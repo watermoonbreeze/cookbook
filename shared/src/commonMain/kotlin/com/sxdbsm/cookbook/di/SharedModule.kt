@@ -13,6 +13,11 @@ import com.sxdbsm.cookbook.platform.DatabaseDriverFactory
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
+/**
+ * shared 层 Koin 依赖注册表。[AI修改]
+ *
+ * `single { ... }` 表示整个进程共用一个实例，类似 Java DI 框架里的 Singleton scope。
+ */
 val sharedModule: Module = module {
     single<SqlDriver> { get<DatabaseDriverFactory>().createDriver() }
     single { CookbookDatabase(get()) }

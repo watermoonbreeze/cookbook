@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 /**
- * 无图占位色：用 id hash 在 PrimaryContainer / TertiaryContainer / SecondaryContainer 三色中轮换。
+ * 无图占位色：用 id hash 在 PrimaryContainer / TertiaryContainer / SecondaryContainer 三色中轮换。[AI修改]
  */
 @Composable
 fun placeholderBg(id: Long): Color {
@@ -17,6 +17,11 @@ fun placeholderBg(id: Long): Color {
     }
 }
 
+/**
+ * 无图占位文字色。[AI修改]
+ *
+ * 前景色必须和 placeholderBg 选中的 container 成对，保证明暗主题下都有足够对比度。
+ */
 @Composable
 fun placeholderFg(id: Long): Color {
     val scheme = MaterialTheme.colorScheme

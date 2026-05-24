@@ -7,12 +7,19 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.ui.graphics.vector.ImageVector
 
+/**
+ * 应用内路由常量与构造方法。[AI修改]
+ *
+ * Compose Navigation 使用字符串描述页面路径，类似 Web 路由或 Android DeepLink。
+ */
 object Routes {
     const val HOME = "home"
     const val TIMELINE = "timeline"
-    const val ADD_MEAL = "addmeal"
+    const val ADD_MEAL = "addmeal?date={date}"
     const val DISHES = "dishes"
     const val MINE = "mine"
+
+    fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}"
 
     const val NEW_DISH = "newdish?dishId={dishId}&importDishId={importDishId}"
     fun newDish(dishId: Long? = null) = "newdish?dishId=${dishId ?: -1L}&importDishId=-1"
@@ -22,12 +29,18 @@ object Routes {
     fun dishDetail(dishId: Long) = "dish/$dishId"
 }
 
+/**
+ * 底部 Tab 的展示配置。[AI修改]
+ */
 data class TabItem(
     val route: String,
     val label: String,
     val icon: ImageVector,
 )
 
+/**
+ * 底部导航栏固定的四个入口。[AI修改]
+ */
 val bottomTabs = listOf(
     TabItem(Routes.HOME, "首页", Icons.Outlined.Home),
     TabItem(Routes.TIMELINE, "食历", Icons.Outlined.CalendarMonth),

@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
+import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
+import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.placeholderBg
 import com.sxdbsm.cookbook.android.ui.component.placeholderFg
 import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
@@ -32,7 +36,8 @@ import com.sxdbsm.cookbook.domain.model.Ingredient
 import org.koin.androidx.compose.koinViewModel
 
 /**
- * 食材选择 - 全屏 Compose Dialog。
+ * 食材选择 - 全屏 Compose Dialog。[AI修改]
+ *
  * 左侧手风琴分类树 + 右侧食材网格 + 顶部搜索 + 底部完成。
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,19 +48,30 @@ fun IngredientPickerScreen(
     onConfirm: (List<Ingredient>) -> Unit,
     vm: IngredientPickerViewModel = koinViewModel(),
 ) {
+    // [AI修改] 选择状态统一来自 ViewModel；弹窗输入框内容使用 remember 保存临时值。
     val ui by vm.state.collectAsStateWithLifecycle()
     var createDialogOpen by remember { mutableStateOf(false) }
     var newIngredientName by remember { mutableStateOf("") }
     var newIngredientAlias by remember { mutableStateOf("") }
+    var newIngredientImages by remember { mutableStateOf<List<String>>(emptyList()) }
+    var newIngredientCategoryId by remember { mutableStateOf<Long?>(null) }
 
+    /**
+     * 外部排除列表变化时刷新可选食材。[AI修改]
+     */
     LaunchedEffect(excludeIngredientIds) {
         vm.configure(excludeIngredientIds)
     }
+    /**
+     * 自定义食材创建成功后关闭创建弹窗。[AI修改]
+     */
     LaunchedEffect(ui.lastCreatedIngredientId) {
         if (ui.lastCreatedIngredientId != null && createDialogOpen) {
             createDialogOpen = false
             newIngredientName = ""
             newIngredientAlias = ""
+            newIngredientImages = emptyList()
+            newIngredientCategoryId = null
         }
     }
     Dialog(
@@ -181,6 +197,8 @@ fun IngredientPickerScreen(
                     createDialogOpen = false
                     newIngredientName = ""
                     newIngredientAlias = ""
+                    newIngredientImages = emptyList()
+                    newIngredientCategoryId = null
                     vm.clearCreateError()
                 }
             },
@@ -204,6 +222,17 @@ fun IngredientPickerScreen(
                         singleLine = true,
                         enabled = !ui.creatingIngredient,
                     )
+                    CategoryDropdown(
+                        categories = ui.tree.map { it.category },
+                        selectedCategoryId = newIngredientCategoryId,
+                        onSelect = { newIngredientCategoryId = it },
+                        enabled = !ui.creatingIngredient,
+                    )
+                    ImagePickerButton(
+                        imagePaths = newIngredientImages,
+                        onImagesChanged = { newIngredientImages = it },
+                        maxCount = 3,
+                    )
                     ui.createError?.let { error ->
                         Text(
                             text = error,
@@ -216,9 +245,14 @@ fun IngredientPickerScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        vm.createUserIngredient(newIngredientName, newIngredientAlias)
+                        vm.createUserIngredient(
+                            name = newIngredientName,
+                            alias = newIngredientAlias,
+                            imagePath = encodeImagePaths(newIngredientImages),
+                            categoryId = newIngredientCategoryId,
+                        )
                     },
-                    enabled = newIngredientName.isNotBlank() && !ui.creatingIngredient,
+                    enabled = newIngredientName.isNotBlank() && newIngredientCategoryId != null && !ui.creatingIngredient,
                 ) {
                     Text(if (ui.creatingIngredient) "添加中" else "添加")
                 }
@@ -229,6 +263,8 @@ fun IngredientPickerScreen(
                         createDialogOpen = false
                         newIngredientName = ""
                         newIngredientAlias = ""
+                        newIngredientImages = emptyList()
+                        newIngredientCategoryId = null
                         vm.clearCreateError()
                     },
                     enabled = !ui.creatingIngredient,
@@ -238,6 +274,44 @@ fun IngredientPickerScreen(
     }
 }
 
+/**
+ * 新建食材时选择分类。[AI生成]
+ */
+@Composable
+private fun CategoryDropdown(
+    categories: List<com.sxdbsm.cookbook.domain.model.FoodCategory>,
+    selectedCategoryId: Long?,
+    onSelect: (Long) -> Unit,
+    enabled: Boolean,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedName = categories.firstOrNull { it.id == selectedCategoryId }?.name.orEmpty()
+    Box {
+        OutlinedButton(
+            onClick = { expanded = true },
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(if (selectedName.isBlank()) "选择分类 *" else selectedName, modifier = Modifier.weight(1f))
+            Icon(Icons.Outlined.ExpandMore, contentDescription = null)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            categories.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(category.name) },
+                    onClick = {
+                        onSelect(category.id)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 左侧分类项。[AI修改]
+ */
 @Composable
 private fun CategoryItem(
     label: String,
@@ -271,6 +345,9 @@ private fun CategoryItem(
     }
 }
 
+/**
+ * 右侧食材网格单元。[AI修改]
+ */
 @Composable
 private fun IngredientCell(
     ingredient: Ingredient,
@@ -278,28 +355,29 @@ private fun IngredientCell(
     onClick: () -> Unit,
 ) {
     val ext = ExtendedColorsHolder.current
-    val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-    val bg = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+    val borderColor = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
+    val bg = if (selected) MaterialTheme.colorScheme.primaryContainer else placeholderBg(ingredient.id)
 
     OutlinedCard(
         modifier = Modifier.clickable { onClick() },
         colors = CardDefaults.outlinedCardColors(containerColor = bg),
         border = androidx.compose.foundation.BorderStroke(if (selected) 2.dp else 1.dp, borderColor),
     ) {
-        Box(modifier = Modifier.padding(8.dp)) {
+        Box(modifier = Modifier.padding(0.dp)) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                         .background(placeholderBg(ingredient.id)),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        ingredient.name.take(1),
+                        if (decodeImagePaths(ingredient.imagePath).isEmpty()) ingredient.name.take(1) else "图",
                         color = placeholderFg(ingredient.id),
                         style = MaterialTheme.typography.titleMedium,
                     )
@@ -310,6 +388,7 @@ private fun IngredientCell(
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                 )
             }
             // 人群分类时的角标

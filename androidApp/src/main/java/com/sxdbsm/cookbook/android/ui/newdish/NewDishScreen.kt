@@ -15,11 +15,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
 import com.sxdbsm.cookbook.android.ui.component.TagChip
+import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
+import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerScreen
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * 新建/编辑菜品页面。[AI修改]
+ *
+ * 通过 `editingDishId` 进入编辑模式，通过 `importDishId` 进入复制导入模式。
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewDishScreen(
@@ -28,17 +36,24 @@ fun NewDishScreen(
     onBack: () -> Unit,
     vm: NewDishViewModel = koinViewModel(),
 ) {
+    // [AI修改] 表单状态来自 ViewModel，局部弹窗开关用 remember 存在当前 Composable 内。
     val state by vm.state.collectAsStateWithLifecycle()
     var tagInputOpen by remember { mutableStateOf(false) }
     var newTagText by remember { mutableStateOf("") }
     var importPickerOpen by remember { mutableStateOf(false) }
     var ingredientPickerOpen by remember { mutableStateOf(false) }
 
+    /**
+     * 进入编辑页时按 id 加载原菜品。[AI修改]
+     */
     LaunchedEffect(editingDishId) {
         if (editingDishId != null && editingDishId > 0 && state.editingId != editingDishId) {
             vm.loadForEdit(editingDishId)
         }
     }
+    /**
+     * 从其它菜品复制导入时加载源菜品。[AI修改]
+     */
     LaunchedEffect(importDishId) {
         if (importDishId != null && importDishId > 0) {
             vm.importFromDishId(importDishId)
@@ -188,6 +203,14 @@ fun NewDishScreen(
                 placeholder = { Text("（可选，做法/心得）") },
                 minLines = 2,
             )
+
+            FieldLabel("图片")
+            ImagePickerButton(
+                imagePaths = decodeImagePaths(state.imagePath),
+                onImagesChanged = { vm.setImagePath(encodeImagePaths(it)) },
+                maxCount = 3,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Spacer(Modifier.height(80.dp))
         }
     }
@@ -243,6 +266,9 @@ fun NewDishScreen(
     }
 }
 
+/**
+ * 表单字段标题。[AI修改]
+ */
 @Composable
 private fun FieldLabel(text: String) {
     Text(
@@ -253,6 +279,11 @@ private fun FieldLabel(text: String) {
     )
 }
 
+/**
+ * 简化版 FlowRow。[AI修改]
+ *
+ * 当前 Compose 版本没有直接使用官方 FlowRow，这里用自定义布局承载标签换行。
+ */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun FlowRow(

@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.domain.model.DishMini
 
 /**
- * 80dp 横滑菜品卡片单元（HomeScreen 热门/最近、DishesScreen 热度、DayMealCardView 内复用）。
+ * 80dp 横滑菜品卡片单元（HomeScreen 热门/最近、DishesScreen 热度、DayMealCardView 内复用）。[AI修改]
+ *
  * 有图：图片 + 下方菜名；无图：图片大小的色块 + 中央首字（不再额外显示名称）。
  */
 @Composable
@@ -33,7 +34,7 @@ fun DishMiniCard(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (dish.imagePath.isNotBlank()) {
-            // 有图：留图占位（实际接入 Coil 后渲染本地路径）
+            // [AI修改] 有图：留图占位（实际接入 Coil 后渲染本地路径）。
             Box(
                 modifier = Modifier
                     .size(size)
@@ -57,7 +58,7 @@ fun DishMiniCard(
                 modifier = Modifier.fillMaxWidth(),
             )
         } else {
-            // 无图：色块 + 中央菜名（不再下方加文字）
+            // [AI修改] 无图：色块 + 中央菜名（不再下方加文字）。
             Box(
                 modifier = Modifier
                     .size(size)

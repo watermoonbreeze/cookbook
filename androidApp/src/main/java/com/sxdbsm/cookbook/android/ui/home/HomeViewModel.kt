@@ -13,17 +13,32 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
+/**
+ * 首页 UI 状态。[AI修改]
+ *
+ * Compose 页面只读取这个不可变对象；状态变化时用 copy 生成新对象。
+ */
 data class HomeUiState(
     val popular: List<DishMini> = emptyList(),
     val recent: List<DishMini> = emptyList(),
     val plans: List<DayMealCardData> = emptyList(),
 )
 
+/**
+ * 首页 ViewModel。[AI修改]
+ *
+ * 负责把热门菜品、最近菜品、今天/未来计划三路数据合并成一个 StateFlow。
+ */
 class HomeViewModel(
     private val dishRepo: DishRepository,
     private val mealRepo: MealRecordRepository,
 ) : ViewModel() {
 
+    /**
+     * 首页可观察状态。[AI修改]
+     *
+     * `combine` 类似把多个 Observable 合并；任意一路变化都会重新生成 HomeUiState。
+     */
     val uiState: StateFlow<HomeUiState> = combine(
         dishRepo.observePopularDishes(limit = 6),
         dishRepo.observeRecentDishes(limit = 6),

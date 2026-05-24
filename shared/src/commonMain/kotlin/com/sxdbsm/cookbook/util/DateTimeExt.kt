@@ -6,6 +6,11 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
+/**
+ * 跨平台日期时间工具。[AI修改]
+ *
+ * 这里统一使用 kotlinx-datetime，避免 shared 层直接依赖 Android/JVM 专属的时间 API。
+ */
 object DateTime {
     fun today(): LocalDate =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date

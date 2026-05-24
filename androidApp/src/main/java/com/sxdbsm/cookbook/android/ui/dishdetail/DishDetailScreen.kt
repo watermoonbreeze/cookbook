@@ -23,6 +23,11 @@ import com.sxdbsm.cookbook.android.ui.component.placeholderBg
 import com.sxdbsm.cookbook.android.ui.component.placeholderFg
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * 菜品详情页面。[AI修改]
+ *
+ * 展示菜名、热度、标签、食材和备注，并提供编辑入口。
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DishDetailScreen(
@@ -31,6 +36,7 @@ fun DishDetailScreen(
     onEdit: (Long) -> Unit,
     vm: DishDetailViewModel = koinViewModel(),
 ) {
+    // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
     val dish by vm.observeDish(dishId).collectAsStateWithLifecycle(initialValue = null)
 
     Scaffold(
@@ -155,6 +161,9 @@ fun DishDetailScreen(
     }
 }
 
+/**
+ * 详情页字段标题。[AI修改]
+ */
 @Composable
 private fun FieldLabel(text: String) {
     Text(

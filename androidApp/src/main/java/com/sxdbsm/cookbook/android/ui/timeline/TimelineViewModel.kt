@@ -5,12 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.LocalDate
 
+/**
+ * 食历页 UI 状态。[AI修改]
+ */
 data class TimelineUiState(
     val pages: List<DayMealCardData> = emptyList(),
     val rangeMin: LocalDate? = null,
@@ -18,38 +21,32 @@ data class TimelineUiState(
     val loading: Boolean = false,
 )
 
+/**
+ * 食历页 ViewModel。[AI修改]
+ *
+ * 通过 Flow 监听数据库变化，添加/编辑餐食后食历会自动刷新。
+ */
 class TimelineViewModel(
     private val repo: MealRecordRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(TimelineUiState())
-    val state: StateFlow<TimelineUiState> = _state.asStateFlow()
+    val state: StateFlow<TimelineUiState> = repo.observeTimelineCards(limit = 60).map { cards ->
+        val today = DateTime.today()
+        val dates = cards.map { it.date }
+        TimelineUiState(
+            pages = cards,
+            rangeMin = dates.minOrNull() ?: today,
+            rangeMax = dates.maxOrNull() ?: today,
+            loading = false,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TimelineUiState(loading = true))
 
-    init { loadFirstPage() }
-
-    fun loadFirstPage() {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(loading = true)
-            val today = DateTime.today()
-            val (min, max) = repo.dateRange()
-            val dates = repo.listDistinctDates(limit = 15, offset = 0)
-            val cards = dates.map { repo.loadDayMealCard(it, today) }
-            _state.value = TimelineUiState(
-                pages = cards,
-                rangeMin = min ?: today,
-                rangeMax = max ?: today,
-                loading = false,
-            )
-        }
-    }
-
+    /**
+     * 兼容旧 UI 的加载更多入口。[AI修改]
+     *
+     * 当前先监听最近 60 个日期，MVP 阶段避免频繁分页查询造成切换卡顿。
+     */
     fun loadMore(offset: Int) {
-        viewModelScope.launch {
-            val today = DateTime.today()
-            val dates = repo.listDistinctDates(limit = 15, offset = offset.toLong())
-            if (dates.isEmpty()) return@launch
-            val cards = dates.map { repo.loadDayMealCard(it, today) }
-            _state.value = _state.value.copy(pages = _state.value.pages + cards)
-        }
+        offset.hashCode() // [AI修改] 保留签名兼容 UI，当前监听模式下无需额外分页加载。
     }
 }

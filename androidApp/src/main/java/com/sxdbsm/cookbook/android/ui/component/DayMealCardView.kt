@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +22,8 @@ import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.MealSection
 
 /**
- * 跨页复用：HomeScreen 计划模块 + FoodTimelineScreen 列表行。
+ * 跨页复用：HomeScreen 计划模块 + FoodTimelineScreen 列表行。[AI修改]
+ *
  * 计划态视觉差异：背景 SurfaceVariant + 顶部 📌 徽章 + 容器虚化。
  */
 @Composable
@@ -28,6 +31,7 @@ fun DayMealCardView(
     data: DayMealCardData,
     modifier: Modifier = Modifier,
     onDishClick: ((DishMini) -> Unit)? = null,
+    onEditClick: (() -> Unit)? = null,
 ) {
     val containerColor = if (data.isPlanState)
         MaterialTheme.colorScheme.surfaceVariant
@@ -44,7 +48,7 @@ fun DayMealCardView(
         colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // 日期标题行
+            // [AI修改] 日期标题行：根据 today/plan 状态展示不同提示。
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = formatDate(data),
@@ -64,6 +68,17 @@ fun DayMealCardView(
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.tertiary,
                     )
+                }
+                Spacer(Modifier.weight(1f))
+                if (onEditClick != null) {
+                    IconButton(onClick = onEditClick, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Outlined.Edit,
+                            contentDescription = "编辑餐食",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                 }
             }
             if (data.meals.isEmpty()) {
@@ -85,6 +100,9 @@ fun DayMealCardView(
     }
 }
 
+/**
+ * 单个餐次分组行。[AI修改]
+ */
 @Composable
 private fun MealSectionRow(
     section: MealSection,
@@ -115,6 +133,9 @@ private fun MealSectionRow(
     }
 }
 
+/**
+ * 格式化卡片日期标题。[AI修改]
+ */
 private fun formatDate(data: DayMealCardData): String {
     val d = data.date
     val weekday = when (d.dayOfWeek.isoDayNumber) {

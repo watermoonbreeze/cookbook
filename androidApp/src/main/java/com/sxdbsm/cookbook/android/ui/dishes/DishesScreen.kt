@@ -20,6 +20,11 @@ import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.domain.model.DishMini
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * 菜品列表页面。[AI修改]
+ *
+ * 展示热门菜品、搜索结果和长按复制入口。
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DishesScreen(
@@ -28,6 +33,7 @@ fun DishesScreen(
     onCopyDish: (Long) -> Unit,
     vm: DishesViewModel = koinViewModel(),
 ) {
+    // [AI修改] 读取不可变 UI 状态，Compose 会在状态变化时自动刷新页面。
     val ui by vm.uiState.collectAsStateWithLifecycle()
     var dropdownDish by remember { mutableStateOf<DishMini?>(null) }
 
@@ -44,7 +50,7 @@ fun DishesScreen(
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            // 搜索框
+            // [AI修改] 搜索框：输入变化直接交给 ViewModel 发起搜索。
             OutlinedTextField(
                 value = ui.keyword,
                 onValueChange = vm::setKeyword,
@@ -56,7 +62,7 @@ fun DishesScreen(
                 singleLine = true,
             )
 
-            // 顶部热度横滑
+            // [AI修改] 顶部热度横滑：空关键词时展示，避免搜索场景干扰结果。
             if (ui.popular.isNotEmpty() && ui.keyword.isBlank()) {
                 Row(
                     Modifier

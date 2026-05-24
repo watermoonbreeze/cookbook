@@ -8,11 +8,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * 首次启动灌入字典与基础数据。每张表先 count，为 0 才灌入，避免重启重复。
+ * 首次启动灌入字典与基础数据。[AI修改]
+ *
+ * 每张表先 count，为 0 才灌入，避免重启重复。
  * MVP 仅灌入字典 + 一级分类 + 少量演示食材 + 人群分类。具体二级分类/食材后续扩充。
  */
 class PresetDataSeeder(private val db: CookbookDatabase) {
 
+    /**
+     * 检查并灌入缺失的预置数据。[AI修改]
+     */
     suspend fun seedIfNeeded() = withContext(Dispatchers.Default) {
         val q = db.cookbookQueries
         val now = DateTime.nowEpochSeconds()
@@ -21,6 +26,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         if (q.countMeasurementUnits().executeAsOne() == 0L) seedMeasurementUnits()
         if (q.countCrowdTypes().executeAsOne() == 0L) seedCrowdTypes(now)
         if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes()
+        ensureFlexibleSnackMealType() // [AI修改] 兼容旧库：补充“加餐”餐次，供添加餐食页按需手动选择时间。
         if (q.countDishTags().executeAsOne() == 0L) seedDishTags(now)
         if (q.countFoodCategories().executeAsOne() == 0L) seedFoodCategories(now)
         if (q.countUserPreferences().executeAsOne() == 0L) seedUserPreferences(now)
@@ -67,6 +73,16 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         }
     }
 
+    /**
+     * 确保存在用户可手动指定时间的“加餐”。[AI修改]
+     *
+     * `meal_type.default_time` 数据库字段非空，所以用 23:59 作为排序占位；
+     * UI 层会识别 `isFixed=false` 并要求用户手动选择具体用餐时间。
+     */
+    private fun ensureFlexibleSnackMealType() {
+        db.cookbookQueries.insertMealType("SNACK", "加餐", "23:59", 0, "preset")
+    }
+
     private fun seedDishTags(now: Long) {
         val q = db.cookbookQueries
         listOf("#复制" to "preset", "家常" to "preset", "快手" to "preset", "少盐" to "preset").forEach { (name, src) ->
@@ -75,7 +91,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     }
 
     /**
-     * 一级分类 + 健康饮食/人群分类下的二级分类。
+     * 一级分类 + 健康饮食/人群分类下的二级分类。[AI修改]
      * 一级 id 由 AUTOINCREMENT 决定，假定按插入顺序为 1-8。
      */
     private fun seedFoodCategories(now: Long) {
@@ -146,7 +162,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     }
 
     /**
-     * 灌入少量演示食材，方便首次启动后用户能直接选用。
+     * 灌入少量演示食材，方便首次启动后用户能直接选用。[AI修改]
      * 若 ingredient 表已有数据则跳过。
      */
     private fun seedDemoIngredientsIfEmpty(now: Long) {

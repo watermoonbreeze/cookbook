@@ -14,12 +14,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 
+/**
+ * App 全局主题入口。[AI修改]
+ *
+ * 所有页面都应包在这里，才能统一使用 MaterialTheme 与业务扩展色。
+ */
 @Composable
 fun CookbookTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
-    val systemDark = isSystemInDarkTheme()
+    val systemDark = isSystemInDarkTheme() // [AI修改] 读取系统深色模式。
     val useDark = when (themeMode) {
         ThemeMode.SYSTEM -> systemDark
         ThemeMode.LIGHT -> false
@@ -45,6 +50,7 @@ fun CookbookTheme(
         extraLarge = RoundedCornerShape(28.dp),
     )
 
+    // [AI修改] CompositionLocalProvider 类似把扩展色放入 Compose 上下文，子组件可直接读取。
     CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
         MaterialTheme(
             colorScheme = colorScheme,

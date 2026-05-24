@@ -15,6 +15,11 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
+/**
+ * Android 层 Koin 依赖注册表。[AI修改]
+ *
+ * 注册平台实现和各页面 ViewModel。sharedModule 注册跨平台仓库，这里注册 Android 专属对象。
+ */
 val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { BackupManager(context = androidContext(), driverProvider = { get() }) }
@@ -23,7 +28,7 @@ val androidModule = module {
     viewModel { DishesViewModel(get(), get()) }
     viewModel { DishDetailViewModel(get()) }
     viewModel { NewDishViewModel(get(), get(), get(), get()) }
-    viewModel { AddMealViewModel(get(), get(), get()) }
+    viewModel { AddMealViewModel(get()) }
     viewModel { TimelineViewModel(get()) }
     viewModel { MineViewModel(get(), get(), get()) }
     viewModel { IngredientPickerViewModel(get(), get()) }

@@ -18,7 +18,7 @@ import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
 import com.sxdbsm.cookbook.domain.model.DishMini
 
 /**
- * DishesScreen 列表行 / DishPickerScreen 候选行 共用。
+ * DishesScreen 列表行 / DishPickerScreen 候选行 共用。[AI修改]
  *
  * @param dish 菜品
  * @param showCheckbox 是否显示多选框
@@ -47,7 +47,7 @@ fun DishRow(
         .padding(horizontal = 16.dp, vertical = 10.dp)
 
     Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
-        // 左侧缩略图（64dp）
+        // [AI修改] 左侧缩略图（64dp）：真实图片未接入时使用稳定占位色。
         Box(
             modifier = Modifier
                 .size(64.dp)
@@ -68,7 +68,7 @@ fun DishRow(
         Spacer(Modifier.width(12.dp))
 
         Column(Modifier.weight(1f)) {
-            // 第一行：菜名 + 标签 + 喜爱度
+            // [AI修改] 第一行：菜名 + 标签 + 喜爱度。
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = dish.name,
@@ -120,6 +120,9 @@ fun DishRow(
     Divider(color = MaterialTheme.colorScheme.outlineVariant)
 }
 
+/**
+ * 菜品标签胶囊。[AI修改]
+ */
 @Composable
 fun TagChip(text: String) {
     val isCopy = text.startsWith("#")

@@ -12,7 +12,8 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Android 端备份实现：
+ * Android 端备份实现。[AI修改]
+ *
  * - 备份位置：app 私有外部存储 backups/
  * - 文件命名：backup_yyyyMMdd_HHmmss.db
  * - 同时拷贝 .db / .db-wal / .db-shm 三个文件
@@ -34,7 +35,7 @@ actual class BackupManager(
         val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val target = File(backupDir, "backup_${ts}.db")
 
-        // 强制 wal checkpoint，把 WAL 内容写回主 db
+        // [AI修改] 强制 wal checkpoint，把 WAL 内容写回主 db，避免只复制主 db 时遗漏最近写入。
         runCatching {
             driverProvider().execute(null, "PRAGMA wal_checkpoint(FULL);", 0)
         }
@@ -64,9 +65,9 @@ actual class BackupManager(
     actual suspend fun restoreFromBackup(fileName: String) = withContext(Dispatchers.IO) {
         val source = File(backupDir, fileName)
         require(source.exists()) { "Backup file not found: $fileName" }
-        // 关闭当前数据库
+        // [AI修改] 恢复前先尝试关闭当前数据库连接，降低覆盖文件时被占用的概率。
         runCatching { driverProvider().close() }
-        // 覆盖三个文件
+        // [AI修改] 覆盖主库及 WAL/SHM 配套文件，保持 SQLite 文件组一致。
         copyDbTriplet(source = source, target = currentDb)
         Unit
     }
@@ -77,6 +78,9 @@ actual class BackupManager(
         Unit
     }
 
+    /**
+     * 复制 SQLite 主文件及可能存在的 WAL/SHM 文件。[AI修改]
+     */
     private fun copyDbTriplet(source: File, target: File) {
         source.copyTo(target, overwrite = true)
         File(source.parentFile, source.name + "-wal").takeIf { it.exists() }
@@ -85,6 +89,9 @@ actual class BackupManager(
             ?.copyTo(File(target.parentFile, target.name + "-shm"), overwrite = true)
     }
 
+    /**
+     * 清理超过保留数量的旧备份。[AI修改]
+     */
     private fun pruneOldBackups(keep: Int) {
         val files = backupDir.listFiles { f -> f.isFile && f.name.startsWith("backup_") && f.name.endsWith(".db") }
             ?.sortedByDescending { it.lastModified() } ?: return

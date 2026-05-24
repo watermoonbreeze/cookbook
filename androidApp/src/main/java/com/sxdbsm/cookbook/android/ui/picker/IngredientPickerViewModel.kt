@@ -11,13 +11,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** 左侧分类节点（手风琴展开后的扁平化项） */
+/** 左侧分类节点（手风琴展开后的扁平化项）。[AI修改] */
 data class CategoryNode(
     val category: FoodCategory,
     val level: Int,    // 1 = 一级，2 = 二级
     val expanded: Boolean = false,
 )
 
+/**
+ * 食材选择器 UI 状态。[AI修改]
+ *
+ * 左侧分类树、右侧食材列表、已选食材、新建食材状态都集中在这里。
+ */
 data class IngredientPickerUiState(
     val keyword: String = "",
     val tree: List<CategoryNode> = emptyList(),  // "全部" + 一级 + 展开的二级
@@ -31,16 +36,25 @@ data class IngredientPickerUiState(
     val lastCreatedIngredientId: Long? = null,
 )
 
+/**
+ * 食材选择器 ViewModel。[AI修改]
+ *
+ * 管理分类展开、食材搜索、多选确认和用户自定义食材创建。
+ */
 class IngredientPickerViewModel(
     private val ingredientRepo: IngredientRepository,
     private val categoryRepo: FoodCategoryRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(IngredientPickerUiState())
-    val state: StateFlow<IngredientPickerUiState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(IngredientPickerUiState()) // [AI修改] 内部可变选择器状态。
+    val state: StateFlow<IngredientPickerUiState> = _state.asStateFlow() // [AI修改] 对 UI 暴露只读状态。
 
+    // [AI修改] ViewModel 创建后立即加载分类和全部食材，页面首屏可直接显示。
     init { loadCategories(); loadAllIngredients() }
 
+    /**
+     * 配置需要排除的食材。[AI修改]
+     */
     fun configure(excludeIngredientIds: Set<Long>) {
         _state.value = _state.value.copy(
             excludeIngredientIds = excludeIngredientIds,
@@ -91,13 +105,13 @@ class IngredientPickerViewModel(
 
             val newTree = current.toMutableList()
             if (node.expanded) {
-                // 收起：移除该一级后面的所有子项
+                // [AI修改] 收起：移除该一级后面的所有子项。
                 val end = newTree.subList(idx + 1, newTree.size).indexOfFirst { it.level == 1 }
                 val to = if (end < 0) newTree.size else idx + 1 + end
                 newTree.subList(idx + 1, to).clear()
                 newTree[idx] = node.copy(expanded = false)
             } else {
-                // 展开：查二级并插入
+                // [AI修改] 展开：查二级并插入到扁平列表中。
                 val children = categoryRepo.listChildren(node.category.id)
                 newTree.add(idx + 1, *children.map { CategoryNode(it, level = 2) }.toTypedArray())
                 newTree[idx] = node.copy(expanded = true)
@@ -106,6 +120,9 @@ class IngredientPickerViewModel(
         }
     }
 
+    /**
+     * 选择某个分类并加载对应食材。[AI修改]
+     */
     fun selectCategory(node: CategoryNode) {
         viewModelScope.launch {
             val cat = node.category
@@ -119,6 +136,9 @@ class IngredientPickerViewModel(
         }
     }
 
+    /**
+     * 切换食材选中状态。[AI修改]
+     */
     fun toggleSelection(ingredient: Ingredient) {
         val ingredientId = ingredient.id
         val current = _state.value.selectedIds
@@ -138,9 +158,13 @@ class IngredientPickerViewModel(
         return _state.value.selectedIngredients
     }
 
-    fun createUserIngredient(name: String, alias: String = "") {
+    /**
+     * 创建用户自定义食材，并默认选中它。[AI修改]
+     */
+    fun createUserIngredient(name: String, alias: String = "", imagePath: String = "", categoryId: Long? = null) {
         val trimmedName = name.trim()
         val trimmedAlias = alias.trim()
+        val trimmedImagePath = imagePath.trim()
         if (trimmedName.isBlank()) {
             _state.value = _state.value.copy(createError = "请输入食材名称")
             return
@@ -148,11 +172,12 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(creatingIngredient = true, createError = null)
             runCatching {
-                val id = ingredientRepo.createUserIngredient(trimmedName, trimmedAlias)
+                val id = ingredientRepo.createUserIngredient(trimmedName, trimmedAlias, trimmedImagePath, categoryId)
                 Ingredient(
                     id = id,
                     name = trimmedName,
                     alias = trimmedAlias,
+                    imagePath = trimmedImagePath, // [AI修改] 新建食材弹框的可选图片路径。
                     source = "user",
                 )
             }.onSuccess { ingredient ->
@@ -193,7 +218,7 @@ class IngredientPickerViewModel(
     }
 }
 
-// 扩展：在指定位置插入多个元素
+// [AI修改] 扩展函数：在指定位置插入多个元素，等价于给 MutableList 增加一个小工具方法。
 private fun <T> MutableList<T>.add(index: Int, vararg items: T) {
     items.forEachIndexed { i, item -> add(index + i, item) }
 }

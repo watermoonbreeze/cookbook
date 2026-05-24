@@ -7,7 +7,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Extended Colors —— 业务语义色板，独立于 Material 标准 ColorScheme。
+ * Extended Colors —— 业务语义色板，独立于 Material 标准 ColorScheme。[AI修改]
  * Success / Warning / Danger 各一对，分 Light/Dark 两套。
  *
  * 注意：Warning 橙更亮，与 Tertiary 品牌橙做出区分（详见配色文档）。
@@ -60,6 +60,11 @@ val DarkExtendedColors = ExtendedColors(
 
 val LocalExtendedColors = compositionLocalOf { LightExtendedColors }
 
+/**
+ * 扩展色读取入口。[AI修改]
+ *
+ * 使用方式类似 `MaterialTheme.colorScheme`，但这里放的是业务自定义语义色。
+ */
 object ExtendedColorsHolder {
     val current: ExtendedColors
         @Composable

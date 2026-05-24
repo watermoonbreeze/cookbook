@@ -9,6 +9,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+/**
+ * 通用空状态组件。[AI修改]
+ *
+ * 当列表没有数据时显示图标和说明文字。
+ */
 @Composable
 fun EmptyState(
     text: String,

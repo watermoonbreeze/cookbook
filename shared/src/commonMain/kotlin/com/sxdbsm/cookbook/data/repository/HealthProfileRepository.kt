@@ -10,12 +10,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/**
+ * 健康档案仓库。[AI修改]
+ *
+ * 管理用户启用的慢性病/健康人群标签，用于后续食材推荐和筛选。
+ */
 class HealthProfileRepository(private val db: CookbookDatabase) {
     private val q = db.cookbookQueries
 
+    /**
+     * 读取系统支持的全部健康人群类型。[AI修改]
+     */
     suspend fun listAllCrowdTypes(): List<CrowdType> =
         q.selectAllCrowdTypes().executeAsList().map { CrowdType(it.id, it.name, it.description) }
 
+    /**
+     * 监听已启用的健康档案。[AI修改]
+     */
     fun observeEnabled(): Flow<List<HealthProfile>> =
         q.selectEnabledHealthProfiles().asFlow().mapToList(Dispatchers.Default).map { rows ->
             rows.map {
@@ -28,6 +39,9 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
             }
         }
 
+    /**
+     * 读取全部健康档案，不只包含启用项。[AI修改]
+     */
     suspend fun listAll(): List<HealthProfile> =
         q.selectAllHealthProfiles().executeAsList().map {
             HealthProfile(
@@ -38,12 +52,18 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
             )
         }
 
+    /**
+     * 新增并启用一个健康档案。[AI修改]
+     */
     suspend fun add(crowdTypeId: Long) {
         q.insertHealthProfile(crowdTypeId, DateTime.nowEpochSeconds())
         q.updateHealthProfileEnabled(1, crowdTypeId)
     }
 
+    /** 禁用健康档案但保留记录。[AI修改] */
     suspend fun disable(crowdTypeId: Long) = q.updateHealthProfileEnabled(0, crowdTypeId)
+    /** 重新启用健康档案。[AI修改] */
     suspend fun enable(crowdTypeId: Long) = q.updateHealthProfileEnabled(1, crowdTypeId)
+    /** 删除健康档案记录。[AI修改] */
     suspend fun remove(crowdTypeId: Long) = q.deleteHealthProfile(crowdTypeId)
 }

@@ -13,16 +13,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DayMealCardView
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
+import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * 食历页面。[AI修改]
+ *
+ * 用时间线方式展示历史餐食和未来计划。
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FoodTimelineScreen(vm: TimelineViewModel = koinViewModel()) {
+fun FoodTimelineScreen(
+    onEditMealDate: (LocalDate) -> Unit,
+    vm: TimelineViewModel = koinViewModel(),
+) {
+    // [AI修改] 页面只订阅 TimelineUiState，不直接访问 Repository。
     val state by vm.state.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize()) {
         TopAppBar(title = { Text("食历", fontWeight = FontWeight.SemiBold) })
 
-        // 时间轴顶部占位（MVP 简化：显示范围文字 + 月份刻度后续补）
+        // [AI修改] 时间轴顶部占位（MVP 简化：显示范围文字 + 月份刻度后续补）。
         Surface(
             color = MaterialTheme.colorScheme.surfaceVariant,
             modifier = Modifier
@@ -51,7 +61,10 @@ fun FoodTimelineScreen(vm: TimelineViewModel = koinViewModel()) {
                 modifier = Modifier.weight(1f),
             ) {
                 items(state.pages, key = { it.date.toString() }) { card ->
-                    DayMealCardView(data = card)
+                    DayMealCardView(
+                        data = card,
+                        onEditClick = { onEditMealDate(card.date) },
+                    )
                 }
                 item {
                     Spacer(Modifier.height(8.dp))

@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,11 @@ import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.domain.model.DishMini
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * 菜品选择全屏弹窗。[AI修改]
+ *
+ * 可配置为单选或多选，常用于添加餐食、导入菜品等场景。
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DishPickerScreen(
@@ -41,10 +47,24 @@ fun DishPickerScreen(
     onConfirm: (List<DishMini>) -> Unit,
     vm: DishPickerViewModel = koinViewModel(),
 ) {
+    // [AI修改] 选择器内部状态由 ViewModel 管理，外部只传初始选中和排除列表。
     val state by vm.state.collectAsStateWithLifecycle()
+    val refreshTick = remember { System.nanoTime() }
 
+    /**
+     * 外部参数变化时重新配置选择器。[AI修改]
+     */
     LaunchedEffect(excludeDishIds, initialSelected) {
         vm.configure(excludeDishIds, initialSelected)
+    }
+
+    /**
+     * 弹窗每次重新进入组合时刷新列表。[AI修改]
+     *
+     * 从“添加菜品”跳到新建菜品并返回后，刚创建的菜品会按创建时间出现在列表前方。
+     */
+    LaunchedEffect(refreshTick) {
+        vm.refresh()
     }
 
     Dialog(
@@ -179,6 +199,9 @@ fun DishPickerScreen(
     }
 }
 
+/**
+ * 弹窗内分区标题。[AI修改]
+ */
 @Composable
 private fun SectionLabel(text: String) {
     Text(

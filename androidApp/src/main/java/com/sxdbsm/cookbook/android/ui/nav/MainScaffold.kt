@@ -25,21 +25,27 @@ import com.sxdbsm.cookbook.android.ui.home.HomeScreen
 import com.sxdbsm.cookbook.android.ui.mine.MineScreen
 import com.sxdbsm.cookbook.android.ui.newdish.NewDishScreen
 import com.sxdbsm.cookbook.android.ui.timeline.FoodTimelineScreen
+import com.sxdbsm.cookbook.util.DateTime
 
+/**
+ * App 主导航骨架。[AI修改]
+ *
+ * Scaffold 类似一个页面框架：底部栏、悬浮按钮、内容区都在这里统一装配。
+ */
 @Composable
 fun MainScaffold() {
     val nav = rememberNavController()
     val current by nav.currentBackStackEntryAsState()
     val currentRoute = current?.destination?.route
 
-    val showBottomBar = currentRoute in bottomTabs.map { it.route }
+    val showBottomBar = currentRoute in bottomTabs.map { it.route } // [AI修改] 详情/编辑页隐藏底部栏。
 
     Scaffold(
         bottomBar = {
             if (showBottomBar) BottomBar(nav, currentRoute)
         },
         floatingActionButton = {
-            if (showBottomBar) CenterPlusFab { nav.navigate(Routes.ADD_MEAL) }
+            if (showBottomBar) CenterPlusFab { nav.navigate(Routes.addMeal()) }
         },
         floatingActionButtonPosition = FabPosition.Center,
     ) { padding ->
@@ -50,12 +56,17 @@ fun MainScaffold() {
         ) {
             composable(Routes.HOME) {
                 HomeScreen(
-                    onAddMeal = { nav.navigate(Routes.ADD_MEAL) },
                     onOpenTimeline = { nav.navigate(Routes.TIMELINE) },
                     onOpenDishes = { nav.navigate(Routes.DISHES) },
+                    onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
+                    onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                 )
             }
-            composable(Routes.TIMELINE) { FoodTimelineScreen() }
+            composable(Routes.TIMELINE) {
+                FoodTimelineScreen(
+                    onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                )
+            }
             composable(Routes.DISHES) {
                 DishesScreen(
                     onAddDish = { nav.navigate(Routes.newDish()) },
@@ -65,7 +76,12 @@ fun MainScaffold() {
             }
             composable(Routes.MINE) { MineScreen() }
             composable(Routes.ADD_MEAL) {
-                AddDayFoodScreen(onBack = { nav.popBackStack() })
+                val date = it.arguments?.getString("date")?.takeIf { value -> value.isNotBlank() }?.let(DateTime::parseDate)
+                AddDayFoodScreen(
+                    onBack = { nav.popBackStack() },
+                    onAddNewDish = { nav.navigate(Routes.newDish()) },
+                    editDate = date,
+                )
             }
             composable(Routes.NEW_DISH) { entry ->
                 val dishId = entry.arguments?.getString("dishId")?.toLongOrNull()?.takeIf { it > 0 }
@@ -88,6 +104,9 @@ fun MainScaffold() {
     }
 }
 
+/**
+ * 底部导航栏。[AI修改]
+ */
 @Composable
 private fun BottomBar(nav: NavController, currentRoute: String?) {
     NavigationBar(
@@ -113,7 +132,7 @@ private fun BottomBar(nav: NavController, currentRoute: String?) {
                 ),
             )
         }
-        // 中间留出 FAB 占位
+        // [AI修改] 中间留出 FAB 占位，让“+”按钮视觉上位于导航栏中央。
         NavigationBarItem(
             selected = false,
             onClick = { },
@@ -142,6 +161,9 @@ private fun BottomBar(nav: NavController, currentRoute: String?) {
     }
 }
 
+/**
+ * 中间添加餐食按钮。[AI修改]
+ */
 @Composable
 private fun CenterPlusFab(onClick: () -> Unit) {
     FloatingActionButton(

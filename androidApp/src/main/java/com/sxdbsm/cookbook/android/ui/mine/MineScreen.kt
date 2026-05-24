@@ -17,6 +17,11 @@ import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import org.koin.androidx.compose.koinViewModel
 
+/**
+ * 我的页面。[AI修改]
+ *
+ * 承载用户信息、健康档案入口、主题切换和数据备份入口。
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MineScreen(vm: MineViewModel = koinViewModel()) {
@@ -31,7 +36,7 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
     ) {
         TopAppBar(title = { Text("我的", fontWeight = FontWeight.SemiBold) })
 
-        // 顶部用户卡
+        // [AI修改] 顶部用户卡：展示健康档案摘要。
         OutlinedCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,6 +108,9 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
     }
 }
 
+/**
+ * 设置分组标题。[AI修改]
+ */
 @Composable
 private fun GroupTitle(text: String) {
     Text(
@@ -113,6 +121,9 @@ private fun GroupTitle(text: String) {
     )
 }
 
+/**
+ * 设置项行组件。[AI修改]
+ */
 @Composable
 private fun SettingRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -148,6 +159,9 @@ private fun SettingRow(
     Divider(color = MaterialTheme.colorScheme.outlineVariant)
 }
 
+/**
+ * 主题选择弹窗。[AI修改]
+ */
 @Composable
 private fun ThemeDialog(
     current: ThemeMode,

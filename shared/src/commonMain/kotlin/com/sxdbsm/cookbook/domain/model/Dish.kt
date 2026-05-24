@@ -1,10 +1,16 @@
 package com.sxdbsm.cookbook.domain.model
 
+/**
+ * 菜品的完整领域模型。[AI修改]
+ *
+ * Kotlin 的 `data class` 类似 Java 里的 POJO + 自动生成的 `equals/hashCode/toString/copy`。
+ * 这里用于菜品详情页和编辑页，包含基础字段、标签、食材明细等完整信息。
+ */
 data class Dish(
-    val id: Long = 0,
-    val name: String,
-    val cookingMethodId: Long? = null,
-    val cookingMethodName: String? = null,
+    val id: Long = 0, // [AI修改] 主键；默认 0 表示还没有入库的新菜品。
+    val name: String, // [AI修改] 菜名，Kotlin 非空 String 等价于 Java 中不允许为 null 的 String。
+    val cookingMethodId: Long? = null, // [AI修改] `Long?` 表示可空 Long，对应 Java 的 Long nullable。
+    val cookingMethodName: String? = null, // [AI修改] 展示用烹饪方式名称，来自字典表查询。
     /** 热度 0-100，自动累加，UI 不暴露编辑 */
     val preference: Double = 0.0,
     val specialNote: String = "",
@@ -13,13 +19,19 @@ data class Dish(
     val source: String = "user",
     val createdAt: Long = 0,
     val updatedAt: Long = 0,
-    val tags: List<String> = emptyList(),
-    val ingredients: List<DishIngredient> = emptyList(),
+    val tags: List<String> = emptyList(), // [AI修改] 只读 List；修改时用 copy(tags = 新列表)。
+    val ingredients: List<DishIngredient> = emptyList(), // [AI修改] 菜品关联的食材明细。
 ) {
     /** 热度星级（0-5） */
     val popularityStars: Float get() = (preference / 20.0).toFloat().coerceIn(0f, 5f)
 }
 
+/**
+ * 菜品与食材的关联模型。[AI修改]
+ *
+ * 在 Java 里通常会写成 DishIngredient 类并持有 Ingredient 字段；
+ * 这里用 data class 直接表达“某道菜用了某个食材、用量、单位、是否主料”。
+ */
 data class DishIngredient(
     val ingredient: Ingredient,
     val quantity: Double? = null,
@@ -28,7 +40,11 @@ data class DishIngredient(
     val isMain: Boolean = true,
 )
 
-/** 列表/卡片用的菜品轻量信息 */
+/**
+ * 列表/卡片用的菜品轻量信息。[AI修改]
+ *
+ * 详情页不使用它，因为它只保留渲染列表需要的字段，避免每行都查完整食材和标签。
+ */
 data class DishMini(
     val id: Long,
     val name: String,
