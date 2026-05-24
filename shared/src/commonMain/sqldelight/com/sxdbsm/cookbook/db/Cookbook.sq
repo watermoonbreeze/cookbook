@@ -1,0 +1,527 @@
+-- ============================================================
+-- Cookbook 数据库 schema (v1)
+-- 设计文档参考: .claude/docs/feature/数据库设计方案.md
+-- ============================================================
+
+-- ========== 字典/基础表 ==========
+
+CREATE TABLE cooking_method (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE crowd_type (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE measurement_unit (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL DEFAULT 'preset'
+);
+
+-- ========== 食材体系 ==========
+
+CREATE TABLE ingredient (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    alias TEXT NOT NULL DEFAULT '',
+    pinyin TEXT NOT NULL DEFAULT '',
+    image_path TEXT NOT NULL DEFAULT '',
+    default_unit_id INTEGER REFERENCES measurement_unit(id),
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX idx_ingredient_pinyin ON ingredient(pinyin);
+
+CREATE TABLE food_category (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    dimension TEXT NOT NULL DEFAULT 'general',
+    parent_id INTEGER REFERENCES food_category(id),
+    crowd_type_id INTEGER REFERENCES crowd_type(id),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    icon TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX idx_food_category_parent ON food_category(parent_id);
+
+CREATE TABLE ingredient_category (
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    PRIMARY KEY (ingredient_id, category_id)
+);
+
+CREATE TABLE crowd_ingredient (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    crowd_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    advice_level TEXT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
+    daily_limit REAL,
+    source TEXT NOT NULL DEFAULT 'preset'
+);
+
+CREATE UNIQUE INDEX uq_crowd_ingredient ON crowd_ingredient(crowd_id, ingredient_id);
+
+-- ========== 菜品体系 ==========
+
+CREATE TABLE dish (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    cooking_method_id INTEGER REFERENCES cooking_method(id),
+    preference REAL NOT NULL DEFAULT 0.0,
+    special_note TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    image_path TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX idx_dish_preference ON dish(preference DESC);
+CREATE INDEX idx_dish_updated_at ON dish(updated_at DESC);
+CREATE INDEX idx_dish_name ON dish(name COLLATE NOCASE);
+
+CREATE TABLE dish_tag (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE dish_tag_rel (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES dish_tag(id) ON DELETE CASCADE,
+    PRIMARY KEY (dish_id, tag_id)
+);
+
+CREATE TABLE dish_ingredient (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id),
+    quantity REAL,
+    unit_id INTEGER REFERENCES measurement_unit(id),
+    is_main INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX uq_dish_ingredient ON dish_ingredient(dish_id, ingredient_id);
+
+CREATE TABLE dish_crowd (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    crowd_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
+    suitability TEXT NOT NULL DEFAULT 'suitable',
+    PRIMARY KEY (dish_id, crowd_id)
+);
+
+-- ========== 餐序类型 ==========
+
+CREATE TABLE meal_type (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    default_time TEXT NOT NULL,
+    is_fixed INTEGER NOT NULL DEFAULT 1,
+    source TEXT NOT NULL DEFAULT 'preset'
+);
+
+-- ========== 每餐记录 ==========
+
+CREATE TABLE meal_record (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL,
+    meal_type_id INTEGER NOT NULL REFERENCES meal_type(id),
+    meal_time TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX idx_meal_record_date ON meal_record(date);
+CREATE INDEX idx_meal_record_created_at ON meal_record(created_at DESC);
+
+CREATE TABLE meal_record_dish (
+    meal_record_id INTEGER NOT NULL REFERENCES meal_record(id) ON DELETE CASCADE,
+    dish_id INTEGER NOT NULL REFERENCES dish(id),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (meal_record_id, dish_id)
+);
+
+-- 热度自动累加：MVP 在应用层 Repository 里维护（SQLDelight 当前方言不支持触发器 NEW 引用）。
+-- 在 MealRecordRepository.save() 中插入 meal_record_dish 后调用 incrementDishPreference()。
+
+-- ========== 收藏组合 ==========
+
+CREATE TABLE favorite_combo (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE favorite_combo_dish (
+    combo_id INTEGER NOT NULL REFERENCES favorite_combo(id) ON DELETE CASCADE,
+    dish_id INTEGER NOT NULL REFERENCES dish(id),
+    PRIMARY KEY (combo_id, dish_id)
+);
+
+-- ========== 用户偏好与档案 ==========
+
+CREATE TABLE user_preferences (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE user_health_profile (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    crowd_type_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX uq_user_health_profile ON user_health_profile(crowd_type_id);
+
+-- ============================================================
+-- 查询定义
+-- ============================================================
+
+-- ===== 元数据 / 初始化检查 =====
+
+countCookingMethods:
+SELECT COUNT(*) FROM cooking_method;
+
+countMealTypes:
+SELECT COUNT(*) FROM meal_type;
+
+countCrowdTypes:
+SELECT COUNT(*) FROM crowd_type;
+
+countFoodCategories:
+SELECT COUNT(*) FROM food_category;
+
+countDishTags:
+SELECT COUNT(*) FROM dish_tag;
+
+countMeasurementUnits:
+SELECT COUNT(*) FROM measurement_unit;
+
+countUserPreferences:
+SELECT COUNT(*) FROM user_preferences;
+
+-- ===== cooking_method =====
+
+insertCookingMethod:
+INSERT OR IGNORE INTO cooking_method(name, source, created_at) VALUES (?, ?, ?);
+
+selectAllCookingMethods:
+SELECT * FROM cooking_method ORDER BY id;
+
+selectCookingMethodById:
+SELECT * FROM cooking_method WHERE id = ?;
+
+-- ===== measurement_unit =====
+
+insertMeasurementUnit:
+INSERT OR IGNORE INTO measurement_unit(name, source) VALUES (?, ?);
+
+selectAllMeasurementUnits:
+SELECT * FROM measurement_unit ORDER BY id;
+
+-- ===== crowd_type =====
+
+insertCrowdType:
+INSERT OR IGNORE INTO crowd_type(name, description, source, created_at) VALUES (?, ?, ?, ?);
+
+selectAllCrowdTypes:
+SELECT * FROM crowd_type ORDER BY id;
+
+selectCrowdTypeById:
+SELECT * FROM crowd_type WHERE id = ?;
+
+-- ===== meal_type =====
+
+insertMealType:
+INSERT OR IGNORE INTO meal_type(code, name, default_time, is_fixed, source) VALUES (?, ?, ?, ?, ?);
+
+selectAllMealTypes:
+SELECT * FROM meal_type ORDER BY default_time;
+
+selectMealTypeById:
+SELECT * FROM meal_type WHERE id = ?;
+
+selectFixedMealTypes:
+SELECT * FROM meal_type WHERE is_fixed = 1 ORDER BY default_time;
+
+-- ===== food_category =====
+
+insertFoodCategory:
+INSERT INTO food_category(name, dimension, parent_id, crowd_type_id, sort_order, icon, source, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectTopLevelCategories:
+SELECT * FROM food_category WHERE parent_id IS NULL ORDER BY sort_order, id;
+
+selectChildCategories:
+SELECT * FROM food_category WHERE parent_id = ? ORDER BY sort_order, id;
+
+selectCategoryById:
+SELECT * FROM food_category WHERE id = ?;
+
+countChildren:
+SELECT COUNT(*) FROM food_category WHERE parent_id = ?;
+
+-- ===== ingredient =====
+
+insertIngredient:
+INSERT INTO ingredient(name, alias, pinyin, image_path, default_unit_id, source, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+selectAllIngredients:
+SELECT * FROM ingredient ORDER BY pinyin, name;
+
+selectIngredientById:
+SELECT * FROM ingredient WHERE id = ?;
+
+searchIngredients:
+SELECT * FROM ingredient
+WHERE name LIKE :kw OR alias LIKE :kw OR pinyin LIKE :kw
+ORDER BY pinyin, name;
+
+selectIngredientsByCategory:
+SELECT i.* FROM ingredient i
+JOIN ingredient_category ic ON i.id = ic.ingredient_id
+WHERE ic.category_id = ?
+ORDER BY i.pinyin, i.name;
+
+selectIngredientsByCrowd:
+SELECT i.id, i.name, i.alias, i.pinyin, i.image_path, i.default_unit_id, i.source, i.created_at,
+       ci.advice_level, ci.reason
+FROM ingredient i
+JOIN crowd_ingredient ci ON i.id = ci.ingredient_id
+WHERE ci.crowd_id = ?
+ORDER BY
+  CASE ci.advice_level WHEN 'recommend' THEN 1 WHEN 'limit' THEN 2 WHEN 'avoid' THEN 3 ELSE 4 END,
+  i.pinyin, i.name;
+
+linkIngredientCategory:
+INSERT OR IGNORE INTO ingredient_category(ingredient_id, category_id) VALUES (?, ?);
+
+-- ===== dish =====
+
+insertDish:
+INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, source, created_at, updated_at)
+VALUES (?, ?, 0.0, ?, ?, ?, ?, ?, ?);
+
+updateDish:
+UPDATE dish
+SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, updated_at = ?
+WHERE id = ?;
+
+deleteDish:
+DELETE FROM dish WHERE id = ?;
+
+selectAllDishes:
+SELECT * FROM dish ORDER BY updated_at DESC;
+
+selectDishById:
+SELECT * FROM dish WHERE id = ?;
+
+selectDishesByPopularity:
+SELECT * FROM dish ORDER BY preference DESC, name COLLATE NOCASE ASC LIMIT ?;
+
+selectDishesByRecent:
+SELECT DISTINCT d.* FROM dish d
+JOIN meal_record_dish mrd ON d.id = mrd.dish_id
+JOIN meal_record mr ON mrd.meal_record_id = mr.id
+ORDER BY mr.created_at DESC
+LIMIT ?;
+
+selectDishesByPreference:
+SELECT * FROM dish ORDER BY preference DESC, updated_at DESC;
+
+selectDishesByPinyin:
+SELECT * FROM dish ORDER BY name COLLATE NOCASE ASC;
+
+searchDishes:
+SELECT DISTINCT d.* FROM dish d
+LEFT JOIN dish_tag_rel dtr ON d.id = dtr.dish_id
+LEFT JOIN dish_tag dt ON dtr.tag_id = dt.id
+LEFT JOIN dish_ingredient di ON d.id = di.dish_id
+LEFT JOIN ingredient i ON di.ingredient_id = i.id
+WHERE d.name LIKE :kw
+   OR dt.name LIKE :kw
+   OR i.name LIKE :kw
+   OR i.alias LIKE :kw
+ORDER BY d.preference DESC, d.name COLLATE NOCASE ASC;
+
+-- ===== dish_tag / dish_tag_rel =====
+
+insertDishTag:
+INSERT OR IGNORE INTO dish_tag(name, source, created_at) VALUES (?, ?, ?);
+
+selectAllDishTags:
+SELECT * FROM dish_tag ORDER BY name COLLATE NOCASE ASC;
+
+selectDishTagByName:
+SELECT * FROM dish_tag WHERE name = ?;
+
+selectTagsByDish:
+SELECT dt.* FROM dish_tag dt
+JOIN dish_tag_rel dtr ON dt.id = dtr.tag_id
+WHERE dtr.dish_id = ?
+ORDER BY dt.name;
+
+linkDishTag:
+INSERT OR IGNORE INTO dish_tag_rel(dish_id, tag_id) VALUES (?, ?);
+
+unlinkAllTagsOfDish:
+DELETE FROM dish_tag_rel WHERE dish_id = ?;
+
+-- ===== dish_ingredient =====
+
+insertDishIngredient:
+INSERT INTO dish_ingredient(dish_id, ingredient_id, quantity, unit_id, is_main)
+VALUES (?, ?, ?, ?, ?);
+
+selectIngredientsOfDish:
+SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, di.is_main,
+       i.name AS ingredient_name, i.alias, i.pinyin, i.image_path, i.default_unit_id,
+       u.name AS unit_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+LEFT JOIN measurement_unit u ON di.unit_id = u.id
+WHERE di.dish_id = ?
+ORDER BY di.is_main DESC, di.id ASC;
+
+deleteIngredientsOfDish:
+DELETE FROM dish_ingredient WHERE dish_id = ?;
+
+-- ===== meal_record =====
+
+insertMealRecord:
+INSERT INTO meal_record(date, meal_type_id, meal_time, note, created_at)
+VALUES (?, ?, ?, ?, ?);
+
+selectMealRecordsByDate:
+SELECT * FROM meal_record WHERE date = ? ORDER BY meal_time;
+
+selectMealRecordById:
+SELECT * FROM meal_record WHERE id = ?;
+
+selectMealRecordsByDateRange:
+SELECT * FROM meal_record
+WHERE date BETWEEN :start AND :end
+ORDER BY date DESC, meal_time;
+
+selectMealRecordsBetween:
+SELECT * FROM meal_record
+WHERE date >= :start AND date <= :end
+ORDER BY date DESC, meal_time;
+
+selectFutureMealRecords:
+SELECT * FROM meal_record
+WHERE date > :today
+ORDER BY date ASC, meal_time ASC
+LIMIT ?;
+
+selectDistinctDates:
+SELECT DISTINCT date FROM meal_record
+ORDER BY date DESC
+LIMIT :limit OFFSET :offset;
+
+selectMinAndMaxDate:
+SELECT MIN(date) AS min_date, MAX(date) AS max_date FROM meal_record;
+
+deleteMealRecord:
+DELETE FROM meal_record WHERE id = ?;
+
+-- ===== meal_record_dish =====
+
+insertMealRecordDish:
+INSERT OR IGNORE INTO meal_record_dish(meal_record_id, dish_id, sort_order)
+VALUES (?, ?, ?);
+
+incrementDishPreference:
+UPDATE dish
+   SET preference = MIN(preference + 0.1, 100.0),
+       updated_at = ?
+ WHERE id = ?;
+
+selectDishesOfMealRecord:
+SELECT d.*, mrd.sort_order FROM dish d
+JOIN meal_record_dish mrd ON d.id = mrd.dish_id
+WHERE mrd.meal_record_id = ?
+ORDER BY mrd.sort_order, d.name;
+
+deleteMealRecordDishes:
+DELETE FROM meal_record_dish WHERE meal_record_id = ?;
+
+removeDishFromMealRecord:
+DELETE FROM meal_record_dish WHERE meal_record_id = ? AND dish_id = ?;
+
+-- ===== favorite_combo =====
+
+insertFavoriteCombo:
+INSERT INTO favorite_combo(name, source, created_at) VALUES (?, ?, ?);
+
+selectAllCombos:
+SELECT * FROM favorite_combo ORDER BY created_at DESC;
+
+deleteCombo:
+DELETE FROM favorite_combo WHERE id = ?;
+
+linkComboDish:
+INSERT OR IGNORE INTO favorite_combo_dish(combo_id, dish_id) VALUES (?, ?);
+
+selectDishesOfCombo:
+SELECT d.* FROM dish d
+JOIN favorite_combo_dish fcd ON d.id = fcd.dish_id
+WHERE fcd.combo_id = ?
+ORDER BY d.name;
+
+-- ===== user_preferences =====
+
+upsertPreference:
+INSERT OR REPLACE INTO user_preferences(key, value, updated_at) VALUES (?, ?, ?);
+
+selectPreference:
+SELECT * FROM user_preferences WHERE key = ?;
+
+selectAllPreferences:
+SELECT * FROM user_preferences;
+
+-- ===== user_health_profile =====
+
+insertHealthProfile:
+INSERT OR IGNORE INTO user_health_profile(crowd_type_id, enabled, created_at) VALUES (?, 1, ?);
+
+updateHealthProfileEnabled:
+UPDATE user_health_profile SET enabled = ? WHERE crowd_type_id = ?;
+
+selectEnabledHealthProfiles:
+SELECT hp.*, ct.name AS crowd_name, ct.description AS crowd_description
+FROM user_health_profile hp
+JOIN crowd_type ct ON hp.crowd_type_id = ct.id
+WHERE hp.enabled = 1
+ORDER BY hp.created_at;
+
+selectAllHealthProfiles:
+SELECT hp.*, ct.name AS crowd_name, ct.description AS crowd_description
+FROM user_health_profile hp
+JOIN crowd_type ct ON hp.crowd_type_id = ct.id
+ORDER BY hp.created_at;
+
+deleteHealthProfile:
+DELETE FROM user_health_profile WHERE crowd_type_id = ?;
