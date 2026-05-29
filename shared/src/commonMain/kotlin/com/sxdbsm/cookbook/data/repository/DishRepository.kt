@@ -7,11 +7,14 @@ import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.DishMini
+import com.sxdbsm.cookbook.domain.model.CookingMethod
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 /**
  * 菜品数据仓库。[AI修改]
@@ -24,56 +27,177 @@ class DishRepository(private val db: CookbookDatabase) {
     private val q = db.cookbookQueries // [AI修改] SQLDelight 根据 .sq 文件生成的类型安全查询入口。
 
     /**
+     * 读取全部烹饪方式字典。[AI生成]
+     *
+     * 新建/编辑菜品页需要展示下拉候选；返回领域模型，避免 UI 直接依赖 SQLDelight 行类型。
+     */
+    suspend fun listCookingMethods(): List<CookingMethod> = withContext(Dispatchers.Default) {
+        q.selectAllCookingMethods().executeAsList().map { row ->
+            CookingMethod(id = row.id, name = row.name)
+        }
+    }
+
+    /**
+     * 按名称获取或创建烹饪方式。[AI生成]
+     *
+     * 数据库当前只支持单个 `cooking_method_id`，所以 UI 的“可输入”会先落到字典表，再保存 id。
+     */
+    suspend fun ensureCookingMethod(name: String): Long? = withContext(Dispatchers.Default) {
+        val trimmed = name.trim()
+        if (trimmed.isBlank()) return@withContext null
+        q.insertCookingMethod(trimmed, "user", DateTime.nowEpochSeconds())
+        q.selectAllCookingMethods().executeAsList().firstOrNull { it.name == trimmed }?.id
+    }
+
+    /**
      * 监听全部菜品的轻量列表。[AI修改]
      *
      * `Flow<List<...>>` 类似一个可持续推送数据变化的 Observable；数据库变更后 UI 会自动收到新列表。
      */
     fun observeAllDishes(): Flow<List<DishMini>> =
         q.selectAllDishes().asFlow().mapToList(Dispatchers.Default).map { rows ->
-            rows.map { row ->
-                DishMini(
-                    id = row.id,
-                    name = row.name,
-                    imagePath = row.image_path,
-                    preference = row.preference,
-                )
-            }
-        }
+            buildDishMinis(
+                rows.map { row ->
+                    DishMiniSource(
+                        id = row.id,
+                        name = row.name,
+                        imagePath = row.image_path,
+                        preference = row.preference.toInt(),
+                        cookingMethodId = row.cooking_method_id,
+                    )
+                },
+            )
+        }.flowOn(Dispatchers.Default)
 
     /**
-     * 监听热度最高的菜品。[AI修改]
+     * 监听喜爱度最高的菜品。[AI修改]
      */
     fun observePopularDishes(limit: Long = 6): Flow<List<DishMini>> =
         q.selectDishesByPopularity(limit).asFlow().mapToList(Dispatchers.Default).map { rows ->
-            rows.map { row ->
-                DishMini(id = row.id, name = row.name, imagePath = row.image_path, preference = row.preference)
-            }
-        }
+            buildDishMinis(
+                rows.map { row ->
+                    DishMiniSource(
+                        id = row.id,
+                        name = row.name,
+                        imagePath = row.image_path,
+                        preference = row.preference.toInt(),
+                        cookingMethodId = row.cooking_method_id,
+                    )
+                },
+            )
+        }.flowOn(Dispatchers.Default)
 
     /**
      * 监听最近创建或更新的菜品。[AI修改]
      */
     fun observeRecentDishes(limit: Long = 6): Flow<List<DishMini>> =
         q.selectDishesByRecent(limit).asFlow().mapToList(Dispatchers.Default).map { rows ->
-            rows.map { row ->
-                DishMini(id = row.id, name = row.name, imagePath = row.image_path, preference = row.preference)
-            }
-        }
+            buildDishMinis(
+                rows.map { row ->
+                    DishMiniSource(
+                        id = row.id,
+                        name = row.name,
+                        imagePath = row.image_path,
+                        preference = row.preference.toInt(),
+                        cookingMethodId = row.cooking_method_id,
+                    )
+                },
+            )
+        }.flowOn(Dispatchers.Default)
 
     /**
      * 按关键词搜索菜品。[AI修改]
      *
      * `suspend` 表示这是协程挂起函数，调用方要在协程里调用，类似异步方法但不用写回调。
      */
-    suspend fun searchDishes(keyword: String): List<DishMini> {
-        if (keyword.isBlank()) return q.selectAllDishes().executeAsList().map { row ->
-            DishMini(id = row.id, name = row.name, imagePath = row.image_path, preference = row.preference)
-        }
-        val kw = "%${keyword.trim()}%"
-        return q.searchDishes(kw).executeAsList().map { row ->
-            DishMini(id = row.id, name = row.name, imagePath = row.image_path, preference = row.preference)
+    suspend fun searchDishes(keyword: String): List<DishMini> = withContext(Dispatchers.Default) {
+        if (keyword.isBlank()) {
+            buildDishMinis(
+                q.selectAllDishes().executeAsList().map { row ->
+                    DishMiniSource(
+                        id = row.id,
+                        name = row.name,
+                        imagePath = row.image_path,
+                        preference = row.preference.toInt(),
+                        cookingMethodId = row.cooking_method_id,
+                    )
+                },
+            )
+        } else {
+            val kw = "%${keyword.trim()}%"
+            buildDishMinis(
+                q.searchDishes(kw).executeAsList().map { row ->
+                    DishMiniSource(
+                        id = row.id,
+                        name = row.name,
+                        imagePath = row.image_path,
+                        preference = row.preference.toInt(),
+                        cookingMethodId = row.cooking_method_id,
+                    )
+                },
+            )
         }
     }
+
+    /**
+     * 批量组装列表用菜品模型。[AI修改]
+     *
+     * 原先每个菜品都会单独查询一次标签和一次烹饪方式，列表返回时容易形成 N+1 查询。
+     * 这里对同一批菜品统一预取标签和字典，再在内存中合并，减少首页/选择器/食历切换卡顿。
+     */
+    internal fun buildDishMinis(sources: List<DishMiniSource>): List<DishMini> {
+        if (sources.isEmpty()) return emptyList()
+        val dishIds = sources.map { it.id }.distinct()
+        val cookingMethodNames = q.selectAllCookingMethods()
+            .executeAsList()
+            .associate { it.id to it.name }
+        val tagsByDish = q.selectTagsByDishIds(dishIds)
+            .executeAsList()
+            .groupBy({ it.dish_id }, { it.name })
+        return sources.map { source ->
+            DishMini(
+                id = source.id,
+                name = source.name,
+                imagePath = source.imagePath,
+                tags = tagsByDish[source.id].orEmpty(),
+                preference = source.preference,
+                cookingMethodName = source.cookingMethodId?.let { cookingMethodNames[it] },
+            )
+        }
+    }
+
+    /**
+     * 列表模型组装的中间行数据。[AI生成]
+     */
+    internal data class DishMiniSource(
+        val id: Long,
+        val name: String,
+        val imagePath: String,
+        val preference: Int,
+        val cookingMethodId: Long?,
+    )
+
+    /**
+     * 统一组装单个列表用菜品模型，保留给详情附近的少量单条读取场景。[AI修改]
+     */
+    private fun buildDishMini(
+        id: Long,
+        name: String,
+        imagePath: String,
+        preference: Int,
+        cookingMethodId: Long?,
+    ): DishMini =
+        buildDishMinis(
+            listOf(
+                DishMiniSource(
+                    id = id,
+                    name = name,
+                    imagePath = imagePath,
+                    preference = preference,
+                    cookingMethodId = cookingMethodId,
+                ),
+            ),
+        ).first()
 
     /**
      * 监听某个菜品详情。[AI修改]
@@ -81,13 +205,14 @@ class DishRepository(private val db: CookbookDatabase) {
     fun observeDishById(id: Long): Flow<Dish?> =
         q.selectDishById(id).asFlow().mapToOneOrNull(Dispatchers.Default).map { row ->
             row?.let { loadFullDish(id, it) }
-        }
+        }.flowOn(Dispatchers.Default)
 
     /**
      * 一次性读取某个菜品详情。[AI修改]
      */
-    suspend fun getDishById(id: Long): Dish? =
+    suspend fun getDishById(id: Long): Dish? = withContext(Dispatchers.Default) {
         q.selectDishById(id).executeAsOneOrNull()?.let { row -> loadFullDish(id, row) }
+    }
 
     /**
      * 把数据库行组装成完整领域对象。[AI修改]
@@ -118,7 +243,7 @@ class DishRepository(private val db: CookbookDatabase) {
             name = row.name,
             cookingMethodId = row.cooking_method_id,
             cookingMethodName = cookingMethod?.name,
-            preference = row.preference,
+            preference = row.preference.toInt(),
             specialNote = row.special_note,
             description = row.description,
             imagePath = row.image_path,
@@ -142,60 +267,62 @@ class DishRepository(private val db: CookbookDatabase) {
         imagePath: String,
         tagNames: List<String>,
         ingredients: List<DishIngredient>,
-    ): Long {
+    ): Long = withContext(Dispatchers.Default) {
         val now = DateTime.nowEpochSeconds()
         var dishId = id
+        db.transaction {
+            // [AI修改] 菜品主表、标签、食材关联一次性提交，避免列表监听收到半完成状态。
+            if (id <= 0) {
+                q.insertDish(
+                    name = name,
+                    cooking_method_id = cookingMethodId,
+                    special_note = specialNote,
+                    description = description,
+                    image_path = imagePath,
+                    source = "user",
+                    created_at = now,
+                    updated_at = now,
+                )
+                dishId = q.lastInsertId().executeAsOne()
+            } else {
+                q.updateDish(
+                    name = name,
+                    cooking_method_id = cookingMethodId,
+                    special_note = specialNote,
+                    description = description,
+                    image_path = imagePath,
+                    updated_at = now,
+                    id = id,
+                )
+            }
 
-        if (id <= 0) {
-            q.insertDish(
-                name = name,
-                cooking_method_id = cookingMethodId,
-                special_note = specialNote,
-                description = description,
-                image_path = imagePath,
-                source = "user",
-                created_at = now,
-                updated_at = now,
-            )
-            dishId = q.lastInsertId().executeAsOne()
-        } else {
-            q.updateDish(
-                name = name,
-                cooking_method_id = cookingMethodId,
-                special_note = specialNote,
-                description = description,
-                image_path = imagePath,
-                updated_at = now,
-                id = id,
-            )
-        }
+            // [AI修改] 同步标签：先清空关联再重建，避免编辑时残留旧标签。
+            q.unlinkAllTagsOfDish(dishId)
+            tagNames.distinct().forEach { tagName ->
+                q.insertDishTag(name = tagName, source = "user", created_at = now)
+                val tagId = q.selectDishTagByName(tagName).executeAsOneOrNull()?.id ?: return@forEach
+                q.linkDishTag(dishId, tagId)
+            }
 
-        // [AI修改] 同步标签：先清空关联再重建，避免编辑时残留旧标签。
-        q.unlinkAllTagsOfDish(dishId)
-        tagNames.distinct().forEach { tagName ->
-            q.insertDishTag(name = tagName, source = "user", created_at = now)
-            val tagId = q.selectDishTagByName(tagName).executeAsOneOrNull()?.id ?: return@forEach
-            q.linkDishTag(dishId, tagId)
+            // [AI修改] 同步食材：同样采用“全量替换”策略，简单且适合 MVP。
+            q.deleteIngredientsOfDish(dishId)
+            ingredients.forEach { di ->
+                q.insertDishIngredient(
+                    dish_id = dishId,
+                    ingredient_id = di.ingredient.id,
+                    quantity = di.quantity,
+                    unit_id = di.unitId,
+                    is_main = if (di.isMain) 1 else 0,
+                )
+            }
         }
-
-        // [AI修改] 同步食材：同样采用“全量替换”策略，简单且适合 MVP。
-        q.deleteIngredientsOfDish(dishId)
-        ingredients.forEach { di ->
-            q.insertDishIngredient(
-                dish_id = dishId,
-                ingredient_id = di.ingredient.id,
-                quantity = di.quantity,
-                unit_id = di.unitId,
-                is_main = if (di.isMain) 1 else 0,
-            )
-        }
-        return dishId
+        dishId
     }
 
     /**
      * 删除用户菜品。[AI修改]
      */
-    suspend fun deleteDish(id: Long) {
+    suspend fun deleteDish(id: Long) = withContext(Dispatchers.Default) {
         q.deleteDish(id)
     }
 }

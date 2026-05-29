@@ -26,6 +26,8 @@ data class NewDishUiState(
     val tags: List<String> = emptyList(),
     val cookingMethodId: Long? = null,
     val cookingMethodName: String? = null,
+    val cookingMethodInput: String = "",
+    val availableCookingMethods: List<CookingMethod> = emptyList(),
     val ingredients: List<DishIngredient> = emptyList(),
     val specialNote: String = "",
     val description: String = "",
@@ -54,7 +56,10 @@ class NewDishViewModel(
     init {
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
-            _state.value = _state.value.copy(availableUnits = ingredientRepo.listMeasurementUnits())
+            _state.value = _state.value.copy(
+                availableUnits = ingredientRepo.listMeasurementUnits(),
+                availableCookingMethods = dishRepo.listCookingMethods(),
+            )
         }
     }
 
@@ -70,6 +75,7 @@ class NewDishViewModel(
                 tags = d.tags,
                 cookingMethodId = d.cookingMethodId,
                 cookingMethodName = d.cookingMethodName,
+                cookingMethodInput = d.cookingMethodName.orEmpty(),
                 ingredients = d.ingredients,
                 specialNote = d.specialNote,
                 description = d.description,
@@ -86,6 +92,7 @@ class NewDishViewModel(
             tags = (d.tags + "#复制").distinct(),
             cookingMethodId = d.cookingMethodId,
             cookingMethodName = d.cookingMethodName,
+            cookingMethodInput = d.cookingMethodName.orEmpty(),
             ingredients = d.ingredients,
             specialNote = d.specialNote,
             description = d.description,
@@ -103,6 +110,22 @@ class NewDishViewModel(
     }
 
     fun setName(v: String) { _state.value = _state.value.copy(name = v) }
+    fun setCookingMethodInput(v: String) {
+        // [AI生成] 手动输入时清空 id；保存时会按名称创建或复用字典项。
+        _state.value = _state.value.copy(cookingMethodInput = v, cookingMethodId = null, cookingMethodName = v)
+    }
+    fun selectCookingMethod(method: CookingMethod) {
+        // [AI生成] 下拉选择时同时保存 id 和展示文本。
+        _state.value = _state.value.copy(
+            cookingMethodId = method.id,
+            cookingMethodName = method.name,
+            cookingMethodInput = method.name,
+        )
+    }
+    fun clearCookingMethod() {
+        // [AI生成] 烹饪方式是可选字段，用户点 chip 旁的关闭图标时清空已选/已输入内容。
+        _state.value = _state.value.copy(cookingMethodId = null, cookingMethodName = null, cookingMethodInput = "")
+    }
     fun setSpecialNote(v: String) { _state.value = _state.value.copy(specialNote = v) }
     fun setDescription(v: String) { _state.value = _state.value.copy(description = v) }
     fun setImagePath(v: String) { _state.value = _state.value.copy(imagePath = v) } // [AI生成] 保存最多 3 张菜品图片 URI。
@@ -124,7 +147,7 @@ class NewDishViewModel(
         _state.value = _state.value.copy(
             ingredients = _state.value.ingredients + DishIngredient(
                 ingredient = ingredient,
-                isMain = true,
+                isMain = false, // [AI修改] 当前版本暂不暴露/保存“主料”语义，后续再扩展原料/调味料分类。
                 unitName = ingredient.defaultUnitName,
                 unitId = ingredient.defaultUnitId,
             ),
@@ -156,17 +179,23 @@ class NewDishViewModel(
         if (s.name.isBlank()) return
         viewModelScope.launch {
             _state.value = s.copy(saving = true)
+            val cookingMethodId = s.cookingMethodId ?: dishRepo.ensureCookingMethod(s.cookingMethodInput) // [AI修改] 支持用户输入新的烹饪方式。
             dishRepo.saveDish(
                 id = s.editingId ?: 0L,
                 name = s.name.trim(),
-                cookingMethodId = s.cookingMethodId,
+                cookingMethodId = cookingMethodId,
                 specialNote = s.specialNote,
                 description = s.description,
                 imagePath = s.imagePath,
                 tagNames = s.tags,
                 ingredients = s.ingredients,
             )
-            _state.value = _state.value.copy(saving = false, done = true)
+            _state.value = _state.value.copy(
+                saving = false,
+                done = true,
+                cookingMethodId = cookingMethodId,
+                availableCookingMethods = dishRepo.listCookingMethods(),
+            )
         }
     }
 }

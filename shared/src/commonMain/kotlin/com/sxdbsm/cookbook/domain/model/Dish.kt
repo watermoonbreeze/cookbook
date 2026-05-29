@@ -11,8 +11,8 @@ data class Dish(
     val name: String, // [AI修改] 菜名，Kotlin 非空 String 等价于 Java 中不允许为 null 的 String。
     val cookingMethodId: Long? = null, // [AI修改] `Long?` 表示可空 Long，对应 Java 的 Long nullable。
     val cookingMethodName: String? = null, // [AI修改] 展示用烹饪方式名称，来自字典表查询。
-    /** 热度 0-100，自动累加，UI 不暴露编辑 */
-    val preference: Double = 0.0,
+    /** 喜爱度 0-1000，自动累加，UI 不暴露编辑。[AI修改] */
+    val preference: Int = 0,
     val specialNote: String = "",
     val description: String = "",
     val imagePath: String = "",
@@ -22,8 +22,8 @@ data class Dish(
     val tags: List<String> = emptyList(), // [AI修改] 只读 List；修改时用 copy(tags = 新列表)。
     val ingredients: List<DishIngredient> = emptyList(), // [AI修改] 菜品关联的食材明细。
 ) {
-    /** 热度星级（0-5） */
-    val popularityStars: Float get() = (preference / 20.0).toFloat().coerceIn(0f, 5f)
+    /** 喜爱度星级（0-5） */
+    val popularityStars: Float get() = (preference / 200.0).toFloat().coerceIn(0f, 5f)
 }
 
 /**
@@ -50,7 +50,7 @@ data class DishMini(
     val name: String,
     val imagePath: String = "",
     val tags: List<String> = emptyList(),
-    val preference: Double = 0.0,
+    val preference: Int = 0,
     val mainIngredientNames: List<String> = emptyList(),
     val cookingMethodName: String? = null,
 )

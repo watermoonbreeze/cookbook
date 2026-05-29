@@ -79,7 +79,7 @@ CREATE TABLE dish (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     cooking_method_id INTEGER REFERENCES cooking_method(id),
-    preference REAL NOT NULL DEFAULT 0.0,
+    preference INTEGER NOT NULL DEFAULT 0,
     special_note TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
     image_path TEXT NOT NULL DEFAULT '',
@@ -155,7 +155,7 @@ CREATE TABLE meal_record_dish (
     PRIMARY KEY (meal_record_id, dish_id)
 );
 
--- 热度自动累加：MVP 在应用层 Repository 里维护（SQLDelight 当前方言不支持触发器 NEW 引用）。
+-- 喜爱度自动累加：MVP 在应用层 Repository 里维护（SQLDelight 当前方言不支持触发器 NEW 引用）。
 -- 在 MealRecordRepository.save() 中插入 meal_record_dish 后调用 incrementDishPreference()。
 
 -- ========== 收藏组合 ==========
@@ -294,6 +294,15 @@ SELECT * FROM ingredient ORDER BY pinyin, name;
 selectIngredientById:
 SELECT * FROM ingredient WHERE id = ?;
 
+updateUserIngredient:
+UPDATE ingredient
+SET name = ?, alias = ?, image_path = ?
+WHERE id = ? AND source = 'user';
+
+deleteUserIngredient:
+DELETE FROM ingredient
+WHERE id = ? AND source = 'user';
+
 searchIngredients:
 SELECT * FROM ingredient
 WHERE name LIKE :kw OR alias LIKE :kw OR pinyin LIKE :kw
@@ -322,7 +331,7 @@ INSERT OR IGNORE INTO ingredient_category(ingredient_id, category_id) VALUES (?,
 
 insertDish:
 INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, source, created_at, updated_at)
-VALUES (?, ?, 0.0, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?);
 
 updateDish:
 UPDATE dish
@@ -383,6 +392,14 @@ JOIN dish_tag_rel dtr ON dt.id = dtr.tag_id
 WHERE dtr.dish_id = ?
 ORDER BY dt.name;
 
+-- [AI修改] 批量读取菜品标签，避免列表和食历组装时对每个菜品单独查询。
+selectTagsByDishIds:
+SELECT dtr.dish_id, dt.name
+FROM dish_tag_rel dtr
+JOIN dish_tag dt ON dtr.tag_id = dt.id
+WHERE dtr.dish_id IN ?
+ORDER BY dtr.dish_id, dt.name;
+
 linkDishTag:
 INSERT OR IGNORE INTO dish_tag_rel(dish_id, tag_id) VALUES (?, ?);
 
@@ -408,6 +425,9 @@ ORDER BY di.is_main DESC, di.id ASC;
 deleteIngredientsOfDish:
 DELETE FROM dish_ingredient WHERE dish_id = ?;
 
+deleteDishIngredientsByIngredient:
+DELETE FROM dish_ingredient WHERE ingredient_id = ?;
+
 -- ===== meal_record =====
 
 insertMealRecord:
@@ -416,6 +436,17 @@ VALUES (?, ?, ?, ?, ?);
 
 selectMealRecordsByDate:
 SELECT * FROM meal_record WHERE date = ? ORDER BY meal_time;
+
+-- [AI修改] 食历只展示真实存在餐食记录的日期，按时间正序分页。
+selectTimelineDatesAsc:
+SELECT DISTINCT date FROM meal_record
+ORDER BY date ASC;
+
+-- [AI修改] 按一组日期批量读取 meal_record，避免食历分页后逐日查询。
+selectMealRecordsByDates:
+SELECT * FROM meal_record
+WHERE date IN ?
+ORDER BY date ASC, meal_time ASC;
 
 selectMealRecordById:
 SELECT * FROM meal_record WHERE id = ?;
@@ -436,9 +467,26 @@ WHERE date > :today
 ORDER BY date ASC, meal_time ASC
 LIMIT ?;
 
+-- [AI生成] 首页计划只展示真实存在且日期不早于今天的 meal_record，不再为空的今天生成占位卡片。
+selectUpcomingMealRecords:
+SELECT * FROM meal_record
+WHERE date >= :today
+ORDER BY date ASC, meal_time ASC
+LIMIT ?;
+
 selectDistinctDates:
 SELECT DISTINCT date FROM meal_record
 ORDER BY date DESC
+LIMIT :limit OFFSET :offset;
+
+-- [AI修改] 全局搜索餐食：命中日期或关联菜品名后返回对应日期，UI 再按日期组装整天餐食卡片。
+searchMealDates:
+SELECT DISTINCT mr.date
+FROM meal_record mr
+LEFT JOIN meal_record_dish mrd ON mr.id = mrd.meal_record_id
+LEFT JOIN dish d ON mrd.dish_id = d.id
+WHERE mr.date LIKE :kw OR d.name LIKE :kw
+ORDER BY mr.date DESC
 LIMIT :limit OFFSET :offset;
 
 selectMinAndMaxDate:
@@ -462,7 +510,7 @@ VALUES (?, ?, ?);
 
 incrementDishPreference:
 UPDATE dish
-   SET preference = MIN(preference + 0.1, 100.0),
+   SET preference = MIN(preference + 1, 1000),
        updated_at = ?
  WHERE id = ?;
 
@@ -471,6 +519,13 @@ SELECT d.*, mrd.sort_order FROM dish d
 JOIN meal_record_dish mrd ON d.id = mrd.dish_id
 WHERE mrd.meal_record_id = ?
 ORDER BY mrd.sort_order, d.name;
+
+-- [AI修改] 批量读取多条餐食记录下的菜品，减少首页计划和食历窗口的 N+1 查询。
+selectDishesOfMealRecords:
+SELECT mrd.meal_record_id, d.*, mrd.sort_order FROM dish d
+JOIN meal_record_dish mrd ON d.id = mrd.dish_id
+WHERE mrd.meal_record_id IN ?
+ORDER BY mrd.meal_record_id, mrd.sort_order, d.name;
 
 deleteMealRecordDishes:
 DELETE FROM meal_record_dish WHERE meal_record_id = ?;

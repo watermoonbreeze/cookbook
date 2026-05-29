@@ -34,7 +34,13 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        TopAppBar(title = { Text("我的", fontWeight = FontWeight.SemiBold) })
+        TopAppBar(
+            title = { Text("我的", fontWeight = FontWeight.SemiBold) },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                titleContentColor = MaterialTheme.colorScheme.onBackground,
+            ),
+        )
 
         // [AI修改] 顶部用户卡：展示健康档案摘要。
         OutlinedCard(
@@ -43,14 +49,14 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
                 .padding(16.dp),
             shape = MaterialTheme.shapes.large,
             colors = CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                containerColor = MaterialTheme.colorScheme.surface, // [AI修改] 个人中心头部信息卡片使用白底。
             ),
         ) {
             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Outlined.Person,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = MaterialTheme.colorScheme.secondary, // [AI修改] 头像图标按暖杏规范使用辅助色。
                     modifier = Modifier.size(40.dp),
                 )
                 Spacer(Modifier.width(12.dp))
@@ -60,7 +66,7 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
                     Text(
                         if (profiles.isEmpty()) "还没设置健康档案，点击去选择" else "健康档案：${profiles.joinToString { it.crowdName }}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

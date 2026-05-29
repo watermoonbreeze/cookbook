@@ -9,6 +9,7 @@ import com.sxdbsm.cookbook.android.ui.timeline.TimelineViewModel
 import com.sxdbsm.cookbook.android.ui.mine.MineViewModel
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerViewModel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerViewModel
+import com.sxdbsm.cookbook.android.ui.search.SearchViewModel
 import com.sxdbsm.cookbook.platform.BackupManager
 import com.sxdbsm.cookbook.platform.DatabaseDriverFactory
 import org.koin.android.ext.koin.androidContext
@@ -33,4 +34,5 @@ val androidModule = module {
     viewModel { MineViewModel(get(), get(), get()) }
     viewModel { IngredientPickerViewModel(get(), get()) }
     viewModel { DishPickerViewModel(get()) }
+    viewModel { SearchViewModel(get(), get(), get()) }
 }

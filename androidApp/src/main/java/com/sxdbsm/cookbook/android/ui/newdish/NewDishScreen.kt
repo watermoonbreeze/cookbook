@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
 import com.sxdbsm.cookbook.android.ui.component.TagChip
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
@@ -42,6 +44,8 @@ fun NewDishScreen(
     var newTagText by remember { mutableStateOf("") }
     var importPickerOpen by remember { mutableStateOf(false) }
     var ingredientPickerOpen by remember { mutableStateOf(false) }
+    var cookingMethodDialogOpen by remember { mutableStateOf(false) }
+    var cookingMethodDraft by remember { mutableStateOf("") }
 
     /**
      * 进入编辑页时按 id 加载原菜品。[AI修改]
@@ -64,9 +68,16 @@ fun NewDishScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         topBar = {
             TopAppBar(
                 title = { Text(if (state.editingId != null) "编辑菜品" else "新建菜品", fontWeight = FontWeight.SemiBold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.secondary,
+                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
@@ -98,15 +109,16 @@ fun NewDishScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
         ) {
-            FieldLabel("菜名 *")
+            FormFieldLabel("菜名 *")
             OutlinedTextField(
                 value = state.name,
                 onValueChange = vm::setName,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
             )
 
-            FieldLabel("标签")
+            FormFieldLabel("标签")
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -126,17 +138,36 @@ fun NewDishScreen(
                 AssistChip(onClick = { tagInputOpen = true }, label = { Text("+ 添加") })
             }
 
-            FieldLabel("烹饪方式")
-            OutlinedTextField(
-                value = state.cookingMethodName.orEmpty(),
-                onValueChange = {},
-                readOnly = true,
-                placeholder = { Text("（可选）") },
+            FormFieldLabel("烹饪方式")
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth(),
-            )
+            ) {
+                if (state.cookingMethodInput.isNotBlank()) {
+                    TagChip(state.cookingMethodInput)
+                    IconButton(
+                        onClick = { vm.clearCookingMethod() },
+                        modifier = Modifier.size(20.dp),
+                    ) {
+                        Icon(Icons.Outlined.Close, contentDescription = "清空烹饪方式", modifier = Modifier.size(14.dp))
+                    }
+                }
+                AssistChip(
+                    onClick = {
+                        cookingMethodDraft = state.cookingMethodInput
+                        cookingMethodDialogOpen = true
+                    },
+                    label = { Text(if (state.cookingMethodInput.isBlank()) "+ 添加" else "修改") },
+                )
+            }
 
-            FieldLabel("食材清单")
-            OutlinedCard(Modifier.fillMaxWidth()) {
+            FormFieldLabel("食材清单")
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 表单卡片按新规范使用白底内容卡片。
+            ) {
                 Column {
                     if (state.ingredients.isEmpty()) {
                         Text(
@@ -156,19 +187,7 @@ fun NewDishScreen(
                                 val qty = ing.quantity?.let { "$it ${ing.unitName}" } ?: "适量"
                                 Text(qty, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.width(8.dp))
-                                if (ing.isMain) {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.primary,
-                                        shape = MaterialTheme.shapes.extraSmall,
-                                    ) {
-                                        Text(
-                                            "主料",
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        )
-                                    }
-                                }
+                                // [AI修改] 新增/编辑页食材列表不展示“主料”标识，保留内部数据用于排序或后续业务。
                                 IconButton(onClick = { vm.removeIngredient(ing.ingredient.id) }) {
                                     Icon(Icons.Outlined.Close, contentDescription = "移除", modifier = Modifier.size(16.dp))
                                 }
@@ -186,25 +205,27 @@ fun NewDishScreen(
                 Text("添加食材", color = MaterialTheme.colorScheme.tertiary)
             }
 
-            FieldLabel("特殊说明")
+            FormFieldLabel("特殊说明")
             OutlinedTextField(
                 value = state.specialNote,
                 onValueChange = vm::setSpecialNote,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("如：少盐") },
                 singleLine = true,
+                shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
             )
 
-            FieldLabel("描述")
+            FormFieldLabel("描述")
             OutlinedTextField(
                 value = state.description,
                 onValueChange = vm::setDescription,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("（可选，做法/心得）") },
                 minLines = 2,
+                shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
             )
 
-            FieldLabel("图片")
+            FormFieldLabel("图片")
             ImagePickerButton(
                 imagePaths = decodeImagePaths(state.imagePath),
                 onImagesChanged = { vm.setImagePath(encodeImagePaths(it)) },
@@ -250,6 +271,7 @@ fun NewDishScreen(
                     onValueChange = { newTagText = it },
                     singleLine = true,
                     label = { Text("标签名（如 家常 / 快手 / 少盐）") },
+                    shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
                 )
             },
             confirmButton = {
@@ -264,18 +286,85 @@ fun NewDishScreen(
             },
         )
     }
+
+    if (cookingMethodDialogOpen) {
+        CookingMethodDialog(
+            value = cookingMethodDraft,
+            options = state.availableCookingMethods,
+            onValueChange = { cookingMethodDraft = it },
+            onSelect = { method ->
+                vm.selectCookingMethod(method)
+                cookingMethodDraft = method.name
+                cookingMethodDialogOpen = false
+            },
+            onConfirm = {
+                vm.setCookingMethodInput(cookingMethodDraft.trim())
+                cookingMethodDialogOpen = false
+            },
+            onDismiss = { cookingMethodDialogOpen = false },
+        )
+    }
 }
 
 /**
- * 表单字段标题。[AI修改]
+ * 烹饪方式弹框。[AI生成]
+ *
+ * 当前数据库只支持一个 `cooking_method_id`，所以弹框提供“Spinner 下拉选择一个或手动输入一个”。
  */
 @Composable
-private fun FieldLabel(text: String) {
-    Text(
-        text,
-        modifier = Modifier.padding(top = 12.dp, bottom = 6.dp),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
+private fun CookingMethodDialog(
+    value: String,
+    options: List<com.sxdbsm.cookbook.domain.model.CookingMethod>,
+    onValueChange: (String) -> Unit,
+    onSelect: (com.sxdbsm.cookbook.domain.model.CookingMethod) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("烹饪方式") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(if (value.isBlank()) "下拉选择烹饪方式" else value, modifier = Modifier.weight(1f))
+                    Icon(Icons.Outlined.ExpandMore, contentDescription = null)
+                }
+                Box {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                    ) {
+                        options.forEach { method ->
+                            DropdownMenuItem(
+                                text = { Text(method.name) },
+                                onClick = {
+                                    onSelect(method)
+                                    expanded = false
+                                },
+                            )
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    label = { Text("或手动输入") },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm, enabled = value.isNotBlank()) { Text("确定") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
     )
 }
 

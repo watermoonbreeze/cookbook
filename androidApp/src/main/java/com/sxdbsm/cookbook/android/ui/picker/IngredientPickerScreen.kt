@@ -12,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,13 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
+import com.sxdbsm.cookbook.android.ui.component.IngredientCard
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
-import com.sxdbsm.cookbook.android.ui.component.placeholderBg
-import com.sxdbsm.cookbook.android.ui.component.placeholderFg
-import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
-import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import org.koin.androidx.compose.koinViewModel
 
@@ -55,6 +52,11 @@ fun IngredientPickerScreen(
     var newIngredientAlias by remember { mutableStateOf("") }
     var newIngredientImages by remember { mutableStateOf<List<String>>(emptyList()) }
     var newIngredientCategoryId by remember { mutableStateOf<Long?>(null) }
+    var editingIngredient by remember { mutableStateOf<Ingredient?>(null) }
+    var deletingIngredient by remember { mutableStateOf<Ingredient?>(null) }
+    var editIngredientName by remember { mutableStateOf("") }
+    var editIngredientAlias by remember { mutableStateOf("") }
+    var editIngredientImages by remember { mutableStateOf<List<String>>(emptyList()) }
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -74,6 +76,18 @@ fun IngredientPickerScreen(
             newIngredientCategoryId = null
         }
     }
+    ui.operationError?.let { error ->
+        AlertDialog(
+            onDismissRequest = { vm.clearOperationError() },
+            title = { Text("操作失败") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = { vm.clearOperationError() }) {
+                    Text("知道了")
+                }
+            },
+        )
+    }
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
@@ -84,13 +98,17 @@ fun IngredientPickerScreen(
         ) {
             Column(Modifier.fillMaxSize()) {
                 TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground,
+                        navigationIconContentColor = MaterialTheme.colorScheme.secondary,
+                        actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                    ), // [AI修改] 食材选择弹窗顶栏按暖杏规范使用背景一体化样式。
                     title = {
-                        OutlinedTextField(
+                        AppSearchField(
                             value = ui.keyword,
                             onValueChange = vm::setKeyword,
-                            placeholder = { Text("搜索食材...") },
-                            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                            singleLine = true,
+                            placeholder = "搜索食材...",
                             modifier = Modifier.fillMaxWidth(),
                         )
                     },
@@ -106,7 +124,7 @@ fun IngredientPickerScreen(
                         modifier = Modifier
                             .width(120.dp)
                             .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                            .background(MaterialTheme.colorScheme.secondaryContainer), // [AI修改] 左侧分类区使用规范中的分组栏底色。
                     ) {
                         item {
                             CategoryItem(
@@ -144,10 +162,17 @@ fun IngredientPickerScreen(
                         modifier = Modifier.weight(1f),
                     ) {
                         items(ui.ingredients, key = { it.id }) { ing ->
-                            IngredientCell(
+                            IngredientCard(
                                 ingredient = ing,
                                 selected = ing.id in ui.selectedIds,
                                 onClick = { vm.toggleSelection(ing) },
+                                onEdit = {
+                                    editingIngredient = ing
+                                    editIngredientName = ing.name
+                                    editIngredientAlias = ing.alias
+                                    editIngredientImages = decodeImagePaths(ing.imagePath)
+                                },
+                                onDelete = { deletingIngredient = ing },
                             )
                         }
                     }
@@ -214,6 +239,7 @@ fun IngredientPickerScreen(
                         label = { Text("食材名称") },
                         singleLine = true,
                         enabled = !ui.creatingIngredient,
+                        shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
                     )
                     OutlinedTextField(
                         value = newIngredientAlias,
@@ -221,6 +247,7 @@ fun IngredientPickerScreen(
                         label = { Text("别名（可选）") },
                         singleLine = true,
                         enabled = !ui.creatingIngredient,
+                        shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
                     )
                     CategoryDropdown(
                         categories = ui.tree.map { it.category },
@@ -269,6 +296,80 @@ fun IngredientPickerScreen(
                     },
                     enabled = !ui.creatingIngredient,
                 ) { Text("取消") }
+            },
+        )
+    }
+
+    editingIngredient?.let { ingredient ->
+        AlertDialog(
+            onDismissRequest = { editingIngredient = null },
+            title = { Text("编辑食材") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = editIngredientName,
+                        onValueChange = { editIngredientName = it },
+                        label = { Text("食材名称") },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
+                    )
+                    OutlinedTextField(
+                        value = editIngredientAlias,
+                        onValueChange = { editIngredientAlias = it },
+                        label = { Text("别名（可选）") },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
+                    )
+                    ImagePickerButton(
+                        imagePaths = editIngredientImages,
+                        onImagesChanged = { editIngredientImages = it },
+                        maxCount = 3,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.updateIngredient(
+                            ingredient = ingredient,
+                            name = editIngredientName,
+                            alias = editIngredientAlias,
+                            imagePath = encodeImagePaths(editIngredientImages),
+                        )
+                        editingIngredient = null
+                    },
+                    enabled = editIngredientName.isNotBlank(),
+                ) { Text("保存") }
+            },
+            dismissButton = {
+                TextButton(onClick = { editingIngredient = null }) { Text("取消") }
+            },
+        )
+    }
+
+    deletingIngredient?.let { ingredient ->
+        AlertDialog(
+            onDismissRequest = { deletingIngredient = null },
+            title = { Text("删除食材") },
+            text = {
+                Text(
+                    "确定删除“${ingredient.name}”吗？删除后，已关联菜品中的该食材也会被移除。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // [AI修改] 删除用户自建食材前必须二次确认，避免级联删除菜品食材关联造成误删。
+                        vm.deleteIngredient(ingredient)
+                        deletingIngredient = null
+                    },
+                ) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deletingIngredient = null }) { Text("取消") }
             },
         )
     }
@@ -341,76 +442,6 @@ private fun CategoryItem(
         )
         if (level == 1 && hasChildren) {
             Text(if (expanded) "▾" else "▸", color = fg)
-        }
-    }
-}
-
-/**
- * 右侧食材网格单元。[AI修改]
- */
-@Composable
-private fun IngredientCell(
-    ingredient: Ingredient,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    val ext = ExtendedColorsHolder.current
-    val borderColor = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val bg = if (selected) MaterialTheme.colorScheme.primaryContainer else placeholderBg(ingredient.id)
-
-    OutlinedCard(
-        modifier = Modifier.clickable { onClick() },
-        colors = CardDefaults.outlinedCardColors(containerColor = bg),
-        border = androidx.compose.foundation.BorderStroke(if (selected) 2.dp else 1.dp, borderColor),
-    ) {
-        Box(modifier = Modifier.padding(0.dp)) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp)
-                        .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                        .background(placeholderBg(ingredient.id)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        if (decodeImagePaths(ingredient.imagePath).isEmpty()) ingredient.name.take(1) else "图",
-                        color = placeholderFg(ingredient.id),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    ingredient.name,
-                    style = MaterialTheme.typography.labelMedium,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-                )
-            }
-            // 人群分类时的角标
-            ingredient.adviceLevel?.let { level ->
-                val (color, label) = when (level) {
-                    AdviceLevel.RECOMMEND -> ext.success to "✓"
-                    AdviceLevel.LIMIT -> ext.warning to "⚠"
-                    AdviceLevel.AVOID -> ext.danger to "✕"
-                }
-                Surface(
-                    color = color,
-                    shape = RoundedCornerShape(50),
-                    modifier = Modifier.align(Alignment.TopEnd),
-                ) {
-                    Text(
-                        label,
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-                    )
-                }
-            }
         }
     }
 }

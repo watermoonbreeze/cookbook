@@ -6,6 +6,8 @@ import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.domain.model.FoodCategory
 import com.sxdbsm.cookbook.domain.model.Ingredient
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +35,7 @@ data class IngredientPickerUiState(
     val excludeIngredientIds: Set<Long> = emptySet(),
     val creatingIngredient: Boolean = false,
     val createError: String? = null,
+    val operationError: String? = null,
     val lastCreatedIngredientId: Long? = null,
 )
 
@@ -48,6 +51,7 @@ class IngredientPickerViewModel(
 
     private val _state = MutableStateFlow(IngredientPickerUiState()) // [AI修改] 内部可变选择器状态。
     val state: StateFlow<IngredientPickerUiState> = _state.asStateFlow() // [AI修改] 对 UI 暴露只读状态。
+    private var searchJob: Job? = null // [AI修改] 食材搜索防抖任务，避免每个字符都访问数据库。
 
     // [AI修改] ViewModel 创建后立即加载分类和全部食材，页面首屏可直接显示。
     init { loadCategories(); loadAllIngredients() }
@@ -79,7 +83,10 @@ class IngredientPickerViewModel(
     }
 
     fun setKeyword(kw: String) {
-        viewModelScope.launch {
+        _state.value = _state.value.copy(keyword = kw)
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(280) // [AI修改] 连续输入时只保留最后一次搜索，降低弹框卡顿。
             _state.value = _state.value.copy(
                 keyword = kw,
                 ingredients = ingredientRepo.search(kw).withoutExcluded(),
@@ -88,8 +95,10 @@ class IngredientPickerViewModel(
     }
 
     fun selectAll() {
+        searchJob?.cancel()
         viewModelScope.launch {
             _state.value = _state.value.copy(
+                keyword = "", // [AI修改] 选择“全部”时清空搜索条件，避免旧关键词影响后续刷新。
                 selectedCategoryId = -1L,
                 ingredients = ingredientRepo.search("").withoutExcluded(),
             )
@@ -197,8 +206,52 @@ class IngredientPickerViewModel(
         }
     }
 
+    /**
+     * 编辑用户自建食材图片/名称。[AI生成]
+     *
+     * 预设食材不可编辑不可删除；这里和 SQL 层都限制 `source=user`。
+     */
+    fun updateIngredient(ingredient: Ingredient, name: String, alias: String, imagePath: String) {
+        if (ingredient.source != "user") return
+        viewModelScope.launch {
+            runCatching {
+                ingredientRepo.updateUserIngredient(ingredient.id, name.trim(), alias.trim(), imagePath)
+            }.onSuccess {
+                reloadCurrentList()
+            }.onFailure {
+                _state.value = _state.value.copy(createError = "编辑失败")
+            }
+        }
+    }
+
+    /**
+     * 删除用户自建食材。[AI生成]
+     */
+    fun deleteIngredient(ingredient: Ingredient) {
+        if (ingredient.source != "user") return
+        viewModelScope.launch {
+            runCatching {
+                ingredientRepo.deleteUserIngredient(ingredient.id)
+            }.onSuccess {
+                _state.value = _state.value.copy(
+                    selectedIds = _state.value.selectedIds - ingredient.id,
+                    selectedIngredients = _state.value.selectedIngredients.filterNot { it.id == ingredient.id },
+                    operationError = null,
+                )
+                reloadCurrentList()
+            }.onFailure {
+                // [AI修改] 删除失败要反馈给 UI，避免外键或事务异常时用户误以为已删除。
+                _state.value = _state.value.copy(operationError = "删除失败，请稍后重试")
+            }
+        }
+    }
+
     fun clearCreateError() {
         _state.value = _state.value.copy(createError = null)
+    }
+
+    fun clearOperationError() {
+        _state.value = _state.value.copy(operationError = null)
     }
 
     private fun List<Ingredient>.withoutExcluded(): List<Ingredient> =

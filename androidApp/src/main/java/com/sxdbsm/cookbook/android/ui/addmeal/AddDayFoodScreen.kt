@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,11 +25,13 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -58,6 +62,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
+import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
 import com.sxdbsm.cookbook.domain.model.MealType
 import kotlinx.datetime.Instant
@@ -95,9 +100,16 @@ fun AddDayFoodScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         topBar = {
             TopAppBar(
                 title = { Text("添加餐食", fontWeight = FontWeight.SemiBold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.secondary,
+                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
@@ -119,7 +131,7 @@ fun AddDayFoodScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            FieldLabel("日期")
+            FormFieldLabel("日期", startPadding = 16.dp)
             OutlinedButton(
                 onClick = { dateDialogOpen = true },
                 modifier = Modifier
@@ -148,7 +160,7 @@ fun AddDayFoodScreen(
                 }
             }
 
-            FieldLabel("餐次")
+            FormFieldLabel("餐次", startPadding = 16.dp)
             state.mealBlocks.forEach { block ->
                 MealBlockCard(
                     block = block,
@@ -244,11 +256,13 @@ private fun MealBlockCard(
     onNoteChange: (String) -> Unit,
     onRemoveBlock: () -> Unit,
 ) {
-    OutlinedCard(
+    ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
         shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 餐食编辑模块使用色块承载，减少边框感。
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp), // [AI修改] 与首页/食历餐食卡片保持投影层级一致。
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -331,6 +345,7 @@ private fun MealBlockCard(
                 placeholder = { Text("备注（可选）") },
                 minLines = 1,
                 maxLines = 2,
+                shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
             )
         }
     }
@@ -441,19 +456,6 @@ private fun TimePickerDialogContent(
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("取消") }
         },
-    )
-}
-
-/**
- * 表单字段标题。[AI修改]
- */
-@Composable
-private fun FieldLabel(text: String) {
-    Text(
-        text,
-        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 6.dp),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
     )
 }
 

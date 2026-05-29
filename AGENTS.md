@@ -57,8 +57,8 @@ Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 A
 # 构建 shared 模块
 ./gradlew :shared:build
 
-# 运行共享模块通用测试
-./gradlew :shared:allTests
+# 运行 shared Android 单元测试（当前工程未注册 :shared:allTests）
+./gradlew :shared:testDebugUnitTest
 
 # 仅运行 Android 单元测试
 ./gradlew :shared:testDebugUnitTest
@@ -80,6 +80,8 @@ Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 A
 
 ## 工程一致性要求
 
+- **任务编排强制门禁**：[AI修改] 只要用户下达的是一个任务（包括开发、修复、优化、调研、文档、配置、审核等），开始执行前必须先走 `~/.codex/memories/workflow_auto_orchestration.md` 的阶段0评估定级；必须先告诉用户本次采用的模式/级别、原因、是否需要智能体分派。不得在未声明任务编排结果的情况下直接自行处理。
+- 开发类任务必须执行 Codex 自动任务编排流程：先读取 `~/.codex/memories/workflow_auto_orchestration.md`，完成阶段0评估定级并输出智能体分派表；标准/深度任务必须按流程用 Codex 子代理映射 DEV 角色参与，不得直接由主线程跳过分派。
 - 开发前必须按需读取 `.codex/docs/experience/09_工程统一规范.md`，保证 KMP 分层、平台 UI 风格、数据库和代码风格一致。
 - Android UI 采用 Material Design 3 与既有 Theme/ExtendedColors；iOS UI 采用 SwiftUI 与 iOS 原生交互风格。
 - 新增跨平台业务能力优先进入 `shared`，平台模块只承接各自 UI 与平台适配。

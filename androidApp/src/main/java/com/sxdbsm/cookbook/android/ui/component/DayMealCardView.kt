@@ -1,11 +1,9 @@
 package com.sxdbsm.cookbook.android.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
@@ -13,10 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.MealSection
@@ -34,18 +30,17 @@ fun DayMealCardView(
     onEditClick: (() -> Unit)? = null,
 ) {
     val containerColor = if (data.isPlanState)
-        MaterialTheme.colorScheme.surfaceVariant
-    else if (data.isToday)
-        MaterialTheme.colorScheme.primaryContainer
+        MaterialTheme.colorScheme.secondaryContainer
     else
-        MaterialTheme.colorScheme.surface
+        MaterialTheme.colorScheme.surface // [AI修改] 新暖杏规范中内容卡片使用白底，计划态才使用浅底色。
 
-    OutlinedCard(
+    ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.outlinedCardColors(containerColor = containerColor),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp), // [AI修改] 餐食模块使用色块 + 投影表达卡片层级，减少边框感。
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // [AI修改] 日期标题行：根据 today/plan 状态展示不同提示。

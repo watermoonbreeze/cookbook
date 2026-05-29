@@ -5,68 +5,70 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 // ============================
-// Material 3 标准色板（Light）
+// Material 3 标准色板（Light）[AI修改]
+// 来源：菜谱菜单App 视觉设计规范文档（适配CodeX），“莫兰迪低饱和暖杏风”。
 // ============================
-val md_light_primary = Color(0xFF4A6741)
-val md_light_onPrimary = Color(0xFFFFFFFF)
-val md_light_primaryContainer = Color(0xFFCBF0BA)
-val md_light_onPrimaryContainer = Color(0xFF082100)
+val md_light_primary = Color(0xFFE2B999)
+val md_light_onPrimary = Color(0xFF3A2F26)
+val md_light_primaryContainer = Color(0xFFEED3BC)
+val md_light_onPrimaryContainer = Color(0xFF3A2F26)
 
-val md_light_secondary = Color(0xFF54634D)
-val md_light_onSecondary = Color(0xFFFFFFFF)
-val md_light_secondaryContainer = Color(0xFFD7E8CD)
-val md_light_onSecondaryContainer = Color(0xFF121F0E)
+val md_light_secondary = Color(0xFFEED3BC)
+val md_light_onSecondary = Color(0xFF3A2F26)
+val md_light_secondaryContainer = Color(0xFFF7EFE6)
+val md_light_onSecondaryContainer = Color(0xFF66594F)
 
-val md_light_tertiary = Color(0xFF825500)
+val md_light_tertiary = Color(0xFFC97C52)
 val md_light_onTertiary = Color(0xFFFFFFFF)
-val md_light_tertiaryContainer = Color(0xFFFFDDB1)
-val md_light_onTertiaryContainer = Color(0xFF291800)
+val md_light_tertiaryContainer = Color(0xFFEED3BC)
+val md_light_onTertiaryContainer = Color(0xFF66594F)
 
-val md_light_background = Color(0xFFFDFDF5)
-val md_light_onBackground = Color(0xFF1A1C18)
-val md_light_surface = Color(0xFFFDFDF5)
-val md_light_onSurface = Color(0xFF1A1C18)
-val md_light_surfaceVariant = Color(0xFFDFE4D7)
-val md_light_onSurfaceVariant = Color(0xFF43483F)
-val md_light_outline = Color(0xFF74796D)
-val md_light_outlineVariant = Color(0xFFC3C8BB)
+val md_light_background = Color(0xFFF9F5F0)
+val md_light_onBackground = Color(0xFF3A2F26)
+val md_light_surface = Color(0xFFFFFFFF)
+val md_light_onSurface = Color(0xFF3A2F26)
+val md_light_surfaceVariant = Color(0xFFF7EFE6)
+val md_light_onSurfaceVariant = Color(0xFF8C7B6E)
+val md_light_outline = Color(0xFFE8D9CC)
+val md_light_outlineVariant = Color(0xFFE8D9CC)
 
-val md_light_error = Color(0xFFBA1A1A)
+val md_light_error = Color(0xFFB95F4F)
 val md_light_onError = Color(0xFFFFFFFF)
-val md_light_errorContainer = Color(0xFFFFDAD6)
-val md_light_onErrorContainer = Color(0xFF410002)
+val md_light_errorContainer = Color(0xFFF3D8D2)
+val md_light_onErrorContainer = Color(0xFF3A2F26)
 
 // ============================
-// Material 3 标准色板（Dark）
+// Material 3 标准色板（Dark）[AI修改]
+// 新规范未单列暗色表；这里按暖杏语义生成低饱和暗色，保证对比度和风格一致。
 // ============================
-val md_dark_primary = Color(0xFFB0D4A0)
-val md_dark_onPrimary = Color(0xFF1B3712)
-val md_dark_primaryContainer = Color(0xFF324D2B)
-val md_dark_onPrimaryContainer = Color(0xFFCBF0BA)
+val md_dark_primary = Color(0xFFD8AE8E)
+val md_dark_onPrimary = Color(0xFF2A211B)
+val md_dark_primaryContainer = Color(0xFF4A3528)
+val md_dark_onPrimaryContainer = Color(0xFFF4E7DC)
 
-val md_dark_secondary = Color(0xFFBBCBB1)
-val md_dark_onSecondary = Color(0xFF263421)
-val md_dark_secondaryContainer = Color(0xFF3C4B36)
-val md_dark_onSecondaryContainer = Color(0xFFD7E8CD)
+val md_dark_secondary = Color(0xFFC9AA91)
+val md_dark_onSecondary = Color(0xFF2A211B)
+val md_dark_secondaryContainer = Color(0xFF3A3029)
+val md_dark_onSecondaryContainer = Color(0xFFEBD7C8)
 
-val md_dark_tertiary = Color(0xFFFBBA75)
-val md_dark_onTertiary = Color(0xFF452B00)
-val md_dark_tertiaryContainer = Color(0xFF633F00)
-val md_dark_onTertiaryContainer = Color(0xFFFFDDB1)
+val md_dark_tertiary = Color(0xFFD19065)
+val md_dark_onTertiary = Color(0xFF2A1B12)
+val md_dark_tertiaryContainer = Color(0xFF553521)
+val md_dark_onTertiaryContainer = Color(0xFFF0D8C7)
 
-val md_dark_background = Color(0xFF1A1C18)
-val md_dark_onBackground = Color(0xFFE2E3DC)
-val md_dark_surface = Color(0xFF1A1C18)
-val md_dark_onSurface = Color(0xFFE2E3DC)
-val md_dark_surfaceVariant = Color(0xFF43483F)
-val md_dark_onSurfaceVariant = Color(0xFFC3C8BB)
-val md_dark_outline = Color(0xFF8D9387)
-val md_dark_outlineVariant = Color(0xFF43483F)
+val md_dark_background = Color(0xFF211B17)
+val md_dark_onBackground = Color(0xFFF4EAE0)
+val md_dark_surface = Color(0xFF2B241F)
+val md_dark_onSurface = Color(0xFFF4EAE0)
+val md_dark_surfaceVariant = Color(0xFF3A3029)
+val md_dark_onSurfaceVariant = Color(0xFFC7B6A8)
+val md_dark_outline = Color(0xFF5A4B41)
+val md_dark_outlineVariant = Color(0xFF4A3D35)
 
-val md_dark_error = Color(0xFFFFB4AB)
-val md_dark_onError = Color(0xFF690005)
-val md_dark_errorContainer = Color(0xFF93000A)
-val md_dark_onErrorContainer = Color(0xFFFFDAD6)
+val md_dark_error = Color(0xFFE09A8C)
+val md_dark_onError = Color(0xFF3A1510)
+val md_dark_errorContainer = Color(0xFF5A2E28)
+val md_dark_onErrorContainer = Color(0xFFFFDCD6)
 
 internal val LightColors = lightColorScheme(
     primary = md_light_primary, onPrimary = md_light_onPrimary,

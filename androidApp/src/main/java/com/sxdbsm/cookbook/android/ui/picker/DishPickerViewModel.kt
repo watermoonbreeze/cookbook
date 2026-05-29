@@ -4,10 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,6 +40,8 @@ class DishPickerViewModel(
     private val _dishes = MutableStateFlow<List<DishMini>>(emptyList()) // [AI修改] 当前搜索结果。
     private val _selected = MutableStateFlow<List<DishMini>>(emptyList()) // [AI修改] 当前已选菜品。
     private val _excludeDishIds = MutableStateFlow<Set<Long>>(emptySet()) // [AI修改] 外部传入的不可选菜品 id。
+    private var lastRefreshKeyword: String? = null
+    private var searchJob: Job? = null // [AI修改] 搜索输入防抖任务；force 刷新不走延迟。
 
     private val popular = dishRepo.observePopularDishes(limit = 12)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -65,9 +68,7 @@ class DishPickerViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishPickerUiState())
 
-    init {
-        refresh("")
-    }
+    init { refresh("", force = true) }
 
     /**
      * 配置选择器的排除项和初始选中项。[AI修改]
@@ -79,7 +80,7 @@ class DishPickerViewModel(
 
     fun setKeyword(value: String) {
         _keyword.value = value
-        refresh(value)
+        refresh(value, debounce = true)
     }
 
     /**
@@ -103,15 +104,17 @@ class DishPickerViewModel(
     fun confirmSelected(): List<DishMini> = _selected.value
 
     /**
-     * 刷新搜索结果。[AI修改]
-     */
-    /**
      * 刷新当前关键词下的菜品库列表。[AI修改]
      *
      * 添加餐食页跳到新建菜品后再返回菜品库时，会主动调用它，确保刚创建的菜品排在前面。
      */
-    fun refresh(keyword: String = _keyword.value) {
-        viewModelScope.launch {
+    fun refresh(keyword: String = _keyword.value, force: Boolean = false, debounce: Boolean = false) {
+        if (!force && keyword == lastRefreshKeyword && _dishes.value.isNotEmpty()) return
+        lastRefreshKeyword = keyword
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            // [AI修改] 用户连续输入时只执行最后一次查询；force=true 的返回刷新保持立即执行。
+            if (debounce && !force) delay(280)
             _dishes.value = dishRepo.searchDishes(keyword)
         }
     }

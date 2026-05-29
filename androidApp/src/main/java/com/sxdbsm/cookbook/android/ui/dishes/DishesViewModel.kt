@@ -5,10 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -42,6 +43,7 @@ class DishesViewModel(
     private val _keyword = MutableStateFlow("") // [AI修改] 搜索框文本。
     private val _sortTab = MutableStateFlow(DishesSortTab.RECENT) // [AI修改] 当前选中的排序 Tab。
     private val _list = MutableStateFlow<List<DishMini>>(emptyList()) // [AI修改] 搜索结果列表。
+    private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
 
     /**
      * 热门菜品列表。[AI修改]
@@ -49,28 +51,41 @@ class DishesViewModel(
     val popular: StateFlow<List<DishMini>> = dishRepo.observePopularDishes(limit = 12)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val uiState: StateFlow<DishesUiState>
-        get() = combineState()
-
-    private fun combineState(): StateFlow<DishesUiState> {
-        return kotlinx.coroutines.flow.combine(
-            popular, _list, _keyword, _sortTab,
-        ) { popular, list, kw, tab ->
-            DishesUiState(popular = popular, all = list, keyword = kw, sortTab = tab)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishesUiState())
-    }
+    val uiState: StateFlow<DishesUiState> = kotlinx.coroutines.flow.combine(
+        popular, _list, _keyword, _sortTab,
+    ) { popular, list, kw, tab ->
+        DishesUiState(popular = popular, all = sortDishes(list, tab), keyword = kw, sortTab = tab)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishesUiState())
 
     init {
-        viewModelScope.launch {
-            // [AI修改] 初始全列表：空关键词等价于查询全部菜品。
-            _list.value = dishRepo.searchDishes("")
-        }
+        searchNow("")
     }
 
     fun setKeyword(kw: String) {
         _keyword.value = kw
-        viewModelScope.launch { _list.value = dishRepo.searchDishes(kw) }
+        searchNow(kw, debounce = true)
     }
 
-    fun setSortTab(tab: DishesSortTab) { _sortTab.value = tab /* [AI修改] MVP 暂不影响列表排序，后续按 tab 重查。 */ }
+    fun setSortTab(tab: DishesSortTab) { _sortTab.value = tab }
+
+    private fun sortDishes(list: List<DishMini>, tab: DishesSortTab): List<DishMini> =
+        when (tab) {
+            DishesSortTab.RECENT -> list
+            DishesSortTab.FAVORITE -> list.sortedByDescending { it.preference }
+            DishesSortTab.PINYIN -> list.sortedBy { it.name }
+            DishesSortTab.ALL -> list.sortedBy { it.id }
+        }
+
+    /**
+     * 执行菜品搜索。[AI生成]
+     *
+     * 首次加载立即查询；用户输入时延迟一小段时间，连续输入会取消旧任务，只保留最后一次关键词。
+     */
+    private fun searchNow(keyword: String, debounce: Boolean = false) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            if (debounce) delay(280)
+            _list.value = dishRepo.searchDishes(keyword)
+        }
+    }
 }

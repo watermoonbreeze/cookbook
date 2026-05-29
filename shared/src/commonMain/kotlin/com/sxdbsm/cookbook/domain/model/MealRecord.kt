@@ -20,7 +20,7 @@ data class MealType(
  * 一次餐食记录。[AI修改]
  *
  * 表示某一天某个餐次实际或计划吃了哪些菜。`dishes` 使用轻量 `DishMini`，
- * 因为餐食列表只需要展示菜名、图片和热度。
+ * 因为餐食列表只需要展示菜名、图片和喜爱度。[AI修改]
  */
 data class MealRecord(
     val id: Long = 0,

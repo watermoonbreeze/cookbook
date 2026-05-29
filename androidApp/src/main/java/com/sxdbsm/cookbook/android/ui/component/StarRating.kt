@@ -14,17 +14,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * 显示热度星级（0-5），Tertiary 橙色，不参与编辑。[AI修改]
+ * 显示喜爱度星级（0-5），Tertiary 橙色，不参与编辑。[AI修改]
  *
- * @param value 热度分（0-100），自动换算为 5 颗星（每颗 20 分）。
+ * @param value 喜爱度分（0-1000），自动换算为 5 颗星（每颗 200 分）。
  */
 @Composable
 fun StarRating(
-    value: Double,
+    value: Int,
     modifier: Modifier = Modifier,
     iconSize: Dp = 14.dp,
 ) {
-    val stars = (value / 20.0).coerceIn(0.0, 5.0) // [AI修改] 业务热度 0-100 转成 UI 星级 0-5。
+    val stars = (value / 200.0).coerceIn(0.0, 5.0) // [AI修改] 业务喜爱度 0-1000 转成 UI 星级 0-5。
     val full = stars.toInt()
     val hasHalf = (stars - full) >= 0.5
     val tertiary = MaterialTheme.colorScheme.tertiary

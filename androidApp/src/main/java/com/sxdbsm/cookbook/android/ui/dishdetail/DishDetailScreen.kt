@@ -1,9 +1,9 @@
 package com.sxdbsm.cookbook.android.ui.dishdetail
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -13,20 +13,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.component.StarRating
+import com.sxdbsm.cookbook.android.ui.component.StoredImage
 import com.sxdbsm.cookbook.android.ui.component.TagChip
-import com.sxdbsm.cookbook.android.ui.component.placeholderBg
-import com.sxdbsm.cookbook.android.ui.component.placeholderFg
+import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import org.koin.androidx.compose.koinViewModel
 
 /**
  * 菜品详情页面。[AI修改]
  *
- * 展示菜名、热度、标签、食材和备注，并提供编辑入口。
+ * 展示菜名、喜爱度、标签、食材和备注，并提供编辑入口。[AI修改]
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,9 +40,16 @@ fun DishDetailScreen(
     val dish by vm.observeDish(dishId).collectAsStateWithLifecycle(initialValue = null)
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         topBar = {
             TopAppBar(
                 title = { Text("菜品详情", fontWeight = FontWeight.SemiBold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.secondary,
+                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
@@ -77,19 +84,13 @@ fun DishDetailScreen(
                 .padding(16.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(88.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(placeholderBg(d.id)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = d.name.take(2),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = placeholderFg(d.id),
-                    )
-                }
+                StoredImage(
+                    imagePath = d.imagePath,
+                    fallbackText = d.name.take(2),
+                    fallbackEmoji = "🍱",
+                    seedId = d.id,
+                    size = 88.dp,
+                )
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
                     Text(d.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
@@ -98,7 +99,8 @@ fun DishDetailScreen(
                         StarRating(value = d.preference)
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            "热度 ${"%.1f".format(d.preference)}",
+                            // [AI修改] 只展示 preference 原始数量，避免误导为固定 1000 分制。
+                            "喜爱度 ${d.preference}",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium,
                         )
@@ -107,14 +109,36 @@ fun DishDetailScreen(
             }
 
             if (d.tags.isNotEmpty()) {
-                FieldLabel("标签")
+                FormFieldLabel("标签", topPadding = 18.dp, bottomPadding = 8.dp)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     d.tags.forEach { TagChip(it) }
                 }
             }
 
-            FieldLabel("食材")
-            OutlinedCard(Modifier.fillMaxWidth()) {
+            val imagePaths = decodeImagePaths(d.imagePath)
+            if (imagePaths.isNotEmpty()) {
+                FormFieldLabel("图片", topPadding = 18.dp, bottomPadding = 8.dp)
+                val detailImagePaths = imagePaths.drop(1).ifEmpty { imagePaths } // [AI修改] 顶部已展示首图，多图区域优先展示剩余图片，单图时保留可预览入口。
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(detailImagePaths, key = { it }) { path ->
+                        StoredImage(
+                            imagePath = path,
+                            fallbackText = d.name.take(2),
+                            fallbackEmoji = "🍱",
+                            seedId = d.id,
+                            size = 96.dp,
+                            corner = 12.dp,
+                        )
+                    }
+                }
+            }
+
+            FormFieldLabel("食材", topPadding = 18.dp, bottomPadding = 8.dp)
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 详情内容卡片按新规范使用白底。
+            ) {
                 Column {
                     if (d.ingredients.isEmpty()) {
                         Text(
@@ -133,10 +157,7 @@ fun DishDetailScreen(
                                 Text(item.ingredient.name, modifier = Modifier.weight(1f))
                                 val quantity = item.quantity?.let { "$it ${item.unitName}" } ?: "适量"
                                 Text(quantity, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                if (item.isMain) {
-                                    Spacer(Modifier.width(8.dp))
-                                    AssistChip(onClick = {}, label = { Text("主料") })
-                                }
+                                // [AI修改] 详情页食材只展示名称和用量，不再暴露“主料”标识。
                             }
                             Divider()
                         }
@@ -146,30 +167,17 @@ fun DishDetailScreen(
 
             val cookingMethodName = d.cookingMethodName
             if (cookingMethodName != null) {
-                FieldLabel("烹饪方式")
+                FormFieldLabel("烹饪方式", topPadding = 18.dp, bottomPadding = 8.dp)
                 Text(cookingMethodName, style = MaterialTheme.typography.bodyLarge)
             }
             if (d.specialNote.isNotBlank()) {
-                FieldLabel("特殊说明")
+                FormFieldLabel("特殊说明", topPadding = 18.dp, bottomPadding = 8.dp)
                 Text(d.specialNote, style = MaterialTheme.typography.bodyLarge)
             }
             if (d.description.isNotBlank()) {
-                FieldLabel("描述")
+                FormFieldLabel("描述", topPadding = 18.dp, bottomPadding = 8.dp)
                 Text(d.description, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
-}
-
-/**
- * 详情页字段标题。[AI修改]
- */
-@Composable
-private fun FieldLabel(text: String) {
-    Text(
-        text = text,
-        modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-    )
 }

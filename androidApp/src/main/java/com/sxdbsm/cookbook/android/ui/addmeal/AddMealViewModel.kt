@@ -7,6 +7,7 @@ import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.MealType
 import com.sxdbsm.cookbook.util.DateTime
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -67,12 +68,32 @@ class AddMealViewModel(
     val state: StateFlow<AddMealUiState> = _state.asStateFlow() // [AI修改] 对 UI 暴露只读 StateFlow。
 
     private var nextBlockId = 1L
+    private var configured = false // [AI生成] 标记外部入口是否已指定，避免 init 默认日期覆盖编辑日期。
+    private var pendingEditDate: LocalDate? = null
+    private var loadJob: Job? = null
 
     init {
         viewModelScope.launch {
             val types = mealRepo.listMealTypes()
             _state.value = _state.value.copy(mealTypes = types)
-            loadMealsForDate(_state.value.date)
+            if (!configured) {
+                configure(editDate = null)
+            } else {
+                loadConfiguredDate()
+            }
+        }
+    }
+
+    /**
+     * 配置添加/编辑入口日期。[AI生成]
+     *
+     * editDate 优先；新建入口会取“今天”或最后计划日期的后一天，避免 init 默认加载和编辑入口 setDate 竞态。
+     */
+    fun configure(editDate: LocalDate? = null) {
+        configured = true
+        pendingEditDate = editDate
+        if (_state.value.mealTypes.isNotEmpty()) {
+            loadConfiguredDate()
         }
     }
 
@@ -80,8 +101,7 @@ class AddMealViewModel(
      * 修改整天餐食的日期。[AI修改]
      */
     fun setDate(date: LocalDate) {
-        _state.value = _state.value.copy(date = date, isPlan = date > DateTime.today())
-        loadMealsForDate(date)
+        configure(editDate = date)
     }
 
     /**
@@ -198,33 +218,55 @@ class AddMealViewModel(
     }
 
     /**
-     * 根据日期加载已有餐食；没有记录时创建默认早餐模块。[AI修改]
+     * 按入口类型解析目标日期并触发加载。[AI生成]
      */
-    private fun loadMealsForDate(date: LocalDate) {
-        viewModelScope.launch {
-            val existingMeals = mealRepo.loadDayMealsForEdit(date)
-            val blocks = if (existingMeals.isEmpty()) {
-                val defaultType = _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" }
-                    ?: _state.value.mealTypes.firstOrNull()
-                listOf(newBlock(defaultType))
-            } else {
-                existingMeals.map { meal ->
-                    MealBlockUiState(
-                        id = nextBlockId++,
-                        mealTypeId = meal.mealTypeId,
-                        mealTime = meal.mealTime,
-                        dishes = meal.dishes,
-                        note = meal.note,
-                    )
-                }
-            }
-            _state.value = _state.value.copy(
-                date = date,
-                isPlan = date > DateTime.today(),
-                mealBlocks = blocks,
-                activeBlockId = blocks.firstOrNull()?.id,
-            )
+    private fun loadConfiguredDate() {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            val targetDate = pendingEditDate ?: resolveNewMealDate()
+            loadMealsForDateInternal(targetDate)
         }
+    }
+
+    /**
+     * 新建餐食默认日期：没有记录或最后记录早于今天则用今天，否则顺延到最后记录的后一天。[AI生成]
+     */
+    private suspend fun resolveNewMealDate(): LocalDate {
+        val today = DateTime.today()
+        val maxDate = mealRepo.dateRange().second
+        return if (maxDate == null || maxDate < today) {
+            today
+        } else {
+            DateTime.plusDays(maxDate, 1)
+        }
+    }
+
+    /**
+     * 实际执行日期回填；调用方负责管理 loadJob，避免配置任务被自己取消。[AI生成]
+     */
+    private suspend fun loadMealsForDateInternal(date: LocalDate) {
+        val existingMeals = mealRepo.loadDayMealsForEdit(date)
+        val blocks = if (existingMeals.isEmpty()) {
+            val defaultType = _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" }
+                ?: _state.value.mealTypes.firstOrNull()
+            listOf(newBlock(defaultType))
+        } else {
+            existingMeals.map { meal ->
+                MealBlockUiState(
+                    id = nextBlockId++,
+                    mealTypeId = meal.mealTypeId,
+                    mealTime = meal.mealTime,
+                    dishes = meal.dishes,
+                    note = meal.note,
+                )
+            }
+        }
+        _state.value = _state.value.copy(
+            date = date,
+            isPlan = date > DateTime.today(),
+            mealBlocks = blocks,
+            activeBlockId = blocks.firstOrNull()?.id,
+        )
     }
 
     private fun updateBlock(blockId: Long, transform: (MealBlockUiState) -> MealBlockUiState) {

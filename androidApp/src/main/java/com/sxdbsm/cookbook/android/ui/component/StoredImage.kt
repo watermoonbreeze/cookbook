@@ -1,0 +1,153 @@
+package com.sxdbsm.cookbook.android.ui.component
+
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.LruCache
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+
+/**
+ * 展示 `image_path` 中保存的第一张图片。[AI修改]
+ *
+ * `image_path` 当前用 `|` 分隔多张图片 URI。这里优先加载第一张；
+ * 如果没有图片或加载失败，则显示默认 emoji/文字占位。点击图片时用弹框展示较大尺寸预览。
+ */
+@Composable
+fun StoredImage(
+    imagePath: String,
+    fallbackText: String,
+    fallbackEmoji: String,
+    seedId: Long,
+    modifier: Modifier = Modifier,
+    size: Dp = 80.dp,
+    corner: Dp = 8.dp,
+    allowPreview: Boolean = true,
+) {
+    val firstPath = remember(imagePath) { decodeImagePaths(imagePath).firstOrNull() }
+    val bitmap = rememberImageBitmap(firstPath, preview = false)
+    var previewOpen by remember { mutableStateOf(false) }
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(RoundedCornerShape(corner))
+            .background(placeholderBg(seedId))
+            .then(
+                // [AI修改] 有真实图片时才允许点击预览，emoji/文字占位不响应点击。
+                if (allowPreview && bitmap != null) Modifier.clickable { previewOpen = true } else Modifier,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = fallbackText,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize(),
+            )
+        } else {
+            Text(
+                text = if (firstPath == null) fallbackEmoji else fallbackText.take(1),
+                color = placeholderFg(seedId),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+
+    if (allowPreview && previewOpen && bitmap != null) {
+        val previewBitmap = rememberImageBitmap(firstPath, preview = true)
+        AlertDialog(
+            onDismissRequest = { previewOpen = false },
+            text = {
+                if (previewBitmap != null) {
+                    Image(
+                        bitmap = previewBitmap,
+                        contentDescription = fallbackText,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 180.dp, max = 420.dp),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { previewOpen = false }) {
+                    Text("关闭")
+                }
+            },
+        )
+    }
+}
+
+/**
+ * 读取 URI 或文件路径为 Compose 可展示的 ImageBitmap。[AI生成]
+ */
+@Composable
+private fun rememberImageBitmap(path: String?, preview: Boolean): ImageBitmap? {
+    val context = LocalContext.current
+    val cacheKey = remember(path, preview) { if (preview) null else path?.let { imageCacheKey(it) } }
+    val image by produceState<ImageBitmap?>(initialValue = cacheKey?.let { imageCache.get(it) }, key1 = cacheKey) {
+        value = if (path.isNullOrBlank()) {
+            null
+        } else {
+            cacheKey?.let { imageCache.get(it) } ?: withContext(Dispatchers.IO) {
+                runCatching {
+                    val uri = Uri.parse(path)
+                    val options = imageOptions(preview)
+                    val bitmap = if (uri.scheme == "content" || uri.scheme == "android.resource") {
+                        context.contentResolver.openInputStream(uri)?.use { stream ->
+                            BitmapFactory.decodeStream(stream, null, options)
+                        }
+                    } else {
+                        BitmapFactory.decodeFile(uri.path ?: File(path).absolutePath, options)
+                    }
+                    bitmap?.asImageBitmap()?.also { imageBitmap ->
+                        // [AI修改] 只缓存列表缩略图；预览大图不进缓存，避免占用过多内存。
+                        cacheKey?.let { imageCache.put(it, imageBitmap) }
+                    }
+                }.getOrNull()
+            }
+        }
+    }
+    return image
+}
+
+private fun imageOptions(preview: Boolean): BitmapFactory.Options =
+    BitmapFactory.Options().apply {
+        // [AI修改] 列表/卡片只需要缩略图；点击预览时再读取更清晰版本。
+        inSampleSize = if (preview) 1 else 4
+    }
+
+private fun imageCacheKey(path: String): String = "thumb:$path"
+
+// [AI修改] 进程内轻量图片缓存，按图片数量限制，避免滚动列表重复 IO/解码同时防止无限占用内存。
+private val imageCache = object : LruCache<String, ImageBitmap>(80) {}

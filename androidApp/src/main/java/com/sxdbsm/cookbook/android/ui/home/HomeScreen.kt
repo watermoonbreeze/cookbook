@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DayMealCardView
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
+import com.sxdbsm.cookbook.android.ui.component.SectionHeader
 import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.koinViewModel
 
@@ -31,57 +32,49 @@ import org.koin.androidx.compose.koinViewModel
 fun HomeScreen(
     onOpenTimeline: () -> Unit,
     onOpenDishes: () -> Unit,
+    onOpenSearch: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
     vm: HomeViewModel = koinViewModel(),
 ) {
     // [AI修改] collectAsStateWithLifecycle 会按 Android 生命周期订阅 StateFlow，避免后台页面继续无意义刷新。
     val ui by vm.uiState.collectAsStateWithLifecycle()
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-    ) {
-        item {
-            // [AI修改] 顶部栏：页面标题和主题入口。
+    Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 页面 Scaffold 不再额外添加系统栏避让，配合透明状态栏形成沉浸式。
+        topBar = {
             TopAppBar(
                 title = { Text("今天吃什么", fontWeight = FontWeight.SemiBold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                ),
                 actions = {
+                    IconButton(onClick = onOpenSearch) {
+                        Icon(
+                            Icons.Outlined.Search,
+                            contentDescription = "搜索",
+                            tint = MaterialTheme.colorScheme.secondary, // [AI修改] 顶栏图标按暖杏规范使用辅助色。
+                        )
+                    }
                     IconButton(onClick = { /* 主题快捷切换：跳到我的页或直接切换三档 */ }) {
                         Icon(
                             Icons.Outlined.WbSunny,
                             contentDescription = "主题",
-                            tint = MaterialTheme.colorScheme.tertiary,
+                            tint = MaterialTheme.colorScheme.secondary, // [AI修改] 顶栏图标按暖杏规范使用辅助色。
                         )
                     }
                 },
             )
-        }
-        // [AI修改] 搜索框（点击调起菜品选择弹框，MVP 先做样式）。
-        item {
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Outlined.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        "搜索菜品 / 标签 / 食材...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-
+        },
+    ) { padding ->
+    LazyColumn(
+        modifier = Modifier
+            .padding(padding)
+            .fillMaxSize(),
+    ) {
         // [AI修改] 热门菜品横向列表。
-        item { SectionTitle(title = "🔥 热门", action = "更多 ▸", onActionClick = onOpenDishes) }
+        item { SectionHeader(title = "🔥 热门", action = "更多 ▸", onActionClick = onOpenDishes) }
         if (ui.popular.isEmpty()) {
             item { EmptyState(text = "还没记录餐食，热门会随着记录自动出现", icon = "🔥") }
         } else {
@@ -100,7 +93,7 @@ fun HomeScreen(
         item { Spacer(Modifier.height(16.dp)) }
 
         // [AI修改] 最近菜品横向列表。
-        item { SectionTitle(title = "⏱ 最近", action = "更多 ▸", onActionClick = onOpenDishes) }
+        item { SectionHeader(title = "⏱ 最近", action = "更多 ▸", onActionClick = onOpenDishes) }
         if (ui.recent.isEmpty()) {
             item { EmptyState(text = "暂无最近餐食", icon = "⏱") }
         } else {
@@ -118,11 +111,9 @@ fun HomeScreen(
 
         item { Spacer(Modifier.height(16.dp)) }
 
-        // [AI修改] 今天/未来计划餐食卡片列表。
-        item { SectionTitle(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
-        if (ui.plans.isEmpty()) {
-            item { EmptyState(text = "还没记录今天的餐食\n点中间 + 号开始记录", icon = "🍽") }
-        } else {
+        // [AI修改] 只展示今天及未来真实存在的餐食记录；没有记录时整个计划区不显示。
+        if (ui.plans.isNotEmpty()) {
+            item { SectionHeader(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
             items(ui.plans, key = { it.date.toString() }) { card ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                     DayMealCardView(
@@ -135,23 +126,5 @@ fun HomeScreen(
         }
         item { Spacer(Modifier.height(80.dp)) } // [AI修改] 留底部 FAB 空间。
     }
-}
-
-/**
- * 首页模块标题行。[AI修改]
- */
-@Composable
-private fun SectionTitle(title: String, action: String? = null, onActionClick: () -> Unit = {}) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.weight(1f))
-        if (action != null) {
-            TextButton(onClick = onActionClick) { Text(action) }
-        }
     }
 }

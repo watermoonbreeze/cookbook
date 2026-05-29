@@ -10,11 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
 import com.sxdbsm.cookbook.domain.model.DishMini
 
 /**
@@ -32,6 +30,7 @@ import com.sxdbsm.cookbook.domain.model.DishMini
 fun DishRow(
     dish: DishMini,
     modifier: Modifier = Modifier,
+    preferenceRank: Int? = null,
     showCheckbox: Boolean = false,
     checked: Boolean = false,
     onCheckedChange: ((Boolean) -> Unit)? = null,
@@ -48,47 +47,33 @@ fun DishRow(
 
     Row(rowModifier, verticalAlignment = Alignment.CenterVertically) {
         // [AI修改] 左侧缩略图（64dp）：真实图片未接入时使用稳定占位色。
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(placeholderBg(dish.id)),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (dish.imagePath.isNotBlank()) {
-                Text("🍱", style = MaterialTheme.typography.titleLarge)
-            } else {
-                Text(
-                    text = dish.name.take(2),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = placeholderFg(dish.id),
-                )
-            }
-        }
+        StoredImage(
+            imagePath = dish.imagePath,
+            fallbackText = dish.name.take(2),
+            fallbackEmoji = "🍱",
+            seedId = dish.id,
+            size = 64.dp,
+            allowPreview = false, // [AI修改] 菜品 Item 点击缩略图也应进入详情，不触发图片预览。
+        )
         Spacer(Modifier.width(12.dp))
 
         Column(Modifier.weight(1f)) {
-            // [AI修改] 第一行：菜名 + 标签 + 喜爱度。
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = dish.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (dish.tags.isNotEmpty()) {
-                    Spacer(Modifier.width(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        dish.tags.take(2).forEach { tag -> TagChip(tag) }
-                    }
-                }
-                Spacer(Modifier.weight(1f))
-                StarRating(value = dish.preference)
-            }
+            // [AI修改] 中间区域固定为“菜名在上、标签在下”，右侧评分/勾选控件单独靠右。
+            Text(
+                text = dish.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Spacer(Modifier.height(4.dp))
+            if (dish.tags.isNotEmpty()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    dish.tags.take(3).forEach { tag -> TagChip(tag) }
+                }
+                Spacer(Modifier.height(4.dp))
+            }
             val subText = buildString {
                 dish.mainIngredientNames.take(3).forEachIndexed { i, n ->
                     if (i > 0) append(" · ")
@@ -109,12 +94,31 @@ fun DishRow(
                 )
             }
         }
+        Spacer(Modifier.width(12.dp))
         if (showCheckbox) {
-            Spacer(Modifier.width(8.dp))
+            // [AI修改] 多选模式右侧只保留 Checkbox，避免评分星星和勾选框互相挤压。
             Checkbox(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
             )
+        } else {
+            Column(
+                modifier = Modifier.widthIn(min = 72.dp),
+                horizontalAlignment = Alignment.End,
+            ) {
+                if (dish.preference > 0) {
+                    val preferenceText = if (preferenceRank != null && preferenceRank in 1..3) {
+                        "🔥 ${dish.preference}"
+                    } else {
+                        "❤️ ${dish.preference}"
+                    } // [AI修改] 菜品 Item 右侧只显示 emoji + 数字；前 3 名用热度标识，其余用爱心。
+                    Text(
+                        text = preferenceText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
     }
     Divider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -137,7 +141,7 @@ fun TagChip(text: String) {
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(50))
+            .clip(MaterialTheme.shapes.small) // [AI修改] 标签圆角按暖杏规范使用 8dp。
             .background(bg)
             .padding(horizontal = 8.dp, vertical = 2.dp),
     ) {
