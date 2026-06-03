@@ -192,3 +192,59 @@
 另外再调整一下样式，尽量少用边框，尽量可以使用色块来代替以下控件
 1. 所有涉及到的餐食模块 使用色块及投影的形式体现，表现为卡片的样式试下
 2. 界面搜索栏，需要换个样式，不要边框，需要以色块来体现，高度48dp ，菜品界面的搜索框和搜索界面的搜索框，还有食材界面的搜索框
+
+
+### 修复9
+1. 所有的SearchScreen 中的字体显示不全，估计是padding太大了。
+2. 新建和编辑菜品中的烹饪方式中的添加，可以添加多个，而不是添加完后变成修改。另外标签和烹饪方式添加的内容样式的宽高需要和添加按钮的宽高一样，内容居中。
+3. 菜品详情在点击编辑时，变成了新建菜品，编辑功能没了，需要添加进来
+4. 菜品Screen中 菜品筛选Tab中的拼音 取消掉，全部标签的排序变成按拼音首字母正序排列，并且在右侧有拼音的标识，手指滑动时有放大效果，并且列表同步滑动到对应拼音的菜品列
+5. 食材选择Screen中 无论预设还是手动添加的都能进行编辑操作，预设的不能删除。售票格子Item的样式需要调整: 如果有图片，图片需要铺满格子的上半部分，下方只留文字大小即可。
+
+
+### 修复10
+- 先改bug
+1. 首页Screen中如果计划为空，计划的标签也要展示，只是内容为暂无计划
+2. 菜品详情在点击编辑时，没有到编辑界面，这个功能还没修复，现在是变成了新建菜品，编辑功能没了，需要添加编辑功能
+3. 菜品编辑和新建界面的标签和烹饪方式，内容不用铺满整行，wrap_content就行，添加按钮紧跟在后面
+
+-改主题
+现有的主题色备份一下，然后基于：/Users/sxd/Downloads/菜单APP/菜谱菜单App 全局视觉设计规范 V2.1（CodeX 开发专用）.md 生成一个新的主题色看下效果
+
+
+这是我公司使用的claude配置，你把里面的配置同步到本机的claude和codex的配置中。请仔细看下哪些是可以被通用使用到的。
+目录: /Users/sxd/Documents/国安广传/work-record/国安广传/临时资料/.claude/
+完成之后重新载入配置，确保以后都按这些配置来
+
+### 修复10-1
+
+打开应用报错了: android.database.sqlite.SQLiteException: Can't downgrade database from version 2 to 1
+
+### 修复11
+1. 添加菜品后 菜品Screen 没有及时刷新，另外菜品的tab下列表也要增加下拉刷新操作。
+2. 编辑菜品 显示的是编辑菜品，但实际内容都是空的，没有通过索引获取到菜品信息
+3. 数据库我希望迁移到 sdCard根目录下的cookbook/db目录下，另外拍摄的照片设置默认的图片路径在 cookbook/img/目录，以yyyyMMddHHmmssS.jpg 格式，同时生成缩略图yyyyMMddHHmmssS_thum.jpg 加_thum 后缀。缩略图的规则为保持图片尺寸，大小压缩到5K左右，不超过10K。另外在存储到对应的菜品和食材中时，需要增加缩略图的字段。实际在展示时，默认显示缩略图，当点击放大查看图片时优先加载缩略图，然后再加载原图。保证打开时就能看到图片，让图片的效果呈现模糊到清晰的过程。
+
+
+### 修复12
+1. 在餐食卡片下的菜品block也要增加点击事件，点击后能进入到该菜品的详情中。
+2. 菜品编辑有的点进去是空的，刚开始可以的，然后返回再进去，就是空的。比如菜品:番茄炒蛋 标签 卡卡 咕咕叫，开始点进去是好的，后面再点编辑就空的，然后退出应用再进去也是空的。
+   新增菜品，点击编辑也是空的，还有菜品中拍照保存后，照片没有了
+3. 点击添加食材 闪退：
+Process: com.sxdbsm.cookbook.android, PID: 26460
+java.lang.NullPointerException
+	at com.sxdbsm.cookbook.db.CookbookQueries$selectAllIngredients$1.invoke(CookbookQueries.kt:424)
+	at com.sxdbsm.cookbook.db.CookbookQueries$selectAllIngredients$1.invoke(CookbookQueries.kt:416)
+	at app.cash.sqldelight.ExecutableQuery$executeAsList$1.invoke(Query.kt:176)
+	at app.cash.sqldelight.ExecutableQuery$executeAsList$1.invoke(Query.kt:174)
+	at app.cash.sqldelight.driver.android.AndroidQuery.executeQuery(AndroidSqliteDriver.kt:307)
+	at app.cash.sqldelight.driver.android.AndroidSqliteDriver$executeQuery$2.invoke(AndroidSqliteDriver.kt:192)
+	at app.cash.sqldelight.driver.android.AndroidSqliteDriver$executeQuery$2.invoke(AndroidSqliteDriver.kt:192)
+	at app.cash.sqldelight.driver.android.AndroidSqliteDriver.execute-zeHU3Mk(AndroidSqliteDriver.kt:169)
+	at app.cash.sqldelight.driver.android.AndroidSqliteDriver.executeQuery-0yMERmw(AndroidSqliteDriver.kt:192)
+	at app.cash.sqldelight.driver.android.AndroidSqliteDriver.executeQuery(AndroidSqliteDriver.kt:29)
+	at app.cash.sqldelight.SimpleQuery.execute(Query.kt:98)
+	at app.cash.sqldelight.ExecutableQuery.executeAsList(Query.kt:174)
+	at com.sxdbsm.cookbook.data.repository.IngredientRepository$search$2.invokeSuspend(IngredientRepository.kt:38)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+4. 另外数据库并没有重新生成在我指定的目录 /sdcard/cookbook/db/ 目录下，拍照也没有在 /sdcard/cookbook/img 目录下生成

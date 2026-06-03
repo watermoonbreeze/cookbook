@@ -170,10 +170,11 @@ class IngredientPickerViewModel(
     /**
      * 创建用户自定义食材，并默认选中它。[AI修改]
      */
-    fun createUserIngredient(name: String, alias: String = "", imagePath: String = "", categoryId: Long? = null) {
+    fun createUserIngredient(name: String, alias: String = "", imagePath: String = "", thumbnailPath: String = "", categoryId: Long? = null) {
         val trimmedName = name.trim()
         val trimmedAlias = alias.trim()
         val trimmedImagePath = imagePath.trim()
+        val trimmedThumbnailPath = thumbnailPath.trim()
         if (trimmedName.isBlank()) {
             _state.value = _state.value.copy(createError = "请输入食材名称")
             return
@@ -181,12 +182,13 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(creatingIngredient = true, createError = null)
             runCatching {
-                val id = ingredientRepo.createUserIngredient(trimmedName, trimmedAlias, trimmedImagePath, categoryId)
+                val id = ingredientRepo.createUserIngredient(trimmedName, trimmedAlias, trimmedImagePath, trimmedThumbnailPath, categoryId)
                 Ingredient(
                     id = id,
                     name = trimmedName,
                     alias = trimmedAlias,
                     imagePath = trimmedImagePath, // [AI修改] 新建食材弹框的可选图片路径。
+                    thumbnailPath = trimmedThumbnailPath, // [AI生成] 新建食材同步保存缩略图路径。
                     source = "user",
                 )
             }.onSuccess { ingredient ->
@@ -207,15 +209,14 @@ class IngredientPickerViewModel(
     }
 
     /**
-     * 编辑用户自建食材图片/名称。[AI生成]
+     * 编辑食材图片/名称。[AI修改]
      *
-     * 预设食材不可编辑不可删除；这里和 SQL 层都限制 `source=user`。
+     * 修复9要求预设和自建食材都能编辑；删除逻辑仍只允许 `source=user`。
      */
-    fun updateIngredient(ingredient: Ingredient, name: String, alias: String, imagePath: String) {
-        if (ingredient.source != "user") return
+    fun updateIngredient(ingredient: Ingredient, name: String, alias: String, imagePath: String, thumbnailPath: String) {
         viewModelScope.launch {
             runCatching {
-                ingredientRepo.updateUserIngredient(ingredient.id, name.trim(), alias.trim(), imagePath)
+                ingredientRepo.updateUserIngredient(ingredient.id, name.trim(), alias.trim(), imagePath, thumbnailPath)
             }.onSuccess {
                 reloadCurrentList()
             }.onFailure {

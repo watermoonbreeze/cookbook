@@ -34,6 +34,7 @@ CREATE TABLE ingredient (
     alias TEXT NOT NULL DEFAULT '',
     pinyin TEXT NOT NULL DEFAULT '',
     image_path TEXT NOT NULL DEFAULT '',
+    thumbnail_path TEXT NOT NULL DEFAULT '',
     default_unit_id INTEGER REFERENCES measurement_unit(id),
     source TEXT NOT NULL DEFAULT 'preset',
     created_at INTEGER NOT NULL
@@ -83,6 +84,7 @@ CREATE TABLE dish (
     special_note TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
     image_path TEXT NOT NULL DEFAULT '',
+    thumbnail_path TEXT NOT NULL DEFAULT '',
     source TEXT NOT NULL DEFAULT 'user',
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -91,6 +93,13 @@ CREATE TABLE dish (
 CREATE INDEX idx_dish_preference ON dish(preference DESC);
 CREATE INDEX idx_dish_updated_at ON dish(updated_at DESC);
 CREATE INDEX idx_dish_name ON dish(name COLLATE NOCASE);
+
+-- [AI生成] 菜品可关联多个烹饪方式；保留 dish.cooking_method_id 作为旧数据兼容和首个方式缓存。
+CREATE TABLE dish_cooking_method_rel (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    cooking_method_id INTEGER NOT NULL REFERENCES cooking_method(id) ON DELETE CASCADE,
+    PRIMARY KEY (dish_id, cooking_method_id)
+);
 
 CREATE TABLE dish_tag (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -282,8 +291,8 @@ SELECT COUNT(*) FROM food_category WHERE parent_id = ?;
 -- ===== ingredient =====
 
 insertIngredient:
-INSERT INTO ingredient(name, alias, pinyin, image_path, default_unit_id, source, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ingredient(name, alias, pinyin, image_path, thumbnail_path, default_unit_id, source, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertId:
 SELECT last_insert_rowid();
@@ -296,8 +305,8 @@ SELECT * FROM ingredient WHERE id = ?;
 
 updateUserIngredient:
 UPDATE ingredient
-SET name = ?, alias = ?, image_path = ?
-WHERE id = ? AND source = 'user';
+SET name = ?, alias = ?, image_path = ?, thumbnail_path = ?
+WHERE id = ?;
 
 deleteUserIngredient:
 DELETE FROM ingredient
@@ -315,7 +324,7 @@ WHERE ic.category_id = ?
 ORDER BY i.pinyin, i.name;
 
 selectIngredientsByCrowd:
-SELECT i.id, i.name, i.alias, i.pinyin, i.image_path, i.default_unit_id, i.source, i.created_at,
+SELECT i.id, i.name, i.alias, i.pinyin, i.image_path, i.thumbnail_path, i.default_unit_id, i.source, i.created_at,
        ci.advice_level, ci.reason
 FROM ingredient i
 JOIN crowd_ingredient ci ON i.id = ci.ingredient_id
@@ -330,12 +339,12 @@ INSERT OR IGNORE INTO ingredient_category(ingredient_id, category_id) VALUES (?,
 -- ===== dish =====
 
 insertDish:
-INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, source, created_at, updated_at)
-VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?);
+INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, thumbnail_path, source, created_at, updated_at)
+VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?);
 
 updateDish:
 UPDATE dish
-SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, updated_at = ?
+SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, thumbnail_path = ?, updated_at = ?
 WHERE id = ?;
 
 deleteDish:
@@ -400,6 +409,27 @@ JOIN dish_tag dt ON dtr.tag_id = dt.id
 WHERE dtr.dish_id IN ?
 ORDER BY dtr.dish_id, dt.name;
 
+-- [AI生成] 批量读取菜品烹饪方式，支持菜品列表和详情展示多个方式。
+selectCookingMethodsByDishIds:
+SELECT dcmr.dish_id, cm.id, cm.name
+FROM dish_cooking_method_rel dcmr
+JOIN cooking_method cm ON dcmr.cooking_method_id = cm.id
+WHERE dcmr.dish_id IN ?
+ORDER BY dcmr.dish_id, cm.name;
+
+selectCookingMethodsByDish:
+SELECT cm.*
+FROM cooking_method cm
+JOIN dish_cooking_method_rel dcmr ON cm.id = dcmr.cooking_method_id
+WHERE dcmr.dish_id = ?
+ORDER BY cm.name;
+
+linkDishCookingMethod:
+INSERT OR IGNORE INTO dish_cooking_method_rel(dish_id, cooking_method_id) VALUES (?, ?);
+
+unlinkCookingMethodsOfDish:
+DELETE FROM dish_cooking_method_rel WHERE dish_id = ?;
+
 linkDishTag:
 INSERT OR IGNORE INTO dish_tag_rel(dish_id, tag_id) VALUES (?, ?);
 
@@ -414,7 +444,7 @@ VALUES (?, ?, ?, ?, ?);
 
 selectIngredientsOfDish:
 SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, di.is_main,
-       i.name AS ingredient_name, i.alias, i.pinyin, i.image_path, i.default_unit_id,
+       i.name AS ingredient_name, i.alias, i.pinyin, i.image_path, i.thumbnail_path, i.default_unit_id,
        u.name AS unit_name
 FROM dish_ingredient di
 JOIN ingredient i ON di.ingredient_id = i.id

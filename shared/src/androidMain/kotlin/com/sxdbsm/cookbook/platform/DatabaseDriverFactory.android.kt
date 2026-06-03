@@ -1,9 +1,11 @@
 package com.sxdbsm.cookbook.platform
 
 import android.content.Context
+import android.os.Environment
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.sxdbsm.cookbook.db.CookbookDatabase
+import java.io.File
 
 /**
  * Android 端 SQLDelight 驱动工厂。[AI修改]
@@ -11,14 +13,46 @@ import com.sxdbsm.cookbook.db.CookbookDatabase
  * `actual class` 是 commonMain 中 `expect class DatabaseDriverFactory` 的 Android 实现。
  */
 actual class DatabaseDriverFactory(private val context: Context) {
-    actual fun createDriver(): SqlDriver =
-        AndroidSqliteDriver(
+    actual fun createDriver(): SqlDriver {
+        val databaseFile = resolveDatabaseFile(context.applicationContext)
+        migrateInternalDatabaseIfNeeded(context.applicationContext, databaseFile)
+        return AndroidSqliteDriver(
             schema = CookbookDatabase.Schema,
             context = context,
-            name = DB_NAME,
+            name = databaseFile.absolutePath,
         )
+    }
 
     companion object {
         const val DB_NAME = "cookbook.db"
+    }
+}
+
+private fun resolveDatabaseFile(context: Context): File {
+    val publicDir = File(Environment.getExternalStorageDirectory(), "cookbook/db")
+    val dir = if (publicDir.exists() || publicDir.mkdirs()) {
+        publicDir
+    } else {
+        // [AI生成] Android 10+ 可能禁止写 sdCard 根目录，降级到 app 专属外部目录保证 App 可启动。
+        File(context.getExternalFilesDir(null) ?: context.filesDir, "cookbook/db").apply { mkdirs() }
+    }
+    return File(dir, DatabaseDriverFactory.DB_NAME)
+}
+
+private fun migrateInternalDatabaseIfNeeded(context: Context, targetDb: File) {
+    val sourceDb = context.getDatabasePath(DatabaseDriverFactory.DB_NAME)
+    if (!sourceDb.exists() || targetDb.exists()) return
+    targetDb.parentFile?.mkdirs()
+    runCatching {
+        sourceDb.copyTo(targetDb, overwrite = false)
+        copySidecarIfExists(sourceDb, targetDb, "-wal")
+        copySidecarIfExists(sourceDb, targetDb, "-shm")
+    } // [AI生成] 迁移失败时不删除旧库，让新库创建流程继续，避免启动崩溃。
+}
+
+private fun copySidecarIfExists(sourceDb: File, targetDb: File, suffix: String) {
+    val sidecar = File(sourceDb.absolutePath + suffix)
+    if (sidecar.exists()) {
+        sidecar.copyTo(File(targetDb.absolutePath + suffix), overwrite = false)
     }
 }

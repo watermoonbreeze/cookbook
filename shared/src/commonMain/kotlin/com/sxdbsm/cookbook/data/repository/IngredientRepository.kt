@@ -59,6 +59,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
                 alias = row.alias,
                 pinyin = row.pinyin,
                 imagePath = row.image_path,
+                thumbnailPath = row.thumbnail_path,
                 defaultUnitId = row.default_unit_id,
                 source = row.source,
                 adviceLevel = AdviceLevel.fromCode(row.advice_level),
@@ -74,6 +75,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
         name: String,
         alias: String = "",
         imagePath: String = "",
+        thumbnailPath: String = "",
         categoryId: Long? = null,
     ): Long = withContext(Dispatchers.Default) {
         val now = DateTime.nowEpochSeconds()
@@ -82,6 +84,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
             alias = alias,
             pinyin = Pinyin.toPinyin(name),
             image_path = imagePath, // [AI修改] 新建食材时可保存可选图片路径，MVP 暂不接入系统相册。
+            thumbnail_path = thumbnailPath, // [AI生成] 新建食材时保存缩略图路径，列表优先展示。
             default_unit_id = null,
             source = "user",
             created_at = now,
@@ -99,15 +102,16 @@ class IngredientRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 编辑用户自建食材。[AI生成]
+     * 编辑食材基础信息。[AI修改]
      *
-     * SQL 层限制 `source='user'`，预设食材即使调用也不会被修改。
+     * 修复9要求预设和自建食材都可以编辑；删除仍只允许自建食材。
      */
-    suspend fun updateUserIngredient(id: Long, name: String, alias: String, imagePath: String) = withContext(Dispatchers.Default) {
+    suspend fun updateUserIngredient(id: Long, name: String, alias: String, imagePath: String, thumbnailPath: String) = withContext(Dispatchers.Default) {
         q.updateUserIngredient(
             name = name,
             alias = alias,
             image_path = imagePath,
+            thumbnail_path = thumbnailPath,
             id = id,
         )
     }
@@ -135,6 +139,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
         alias = alias,
         pinyin = pinyin,
         imagePath = image_path,
+        thumbnailPath = thumbnail_path,
         defaultUnitId = default_unit_id,
         source = source,
     )

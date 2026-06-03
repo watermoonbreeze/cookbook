@@ -49,6 +49,7 @@ fun DishRow(
         // [AI修改] 左侧缩略图（64dp）：真实图片未接入时使用稳定占位色。
         StoredImage(
             imagePath = dish.imagePath,
+            thumbnailPath = dish.thumbnailPath,
             fallbackText = dish.name.take(2),
             fallbackEmoji = "🍱",
             seedId = dish.id,
@@ -79,9 +80,10 @@ fun DishRow(
                     if (i > 0) append(" · ")
                     append(n)
                 }
-                if (dish.cookingMethodName != null) {
+                val cookingMethods = dish.cookingMethodNames.ifEmpty { dish.cookingMethodName?.let(::listOf).orEmpty() }
+                if (cookingMethods.isNotEmpty()) {
                     if (dish.mainIngredientNames.isNotEmpty()) append(" · ")
-                    append(dish.cookingMethodName)
+                    append(cookingMethods.joinToString(" / "))
                 }
             }
             if (subText.isNotEmpty()) {

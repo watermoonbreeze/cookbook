@@ -22,9 +22,9 @@ object Routes {
 
     fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}"
 
-    const val NEW_DISH = "newdish?dishId={dishId}&importDishId={importDishId}"
-    fun newDish(dishId: Long? = null) = "newdish?dishId=${dishId ?: -1L}&importDishId=-1"
-    fun copyDish(dishId: Long) = "newdish?dishId=-1&importDishId=$dishId"
+    const val NEW_DISH = "newdish/{dishId}/{importDishId}"
+    fun newDish(dishId: Long? = null) = "newdish/${dishId ?: -1L}/-1"
+    fun copyDish(dishId: Long) = "newdish/-1/$dishId"
 
     const val DISH_DETAIL = "dish/{dishId}"
     fun dishDetail(dishId: Long) = "dish/$dishId"

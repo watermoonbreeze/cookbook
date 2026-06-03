@@ -51,12 +51,14 @@ fun IngredientPickerScreen(
     var newIngredientName by remember { mutableStateOf("") }
     var newIngredientAlias by remember { mutableStateOf("") }
     var newIngredientImages by remember { mutableStateOf<List<String>>(emptyList()) }
+    var newIngredientThumbnails by remember { mutableStateOf<List<String>>(emptyList()) }
     var newIngredientCategoryId by remember { mutableStateOf<Long?>(null) }
     var editingIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var deletingIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var editIngredientName by remember { mutableStateOf("") }
     var editIngredientAlias by remember { mutableStateOf("") }
     var editIngredientImages by remember { mutableStateOf<List<String>>(emptyList()) }
+    var editIngredientThumbnails by remember { mutableStateOf<List<String>>(emptyList()) }
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -73,6 +75,7 @@ fun IngredientPickerScreen(
             newIngredientName = ""
             newIngredientAlias = ""
             newIngredientImages = emptyList()
+            newIngredientThumbnails = emptyList()
             newIngredientCategoryId = null
         }
     }
@@ -171,6 +174,7 @@ fun IngredientPickerScreen(
                                     editIngredientName = ing.name
                                     editIngredientAlias = ing.alias
                                     editIngredientImages = decodeImagePaths(ing.imagePath)
+                                    editIngredientThumbnails = decodeImagePaths(ing.thumbnailPath)
                                 },
                                 onDelete = { deletingIngredient = ing },
                             )
@@ -257,7 +261,11 @@ fun IngredientPickerScreen(
                     )
                     ImagePickerButton(
                         imagePaths = newIngredientImages,
-                        onImagesChanged = { newIngredientImages = it },
+                        thumbnailPaths = newIngredientThumbnails,
+                        onImagesChanged = { images, thumbnails ->
+                            newIngredientImages = images
+                            newIngredientThumbnails = thumbnails
+                        },
                         maxCount = 3,
                     )
                     ui.createError?.let { error ->
@@ -276,6 +284,7 @@ fun IngredientPickerScreen(
                             name = newIngredientName,
                             alias = newIngredientAlias,
                             imagePath = encodeImagePaths(newIngredientImages),
+                            thumbnailPath = encodeImagePaths(newIngredientThumbnails),
                             categoryId = newIngredientCategoryId,
                         )
                     },
@@ -291,6 +300,7 @@ fun IngredientPickerScreen(
                         newIngredientName = ""
                         newIngredientAlias = ""
                         newIngredientImages = emptyList()
+                        newIngredientThumbnails = emptyList()
                         newIngredientCategoryId = null
                         vm.clearCreateError()
                     },
@@ -322,7 +332,11 @@ fun IngredientPickerScreen(
                     )
                     ImagePickerButton(
                         imagePaths = editIngredientImages,
-                        onImagesChanged = { editIngredientImages = it },
+                        thumbnailPaths = editIngredientThumbnails,
+                        onImagesChanged = { images, thumbnails ->
+                            editIngredientImages = images
+                            editIngredientThumbnails = thumbnails
+                        },
                         maxCount = 3,
                     )
                 }
@@ -335,6 +349,7 @@ fun IngredientPickerScreen(
                             name = editIngredientName,
                             alias = editIngredientAlias,
                             imagePath = encodeImagePaths(editIngredientImages),
+                            thumbnailPath = encodeImagePaths(editIngredientThumbnails),
                         )
                         editingIngredient = null
                     },

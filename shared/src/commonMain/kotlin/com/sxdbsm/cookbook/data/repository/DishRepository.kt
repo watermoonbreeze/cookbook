@@ -38,9 +38,9 @@ class DishRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 按名称获取或创建烹饪方式。[AI生成]
+     * 按名称获取或创建烹饪方式。[AI修改]
      *
-     * 数据库当前只支持单个 `cooking_method_id`，所以 UI 的“可输入”会先落到字典表，再保存 id。
+     * 新建/编辑菜品页支持多个烹饪方式；每个手动输入项都会先落到字典表，再写入关联表。
      */
     suspend fun ensureCookingMethod(name: String): Long? = withContext(Dispatchers.Default) {
         val trimmed = name.trim()
@@ -48,6 +48,15 @@ class DishRepository(private val db: CookbookDatabase) {
         q.insertCookingMethod(trimmed, "user", DateTime.nowEpochSeconds())
         q.selectAllCookingMethods().executeAsList().firstOrNull { it.name == trimmed }?.id
     }
+
+    /** 批量确保烹饪方式字典存在并返回 id。[AI生成] */
+    private fun ensureCookingMethodIds(names: List<String>, now: Long): List<Long> =
+        names.mapNotNull { raw ->
+            val trimmed = raw.trim()
+            if (trimmed.isBlank()) return@mapNotNull null
+            q.insertCookingMethod(trimmed, "user", now)
+            q.selectAllCookingMethods().executeAsList().firstOrNull { it.name == trimmed }?.id
+        }.distinct()
 
     /**
      * 监听全部菜品的轻量列表。[AI修改]
@@ -62,6 +71,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         id = row.id,
                         name = row.name,
                         imagePath = row.image_path,
+                        thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                     )
@@ -80,6 +90,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         id = row.id,
                         name = row.name,
                         imagePath = row.image_path,
+                        thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                     )
@@ -98,6 +109,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         id = row.id,
                         name = row.name,
                         imagePath = row.image_path,
+                        thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                     )
@@ -118,6 +130,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         id = row.id,
                         name = row.name,
                         imagePath = row.image_path,
+                        thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                     )
@@ -131,6 +144,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         id = row.id,
                         name = row.name,
                         imagePath = row.image_path,
+                        thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                     )
@@ -151,17 +165,25 @@ class DishRepository(private val db: CookbookDatabase) {
         val cookingMethodNames = q.selectAllCookingMethods()
             .executeAsList()
             .associate { it.id to it.name }
+        val relMethodsByDish = q.selectCookingMethodsByDishIds(dishIds)
+            .executeAsList()
+            .groupBy({ it.dish_id }, { CookingMethod(id = it.id, name = it.name) })
         val tagsByDish = q.selectTagsByDishIds(dishIds)
             .executeAsList()
             .groupBy({ it.dish_id }, { it.name })
         return sources.map { source ->
+            val relMethods = relMethodsByDish[source.id].orEmpty()
+            val fallbackName = source.cookingMethodId?.let { cookingMethodNames[it] }
+            val methodNames = relMethods.map { it.name }.ifEmpty { fallbackName?.let(::listOf).orEmpty() }
             DishMini(
                 id = source.id,
                 name = source.name,
                 imagePath = source.imagePath,
+                thumbnailPath = source.thumbnailPath,
                 tags = tagsByDish[source.id].orEmpty(),
                 preference = source.preference,
-                cookingMethodName = source.cookingMethodId?.let { cookingMethodNames[it] },
+                cookingMethodName = methodNames.firstOrNull(),
+                cookingMethodNames = methodNames,
             )
         }
     }
@@ -173,6 +195,7 @@ class DishRepository(private val db: CookbookDatabase) {
         val id: Long,
         val name: String,
         val imagePath: String,
+        val thumbnailPath: String,
         val preference: Int,
         val cookingMethodId: Long?,
     )
@@ -184,6 +207,7 @@ class DishRepository(private val db: CookbookDatabase) {
         id: Long,
         name: String,
         imagePath: String,
+        thumbnailPath: String,
         preference: Int,
         cookingMethodId: Long?,
     ): DishMini =
@@ -193,6 +217,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     id = id,
                     name = name,
                     imagePath = imagePath,
+                    thumbnailPath = thumbnailPath,
                     preference = preference,
                     cookingMethodId = cookingMethodId,
                 ),
@@ -220,7 +245,10 @@ class DishRepository(private val db: CookbookDatabase) {
      * SQLDelight 的主表行只含 dish 自身字段，标签和食材需要额外查询后合并。
      */
     private fun loadFullDish(id: Long, row: com.sxdbsm.cookbook.db.Dish): Dish {
-        val cookingMethod = row.cooking_method_id?.let { q.selectCookingMethodById(it).executeAsOneOrNull() }
+        val relMethods = q.selectCookingMethodsByDish(id).executeAsList().map { CookingMethod(id = it.id, name = it.name) }
+        val fallbackMethod = row.cooking_method_id?.let { q.selectCookingMethodById(it).executeAsOneOrNull() }
+            ?.let { CookingMethod(id = it.id, name = it.name) }
+        val methods = relMethods.ifEmpty { fallbackMethod?.let(::listOf).orEmpty() }
         val tags = q.selectTagsByDish(id).executeAsList().map { it.name }
         val ingredients = q.selectIngredientsOfDish(id).executeAsList().map { ing ->
             DishIngredient(
@@ -230,6 +258,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     alias = ing.alias,
                     pinyin = ing.pinyin,
                     imagePath = ing.image_path,
+                    thumbnailPath = ing.thumbnail_path,
                     defaultUnitId = ing.default_unit_id,
                 ),
                 quantity = ing.quantity,
@@ -241,12 +270,14 @@ class DishRepository(private val db: CookbookDatabase) {
         return Dish(
             id = row.id,
             name = row.name,
-            cookingMethodId = row.cooking_method_id,
-            cookingMethodName = cookingMethod?.name,
+            cookingMethodId = methods.firstOrNull()?.id ?: row.cooking_method_id,
+            cookingMethodName = methods.firstOrNull()?.name,
+            cookingMethods = methods,
             preference = row.preference.toInt(),
             specialNote = row.special_note,
             description = row.description,
             imagePath = row.image_path,
+            thumbnailPath = row.thumbnail_path,
             source = row.source,
             createdAt = row.created_at,
             updatedAt = row.updated_at,
@@ -262,23 +293,28 @@ class DishRepository(private val db: CookbookDatabase) {
         id: Long,
         name: String,
         cookingMethodId: Long?,
+        cookingMethodNames: List<String> = emptyList(),
         specialNote: String,
         description: String,
         imagePath: String,
+        thumbnailPath: String,
         tagNames: List<String>,
         ingredients: List<DishIngredient>,
     ): Long = withContext(Dispatchers.Default) {
         val now = DateTime.nowEpochSeconds()
         var dishId = id
         db.transaction {
+            val cookingMethodIds = (listOfNotNull(cookingMethodId) + ensureCookingMethodIds(cookingMethodNames, now)).distinct()
+            val primaryCookingMethodId = cookingMethodIds.firstOrNull()
             // [AI修改] 菜品主表、标签、食材关联一次性提交，避免列表监听收到半完成状态。
             if (id <= 0) {
                 q.insertDish(
                     name = name,
-                    cooking_method_id = cookingMethodId,
+                    cooking_method_id = primaryCookingMethodId,
                     special_note = specialNote,
                     description = description,
                     image_path = imagePath,
+                    thumbnail_path = thumbnailPath,
                     source = "user",
                     created_at = now,
                     updated_at = now,
@@ -287,13 +323,20 @@ class DishRepository(private val db: CookbookDatabase) {
             } else {
                 q.updateDish(
                     name = name,
-                    cooking_method_id = cookingMethodId,
+                    cooking_method_id = primaryCookingMethodId,
                     special_note = specialNote,
                     description = description,
                     image_path = imagePath,
+                    thumbnail_path = thumbnailPath,
                     updated_at = now,
                     id = id,
                 )
+            }
+
+            // [AI生成] 同步多烹饪方式关联：主表只保留首个方式作兼容缓存，完整列表来自关联表。
+            q.unlinkCookingMethodsOfDish(dishId)
+            cookingMethodIds.forEach { methodId ->
+                q.linkDishCookingMethod(dishId, methodId)
             }
 
             // [AI修改] 同步标签：先清空关联再重建，避免编辑时残留旧标签。

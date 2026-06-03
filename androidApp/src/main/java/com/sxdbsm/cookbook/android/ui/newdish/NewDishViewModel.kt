@@ -27,11 +27,15 @@ data class NewDishUiState(
     val cookingMethodId: Long? = null,
     val cookingMethodName: String? = null,
     val cookingMethodInput: String = "",
+    val cookingMethodNames: List<String> = emptyList(),
     val availableCookingMethods: List<CookingMethod> = emptyList(),
     val ingredients: List<DishIngredient> = emptyList(),
     val specialNote: String = "",
     val description: String = "",
     val imagePath: String = "",
+    val thumbnailPath: String = "",
+    val loading: Boolean = false,
+    val errorMessage: String? = null,
     val saving: Boolean = false,
     val done: Boolean = false,
 
@@ -52,6 +56,7 @@ class NewDishViewModel(
 
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
     val state: StateFlow<NewDishUiState> = _state.asStateFlow() // [AI修改] UI 只能观察，不能直接改。
+    private var lastStartKey: String? = null // [AI生成] 记录最近一次页面入口，避免 Compose 重组时重复加载同一菜品。
 
     init {
         viewModelScope.launch {
@@ -64,23 +69,80 @@ class NewDishViewModel(
     }
 
     /**
+     * 根据路由参数启动新建、编辑或导入模式。[AI生成]
+     *
+     * 导航栈可能复用同一个 ViewModel，如果不先重置表单，旧的新建状态会污染编辑页。
+     * 这里统一入口：编辑优先于导入；无参数时就是干净的新建表单。
+     */
+    fun start(editingDishId: Long?, importDishId: Long?) {
+        val editId = editingDishId?.takeIf { it > 0L }
+        val sourceId = importDishId?.takeIf { it > 0L }
+        val key = "edit=${editId ?: 0L};import=${sourceId ?: 0L}"
+        if (lastStartKey == key && !_state.value.done) return
+        lastStartKey = key
+
+        val current = _state.value
+        _state.value = NewDishUiState(
+            editingId = editId,
+            availableUnits = current.availableUnits,
+            availableCookingMethods = current.availableCookingMethods,
+            loading = editId != null || sourceId != null,
+        ) // [AI生成] 保留字典数据，只清空表单草稿和保存完成标记。
+
+        when {
+            editId != null -> loadForEdit(editId)
+            sourceId != null -> importFromDishId(sourceId)
+        }
+    }
+
+    /**
      * 加载已有菜品进入编辑模式。[AI修改]
      */
     fun loadForEdit(dishId: Long) {
         viewModelScope.launch {
-            val d = dishRepo.getDishById(dishId) ?: return@launch
             _state.value = _state.value.copy(
-                editingId = d.id,
-                name = d.name,
-                tags = d.tags,
-                cookingMethodId = d.cookingMethodId,
-                cookingMethodName = d.cookingMethodName,
-                cookingMethodInput = d.cookingMethodName.orEmpty(),
-                ingredients = d.ingredients,
-                specialNote = d.specialNote,
-                description = d.description,
-                imagePath = d.imagePath,
-            )
+                editingId = dishId,
+                loading = true,
+                errorMessage = null,
+                saving = false,
+                done = false,
+            ) // [AI修改] 先进入编辑模式，避免加载期间标题或保存逻辑误判为新建。
+            runCatching { dishRepo.getDishById(dishId) }
+                .onSuccess { d ->
+                    if (d == null) {
+                        _state.value = _state.value.copy(
+                            loading = false,
+                            saving = false,
+                            errorMessage = "未找到要编辑的菜品",
+                        ) // [AI生成] 避免编辑页标题正确但表单空白时没有任何提示。
+                    } else {
+                        _state.value = _state.value.copy(
+                            editingId = d.id,
+                            name = d.name,
+                            tags = d.tags,
+                            cookingMethodId = d.cookingMethodId,
+                            cookingMethodName = d.cookingMethodName,
+                            cookingMethodInput = d.cookingMethodName.orEmpty(),
+                            cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() },
+                            ingredients = d.ingredients,
+                            specialNote = d.specialNote,
+                            description = d.description,
+                            imagePath = d.imagePath,
+                            thumbnailPath = d.thumbnailPath,
+                            loading = false,
+                            errorMessage = null,
+                            done = false,
+                            saving = false,
+                        )
+                    }
+                }
+                .onFailure {
+                    _state.value = _state.value.copy(
+                        loading = false,
+                        saving = false,
+                        errorMessage = "加载菜品失败，请返回后重试",
+                    )
+                }
         }
     }
 
@@ -93,10 +155,14 @@ class NewDishViewModel(
             cookingMethodId = d.cookingMethodId,
             cookingMethodName = d.cookingMethodName,
             cookingMethodInput = d.cookingMethodName.orEmpty(),
+            cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() },
             ingredients = d.ingredients,
             specialNote = d.specialNote,
             description = d.description,
             imagePath = d.imagePath,
+            thumbnailPath = d.thumbnailPath,
+            loading = false,
+            errorMessage = null,
         )
     }
 
@@ -105,30 +171,58 @@ class NewDishViewModel(
      */
     fun importFromDishId(dishId: Long) {
         viewModelScope.launch {
-            dishRepo.getDishById(dishId)?.let { importFrom(it) }
+            _state.value = _state.value.copy(loading = true, errorMessage = null)
+            runCatching { dishRepo.getDishById(dishId) }
+                .onSuccess { dish ->
+                    if (dish == null) {
+                        _state.value = _state.value.copy(loading = false, errorMessage = "未找到要导入的菜品")
+                    } else {
+                        importFrom(dish)
+                    }
+                }
+                .onFailure {
+                    _state.value = _state.value.copy(loading = false, errorMessage = "导入菜品失败，请稍后重试")
+                }
         }
     }
 
     fun setName(v: String) { _state.value = _state.value.copy(name = v) }
     fun setCookingMethodInput(v: String) {
-        // [AI生成] 手动输入时清空 id；保存时会按名称创建或复用字典项。
-        _state.value = _state.value.copy(cookingMethodInput = v, cookingMethodId = null, cookingMethodName = v)
+        addCookingMethod(v)
     }
     fun selectCookingMethod(method: CookingMethod) {
-        // [AI生成] 下拉选择时同时保存 id 和展示文本。
-        _state.value = _state.value.copy(
-            cookingMethodId = method.id,
-            cookingMethodName = method.name,
-            cookingMethodInput = method.name,
-        )
+        addCookingMethod(method.name)
     }
     fun clearCookingMethod() {
-        // [AI生成] 烹饪方式是可选字段，用户点 chip 旁的关闭图标时清空已选/已输入内容。
-        _state.value = _state.value.copy(cookingMethodId = null, cookingMethodName = null, cookingMethodInput = "")
+        // [AI修改] 兼容旧调用：清空全部烹饪方式。
+        _state.value = _state.value.copy(cookingMethodId = null, cookingMethodName = null, cookingMethodInput = "", cookingMethodNames = emptyList())
+    }
+    fun addCookingMethod(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        val next = (_state.value.cookingMethodNames + trimmed).distinct()
+        _state.value = _state.value.copy(
+            cookingMethodNames = next,
+            cookingMethodName = next.firstOrNull(),
+            cookingMethodInput = "",
+            cookingMethodId = null,
+        ) // [AI生成] 支持多烹饪方式；保存时统一按名称创建/复用字典并写关联表。
+    }
+    fun removeCookingMethod(name: String) {
+        val next = _state.value.cookingMethodNames.filterNot { it == name }
+        _state.value = _state.value.copy(
+            cookingMethodNames = next,
+            cookingMethodName = next.firstOrNull(),
+            cookingMethodInput = "",
+            cookingMethodId = null,
+        )
     }
     fun setSpecialNote(v: String) { _state.value = _state.value.copy(specialNote = v) }
     fun setDescription(v: String) { _state.value = _state.value.copy(description = v) }
     fun setImagePath(v: String) { _state.value = _state.value.copy(imagePath = v) } // [AI生成] 保存最多 3 张菜品图片 URI。
+    fun setImages(imagePath: String, thumbnailPath: String) {
+        _state.value = _state.value.copy(imagePath = imagePath, thumbnailPath = thumbnailPath)
+    } // [AI生成] 原图和缩略图成对保存，列表默认读取缩略图。
     fun addTag(name: String) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
@@ -176,24 +270,25 @@ class NewDishViewModel(
      */
     fun save() {
         val s = _state.value
-        if (s.name.isBlank()) return
+        if (s.name.isBlank() || s.loading) return
         viewModelScope.launch {
             _state.value = s.copy(saving = true)
-            val cookingMethodId = s.cookingMethodId ?: dishRepo.ensureCookingMethod(s.cookingMethodInput) // [AI修改] 支持用户输入新的烹饪方式。
             dishRepo.saveDish(
                 id = s.editingId ?: 0L,
                 name = s.name.trim(),
-                cookingMethodId = cookingMethodId,
+                cookingMethodId = s.cookingMethodId,
+                cookingMethodNames = s.cookingMethodNames,
                 specialNote = s.specialNote,
                 description = s.description,
                 imagePath = s.imagePath,
+                thumbnailPath = s.thumbnailPath,
                 tagNames = s.tags,
                 ingredients = s.ingredients,
             )
             _state.value = _state.value.copy(
                 saving = false,
                 done = true,
-                cookingMethodId = cookingMethodId,
+                cookingMethodId = null,
                 availableCookingMethods = dishRepo.listCookingMethods(),
             )
         }

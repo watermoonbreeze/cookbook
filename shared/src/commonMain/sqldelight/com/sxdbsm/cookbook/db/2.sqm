@@ -1,0 +1,4 @@
+-- [AI生成] v2 -> v3：菜品和食材增加缩略图路径字段，列表默认加载缩略图。
+ALTER TABLE dish ADD COLUMN thumbnail_path TEXT NOT NULL DEFAULT '';
+
+ALTER TABLE ingredient ADD COLUMN thumbnail_path TEXT NOT NULL DEFAULT '';

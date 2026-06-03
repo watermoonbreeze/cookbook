@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,18 +52,30 @@ fun StoredImage(
     size: Dp = 80.dp,
     corner: Dp = 8.dp,
     allowPreview: Boolean = true,
+    fillWidth: Boolean = false,
+    imageHeight: Dp = size,
+    thumbnailPath: String = "",
 ) {
     val firstPath = remember(imagePath) { decodeImagePaths(imagePath).firstOrNull() }
-    val bitmap = rememberImageBitmap(firstPath, preview = false)
+    val firstThumbnailPath = remember(thumbnailPath, imagePath) {
+        decodeImagePaths(thumbnailPath).firstOrNull() ?: firstPath
+    }
+    val bitmap = rememberImageBitmap(firstThumbnailPath, preview = false)
     var previewOpen by remember { mutableStateOf(false) }
     Box(
         modifier = modifier
-            .size(size)
+            .then(
+                if (fillWidth) {
+                    Modifier.fillMaxWidth().height(imageHeight)
+                } else {
+                    Modifier.size(size)
+                },
+            )
             .clip(RoundedCornerShape(corner))
             .background(placeholderBg(seedId))
             .then(
                 // [AI修改] 有真实图片时才允许点击预览，emoji/文字占位不响应点击。
-                if (allowPreview && bitmap != null) Modifier.clickable { previewOpen = true } else Modifier,
+                if (allowPreview && bitmap != null && firstPath != null) Modifier.clickable { previewOpen = true } else Modifier,
             ),
         contentAlignment = Alignment.Center,
     ) {
@@ -88,16 +101,15 @@ fun StoredImage(
         AlertDialog(
             onDismissRequest = { previewOpen = false },
             text = {
-                if (previewBitmap != null) {
-                    Image(
-                        bitmap = previewBitmap,
-                        contentDescription = fallbackText,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 180.dp, max = 420.dp),
-                    )
-                }
+                val shownBitmap = previewBitmap ?: bitmap // [AI生成] 预览先显示缩略图，原图解码完成后自动替换为清晰图。
+                Image(
+                    bitmap = shownBitmap,
+                    contentDescription = fallbackText,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 180.dp, max = 420.dp),
+                )
             },
             confirmButton = {
                 TextButton(onClick = { previewOpen = false }) {

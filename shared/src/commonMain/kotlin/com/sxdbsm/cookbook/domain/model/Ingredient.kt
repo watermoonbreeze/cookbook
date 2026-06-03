@@ -12,6 +12,7 @@ data class Ingredient(
     val alias: String = "",
     val pinyin: String = "",
     val imagePath: String = "",
+    val thumbnailPath: String = "", // [AI生成] 食材缩略图路径，选择列表优先展示。
     val defaultUnitId: Long? = null,
     val defaultUnitName: String = "",
     val source: String = "preset",

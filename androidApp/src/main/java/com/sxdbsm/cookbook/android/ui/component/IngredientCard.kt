@@ -6,6 +6,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -60,7 +61,8 @@ fun IngredientCard(
     showAdviceBadge: Boolean = true,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
-    val canEdit = ingredient.source == "user" && (onEdit != null || onDelete != null)
+    val canDelete = ingredient.source == "user" && onDelete != null
+    val canEdit = onEdit != null || canDelete
     val bg = if (selected) MaterialTheme.colorScheme.primaryContainer else placeholderBg(ingredient.id)
     val ext = ExtendedColorsHolder.current
 
@@ -84,24 +86,32 @@ fun IngredientCard(
         Box(modifier = Modifier.padding(0.dp)) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = imageSize + 34.dp),
             ) {
                 StoredImage(
                     imagePath = ingredient.imagePath,
+                    thumbnailPath = ingredient.thumbnailPath,
                     fallbackText = ingredient.name.take(1),
                     fallbackEmoji = foodEmojiForName(ingredient.name),
                     seedId = ingredient.id,
+                    modifier = Modifier.fillMaxWidth(),
                     size = imageSize,
                     corner = 8.dp,
+                    fillWidth = decodeImagePaths(ingredient.imagePath).isNotEmpty(),
+                    imageHeight = imageSize,
                 )
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     text = ingredient.name,
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
                 )
             }
             if (canEdit) {
@@ -131,12 +141,12 @@ fun IngredientCard(
                             },
                         )
                     }
-                    if (onDelete != null) {
+                    if (canDelete) {
                         DropdownMenuItem(
                             text = { Text("删除") },
                             onClick = {
                                 menuOpen = false
-                                onDelete()
+                                onDelete?.invoke()
                             },
                         )
                     }

@@ -33,6 +33,7 @@ fun DishMiniCard(
         if (decodeImagePaths(dish.imagePath).isNotEmpty()) {
             StoredImage(
                 imagePath = dish.imagePath,
+                thumbnailPath = dish.thumbnailPath,
                 fallbackText = dish.name,
                 fallbackEmoji = "🍱",
                 seedId = dish.id,

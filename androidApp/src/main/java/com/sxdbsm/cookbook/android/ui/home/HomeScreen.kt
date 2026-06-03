@@ -111,9 +111,11 @@ fun HomeScreen(
 
         item { Spacer(Modifier.height(16.dp)) }
 
-        // [AI修改] 只展示今天及未来真实存在的餐食记录；没有记录时整个计划区不显示。
-        if (ui.plans.isNotEmpty()) {
-            item { SectionHeader(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
+        // [AI修改] 计划标题始终展示；没有计划时内容区显示“暂无计划”。
+        item { SectionHeader(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
+        if (ui.plans.isEmpty()) {
+            item { EmptyState(text = "暂无计划", icon = "📅") }
+        } else {
             items(ui.plans, key = { it.date.toString() }) { card ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                     DayMealCardView(

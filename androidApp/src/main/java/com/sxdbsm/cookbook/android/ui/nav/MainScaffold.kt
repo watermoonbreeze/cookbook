@@ -128,7 +128,7 @@ fun MainScaffold() {
                     navArgument("importDishId") { type = NavType.LongType; defaultValue = -1L },
                 ),
             ) { entry ->
-                // [AI修改] NEW_DISH 使用 query 参数，必须显式声明 navArgument，详情页点编辑才能拿到 dishId。
+                // [AI修改] 使用路径参数承载编辑/导入 id，避免 query 参数在部分 Navigation 版本下丢失导致误进新建模式。
                 val dishId = entry.arguments?.getLong("dishId")?.takeIf { it > 0 }
                 val importDishId = entry.arguments?.getLong("importDishId")?.takeIf { it > 0 }
                 NewDishScreen(

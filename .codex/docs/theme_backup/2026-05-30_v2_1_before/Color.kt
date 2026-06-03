@@ -6,66 +6,66 @@ import androidx.compose.ui.graphics.Color
 
 // ============================
 // Material 3 标准色板（Light）[AI修改]
-// 来源：菜谱菜单App 全局视觉设计规范 V2.1（CodeX 开发专用）。
+// 来源：菜谱菜单App 视觉设计规范文档（适配CodeX），“莫兰迪低饱和暖杏风”。
 // ============================
-val md_light_primary = Color(0xFFD9A882)
-val md_light_onPrimary = Color(0xFF2B221A)
-val md_light_primaryContainer = Color(0xFFE6C7A8)
-val md_light_onPrimaryContainer = Color(0xFF2B221A)
+val md_light_primary = Color(0xFFE2B999)
+val md_light_onPrimary = Color(0xFF3A2F26)
+val md_light_primaryContainer = Color(0xFFEED3BC)
+val md_light_onPrimaryContainer = Color(0xFF3A2F26)
 
-val md_light_secondary = Color(0xFFE6C7A8)
-val md_light_onSecondary = Color(0xFF2B221A)
+val md_light_secondary = Color(0xFFEED3BC)
+val md_light_onSecondary = Color(0xFF3A2F26)
 val md_light_secondaryContainer = Color(0xFFF7EFE6)
-val md_light_onSecondaryContainer = Color(0xFF52463A)
+val md_light_onSecondaryContainer = Color(0xFF66594F)
 
-val md_light_tertiary = Color(0xFFC17A52)
+val md_light_tertiary = Color(0xFFC97C52)
 val md_light_onTertiary = Color(0xFFFFFFFF)
-val md_light_tertiaryContainer = Color(0xFFE6C7A8)
-val md_light_onTertiaryContainer = Color(0xFF52463A)
+val md_light_tertiaryContainer = Color(0xFFEED3BC)
+val md_light_onTertiaryContainer = Color(0xFF66594F)
 
 val md_light_background = Color(0xFFF9F5F0)
-val md_light_onBackground = Color(0xFF2B221A)
+val md_light_onBackground = Color(0xFF3A2F26)
 val md_light_surface = Color(0xFFFFFFFF)
-val md_light_onSurface = Color(0xFF2B221A)
+val md_light_onSurface = Color(0xFF3A2F26)
 val md_light_surfaceVariant = Color(0xFFF7EFE6)
-val md_light_onSurfaceVariant = Color(0xFF7A6B5D)
-val md_light_outline = Color(0xFFE0D2C4)
-val md_light_outlineVariant = Color(0xFFE0D2C4)
+val md_light_onSurfaceVariant = Color(0xFF8C7B6E)
+val md_light_outline = Color(0xFFE8D9CC)
+val md_light_outlineVariant = Color(0xFFE8D9CC)
 
-val md_light_error = Color(0xFFA85A4A)
+val md_light_error = Color(0xFFB95F4F)
 val md_light_onError = Color(0xFFFFFFFF)
 val md_light_errorContainer = Color(0xFFF3D8D2)
-val md_light_onErrorContainer = Color(0xFF2B221A)
+val md_light_onErrorContainer = Color(0xFF3A2F26)
 
 // ============================
 // Material 3 标准色板（Dark）[AI修改]
 // 新规范未单列暗色表；这里按暖杏语义生成低饱和暗色，保证对比度和风格一致。
 // ============================
-val md_dark_primary = Color(0xFFD9A882)
+val md_dark_primary = Color(0xFFD8AE8E)
 val md_dark_onPrimary = Color(0xFF2A211B)
-val md_dark_primaryContainer = Color(0xFF5B3F2F)
-val md_dark_onPrimaryContainer = Color(0xFFF7E7D8)
+val md_dark_primaryContainer = Color(0xFF4A3528)
+val md_dark_onPrimaryContainer = Color(0xFFF4E7DC)
 
-val md_dark_secondary = Color(0xFFE6C7A8)
+val md_dark_secondary = Color(0xFFC9AA91)
 val md_dark_onSecondary = Color(0xFF2A211B)
-val md_dark_secondaryContainer = Color(0xFF3F352E)
-val md_dark_onSecondaryContainer = Color(0xFFF0DDC9)
+val md_dark_secondaryContainer = Color(0xFF3A3029)
+val md_dark_onSecondaryContainer = Color(0xFFEBD7C8)
 
-val md_dark_tertiary = Color(0xFFC17A52)
+val md_dark_tertiary = Color(0xFFD19065)
 val md_dark_onTertiary = Color(0xFF2A1B12)
-val md_dark_tertiaryContainer = Color(0xFF5C3826)
-val md_dark_onTertiaryContainer = Color(0xFFF3D7C5)
+val md_dark_tertiaryContainer = Color(0xFF553521)
+val md_dark_onTertiaryContainer = Color(0xFFF0D8C7)
 
-val md_dark_background = Color(0xFF1F1A16)
-val md_dark_onBackground = Color(0xFFF7EEE6)
-val md_dark_surface = Color(0xFF2A231F)
-val md_dark_onSurface = Color(0xFFF7EEE6)
-val md_dark_surfaceVariant = Color(0xFF3B312A)
-val md_dark_onSurfaceVariant = Color(0xFFD8C8BA)
-val md_dark_outline = Color(0xFF6A584A)
-val md_dark_outlineVariant = Color(0xFF4D4036)
+val md_dark_background = Color(0xFF211B17)
+val md_dark_onBackground = Color(0xFFF4EAE0)
+val md_dark_surface = Color(0xFF2B241F)
+val md_dark_onSurface = Color(0xFFF4EAE0)
+val md_dark_surfaceVariant = Color(0xFF3A3029)
+val md_dark_onSurfaceVariant = Color(0xFFC7B6A8)
+val md_dark_outline = Color(0xFF5A4B41)
+val md_dark_outlineVariant = Color(0xFF4A3D35)
 
-val md_dark_error = Color(0xFFD99A8E)
+val md_dark_error = Color(0xFFE09A8C)
 val md_dark_onError = Color(0xFF3A1510)
 val md_dark_errorContainer = Color(0xFF5A2E28)
 val md_dark_onErrorContainer = Color(0xFFFFDCD6)

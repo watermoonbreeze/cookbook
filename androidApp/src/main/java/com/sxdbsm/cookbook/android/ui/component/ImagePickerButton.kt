@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +41,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+/**
+ * 原图与缩略图成对保存后的路径。[AI生成]
+ */
+data class StoredImagePair(
+    val imagePath: String,
+    val thumbnailPath: String,
+)
 
 /**
  * 系统图片选择按钮。[AI修改]
@@ -50,9 +62,10 @@ import java.io.File
 @Composable
 fun ImagePickerButton(
     imagePaths: List<String>,
-    onImagesChanged: (List<String>) -> Unit,
+    onImagesChanged: (List<String>, List<String>) -> Unit,
     modifier: Modifier = Modifier,
     maxCount: Int = 3,
+    thumbnailPaths: List<String> = emptyList(),
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -65,13 +78,16 @@ fun ImagePickerButton(
         if (remaining > 0 && uris.isNotEmpty()) {
             processing = true
             scope.launch {
-                val compressed = withContext(Dispatchers.IO) {
+                val saved = withContext(Dispatchers.IO) {
                     uris.take(remaining).mapNotNull { uri ->
-                        compressImageToPrivateFile(context.applicationContext, uri)
+                        saveImagePair(context.applicationContext, uri)
                     }
                 }
-                // [AI修改] image_path 只保存压缩后的私有文件路径，多图仍沿用 `|` 分隔规则。
-                onImagesChanged((imagePaths + compressed).distinct().take(maxCount))
+                // [AI修改] image_path 保存原图路径，thumbnail_path 保存缩略图路径，多图仍沿用 `|` 分隔规则。
+                onImagesChanged(
+                    (imagePaths + saved.map { it.imagePath }).distinct().take(maxCount),
+                    (thumbnailPaths + saved.map { it.thumbnailPath }).distinct().take(maxCount),
+                )
                 processing = false
             }
         }
@@ -81,12 +97,15 @@ fun ImagePickerButton(
         if (success && uri != null) {
             processing = true
             scope.launch {
-                val compressed = withContext(Dispatchers.IO) {
-                    compressImageToPrivateFile(context.applicationContext, uri)
+                val saved = withContext(Dispatchers.IO) {
+                    saveImagePair(context.applicationContext, uri)
                 }
-                if (compressed != null) {
-                    // [AI修改] 相机原始输出只做临时输入，业务侧永远使用压缩后的图片文件。
-                    onImagesChanged((imagePaths + compressed).distinct().take(maxCount))
+                if (saved != null) {
+                    // [AI修改] 相机原始输出只做临时输入，业务侧保存 cookbook/img 下的原图和缩略图。
+                    onImagesChanged(
+                        (imagePaths + saved.imagePath).distinct().take(maxCount),
+                        (thumbnailPaths + saved.thumbnailPath).distinct().take(maxCount),
+                    )
                     deleteTempCameraFile(context.applicationContext, uri)
                 }
                 processing = false
@@ -109,14 +128,20 @@ fun ImagePickerButton(
                 imagePaths.forEachIndexed { index, path ->
                     Box(contentAlignment = Alignment.TopEnd) {
                         StoredImage(
-                            imagePath = path,
+                            imagePath = thumbnailPaths.getOrNull(index).takeUnless { it.isNullOrBlank() } ?: path,
                             fallbackText = "图片${index + 1}",
                             fallbackEmoji = "🖼",
                             seedId = index.toLong(),
                             size = 72.dp,
                         )
                         TextButton(
-                            onClick = { onImagesChanged(imagePaths.filterNot { it == path }) },
+                            onClick = {
+                                // [AI修改] 删除图片时原图和缩略图按同一索引同步移除，避免 image_path 与 thumbnail_path 错位。
+                                onImagesChanged(
+                                    imagePaths.filterIndexed { removeIndex, _ -> removeIndex != index },
+                                    thumbnailPaths.filterIndexed { removeIndex, _ -> removeIndex != index },
+                                )
+                            },
                             modifier = Modifier.size(32.dp),
                         ) { Text("×") }
                     }
@@ -178,26 +203,23 @@ private fun createCameraUri(context: Context): Uri {
 }
 
 /**
- * 将相机/相册图片压缩到 app 私有目录并返回压缩后文件路径。[AI生成]
+ * 将相机/相册图片保存到 cookbook/img 并返回原图/缩略图路径。[AI生成]
  *
- * 压缩目标控制在 10KB 以内。若图片复杂度过高，函数会逐步降低质量和尺寸，
- * 最终仍以 10KB 作为硬限制，保证列表、详情等所有界面加载的都是轻量图片。
+ * 原图按常规质量保存；缩略图保持显示尺寸但压缩到 5KB 左右，最大不超过 10KB。
  */
-private fun compressImageToPrivateFile(context: Context, sourceUri: Uri): String? = runCatching {
+private fun saveImagePair(context: Context, sourceUri: Uri): StoredImagePair? = runCatching {
     val originalBounds = readImageBounds(context, sourceUri) ?: return@runCatching null
-    var maxSide = 720
-    var encoded: ByteArray
-    do {
-        val bitmap = decodeScaledBitmap(context, sourceUri, originalBounds, maxSide) ?: return@runCatching null
-        encoded = encodeJpegUnderLimit(bitmap, IMAGE_MAX_BYTES)
-        bitmap.recycle()
-        maxSide = (maxSide * 0.75f).toInt()
-    } while (encoded.size > IMAGE_MAX_BYTES && maxSide >= 16)
-
-    val dir = File(context.filesDir, "images").apply { mkdirs() }
-    val file = File(dir, "cookbook_${System.currentTimeMillis()}_${encoded.size}.jpg")
-    file.writeBytes(encoded)
-    file.absolutePath
+    val originalBitmap = decodeScaledBitmap(context, sourceUri, originalBounds, ORIGINAL_MAX_SIDE) ?: return@runCatching null
+    val thumbBitmap = decodeScaledBitmap(context, sourceUri, originalBounds, THUMB_MAX_SIDE) ?: return@runCatching null
+    val baseName = timestampFileName()
+    val dir = cookbookImageDir(context).apply { mkdirs() }
+    val imageFile = File(dir, "$baseName.jpg")
+    val thumbFile = File(dir, "${baseName}_thum.jpg")
+    imageFile.writeBytes(encodeJpeg(originalBitmap, ORIGINAL_QUALITY))
+    thumbFile.writeBytes(encodeJpegAroundLimit(thumbBitmap, THUMB_TARGET_BYTES, THUMB_MAX_BYTES))
+    originalBitmap.recycle()
+    thumbBitmap.recycle()
+    StoredImagePair(imagePath = imageFile.absolutePath, thumbnailPath = thumbFile.absolutePath)
 }.getOrNull()
 
 /**
@@ -246,17 +268,38 @@ private fun decodeScaledBitmap(
 /**
  * 在给定字节上限内循环降低 JPEG 质量。[AI生成]
  */
-private fun encodeJpegUnderLimit(bitmap: Bitmap, maxBytes: Int): ByteArray {
+private fun encodeJpeg(bitmap: Bitmap, quality: Int): ByteArray {
+    val output = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
+    return output.toByteArray()
+}
+
+private fun encodeJpegAroundLimit(bitmap: Bitmap, targetBytes: Int, maxBytes: Int): ByteArray {
     var quality = 80
     var bytes: ByteArray
     do {
         val output = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
         bytes = output.toByteArray()
-        quality -= 8
-    } while (bytes.size > maxBytes && quality >= 8)
+        quality -= 6
+    } while (bytes.size > targetBytes && quality >= 8)
+    while (bytes.size > maxBytes && quality >= 4) {
+        val output = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
+        bytes = output.toByteArray()
+        quality -= 4
+    }
     return bytes
 }
+
+private fun cookbookImageDir(context: Context): File {
+    val publicDir = File(Environment.getExternalStorageDirectory(), "cookbook/img")
+    if (publicDir.exists() || publicDir.mkdirs()) return publicDir
+    return File(context.getExternalFilesDir(null) ?: context.filesDir, "cookbook/img")
+}
+
+private fun timestampFileName(): String =
+    SimpleDateFormat("yyyyMMddHHmmssS", Locale.US).format(Date())
 
 private fun highestPowerOfTwoAtMost(value: Int): Int {
     var result = 1
@@ -278,3 +321,8 @@ fun decodeImagePaths(text: String): List<String> =
     text.split("|").map { it.trim() }.filter { it.isNotEmpty() }.take(3)
 
 private const val IMAGE_MAX_BYTES = 10 * 1024
+private const val ORIGINAL_MAX_SIDE = 1600
+private const val ORIGINAL_QUALITY = 88
+private const val THUMB_MAX_SIDE = 360
+private const val THUMB_TARGET_BYTES = 5 * 1024
+private const val THUMB_MAX_BYTES = 10 * 1024

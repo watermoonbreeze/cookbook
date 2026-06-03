@@ -56,7 +56,10 @@ fun DishDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onEdit(dishId) }) {
+                    IconButton(
+                        onClick = { dish?.let { onEdit(it.id) } },
+                        enabled = dish != null,
+                    ) {
                         Icon(Icons.Outlined.Edit, contentDescription = "编辑")
                     }
                 },
@@ -86,6 +89,7 @@ fun DishDetailScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StoredImage(
                     imagePath = d.imagePath,
+                    thumbnailPath = d.thumbnailPath,
                     fallbackText = d.name.take(2),
                     fallbackEmoji = "🍱",
                     seedId = d.id,
@@ -116,13 +120,18 @@ fun DishDetailScreen(
             }
 
             val imagePaths = decodeImagePaths(d.imagePath)
+            val thumbnailPaths = decodeImagePaths(d.thumbnailPath)
             if (imagePaths.isNotEmpty()) {
                 FormFieldLabel("图片", topPadding = 18.dp, bottomPadding = 8.dp)
-                val detailImagePaths = imagePaths.drop(1).ifEmpty { imagePaths } // [AI修改] 顶部已展示首图，多图区域优先展示剩余图片，单图时保留可预览入口。
+                val detailImagePairs = imagePaths
+                    .mapIndexed { index, path -> path to thumbnailPaths.getOrNull(index).orEmpty() }
+                    .drop(1)
+                    .ifEmpty { imagePaths.mapIndexed { index, path -> path to thumbnailPaths.getOrNull(index).orEmpty() } } // [AI修改] 顶部已展示首图，多图区域优先展示剩余图片，单图时保留可预览入口。
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(detailImagePaths, key = { it }) { path ->
+                    items(detailImagePairs, key = { it.first }) { (path, thumbnailPath) ->
                         StoredImage(
                             imagePath = path,
+                            thumbnailPath = thumbnailPath,
                             fallbackText = d.name.take(2),
                             fallbackEmoji = "🍱",
                             seedId = d.id,
@@ -165,10 +174,10 @@ fun DishDetailScreen(
                 }
             }
 
-            val cookingMethodName = d.cookingMethodName
-            if (cookingMethodName != null) {
+            val cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() }
+            if (cookingMethodNames.isNotEmpty()) {
                 FormFieldLabel("烹饪方式", topPadding = 18.dp, bottomPadding = 8.dp)
-                Text(cookingMethodName, style = MaterialTheme.typography.bodyLarge)
+                Text(cookingMethodNames.joinToString(" / "), style = MaterialTheme.typography.bodyLarge)
             }
             if (d.specialNote.isNotBlank()) {
                 FormFieldLabel("特殊说明", topPadding = 18.dp, bottomPadding = 8.dp)

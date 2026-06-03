@@ -385,6 +385,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     id = row.id,
                     name = row.name,
                     imagePath = row.image_path,
+                    thumbnailPath = row.thumbnail_path,
                     tags = tagsByDish[row.id].orEmpty(),
                     preference = row.preference.toInt(),
                     cookingMethodName = row.cooking_method_id?.let { cookingMethodNames[it] },

@@ -211,6 +211,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                 alias = d.alias,
                 pinyin = Pinyin.toPinyin(d.name),
                 image_path = "",
+                thumbnail_path = "",
                 default_unit_id = unitId,
                 source = "preset",
                 created_at = now,

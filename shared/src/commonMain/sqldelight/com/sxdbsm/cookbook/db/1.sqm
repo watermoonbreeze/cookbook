@@ -1,0 +1,12 @@
+-- [AI生成] v1 -> v2：补充菜品-烹饪方式多对多关联表，修复旧库升级后缺表闪退。
+CREATE TABLE IF NOT EXISTS dish_cooking_method_rel (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    cooking_method_id INTEGER NOT NULL REFERENCES cooking_method(id) ON DELETE CASCADE,
+    PRIMARY KEY (dish_id, cooking_method_id)
+);
+
+-- [AI生成] 兼容旧数据：把 dish.cooking_method_id 中已有的单个烹饪方式回填到新关联表。
+INSERT OR IGNORE INTO dish_cooking_method_rel(dish_id, cooking_method_id)
+SELECT id, cooking_method_id
+FROM dish
+WHERE cooking_method_id IS NOT NULL;

@@ -1,0 +1,33 @@
+# 2026-05-30 修复9上下文
+
+- 任务编排：标准级；尝试分派 Mill 做只读分析，但网络断开失败，主线程基于本地扫描完成实现。
+- 搜索栏：
+  - `AppSearchField` 从 Material `TextField/OutlinedTextField` 改为 `BasicTextField + Row 色块容器`。
+  - 保持 48dp 高度，去掉默认 TextField 内部竖向挤压，解决 SearchScreen/菜品页/食材选择页字体显示不全。
+- 菜品编辑路由：
+  - `Routes.NEW_DISH` 改为路径参数 `newdish/{dishId}/{importDishId}`。
+  - `Routes.newDish(id)` 生成 `newdish/<id>/-1`，避免 query 参数解析不稳定导致详情页点编辑进入新建。
+- 多烹饪方式：
+  - `Cookbook.sq` 新增 `dish_cooking_method_rel` 关联表和相关查询。
+  - `Dish` 新增 `cookingMethods`，`DishMini` 新增 `cookingMethodNames`。
+  - `DishRepository.saveDish()` 同步多烹饪方式，主表 `cooking_method_id` 保留首个方式作兼容缓存。
+  - `NewDishViewModel` 支持 `cookingMethodNames` 列表；编辑页“+ 添加”可反复追加，不再变成“修改”。
+  - 菜品详情和菜品 Item 会展示多个烹饪方式，用 ` / ` 分隔。
+- 菜品页：
+  - `DishesSortTab` 移除 `PINYIN`；Tab 只剩 最近 / 喜爱 / 全部。
+  - “全部”按 `dishInitial(name)` 分组排序，并展示右侧字母索引条。
+  - `PinyinInitial.kt` 用 GBK 区位码估算中文拼音首字母，英文直接取首字母；拖动/点击索引会同步滚动列表。
+- 食材选择：
+  - 预设和自建食材都允许编辑；删除仍只允许 `source=user`。
+  - `IngredientCard` 对有图片食材使用上半部分铺满图片、下方文字区的布局。
+  - `StoredImage` 增加 `fillWidth/imageHeight`，支持食材卡横向铺满图片区域。
+- 验证：
+  - `:shared:generateCommonMainCookbookDatabaseInterface`
+  - `:shared:compileDebugKotlinAndroid`
+  - `:androidApp:compileDebugKotlin`
+  - `:androidApp:assembleDebug`
+  - `:shared:testDebugUnitTest`
+  - `:androidApp:testDebugUnitTest`
+  全部通过；测试任务当前为 `NO-SOURCE`。
+- 注意：
+  - 曾遇到 Kotlin daemon 连接失败并错误转义中文路径；执行 `./gradlew --stop` 后复跑通过。

@@ -43,6 +43,7 @@ sqldelight {
     databases {
         create("CookbookDatabase") {
             packageName.set("com.sxdbsm.cookbook.db")
+            version = 3 // [AI修改] v3 新增缩略图字段；数据库版本只能升不能降。
         }
     }
 }

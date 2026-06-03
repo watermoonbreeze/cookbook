@@ -14,11 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
-import com.sxdbsm.cookbook.android.ui.component.TagChip
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
@@ -48,20 +48,10 @@ fun NewDishScreen(
     var cookingMethodDraft by remember { mutableStateOf("") }
 
     /**
-     * 进入编辑页时按 id 加载原菜品。[AI修改]
+     * 页面入口统一交给 ViewModel 处理，避免编辑、新建、导入在同一实例中串状态。[AI修改]
      */
-    LaunchedEffect(editingDishId) {
-        if (editingDishId != null && editingDishId > 0 && state.editingId != editingDishId) {
-            vm.loadForEdit(editingDishId)
-        }
-    }
-    /**
-     * 从其它菜品复制导入时加载源菜品。[AI修改]
-     */
-    LaunchedEffect(importDishId) {
-        if (importDishId != null && importDishId > 0) {
-            vm.importFromDishId(importDishId)
-        }
+    LaunchedEffect(editingDishId, importDishId) {
+        vm.start(editingDishId, importDishId)
     }
     LaunchedEffect(state.done) {
         if (state.done) onBack()
@@ -71,7 +61,7 @@ fun NewDishScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         topBar = {
             TopAppBar(
-                title = { Text(if (state.editingId != null) "编辑菜品" else "新建菜品", fontWeight = FontWeight.SemiBold) },
+                title = { Text(if (editingDishId != null || state.editingId != null) "编辑菜品" else "新建菜品", fontWeight = FontWeight.SemiBold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -95,7 +85,7 @@ fun NewDishScreen(
                     Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = { vm.save() },
-                        enabled = state.name.isNotBlank() && !state.saving,
+                        enabled = state.name.isNotBlank() && !state.saving && !state.loading && state.errorMessage == null,
                     ) { Text("保存") }
                     Spacer(Modifier.width(8.dp))
                 },
@@ -109,6 +99,23 @@ fun NewDishScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
         ) {
+            if (state.loading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = "加载菜品信息中...",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
+            state.errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+            }
             FormFieldLabel("菜名 *")
             OutlinedTextField(
                 value = state.name,
@@ -125,17 +132,35 @@ fun NewDishScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 state.tags.forEach { tag ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        TagChip(tag)
-                        IconButton(
-                            onClick = { vm.removeTag(tag) },
-                            modifier = Modifier.size(20.dp),
-                        ) {
-                            Icon(Icons.Outlined.Close, contentDescription = "删除标签", modifier = Modifier.size(14.dp))
-                        }
-                    }
+                    AssistChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                text = tag,
+                                textAlign = TextAlign.Center,
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { vm.removeTag(tag) },
+                                modifier = Modifier.size(20.dp),
+                            ) {
+                                Icon(Icons.Outlined.Close, contentDescription = "删除标签", modifier = Modifier.size(14.dp))
+                            }
+                        },
+                        modifier = Modifier.height(32.dp), // [AI修改] 标签项高度与“+ 添加”按钮保持一致。
+                    )
                 }
-                AssistChip(onClick = { tagInputOpen = true }, label = { Text("+ 添加") })
+                AssistChip(
+                    onClick = { tagInputOpen = true },
+                    label = {
+                        Text(
+                            "+ 添加",
+                            textAlign = TextAlign.Center,
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
+                )
             }
 
             FormFieldLabel("烹饪方式")
@@ -144,21 +169,38 @@ fun NewDishScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                if (state.cookingMethodInput.isNotBlank()) {
-                    TagChip(state.cookingMethodInput)
-                    IconButton(
-                        onClick = { vm.clearCookingMethod() },
-                        modifier = Modifier.size(20.dp),
-                    ) {
-                        Icon(Icons.Outlined.Close, contentDescription = "清空烹饪方式", modifier = Modifier.size(14.dp))
-                    }
+                state.cookingMethodNames.forEach { method ->
+                    AssistChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                text = method,
+                                textAlign = TextAlign.Center,
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = { vm.removeCookingMethod(method) },
+                                modifier = Modifier.size(20.dp),
+                            ) {
+                                Icon(Icons.Outlined.Close, contentDescription = "删除烹饪方式", modifier = Modifier.size(14.dp))
+                            }
+                        },
+                        modifier = Modifier.height(32.dp), // [AI修改] 已添加项高度与“+ 添加”按钮保持一致。
+                    )
                 }
                 AssistChip(
                     onClick = {
-                        cookingMethodDraft = state.cookingMethodInput
+                        cookingMethodDraft = ""
                         cookingMethodDialogOpen = true
                     },
-                    label = { Text(if (state.cookingMethodInput.isBlank()) "+ 添加" else "修改") },
+                    label = {
+                        Text(
+                            "+ 添加",
+                            textAlign = TextAlign.Center,
+                        )
+                    },
+                    modifier = Modifier.height(32.dp),
                 )
             }
 
@@ -228,7 +270,10 @@ fun NewDishScreen(
             FormFieldLabel("图片")
             ImagePickerButton(
                 imagePaths = decodeImagePaths(state.imagePath),
-                onImagesChanged = { vm.setImagePath(encodeImagePaths(it)) },
+                thumbnailPaths = decodeImagePaths(state.thumbnailPath),
+                onImagesChanged = { images, thumbnails ->
+                    vm.setImages(encodeImagePaths(images), encodeImagePaths(thumbnails))
+                },
                 maxCount = 3,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -309,7 +354,7 @@ fun NewDishScreen(
 /**
  * 烹饪方式弹框。[AI生成]
  *
- * 当前数据库只支持一个 `cooking_method_id`，所以弹框提供“Spinner 下拉选择一个或手动输入一个”。
+ * 支持一次添加一个烹饪方式，外层表单可重复点击“+ 添加”形成多个方式。[AI修改]
  */
 @Composable
 private fun CookingMethodDialog(
