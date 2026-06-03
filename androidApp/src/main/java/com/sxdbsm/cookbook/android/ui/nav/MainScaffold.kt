@@ -96,6 +96,7 @@ fun MainScaffold() {
             composable(Routes.TIMELINE) {
                 FoodTimelineScreen(
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                    onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                 )
             }
             composable(Routes.DISHES) {

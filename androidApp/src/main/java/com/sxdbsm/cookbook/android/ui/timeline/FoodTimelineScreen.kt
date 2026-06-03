@@ -38,6 +38,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FoodTimelineScreen(
     onEditMealDate: (LocalDate) -> Unit,
+    onOpenDish: (Long) -> Unit,
     vm: TimelineViewModel = koinViewModel(),
 ) {
     // [AI修改] 页面只订阅 TimelineUiState，不直接访问 Repository。
@@ -120,6 +121,7 @@ fun FoodTimelineScreen(
                     DayMealCardView(
                         data = card,
                         onEditClick = { onEditMealDate(card.date) },
+                        onDishClick = { dish -> onOpenDish(dish.id) }, // [AI修改] 食历餐食卡片内的菜品 block 点击进入菜品详情。
                     )
                 }
                 item {

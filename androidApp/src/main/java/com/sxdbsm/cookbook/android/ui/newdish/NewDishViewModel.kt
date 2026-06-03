@@ -56,8 +56,6 @@ class NewDishViewModel(
 
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
     val state: StateFlow<NewDishUiState> = _state.asStateFlow() // [AI修改] UI 只能观察，不能直接改。
-    private var lastStartKey: String? = null // [AI生成] 记录最近一次页面入口，避免 Compose 重组时重复加载同一菜品。
-
     init {
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
@@ -77,10 +75,6 @@ class NewDishViewModel(
     fun start(editingDishId: Long?, importDishId: Long?) {
         val editId = editingDishId?.takeIf { it > 0L }
         val sourceId = importDishId?.takeIf { it > 0L }
-        val key = "edit=${editId ?: 0L};import=${sourceId ?: 0L}"
-        if (lastStartKey == key && !_state.value.done) return
-        lastStartKey = key
-
         val current = _state.value
         _state.value = NewDishUiState(
             editingId = editId,

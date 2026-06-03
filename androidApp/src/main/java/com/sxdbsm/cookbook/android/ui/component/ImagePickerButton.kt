@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.sxdbsm.cookbook.platform.CookbookStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -293,9 +293,11 @@ private fun encodeJpegAroundLimit(bitmap: Bitmap, targetBytes: Int, maxBytes: In
 }
 
 private fun cookbookImageDir(context: Context): File {
-    val publicDir = File(Environment.getExternalStorageDirectory(), "cookbook/img")
-    if (publicDir.exists() || publicDir.mkdirs()) return publicDir
-    return File(context.getExternalFilesDir(null) ?: context.filesDir, "cookbook/img")
+    check(CookbookStorage.hasPublicStorageAccess(context)) {
+        "保存图片前必须先获取 /sdcard/cookbook 访问权限"
+    } // [AI修改] 图片统一保存到 /sdcard/cookbook/img，不再回退到 app 专属目录。
+    CookbookStorage.migrateAppSpecificCookbookToPublic(context)
+    return CookbookStorage.requirePublicSubDir(CookbookStorage.IMG_DIR_NAME)
 }
 
 private fun timestampFileName(): String =

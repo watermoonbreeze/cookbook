@@ -1,7 +1,6 @@
 package com.sxdbsm.cookbook.platform
 
 import android.content.Context
-import android.os.Environment
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.sxdbsm.cookbook.db.CookbookDatabase
@@ -29,13 +28,11 @@ actual class DatabaseDriverFactory(private val context: Context) {
 }
 
 private fun resolveDatabaseFile(context: Context): File {
-    val publicDir = File(Environment.getExternalStorageDirectory(), "cookbook/db")
-    val dir = if (publicDir.exists() || publicDir.mkdirs()) {
-        publicDir
-    } else {
-        // [AI生成] Android 10+ 可能禁止写 sdCard 根目录，降级到 app 专属外部目录保证 App 可启动。
-        File(context.getExternalFilesDir(null) ?: context.filesDir, "cookbook/db").apply { mkdirs() }
-    }
+    check(CookbookStorage.hasPublicStorageAccess(context)) {
+        "创建数据库前必须先获取 /sdcard/cookbook 访问权限"
+    } // [AI修改] 修复12要求授权后才能创建数据库，避免提前落到 app 专属目录。
+    CookbookStorage.migrateAppSpecificCookbookToPublic(context) // [AI修改] 授权后先迁移旧 app 专属 cookbook 目录。
+    val dir = CookbookStorage.requirePublicSubDir(CookbookStorage.DB_DIR_NAME)
     return File(dir, DatabaseDriverFactory.DB_NAME)
 }
 

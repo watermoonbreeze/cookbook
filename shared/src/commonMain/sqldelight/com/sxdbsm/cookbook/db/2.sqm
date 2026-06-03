@@ -2,3 +2,23 @@
 ALTER TABLE dish ADD COLUMN thumbnail_path TEXT NOT NULL DEFAULT '';
 
 ALTER TABLE ingredient ADD COLUMN thumbnail_path TEXT NOT NULL DEFAULT '';
+
+-- [AI生成] 兼容旧库中历史写入的 NULL 文本字段，避免 SQLDelight 非空映射触发 NPE。
+UPDATE dish
+SET name = COALESCE(name, ''),
+    special_note = COALESCE(special_note, ''),
+    description = COALESCE(description, ''),
+    image_path = COALESCE(image_path, ''),
+    thumbnail_path = COALESCE(thumbnail_path, ''),
+    source = COALESCE(source, 'user'),
+    created_at = COALESCE(created_at, 0),
+    updated_at = COALESCE(updated_at, 0);
+
+UPDATE ingredient
+SET name = COALESCE(name, ''),
+    alias = COALESCE(alias, ''),
+    pinyin = COALESCE(pinyin, ''),
+    image_path = COALESCE(image_path, ''),
+    thumbnail_path = COALESCE(thumbnail_path, ''),
+    source = COALESCE(source, 'preset'),
+    created_at = COALESCE(created_at, 0);

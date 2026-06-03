@@ -26,18 +26,16 @@ class IngredientRepository(private val db: CookbookDatabase) {
      * 监听全部食材。[AI修改]
      */
     fun observeAll(): Flow<List<Ingredient>> =
-        q.selectAllIngredients().asFlow().mapToList(Dispatchers.Default).map { rows ->
-            rows.map { it.toDomain() }
-        }
+        q.selectAllIngredients(::mapIngredientRow).asFlow().mapToList(Dispatchers.Default)
 
     /**
      * 关键词搜索食材。[AI修改]
      */
     suspend fun search(keyword: String): List<Ingredient> = withContext(Dispatchers.Default) {
         if (keyword.isBlank()) {
-            q.selectAllIngredients().executeAsList().map { it.toDomain() }
+            q.selectAllIngredients(::mapIngredientRow).executeAsList()
         } else {
-            q.searchIngredients("%${keyword.trim()}%").executeAsList().map { it.toDomain() }
+            q.searchIngredients("%${keyword.trim()}%", ::mapIngredientRow).executeAsList()
         }
     }
 
@@ -45,7 +43,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
      * 按普通食材分类查询。[AI修改]
      */
     suspend fun listByCategory(categoryId: Long): List<Ingredient> = withContext(Dispatchers.Default) {
-        q.selectIngredientsByCategory(categoryId).executeAsList().map { it.toDomain() }
+        q.selectIngredientsByCategory(categoryId, ::mapIngredientRow).executeAsList()
     }
 
     /**
@@ -129,11 +127,21 @@ class IngredientRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * SQLDelight 数据库实体转领域模型。[AI修改]
+     * SQLDelight 食材查询结果转领域模型。[AI修改]
      *
-     * Kotlin 扩展函数写法，等价于 Java 工具方法 `IngredientMapper.toDomain(row)`。
+     * 食材查询使用 COALESCE 兼容旧库 NULL 字段，因此这里用显式 mapper，不依赖 `SELECT *` 表行类型。
      */
-    private fun com.sxdbsm.cookbook.db.Ingredient.toDomain() = Ingredient(
+    private fun mapIngredientRow(
+        id: Long,
+        name: String,
+        alias: String,
+        pinyin: String,
+        image_path: String,
+        thumbnail_path: String,
+        default_unit_id: Long?,
+        source: String,
+        @Suppress("UNUSED_PARAMETER") created_at: Long,
+    ) = Ingredient(
         id = id,
         name = name,
         alias = alias,

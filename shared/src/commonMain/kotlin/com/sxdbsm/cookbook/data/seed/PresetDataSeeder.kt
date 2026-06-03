@@ -21,6 +21,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     suspend fun seedIfNeeded() = withContext(Dispatchers.Default) {
         val q = db.cookbookQueries
         val now = DateTime.nowEpochSeconds()
+        q.sanitizeLegacyNullTextFields() // [AI生成] 兼容旧库 NULL 文本字段，避免 SQLDelight 非空映射 NPE。
+        q.sanitizeLegacyDishNullTextFields() // [AI生成] 菜品编辑加载前先修正旧数据空字段，避免图片/表单字段丢失。
 
         if (q.countCookingMethods().executeAsOne() == 0L) seedCookingMethods(now)
         if (q.countMeasurementUnits().executeAsOne() == 0L) seedMeasurementUnits()
