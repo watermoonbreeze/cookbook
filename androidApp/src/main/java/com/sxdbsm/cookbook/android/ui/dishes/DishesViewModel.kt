@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.dishes
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
@@ -29,6 +30,20 @@ data class DishesUiState(
     val keyword: String = "",
     val sortTab: DishesSortTab = DishesSortTab.RECENT,
     val refreshing: Boolean = false,
+    val deleteState: DishDeleteState = DishDeleteState(),
+)
+
+/**
+ * 菜品删除弹框状态。[AI生成]
+ *
+ * 删除前必须先检查餐食引用；有引用时展示风险提示，无引用时展示二次确认。
+ */
+data class DishDeleteState(
+    val checking: Boolean = false,
+    val pendingDish: DishMini? = null,
+    val warningDish: DishMini? = null,
+    val warningReferences: List<DishRepository.DishMealReference> = emptyList(),
+    val errorMessage: String? = null,
 )
 
 /**
@@ -45,7 +60,12 @@ class DishesViewModel(
     private val _sortTab = MutableStateFlow(DishesSortTab.RECENT) // [AI修改] 当前选中的排序 Tab。
     private val _list = MutableStateFlow<List<DishMini>>(emptyList()) // [AI修改] 搜索结果列表。
     private val _refreshing = MutableStateFlow(false) // [AI生成] 下拉刷新状态。
+    private val _deleteState = MutableStateFlow(DishDeleteState()) // [AI生成] 长按删除前的引用检查/确认弹框状态。
     private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
+
+    private companion object {
+        private const val TAG = "DishActions" // [AI生成] 菜品列表操作统一日志 Tag，便于排查长按编辑/删除。
+    }
 
     /**
      * 热门菜品列表。[AI修改]
@@ -64,9 +84,9 @@ class DishesViewModel(
     }
 
     val uiState: StateFlow<DishesUiState> = kotlinx.coroutines.flow.combine(
-        baseState, _refreshing,
-    ) { state, refreshing ->
-        state.copy(refreshing = refreshing)
+        baseState, _refreshing, _deleteState,
+    ) { state, refreshing, deleteState ->
+        state.copy(refreshing = refreshing, deleteState = deleteState)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishesUiState())
 
     init {
@@ -83,6 +103,57 @@ class DishesViewModel(
     fun refresh() {
         searchNow(_keyword.value, force = true)
     } // [AI生成] 给返回页面和下拉刷新使用；空关键词时依赖 Flow 自动刷新，仅短暂显示刷新态。
+
+    /**
+     * 请求删除菜品。[AI生成]
+     *
+     * 先查餐食引用；若被引用，只展示风险提示，不直接删除，避免破坏食历。
+     */
+    fun requestDeleteDish(dish: DishMini) {
+        viewModelScope.launch {
+            Log.d(TAG, "request delete dish: id=${dish.id} name=${dish.name}")
+            _deleteState.value = DishDeleteState(checking = true)
+            runCatching { dishRepo.listMealReferencesByDish(dish.id) }
+                .onSuccess { references ->
+                    Log.d(TAG, "delete reference check: id=${dish.id} refs=${references.size}")
+                    _deleteState.value = if (references.isNotEmpty()) {
+                        DishDeleteState(warningDish = dish, warningReferences = references)
+                    } else {
+                        DishDeleteState(pendingDish = dish)
+                    }
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "delete reference check failed: id=${dish.id}", error)
+                    _deleteState.value = DishDeleteState(errorMessage = "检查菜品引用失败，请稍后重试")
+                }
+        }
+    }
+
+    /**
+     * 确认删除未被餐食引用的菜品。[AI生成]
+     */
+    fun confirmDeleteDish() {
+        val dish = _deleteState.value.pendingDish ?: return
+        viewModelScope.launch {
+            Log.d(TAG, "confirm delete dish: id=${dish.id} name=${dish.name}")
+            _deleteState.value = _deleteState.value.copy(checking = true)
+            runCatching { dishRepo.deleteDish(dish.id) }
+                .onSuccess {
+                    Log.d(TAG, "delete dish success: id=${dish.id}")
+                    _deleteState.value = DishDeleteState()
+                    refresh()
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "delete dish failed: id=${dish.id}", error)
+                    _deleteState.value = DishDeleteState(errorMessage = "删除菜品失败，请稍后重试")
+                }
+        }
+    }
+
+    fun dismissDeleteDialog() {
+        Log.d(TAG, "dismiss delete dialog")
+        _deleteState.value = DishDeleteState()
+    }
 
     private fun sortDishes(list: List<DishMini>, tab: DishesSortTab): List<DishMini> =
         when (tab) {

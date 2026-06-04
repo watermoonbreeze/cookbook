@@ -105,6 +105,7 @@ fun MainScaffold() {
                 DishesScreen(
                     onAddDish = { nav.navigate(Routes.newDish()) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
+                    onEditDish = { id -> nav.navigate(Routes.newDish(id)) },
                     onCopyDish = { id -> nav.navigate(Routes.copyDish(id)) },
                 )
             }

@@ -71,6 +71,7 @@ import org.koin.androidx.compose.koinViewModel
 fun DishesScreen(
     onAddDish: () -> Unit,
     onOpenDish: (Long) -> Unit,
+    onEditDish: (Long) -> Unit,
     onCopyDish: (Long) -> Unit,
     vm: DishesViewModel = koinViewModel(),
 ) {
@@ -282,13 +283,69 @@ fun DishesScreen(
             title = { Text(d.name) },
             text = { Text("选择操作") },
             confirmButton = {
-                TextButton(onClick = {
-                    dropdownDish = null
-                    onCopyDish(d.id)
-                }) { Text("基于此另存") }
+                Column(horizontalAlignment = Alignment.End) {
+                    TextButton(onClick = {
+                        dropdownDish = null
+                        onEditDish(d.id)
+                    }) { Text("编辑") }
+                    TextButton(onClick = {
+                        dropdownDish = null
+                        onCopyDish(d.id)
+                    }) { Text("基于此另存") }
+                    TextButton(onClick = {
+                        dropdownDish = null
+                        vm.requestDeleteDish(d)
+                    }) { Text("删除") }
+                } // [AI修改] 弹框外部可关闭，不再额外展示“取消”；长按菜单补充编辑和删除。
+            },
+        )
+    }
+
+    val deleteState = ui.deleteState
+    deleteState.warningDish?.let { dish ->
+        AlertDialog(
+            onDismissRequest = vm::dismissDeleteDialog,
+            title = { Text("无法直接删除") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("“${dish.name}”已被以下餐食引用，请谨慎操作：")
+                    deleteState.warningReferences.take(8).forEach { ref ->
+                        Text("• ${ref.date} ${ref.mealName} ${ref.mealTime}")
+                    }
+                    if (deleteState.warningReferences.size > 8) {
+                        Text("还有 ${deleteState.warningReferences.size - 8} 条引用未展示")
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = vm::dismissDeleteDialog) { Text("知道了") }
+            },
+        )
+    }
+
+    deleteState.pendingDish?.let { dish ->
+        AlertDialog(
+            onDismissRequest = vm::dismissDeleteDialog,
+            title = { Text("删除菜品") },
+            text = { Text("确认删除“${dish.name}”？删除后菜品列表中将不再展示。") },
+            confirmButton = {
+                TextButton(onClick = vm::confirmDeleteDish) {
+                    Text(if (deleteState.checking) "删除中..." else "删除")
+                }
             },
             dismissButton = {
-                TextButton(onClick = { dropdownDish = null }) { Text("取消") }
+                TextButton(onClick = vm::dismissDeleteDialog) { Text("取消") }
+            },
+        )
+    }
+
+    deleteState.errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = vm::dismissDeleteDialog,
+            title = { Text("操作失败") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = vm::dismissDeleteDialog) { Text("知道了") }
             },
         )
     }

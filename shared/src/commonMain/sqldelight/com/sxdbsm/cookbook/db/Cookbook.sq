@@ -9,7 +9,8 @@ CREATE TABLE cooking_method (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     source TEXT NOT NULL DEFAULT 'preset',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE crowd_type (
@@ -17,13 +18,15 @@ CREATE TABLE crowd_type (
     name TEXT NOT NULL UNIQUE,
     description TEXT NOT NULL DEFAULT '',
     source TEXT NOT NULL DEFAULT 'preset',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE measurement_unit (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
-    source TEXT NOT NULL DEFAULT 'preset'
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 -- ========== 食材体系 ==========
@@ -37,7 +40,8 @@ CREATE TABLE ingredient (
     thumbnail_path TEXT NOT NULL DEFAULT '',
     default_unit_id INTEGER REFERENCES measurement_unit(id),
     source TEXT NOT NULL DEFAULT 'preset',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE INDEX idx_ingredient_pinyin ON ingredient(pinyin);
@@ -51,7 +55,8 @@ CREATE TABLE food_category (
     sort_order INTEGER NOT NULL DEFAULT 0,
     icon TEXT NOT NULL DEFAULT '',
     source TEXT NOT NULL DEFAULT 'preset',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE INDEX idx_food_category_parent ON food_category(parent_id);
@@ -59,6 +64,7 @@ CREATE INDEX idx_food_category_parent ON food_category(parent_id);
 CREATE TABLE ingredient_category (
     ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
     category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (ingredient_id, category_id)
 );
 
@@ -69,7 +75,8 @@ CREATE TABLE crowd_ingredient (
     advice_level TEXT NOT NULL,
     reason TEXT NOT NULL DEFAULT '',
     daily_limit REAL,
-    source TEXT NOT NULL DEFAULT 'preset'
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE UNIQUE INDEX uq_crowd_ingredient ON crowd_ingredient(crowd_id, ingredient_id);
@@ -87,7 +94,8 @@ CREATE TABLE dish (
     thumbnail_path TEXT NOT NULL DEFAULT '',
     source TEXT NOT NULL DEFAULT 'user',
     created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE INDEX idx_dish_preference ON dish(preference DESC);
@@ -98,6 +106,7 @@ CREATE INDEX idx_dish_name ON dish(name COLLATE NOCASE);
 CREATE TABLE dish_cooking_method_rel (
     dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
     cooking_method_id INTEGER NOT NULL REFERENCES cooking_method(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (dish_id, cooking_method_id)
 );
 
@@ -105,12 +114,14 @@ CREATE TABLE dish_tag (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     source TEXT NOT NULL DEFAULT 'user',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE dish_tag_rel (
     dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
     tag_id INTEGER NOT NULL REFERENCES dish_tag(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (dish_id, tag_id)
 );
 
@@ -120,7 +131,8 @@ CREATE TABLE dish_ingredient (
     ingredient_id INTEGER NOT NULL REFERENCES ingredient(id),
     quantity REAL,
     unit_id INTEGER REFERENCES measurement_unit(id),
-    is_main INTEGER NOT NULL DEFAULT 1
+    is_main INTEGER NOT NULL DEFAULT 1,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE UNIQUE INDEX uq_dish_ingredient ON dish_ingredient(dish_id, ingredient_id);
@@ -129,6 +141,7 @@ CREATE TABLE dish_crowd (
     dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
     crowd_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
     suitability TEXT NOT NULL DEFAULT 'suitable',
+    status INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (dish_id, crowd_id)
 );
 
@@ -140,7 +153,8 @@ CREATE TABLE meal_type (
     name TEXT NOT NULL,
     default_time TEXT NOT NULL,
     is_fixed INTEGER NOT NULL DEFAULT 1,
-    source TEXT NOT NULL DEFAULT 'preset'
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 -- ========== 每餐记录 ==========
@@ -151,7 +165,8 @@ CREATE TABLE meal_record (
     meal_type_id INTEGER NOT NULL REFERENCES meal_type(id),
     meal_time TEXT NOT NULL,
     note TEXT NOT NULL DEFAULT '',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE INDEX idx_meal_record_date ON meal_record(date);
@@ -161,6 +176,7 @@ CREATE TABLE meal_record_dish (
     meal_record_id INTEGER NOT NULL REFERENCES meal_record(id) ON DELETE CASCADE,
     dish_id INTEGER NOT NULL REFERENCES dish(id),
     sort_order INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (meal_record_id, dish_id)
 );
 
@@ -173,12 +189,14 @@ CREATE TABLE favorite_combo (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     source TEXT NOT NULL DEFAULT 'user',
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE favorite_combo_dish (
     combo_id INTEGER NOT NULL REFERENCES favorite_combo(id) ON DELETE CASCADE,
     dish_id INTEGER NOT NULL REFERENCES dish(id),
+    status INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (combo_id, dish_id)
 );
 
@@ -187,14 +205,16 @@ CREATE TABLE favorite_combo_dish (
 CREATE TABLE user_preferences (
     key TEXT NOT NULL PRIMARY KEY,
     value TEXT NOT NULL,
-    updated_at INTEGER NOT NULL
+    updated_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE user_health_profile (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     crowd_type_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
     enabled INTEGER NOT NULL DEFAULT 1,
-    created_at INTEGER NOT NULL
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE UNIQUE INDEX uq_user_health_profile ON user_health_profile(crowd_type_id);
@@ -206,69 +226,69 @@ CREATE UNIQUE INDEX uq_user_health_profile ON user_health_profile(crowd_type_id)
 -- ===== 元数据 / 初始化检查 =====
 
 countCookingMethods:
-SELECT COUNT(*) FROM cooking_method;
+SELECT COUNT(*) FROM cooking_method WHERE status = 1;
 
 countMealTypes:
-SELECT COUNT(*) FROM meal_type;
+SELECT COUNT(*) FROM meal_type WHERE status = 1;
 
 countCrowdTypes:
-SELECT COUNT(*) FROM crowd_type;
+SELECT COUNT(*) FROM crowd_type WHERE status = 1;
 
 countFoodCategories:
-SELECT COUNT(*) FROM food_category;
+SELECT COUNT(*) FROM food_category WHERE status = 1;
 
 countDishTags:
-SELECT COUNT(*) FROM dish_tag;
+SELECT COUNT(*) FROM dish_tag WHERE status = 1;
 
 countMeasurementUnits:
-SELECT COUNT(*) FROM measurement_unit;
+SELECT COUNT(*) FROM measurement_unit WHERE status = 1;
 
 countUserPreferences:
-SELECT COUNT(*) FROM user_preferences;
+SELECT COUNT(*) FROM user_preferences WHERE status = 1;
 
 -- ===== cooking_method =====
 
 insertCookingMethod:
-INSERT OR IGNORE INTO cooking_method(name, source, created_at) VALUES (?, ?, ?);
+INSERT OR IGNORE INTO cooking_method(name, source, created_at, status) VALUES (?, ?, ?, 1);
 
 selectAllCookingMethods:
-SELECT * FROM cooking_method ORDER BY id;
+SELECT * FROM cooking_method WHERE status = 1 ORDER BY id;
 
 selectCookingMethodById:
-SELECT * FROM cooking_method WHERE id = ?;
+SELECT * FROM cooking_method WHERE id = ? AND status = 1;
 
 -- ===== measurement_unit =====
 
 insertMeasurementUnit:
-INSERT OR IGNORE INTO measurement_unit(name, source) VALUES (?, ?);
+INSERT OR IGNORE INTO measurement_unit(name, source, status) VALUES (?, ?, 1);
 
 selectAllMeasurementUnits:
-SELECT * FROM measurement_unit ORDER BY id;
+SELECT * FROM measurement_unit WHERE status = 1 ORDER BY id;
 
 -- ===== crowd_type =====
 
 insertCrowdType:
-INSERT OR IGNORE INTO crowd_type(name, description, source, created_at) VALUES (?, ?, ?, ?);
+INSERT OR IGNORE INTO crowd_type(name, description, source, created_at, status) VALUES (?, ?, ?, ?, 1);
 
 selectAllCrowdTypes:
-SELECT * FROM crowd_type ORDER BY id;
+SELECT * FROM crowd_type WHERE status = 1 ORDER BY id;
 
 selectCrowdTypeById:
-SELECT * FROM crowd_type WHERE id = ?;
+SELECT * FROM crowd_type WHERE id = ? AND status = 1;
 
 -- ===== meal_type =====
 
 insertMealType:
-INSERT OR IGNORE INTO meal_type(code, name, default_time, is_fixed, source) VALUES (?, ?, ?, ?, ?);
+INSERT OR IGNORE INTO meal_type(code, name, default_time, is_fixed, source, status) VALUES (?, ?, ?, ?, ?, 1);
 
 selectAllMealTypes:
-SELECT * FROM meal_type ORDER BY default_time;
+SELECT * FROM meal_type WHERE status = 1 ORDER BY default_time;
 
 selectMealTypeById:
-SELECT * FROM meal_type WHERE id = ?;
+SELECT * FROM meal_type WHERE id = ? AND status = 1;
 
 selectFixedMealTypes:
-SELECT * FROM meal_type WHERE is_fixed = 1 ORDER BY default_time;
+SELECT * FROM meal_type WHERE is_fixed = 1 AND status = 1 ORDER BY default_time;
 
 -- ===== food_category =====
 
@@ -277,16 +297,16 @@ INSERT INTO food_category(name, dimension, parent_id, crowd_type_id, sort_order,
 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 selectTopLevelCategories:
-SELECT * FROM food_category WHERE parent_id IS NULL ORDER BY sort_order, id;
+SELECT * FROM food_category WHERE parent_id IS NULL AND status = 1 ORDER BY sort_order, id;
 
 selectChildCategories:
-SELECT * FROM food_category WHERE parent_id = ? ORDER BY sort_order, id;
+SELECT * FROM food_category WHERE parent_id = ? AND status = 1 ORDER BY sort_order, id;
 
 selectCategoryById:
-SELECT * FROM food_category WHERE id = ?;
+SELECT * FROM food_category WHERE id = ? AND status = 1;
 
 countChildren:
-SELECT COUNT(*) FROM food_category WHERE parent_id = ?;
+SELECT COUNT(*) FROM food_category WHERE parent_id = ? AND status = 1;
 
 -- ===== ingredient =====
 
@@ -308,6 +328,7 @@ SELECT id,
        COALESCE(source, 'preset') AS source,
        COALESCE(created_at, 0) AS created_at
 FROM ingredient
+WHERE status = 1
 ORDER BY pinyin, name;
 
 selectIngredientById:
@@ -321,7 +342,7 @@ SELECT id,
        COALESCE(source, 'preset') AS source,
        COALESCE(created_at, 0) AS created_at
 FROM ingredient
-WHERE id = ?;
+WHERE id = ? AND status = 1;
 
 sanitizeLegacyNullTextFields:
 UPDATE ingredient
@@ -331,7 +352,8 @@ SET name = COALESCE(name, ''),
     image_path = COALESCE(image_path, ''),
     thumbnail_path = COALESCE(thumbnail_path, ''),
     source = COALESCE(source, 'preset'),
-    created_at = COALESCE(created_at, 0);
+    created_at = COALESCE(created_at, 0),
+    status = COALESCE(status, 1);
 
 sanitizeLegacyDishNullTextFields:
 UPDATE dish
@@ -342,15 +364,17 @@ SET name = COALESCE(name, ''),
     thumbnail_path = COALESCE(thumbnail_path, ''),
     source = COALESCE(source, 'user'),
     created_at = COALESCE(created_at, 0),
-    updated_at = COALESCE(updated_at, 0);
+    updated_at = COALESCE(updated_at, 0),
+    status = COALESCE(status, 1);
 
 updateUserIngredient:
 UPDATE ingredient
 SET name = ?, alias = ?, image_path = ?, thumbnail_path = ?
-WHERE id = ?;
+WHERE id = ? AND status = 1;
 
 deleteUserIngredient:
-DELETE FROM ingredient
+UPDATE ingredient
+SET status = 0
 WHERE id = ? AND source = 'user';
 
 searchIngredients:
@@ -364,7 +388,7 @@ SELECT id,
        COALESCE(source, 'preset') AS source,
        COALESCE(created_at, 0) AS created_at
 FROM ingredient
-WHERE name LIKE :kw OR alias LIKE :kw OR pinyin LIKE :kw
+WHERE status = 1 AND (name LIKE :kw OR alias LIKE :kw OR pinyin LIKE :kw)
 ORDER BY pinyin, name;
 
 selectIngredientsByCategory:
@@ -379,7 +403,7 @@ SELECT i.id,
        COALESCE(i.created_at, 0) AS created_at
 FROM ingredient i
 JOIN ingredient_category ic ON i.id = ic.ingredient_id
-WHERE ic.category_id = ?
+WHERE ic.category_id = ? AND i.status = 1 AND ic.status = 1
 ORDER BY i.pinyin, i.name;
 
 selectIngredientsByCrowd:
@@ -396,13 +420,13 @@ SELECT i.id,
        COALESCE(ci.reason, '') AS reason
 FROM ingredient i
 JOIN crowd_ingredient ci ON i.id = ci.ingredient_id
-WHERE ci.crowd_id = ?
+WHERE ci.crowd_id = ? AND i.status = 1 AND ci.status = 1
 ORDER BY
   CASE ci.advice_level WHEN 'recommend' THEN 1 WHEN 'limit' THEN 2 WHEN 'avoid' THEN 3 ELSE 4 END,
   i.pinyin, i.name;
 
 linkIngredientCategory:
-INSERT OR IGNORE INTO ingredient_category(ingredient_id, category_id) VALUES (?, ?);
+INSERT OR REPLACE INTO ingredient_category(ingredient_id, category_id, status) VALUES (?, ?, 1);
 
 -- ===== dish =====
 
@@ -416,13 +440,13 @@ SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_pa
 WHERE id = ?;
 
 deleteDish:
-DELETE FROM dish WHERE id = ?;
+UPDATE dish SET status = 0 WHERE id = ?;
 
 selectAllDishes:
-SELECT * FROM dish ORDER BY updated_at DESC;
+SELECT * FROM dish WHERE status = 1 ORDER BY updated_at DESC;
 
 selectDishById:
-SELECT * FROM dish WHERE id = ?;
+SELECT * FROM dish WHERE id = ? AND status = 1;
 
 -- [AI生成] 编辑/详情页专用安全读取：旧库可能残留 NULL 文本字段，统一兜底为空字符串，避免表单加载被 SQLDelight 非空映射中断。
 selectDishForEditById:
@@ -438,23 +462,24 @@ SELECT id,
        COALESCE(created_at, 0) AS created_at,
        COALESCE(updated_at, 0) AS updated_at
 FROM dish
-WHERE id = ?;
+WHERE id = ? AND status = 1;
 
 selectDishesByPopularity:
-SELECT * FROM dish ORDER BY preference DESC, name COLLATE NOCASE ASC LIMIT ?;
+SELECT * FROM dish WHERE status = 1 ORDER BY preference DESC, name COLLATE NOCASE ASC LIMIT ?;
 
 selectDishesByRecent:
 SELECT DISTINCT d.* FROM dish d
 JOIN meal_record_dish mrd ON d.id = mrd.dish_id
 JOIN meal_record mr ON mrd.meal_record_id = mr.id
+WHERE d.status = 1 AND mrd.status = 1 AND mr.status = 1
 ORDER BY mr.created_at DESC
 LIMIT ?;
 
 selectDishesByPreference:
-SELECT * FROM dish ORDER BY preference DESC, updated_at DESC;
+SELECT * FROM dish WHERE status = 1 ORDER BY preference DESC, updated_at DESC;
 
 selectDishesByPinyin:
-SELECT * FROM dish ORDER BY name COLLATE NOCASE ASC;
+SELECT * FROM dish WHERE status = 1 ORDER BY name COLLATE NOCASE ASC;
 
 searchDishes:
 SELECT DISTINCT d.* FROM dish d
@@ -462,27 +487,28 @@ LEFT JOIN dish_tag_rel dtr ON d.id = dtr.dish_id
 LEFT JOIN dish_tag dt ON dtr.tag_id = dt.id
 LEFT JOIN dish_ingredient di ON d.id = di.dish_id
 LEFT JOIN ingredient i ON di.ingredient_id = i.id
-WHERE d.name LIKE :kw
-   OR dt.name LIKE :kw
-   OR i.name LIKE :kw
-   OR i.alias LIKE :kw
+WHERE d.status = 1
+  AND (d.name LIKE :kw
+   OR (dtr.status = 1 AND dt.status = 1 AND dt.name LIKE :kw)
+   OR (di.status = 1 AND i.status = 1 AND i.name LIKE :kw)
+   OR (di.status = 1 AND i.status = 1 AND i.alias LIKE :kw))
 ORDER BY d.preference DESC, d.name COLLATE NOCASE ASC;
 
 -- ===== dish_tag / dish_tag_rel =====
 
 insertDishTag:
-INSERT OR IGNORE INTO dish_tag(name, source, created_at) VALUES (?, ?, ?);
+INSERT OR IGNORE INTO dish_tag(name, source, created_at, status) VALUES (?, ?, ?, 1);
 
 selectAllDishTags:
-SELECT * FROM dish_tag ORDER BY name COLLATE NOCASE ASC;
+SELECT * FROM dish_tag WHERE status = 1 ORDER BY name COLLATE NOCASE ASC;
 
 selectDishTagByName:
-SELECT * FROM dish_tag WHERE name = ?;
+SELECT * FROM dish_tag WHERE name = ? AND status = 1;
 
 selectTagsByDish:
 SELECT dt.* FROM dish_tag dt
 JOIN dish_tag_rel dtr ON dt.id = dtr.tag_id
-WHERE dtr.dish_id = ?
+WHERE dtr.dish_id = ? AND dtr.status = 1 AND dt.status = 1
 ORDER BY dt.name;
 
 -- [AI修改] 批量读取菜品标签，避免列表和食历组装时对每个菜品单独查询。
@@ -490,7 +516,7 @@ selectTagsByDishIds:
 SELECT dtr.dish_id, dt.name
 FROM dish_tag_rel dtr
 JOIN dish_tag dt ON dtr.tag_id = dt.id
-WHERE dtr.dish_id IN ?
+WHERE dtr.dish_id IN ? AND dtr.status = 1 AND dt.status = 1
 ORDER BY dtr.dish_id, dt.name;
 
 -- [AI生成] 批量读取菜品烹饪方式，支持菜品列表和详情展示多个方式。
@@ -498,33 +524,33 @@ selectCookingMethodsByDishIds:
 SELECT dcmr.dish_id, cm.id, cm.name
 FROM dish_cooking_method_rel dcmr
 JOIN cooking_method cm ON dcmr.cooking_method_id = cm.id
-WHERE dcmr.dish_id IN ?
+WHERE dcmr.dish_id IN ? AND dcmr.status = 1 AND cm.status = 1
 ORDER BY dcmr.dish_id, cm.name;
 
 selectCookingMethodsByDish:
 SELECT cm.*
 FROM cooking_method cm
 JOIN dish_cooking_method_rel dcmr ON cm.id = dcmr.cooking_method_id
-WHERE dcmr.dish_id = ?
+WHERE dcmr.dish_id = ? AND dcmr.status = 1 AND cm.status = 1
 ORDER BY cm.name;
 
 linkDishCookingMethod:
-INSERT OR IGNORE INTO dish_cooking_method_rel(dish_id, cooking_method_id) VALUES (?, ?);
+INSERT OR REPLACE INTO dish_cooking_method_rel(dish_id, cooking_method_id, status) VALUES (?, ?, 1);
 
 unlinkCookingMethodsOfDish:
-DELETE FROM dish_cooking_method_rel WHERE dish_id = ?;
+UPDATE dish_cooking_method_rel SET status = 0 WHERE dish_id = ?;
 
 linkDishTag:
-INSERT OR IGNORE INTO dish_tag_rel(dish_id, tag_id) VALUES (?, ?);
+INSERT OR REPLACE INTO dish_tag_rel(dish_id, tag_id, status) VALUES (?, ?, 1);
 
 unlinkAllTagsOfDish:
-DELETE FROM dish_tag_rel WHERE dish_id = ?;
+UPDATE dish_tag_rel SET status = 0 WHERE dish_id = ?;
 
 -- ===== dish_ingredient =====
 
 insertDishIngredient:
-INSERT INTO dish_ingredient(dish_id, ingredient_id, quantity, unit_id, is_main)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO dish_ingredient(dish_id, ingredient_id, quantity, unit_id, is_main, status)
+VALUES (?, ?, ?, ?, ?, 1);
 
 selectIngredientsOfDish:
 SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, di.is_main,
@@ -538,14 +564,14 @@ SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, d
 FROM dish_ingredient di
 JOIN ingredient i ON di.ingredient_id = i.id
 LEFT JOIN measurement_unit u ON di.unit_id = u.id
-WHERE di.dish_id = ?
+WHERE di.dish_id = ? AND di.status = 1 AND i.status = 1
 ORDER BY di.is_main DESC, di.id ASC;
 
 deleteIngredientsOfDish:
-DELETE FROM dish_ingredient WHERE dish_id = ?;
+UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 
 deleteDishIngredientsByIngredient:
-DELETE FROM dish_ingredient WHERE ingredient_id = ?;
+UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
 
 -- ===== meal_record =====
 
@@ -554,47 +580,50 @@ INSERT INTO meal_record(date, meal_type_id, meal_time, note, created_at)
 VALUES (?, ?, ?, ?, ?);
 
 selectMealRecordsByDate:
-SELECT * FROM meal_record WHERE date = ? ORDER BY meal_time;
+SELECT * FROM meal_record WHERE date = ? AND status = 1 ORDER BY meal_time;
 
 -- [AI修改] 食历只展示真实存在餐食记录的日期，按时间正序分页。
 selectTimelineDatesAsc:
 SELECT DISTINCT date FROM meal_record
+WHERE status = 1
 ORDER BY date ASC;
 
 -- [AI修改] 按一组日期批量读取 meal_record，避免食历分页后逐日查询。
 selectMealRecordsByDates:
 SELECT * FROM meal_record
 WHERE date IN ?
+  AND status = 1
 ORDER BY date ASC, meal_time ASC;
 
 selectMealRecordById:
-SELECT * FROM meal_record WHERE id = ?;
+SELECT * FROM meal_record WHERE id = ? AND status = 1;
 
 selectMealRecordsByDateRange:
 SELECT * FROM meal_record
-WHERE date BETWEEN :start AND :end
+WHERE date BETWEEN :start AND :end AND status = 1
 ORDER BY date DESC, meal_time;
 
 selectMealRecordsBetween:
 SELECT * FROM meal_record
-WHERE date >= :start AND date <= :end
+WHERE date >= :start AND date <= :end AND status = 1
 ORDER BY date DESC, meal_time;
 
 selectFutureMealRecords:
 SELECT * FROM meal_record
-WHERE date > :today
+WHERE date > :today AND status = 1
 ORDER BY date ASC, meal_time ASC
 LIMIT ?;
 
 -- [AI生成] 首页计划只展示真实存在且日期不早于今天的 meal_record，不再为空的今天生成占位卡片。
 selectUpcomingMealRecords:
 SELECT * FROM meal_record
-WHERE date >= :today
+WHERE date >= :today AND status = 1
 ORDER BY date ASC, meal_time ASC
 LIMIT ?;
 
 selectDistinctDates:
 SELECT DISTINCT date FROM meal_record
+WHERE status = 1
 ORDER BY date DESC
 LIMIT :limit OFFSET :offset;
 
@@ -604,28 +633,30 @@ SELECT DISTINCT mr.date
 FROM meal_record mr
 LEFT JOIN meal_record_dish mrd ON mr.id = mrd.meal_record_id
 LEFT JOIN dish d ON mrd.dish_id = d.id
-WHERE mr.date LIKE :kw OR d.name LIKE :kw
+WHERE mr.status = 1
+  AND (mr.date LIKE :kw OR (mrd.status = 1 AND d.status = 1 AND d.name LIKE :kw))
 ORDER BY mr.date DESC
 LIMIT :limit OFFSET :offset;
 
 selectMinAndMaxDate:
-SELECT MIN(date) AS min_date, MAX(date) AS max_date FROM meal_record;
+SELECT MIN(date) AS min_date, MAX(date) AS max_date FROM meal_record WHERE status = 1;
 
 deleteMealRecord:
-DELETE FROM meal_record WHERE id = ?;
+UPDATE meal_record SET status = 0 WHERE id = ?;
 
 deleteMealRecordsByDate:
-DELETE FROM meal_record WHERE date = ?;
+UPDATE meal_record SET status = 0 WHERE date = ?;
 
 -- ===== meal_record_dish =====
 
 deleteMealRecordDishesByDate:
-DELETE FROM meal_record_dish
+UPDATE meal_record_dish
+SET status = 0
 WHERE meal_record_id IN (SELECT id FROM meal_record WHERE date = ?);
 
 insertMealRecordDish:
-INSERT OR IGNORE INTO meal_record_dish(meal_record_id, dish_id, sort_order)
-VALUES (?, ?, ?);
+INSERT OR REPLACE INTO meal_record_dish(meal_record_id, dish_id, sort_order, status)
+VALUES (?, ?, ?, 1);
 
 incrementDishPreference:
 UPDATE dish
@@ -636,27 +667,38 @@ UPDATE dish
 selectDishesOfMealRecord:
 SELECT d.*, mrd.sort_order FROM dish d
 JOIN meal_record_dish mrd ON d.id = mrd.dish_id
-WHERE mrd.meal_record_id = ?
+WHERE mrd.meal_record_id = ? AND mrd.status = 1 AND d.status = 1
 ORDER BY mrd.sort_order, d.name;
 
 -- [AI修改] 批量读取多条餐食记录下的菜品，减少首页计划和食历窗口的 N+1 查询。
 selectDishesOfMealRecords:
 SELECT mrd.meal_record_id, d.*, mrd.sort_order FROM dish d
 JOIN meal_record_dish mrd ON d.id = mrd.dish_id
-WHERE mrd.meal_record_id IN ?
+WHERE mrd.meal_record_id IN ? AND mrd.status = 1 AND d.status = 1
 ORDER BY mrd.meal_record_id, mrd.sort_order, d.name;
 
 selectDishIdsByMealDate:
 SELECT DISTINCT mrd.dish_id
 FROM meal_record_dish mrd
 JOIN meal_record mr ON mrd.meal_record_id = mr.id
-WHERE mr.date = ?;
+WHERE mr.date = ? AND mr.status = 1 AND mrd.status = 1;
+
+-- [AI生成] 删除菜品前检查该菜品被哪些日期/餐次引用，用于给用户明确风险提示。
+selectMealReferencesByDish:
+SELECT mr.date,
+       mt.name AS meal_name,
+       mr.meal_time
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id
+JOIN meal_type mt ON mr.meal_type_id = mt.id
+WHERE mrd.dish_id = ? AND mrd.status = 1 AND mr.status = 1 AND mt.status = 1
+ORDER BY mr.date DESC, mr.meal_time ASC;
 
 deleteMealRecordDishes:
-DELETE FROM meal_record_dish WHERE meal_record_id = ?;
+UPDATE meal_record_dish SET status = 0 WHERE meal_record_id = ?;
 
 removeDishFromMealRecord:
-DELETE FROM meal_record_dish WHERE meal_record_id = ? AND dish_id = ?;
+UPDATE meal_record_dish SET status = 0 WHERE meal_record_id = ? AND dish_id = ?;
 
 -- ===== favorite_combo =====
 
@@ -664,51 +706,55 @@ insertFavoriteCombo:
 INSERT INTO favorite_combo(name, source, created_at) VALUES (?, ?, ?);
 
 selectAllCombos:
-SELECT * FROM favorite_combo ORDER BY created_at DESC;
+SELECT * FROM favorite_combo WHERE status = 1 ORDER BY created_at DESC;
 
 deleteCombo:
-DELETE FROM favorite_combo WHERE id = ?;
+UPDATE favorite_combo SET status = 0 WHERE id = ?;
 
 linkComboDish:
-INSERT OR IGNORE INTO favorite_combo_dish(combo_id, dish_id) VALUES (?, ?);
+INSERT OR REPLACE INTO favorite_combo_dish(combo_id, dish_id, status) VALUES (?, ?, 1);
+
+deleteFavoriteComboDishesByDish:
+UPDATE favorite_combo_dish SET status = 0 WHERE dish_id = ?;
 
 selectDishesOfCombo:
 SELECT d.* FROM dish d
 JOIN favorite_combo_dish fcd ON d.id = fcd.dish_id
-WHERE fcd.combo_id = ?
+WHERE fcd.combo_id = ? AND fcd.status = 1 AND d.status = 1
 ORDER BY d.name;
 
 -- ===== user_preferences =====
 
 upsertPreference:
-INSERT OR REPLACE INTO user_preferences(key, value, updated_at) VALUES (?, ?, ?);
+INSERT OR REPLACE INTO user_preferences(key, value, updated_at, status) VALUES (?, ?, ?, 1);
 
 selectPreference:
-SELECT * FROM user_preferences WHERE key = ?;
+SELECT * FROM user_preferences WHERE key = ? AND status = 1;
 
 selectAllPreferences:
-SELECT * FROM user_preferences;
+SELECT * FROM user_preferences WHERE status = 1;
 
 -- ===== user_health_profile =====
 
 insertHealthProfile:
-INSERT OR IGNORE INTO user_health_profile(crowd_type_id, enabled, created_at) VALUES (?, 1, ?);
+INSERT OR REPLACE INTO user_health_profile(crowd_type_id, enabled, created_at, status) VALUES (?, 1, ?, 1);
 
 updateHealthProfileEnabled:
-UPDATE user_health_profile SET enabled = ? WHERE crowd_type_id = ?;
+UPDATE user_health_profile SET enabled = ?, status = 1 WHERE crowd_type_id = ?;
 
 selectEnabledHealthProfiles:
 SELECT hp.*, ct.name AS crowd_name, ct.description AS crowd_description
 FROM user_health_profile hp
 JOIN crowd_type ct ON hp.crowd_type_id = ct.id
-WHERE hp.enabled = 1
+WHERE hp.enabled = 1 AND hp.status = 1 AND ct.status = 1
 ORDER BY hp.created_at;
 
 selectAllHealthProfiles:
 SELECT hp.*, ct.name AS crowd_name, ct.description AS crowd_description
 FROM user_health_profile hp
 JOIN crowd_type ct ON hp.crowd_type_id = ct.id
+WHERE hp.status = 1 AND ct.status = 1
 ORDER BY hp.created_at;
 
 deleteHealthProfile:
-DELETE FROM user_health_profile WHERE crowd_type_id = ?;
+UPDATE user_health_profile SET status = 0 WHERE crowd_type_id = ?;

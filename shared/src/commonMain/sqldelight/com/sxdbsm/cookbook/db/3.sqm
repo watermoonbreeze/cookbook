@@ -1,0 +1,43 @@
+-- [AI生成] v3 -> v4：全表增加软删除状态字段，1=有效，0=无效。
+ALTER TABLE cooking_method ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE crowd_type ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE measurement_unit ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE ingredient ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE food_category ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE ingredient_category ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE crowd_ingredient ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE dish ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE dish_cooking_method_rel ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE dish_tag ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE dish_tag_rel ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE dish_ingredient ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE dish_crowd ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE meal_type ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE meal_record ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE meal_record_dish ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE favorite_combo ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE favorite_combo_dish ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE user_preferences ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE user_health_profile ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
+
+-- [AI生成] 防御异常旧库或手工改库造成的 NULL 状态值，所有历史数据默认视为有效。
+UPDATE cooking_method SET status = COALESCE(status, 1);
+UPDATE crowd_type SET status = COALESCE(status, 1);
+UPDATE measurement_unit SET status = COALESCE(status, 1);
+UPDATE ingredient SET status = COALESCE(status, 1);
+UPDATE food_category SET status = COALESCE(status, 1);
+UPDATE ingredient_category SET status = COALESCE(status, 1);
+UPDATE crowd_ingredient SET status = COALESCE(status, 1);
+UPDATE dish SET status = COALESCE(status, 1);
+UPDATE dish_cooking_method_rel SET status = COALESCE(status, 1);
+UPDATE dish_tag SET status = COALESCE(status, 1);
+UPDATE dish_tag_rel SET status = COALESCE(status, 1);
+UPDATE dish_ingredient SET status = COALESCE(status, 1);
+UPDATE dish_crowd SET status = COALESCE(status, 1);
+UPDATE meal_type SET status = COALESCE(status, 1);
+UPDATE meal_record SET status = COALESCE(status, 1);
+UPDATE meal_record_dish SET status = COALESCE(status, 1);
+UPDATE favorite_combo SET status = COALESCE(status, 1);
+UPDATE favorite_combo_dish SET status = COALESCE(status, 1);
+UPDATE user_preferences SET status = COALESCE(status, 1);
+UPDATE user_health_profile SET status = COALESCE(status, 1);

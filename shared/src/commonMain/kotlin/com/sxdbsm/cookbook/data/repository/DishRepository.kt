@@ -202,6 +202,17 @@ class DishRepository(private val db: CookbookDatabase) {
     )
 
     /**
+     * 菜品被餐食引用的位置。[AI生成]
+     *
+     * 删除菜品前用于给用户明确提示“被哪一天的哪个餐次引用”。
+     */
+    data class DishMealReference(
+        val date: String,
+        val mealName: String,
+        val mealTime: String,
+    )
+
+    /**
      * 统一组装单个列表用菜品模型，保留给详情附近的少量单条读取场景。[AI修改]
      */
     private fun buildDishMini(
@@ -368,6 +379,22 @@ class DishRepository(private val db: CookbookDatabase) {
      * 删除用户菜品。[AI修改]
      */
     suspend fun deleteDish(id: Long) = withContext(Dispatchers.Default) {
-        q.deleteDish(id)
+        db.transaction {
+            q.deleteFavoriteComboDishesByDish(id) // [AI生成] favorite_combo_dish 对 dish 没有级联删除，先清关联避免外键失败。
+            q.deleteDish(id)
+        }
+    }
+
+    /**
+     * 查询菜品被哪些餐食记录引用。[AI生成]
+     */
+    suspend fun listMealReferencesByDish(id: Long): List<DishMealReference> = withContext(Dispatchers.Default) {
+        q.selectMealReferencesByDish(id).executeAsList().map { row ->
+            DishMealReference(
+                date = row.date,
+                mealName = row.meal_name,
+                mealTime = row.meal_time,
+            )
+        }
     }
 }
