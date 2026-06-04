@@ -44,6 +44,7 @@ class TimelineViewModel(
 
     private val today = DateTime.today() // [AI生成] 当前 ViewModel 生命周期内固定“今天”，避免跨午夜导致索引跳动。
     private var observeJob: Job? = null
+    private var refreshJob: Job? = null // [AI生成] 食历窗口刷新只保留最新任务，避免连续加载时旧结果覆盖新结果。
     private var allDates: List<LocalDate> = emptyList()
     private var loadedStartIndex = 0
     private var loadedEndIndex = -1
@@ -159,7 +160,8 @@ class TimelineViewModel(
      * 按当前日期索引窗口加载真实有记录的食历卡片。[AI生成]
      */
     private fun refreshLoadedPages() {
-        viewModelScope.launch {
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch {
             val visibleDates = if (loadedEndIndex >= loadedStartIndex && allDates.isNotEmpty()) {
                 allDates.subList(loadedStartIndex, loadedEndIndex + 1)
             } else {

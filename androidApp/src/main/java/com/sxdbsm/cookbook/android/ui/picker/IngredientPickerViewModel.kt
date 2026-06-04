@@ -62,11 +62,14 @@ class IngredientPickerViewModel(
     fun configure(excludeIngredientIds: Set<Long>) {
         _state.value = _state.value.copy(
             excludeIngredientIds = excludeIngredientIds,
-            selectedIds = _state.value.selectedIds - excludeIngredientIds,
-            selectedIngredients = _state.value.selectedIngredients.filterNot { it.id in excludeIngredientIds },
+            selectedIds = emptySet(),
+            selectedIngredients = emptyList(),
             ingredients = _state.value.ingredients.filterNot { it.id in excludeIngredientIds },
+            createError = null,
+            operationError = null,
+            lastCreatedIngredientId = null,
         )
-    }
+    } // [AI修改] 选择器每次打开都应是干净状态，避免取消后下次打开仍保留上次已选。
 
     private fun loadCategories() {
         viewModelScope.launch {

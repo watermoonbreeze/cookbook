@@ -1,5 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.newdish
 
+import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,15 +49,29 @@ fun NewDishScreen(
     var ingredientPickerOpen by remember { mutableStateOf(false) }
     var cookingMethodDialogOpen by remember { mutableStateOf(false) }
     var cookingMethodDraft by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     /**
      * 页面入口统一交给 ViewModel 处理，避免编辑、新建、导入在同一实例中串状态。[AI修改]
      */
     LaunchedEffect(editingDishId, importDishId) {
+        Log.d("NewDishEdit", "screen start effect: editingDishId=$editingDishId importDishId=$importDishId") // [AI生成] 记录页面收到的导航参数。
         vm.start(editingDishId, importDishId)
     }
     LaunchedEffect(state.done) {
         if (state.done) onBack()
+    }
+    LaunchedEffect(state.editProbeToastSerial) {
+        val message = state.editProbeToastMessage ?: return@LaunchedEffect
+        Log.d("NewDishEdit", "show edit probe toast: serial=${state.editProbeToastSerial} message=$message") // [AI生成] 记录一次性 Toast 是否被 UI 消费。
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        vm.consumeEditProbeToast()
+    }
+    LaunchedEffect(state.editingId, state.loading, state.name, state.tags.size, state.ingredients.size, state.errorMessage) {
+        Log.d(
+            "NewDishEdit",
+            "ui state snapshot: editingId=${state.editingId} loading=${state.loading} name=${state.name} tags=${state.tags.size} ingredients=${state.ingredients.size} error=${state.errorMessage}",
+        ) // [AI生成] 记录 Compose 实际收到的表单状态，排查“Toast 成功但界面空白”是否为状态覆盖或渲染问题。
     }
 
     Scaffold(

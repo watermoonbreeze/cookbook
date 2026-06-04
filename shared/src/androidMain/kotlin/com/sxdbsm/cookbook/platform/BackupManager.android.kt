@@ -14,7 +14,7 @@ import java.util.Locale
 /**
  * Android 端备份实现。[AI修改]
  *
- * - 备份位置：app 私有外部存储 backups/
+ * - 备份位置：/sdcard/cookbook/backups/
  * - 文件命名：backup_yyyyMMdd_HHmmss.db
  * - 同时拷贝 .db / .db-wal / .db-shm 三个文件
  * - 保留最近 5 个备份，超过自动清理
@@ -26,14 +26,20 @@ actual class BackupManager(
     private val dbName get() = DatabaseDriverFactory.DB_NAME
 
     private val backupDir: File
-        get() = File(context.getExternalFilesDir(null), "backups").apply { mkdirs() }
+        get() = CookbookStorage.requirePublicSubDir("backups")
 
     private val currentDb: File
-        get() = context.getDatabasePath(dbName)
+        get() {
+            check(CookbookStorage.hasPublicStorageAccess(context)) {
+                "备份数据库前必须先获取 /sdcard/cookbook 访问权限"
+            } // [AI修改] 数据库已迁移到公共目录，备份必须读取同一个真实库文件。
+            return File(CookbookStorage.requirePublicSubDir(CookbookStorage.DB_DIR_NAME), dbName)
+        }
 
     actual suspend fun createBackup(): BackupInfo = withContext(Dispatchers.IO) {
         val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val target = File(backupDir, "backup_${ts}.db")
+        require(currentDb.exists()) { "Database file not found: ${currentDb.absolutePath}" }
 
         // [AI修改] 强制 wal checkpoint，把 WAL 内容写回主 db，避免只复制主 db 时遗漏最近写入。
         runCatching {

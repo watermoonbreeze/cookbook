@@ -9,6 +9,7 @@ import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 /**
  * 用户偏好仓库。[AI修改]
@@ -29,19 +30,21 @@ class PreferenceRepository(private val db: CookbookDatabase) {
     /**
      * 写入主题模式。[AI修改]
      */
-    suspend fun setThemeMode(mode: ThemeMode) {
+    suspend fun setThemeMode(mode: ThemeMode) = withContext(Dispatchers.Default) {
         q.upsertPreference(PreferenceKeys.THEME_MODE, mode.code, DateTime.nowEpochSeconds())
     }
 
     /**
      * 读取任意偏好 key。[AI修改]
      */
-    suspend fun get(key: String): String? = q.selectPreference(key).executeAsOneOrNull()?.value_
+    suspend fun get(key: String): String? = withContext(Dispatchers.Default) {
+        q.selectPreference(key).executeAsOneOrNull()?.value_
+    }
 
     /**
      * 写入任意偏好 key。[AI修改]
      */
-    suspend fun set(key: String, value: String) {
+    suspend fun set(key: String, value: String) = withContext(Dispatchers.Default) {
         q.upsertPreference(key, value, DateTime.nowEpochSeconds())
     }
 }

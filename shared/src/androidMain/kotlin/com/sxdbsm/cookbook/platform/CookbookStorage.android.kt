@@ -29,7 +29,7 @@ object CookbookStorage {
     fun hasPublicStorageAccess(context: Context): Boolean =
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> Environment.isExternalStorageManager()
-            Build.VERSION.SDK_INT <= Build.VERSION_CODES.P -> {
+            Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q -> {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                     true
                 } else {

@@ -1,6 +1,6 @@
 -- ============================================================
 -- Cookbook 数据库 schema (v1)
--- 设计文档参考: .claude/docs/feature/数据库设计方案.md
+-- 设计文档参考: .codex/docs/feature/数据库设计方案.md
 -- ============================================================
 
 -- ========== 字典/基础表 ==========
@@ -424,6 +424,22 @@ SELECT * FROM dish ORDER BY updated_at DESC;
 selectDishById:
 SELECT * FROM dish WHERE id = ?;
 
+-- [AI生成] 编辑/详情页专用安全读取：旧库可能残留 NULL 文本字段，统一兜底为空字符串，避免表单加载被 SQLDelight 非空映射中断。
+selectDishForEditById:
+SELECT id,
+       COALESCE(name, '') AS name,
+       cooking_method_id,
+       COALESCE(preference, 0) AS preference,
+       COALESCE(special_note, '') AS special_note,
+       COALESCE(description, '') AS description,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(source, 'user') AS source,
+       COALESCE(created_at, 0) AS created_at,
+       COALESCE(updated_at, 0) AS updated_at
+FROM dish
+WHERE id = ?;
+
 selectDishesByPopularity:
 SELECT * FROM dish ORDER BY preference DESC, name COLLATE NOCASE ASC LIMIT ?;
 
@@ -512,8 +528,13 @@ VALUES (?, ?, ?, ?, ?);
 
 selectIngredientsOfDish:
 SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, di.is_main,
-       i.name AS ingredient_name, i.alias, i.pinyin, i.image_path, i.thumbnail_path, i.default_unit_id,
-       u.name AS unit_name
+       COALESCE(i.name, '') AS ingredient_name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       i.default_unit_id,
+       COALESCE(u.name, '') AS unit_name
 FROM dish_ingredient di
 JOIN ingredient i ON di.ingredient_id = i.id
 LEFT JOIN measurement_unit u ON di.unit_id = u.id
@@ -624,6 +645,12 @@ SELECT mrd.meal_record_id, d.*, mrd.sort_order FROM dish d
 JOIN meal_record_dish mrd ON d.id = mrd.dish_id
 WHERE mrd.meal_record_id IN ?
 ORDER BY mrd.meal_record_id, mrd.sort_order, d.name;
+
+selectDishIdsByMealDate:
+SELECT DISTINCT mrd.dish_id
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id
+WHERE mr.date = ?;
 
 deleteMealRecordDishes:
 DELETE FROM meal_record_dish WHERE meal_record_id = ?;

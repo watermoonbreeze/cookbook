@@ -39,7 +39,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     isFixed = it.is_fixed == 1L,
                 )
             }
-        }
+        }.flowOn(Dispatchers.Default)
 
     /**
      * 一次性读取餐次类型。[AI修改]
@@ -229,6 +229,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         val recordIds = mutableListOf<Long>()
         db.transaction {
             // [AI修改] 编辑某天餐食采用整日替换：删除旧记录和写入新记录必须保持原子性。
+            val oldDishIds = q.selectDishIdsByMealDate(dateStr).executeAsList().toSet()
+            val newDishIds = meals.flatMap { it.dishIds }.toSet()
+            val dishIdsToIncrement = newDishIds - oldDishIds // [AI生成] 编辑同一天时不重复抬高已存在菜品的喜爱值。
             q.deleteMealRecordDishesByDate(dateStr)
             q.deleteMealRecordsByDate(dateStr)
             meals.forEach { meal ->
@@ -243,7 +246,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                 recordIds += recordId
                 meal.dishIds.forEachIndexed { index, dishId ->
                     q.insertMealRecordDish(recordId, dishId, index.toLong())
-                    q.incrementDishPreference(now, dishId)
+                    if (dishId in dishIdsToIncrement) q.incrementDishPreference(now, dishId)
                 }
             }
         }

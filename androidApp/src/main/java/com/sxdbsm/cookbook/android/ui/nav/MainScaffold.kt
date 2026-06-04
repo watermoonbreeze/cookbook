@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.nav
 
 import android.app.Activity
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -89,6 +90,7 @@ fun MainScaffold() {
                     onOpenTimeline = { nav.navigateRootTab(Routes.TIMELINE) },
                     onOpenDishes = { nav.navigateRootTab(Routes.DISHES) },
                     onOpenSearch = { nav.navigate(Routes.SEARCH) },
+                    onOpenMine = { nav.navigateRootTab(Routes.MINE) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                 )
@@ -132,6 +134,7 @@ fun MainScaffold() {
                 // [AI修改] 使用路径参数承载编辑/导入 id，避免 query 参数在部分 Navigation 版本下丢失导致误进新建模式。
                 val dishId = entry.arguments?.getLong("dishId")?.takeIf { it > 0 }
                 val importDishId = entry.arguments?.getLong("importDishId")?.takeIf { it > 0 }
+                Log.d("NewDishEdit", "nav newdish args: route=${entry.destination.route} dishId=$dishId importDishId=$importDishId") // [AI生成] 记录导航层解析出的编辑/导入参数，便于排查空白表单。
                 NewDishScreen(
                     editingDishId = dishId,
                     importDishId = importDishId,

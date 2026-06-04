@@ -131,6 +131,14 @@ fun AddDayFoodScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
+            state.errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            } // [AI生成] 保存失败时在表单顶部提示，用户可调整后重试。
             FormFieldLabel("日期", startPadding = 16.dp)
             OutlinedButton(
                 onClick = { dateDialogOpen = true },

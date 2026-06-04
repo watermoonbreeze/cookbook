@@ -33,6 +33,7 @@ fun HomeScreen(
     onOpenTimeline: () -> Unit,
     onOpenDishes: () -> Unit,
     onOpenSearch: () -> Unit,
+    onOpenMine: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
     vm: HomeViewModel = koinViewModel(),
@@ -57,7 +58,7 @@ fun HomeScreen(
                             tint = MaterialTheme.colorScheme.secondary, // [AI修改] 顶栏图标按暖杏规范使用辅助色。
                         )
                     }
-                    IconButton(onClick = { /* 主题快捷切换：跳到我的页或直接切换三档 */ }) {
+                    IconButton(onClick = onOpenMine) {
                         Icon(
                             Icons.Outlined.WbSunny,
                             contentDescription = "主题",

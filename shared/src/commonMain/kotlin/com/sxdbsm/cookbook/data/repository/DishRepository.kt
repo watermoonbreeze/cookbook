@@ -4,6 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.sxdbsm.cookbook.db.CookbookDatabase
+import com.sxdbsm.cookbook.db.SelectDishForEditById
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -228,15 +229,15 @@ class DishRepository(private val db: CookbookDatabase) {
      * 监听某个菜品详情。[AI修改]
      */
     fun observeDishById(id: Long): Flow<Dish?> =
-        q.selectDishById(id).asFlow().mapToOneOrNull(Dispatchers.Default).map { row ->
-            row?.let { loadFullDish(id, it) }
+        q.selectDishForEditById(id).asFlow().mapToOneOrNull(Dispatchers.Default).map { row ->
+            row?.let { loadFullDish(it) }
         }.flowOn(Dispatchers.Default)
 
     /**
      * 一次性读取某个菜品详情。[AI修改]
      */
     suspend fun getDishById(id: Long): Dish? = withContext(Dispatchers.Default) {
-        q.selectDishById(id).executeAsOneOrNull()?.let { row -> loadFullDish(id, row) }
+        q.selectDishForEditById(id).executeAsOneOrNull()?.let { row -> loadFullDish(row) }
     }
 
     /**
@@ -244,7 +245,8 @@ class DishRepository(private val db: CookbookDatabase) {
      *
      * SQLDelight 的主表行只含 dish 自身字段，标签和食材需要额外查询后合并。
      */
-    private fun loadFullDish(id: Long, row: com.sxdbsm.cookbook.db.Dish): Dish {
+    private fun loadFullDish(row: SelectDishForEditById): Dish {
+        val id = row.id // [AI修改] 编辑/详情统一使用安全查询返回的真实主键，避免路由 id 与行 id 混用。
         val relMethods = q.selectCookingMethodsByDish(id).executeAsList().map { CookingMethod(id = it.id, name = it.name) }
         val fallbackMethod = row.cooking_method_id?.let { q.selectCookingMethodById(it).executeAsOneOrNull() }
             ?.let { CookingMethod(id = it.id, name = it.name) }

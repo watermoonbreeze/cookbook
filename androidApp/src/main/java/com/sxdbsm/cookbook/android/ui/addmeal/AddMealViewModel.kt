@@ -47,6 +47,7 @@ data class AddMealUiState(
     val isPlan: Boolean = false,
     val saving: Boolean = false,
     val done: Boolean = false,
+    val errorMessage: String? = null,
 ) {
     /**
      * 页面是否允许保存。[AI生成]
@@ -203,8 +204,16 @@ class AddMealViewModel(
         viewModelScope.launch {
             // [AI修改] viewModelScope 会随 ViewModel 销毁自动取消，避免页面关闭后继续持有 UI。
             _state.value = s.copy(saving = true)
-            mealRepo.saveDayMeals(date = s.date, meals = drafts)
-            _state.value = _state.value.copy(saving = false, done = true)
+            runCatching {
+                mealRepo.saveDayMeals(date = s.date, meals = drafts)
+            }.onSuccess {
+                _state.value = _state.value.copy(saving = false, done = true, errorMessage = null)
+            }.onFailure {
+                _state.value = _state.value.copy(
+                    saving = false,
+                    errorMessage = "保存餐食失败，请检查数据后重试",
+                )
+            } // [AI生成] 保存失败时保持页面可操作并给出错误提示，避免崩溃或卡在保存中。
         }
     }
 

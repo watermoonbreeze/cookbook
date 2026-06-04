@@ -56,8 +56,8 @@ data class StoredImagePair(
 /**
  * 系统图片选择按钮。[AI修改]
  *
- * 支持拍照或从相册选择，最多保存 3 张图片。图片进入业务字段前会先压缩到
- * `filesDir/images/`，`image_path` 保存压缩后的本地文件路径，避免列表展示时解码原图造成卡顿。
+ * 支持拍照或从相册选择，最多保存 3 张图片。图片进入业务字段前会保存到
+ * `/sdcard/cookbook/img/`，`image_path` 保存原图，`thumbnail_path` 保存缩略图。[AI修改]
  */
 @Composable
 fun ImagePickerButton(
@@ -72,22 +72,28 @@ fun ImagePickerButton(
     var chooserOpen by remember { mutableStateOf(false) }
     var processing by remember { mutableStateOf(false) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         val remaining = maxCount - imagePaths.size
         if (remaining > 0 && uris.isNotEmpty()) {
             processing = true
+            errorMessage = null
             scope.launch {
                 val saved = withContext(Dispatchers.IO) {
                     uris.take(remaining).mapNotNull { uri ->
                         saveImagePair(context.applicationContext, uri)
                     }
                 }
-                // [AI修改] image_path 保存原图路径，thumbnail_path 保存缩略图路径，多图仍沿用 `|` 分隔规则。
-                onImagesChanged(
-                    (imagePaths + saved.map { it.imagePath }).distinct().take(maxCount),
-                    (thumbnailPaths + saved.map { it.thumbnailPath }).distinct().take(maxCount),
-                )
+                if (saved.isEmpty()) {
+                    errorMessage = "图片保存失败，请确认存储权限后重试"
+                } else {
+                    // [AI修改] image_path 保存原图路径，thumbnail_path 保存缩略图路径，多图仍沿用 `|` 分隔规则。
+                    onImagesChanged(
+                        (imagePaths + saved.map { it.imagePath }).distinct().take(maxCount),
+                        (thumbnailPaths + saved.map { it.thumbnailPath }).distinct().take(maxCount),
+                    )
+                }
                 processing = false
             }
         }
@@ -96,6 +102,7 @@ fun ImagePickerButton(
         val uri = pendingCameraUri
         if (success && uri != null) {
             processing = true
+            errorMessage = null
             scope.launch {
                 val saved = withContext(Dispatchers.IO) {
                     saveImagePair(context.applicationContext, uri)
@@ -107,9 +114,13 @@ fun ImagePickerButton(
                         (thumbnailPaths + saved.thumbnailPath).distinct().take(maxCount),
                     )
                     deleteTempCameraFile(context.applicationContext, uri)
+                } else {
+                    errorMessage = "照片保存失败，请确认存储权限后重试"
                 }
                 processing = false
             }
+        } else if (!success) {
+            errorMessage = "拍照已取消或未生成照片"
         }
     }
 
@@ -122,6 +133,14 @@ fun ImagePickerButton(
             Spacer(Modifier.width(6.dp))
             Text(if (processing) "压缩中..." else "添加图片 ${imagePaths.size}/$maxCount")
         }
+        errorMessage?.let { message ->
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        } // [AI生成] 图片保存失败时给用户明确反馈，避免误以为照片已保存。
         if (imagePaths.isNotEmpty()) {
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {

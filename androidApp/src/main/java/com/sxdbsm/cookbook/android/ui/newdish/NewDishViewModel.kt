@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.newdish
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
@@ -13,6 +14,7 @@ import com.sxdbsm.cookbook.domain.model.MeasurementUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -36,6 +38,8 @@ data class NewDishUiState(
     val thumbnailPath: String = "",
     val loading: Boolean = false,
     val errorMessage: String? = null,
+    val editProbeToastMessage: String? = null,
+    val editProbeToastSerial: Int = 0,
     val saving: Boolean = false,
     val done: Boolean = false,
 
@@ -56,13 +60,25 @@ class NewDishViewModel(
 
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
     val state: StateFlow<NewDishUiState> = _state.asStateFlow() // [AI修改] UI 只能观察，不能直接改。
+    private var activeStartKey: String? = null // [AI生成] 记录当前路由参数，避免同一编辑页重复触发 start 清空表单。
+
+    private companion object {
+        private const val TAG = "NewDishEdit" // [AI生成] 菜品编辑链路统一日志 Tag，方便 logcat 过滤排查。
+    }
+
     init {
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
-            _state.value = _state.value.copy(
-                availableUnits = ingredientRepo.listMeasurementUnits(),
-                availableCookingMethods = dishRepo.listCookingMethods(),
-            )
+            // [AI修改] 先把挂起查询结果放到局部变量，再基于最新 state 合并，避免旧空表单快照覆盖编辑加载结果。
+            val units = ingredientRepo.listMeasurementUnits()
+            val cookingMethods = dishRepo.listCookingMethods()
+            _state.update { current ->
+                Log.d(TAG, "init dictionaries merged: currentEditId=${current.editingId} currentName=${current.name} units=${units.size} methods=${cookingMethods.size}")
+                current.copy(
+                    availableUnits = units,
+                    availableCookingMethods = cookingMethods,
+                )
+            }
         }
     }
 
@@ -76,6 +92,13 @@ class NewDishViewModel(
         val editId = editingDishId?.takeIf { it > 0L }
         val sourceId = importDishId?.takeIf { it > 0L }
         val current = _state.value
+        val startKey = "edit=${editId ?: -1L};import=${sourceId ?: -1L}"
+        if (activeStartKey == startKey) {
+            Log.d(TAG, "skip duplicate start: key=$startKey loading=${current.loading} name=${current.name} error=${current.errorMessage}")
+            return
+        } // [AI修改] 同一路由参数重复进入时绝不重置表单，避免加载成功后被空状态覆盖。
+        Log.d(TAG, "start: key=$startKey currentName=${current.name} currentEditId=${current.editingId}")
+        activeStartKey = startKey
         _state.value = NewDishUiState(
             editingId = editId,
             availableUnits = current.availableUnits,
@@ -94,6 +117,7 @@ class NewDishViewModel(
      */
     fun loadForEdit(dishId: Long) {
         viewModelScope.launch {
+            Log.d(TAG, "loadForEdit begin: dishId=$dishId")
             _state.value = _state.value.copy(
                 editingId = dishId,
                 loading = true,
@@ -104,12 +128,16 @@ class NewDishViewModel(
             runCatching { dishRepo.getDishById(dishId) }
                 .onSuccess { d ->
                     if (d == null) {
+                        Log.w(TAG, "loadForEdit empty: dishId=$dishId")
                         _state.value = _state.value.copy(
                             loading = false,
                             saving = false,
                             errorMessage = "未找到要编辑的菜品",
+                            editProbeToastMessage = "编辑菜品 ID=$dishId 当前为空",
+                            editProbeToastSerial = _state.value.editProbeToastSerial + 1,
                         ) // [AI生成] 避免编辑页标题正确但表单空白时没有任何提示。
                     } else {
+                        Log.d(TAG, "loadForEdit success: dishId=$dishId loadedId=${d.id} name=${d.name} tags=${d.tags.size} ingredients=${d.ingredients.size}")
                         _state.value = _state.value.copy(
                             editingId = d.id,
                             name = d.name,
@@ -127,17 +155,31 @@ class NewDishViewModel(
                             errorMessage = null,
                             done = false,
                             saving = false,
+                            editProbeToastMessage = "正在编辑：${d.name} ID=${d.id}",
+                            editProbeToastSerial = _state.value.editProbeToastSerial + 1,
                         )
                     }
                 }
-                .onFailure {
+                .onFailure { error ->
+                    Log.e(TAG, "loadForEdit failed: dishId=$dishId", error)
                     _state.value = _state.value.copy(
                         loading = false,
                         saving = false,
                         errorMessage = "加载菜品失败，请返回后重试",
+                        editProbeToastMessage = "编辑菜品 ID=$dishId 加载失败：加载菜品失败，请返回后重试",
+                        editProbeToastSerial = _state.value.editProbeToastSerial + 1,
                     )
                 }
         }
+    }
+
+    /**
+     * 消费编辑诊断 Toast。[AI生成]
+     *
+     * Toast 是一次性事件，展示后清空消息但保留序号，避免 Compose 重组或返回前台时重复弹出。
+     */
+    fun consumeEditProbeToast() {
+        _state.update { it.copy(editProbeToastMessage = null) } // [AI修改] 只清一次性消息，保留最新表单字段。
     }
 
     /** 从其他菜品导入，回填字段并自动加 #复制 标签。[AI修改] */

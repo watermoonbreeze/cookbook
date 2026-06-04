@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -108,7 +109,7 @@ class MainActivity : ComponentActivity() {
                 runCatching { startActivity(intent) }
                     .onFailure { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
             }
-            Build.VERSION.SDK_INT <= Build.VERSION_CODES.P -> {
+            Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q -> {
                 legacyStoragePermissionLauncher.launch(
                     arrayOf(
                         Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -122,10 +123,28 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun CookbookAppContent() {
-        LaunchedEffect(Unit) {
+        var initialized by remember { mutableStateOf(false) }
+        var initError by remember { mutableStateOf<String?>(null) }
+        var initAttempt by remember { mutableStateOf(0) }
+        LaunchedEffect(initAttempt) {
+            initError = null
             // [AI修改] seed 放到权限和公共目录准备之后，避免 Application 启动时提前创建数据库。
-            runCatching { seeder.seedIfNeeded() }.onFailure { it.printStackTrace() }
+            runCatching { seeder.seedIfNeeded() }
+                .onSuccess { initialized = true }
+                .onFailure {
+                    it.printStackTrace()
+                    initError = "初始化数据失败，请重启应用重试"
+                }
         }
+        if (!initialized) {
+            InitializingScreen(
+                message = initError ?: "初始化数据中...",
+                failed = initError != null,
+                onRetry = { initAttempt++ },
+            )
+            return
+        } // [AI修改] 等旧库 NULL 清洗和预置数据初始化完成后，才允许进入首页/编辑页。
+
         // [AI修改] collectAsState 会把 Flow 转成 Compose State，主题变化后界面自动重组。
         val mode by prefs.observeThemeMode().collectAsState(initial = ThemeMode.SYSTEM)
         val systemDark = isSystemInDarkTheme()
@@ -143,6 +162,36 @@ class MainActivity : ComponentActivity() {
         }
         CookbookTheme(themeMode = mode) {
             MainScaffold()
+        }
+    }
+
+    @Composable
+    private fun InitializingScreen(message: String, failed: Boolean, onRetry: () -> Unit) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                if (!failed) {
+                    CircularProgressIndicator()
+                    Spacer(Modifier.height(16.dp))
+                }
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+                if (failed) {
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = onRetry) {
+                        Text("重试")
+                    }
+                } // [AI生成] 初始化失败允许用户重试，避免停留在不可恢复页面。
+            }
         }
     }
 
@@ -184,7 +233,7 @@ class MainActivity : ComponentActivity() {
                 Button(onClick = onRequestPermission) {
                     Text(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) "打开所有文件访问权限" else "授权读写存储")
                 }
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q &&
                     ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                 ) {
                     LaunchedEffect(Unit) { onCheckPermission() }
