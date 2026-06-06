@@ -9,6 +9,8 @@ import com.sxdbsm.cookbook.domain.model.HealthProfile
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.platform.BackupInfo
 import com.sxdbsm.cookbook.platform.BackupManager
+import com.sxdbsm.cookbook.android.util.LogFileInfo
+import com.sxdbsm.cookbook.android.util.LogFileManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +38,7 @@ class MineViewModel(
     private val prefs: PreferenceRepository,
     private val health: HealthProfileRepository,
     private val backup: BackupManager,
+    private val logFileManager: LogFileManager,
 ) : ViewModel() {
 
     /**
@@ -53,6 +56,12 @@ class MineViewModel(
     private val _backups = MutableStateFlow<List<BackupInfo>>(emptyList()) // [AI修改] 备份列表需要手动刷新。
     val backups: StateFlow<List<BackupInfo>> = _backups.asStateFlow() // [AI修改] 对 UI 暴露只读备份列表。
 
+    private val _logFiles = MutableStateFlow<List<LogFileInfo>>(emptyList()) // [AI生成] 日志文件列表需要进入弹框时刷新。
+    val logFiles: StateFlow<List<LogFileInfo>> = _logFiles.asStateFlow()
+
+    private val _selectedLogContent = MutableStateFlow("") // [AI生成] 当前查看的日志文件内容。
+    val selectedLogContent: StateFlow<String> = _selectedLogContent.asStateFlow()
+
     private val _crowdTypes = MutableStateFlow<List<CrowdType>>(emptyList()) // [AI生成] 健康档案弹框展示系统支持的人群类型。
     val crowdTypes: StateFlow<List<CrowdType>> = _crowdTypes.asStateFlow()
 
@@ -68,6 +77,20 @@ class MineViewModel(
 
     fun refreshBackups() {
         viewModelScope.launch { _backups.value = backup.listBackups() }
+    }
+
+    /**
+     * 刷新 `/sdcard/cookbook/log/` 下的日志文件列表。[AI生成]
+     */
+    fun refreshLogFiles() {
+        viewModelScope.launch { _logFiles.value = logFileManager.listLogFiles() }
+    }
+
+    /**
+     * 读取指定日志文件详情。[AI生成]
+     */
+    fun readLogFile(fileName: String) {
+        viewModelScope.launch { _selectedLogContent.value = logFileManager.readLog(fileName) }
     }
 
     /**

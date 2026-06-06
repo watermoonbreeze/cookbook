@@ -10,6 +10,7 @@ import com.sxdbsm.cookbook.android.ui.mine.MineViewModel
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerViewModel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerViewModel
 import com.sxdbsm.cookbook.android.ui.search.SearchViewModel
+import com.sxdbsm.cookbook.android.util.LogFileManager
 import com.sxdbsm.cookbook.platform.BackupManager
 import com.sxdbsm.cookbook.platform.DatabaseDriverFactory
 import org.koin.android.ext.koin.androidContext
@@ -24,6 +25,7 @@ import org.koin.dsl.module
 val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { BackupManager(context = androidContext(), driverProvider = { get() }) }
+    single { LogFileManager() } // [AI生成] 我的页日志查看读取 /sdcard/cookbook/log/。
 
     viewModel { HomeViewModel(get(), get(), get()) } // [AI修改] 首页主题弹框需要读取/写入主题偏好。
     viewModel { DishesViewModel(get(), get()) }
@@ -31,7 +33,7 @@ val androidModule = module {
     viewModel { NewDishViewModel(get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用。
     viewModel { TimelineViewModel(get()) }
-    viewModel { MineViewModel(get(), get(), get()) }
+    viewModel { MineViewModel(get(), get(), get(), get()) }
     viewModel { IngredientPickerViewModel(get(), get()) }
     viewModel { DishPickerViewModel(get()) }
     viewModel { SearchViewModel(get(), get(), get()) }

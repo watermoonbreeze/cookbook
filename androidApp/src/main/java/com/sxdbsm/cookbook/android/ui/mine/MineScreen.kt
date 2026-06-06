@@ -19,6 +19,7 @@ import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.platform.BackupInfo
+import com.sxdbsm.cookbook.android.util.LogFileInfo
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -33,13 +34,23 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
     val profiles by vm.profiles.collectAsStateWithLifecycle()
     val crowdTypes by vm.crowdTypes.collectAsStateWithLifecycle()
     val backups by vm.backups.collectAsStateWithLifecycle()
+    val logFiles by vm.logFiles.collectAsStateWithLifecycle()
+    val selectedLogContent by vm.selectedLogContent.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var themeDialogOpen by remember { mutableStateOf(false) }
     var healthDialogOpen by remember { mutableStateOf(false) }
     var backupDialogOpen by remember { mutableStateOf(false) }
+    var logDialogOpen by remember { mutableStateOf(false) }
+    var selectedLogFileName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(backupDialogOpen) {
         if (backupDialogOpen) vm.refreshBackups()
+    }
+    LaunchedEffect(logDialogOpen) {
+        if (logDialogOpen) vm.refreshLogFiles()
+    }
+    LaunchedEffect(selectedLogFileName) {
+        selectedLogFileName?.let { vm.readLogFile(it) }
     }
 
     Column(
@@ -109,6 +120,9 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
         SettingRow(icon = Icons.Outlined.Save, title = "本地备份与恢复", subtitle = "创建、恢复或删除本地备份", trailing = "▸") {
             backupDialogOpen = true
         }
+        SettingRow(icon = Icons.Outlined.Article, title = "日志查看", subtitle = "查看 /sdcard/cookbook/log/ 下的预测试日志", trailing = "▸") {
+            logDialogOpen = true
+        }
 
         GroupTitle("实用工具")
         SettingRow(
@@ -167,6 +181,24 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
                     android.widget.Toast.makeText(context, "备份已删除", android.widget.Toast.LENGTH_SHORT).show()
                 }
             },
+        )
+    }
+
+    if (logDialogOpen) {
+        LogFileListDialog(
+            files = logFiles,
+            onDismiss = { logDialogOpen = false },
+            onOpen = { file ->
+                selectedLogFileName = file.fileName
+            },
+        )
+    }
+
+    selectedLogFileName?.let { fileName ->
+        LogFileDetailDialog(
+            fileName = fileName,
+            content = selectedLogContent,
+            onDismiss = { selectedLogFileName = null },
         )
     }
 }
@@ -342,6 +374,91 @@ private fun BackupRow(
         }
         Divider(color = MaterialTheme.colorScheme.outlineVariant)
     }
+}
+
+/**
+ * 日志文件列表弹框。[AI生成]
+ */
+@Composable
+private fun LogFileListDialog(
+    files: List<LogFileInfo>,
+    onDismiss: () -> Unit,
+    onOpen: (LogFileInfo) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("日志查看") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                if (files.isEmpty()) {
+                    Text("暂无日志文件", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    files.forEach { file ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onOpen(file) }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Outlined.Article, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
+                            Spacer(Modifier.width(10.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(file.fileName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    formatBackupSize(file.sizeBytes),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Text("▸", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
+}
+
+/**
+ * 日志详情弹框。[AI生成]
+ */
+@Composable
+private fun LogFileDetailDialog(
+    fileName: String,
+    content: String,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(fileName) },
+        text = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 460.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                Text(
+                    text = content.ifBlank { "日志为空" },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
 }
 
 private fun formatBackupSize(bytes: Long): String =

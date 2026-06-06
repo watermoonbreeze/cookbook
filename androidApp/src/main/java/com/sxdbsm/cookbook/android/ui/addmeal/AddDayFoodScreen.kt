@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.addmeal
 
+import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -98,16 +99,24 @@ fun AddDayFoodScreen(
     var saveComboBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
     var comboNameDraft by rememberSaveable { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        AppLogger.d("MealFlow", "AddDayFoodScreen enter: editDate=$editDate createdDishId=$createdDishId") // [AI生成] 记录添加/编辑餐食页入口参数，便于排查路由与状态是否匹配。
+    }
     LaunchedEffect(state.done) {
-        if (state.done) onBack()
+        if (state.done) {
+            AppLogger.d("MealFlow", "AddDayFoodScreen done: date=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 保存完成后记录返回前状态摘要。
+            onBack()
+        }
     }
     LaunchedEffect(editDate) {
-        editDate?.let { vm.setDate(it) }
+        AppLogger.d("MealFlow", "configure by editDate effect: editDate=$editDate currentDate=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 记录入口日期配置，排查返回后是否误重载旧餐食。
+        vm.configure(editDate) // [AI修改] 入口日期只做初始化配置；返回新建菜品时避免重新加载数据库旧餐食覆盖未保存编辑。
     }
     LaunchedEffect(createdDishId) {
         val dishId = createdDishId?.takeIf { it > 0 } ?: return@LaunchedEffect
-        pickerOpen = true // [AI生成] 返回后保持菜品库语境，用户能看到刚加入的菜品已被选中。
+        AppLogger.d("MealFlow", "created dish consumed: dishId=$dishId targetBlock=${pickingBlockId ?: state.activeBlockId} pickerOpenBefore=$pickerOpen") // [AI生成] 记录新建菜品回传后加入哪个餐食模块。
         vm.addCreatedDish(dishId, pickingBlockId ?: state.activeBlockId)
+        pickerOpen = true // [AI修改] 返回后继续停留在菜品选择流程，并由 DishPicker 重新读取最新菜品列表。
         onCreatedDishConsumed()
     }
 
@@ -191,6 +200,7 @@ fun AddDayFoodScreen(
                     onAddDish = {
                         vm.setActiveBlock(block.id)
                         pickingBlockId = block.id
+                        AppLogger.d("MealFlow", "open dish picker: blockId=${block.id} date=${state.date} mealTypeId=${block.mealTypeId} existingDishes=${block.dishes.map { it.id }}") // [AI生成] 记录打开菜品选择器时的餐次和已有菜品。
                         pickerOpen = true
                     },
                     onRemoveDish = { dishId -> vm.removeDish(block.id, dishId) },
@@ -198,7 +208,11 @@ fun AddDayFoodScreen(
                     onRemoveBlock = { vm.removeMealBlock(block.id) },
                     onOpenCombos = { comboPickerBlockId = block.id },
                     onSaveCombo = {
-                        comboNameDraft = mealNameForBlock(block, state.mealTypes)
+                        comboNameDraft = comboNameForBlock(
+                            date = state.date,
+                            block = block,
+                            mealTypes = state.mealTypes,
+                        )
                         saveComboBlockId = block.id
                     },
                     hasCombos = state.favoriteCombos.isNotEmpty(),
@@ -249,19 +263,22 @@ fun AddDayFoodScreen(
         val blockId = pickingBlockId ?: state.activeBlockId
         val block = state.mealBlocks.firstOrNull { it.id == blockId }
         val mealName = state.mealTypes.firstOrNull { it.id == block?.mealTypeId }?.name.orEmpty()
+        AppLogger.d("MealFlow", "compose dish picker: blockId=$blockId mealName=$mealName selected=${block?.dishes?.map { it.id }} pickerOpen=$pickerOpen") // [AI生成] 记录弹框组合时传入的已选菜品，排查勾选状态。
         DishPickerScreen(
             title = if (mealName.isBlank()) "添加菜品" else "添加到$mealName",
             multiSelect = true,
-            initialSelected = emptyList(),
-            excludeDishIds = block?.dishes?.map { it.id }?.toSet() ?: emptySet(),
+            initialSelected = block?.dishes ?: emptyList(),
+            excludeDishIds = emptySet(), // [AI修改] 当前餐次已有菜品在弹框内以勾选态展示，避免新建菜品回填后被排除导致看不到。
             showRecentChips = true,
             showAddNewButton = true,
             onDismiss = { pickerOpen = false },
             onAddNewDish = {
-                pickerOpen = false // [AI生成] 跳转新建菜品前关闭弹框，返回后再由 createdDishId 自动打开并选中。
+                AppLogger.d("MealFlow", "navigate add new dish from picker: blockId=$blockId selected=${block?.dishes?.map { it.id }}") // [AI生成] 记录从添加餐食的菜品库跳转新建菜品前的上下文。
+                pickerOpen = false // [AI修改] 跳转新建菜品前先关闭当前弹框；保存返回后重新打开并刷新菜品库。
                 onAddNewDish()
             },
             onConfirm = { selected ->
+                AppLogger.d("MealFlow", "dish picker confirm: blockId=$blockId selected=${selected.map { it.id }}") // [AI生成] 记录菜品选择确认结果。
                 if (blockId != null) vm.addDishes(blockId, selected)
             },
         )
@@ -485,9 +502,10 @@ private fun SaveComboDialog(
     )
 }
 
-private fun mealNameForBlock(block: MealBlockUiState, mealTypes: List<MealType>): String {
+private fun comboNameForBlock(date: LocalDate, block: MealBlockUiState, mealTypes: List<MealType>): String {
     val mealName = mealTypes.firstOrNull { it.id == block.mealTypeId }?.name ?: "餐食"
-    return "$mealName 组合"
+    val timeText = block.mealTime?.formatForUi() ?: "未定时间"
+    return "${date} ${mealName} ${timeText}" // [AI修改] 默认组合名只保留日期、餐次、时间，菜品数量由弹框内容表达。
 }
 
 /**

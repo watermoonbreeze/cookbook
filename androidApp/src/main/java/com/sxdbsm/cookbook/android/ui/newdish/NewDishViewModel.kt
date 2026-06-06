@@ -1,6 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.newdish
 
-import android.util.Log
+import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
@@ -74,7 +74,7 @@ class NewDishViewModel(
             val units = ingredientRepo.listMeasurementUnits()
             val cookingMethods = dishRepo.listCookingMethods()
             _state.update { current ->
-                Log.d(TAG, "init dictionaries merged: currentEditId=${current.editingId} currentName=${current.name} units=${units.size} methods=${cookingMethods.size}")
+                AppLogger.d(TAG, "init dictionaries merged: currentEditId=${current.editingId} currentName=${current.name} units=${units.size} methods=${cookingMethods.size}")
                 current.copy(
                     availableUnits = units,
                     availableCookingMethods = cookingMethods,
@@ -95,10 +95,10 @@ class NewDishViewModel(
         val current = _state.value
         val startKey = "edit=${editId ?: -1L};import=${sourceId ?: -1L}"
         if (activeStartKey == startKey) {
-            Log.d(TAG, "skip duplicate start: key=$startKey loading=${current.loading} name=${current.name} error=${current.errorMessage}")
+            AppLogger.d(TAG, "skip duplicate start: key=$startKey loading=${current.loading} name=${current.name} error=${current.errorMessage}")
             return
         } // [AI修改] 同一路由参数重复进入时绝不重置表单，避免加载成功后被空状态覆盖。
-        Log.d(TAG, "start: key=$startKey currentName=${current.name} currentEditId=${current.editingId}")
+        AppLogger.d(TAG, "start: key=$startKey currentName=${current.name} currentEditId=${current.editingId}")
         activeStartKey = startKey
         _state.value = NewDishUiState(
             editingId = editId,
@@ -118,7 +118,7 @@ class NewDishViewModel(
      */
     fun loadForEdit(dishId: Long) {
         viewModelScope.launch {
-            Log.d(TAG, "loadForEdit begin: dishId=$dishId")
+            AppLogger.d(TAG, "loadForEdit begin: dishId=$dishId")
             _state.value = _state.value.copy(
                 editingId = dishId,
                 loading = true,
@@ -129,7 +129,7 @@ class NewDishViewModel(
             runCatching { dishRepo.getDishById(dishId) }
                 .onSuccess { d ->
                     if (d == null) {
-                        Log.w(TAG, "loadForEdit empty: dishId=$dishId")
+                        AppLogger.w(TAG, "loadForEdit empty: dishId=$dishId")
                         _state.value = _state.value.copy(
                             loading = false,
                             saving = false,
@@ -138,7 +138,7 @@ class NewDishViewModel(
                             editProbeToastSerial = _state.value.editProbeToastSerial + 1,
                         ) // [AI生成] 避免编辑页标题正确但表单空白时没有任何提示。
                     } else {
-                        Log.d(TAG, "loadForEdit success: dishId=$dishId loadedId=${d.id} name=${d.name} tags=${d.tags.size} ingredients=${d.ingredients.size}")
+                        AppLogger.d(TAG, "loadForEdit success: dishId=$dishId loadedId=${d.id} name=${d.name} tags=${d.tags.size} ingredients=${d.ingredients.size}")
                         _state.value = _state.value.copy(
                             editingId = d.id,
                             name = d.name,
@@ -162,7 +162,7 @@ class NewDishViewModel(
                     }
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "loadForEdit failed: dishId=$dishId", error)
+                    AppLogger.e(TAG, "loadForEdit failed: dishId=$dishId", error)
                     _state.value = _state.value.copy(
                         loading = false,
                         saving = false,
@@ -310,25 +310,52 @@ class NewDishViewModel(
         if (s.name.isBlank() || s.loading) return
         viewModelScope.launch {
             _state.value = s.copy(saving = true)
-            val savedId = dishRepo.saveDish(
-                id = s.editingId ?: 0L,
-                name = s.name.trim(),
-                cookingMethodId = s.cookingMethodId,
-                cookingMethodNames = s.cookingMethodNames,
-                specialNote = s.specialNote,
-                description = s.description,
-                imagePath = s.imagePath,
-                thumbnailPath = s.thumbnailPath,
-                tagNames = s.tags,
-                ingredients = s.ingredients,
-            )
-            _state.value = _state.value.copy(
-                saving = false,
-                done = true,
-                savedDishId = savedId,
-                cookingMethodId = null,
-                availableCookingMethods = dishRepo.listCookingMethods(),
-            )
+            runCatching {
+                dishRepo.saveDish(
+                    id = s.editingId ?: 0L,
+                    name = s.name.trim(),
+                    cookingMethodId = s.cookingMethodId,
+                    cookingMethodNames = s.cookingMethodNames,
+                    specialNote = s.specialNote,
+                    description = s.description,
+                    imagePath = s.imagePath,
+                    thumbnailPath = s.thumbnailPath,
+                    tagNames = s.tags,
+                    ingredients = s.ingredients,
+                )
+            }.onSuccess { savedId ->
+                AppLogger.event(
+                    "new_dish_save",
+                    mapOf(
+                        "dishId" to savedId,
+                        "mode" to if (s.editingId == null) "create" else "edit",
+                        "ingredientCount" to s.ingredients.size,
+                        "tagCount" to s.tags.size,
+                        "imageCount" to s.imagePath.split("|").filter { it.isNotBlank() }.size,
+                        "success" to true,
+                    ),
+                ) // [AI生成] 内测埋点：记录菜品保存成功摘要。
+                _state.value = _state.value.copy(
+                    saving = false,
+                    done = true,
+                    savedDishId = savedId,
+                    cookingMethodId = null,
+                    availableCookingMethods = dishRepo.listCookingMethods(),
+                )
+            }.onFailure { error ->
+                AppLogger.e(TAG, "save dish failed: editingId=${s.editingId}", error) // [AI生成] 保存失败时写入本地日志。
+                AppLogger.event(
+                    "new_dish_save",
+                    mapOf(
+                        "mode" to if (s.editingId == null) "create" else "edit",
+                        "ingredientCount" to s.ingredients.size,
+                        "tagCount" to s.tags.size,
+                        "success" to false,
+                        "errorType" to error.javaClass.simpleName,
+                    ),
+                ) // [AI生成] 内测埋点：记录菜品保存失败摘要。
+                _state.value = _state.value.copy(saving = false, errorMessage = "保存菜品失败，请稍后重试")
+            }
         }
     }
 }

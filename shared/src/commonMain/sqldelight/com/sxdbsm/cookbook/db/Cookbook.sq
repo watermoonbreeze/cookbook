@@ -309,6 +309,37 @@ SELECT * FROM food_category WHERE id = ? AND status = 1;
 countChildren:
 SELECT COUNT(*) FROM food_category WHERE parent_id = ? AND status = 1;
 
+-- [AI生成] 分类管理使用：读取全部有效分类，避免 UI 只看到已展开的局部分类树。
+selectAllFoodCategories:
+SELECT * FROM food_category
+WHERE status = 1
+ORDER BY parent_id IS NOT NULL, sort_order, id;
+
+-- [AI生成] 仅用户自建的通用分类允许编辑名称/图标，预设分类和慢病分类保持只读。
+updateUserFoodCategory:
+UPDATE food_category
+SET name = :name, icon = :icon
+WHERE id = :id
+  AND source = 'user'
+  AND dimension = 'general'
+  AND crowd_type_id IS NULL
+  AND status = 1;
+
+-- [AI生成] 分类删除采用软删除，保留操作痕迹，符合全库 status 字段约定。
+softDeleteUserFoodCategory:
+UPDATE food_category
+SET status = 0
+WHERE id = :id
+  AND source = 'user'
+  AND dimension = 'general'
+  AND crowd_type_id IS NULL;
+
+-- [AI生成] 用户分类被删除后，只解除分类关系，不删除食材本体。
+unlinkIngredientCategoryByCategory:
+UPDATE ingredient_category
+SET status = 0
+WHERE category_id = ?;
+
 -- ===== ingredient =====
 
 insertIngredient:
@@ -416,6 +447,29 @@ FROM ingredient i
 JOIN ingredient_category ic ON i.id = ic.ingredient_id
 WHERE ic.category_id = ? AND i.status = 1 AND ic.status = 1
 ORDER BY i.pinyin, i.name;
+
+-- [AI生成] “最近使用”虚拟分类：按餐食记录引用时间倒序展示被实际使用过的食材。
+selectRecentlyUsedIngredients:
+SELECT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at
+FROM ingredient i
+JOIN dish_ingredient di ON i.id = di.ingredient_id
+JOIN meal_record_dish mrd ON di.dish_id = mrd.dish_id
+JOIN meal_record mr ON mrd.meal_record_id = mr.id
+WHERE i.status = 1
+  AND di.status = 1
+  AND mrd.status = 1
+  AND mr.status = 1
+GROUP BY i.id
+ORDER BY MAX(mr.created_at) DESC, i.name;
 
 selectIngredientsByCrowd:
 SELECT i.id,

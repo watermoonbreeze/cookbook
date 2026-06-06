@@ -47,6 +47,15 @@ class IngredientRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 读取最近被餐食引用过的食材。[AI生成]
+     *
+     * 这是食材选择器左侧“最近使用”虚拟分类的数据源，不落库成真实分类。
+     */
+    suspend fun listRecentlyUsed(): List<Ingredient> = withContext(Dispatchers.Default) {
+        q.selectRecentlyUsedIngredients(::mapIngredientRow).executeAsList()
+    }
+
+    /**
      * 按健康人群查询食材，并附带推荐/限制/避免建议。[AI修改]
      */
     suspend fun listByCrowd(crowdTypeId: Long): List<Ingredient> = withContext(Dispatchers.Default) {
@@ -204,6 +213,27 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 读取全部有效分类。[AI生成]
+     *
+     * 添加食材弹框和分类管理弹框不能依赖左侧是否展开，所以这里单独提供完整列表。
+     */
+    suspend fun listAll(): List<FoodCategory> = withContext(Dispatchers.Default) {
+        q.selectAllFoodCategories().executeAsList().map { row ->
+            FoodCategory(
+                id = row.id,
+                name = row.name,
+                dimension = row.dimension,
+                parentId = row.parent_id,
+                crowdTypeId = row.crowd_type_id,
+                sortOrder = row.sort_order.toInt(),
+                icon = row.icon,
+                source = row.source,
+                hasChildren = q.countChildren(row.id).executeAsOne() > 0,
+            )
+        }
+    }
+
+    /**
      * 按 id 读取分类详情。[AI修改]
      */
     suspend fun get(id: Long): FoodCategory? = withContext(Dispatchers.Default) {
@@ -221,4 +251,75 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
             )
         }
     }
+
+    /**
+     * 创建用户自建通用分类。[AI生成]
+     *
+     * 方案 A 只开放普通食材分类编辑；慢病/营养等维度继续作为预设体系维护。
+     */
+    suspend fun createUserCategory(name: String, parentId: Long?, icon: String = ""): Long = withContext(Dispatchers.Default) {
+        val trimmedName = name.trim()
+        require(trimmedName.isNotBlank()) { "分类名称不能为空" }
+        parentId?.let { parent ->
+            val parentCategory = get(parent)
+            require(parentCategory?.dimension == "general" && parentCategory.crowdTypeId == null) {
+                "只能在普通分类下新增子分类"
+            }
+        }
+        q.insertFoodCategory(
+            name = trimmedName,
+            dimension = "general",
+            parent_id = parentId,
+            crowd_type_id = null,
+            sort_order = DateTime.nowEpochSeconds(),
+            icon = icon.trim(),
+            source = "user",
+            created_at = DateTime.nowEpochSeconds(),
+        )
+        q.lastInsertId().executeAsOne()
+    }
+
+    /**
+     * 编辑用户自建通用分类。[AI生成]
+     */
+    suspend fun renameUserCategory(id: Long, name: String, icon: String = "") = withContext(Dispatchers.Default) {
+        val category = get(id)
+        require(category?.isEditableUserGeneralCategory() == true) { "预设分类不可编辑" }
+        val trimmedName = name.trim()
+        require(trimmedName.isNotBlank()) { "分类名称不能为空" }
+        q.updateUserFoodCategory(name = trimmedName, icon = icon.trim(), id = id)
+    }
+
+    /**
+     * 软删除用户自建通用分类。[AI生成]
+     *
+     * 仅删除分类与食材的关系，不删除食材；有子分类时先阻止，避免形成不可见层级。
+     */
+    suspend fun deleteUserCategory(id: Long) = withContext(Dispatchers.Default) {
+        db.transaction {
+            val category = q.selectCategoryById(id).executeAsOneOrNull()?.let { row ->
+                FoodCategory(
+                    id = row.id,
+                    name = row.name,
+                    dimension = row.dimension,
+                    parentId = row.parent_id,
+                    crowdTypeId = row.crowd_type_id,
+                    sortOrder = row.sort_order.toInt(),
+                    icon = row.icon,
+                    source = row.source,
+                    hasChildren = q.countChildren(row.id).executeAsOne() > 0,
+                )
+            }
+            require(category?.isEditableUserGeneralCategory() == true) { "预设分类不可删除" }
+            require(q.countChildren(id).executeAsOne() == 0L) { "请先删除子分类" }
+            q.unlinkIngredientCategoryByCategory(id) // [AI生成] 只解除分类关系，食材仍保留。
+            q.softDeleteUserFoodCategory(id)
+        }
+    }
+
+    /**
+     * 判断分类是否属于方案 A 允许维护的范围。[AI生成]
+     */
+    private fun FoodCategory.isEditableUserGeneralCategory(): Boolean =
+        source == "user" && dimension == "general" && crowdTypeId == null
 }

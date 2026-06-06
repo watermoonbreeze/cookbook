@@ -44,6 +44,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.nav.MainScaffold
 import com.sxdbsm.cookbook.android.ui.theme.CookbookTheme
+import com.sxdbsm.cookbook.android.util.AppLogger
 import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.domain.model.ThemeMode
@@ -95,6 +96,9 @@ class MainActivity : ComponentActivity() {
             CookbookStorage.migrateAppSpecificCookbookToPublic(this)
             CookbookStorage.requirePublicSubDir(CookbookStorage.DB_DIR_NAME)
             CookbookStorage.requirePublicSubDir(CookbookStorage.IMG_DIR_NAME)
+            CookbookStorage.requirePublicSubDir(CookbookStorage.LOG_DIR_NAME)
+            AppLogger.init(this) // [AI生成] 授权并创建 log 目录后启动文件日志，预测试可导出 /sdcard/cookbook/log/。
+            AppLogger.installCrashHandler() // [AI生成] 预测试期间把未捕获崩溃摘要写入同一份日期日志。
             true
         }.getOrDefault(false)
 
@@ -130,8 +134,12 @@ class MainActivity : ComponentActivity() {
             initError = null
             // [AI修改] seed 放到权限和公共目录准备之后，避免 Application 启动时提前创建数据库。
             runCatching { seeder.seedIfNeeded() }
-                .onSuccess { initialized = true }
+                .onSuccess {
+                    initialized = true
+                    AppLogger.event("app_start", mapOf("storageReady" to true, "initAttempt" to initAttempt)) // [AI生成] 内测埋点：记录应用启动和初始化成功。
+                }
                 .onFailure {
+                    AppLogger.e("AppInit", "seed failed: attempt=$initAttempt", it) // [AI生成] 初始化失败写入本地日志，便于预测试排查。
                     it.printStackTrace()
                     initError = "初始化数据失败，请重启应用重试"
                 }

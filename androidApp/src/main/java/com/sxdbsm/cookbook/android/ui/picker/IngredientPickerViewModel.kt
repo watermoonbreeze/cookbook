@@ -28,7 +28,8 @@ data class CategoryNode(
 data class IngredientPickerUiState(
     val keyword: String = "",
     val tree: List<CategoryNode> = emptyList(),  // "全部" + 一级 + 展开的二级
-    val selectedCategoryId: Long? = null,        // -1 表示"全部"
+    val allCategories: List<FoodCategory> = emptyList(), // [AI生成] 添加食材和分类管理使用完整分类列表，不依赖左侧展开状态。
+    val selectedCategoryId: Long? = null,        // -1 表示"全部"，-2 表示"最近使用"
     val ingredients: List<Ingredient> = emptyList(),
     val selectedIds: Set<Long> = emptySet(),
     val selectedIngredients: List<Ingredient> = emptyList(),
@@ -38,6 +39,9 @@ data class IngredientPickerUiState(
     val operationError: String? = null,
     val lastCreatedIngredientId: Long? = null,
 )
+
+private const val ALL_CATEGORY_ID = -1L // [AI生成] 虚拟分类：全部。
+private const val RECENT_CATEGORY_ID = -2L // [AI生成] 虚拟分类：最近使用。
 
 /**
  * 食材选择器 ViewModel。[AI修改]
@@ -75,7 +79,11 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             val tops = categoryRepo.listTopLevel()
             val tree = tops.map { CategoryNode(it, level = 1) }
-            _state.value = _state.value.copy(tree = tree, selectedCategoryId = -1L /* 全部 */)
+            _state.value = _state.value.copy(
+                tree = tree,
+                allCategories = categoryRepo.listAll(),
+                selectedCategoryId = ALL_CATEGORY_ID /* 全部 */,
+            )
         }
     }
 
@@ -102,8 +110,22 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(
                 keyword = "", // [AI修改] 选择“全部”时清空搜索条件，避免旧关键词影响后续刷新。
-                selectedCategoryId = -1L,
+                selectedCategoryId = ALL_CATEGORY_ID,
                 ingredients = ingredientRepo.search("").withoutExcluded(),
+            )
+        }
+    }
+
+    /**
+     * 选择“最近使用”虚拟分类。[AI生成]
+     */
+    fun selectRecentlyUsed() {
+        searchJob?.cancel()
+        viewModelScope.launch {
+            _state.value = _state.value.copy(
+                keyword = "",
+                selectedCategoryId = RECENT_CATEGORY_ID,
+                ingredients = ingredientRepo.listRecentlyUsed().withoutExcluded(),
             )
         }
     }
@@ -145,6 +167,55 @@ class IngredientPickerViewModel(
                 selectedCategoryId = cat.id,
                 ingredients = ingredients.withoutExcluded(),
             )
+        }
+    }
+
+    /**
+     * 新增用户自建分类。[AI生成]
+     */
+    fun createCategory(name: String, parentId: Long?) {
+        viewModelScope.launch {
+            runCatching {
+                categoryRepo.createUserCategory(name = name, parentId = parentId)
+            }.onSuccess {
+                refreshCategories()
+            }.onFailure { error ->
+                _state.value = _state.value.copy(operationError = error.message ?: "新增分类失败")
+            }
+        }
+    }
+
+    /**
+     * 编辑用户自建分类。[AI生成]
+     */
+    fun renameCategory(category: FoodCategory, name: String) {
+        viewModelScope.launch {
+            runCatching {
+                categoryRepo.renameUserCategory(category.id, name, category.icon)
+            }.onSuccess {
+                refreshCategories()
+                reloadCurrentList()
+            }.onFailure { error ->
+                _state.value = _state.value.copy(operationError = error.message ?: "编辑分类失败")
+            }
+        }
+    }
+
+    /**
+     * 删除用户自建分类。[AI生成]
+     */
+    fun deleteCategory(category: FoodCategory) {
+        viewModelScope.launch {
+            runCatching {
+                categoryRepo.deleteUserCategory(category.id)
+            }.onSuccess {
+                refreshCategories()
+                if (_state.value.selectedCategoryId == category.id) {
+                    selectAll()
+                }
+            }.onFailure { error ->
+                _state.value = _state.value.copy(operationError = error.message ?: "删除分类失败")
+            }
         }
     }
 
@@ -264,7 +335,8 @@ class IngredientPickerViewModel(
     private suspend fun reloadCurrentList() {
         val current = _state.value
         val ingredients = when (val categoryId = current.selectedCategoryId) {
-            null, -1L -> ingredientRepo.search(current.keyword)
+            null, ALL_CATEGORY_ID -> ingredientRepo.search(current.keyword)
+            RECENT_CATEGORY_ID -> ingredientRepo.listRecentlyUsed()
             else -> {
                 val node = current.tree.firstOrNull { it.category.id == categoryId }
                 val crowdId = node?.category?.crowdTypeId
@@ -272,6 +344,17 @@ class IngredientPickerViewModel(
             }
         }
         _state.value = _state.value.copy(ingredients = ingredients.withoutExcluded())
+    }
+
+    /**
+     * 刷新分类树和完整分类列表。[AI生成]
+     */
+    private suspend fun refreshCategories() {
+        val tops = categoryRepo.listTopLevel()
+        _state.value = _state.value.copy(
+            tree = tops.map { CategoryNode(it, level = 1) },
+            allCategories = categoryRepo.listAll(),
+        )
     }
 }
 

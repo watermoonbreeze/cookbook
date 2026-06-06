@@ -8,9 +8,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +34,7 @@ import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
 import com.sxdbsm.cookbook.android.ui.component.IngredientCard
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
+import com.sxdbsm.cookbook.domain.model.FoodCategory
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import org.koin.androidx.compose.koinViewModel
 
@@ -59,6 +65,12 @@ fun IngredientPickerScreen(
     var editIngredientAlias by remember { mutableStateOf("") }
     var editIngredientImages by remember { mutableStateOf<List<String>>(emptyList()) }
     var editIngredientThumbnails by remember { mutableStateOf<List<String>>(emptyList()) }
+    var categoryManageOpen by remember { mutableStateOf(false) } // [AI生成] 分类管理弹框开关。
+    var categoryEditOpen by remember { mutableStateOf(false) } // [AI生成] 新增/编辑分类弹框开关。
+    var categoryEditTarget by remember { mutableStateOf<FoodCategory?>(null) }
+    var categoryDeleteTarget by remember { mutableStateOf<FoodCategory?>(null) }
+    var categoryNameDraft by remember { mutableStateOf("") }
+    var categoryParentIdDraft by remember { mutableStateOf<Long?>(null) }
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -138,6 +150,28 @@ fun IngredientPickerScreen(
                                 selected = ui.selectedCategoryId == -1L,
                                 onClick = { vm.selectAll() },
                             )
+                        }
+                        item {
+                            CategoryItem(
+                                label = "最近使用",
+                                level = 1,
+                                expanded = false,
+                                hasChildren = false,
+                                selected = ui.selectedCategoryId == -2L,
+                                onClick = { vm.selectRecentlyUsed() },
+                            )
+                        }
+                        item {
+                            TextButton(
+                                onClick = { categoryManageOpen = true },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                            ) {
+                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("管理分类")
+                            }
                         }
                         items(ui.tree, key = { "${it.category.id}-${it.level}" }) { node ->
                             CategoryItem(
@@ -254,7 +288,7 @@ fun IngredientPickerScreen(
                         shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
                     )
                     CategoryDropdown(
-                        categories = ui.tree.map { it.category },
+                        categories = ui.allCategories.filter { it.dimension == "general" && it.crowdTypeId == null },
                         selectedCategoryId = newIngredientCategoryId,
                         onSelect = { newIngredientCategoryId = it },
                         enabled = !ui.creatingIngredient,
@@ -388,6 +422,231 @@ fun IngredientPickerScreen(
             },
         )
     }
+
+    if (categoryManageOpen) {
+        CategoryManageDialog(
+            categories = ui.allCategories,
+            onDismiss = { categoryManageOpen = false },
+            onAdd = {
+                categoryManageOpen = false
+                categoryEditTarget = null
+                categoryNameDraft = ""
+                categoryParentIdDraft = null
+                categoryEditOpen = true
+            },
+            onEdit = { category ->
+                categoryManageOpen = false
+                categoryEditTarget = category
+                categoryNameDraft = category.name
+                categoryParentIdDraft = category.parentId
+                categoryEditOpen = true
+            },
+            onDelete = {
+                categoryManageOpen = false
+                categoryDeleteTarget = it
+            },
+        )
+    }
+
+    if (categoryEditOpen) {
+        val editingCategory = categoryEditTarget
+        CategoryEditDialog(
+            editingCategory = editingCategory,
+            categories = ui.allCategories,
+            name = categoryNameDraft,
+            parentId = categoryParentIdDraft,
+            onNameChange = { categoryNameDraft = it },
+            onParentChange = { categoryParentIdDraft = it },
+            onDismiss = {
+                categoryEditOpen = false
+                categoryEditTarget = null
+                categoryNameDraft = ""
+                categoryParentIdDraft = null
+            },
+            onSave = {
+                if (editingCategory == null) {
+                    vm.createCategory(categoryNameDraft, categoryParentIdDraft)
+                } else {
+                    vm.renameCategory(editingCategory, categoryNameDraft)
+                }
+                categoryEditOpen = false
+                categoryEditTarget = null
+                categoryNameDraft = ""
+                categoryParentIdDraft = null
+            },
+        )
+    }
+
+    categoryDeleteTarget?.let { category ->
+        AlertDialog(
+            onDismissRequest = { categoryDeleteTarget = null },
+            title = { Text("删除分类") },
+            text = {
+                Text("确定删除“${category.name}”吗？分类会被软删除，已绑定的食材只解除分类关系，食材本身不会删除。")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.deleteCategory(category)
+                        categoryDeleteTarget = null
+                    },
+                ) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { categoryDeleteTarget = null }) { Text("取消") }
+            },
+        )
+    }
+}
+
+/**
+ * 食材分类管理弹框。[AI生成]
+ *
+ * 方案 A 只允许用户自建的普通分类被编辑/删除，预设分类在这里作为只读参考显示。
+ */
+@Composable
+private fun CategoryManageDialog(
+    categories: List<FoodCategory>,
+    onDismiss: () -> Unit,
+    onAdd: () -> Unit,
+    onEdit: (FoodCategory) -> Unit,
+    onDelete: (FoodCategory) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("管理分类") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                categories.forEach { category ->
+                    val editable = category.isEditableUserGeneralCategory()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (editable) 0.72f else 0.34f))
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "${if (category.parentId == null) "" else "  "}${category.icon.ifBlank { "□" }} ${category.name}",
+                            modifier = Modifier.weight(1f),
+                            color = if (editable) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (editable) {
+                            IconButton(onClick = { onEdit(category) }, modifier = Modifier.size(36.dp)) {
+                                Icon(Icons.Outlined.Edit, contentDescription = "编辑分类")
+                            }
+                            IconButton(onClick = { onDelete(category) }, modifier = Modifier.size(36.dp)) {
+                                Icon(Icons.Outlined.Delete, contentDescription = "删除分类")
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onAdd) {
+                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("新增分类")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
+}
+
+/**
+ * 新增/编辑食材分类弹框。[AI生成]
+ */
+@Composable
+private fun CategoryEditDialog(
+    editingCategory: FoodCategory?,
+    categories: List<FoodCategory>,
+    name: String,
+    parentId: Long?,
+    onNameChange: (String) -> Unit,
+    onParentChange: (Long?) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+) {
+    val topGeneralCategories = categories.filter {
+        it.parentId == null && it.dimension == "general" && it.crowdTypeId == null
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (editingCategory == null) "新增分类" else "编辑分类") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = onNameChange,
+                    label = { Text("分类名称") },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                )
+                if (editingCategory == null) {
+                    CategoryParentDropdown(
+                        categories = topGeneralCategories,
+                        selectedParentId = parentId,
+                        onSelect = onParentChange,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onSave, enabled = name.isNotBlank()) { Text("保存") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
+}
+
+/**
+ * 新增分类时选择父级分类。[AI生成]
+ */
+@Composable
+private fun CategoryParentDropdown(
+    categories: List<FoodCategory>,
+    selectedParentId: Long?,
+    onSelect: (Long?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedName = categories.firstOrNull { it.id == selectedParentId }?.name
+    Box {
+        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+            Text(selectedName ?: "一级分类", modifier = Modifier.weight(1f))
+            Icon(Icons.Outlined.ExpandMore, contentDescription = null)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("一级分类") },
+                onClick = {
+                    onSelect(null)
+                    expanded = false
+                },
+            )
+            categories.forEach { category ->
+                DropdownMenuItem(
+                    text = { Text(category.name) },
+                    onClick = {
+                        onSelect(category.id)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
 }
 
 /**
@@ -395,7 +654,7 @@ fun IngredientPickerScreen(
  */
 @Composable
 private fun CategoryDropdown(
-    categories: List<com.sxdbsm.cookbook.domain.model.FoodCategory>,
+    categories: List<FoodCategory>,
     selectedCategoryId: Long?,
     onSelect: (Long) -> Unit,
     enabled: Boolean,
@@ -424,6 +683,12 @@ private fun CategoryDropdown(
         }
     }
 }
+
+/**
+ * 当前分类是否属于方案 A 的可维护范围。[AI生成]
+ */
+private fun FoodCategory.isEditableUserGeneralCategory(): Boolean =
+    source == "user" && dimension == "general" && crowdTypeId == null
 
 /**
  * 左侧分类项。[AI修改]

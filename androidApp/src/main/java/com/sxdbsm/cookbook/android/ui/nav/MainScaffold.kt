@@ -1,7 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.nav
 
 import android.app.Activity
-import android.util.Log
+import com.sxdbsm.cookbook.android.util.AppLogger
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -49,6 +49,12 @@ fun MainScaffold() {
     var lastBackAt by remember { mutableStateOf(0L) }
 
     val showBottomBar = currentRoute in bottomTabs.map { it.route } // [AI修改] 详情/编辑页隐藏底部栏。
+
+    LaunchedEffect(currentRoute) {
+        currentRoute?.let { route ->
+            AppLogger.event("screen_enter", mapOf("route" to route, "showBottomBar" to showBottomBar)) // [AI生成] 内测埋点：记录页面流转，便于分析异常跳转和常用路径。
+        }
+    }
 
     BackHandler {
         // [AI生成] 统一物理返回键：优先走路由返回；路由到底后非首页回首页；首页双击退出。
@@ -122,12 +128,19 @@ fun MainScaffold() {
                 val createdDishId by it.savedStateHandle
                     .getStateFlow(KEY_CREATED_DISH_ID, -1L)
                     .collectAsStateWithLifecycle()
+                AppLogger.d("MealFlow", "nav addmeal args: route=${it.destination.route} date=$date createdDishId=$createdDishId") // [AI生成] 记录添加/编辑餐食路由参数和新建菜品回传 id。
                 AddDayFoodScreen(
                     onBack = { nav.popBackStack() },
-                    onAddNewDish = { nav.navigate(Routes.newDish()) },
+                    onAddNewDish = {
+                        AppLogger.d("MealFlow", "nav from addmeal to newdish") // [AI生成] 记录从添加餐食进入新建菜品。
+                        nav.navigate(Routes.newDish())
+                    },
                     editDate = date,
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
-                    onCreatedDishConsumed = { it.savedStateHandle[KEY_CREATED_DISH_ID] = -1L },
+                    onCreatedDishConsumed = {
+                        AppLogger.d("MealFlow", "consume createdDishId: value=$createdDishId") // [AI生成] 记录导航结果消费，避免重复回填。
+                        it.savedStateHandle[KEY_CREATED_DISH_ID] = -1L
+                    },
                 )
             }
             composable(
@@ -140,12 +153,13 @@ fun MainScaffold() {
                 // [AI修改] 使用路径参数承载编辑/导入 id，避免 query 参数在部分 Navigation 版本下丢失导致误进新建模式。
                 val dishId = entry.arguments?.getLong("dishId")?.takeIf { it > 0 }
                 val importDishId = entry.arguments?.getLong("importDishId")?.takeIf { it > 0 }
-                Log.d("NewDishEdit", "nav newdish args: route=${entry.destination.route} dishId=$dishId importDishId=$importDishId") // [AI生成] 记录导航层解析出的编辑/导入参数，便于排查空白表单。
+                AppLogger.d("NewDishEdit", "nav newdish args: route=${entry.destination.route} dishId=$dishId importDishId=$importDishId") // [AI生成] 记录导航层解析出的编辑/导入参数，便于排查空白表单。
                 NewDishScreen(
                     editingDishId = dishId,
                     importDishId = importDishId,
                     onBack = { nav.popBackStack() },
                     onSavedDish = { savedDishId ->
+                        AppLogger.d("NewDishEdit", "saved dish return result: savedDishId=$savedDishId previousRoute=${nav.previousBackStackEntry?.destination?.route}") // [AI生成] 记录新建/编辑菜品保存后向上一页回传的 id。
                         nav.previousBackStackEntry?.savedStateHandle?.set(KEY_CREATED_DISH_ID, savedDishId)
                     },
                 )

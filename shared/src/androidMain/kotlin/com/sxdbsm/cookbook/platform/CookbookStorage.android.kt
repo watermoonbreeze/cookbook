@@ -22,6 +22,7 @@ object CookbookStorage {
     const val ROOT_DIR_NAME = "cookbook"
     const val DB_DIR_NAME = "db"
     const val IMG_DIR_NAME = "img"
+    const val LOG_DIR_NAME = "log" // [AI生成] 预测试日志目录：/sdcard/cookbook/log/。
 
     /**
      * 判断当前是否具备创建 `/sdcard/cookbook` 的权限。[AI生成]
