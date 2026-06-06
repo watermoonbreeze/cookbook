@@ -33,6 +33,7 @@ import com.sxdbsm.cookbook.android.ui.newdish.NewDishScreen
 import com.sxdbsm.cookbook.android.ui.search.SearchScreen
 import com.sxdbsm.cookbook.android.ui.timeline.FoodTimelineScreen
 import com.sxdbsm.cookbook.util.DateTime
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * App 主导航骨架。[AI修改]
@@ -90,7 +91,6 @@ fun MainScaffold() {
                     onOpenTimeline = { nav.navigateRootTab(Routes.TIMELINE) },
                     onOpenDishes = { nav.navigateRootTab(Routes.DISHES) },
                     onOpenSearch = { nav.navigate(Routes.SEARCH) },
-                    onOpenMine = { nav.navigateRootTab(Routes.MINE) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                 )
@@ -119,10 +119,15 @@ fun MainScaffold() {
             }
             composable(Routes.ADD_MEAL) {
                 val date = it.arguments?.getString("date")?.takeIf { value -> value.isNotBlank() }?.let(DateTime::parseDate)
+                val createdDishId by it.savedStateHandle
+                    .getStateFlow(KEY_CREATED_DISH_ID, -1L)
+                    .collectAsStateWithLifecycle()
                 AddDayFoodScreen(
                     onBack = { nav.popBackStack() },
                     onAddNewDish = { nav.navigate(Routes.newDish()) },
                     editDate = date,
+                    createdDishId = createdDishId.takeIf { id -> id > 0 },
+                    onCreatedDishConsumed = { it.savedStateHandle[KEY_CREATED_DISH_ID] = -1L },
                 )
             }
             composable(
@@ -140,6 +145,9 @@ fun MainScaffold() {
                     editingDishId = dishId,
                     importDishId = importDishId,
                     onBack = { nav.popBackStack() },
+                    onSavedDish = { savedDishId ->
+                        nav.previousBackStackEntry?.savedStateHandle?.set(KEY_CREATED_DISH_ID, savedDishId)
+                    },
                 )
             }
             composable(Routes.DISH_DETAIL) { entry ->
@@ -153,6 +161,8 @@ fun MainScaffold() {
         }
     }
 }
+
+private const val KEY_CREATED_DISH_ID = "createdDishId" // [AI生成] 添加餐食页从新建菜品页接收新菜品 id 的导航结果 key。
 
 /**
  * 底部导航栏。[AI修改]

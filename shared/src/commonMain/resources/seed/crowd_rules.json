@@ -1,0 +1,16 @@
+[
+  {"crowd":"高血压","ingredient":"盐","level":"avoid","reason":"高钠调味品，需严格控量"},
+  {"crowd":"高血压","ingredient":"生抽","level":"limit","reason":"钠含量较高，建议少量使用"},
+  {"crowd":"高血压","ingredient":"低脂牛奶","level":"recommend","reason":"低脂奶类适合 DASH 饮食"},
+  {"crowd":"高血压","ingredient":"菠菜","level":"recommend","reason":"深色蔬菜，富含钾和膳食纤维"},
+  {"crowd":"糖尿病","ingredient":"燕麦","level":"recommend","reason":"全谷物且低 GI，适合稳定餐后血糖"},
+  {"crowd":"糖尿病","ingredient":"白糖","level":"avoid","reason":"精制糖，容易快速升高血糖"},
+  {"crowd":"糖尿病","ingredient":"香蕉","level":"limit","reason":"糖分较高，需控制摄入量"},
+  {"crowd":"高血脂","ingredient":"五花肉","level":"avoid","reason":"脂肪含量高，建议避免或极少食用"},
+  {"crowd":"高血脂","ingredient":"鸡胸肉","level":"recommend","reason":"优质蛋白且脂肪较低"},
+  {"crowd":"高血脂","ingredient":"橄榄油","level":"limit","reason":"植物油也需控制总量"},
+  {"crowd":"高尿酸","ingredient":"猪肝","level":"avoid","reason":"动物内脏嘌呤高"},
+  {"crowd":"高尿酸","ingredient":"蛤蜊","level":"avoid","reason":"贝类嘌呤较高"},
+  {"crowd":"高尿酸","ingredient":"鸡蛋","level":"recommend","reason":"低嘌呤优质蛋白"},
+  {"crowd":"高尿酸","ingredient":"牛奶","level":"recommend","reason":"低嘌呤奶类蛋白"}
+]

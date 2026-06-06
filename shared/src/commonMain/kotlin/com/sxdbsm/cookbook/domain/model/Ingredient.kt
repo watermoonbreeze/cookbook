@@ -13,6 +13,7 @@ data class Ingredient(
     val pinyin: String = "",
     val imagePath: String = "",
     val thumbnailPath: String = "", // [AI生成] 食材缩略图路径，选择列表优先展示。
+    val emoji: String = "🥗", // [AI生成] 无图片时展示的默认食物图标，预设食材由 JSON 维护。
     val defaultUnitId: Long? = null,
     val defaultUnitName: String = "",
     val source: String = "preset",

@@ -155,6 +155,24 @@ class DishRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 按 id 读取列表/选择器用的轻量菜品。[AI生成]
+     *
+     * 添加餐食页从“新建菜品”返回后只拿到新菜品 id，需要补成 `DishMini` 才能加入餐食模块。
+     */
+    suspend fun getDishMiniById(id: Long): DishMini? = withContext(Dispatchers.Default) {
+        q.selectDishById(id).executeAsOneOrNull()?.let { row ->
+            buildDishMini(
+                id = row.id,
+                name = row.name,
+                imagePath = row.image_path,
+                thumbnailPath = row.thumbnail_path,
+                preference = row.preference.toInt(), // [AI修改] SQLDelight 表实体整数为 Long，领域列表模型使用 Int。
+                cookingMethodId = row.cooking_method_id,
+            )
+        }
+    }
+
+    /**
      * 批量组装列表用菜品模型。[AI修改]
      *
      * 原先每个菜品都会单独查询一次标签和一次烹饪方式，列表返回时容易形成 N+1 查询。
@@ -272,6 +290,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     pinyin = ing.pinyin,
                     imagePath = ing.image_path,
                     thumbnailPath = ing.thumbnail_path,
+                    emoji = ing.emoji,
                     defaultUnitId = ing.default_unit_id,
                 ),
                 quantity = ing.quantity,

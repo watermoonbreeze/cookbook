@@ -1,0 +1,5 @@
+-- [AI生成] v4 -> v5：食材增加默认 emoji 图标字段，用于没有拍照时展示 JSON 维护的食材图标。
+ALTER TABLE ingredient ADD COLUMN emoji TEXT NOT NULL DEFAULT '🥗';
+
+-- [AI生成] 兼容历史库和手工迁移场景，新增 NOT NULL 字段后统一兜底为通用食物图标。
+UPDATE ingredient SET emoji = COALESCE(emoji, '🥗');

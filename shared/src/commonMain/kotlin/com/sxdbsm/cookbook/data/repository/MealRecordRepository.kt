@@ -254,6 +254,25 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 将某天餐食整日复用到目标日期。[AI生成]
+     *
+     * 复用采用“目标日整日替换”策略，与添加/编辑餐食页保存语义一致；这样用户看到的目标日期餐食
+     * 和源日期完全一致，也避免同一天出现重复餐次。
+     */
+    suspend fun copyDayMeals(sourceDate: LocalDate, targetDate: LocalDate): List<Long> = withContext(Dispatchers.Default) {
+        val sourceMeals = loadDayMealsForEdit(sourceDate).map { meal ->
+            DayMealDraft(
+                mealTypeId = meal.mealTypeId,
+                mealTime = meal.mealTime,
+                note = meal.note,
+                dishIds = meal.dishes.map { it.id },
+            )
+        }.filter { it.dishIds.isNotEmpty() }
+        if (sourceMeals.isEmpty()) return@withContext emptyList()
+        saveDayMeals(targetDate, sourceMeals)
+    }
+
+    /**
      * 读取某天餐食用于编辑页回填。[AI修改]
      */
     suspend fun loadDayMealsForEdit(date: LocalDate): List<MealRecordEditData> = withContext(Dispatchers.Default) {

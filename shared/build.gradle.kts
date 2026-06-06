@@ -36,6 +36,11 @@ kotlin {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.kotlinx.coroutines.android)
         }
+        getByName("androidMain").resources.srcDir("src/commonMain/resources") // [AI生成] Android 运行时可通过 ClassLoader 读取基础数据 JSON。
+        getByName("androidUnitTest").resources.srcDir("src/commonMain/resources") // [AI生成] 单元测试同步读取基础数据 JSON，防止 seed 资源漏打包。
+        getByName("androidUnitTest").dependencies {
+            implementation(libs.sqldelight.sqlite.driver) // [AI生成] 单元测试使用内存 SQLite，验证 SQLDelight 查询和 Repository 逻辑。
+        }
     }
 }
 
@@ -43,7 +48,7 @@ sqldelight {
     databases {
         create("CookbookDatabase") {
             packageName.set("com.sxdbsm.cookbook.db")
-            version = 4 // [AI修改] v4 全表增加 status 软删除字段；数据库版本只能升不能降。
+            version = 5 // [AI修改] v5 食材增加 emoji 默认图标字段；数据库版本只能升不能降。
         }
     }
 }
@@ -51,6 +56,8 @@ sqldelight {
 android {
     namespace = "com.sxdbsm.cookbook"
     compileSdk = 34
+    sourceSets["main"].resources.srcDir("src/commonMain/resources") // [AI生成] Android library 打包 seed JSON，供 ClassLoader 读取。
+    sourceSets["test"].resources.srcDir("src/commonMain/resources") // [AI生成] JVM 单元测试打包同一份 seed JSON，避免测试与运行时数据分叉。
     defaultConfig {
         minSdk = 21
     }

@@ -42,6 +42,7 @@ data class NewDishUiState(
     val editProbeToastSerial: Int = 0,
     val saving: Boolean = false,
     val done: Boolean = false,
+    val savedDishId: Long? = null,
 
     val availableUnits: List<MeasurementUnit> = emptyList(), // [AI修改] 食材用量单位下拉列表。
 )
@@ -309,7 +310,7 @@ class NewDishViewModel(
         if (s.name.isBlank() || s.loading) return
         viewModelScope.launch {
             _state.value = s.copy(saving = true)
-            dishRepo.saveDish(
+            val savedId = dishRepo.saveDish(
                 id = s.editingId ?: 0L,
                 name = s.name.trim(),
                 cookingMethodId = s.cookingMethodId,
@@ -324,6 +325,7 @@ class NewDishViewModel(
             _state.value = _state.value.copy(
                 saving = false,
                 done = true,
+                savedDishId = savedId,
                 cookingMethodId = null,
                 availableCookingMethods = dishRepo.listCookingMethods(),
             )

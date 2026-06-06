@@ -58,6 +58,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
                 pinyin = row.pinyin,
                 imagePath = row.image_path,
                 thumbnailPath = row.thumbnail_path,
+                emoji = row.emoji,
                 defaultUnitId = row.default_unit_id,
                 source = row.source,
                 adviceLevel = AdviceLevel.fromCode(row.advice_level),
@@ -83,6 +84,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
             pinyin = Pinyin.toPinyin(name),
             image_path = imagePath, // [AI修改] 新建食材时可保存可选图片路径，MVP 暂不接入系统相册。
             thumbnail_path = thumbnailPath, // [AI生成] 新建食材时保存缩略图路径，列表优先展示。
+            emoji = "🥗", // [AI生成] 用户自建食材没有 JSON 预置图标时先使用通用食物图标。
             default_unit_id = null,
             source = "user",
             created_at = now,
@@ -138,6 +140,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
         pinyin: String,
         image_path: String,
         thumbnail_path: String,
+        emoji: String,
         default_unit_id: Long?,
         source: String,
         @Suppress("UNUSED_PARAMETER") created_at: Long,
@@ -148,6 +151,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
         pinyin = pinyin,
         imagePath = image_path,
         thumbnailPath = thumbnail_path,
+        emoji = emoji,
         defaultUnitId = default_unit_id,
         source = source,
     )

@@ -38,6 +38,7 @@ CREATE TABLE ingredient (
     pinyin TEXT NOT NULL DEFAULT '',
     image_path TEXT NOT NULL DEFAULT '',
     thumbnail_path TEXT NOT NULL DEFAULT '',
+    emoji TEXT NOT NULL DEFAULT '🥗',
     default_unit_id INTEGER REFERENCES measurement_unit(id),
     source TEXT NOT NULL DEFAULT 'preset',
     created_at INTEGER NOT NULL,
@@ -311,8 +312,8 @@ SELECT COUNT(*) FROM food_category WHERE parent_id = ? AND status = 1;
 -- ===== ingredient =====
 
 insertIngredient:
-INSERT INTO ingredient(name, alias, pinyin, image_path, thumbnail_path, default_unit_id, source, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ingredient(name, alias, pinyin, image_path, thumbnail_path, emoji, default_unit_id, source, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertId:
 SELECT last_insert_rowid();
@@ -324,6 +325,7 @@ SELECT id,
        COALESCE(pinyin, '') AS pinyin,
        COALESCE(image_path, '') AS image_path,
        COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
        default_unit_id,
        COALESCE(source, 'preset') AS source,
        COALESCE(created_at, 0) AS created_at
@@ -338,6 +340,7 @@ SELECT id,
        COALESCE(pinyin, '') AS pinyin,
        COALESCE(image_path, '') AS image_path,
        COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
        default_unit_id,
        COALESCE(source, 'preset') AS source,
        COALESCE(created_at, 0) AS created_at
@@ -351,6 +354,7 @@ SET name = COALESCE(name, ''),
     pinyin = COALESCE(pinyin, ''),
     image_path = COALESCE(image_path, ''),
     thumbnail_path = COALESCE(thumbnail_path, ''),
+    emoji = COALESCE(emoji, '🥗'),
     source = COALESCE(source, 'preset'),
     created_at = COALESCE(created_at, 0),
     status = COALESCE(status, 1);
@@ -372,6 +376,11 @@ UPDATE ingredient
 SET name = ?, alias = ?, image_path = ?, thumbnail_path = ?
 WHERE id = ? AND status = 1;
 
+updateIngredientEmoji:
+UPDATE ingredient
+SET emoji = ?
+WHERE id = ? AND status = 1;
+
 deleteUserIngredient:
 UPDATE ingredient
 SET status = 0
@@ -384,6 +393,7 @@ SELECT id,
        COALESCE(pinyin, '') AS pinyin,
        COALESCE(image_path, '') AS image_path,
        COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
        default_unit_id,
        COALESCE(source, 'preset') AS source,
        COALESCE(created_at, 0) AS created_at
@@ -398,6 +408,7 @@ SELECT i.id,
        COALESCE(i.pinyin, '') AS pinyin,
        COALESCE(i.image_path, '') AS image_path,
        COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
        i.default_unit_id,
        COALESCE(i.source, 'preset') AS source,
        COALESCE(i.created_at, 0) AS created_at
@@ -413,6 +424,7 @@ SELECT i.id,
        COALESCE(i.pinyin, '') AS pinyin,
        COALESCE(i.image_path, '') AS image_path,
        COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
        i.default_unit_id,
        COALESCE(i.source, 'preset') AS source,
        COALESCE(i.created_at, 0) AS created_at,
@@ -424,6 +436,10 @@ WHERE ci.crowd_id = ? AND i.status = 1 AND ci.status = 1
 ORDER BY
   CASE ci.advice_level WHEN 'recommend' THEN 1 WHEN 'limit' THEN 2 WHEN 'avoid' THEN 3 ELSE 4 END,
   i.pinyin, i.name;
+
+upsertCrowdIngredient:
+INSERT OR REPLACE INTO crowd_ingredient(crowd_id, ingredient_id, advice_level, reason, daily_limit, source, status)
+VALUES (?, ?, ?, ?, ?, ?, 1);
 
 linkIngredientCategory:
 INSERT OR REPLACE INTO ingredient_category(ingredient_id, category_id, status) VALUES (?, ?, 1);
@@ -559,6 +575,7 @@ SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, d
        COALESCE(i.pinyin, '') AS pinyin,
        COALESCE(i.image_path, '') AS image_path,
        COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
        i.default_unit_id,
        COALESCE(u.name, '') AS unit_name
 FROM dish_ingredient di
@@ -572,6 +589,17 @@ UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 
 deleteDishIngredientsByIngredient:
 UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
+
+selectIngredientIdByNameIncludingInactive:
+SELECT id, status
+FROM ingredient
+WHERE name = ?
+LIMIT 1;
+
+restorePresetIngredient:
+UPDATE ingredient
+SET alias = ?, pinyin = ?, emoji = ?, default_unit_id = ?, source = 'preset', status = 1
+WHERE id = ?;
 
 -- ===== meal_record =====
 

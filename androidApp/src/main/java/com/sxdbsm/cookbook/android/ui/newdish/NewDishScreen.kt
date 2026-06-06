@@ -39,6 +39,7 @@ fun NewDishScreen(
     editingDishId: Long? = null,
     importDishId: Long? = null,
     onBack: () -> Unit,
+    onSavedDish: ((Long) -> Unit)? = null,
     vm: NewDishViewModel = koinViewModel(),
 ) {
     // [AI修改] 表单状态来自 ViewModel，局部弹窗开关用 remember 存在当前 Composable 内。
@@ -59,7 +60,10 @@ fun NewDishScreen(
         vm.start(editingDishId, importDishId)
     }
     LaunchedEffect(state.done) {
-        if (state.done) onBack()
+        if (state.done) {
+            state.savedDishId?.let { onSavedDish?.invoke(it) } // [AI生成] 从添加餐食页新建菜品后，把新菜品 id 回传给上一层路由。
+            onBack()
+        }
     }
     LaunchedEffect(state.editProbeToastSerial) {
         val message = state.editProbeToastMessage ?: return@LaunchedEffect

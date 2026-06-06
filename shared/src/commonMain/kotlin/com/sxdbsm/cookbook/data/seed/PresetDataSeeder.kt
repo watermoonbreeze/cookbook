@@ -6,14 +6,18 @@ import com.sxdbsm.cookbook.platform.Pinyin
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 /**
  * 首次启动灌入字典与基础数据。[AI修改]
  *
- * 每张表先 count，为 0 才灌入，避免重启重复。
- * MVP 仅灌入字典 + 一级分类 + 少量演示食材 + 人群分类。具体二级分类/食材后续扩充。
+ * 字典类小表仍保留代码内 seed；基础食材和多维分类改为读取 `shared/src/commonMain/resources/seed/` 下的 JSON 文件。
+ * 这样后续扩展基础数据时，主要维护 JSON 文件即可，不需要频繁修改 Kotlin 逻辑。
  */
 class PresetDataSeeder(private val db: CookbookDatabase) {
+    private val json = Json { ignoreUnknownKeys = true } // [AI生成] JSON 后续新增字段时旧代码可继续解析。
 
     /**
      * 检查并灌入缺失的预置数据。[AI修改]
@@ -30,9 +34,10 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes()
         ensureFlexibleSnackMealType() // [AI修改] 兼容旧库：补充“加餐”餐次，供添加餐食页按需手动选择时间。
         if (q.countDishTags().executeAsOne() == 0L) seedDishTags(now)
-        if (q.countFoodCategories().executeAsOne() == 0L) seedFoodCategories(now)
+        val categoryIdsByCode = seedFoodCategories(now) // [AI修改] 分类采用补齐式 JSON seed，旧库已有数据时仍能补新增分类。
         if (q.countUserPreferences().executeAsOne() == 0L) seedUserPreferences(now)
-        seedDemoIngredientsIfEmpty(now)
+        seedFoundationIngredients(now, categoryIdsByCode) // [AI修改] 食材采用补齐式 JSON seed，并补齐默认 emoji。
+        seedCrowdRules() // [AI生成] 慢病食材建议规则采用 JSON 补齐式 seed。
     }
 
     private fun seedCookingMethods(now: Long) {
@@ -44,7 +49,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
     private fun seedMeasurementUnits() {
         val q = db.cookbookQueries
-        listOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "适量", "少许").forEach { name ->
+        listOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "碗", "块", "根", "条", "段", "瓣", "只", "适量", "少许").forEach { name ->
             q.insertMeasurementUnit(name, "preset")
         }
     }
@@ -77,9 +82,6 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
     /**
      * 确保存在用户可手动指定时间的“加餐”。[AI修改]
-     *
-     * `meal_type.default_time` 数据库字段非空，所以用 23:59 作为排序占位；
-     * UI 层会识别 `isFixed=false` 并要求用户手动选择具体用餐时间。
      */
     private fun ensureFlexibleSnackMealType() {
         db.cookbookQueries.insertMealType("SNACK", "加餐", "23:59", 0, "preset")
@@ -93,67 +95,52 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     }
 
     /**
-     * 一级分类 + 健康饮食/人群分类下的二级分类。[AI修改]
-     * 一级 id 由 AUTOINCREMENT 决定，假定按插入顺序为 1-8。
+     * 从 JSON 补齐食材分类，并返回 `code -> database id` 映射。[AI修改]
      */
-    private fun seedFoodCategories(now: Long) {
+    private fun seedFoodCategories(now: Long): Map<String, Long> {
         val q = db.cookbookQueries
-        // 一级 (1-8)
-        val topLevel = listOf(
-            // name, dimension, sort, icon
-            arrayOf("主食", "general", 10, ""),
-            arrayOf("蔬菜", "general", 20, ""),
-            arrayOf("肉类", "general", 30, ""),
-            arrayOf("水产", "general", 40, ""),
-            arrayOf("蛋奶豆", "general", 50, ""),
-            arrayOf("调味料", "general", 60, ""),
-            arrayOf("健康饮食", "nutrition", 70, ""),
-            arrayOf("人群分类", "crowd", 80, ""),
-        )
-        topLevel.forEach { row ->
-            q.insertFoodCategory(
-                name = row[0] as String,
-                dimension = row[1] as String,
-                parent_id = null,
-                crowd_type_id = null,
-                sort_order = (row[2] as Int).toLong(),
-                icon = row[3] as String,
-                source = "preset",
-                created_at = now,
-            )
-        }
-        val nutritionParentId = q.selectTopLevelCategories().executeAsList().first { it.name == "健康饮食" }.id
-        val crowdParentId = q.selectTopLevelCategories().executeAsList().first { it.name == "人群分类" }.id
+        val categoryIdsByCode = mutableMapOf<String, Long>()
+        val categories = loadFoodCategories()
 
-        // 健康饮食 二级
-        listOf(
-            "低嘌呤" to "purine", "低 Gi" to "gi", "低糖" to "sugar", "低脂" to "fat", "低钠" to "sodium",
-        ).forEachIndexed { idx, (name, dim) ->
+        fun ensureCategory(seed: SeedFoodCategory, parentId: Long?, crowdTypeId: Long? = null): Long {
+            val existing = if (parentId == null) {
+                q.selectTopLevelCategories().executeAsList().firstOrNull { it.name == seed.name && it.dimension == seed.dimension }
+            } else {
+                q.selectChildCategories(parentId).executeAsList().firstOrNull { it.name == seed.name && it.dimension == seed.dimension }
+            }
+            if (existing != null) return existing.id
             q.insertFoodCategory(
-                name = name,
-                dimension = dim,
-                parent_id = nutritionParentId,
-                crowd_type_id = null,
-                sort_order = ((idx + 1) * 10).toLong(),
-                icon = "",
+                name = seed.name,
+                dimension = seed.dimension,
+                parent_id = parentId,
+                crowd_type_id = crowdTypeId,
+                sort_order = seed.sort,
+                icon = seed.icon,
                 source = "preset",
                 created_at = now,
             )
+            return q.lastInsertId().executeAsOne()
         }
 
-        // 人群分类 二级（关联到 crowd_type）
-        q.selectAllCrowdTypes().executeAsList().forEachIndexed { idx, crowd ->
-            q.insertFoodCategory(
-                name = crowd.name,
-                dimension = "crowd",
-                parent_id = crowdParentId,
-                crowd_type_id = crowd.id,
-                sort_order = ((idx + 1) * 10).toLong(),
-                icon = "",
-                source = "preset",
-                created_at = now,
-            )
+        categories.forEach { seed ->
+            val parentId = seed.parent?.let { categoryIdsByCode[it] }
+            categoryIdsByCode[seed.code] = ensureCategory(seed, parentId)
         }
+
+        val crowdParentId = categoryIdsByCode["crowd"]
+        if (crowdParentId != null) {
+            q.selectAllCrowdTypes().executeAsList().forEachIndexed { idx, crowd ->
+                val seed = SeedFoodCategory(
+                    code = "crowd_${crowd.id}",
+                    name = crowd.name,
+                    dimension = "crowd",
+                    parent = "crowd",
+                    sort = ((idx + 1) * 10).toLong(),
+                )
+                ensureCategory(seed, crowdParentId, crowd.id)
+            }
+        }
+        return categoryIdsByCode
     }
 
     private fun seedUserPreferences(now: Long) {
@@ -164,64 +151,121 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     }
 
     /**
-     * 灌入少量演示食材，方便首次启动后用户能直接选用。[AI修改]
-     * 若 ingredient 表已有数据则跳过。
+     * 从 JSON 灌入第一阶段基础食材。[AI修改]
+     *
+     * 规则：同名食材已存在时不重复插入，但仍补齐默认 emoji 和分类关系；软删除的预设食材会被恢复。
      */
-    private fun seedDemoIngredientsIfEmpty(now: Long) {
+    private fun seedFoundationIngredients(now: Long, categoryIdsByCode: Map<String, Long>) {
         val q = db.cookbookQueries
-        val existing = q.selectAllIngredients().executeAsList()
-        if (existing.isNotEmpty()) return
-
         val units = q.selectAllMeasurementUnits().executeAsList().associateBy { it.name }
-        val categories = (q.selectTopLevelCategories().executeAsList() +
-            q.selectTopLevelCategories().executeAsList()
-                .flatMap { q.selectChildCategories(it.id).executeAsList() })
-            .associateBy { it.name }
 
-        data class DemoIngredient(
-            val name: String, val alias: String, val unit: String, val categories: List<String>,
-        )
+        loadIngredients().forEach { seed ->
+            val unitId = units[seed.unit]?.id
+            val pinyin = Pinyin.toPinyin(seed.name)
+            val existing = q.selectIngredientIdByNameIncludingInactive(seed.name).executeAsOneOrNull()
+            val ingredientId = when {
+                existing == null -> {
+                    q.insertIngredient(
+                        name = seed.name,
+                        alias = seed.alias,
+                        pinyin = pinyin,
+                        image_path = "",
+                        thumbnail_path = "",
+                        emoji = seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI },
+                        default_unit_id = unitId,
+                        source = "preset",
+                        created_at = now,
+                    )
+                    q.lastInsertId().executeAsOne()
+                }
+                existing.status == 0L -> {
+                    q.restorePresetIngredient(
+                        alias = seed.alias,
+                        pinyin = pinyin,
+                        emoji = seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI },
+                        default_unit_id = unitId,
+                        id = existing.id,
+                    )
+                    existing.id
+                }
+                else -> {
+                    q.updateIngredientEmoji(seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI }, existing.id)
+                    existing.id
+                }
+            }
 
-        val demos = listOf(
-            DemoIngredient("西红柿", "番茄", "个", listOf("蔬菜")),
-            DemoIngredient("鸡蛋", "", "个", listOf("蛋奶豆")),
-            DemoIngredient("米饭", "白米饭", "碗", listOf("主食")),
-            DemoIngredient("青菜", "小白菜", "把", listOf("蔬菜")),
-            DemoIngredient("猪肉", "里脊肉", "克", listOf("肉类")),
-            DemoIngredient("鸡肉", "鸡胸肉", "克", listOf("肉类")),
-            DemoIngredient("豆腐", "嫩豆腐", "块", listOf("蛋奶豆")),
-            DemoIngredient("胡萝卜", "红萝卜", "根", listOf("蔬菜")),
-            DemoIngredient("土豆", "马铃薯", "个", listOf("主食")),
-            DemoIngredient("面条", "挂面", "把", listOf("主食")),
-            DemoIngredient("鲈鱼", "", "条", listOf("水产")),
-            DemoIngredient("虾", "基围虾", "克", listOf("水产")),
-            DemoIngredient("牛奶", "", "毫升", listOf("蛋奶豆")),
-            DemoIngredient("盐", "食盐", "克", listOf("调味料")),
-            DemoIngredient("生抽", "酱油", "勺", listOf("调味料")),
-            DemoIngredient("食用油", "菜籽油", "勺", listOf("调味料")),
-            DemoIngredient("姜", "生姜", "片", listOf("调味料")),
-            DemoIngredient("葱", "大葱", "段", listOf("调味料")),
-            DemoIngredient("大蒜", "蒜", "瓣", listOf("调味料")),
-            DemoIngredient("黄瓜", "青瓜", "根", listOf("蔬菜")),
-        )
-
-        demos.forEach { d ->
-            val unitId = units[d.unit]?.id
-            // unit 可能预置中没有，跳过单位即可
-            q.insertIngredient(
-                name = d.name,
-                alias = d.alias,
-                pinyin = Pinyin.toPinyin(d.name),
-                image_path = "",
-                thumbnail_path = "",
-                default_unit_id = unitId,
-                source = "preset",
-                created_at = now,
-            )
-            val ingredientId = q.lastInsertId().executeAsOne()
-            d.categories.forEach { catName ->
-                categories[catName]?.let { cat -> q.linkIngredientCategory(ingredientId, cat.id) }
+            seed.categories.forEach { categoryCode ->
+                categoryIdsByCode[categoryCode]?.let { categoryId ->
+                    q.linkIngredientCategory(ingredientId, categoryId) // [AI修改] 已存在食材也补齐新 JSON 分类。
+                }
             }
         }
     }
+
+    private fun loadFoodCategories(): List<SeedFoodCategory> =
+        SeedResourceLoader.readText("seed/food_categories.json")
+            ?.let { json.decodeFromString(it) }
+            ?: emptyList()
+
+    internal fun loadIngredientsForTest(): List<SeedIngredient> = loadIngredients() // [AI生成] 单元测试校验 JSON 维护质量。
+
+    private fun loadIngredients(): List<SeedIngredient> =
+        SeedResourceLoader.readText("seed/ingredients.json")
+            ?.let { json.decodeFromString(it) }
+            ?: emptyList()
+
+    private fun seedCrowdRules() {
+        val q = db.cookbookQueries
+        val crowds = q.selectAllCrowdTypes().executeAsList().associateBy { it.name }
+        loadCrowdRules().forEach { rule ->
+            val crowd = crowds[rule.crowd] ?: return@forEach
+            val ingredientId = q.selectIngredientIdByNameIncludingInactive(rule.ingredient).executeAsOneOrNull()?.id ?: return@forEach
+            q.upsertCrowdIngredient(
+                crowd_id = crowd.id,
+                ingredient_id = ingredientId,
+                advice_level = rule.level,
+                reason = rule.reason,
+                daily_limit = rule.dailyLimit,
+                source = "preset",
+            )
+        }
+    }
+
+    private fun loadCrowdRules(): List<SeedCrowdRule> =
+        SeedResourceLoader.readText("seed/crowd_rules.json")
+            ?.let { json.decodeFromString(it) }
+            ?: emptyList()
+
+    private companion object {
+        const val DEFAULT_INGREDIENT_EMOJI = "🥗" // [AI生成] 所有兜底食材统一使用更清爽的沙拉图标。
+    }
 }
+
+@Serializable
+private data class SeedFoodCategory(
+    val code: String,
+    val name: String,
+    val dimension: String = "general",
+    val parent: String? = null,
+    val sort: Long = 0,
+    val icon: String = "",
+)
+
+@Serializable
+internal data class SeedIngredient(
+    val code: String,
+    val name: String,
+    val alias: String = "",
+    val unit: String = "",
+    val emoji: String = "🥗",
+    val categories: List<String> = emptyList(),
+)
+
+@Serializable
+private data class SeedCrowdRule(
+    val crowd: String,
+    val ingredient: String,
+    val level: String,
+    val reason: String = "",
+    val dailyLimit: Double? = null,
+)

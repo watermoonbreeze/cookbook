@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ fun DayMealCardView(
     modifier: Modifier = Modifier,
     onDishClick: ((DishMini) -> Unit)? = null,
     onEditClick: (() -> Unit)? = null,
+    onCopyClick: (() -> Unit)? = null,
 ) {
     val containerColor = if (data.isPlanState)
         MaterialTheme.colorScheme.secondaryContainer
@@ -65,6 +67,16 @@ fun DayMealCardView(
                     )
                 }
                 Spacer(Modifier.weight(1f))
+                if (onCopyClick != null && data.meals.isNotEmpty()) {
+                    IconButton(onClick = onCopyClick, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            Icons.Outlined.ContentCopy,
+                            contentDescription = "复用餐食",
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                }
                 if (onEditClick != null) {
                     IconButton(onClick = onEditClick, modifier = Modifier.size(32.dp)) {
                         Icon(

@@ -94,7 +94,7 @@ fun IngredientCard(
                     imagePath = ingredient.imagePath,
                     thumbnailPath = ingredient.thumbnailPath,
                     fallbackText = ingredient.name.take(1),
-                    fallbackEmoji = foodEmojiForName(ingredient.name),
+                    fallbackEmoji = ingredient.emoji.ifBlank { foodEmojiForName(ingredient.name) }, // [AI修改] 预设食材优先使用 JSON 写入数据库的 emoji。
                     seedId = ingredient.id,
                     modifier = Modifier.fillMaxWidth(),
                     size = imageSize,

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
+import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.HealthProfile
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.platform.BackupInfo
@@ -52,12 +53,35 @@ class MineViewModel(
     private val _backups = MutableStateFlow<List<BackupInfo>>(emptyList()) // [AI修改] 备份列表需要手动刷新。
     val backups: StateFlow<List<BackupInfo>> = _backups.asStateFlow() // [AI修改] 对 UI 暴露只读备份列表。
 
+    private val _crowdTypes = MutableStateFlow<List<CrowdType>>(emptyList()) // [AI生成] 健康档案弹框展示系统支持的人群类型。
+    val crowdTypes: StateFlow<List<CrowdType>> = _crowdTypes.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            _crowdTypes.value = health.listAllCrowdTypes()
+        }
+    }
+
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { prefs.setThemeMode(mode) }
     }
 
     fun refreshBackups() {
         viewModelScope.launch { _backups.value = backup.listBackups() }
+    }
+
+    /**
+     * 保存健康档案多选结果。[AI生成]
+     *
+     * 未选中的档案只禁用不物理删除，便于后续审计和恢复用户偏好。
+     */
+    fun saveHealthProfiles(selectedCrowdTypeIds: Set<Long>, onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            _crowdTypes.value.forEach { crowd ->
+                if (crowd.id in selectedCrowdTypeIds) health.add(crowd.id) else health.disable(crowd.id)
+            }
+            onDone()
+        }
     }
 
     /**
@@ -77,6 +101,14 @@ class MineViewModel(
     fun restoreBackup(file: String, onDone: () -> Unit = {}) {
         viewModelScope.launch {
             backup.restoreFromBackup(file)
+            onDone()
+        }
+    }
+
+    fun deleteBackup(file: String, onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            backup.deleteBackup(file)
+            refreshBackups()
             onDone()
         }
     }

@@ -8,7 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +19,7 @@ import com.sxdbsm.cookbook.android.ui.component.DayMealCardView
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SectionHeader
+import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
 import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.koinViewModel
 
@@ -33,13 +34,14 @@ fun HomeScreen(
     onOpenTimeline: () -> Unit,
     onOpenDishes: () -> Unit,
     onOpenSearch: () -> Unit,
-    onOpenMine: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
     vm: HomeViewModel = koinViewModel(),
 ) {
     // [AI修改] collectAsStateWithLifecycle 会按 Android 生命周期订阅 StateFlow，避免后台页面继续无意义刷新。
     val ui by vm.uiState.collectAsStateWithLifecycle()
+    val mode by vm.themeMode.collectAsStateWithLifecycle()
+    var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 页面 Scaffold 不再额外添加系统栏避让，配合透明状态栏形成沉浸式。
         topBar = {
@@ -58,7 +60,7 @@ fun HomeScreen(
                             tint = MaterialTheme.colorScheme.secondary, // [AI修改] 顶栏图标按暖杏规范使用辅助色。
                         )
                     }
-                    IconButton(onClick = onOpenMine) {
+                    IconButton(onClick = { themeDialogOpen = true }) {
                         Icon(
                             Icons.Outlined.WbSunny,
                             contentDescription = "主题",
@@ -129,5 +131,16 @@ fun HomeScreen(
         }
         item { Spacer(Modifier.height(80.dp)) } // [AI修改] 留底部 FAB 空间。
     }
+    }
+
+    if (themeDialogOpen) {
+        ThemeModeDialog(
+            current = mode,
+            onSelect = {
+                vm.setThemeMode(it)
+                themeDialogOpen = false
+            },
+            onDismiss = { themeDialogOpen = false },
+        )
     }
 }

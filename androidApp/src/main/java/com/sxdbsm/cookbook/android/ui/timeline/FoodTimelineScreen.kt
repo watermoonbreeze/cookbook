@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,8 +45,10 @@ fun FoodTimelineScreen(
     // [AI修改] 页面只订阅 TimelineUiState，不直接访问 Repository。
     val state by vm.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val context = LocalContext.current
     var initialScrollDone by remember { mutableStateOf(false) }
     var calendarOpen by remember { mutableStateOf(false) }
+    var copySourceDate by remember { mutableStateOf<LocalDate?>(null) }
 
     LaunchedEffect(state.scrollRequestVersion, state.scrollTargetIndex, state.pages.size) {
         if (state.scrollTargetIndex >= 0 && state.pages.isNotEmpty()) {
@@ -88,6 +91,12 @@ fun FoodTimelineScreen(
         }
     }
 
+    LaunchedEffect(state.copyMessage, state.copyError) {
+        val message = state.copyMessage ?: state.copyError ?: return@LaunchedEffect
+        android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+        vm.consumeCopyMessage()
+    }
+
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("食历", fontWeight = FontWeight.SemiBold) },
@@ -121,6 +130,7 @@ fun FoodTimelineScreen(
                     DayMealCardView(
                         data = card,
                         onEditClick = { onEditMealDate(card.date) },
+                        onCopyClick = { copySourceDate = card.date },
                         onDishClick = { dish -> onOpenDish(dish.id) }, // [AI修改] 食历餐食卡片内的菜品 block 点击进入菜品详情。
                     )
                 }
@@ -143,6 +153,46 @@ fun FoodTimelineScreen(
             },
         )
     }
+
+    copySourceDate?.let { sourceDate ->
+        CopyMealDialog(
+            sourceDate = sourceDate,
+            onDismiss = { copySourceDate = null },
+            onCopyTo = { targetDate ->
+                vm.copyDayMeals(sourceDate, targetDate)
+                copySourceDate = null
+            },
+        )
+    }
+}
+
+/**
+ * 食历复用目标日期选择弹框。[AI生成]
+ */
+@Composable
+private fun CopyMealDialog(
+    sourceDate: LocalDate,
+    onDismiss: () -> Unit,
+    onCopyTo: (LocalDate) -> Unit,
+) {
+    val today = DateTime.today()
+    val tomorrow = DateTime.plusDays(today, 1)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("复用餐食") },
+        text = {
+            Text("将 ${DateTime.formatDate(sourceDate)} 的餐食复用到目标日期。若目标日期已有餐食，将被这份餐食替换。")
+        },
+        confirmButton = {
+            Row {
+                TextButton(onClick = { onCopyTo(today) }) { Text("复用到今天") }
+                TextButton(onClick = { onCopyTo(tomorrow) }) { Text("复用到明天") }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
 }
 
 /**

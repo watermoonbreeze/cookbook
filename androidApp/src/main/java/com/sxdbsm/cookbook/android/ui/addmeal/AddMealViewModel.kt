@@ -2,9 +2,12 @@ package com.sxdbsm.cookbook.android.ui.addmeal
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.DayMealDraft
+import com.sxdbsm.cookbook.data.repository.FavoriteComboRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
+import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealType
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Job
@@ -43,6 +46,7 @@ data class AddMealUiState(
     val date: LocalDate = DateTime.today(),
     val mealTypes: List<MealType> = emptyList(),
     val mealBlocks: List<MealBlockUiState> = emptyList(),
+    val favoriteCombos: List<FavoriteCombo> = emptyList(),
     val activeBlockId: Long? = null,
     val isPlan: Boolean = false,
     val saving: Boolean = false,
@@ -63,6 +67,8 @@ data class AddMealUiState(
  */
 class AddMealViewModel(
     private val mealRepo: MealRecordRepository,
+    private val dishRepo: DishRepository,
+    private val comboRepo: FavoriteComboRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddMealUiState()) // [AI修改] 内部可变状态，只允许 ViewModel 修改。
@@ -76,7 +82,7 @@ class AddMealViewModel(
     init {
         viewModelScope.launch {
             val types = mealRepo.listMealTypes()
-            _state.value = _state.value.copy(mealTypes = types)
+            _state.value = _state.value.copy(mealTypes = types, favoriteCombos = comboRepo.listCombos())
             if (!configured) {
                 configure(editDate = null)
             } else {
@@ -173,6 +179,31 @@ class AddMealViewModel(
     fun addDishes(blockId: Long, dishes: List<DishMini>) {
         updateBlock(blockId) { block ->
             block.copy(dishes = (block.dishes + dishes).distinctBy { it.id })
+        }
+    }
+
+    /**
+     * 新建菜品返回后，按 id 拉取轻量菜品并加入当前餐食模块。[AI生成]
+     */
+    fun addCreatedDish(dishId: Long, blockId: Long? = _state.value.activeBlockId) {
+        if (dishId <= 0 || blockId == null) return
+        viewModelScope.launch {
+            dishRepo.getDishMiniById(dishId)?.let { dish ->
+                addDishes(blockId, listOf(dish))
+            }
+        }
+    }
+
+    fun addComboDishes(blockId: Long, combo: FavoriteCombo) {
+        addDishes(blockId, combo.dishes) // [AI生成] 组合复用只把组合内菜品加入当前餐食模块，不改变组合本身。
+    }
+
+    fun saveCurrentBlockAsCombo(blockId: Long, name: String) {
+        val block = _state.value.mealBlocks.firstOrNull { it.id == blockId } ?: return
+        if (block.dishes.isEmpty()) return
+        viewModelScope.launch {
+            comboRepo.createCombo(name, block.dishes.map { it.id })
+            _state.value = _state.value.copy(favoriteCombos = comboRepo.listCombos())
         }
     }
 

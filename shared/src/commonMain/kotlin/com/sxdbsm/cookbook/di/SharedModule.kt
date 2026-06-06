@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.di
 
 import app.cash.sqldelight.db.SqlDriver
 import com.sxdbsm.cookbook.data.repository.DishRepository
+import com.sxdbsm.cookbook.data.repository.FavoriteComboRepository
 import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
@@ -23,6 +24,7 @@ val sharedModule: Module = module {
     single { CookbookDatabase(get()) }
     single { PresetDataSeeder(get()) }
     single { DishRepository(get()) }
+    single { FavoriteComboRepository(get(), get()) }
     single { IngredientRepository(get()) }
     single { FoodCategoryRepository(get()) }
     single { MealRecordRepository(get()) }

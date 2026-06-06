@@ -28,6 +28,6 @@ fun foodEmojiForName(name: String): String {
         text.contains("虾") -> "🦐"
         text.contains("盐") -> "🧂"
         text.contains("油") -> "🫒"
-        else -> "🍽"
+        else -> "🥗" // [AI修改] 通用食材占位改为更清爽的沙拉图标。
     }
 }

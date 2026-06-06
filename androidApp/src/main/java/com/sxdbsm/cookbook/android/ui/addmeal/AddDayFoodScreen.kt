@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
+import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealType
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -83,6 +84,8 @@ fun AddDayFoodScreen(
     onBack: () -> Unit,
     onAddNewDish: () -> Unit,
     editDate: LocalDate? = null,
+    createdDishId: Long? = null,
+    onCreatedDishConsumed: () -> Unit = {},
     vm: AddMealViewModel = koinViewModel(),
 ) {
     // [AI修改] 页面订阅 ViewModel 状态，任何字段变化都会触发相关 UI 重组。
@@ -91,12 +94,21 @@ fun AddDayFoodScreen(
     var pickingBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
     var dateDialogOpen by rememberSaveable { mutableStateOf(false) }
     var timeDialogBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var comboPickerBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var saveComboBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var comboNameDraft by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(state.done) {
         if (state.done) onBack()
     }
     LaunchedEffect(editDate) {
         editDate?.let { vm.setDate(it) }
+    }
+    LaunchedEffect(createdDishId) {
+        val dishId = createdDishId?.takeIf { it > 0 } ?: return@LaunchedEffect
+        pickerOpen = true // [AI生成] 返回后保持菜品库语境，用户能看到刚加入的菜品已被选中。
+        vm.addCreatedDish(dishId, pickingBlockId ?: state.activeBlockId)
+        onCreatedDishConsumed()
     }
 
     Scaffold(
@@ -184,6 +196,12 @@ fun AddDayFoodScreen(
                     onRemoveDish = { dishId -> vm.removeDish(block.id, dishId) },
                     onNoteChange = { vm.setNote(block.id, it) },
                     onRemoveBlock = { vm.removeMealBlock(block.id) },
+                    onOpenCombos = { comboPickerBlockId = block.id },
+                    onSaveCombo = {
+                        comboNameDraft = mealNameForBlock(block, state.mealTypes)
+                        saveComboBlockId = block.id
+                    },
+                    hasCombos = state.favoriteCombos.isNotEmpty(),
                 )
             }
 
@@ -239,9 +257,35 @@ fun AddDayFoodScreen(
             showRecentChips = true,
             showAddNewButton = true,
             onDismiss = { pickerOpen = false },
-            onAddNewDish = onAddNewDish,
+            onAddNewDish = {
+                pickerOpen = false // [AI生成] 跳转新建菜品前关闭弹框，返回后再由 createdDishId 自动打开并选中。
+                onAddNewDish()
+            },
             onConfirm = { selected ->
                 if (blockId != null) vm.addDishes(blockId, selected)
+            },
+        )
+    }
+
+    comboPickerBlockId?.let { blockId ->
+        FavoriteComboPickerDialog(
+            combos = state.favoriteCombos,
+            onDismiss = { comboPickerBlockId = null },
+            onPick = { combo ->
+                vm.addComboDishes(blockId, combo)
+                comboPickerBlockId = null
+            },
+        )
+    }
+
+    saveComboBlockId?.let { blockId ->
+        SaveComboDialog(
+            name = comboNameDraft,
+            onNameChange = { comboNameDraft = it },
+            onDismiss = { saveComboBlockId = null },
+            onSave = {
+                vm.saveCurrentBlockAsCombo(blockId, comboNameDraft)
+                saveComboBlockId = null
             },
         )
     }
@@ -263,6 +307,9 @@ private fun MealBlockCard(
     onRemoveDish: (Long) -> Unit,
     onNoteChange: (String) -> Unit,
     onRemoveBlock: () -> Unit,
+    onOpenCombos: () -> Unit,
+    onSaveCombo: () -> Unit,
+    hasCombos: Boolean,
 ) {
     ElevatedCard(
         modifier = Modifier
@@ -307,13 +354,20 @@ private fun MealBlockCard(
             Spacer(Modifier.height(10.dp))
 
             if (block.dishes.isEmpty()) {
-                TextButton(
-                    onClick = onAddDish,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.Add, contentDescription = null)
-                    Spacer(Modifier.width(4.dp))
-                    Text("添加菜品", color = MaterialTheme.colorScheme.tertiary)
+                Column {
+                    TextButton(
+                        onClick = onAddDish,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(Icons.Outlined.Add, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text("添加菜品", color = MaterialTheme.colorScheme.tertiary)
+                    }
+                    if (hasCombos) {
+                        TextButton(onClick = onOpenCombos, modifier = Modifier.fillMaxWidth()) {
+                            Text("选择收藏组合", color = MaterialTheme.colorScheme.tertiary)
+                        }
+                    }
                 }
             } else {
                 Row(
@@ -342,6 +396,15 @@ private fun MealBlockCard(
                         Icon(Icons.Outlined.Add, contentDescription = null)
                     }
                 }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    if (hasCombos) {
+                        TextButton(onClick = onOpenCombos) { Text("选择组合") }
+                    }
+                    TextButton(onClick = onSaveCombo) { Text("保存组合") }
+                }
             }
 
             OutlinedTextField(
@@ -357,6 +420,74 @@ private fun MealBlockCard(
             )
         }
     }
+}
+
+/**
+ * 收藏组合选择弹框。[AI生成]
+ */
+@Composable
+private fun FavoriteComboPickerDialog(
+    combos: List<FavoriteCombo>,
+    onDismiss: () -> Unit,
+    onPick: (FavoriteCombo) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("选择收藏组合") },
+        text = {
+            Column {
+                if (combos.isEmpty()) {
+                    Text("暂无收藏组合")
+                } else {
+                    combos.forEach { combo ->
+                        TextButton(
+                            onClick = { onPick(combo) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("${combo.name}（${combo.dishes.size} 道菜）", modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+    )
+}
+
+/**
+ * 保存当前餐食模块为收藏组合。[AI生成]
+ */
+@Composable
+private fun SaveComboDialog(
+    name: String,
+    onNameChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("保存组合") },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = onNameChange,
+                label = { Text("组合名称") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onSave, enabled = name.isNotBlank()) { Text("保存") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
+}
+
+private fun mealNameForBlock(block: MealBlockUiState, mealTypes: List<MealType>): String {
+    val mealName = mealTypes.firstOrNull { it.id == block.mealTypeId }?.name ?: "餐食"
+    return "$mealName 组合"
 }
 
 /**

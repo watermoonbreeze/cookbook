@@ -27,6 +27,8 @@ data class TimelineUiState(
     val prependCount: Int = 0,
     val scrollTargetIndex: Int = -1,
     val scrollRequestVersion: Int = 0,
+    val copyMessage: String? = null,
+    val copyError: String? = null,
 )
 
 /**
@@ -124,6 +126,33 @@ class TimelineViewModel(
     fun consumeScrollRequest() {
         if (_state.value.scrollTargetIndex < 0) return
         _state.value = _state.value.copy(scrollTargetIndex = -1)
+    }
+
+    /**
+     * 将指定日期的整日餐食复用到目标日期。[AI生成]
+     */
+    fun copyDayMeals(sourceDate: LocalDate, targetDate: LocalDate) {
+        viewModelScope.launch {
+            runCatching {
+                repo.copyDayMeals(sourceDate, targetDate)
+            }.onSuccess { ids ->
+                pendingScrollTargetDate = targetDate
+                _state.value = _state.value.copy(
+                    copyMessage = if (ids.isEmpty()) "这一天没有可复用的餐食" else "已复用到 ${DateTime.formatDate(targetDate)}",
+                    copyError = null,
+                )
+            }.onFailure { e ->
+                _state.value = _state.value.copy(
+                    copyMessage = null,
+                    copyError = e.message ?: "复用失败，请稍后重试",
+                )
+            }
+        }
+    }
+
+    fun consumeCopyMessage() {
+        if (_state.value.copyMessage == null && _state.value.copyError == null) return
+        _state.value = _state.value.copy(copyMessage = null, copyError = null)
     }
 
     /**

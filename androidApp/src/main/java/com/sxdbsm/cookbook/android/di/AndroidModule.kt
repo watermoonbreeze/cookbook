@@ -25,11 +25,11 @@ val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { BackupManager(context = androidContext(), driverProvider = { get() }) }
 
-    viewModel { HomeViewModel(get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get()) } // [AI修改] 首页主题弹框需要读取/写入主题偏好。
     viewModel { DishesViewModel(get(), get()) }
     viewModel { DishDetailViewModel(get()) }
     viewModel { NewDishViewModel(get(), get(), get(), get()) }
-    viewModel { AddMealViewModel(get()) }
+    viewModel { AddMealViewModel(get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用。
     viewModel { TimelineViewModel(get()) }
     viewModel { MineViewModel(get(), get(), get()) }
     viewModel { IngredientPickerViewModel(get(), get()) }
