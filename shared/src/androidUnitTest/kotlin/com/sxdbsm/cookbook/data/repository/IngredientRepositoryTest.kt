@@ -52,44 +52,45 @@ class IngredientRepositoryTest {
     }
 
     @Test
-    fun recentlyUsedIngredientsAreOrderedByMealReferenceTimeDesc() = runBlocking {
+    fun recentlyUsedIngredientsAreShownAfterBeingSavedInDish() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val ingredientId = ingredientRepo.createUserIngredient(name = "刚加入菜品的食材")
+
+        assertEquals(emptyList(), ingredientRepo.listRecentlyUsed())
+
+        dishRepo.saveDish(
+            id = 0,
+            name = "包含新食材的菜品",
+            cookingMethodId = null,
+            specialNote = "",
+            description = "",
+            imagePath = "",
+            thumbnailPath = "",
+            tagNames = emptyList(),
+            ingredients = listOf(DishIngredient(Ingredient(id = ingredientId, name = "刚加入菜品的食材"))),
+        )
+
+        assertEquals(
+            listOf("刚加入菜品的食材"),
+            ingredientRepo.listRecentlyUsed().map { it.name },
+        )
+    }
+
+    @Test
+    fun recentlyUsedIngredientsAreOrderedByLastReferencedAtDesc() = runBlocking {
         val db = RepositoryTestDatabase.create()
         val q = db.cookbookQueries
         val ingredientRepo = IngredientRepository(db)
-        val dishRepo = DishRepository(db)
-        q.insertMealType("BREAKFAST", "早餐", "07:30", 1, "preset")
-        val mealTypeId = q.lastInsertId().executeAsOne()
-        val olderIngredientId = ingredientRepo.createUserIngredient(name = "较早引用食材")
-        val newerIngredientId = ingredientRepo.createUserIngredient(name = "最近引用食材")
-        val olderDishId = dishRepo.saveDish(
-            id = 0,
-            name = "较早引用菜品",
-            cookingMethodId = null,
-            specialNote = "",
-            description = "",
-            imagePath = "",
-            thumbnailPath = "",
-            tagNames = emptyList(),
-            ingredients = listOf(DishIngredient(Ingredient(id = olderIngredientId, name = "较早引用食材"))),
-        )
-        val newerDishId = dishRepo.saveDish(
-            id = 0,
-            name = "最近引用菜品",
-            cookingMethodId = null,
-            specialNote = "",
-            description = "",
-            imagePath = "",
-            thumbnailPath = "",
-            tagNames = emptyList(),
-            ingredients = listOf(DishIngredient(Ingredient(id = newerIngredientId, name = "最近引用食材"))),
-        )
-        q.insertMealRecord("2026-06-01", mealTypeId, "07:30", "", 1)
-        q.insertMealRecordDish(q.lastInsertId().executeAsOne(), olderDishId, 0)
-        q.insertMealRecord("2026-06-02", mealTypeId, "07:30", "", 2)
-        q.insertMealRecordDish(q.lastInsertId().executeAsOne(), newerDishId, 0)
+        val olderIngredientId = ingredientRepo.createUserIngredient(name = "较早菜品引用食材")
+        val newerIngredientId = ingredientRepo.createUserIngredient(name = "较新菜品引用食材")
+        ingredientRepo.createUserIngredient(name = "未引用食材")
+        q.updateIngredientLastReferencedAt(last_referenced_at = 100, id = olderIngredientId)
+        q.updateIngredientLastReferencedAt(last_referenced_at = 200, id = newerIngredientId)
 
         assertEquals(
-            listOf("最近引用食材", "较早引用食材"),
+            listOf("较新菜品引用食材", "较早菜品引用食材"),
             ingredientRepo.listRecentlyUsed().map { it.name },
         )
     }

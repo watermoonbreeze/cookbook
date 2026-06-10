@@ -389,6 +389,10 @@ class DishRepository(private val db: CookbookDatabase) {
                     unit_id = di.unitId,
                     is_main = if (di.isMain) 1 else 0,
                 )
+                q.updateIngredientLastReferencedAt(
+                    last_referenced_at = now,
+                    id = di.ingredient.id,
+                ) // [AI生成] 食材只要被保存进菜品，就进入“最近使用”并按最后引用时间排序。
             }
         }
         dishId

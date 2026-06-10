@@ -1,0 +1,5 @@
+-- [AI生成] v5 -> v6：食材增加最后被菜品引用时间，用于“最近使用”按菜品引用而非餐食引用排序。
+ALTER TABLE ingredient ADD COLUMN last_referenced_at INTEGER NOT NULL DEFAULT 0;
+
+-- [AI生成] 兼容历史库和手工迁移场景，新增 NOT NULL 字段后统一兜底为 0，表示从未被菜品引用。
+UPDATE ingredient SET last_referenced_at = COALESCE(last_referenced_at, 0);

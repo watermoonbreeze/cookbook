@@ -319,7 +319,7 @@ fun NewDishScreen(
 
     if (ingredientPickerOpen) {
         IngredientPickerScreen(
-            excludeIngredientIds = state.ingredients.map { it.ingredient.id }.toSet(),
+            excludeIngredientIds = emptySet(), // [AI修改] 不再过滤当前菜品已有食材，确保保存后进入“最近使用”的食材在再次打开选择器时可见；重复添加由 ViewModel 兜底。
             onDismiss = { ingredientPickerOpen = false },
             onConfirm = { selected ->
                 selected.forEach { vm.addIngredient(it) }

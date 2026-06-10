@@ -50,6 +50,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
      * 读取最近被餐食引用过的食材。[AI生成]
      *
      * 这是食材选择器左侧“最近使用”虚拟分类的数据源，不落库成真实分类。
+     * 只要食材被保存进菜品，就会按最后引用时间展示在这里。[AI修改]
      */
     suspend fun listRecentlyUsed(): List<Ingredient> = withContext(Dispatchers.Default) {
         q.selectRecentlyUsedIngredients(::mapIngredientRow).executeAsList()
