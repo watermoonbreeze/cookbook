@@ -48,7 +48,7 @@ sqldelight {
     databases {
         create("CookbookDatabase") {
             packageName.set("com.sxdbsm.cookbook.db")
-            version = 6 // [AI修改] v6 食材增加 last_referenced_at，用于按菜品引用统计最近食材；数据库版本只能升不能降。
+            version = 7 // [AI修改] v7 新增烹饪计时模板表；数据库版本只能升不能降。
         }
     }
 }

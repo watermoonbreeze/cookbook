@@ -25,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sxdbsm.cookbook.android.ui.addmeal.AddDayFoodScreen
+import com.sxdbsm.cookbook.android.ui.kitchen.CookingTimerScreen
 import com.sxdbsm.cookbook.android.ui.dishdetail.DishDetailScreen
 import com.sxdbsm.cookbook.android.ui.dishes.DishesScreen
 import com.sxdbsm.cookbook.android.ui.home.HomeScreen
@@ -115,7 +116,14 @@ fun MainScaffold() {
                     onCopyDish = { id -> nav.navigate(Routes.copyDish(id)) },
                 )
             }
-            composable(Routes.MINE) { MineScreen() }
+            composable(Routes.MINE) {
+                MineScreen(
+                    onOpenCookingTimer = { nav.navigate(Routes.COOKING_TIMER) },
+                )
+            }
+            composable(Routes.COOKING_TIMER) {
+                CookingTimerScreen(onBack = { nav.popBackStack() })
+            }
             composable(Routes.SEARCH) {
                 SearchScreen(
                     onBack = { nav.popBackStack() },

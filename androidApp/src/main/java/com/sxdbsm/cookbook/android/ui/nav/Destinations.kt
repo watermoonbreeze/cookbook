@@ -19,6 +19,7 @@ object Routes {
     const val DISHES = "dishes"
     const val SEARCH = "search"
     const val MINE = "mine"
+    const val COOKING_TIMER = "cooking_timer"
 
     fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}"
 

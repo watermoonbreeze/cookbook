@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
-import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.platform.BackupInfo
@@ -29,7 +28,10 @@ import org.koin.androidx.compose.koinViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MineScreen(vm: MineViewModel = koinViewModel()) {
+fun MineScreen(
+    onOpenCookingTimer: () -> Unit,
+    vm: MineViewModel = koinViewModel(),
+) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
     val profiles by vm.profiles.collectAsStateWithLifecycle()
     val crowdTypes by vm.crowdTypes.collectAsStateWithLifecycle()
@@ -41,6 +43,8 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
     var healthDialogOpen by remember { mutableStateOf(false) }
     var backupDialogOpen by remember { mutableStateOf(false) }
     var logDialogOpen by remember { mutableStateOf(false) }
+    var kitchenDialogOpen by remember { mutableStateOf(false) }
+    var aboutDialogOpen by remember { mutableStateOf(false) }
     var selectedLogFileName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(backupDialogOpen) {
@@ -128,13 +132,14 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
         SettingRow(
             icon = Icons.Outlined.SoupKitchen,
             title = "厨房小助手",
-            subtitle = "Coming Soon",
-            subtitleColor = ExtendedColorsHolder.current.warning,
+            subtitle = "烹饪计时等实用工具",
             trailing = "▸",
-        ) { }
+        ) { kitchenDialogOpen = true }
 
         GroupTitle("关于")
-        SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") { }
+        SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") {
+            aboutDialogOpen = true
+        }
 
         Spacer(Modifier.height(80.dp))
     }
@@ -194,6 +199,20 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
         )
     }
 
+    if (kitchenDialogOpen) {
+        KitchenAssistantDialog(
+            onDismiss = { kitchenDialogOpen = false },
+            onOpenCookingTimer = {
+                kitchenDialogOpen = false
+                onOpenCookingTimer()
+            },
+        )
+    }
+
+    if (aboutDialogOpen) {
+        AboutCookbookDialog(onDismiss = { aboutDialogOpen = false })
+    }
+
     selectedLogFileName?.let { fileName ->
         LogFileDetailDialog(
             fileName = fileName,
@@ -201,6 +220,79 @@ fun MineScreen(vm: MineViewModel = koinViewModel()) {
             onDismiss = { selectedLogFileName = null },
         )
     }
+}
+
+/**
+ * 厨房小助手入口弹框。[AI生成]
+ *
+ * 先承载烹饪计时入口，后续可继续扩展食材换算、火候提醒等工具。
+ */
+@Composable
+private fun KitchenAssistantDialog(
+    onDismiss: () -> Unit,
+    onOpenCookingTimer: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("厨房小助手") },
+        text = {
+            Column {
+                Button(
+                    onClick = onOpenCookingTimer,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Outlined.Timer, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("烹饪计时")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
+}
+
+/**
+ * 关于 Cookbook 弹框。[AI生成]
+ *
+ * 展示产品定位、版本和项目开源许可说明。
+ */
+@Composable
+private fun AboutCookbookDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("关于 Cookbook") },
+        text = {
+            Column {
+                Text(
+                    text = "Cookbook 是一款面向慢性病和健康饮食场景的本地菜单规划工具，帮助用户记录每日餐食、复用历史菜单，并逐步加入食材风险提示与智能推荐能力。",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = "当前版本：v0.1.0",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = "开源说明",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "项目根目录包含 LICENSE 文件，采用木兰宽松许可证第 2 版（Mulan PSL v2）。如后续发布源码或分发应用，请保留许可证文本和相关版权/免责声明。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
 }
 
 /**
