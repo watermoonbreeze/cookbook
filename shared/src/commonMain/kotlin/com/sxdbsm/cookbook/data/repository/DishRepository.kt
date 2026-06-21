@@ -8,6 +8,7 @@ import com.sxdbsm.cookbook.db.SelectDishForEditById
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.DishMini
+import com.sxdbsm.cookbook.domain.model.DishStep
 import com.sxdbsm.cookbook.domain.model.CookingMethod
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import com.sxdbsm.cookbook.util.DateTime
@@ -299,6 +300,15 @@ class DishRepository(private val db: CookbookDatabase) {
                 isMain = ing.is_main == 1L,
             )
         }
+        val steps = q.selectStepsOfDish(id).executeAsList().map { step ->
+            DishStep(
+                id = step.id,
+                sortOrder = step.sort_order.toInt(),
+                text = step.text,
+                imagePath = step.image_path,
+                thumbnailPath = step.thumbnail_path,
+            )
+        } // [AI生成] 编辑/详情统一读取菜品操作步骤，按 sort_order 保持用户录入顺序。
         return Dish(
             id = row.id,
             name = row.name,
@@ -315,6 +325,7 @@ class DishRepository(private val db: CookbookDatabase) {
             updatedAt = row.updated_at,
             tags = tags,
             ingredients = ingredients,
+            steps = steps,
         )
     }
 
@@ -332,6 +343,7 @@ class DishRepository(private val db: CookbookDatabase) {
         thumbnailPath: String,
         tagNames: List<String>,
         ingredients: List<DishIngredient>,
+        steps: List<DishStep> = emptyList(),
     ): Long = withContext(Dispatchers.Default) {
         val now = DateTime.nowEpochSeconds()
         var dishId = id
@@ -394,6 +406,22 @@ class DishRepository(private val db: CookbookDatabase) {
                     id = di.ingredient.id,
                 ) // [AI生成] 食材只要被保存进菜品，就进入“最近使用”并按最后引用时间排序。
             }
+
+            // [AI生成] 同步操作步骤：MVP 采用全量替换，避免编辑时出现旧步骤和新步骤交叉残留。
+            q.deleteStepsOfDish(updated_at = now, dish_id = dishId)
+            steps
+                .filter { it.text.isNotBlank() || it.imagePath.isNotBlank() || it.thumbnailPath.isNotBlank() }
+                .forEachIndexed { index, step ->
+                    q.insertDishStep(
+                        dish_id = dishId,
+                        sort_order = index.toLong(),
+                        text = step.text.trim(),
+                        image_path = step.imagePath,
+                        thumbnail_path = step.thumbnailPath,
+                        created_at = now,
+                        updated_at = now,
+                    )
+                }
         }
         dishId
     }

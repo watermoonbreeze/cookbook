@@ -23,10 +23,25 @@ data class Dish(
     val updatedAt: Long = 0,
     val tags: List<String> = emptyList(), // [AI修改] 只读 List；修改时用 copy(tags = 新列表)。
     val ingredients: List<DishIngredient> = emptyList(), // [AI修改] 菜品关联的食材明细。
+    val steps: List<DishStep> = emptyList(), // [AI生成] 菜品操作步骤，支持每一步记录文字和多张过程图。
 ) {
     /** 喜爱度星级（0-5） */
     val popularityStars: Float get() = (preference / 200.0).toFloat().coerceIn(0f, 5f)
 }
+
+/**
+ * 菜品操作步骤模型。[AI生成]
+ *
+ * 一道菜可以有多步做法；每一步保存一段说明和若干本地图片路径。
+ * 图片路径沿用菜品图片的 `|` 编码规则，避免 shared 层依赖平台媒体 API。
+ */
+data class DishStep(
+    val id: Long = 0,
+    val sortOrder: Int = 0,
+    val text: String = "",
+    val imagePath: String = "",
+    val thumbnailPath: String = "",
+)
 
 /**
  * 菜品与食材的关联模型。[AI修改]

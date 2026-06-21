@@ -29,6 +29,7 @@ import com.sxdbsm.cookbook.android.ui.kitchen.CookingTimerScreen
 import com.sxdbsm.cookbook.android.ui.dishdetail.DishDetailScreen
 import com.sxdbsm.cookbook.android.ui.dishes.DishesScreen
 import com.sxdbsm.cookbook.android.ui.home.HomeScreen
+import com.sxdbsm.cookbook.android.ui.ingredients.IngredientsScreen
 import com.sxdbsm.cookbook.android.ui.mine.MineScreen
 import com.sxdbsm.cookbook.android.ui.newdish.NewDishScreen
 import com.sxdbsm.cookbook.android.ui.search.SearchScreen
@@ -95,7 +96,7 @@ fun MainScaffold() {
         ) {
             composable(Routes.HOME) {
                 HomeScreen(
-                    onOpenTimeline = { nav.navigateRootTab(Routes.TIMELINE) },
+                    onOpenTimeline = { nav.navigate(Routes.TIMELINE_FULL) },
                     onOpenDishes = { nav.navigateRootTab(Routes.DISHES) },
                     onOpenSearch = { nav.navigate(Routes.SEARCH) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
@@ -108,6 +109,13 @@ fun MainScaffold() {
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                 )
             }
+            composable(Routes.TIMELINE_FULL) {
+                FoodTimelineScreen(
+                    onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                    onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
+                    onBack = { nav.popBackStack() },
+                )
+            }
             composable(Routes.DISHES) {
                 DishesScreen(
                     onAddDish = { nav.navigate(Routes.newDish()) },
@@ -115,6 +123,9 @@ fun MainScaffold() {
                     onEditDish = { id -> nav.navigate(Routes.newDish(id)) },
                     onCopyDish = { id -> nav.navigate(Routes.copyDish(id)) },
                 )
+            }
+            composable(Routes.INGREDIENTS) {
+                IngredientsScreen()
             }
             composable(Routes.MINE) {
                 MineScreen(

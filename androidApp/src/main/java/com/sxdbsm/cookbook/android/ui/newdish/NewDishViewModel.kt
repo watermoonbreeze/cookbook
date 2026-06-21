@@ -9,6 +9,7 @@ import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.domain.model.CookingMethod
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.domain.model.DishIngredient
+import com.sxdbsm.cookbook.domain.model.DishStep
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import com.sxdbsm.cookbook.domain.model.MeasurementUnit
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +33,7 @@ data class NewDishUiState(
     val cookingMethodNames: List<String> = emptyList(),
     val availableCookingMethods: List<CookingMethod> = emptyList(),
     val ingredients: List<DishIngredient> = emptyList(),
+    val steps: List<DishStep> = emptyList(), // [AI生成] 菜品操作步骤草稿，保存时随菜品事务一起落库。
     val specialNote: String = "",
     val description: String = "",
     val imagePath: String = "",
@@ -148,6 +150,7 @@ class NewDishViewModel(
                             cookingMethodInput = d.cookingMethodName.orEmpty(),
                             cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() },
                             ingredients = d.ingredients,
+                            steps = d.steps,
                             specialNote = d.specialNote,
                             description = d.description,
                             imagePath = d.imagePath,
@@ -194,6 +197,7 @@ class NewDishViewModel(
             cookingMethodInput = d.cookingMethodName.orEmpty(),
             cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() },
             ingredients = d.ingredients,
+            steps = d.steps,
             specialNote = d.specialNote,
             description = d.description,
             imagePath = d.imagePath,
@@ -303,6 +307,49 @@ class NewDishViewModel(
     }
 
     /**
+     * 新增一个操作步骤。[AI生成]
+     */
+    fun addStep() {
+        val nextOrder = _state.value.steps.size
+        _state.value = _state.value.copy(
+            steps = _state.value.steps + DishStep(sortOrder = nextOrder),
+        )
+    }
+
+    /**
+     * 修改某一步的文字说明。[AI生成]
+     */
+    fun updateStepText(index: Int, text: String) {
+        _state.value = _state.value.copy(
+            steps = _state.value.steps.mapIndexed { i, step ->
+                if (i == index) step.copy(text = text) else step
+            },
+        )
+    }
+
+    /**
+     * 修改某一步的过程图片。[AI生成]
+     */
+    fun updateStepImages(index: Int, imagePath: String, thumbnailPath: String) {
+        _state.value = _state.value.copy(
+            steps = _state.value.steps.mapIndexed { i, step ->
+                if (i == index) step.copy(imagePath = imagePath, thumbnailPath = thumbnailPath) else step
+            },
+        )
+    }
+
+    /**
+     * 删除某个操作步骤并重排序号。[AI生成]
+     */
+    fun removeStep(index: Int) {
+        _state.value = _state.value.copy(
+            steps = _state.value.steps
+                .filterIndexed { i, _ -> i != index }
+                .mapIndexed { i, step -> step.copy(sortOrder = i) },
+        )
+    }
+
+    /**
      * 保存当前菜品表单。[AI修改]
      */
     fun save() {
@@ -322,6 +369,7 @@ class NewDishViewModel(
                     thumbnailPath = s.thumbnailPath,
                     tagNames = s.tags,
                     ingredients = s.ingredients,
+                    steps = s.steps,
                 )
             }.onSuccess { savedId ->
                 AppLogger.event(
@@ -332,6 +380,7 @@ class NewDishViewModel(
                         "ingredientCount" to s.ingredients.size,
                         "tagCount" to s.tags.size,
                         "imageCount" to s.imagePath.split("|").filter { it.isNotBlank() }.size,
+                        "stepCount" to s.steps.count { it.text.isNotBlank() || it.imagePath.isNotBlank() },
                         "success" to true,
                     ),
                 ) // [AI生成] 内测埋点：记录菜品保存成功摘要。
@@ -350,6 +399,7 @@ class NewDishViewModel(
                         "mode" to if (s.editingId == null) "create" else "edit",
                         "ingredientCount" to s.ingredients.size,
                         "tagCount" to s.tags.size,
+                        "stepCount" to s.steps.count { it.text.isNotBlank() || it.imagePath.isNotBlank() },
                         "success" to false,
                         "errorType" to error.javaClass.simpleName,
                     ),

@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import com.sxdbsm.cookbook.domain.model.DishStep
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -34,6 +35,10 @@ class DishRepositoryTest {
             thumbnailPath = "/sdcard/cookbook/img/a_thum.jpg",
             tagNames = listOf("家常"),
             ingredients = emptyList(),
+            steps = listOf(
+                DishStep(text = "材料准备，土豆切丝", imagePath = "/sdcard/cookbook/img/step1.jpg", thumbnailPath = "/sdcard/cookbook/img/step1_t.jpg"),
+                DishStep(text = "热锅冷油，下锅翻炒"),
+            ),
         )
 
         val dish = repo.getDishById(dishId)
@@ -44,6 +49,46 @@ class DishRepositoryTest {
         assertEquals(listOf("炒"), dish.cookingMethods.map { it.name })
         assertEquals("少油", dish.specialNote)
         assertEquals("/sdcard/cookbook/img/a_thum.jpg", dish.thumbnailPath)
+        assertEquals(2, dish.steps.size)
+        assertEquals("材料准备，土豆切丝", dish.steps[0].text)
+        assertEquals("/sdcard/cookbook/img/step1_t.jpg", dish.steps[0].thumbnailPath)
+        assertEquals("热锅冷油，下锅翻炒", dish.steps[1].text)
+    }
+
+    @Test
+    fun updateDishReplacesSteps() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val repo = DishRepository(db)
+        val dishId = repo.saveDish(
+            id = 0,
+            name = "步骤替换菜品",
+            cookingMethodId = null,
+            specialNote = "",
+            description = "",
+            imagePath = "",
+            thumbnailPath = "",
+            tagNames = emptyList(),
+            ingredients = emptyList(),
+            steps = listOf(DishStep(text = "旧步骤")),
+        )
+
+        repo.saveDish(
+            id = dishId,
+            name = "步骤替换菜品",
+            cookingMethodId = null,
+            specialNote = "",
+            description = "",
+            imagePath = "",
+            thumbnailPath = "",
+            tagNames = emptyList(),
+            ingredients = emptyList(),
+            steps = listOf(DishStep(text = "新步骤")),
+        )
+
+        val dish = repo.getDishById(dishId)
+
+        assertNotNull(dish)
+        assertEquals(listOf("新步骤"), dish.steps.map { it.text })
     }
 
     @Test

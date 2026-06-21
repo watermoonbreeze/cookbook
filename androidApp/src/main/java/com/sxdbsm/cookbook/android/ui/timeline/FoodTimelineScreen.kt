@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import org.koin.androidx.compose.koinViewModel
 fun FoodTimelineScreen(
     onEditMealDate: (LocalDate) -> Unit,
     onOpenDish: (Long) -> Unit,
+    onBack: (() -> Unit)? = null,
     vm: TimelineViewModel = koinViewModel(),
 ) {
     // [AI修改] 页面只订阅 TimelineUiState，不直接访问 Repository。
@@ -103,8 +105,16 @@ fun FoodTimelineScreen(
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = MaterialTheme.colorScheme.background,
                 titleContentColor = MaterialTheme.colorScheme.onBackground,
+                navigationIconContentColor = MaterialTheme.colorScheme.secondary,
                 actionIconContentColor = MaterialTheme.colorScheme.secondary,
             ),
+            navigationIcon = {
+                onBack?.let { back ->
+                    IconButton(onClick = back) {
+                        Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
+                    }
+                }
+            },
             actions = {
                 TextButton(onClick = { calendarOpen = true }) {
                     Icon(Icons.Outlined.CalendarMonth, contentDescription = "选择日期")

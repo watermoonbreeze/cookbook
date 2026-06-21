@@ -1,10 +1,10 @@
 package com.sxdbsm.cookbook.android.ui.nav
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Restaurant
+import androidx.compose.material.icons.outlined.SoupKitchen
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
@@ -15,8 +15,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 object Routes {
     const val HOME = "home"
     const val TIMELINE = "timeline"
+    const val TIMELINE_FULL = "timeline_full"
     const val ADD_MEAL = "addmeal?date={date}"
     const val DISHES = "dishes"
+    const val INGREDIENTS = "ingredients"
     const val SEARCH = "search"
     const val MINE = "mine"
     const val COOKING_TIMER = "cooking_timer"
@@ -45,7 +47,7 @@ data class TabItem(
  */
 val bottomTabs = listOf(
     TabItem(Routes.HOME, "首页", Icons.Outlined.Home),
-    TabItem(Routes.TIMELINE, "食历", Icons.Outlined.CalendarMonth),
     TabItem(Routes.DISHES, "菜品", Icons.Outlined.Restaurant),
+    TabItem(Routes.INGREDIENTS, "食材", Icons.Outlined.SoupKitchen),
     TabItem(Routes.MINE, "我的", Icons.Outlined.Person),
 )

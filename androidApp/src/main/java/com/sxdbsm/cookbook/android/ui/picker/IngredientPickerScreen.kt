@@ -49,6 +49,8 @@ fun IngredientPickerScreen(
     excludeIngredientIds: Set<Long> = emptySet(),
     onDismiss: () -> Unit,
     onConfirm: (List<Ingredient>) -> Unit,
+    asDialog: Boolean = true,
+    selectionMode: Boolean = true,
     vm: IngredientPickerViewModel = koinViewModel(),
 ) {
     // [AI修改] 选择状态统一来自 ViewModel；弹窗输入框内容使用 remember 保存临时值。
@@ -103,10 +105,7 @@ fun IngredientPickerScreen(
             },
         )
     }
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
-    ) {
+    val content: @Composable () -> Unit = {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.surface,
@@ -120,16 +119,36 @@ fun IngredientPickerScreen(
                         actionIconContentColor = MaterialTheme.colorScheme.secondary,
                     ), // [AI修改] 食材选择弹窗顶栏按暖杏规范使用背景一体化样式。
                     title = {
-                        AppSearchField(
-                            value = ui.keyword,
-                            onValueChange = vm::setKeyword,
-                            placeholder = "搜索食材...",
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (!selectionMode) {
+                                Text("食材", fontWeight = FontWeight.SemiBold)
+                                Spacer(Modifier.width(12.dp))
+                            }
+                            AppSearchField(
+                                value = ui.keyword,
+                                onValueChange = vm::setKeyword,
+                                placeholder = "搜索食材...",
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                     },
                     navigationIcon = {
-                        IconButton(onClick = onDismiss) {
-                            Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
+                        if (selectionMode) {
+                            IconButton(onClick = onDismiss) {
+                                Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
+                            }
+                        }
+                    },
+                    actions = {
+                        if (!selectionMode) {
+                            IconButton(
+                                onClick = {
+                                    vm.clearCreateError()
+                                    createDialogOpen = true
+                                },
+                            ) {
+                                Icon(Icons.Outlined.Add, contentDescription = "添加食材")
+                            }
                         }
                     },
                 )
@@ -201,8 +220,18 @@ fun IngredientPickerScreen(
                         items(ui.ingredients, key = { it.id }) { ing ->
                             IngredientCard(
                                 ingredient = ing,
-                                selected = ing.id in ui.selectedIds,
-                                onClick = { vm.toggleSelection(ing) },
+                                selected = selectionMode && ing.id in ui.selectedIds,
+                                onClick = {
+                                    if (selectionMode) {
+                                        vm.toggleSelection(ing)
+                                    } else {
+                                        editingIngredient = ing
+                                        editIngredientName = ing.name
+                                        editIngredientAlias = ing.alias
+                                        editIngredientImages = decodeImagePaths(ing.imagePath)
+                                        editIngredientThumbnails = decodeImagePaths(ing.thumbnailPath)
+                                    }
+                                },
                                 onEdit = {
                                     editingIngredient = ing
                                     editIngredientName = ing.name
@@ -216,41 +245,53 @@ fun IngredientPickerScreen(
                     }
                 }
                 // 底部固定栏
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
+                if (selectionMode) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 2.dp,
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Text(
-                            "已选 ${ui.selectedIds.size} 项",
-                            modifier = Modifier.weight(1f),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        OutlinedButton(
-                            onClick = {
-                                vm.clearCreateError()
-                                createDialogOpen = true
-                            },
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
-                        ) { Text("+ 添加食材") }
-                        Spacer(Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                onConfirm(vm.confirmSelected())
-                                onDismiss()
-                            },
-                            enabled = ui.selectedIds.isNotEmpty(),
-                        ) { Text("完成") }
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                "已选 ${ui.selectedIds.size} 项",
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            OutlinedButton(
+                                onClick = {
+                                    vm.clearCreateError()
+                                    createDialogOpen = true
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
+                            ) { Text("+ 添加食材") }
+                            Spacer(Modifier.width(8.dp))
+                            Button(
+                                onClick = {
+                                    onConfirm(vm.confirmSelected())
+                                    onDismiss()
+                                },
+                                enabled = ui.selectedIds.isNotEmpty(),
+                            ) { Text("完成") }
+                        }
                     }
                 }
             }
         }
+    }
+    if (asDialog) {
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
+        ) {
+            content()
+        }
+    } else {
+        content()
     }
 
     if (createDialogOpen) {

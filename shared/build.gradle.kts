@@ -48,7 +48,7 @@ sqldelight {
     databases {
         create("CookbookDatabase") {
             packageName.set("com.sxdbsm.cookbook.db")
-            version = 7 // [AI修改] v7 新增烹饪计时模板表；数据库版本只能升不能降。
+            version = 8 // [AI修改] v8 新增菜品操作步骤表；数据库版本只能升不能降。
         }
     }
 }

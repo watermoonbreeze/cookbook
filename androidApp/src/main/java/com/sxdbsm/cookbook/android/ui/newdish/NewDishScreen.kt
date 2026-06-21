@@ -268,6 +268,16 @@ fun NewDishScreen(
                 Text("添加食材", color = MaterialTheme.colorScheme.tertiary)
             }
 
+            OperationStepsEditor(
+                steps = state.steps,
+                onAddStep = vm::addStep,
+                onUpdateStepText = vm::updateStepText,
+                onUpdateStepImages = { index, images, thumbnails ->
+                    vm.updateStepImages(index, encodeImagePaths(images), encodeImagePaths(thumbnails))
+                },
+                onRemoveStep = vm::removeStep,
+            )
+
             FormFieldLabel("特殊说明")
             OutlinedTextField(
                 value = state.specialNote,
@@ -369,6 +379,81 @@ fun NewDishScreen(
             },
             onDismiss = { cookingMethodDialogOpen = false },
         )
+    }
+}
+
+/**
+ * 菜品操作步骤编辑区。[AI生成]
+ *
+ * 每一步支持文字和多张过程图，保存时由 ViewModel 转成 shared 层 `DishStep`。
+ */
+@Composable
+private fun OperationStepsEditor(
+    steps: List<com.sxdbsm.cookbook.domain.model.DishStep>,
+    onAddStep: () -> Unit,
+    onUpdateStepText: (Int, String) -> Unit,
+    onUpdateStepImages: (Int, List<String>, List<String>) -> Unit,
+    onRemoveStep: (Int) -> Unit,
+) {
+    FormFieldLabel("操作步骤")
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (steps.isEmpty()) {
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+            ) {
+                Text(
+                    "还没添加步骤",
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        steps.forEachIndexed { index, step ->
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "第${index + 1}步",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(onClick = { onRemoveStep(index) }, modifier = Modifier.size(32.dp)) {
+                            Icon(Icons.Outlined.Close, contentDescription = "删除步骤", modifier = Modifier.size(18.dp))
+                        }
+                    }
+                    OutlinedTextField(
+                        value = step.text,
+                        onValueChange = { onUpdateStepText(index, it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("如：热锅冷油，放入蒜末爆香") },
+                        minLines = 2,
+                        shape = MaterialTheme.shapes.medium,
+                    )
+                    ImagePickerButton(
+                        imagePaths = decodeImagePaths(step.imagePath),
+                        thumbnailPaths = decodeImagePaths(step.thumbnailPath),
+                        onImagesChanged = { images, thumbnails -> onUpdateStepImages(index, images, thumbnails) },
+                        maxCount = 3,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
+        TextButton(onClick = onAddStep) {
+            Icon(Icons.Outlined.Add, contentDescription = null)
+            Spacer(Modifier.width(4.dp))
+            Text("添加步骤", color = MaterialTheme.colorScheme.tertiary)
+        }
     }
 }
 

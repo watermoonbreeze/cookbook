@@ -174,6 +174,50 @@ fun DishDetailScreen(
                 }
             }
 
+            if (d.steps.isNotEmpty()) {
+                FormFieldLabel("操作步骤", topPadding = 18.dp, bottomPadding = 8.dp)
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    d.steps.forEachIndexed { index, step ->
+                        OutlinedCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                Text(
+                                    "第${index + 1}步",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                if (step.text.isNotBlank()) {
+                                    Text(step.text, style = MaterialTheme.typography.bodyLarge)
+                                }
+                                val stepImages = decodeImagePaths(step.imagePath)
+                                val stepThumbnails = decodeImagePaths(step.thumbnailPath)
+                                if (stepImages.isNotEmpty()) {
+                                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        items(stepImages.mapIndexed { imageIndex, path -> path to stepThumbnails.getOrNull(imageIndex).orEmpty() }) { (path, thumbnailPath) ->
+                                            StoredImage(
+                                                imagePath = path,
+                                                thumbnailPath = thumbnailPath,
+                                                fallbackText = "步骤",
+                                                fallbackEmoji = "🍳",
+                                                seedId = step.id,
+                                                size = 96.dp,
+                                                corner = 12.dp,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             val cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() }
             if (cookingMethodNames.isNotEmpty()) {
                 FormFieldLabel("烹饪方式", topPadding = 18.dp, bottomPadding = 8.dp)

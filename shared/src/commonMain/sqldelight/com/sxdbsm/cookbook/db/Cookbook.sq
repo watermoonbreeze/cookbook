@@ -139,6 +139,21 @@ CREATE TABLE dish_ingredient (
 
 CREATE UNIQUE INDEX uq_dish_ingredient ON dish_ingredient(dish_id, ingredient_id);
 
+-- [AI生成] 菜品操作步骤：每一步保存文字和多图路径，图片路径沿用 `|` 分隔编码。
+CREATE TABLE dish_step (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    text TEXT NOT NULL DEFAULT '',
+    image_path TEXT NOT NULL DEFAULT '',
+    thumbnail_path TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_dish_step_dish_order ON dish_step(dish_id, sort_order, id);
+
 CREATE TABLE dish_crowd (
     dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
     crowd_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
@@ -700,6 +715,28 @@ UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 
 deleteDishIngredientsByIngredient:
 UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
+
+-- ===== dish_step =====
+
+insertDishStep:
+INSERT INTO dish_step(dish_id, sort_order, text, image_path, thumbnail_path, created_at, updated_at, status)
+VALUES (?, ?, ?, ?, ?, ?, ?, 1);
+
+selectStepsOfDish:
+SELECT id,
+       dish_id,
+       sort_order,
+       COALESCE(text, '') AS text,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(created_at, 0) AS created_at,
+       COALESCE(updated_at, 0) AS updated_at
+FROM dish_step
+WHERE dish_id = ? AND status = 1
+ORDER BY sort_order ASC, id ASC;
+
+deleteStepsOfDish:
+UPDATE dish_step SET status = 0, updated_at = ? WHERE dish_id = ?;
 
 selectIngredientIdByNameIncludingInactive:
 SELECT id, status
