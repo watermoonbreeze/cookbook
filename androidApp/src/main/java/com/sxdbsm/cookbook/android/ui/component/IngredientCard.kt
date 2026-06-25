@@ -43,7 +43,7 @@ import com.sxdbsm.cookbook.domain.model.Ingredient
  * @Author : SXD-AI
  * @Desc : 通用食材展示卡
  * <p>
- * 用于“搜索页食材结果”和“食材选择器右侧食材格子”。支持可选态、点击、用户自建食材长按菜单。
+ * 用于“搜索页食材结果”和“食材选择器右侧食材格子”。支持可选态、点击、用户自建食材长按菜单。[AI修改]
  * 后续沟通中提到“食材卡/食材格子Item”时，默认定位到这个控件。
  * <p>
  * [AI生成] 合并 IngredientResultCard 与 IngredientCell 的重复图片、名称、角标展示逻辑。
@@ -99,12 +99,13 @@ fun IngredientCard(
                     modifier = Modifier.fillMaxWidth(),
                     size = imageSize,
                     corner = 8.dp,
+                    allowPreview = false, // [AI修改] 食材 item 点击图片也进入详情，图片预览统一放到详情弹层中触发。
                     fillWidth = decodeImagePaths(ingredient.imagePath).isNotEmpty(),
                     imageHeight = imageSize,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = ingredient.name,
+                    text = ingredient.displayNameText(), // [AI修改] 食材卡展示统一使用“食材名称(二级名称)”格式。
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
@@ -177,3 +178,7 @@ fun IngredientCard(
         }
     }
 }
+
+// [AI生成] 通用食材卡本地展示名，避免各调用方重复拼接名称和二级名称。
+private fun Ingredient.displayNameText(): String =
+    if (alias.isBlank()) name else "$name($alias)"

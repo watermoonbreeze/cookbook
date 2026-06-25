@@ -6,6 +6,7 @@ import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.db.SelectDishForEditById
 import com.sxdbsm.cookbook.domain.model.Dish
+import com.sxdbsm.cookbook.domain.model.DishIngredientMatch
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.DishStep
@@ -151,6 +152,30 @@ class DishRepository(private val db: CookbookDatabase) {
                         cookingMethodId = row.cooking_method_id,
                     )
                 },
+            )
+        }
+    }
+
+    /**
+     * 按已有食材匹配可做菜品。[AI生成]
+     *
+     * 返回命中食材数和菜品总食材数，UI 可据此展示“食材齐全/差几项/部分匹配”。
+     */
+    suspend fun findDishesByIngredients(ingredientIds: List<Long>, limit: Long = 50): List<DishIngredientMatch> = withContext(Dispatchers.Default) {
+        val ids = ingredientIds.distinct()
+        if (ids.isEmpty()) return@withContext emptyList()
+        q.selectDishesByIngredientMatch(ids, limit).executeAsList().map { row ->
+            DishIngredientMatch(
+                dish = buildDishMini(
+                    id = row.id,
+                    name = row.name,
+                    imagePath = row.image_path,
+                    thumbnailPath = row.thumbnail_path,
+                    preference = row.preference.toInt(),
+                    cookingMethodId = row.cooking_method_id,
+                ),
+                matchCount = row.match_count.toInt(),
+                totalIngredientCount = row.total_count.toInt(),
             )
         }
     }

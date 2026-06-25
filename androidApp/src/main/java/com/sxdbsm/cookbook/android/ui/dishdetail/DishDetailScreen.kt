@@ -177,7 +177,7 @@ fun DishDetailScreen(
             if (d.steps.isNotEmpty()) {
                 FormFieldLabel("操作步骤", topPadding = 18.dp, bottomPadding = 8.dp)
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    d.steps.forEachIndexed { index, step ->
+                    d.steps.forEach { step ->
                         OutlinedCard(
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.large,
@@ -187,11 +187,6 @@ fun DishDetailScreen(
                                 modifier = Modifier.padding(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
-                                Text(
-                                    "第${index + 1}步",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
                                 if (step.text.isNotBlank()) {
                                     Text(step.text, style = MaterialTheme.typography.bodyLarge)
                                 }

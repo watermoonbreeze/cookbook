@@ -6,6 +6,8 @@ import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.FoodCategory
 import com.sxdbsm.cookbook.domain.model.Ingredient
+import com.sxdbsm.cookbook.domain.model.IngredientCareRule
+import com.sxdbsm.cookbook.domain.model.IngredientDetail
 import com.sxdbsm.cookbook.domain.model.MeasurementUnit
 import com.sxdbsm.cookbook.platform.Pinyin
 import com.sxdbsm.cookbook.util.DateTime
@@ -86,6 +88,8 @@ class IngredientRepository(private val db: CookbookDatabase) {
         imagePath: String = "",
         thumbnailPath: String = "",
         categoryId: Long? = null,
+        defaultUnitId: Long? = null,
+        categoryIds: List<Long> = categoryId?.let { listOf(it) }.orEmpty(),
     ): Long = withContext(Dispatchers.Default) {
         val now = DateTime.nowEpochSeconds()
         q.insertIngredient(
@@ -95,13 +99,128 @@ class IngredientRepository(private val db: CookbookDatabase) {
             image_path = imagePath, // [AI修改] 新建食材时可保存可选图片路径，MVP 暂不接入系统相册。
             thumbnail_path = thumbnailPath, // [AI生成] 新建食材时保存缩略图路径，列表优先展示。
             emoji = "🥗", // [AI生成] 用户自建食材没有 JSON 预置图标时先使用通用食物图标。
-            default_unit_id = null,
+            default_unit_id = defaultUnitId,
             source = "user",
             created_at = now,
         )
         val id = q.lastInsertId().executeAsOne()
-        categoryId?.let { q.linkIngredientCategory(id, it) } // [AI修改] 新建食材时按用户选择绑定分类。
+        categoryIds.distinct().forEach { q.linkIngredientCategory(id, it) } // [AI修改] 新建食材时按多分类选择绑定分类。
         id
+    }
+
+    /**
+     * 读取食材已绑定的分类 id。[AI生成]
+     */
+    suspend fun listCategoryIds(ingredientId: Long): List<Long> = withContext(Dispatchers.Default) {
+        q.selectCategoryIdsByIngredient(ingredientId).executeAsList()
+    }
+
+    /**
+     * 读取食材绑定的完整分类信息。[AI生成]
+     */
+    suspend fun listCategories(ingredientId: Long): List<FoodCategory> = withContext(Dispatchers.Default) {
+        q.selectCategoriesByIngredient(ingredientId).executeAsList().map { row ->
+            FoodCategory(
+                id = row.id,
+                name = row.name,
+                dimension = row.dimension,
+                parentId = row.parent_id,
+                crowdTypeId = row.crowd_type_id,
+                sortOrder = row.sort_order.toInt(),
+                icon = row.icon,
+                source = row.source,
+                hasChildren = q.countChildren(row.id).executeAsOne() > 0,
+            )
+        }
+    }
+
+    /**
+     * 按多个分类筛选食材。[AI生成]
+     */
+    suspend fun listByCategories(categoryIds: List<Long>): List<Ingredient> = withContext(Dispatchers.Default) {
+        if (categoryIds.isEmpty()) return@withContext search("")
+        q.selectIngredientsByCategoryIds(categoryIds, ::mapIngredientRow).executeAsList()
+    }
+
+    /**
+     * 重置食材分类关系。[AI生成]
+     *
+     * 新版新增/编辑食材会一次选择常规、营养、调养等多个分类，这里用事务保证关系整体替换。
+     */
+    suspend fun replaceIngredientCategories(ingredientId: Long, categoryIds: List<Long>) = withContext(Dispatchers.Default) {
+        db.transaction {
+            q.unlinkIngredientCategoriesByIngredient(ingredientId)
+            categoryIds.distinct().forEach { categoryId ->
+                q.linkIngredientCategory(ingredientId, categoryId)
+            }
+        }
+    }
+
+    /**
+     * 保存食材详情扩展信息。[AI生成]
+     */
+    suspend fun saveIngredientDetail(detail: IngredientDetail) = withContext(Dispatchers.Default) {
+        q.upsertIngredientDetail(
+            ingredient_id = detail.ingredientId,
+            common_methods = detail.commonMethods.trim(),
+            prep_tips = detail.prepTips.trim(),
+            eating_notes = detail.eatingNotes.trim(),
+            storage_tips = detail.storageTips.trim(),
+            health_note = detail.healthNote.trim(),
+            updated_at = DateTime.nowEpochSeconds(),
+        )
+    }
+
+    /**
+     * 读取食材详情扩展信息。[AI生成]
+     */
+    suspend fun getIngredientDetail(ingredientId: Long): IngredientDetail? = withContext(Dispatchers.Default) {
+        q.selectIngredientDetail(ingredientId).executeAsOneOrNull()?.let { row ->
+            IngredientDetail(
+                ingredientId = row.ingredient_id,
+                commonMethods = row.common_methods,
+                prepTips = row.prep_tips,
+                eatingNotes = row.eating_notes,
+                storageTips = row.storage_tips,
+                healthNote = row.health_note,
+                updatedAt = row.updated_at,
+            )
+        }
+    }
+
+    /**
+     * 重置食材调养规则。[AI生成]
+     */
+    suspend fun replaceCareRules(ingredientId: Long, rules: List<IngredientCareRule>) = withContext(Dispatchers.Default) {
+        db.transaction {
+            q.clearIngredientCareRules(ingredientId)
+            rules.distinctBy { it.categoryId }.forEach { rule ->
+                q.upsertIngredientCareRule(
+                    ingredient_id = ingredientId,
+                    category_id = rule.categoryId,
+                    advice_level = rule.adviceLevel.code(),
+                    reason = rule.reason.trim(),
+                    source = rule.source,
+                )
+            }
+        }
+    }
+
+    /**
+     * 读取食材调养规则。[AI生成]
+     */
+    suspend fun listCareRules(ingredientId: Long): List<IngredientCareRule> = withContext(Dispatchers.Default) {
+        q.selectCareRulesByIngredient(ingredientId).executeAsList().map { row ->
+            IngredientCareRule(
+                id = row.id,
+                ingredientId = row.ingredient_id,
+                categoryId = row.category_id,
+                categoryName = row.category_name,
+                adviceLevel = AdviceLevel.fromCode(row.advice_level) ?: AdviceLevel.LIMIT,
+                reason = row.reason,
+                source = row.source,
+            )
+        }
     }
 
     /**
@@ -116,12 +235,20 @@ class IngredientRepository(private val db: CookbookDatabase) {
      *
      * 修复9要求预设和自建食材都可以编辑；删除仍只允许自建食材。
      */
-    suspend fun updateUserIngredient(id: Long, name: String, alias: String, imagePath: String, thumbnailPath: String) = withContext(Dispatchers.Default) {
+    suspend fun updateUserIngredient(
+        id: Long,
+        name: String,
+        alias: String,
+        imagePath: String,
+        thumbnailPath: String,
+        defaultUnitId: Long? = null,
+    ) = withContext(Dispatchers.Default) {
         q.updateUserIngredient(
             name = name,
             alias = alias,
             image_path = imagePath,
             thumbnail_path = thumbnailPath,
+            default_unit_id = defaultUnitId,
             id = id,
         )
     }
@@ -165,6 +292,15 @@ class IngredientRepository(private val db: CookbookDatabase) {
         defaultUnitId = default_unit_id,
         source = source,
     )
+
+    /**
+     * 调养建议等级落库 code。[AI生成]
+     */
+    private fun AdviceLevel.code(): String = when (this) {
+        AdviceLevel.RECOMMEND -> "recommend"
+        AdviceLevel.LIMIT -> "limit"
+        AdviceLevel.AVOID -> "avoid"
+    }
 }
 
 /**
@@ -195,7 +331,9 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 读取某个一级分类下的二级分类。[AI修改]
+     * 读取某个分类下的直接子分类。[AI修改]
+     *
+     * 分类树已支持多级结构，返回每个子节点时同步计算它是否还有下一层。
      */
     suspend fun listChildren(parentId: Long): List<FoodCategory> = withContext(Dispatchers.Default) {
         q.selectChildCategories(parentId).executeAsList().map { row ->
@@ -208,7 +346,7 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
                 sortOrder = row.sort_order.toInt(),
                 icon = row.icon,
                 source = row.source,
-                hasChildren = false,
+                hasChildren = q.countChildren(row.id).executeAsOne() > 0, // [AI修改] 多级分类树需要每层都能继续展开。
             )
         }
     }

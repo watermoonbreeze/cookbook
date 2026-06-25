@@ -1,0 +1,50 @@
+[
+  {
+    "ingredient": "青椒",
+    "commonMethods": "快炒、凉拌、搭配鸡胸肉或瘦肉丝。",
+    "prepTips": "去蒂去籽后切丝或切块，大火短时间烹调更能保持脆感。",
+    "eatingNotes": "肠胃敏感时少量尝试，避免过辣品种。",
+    "storageTips": "擦干表面水分后冷藏，建议 3-5 天内使用。",
+    "healthNote": "富含维生素 C，适合做低油快手蔬菜。"
+  },
+  {
+    "ingredient": "鸡胸肉",
+    "commonMethods": "水煮、清炒、煎烤、做鸡丝或沙拉。",
+    "prepTips": "可提前用少量盐、姜片或淀粉腌制，避免久煮变柴。",
+    "eatingNotes": "控制用油和重口调料，搭配蔬菜更均衡。",
+    "storageTips": "生肉冷藏 1-2 天内使用，长期保存需冷冻。",
+    "healthNote": "优质蛋白且脂肪较低，适合作为日常蛋白来源。"
+  },
+  {
+    "ingredient": "燕麦",
+    "commonMethods": "煮粥、泡牛奶、搭配酸奶或水果。",
+    "prepTips": "即食燕麦适合快速冲泡，传统燕麦需要更长煮制时间。",
+    "eatingNotes": "糖尿病人群选择无糖燕麦，并注意总碳水量。",
+    "storageTips": "密封防潮保存，开封后尽快食用。",
+    "healthNote": "全谷物、高膳食纤维，有助于增强饱腹感。"
+  },
+  {
+    "ingredient": "菠菜",
+    "commonMethods": "焯水凉拌、清炒、做汤。",
+    "prepTips": "建议先焯水再烹调，以改善口感并减少部分草酸。",
+    "eatingNotes": "肾病或需控钾人群应结合个人医嘱控制摄入。",
+    "storageTips": "叶菜易损耗，冷藏后尽快食用。",
+    "healthNote": "深色叶菜，含膳食纤维、钾和非血红素铁。"
+  },
+  {
+    "ingredient": "牛奶",
+    "commonMethods": "直接饮用、搭配燕麦、做奶昔或炖蛋。",
+    "prepTips": "加热不宜长时间沸腾，避免影响口感。",
+    "eatingNotes": "乳糖不耐受者可选择低乳糖奶或酸奶。",
+    "storageTips": "开封后冷藏并按包装建议尽快饮用。",
+    "healthNote": "低嘌呤且富含钙，是常见优质蛋白来源。"
+  },
+  {
+    "ingredient": "蛤蜊",
+    "commonMethods": "清蒸、煮汤、爆炒。",
+    "prepTips": "烹饪前充分吐沙并清洗，确保完全熟透。",
+    "eatingNotes": "高尿酸或痛风急性期人群应避免。",
+    "storageTips": "鲜活贝类不宜久放，购买后尽快烹饪。",
+    "healthNote": "贝类嘌呤相对较高，适合按个人情况限量。"
+  }
+]

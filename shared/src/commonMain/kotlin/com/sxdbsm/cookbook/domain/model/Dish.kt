@@ -73,3 +73,16 @@ data class DishMini(
     val cookingMethodName: String? = null,
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 列表/搜索中展示多个烹饪方式。
 )
+
+/**
+ * 按食材匹配出来的菜品。[AI生成]
+ *
+ * `matchCount` 表示用户选择的食材命中了多少个，`totalIngredientCount` 表示菜品全部食材数。
+ */
+data class DishIngredientMatch(
+    val dish: DishMini,
+    val matchCount: Int,
+    val totalIngredientCount: Int,
+) {
+    val missingCount: Int get() = (totalIngredientCount - matchCount).coerceAtLeast(0)
+}

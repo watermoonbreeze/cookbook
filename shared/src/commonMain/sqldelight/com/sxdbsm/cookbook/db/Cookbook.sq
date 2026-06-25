@@ -70,6 +70,18 @@ CREATE TABLE ingredient_category (
     PRIMARY KEY (ingredient_id, category_id)
 );
 
+-- [AI生成] 食材详情扩展表：承载做法、处理、注意事项、保存和健康说明。
+CREATE TABLE ingredient_detail (
+    ingredient_id INTEGER NOT NULL PRIMARY KEY REFERENCES ingredient(id) ON DELETE CASCADE,
+    common_methods TEXT NOT NULL DEFAULT '',
+    prep_tips TEXT NOT NULL DEFAULT '',
+    eating_notes TEXT NOT NULL DEFAULT '',
+    storage_tips TEXT NOT NULL DEFAULT '',
+    health_note TEXT NOT NULL DEFAULT '',
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
 CREATE TABLE crowd_ingredient (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     crowd_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
@@ -82,6 +94,20 @@ CREATE TABLE crowd_ingredient (
 );
 
 CREATE UNIQUE INDEX uq_crowd_ingredient ON crowd_ingredient(crowd_id, ingredient_id);
+
+-- [AI生成] 通用调养规则：后续承接病种、人群、身体状态等食材建议，不再局限 crowd_type。
+CREATE TABLE ingredient_care_rule (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    advice_level TEXT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX uq_ingredient_care_rule ON ingredient_care_rule(ingredient_id, category_id);
+CREATE INDEX idx_ingredient_care_rule_category ON ingredient_care_rule(category_id, advice_level);
 
 -- ========== 菜品体系 ==========
 
@@ -476,7 +502,7 @@ SET name = COALESCE(name, ''),
 
 updateUserIngredient:
 UPDATE ingredient
-SET name = ?, alias = ?, image_path = ?, thumbnail_path = ?
+SET name = ?, alias = ?, image_path = ?, thumbnail_path = ?, default_unit_id = ?
 WHERE id = ? AND status = 1;
 
 updateIngredientEmoji:
@@ -570,6 +596,87 @@ VALUES (?, ?, ?, ?, ?, ?, 1);
 linkIngredientCategory:
 INSERT OR REPLACE INTO ingredient_category(ingredient_id, category_id, status) VALUES (?, ?, 1);
 
+unlinkIngredientCategoriesByIngredient:
+UPDATE ingredient_category
+SET status = 0
+WHERE ingredient_id = ?;
+
+selectCategoryIdsByIngredient:
+SELECT category_id
+FROM ingredient_category
+WHERE ingredient_id = ? AND status = 1
+ORDER BY category_id;
+
+selectCategoriesByIngredient:
+SELECT fc.*
+FROM food_category fc
+JOIN ingredient_category ic ON fc.id = ic.category_id
+WHERE ic.ingredient_id = ? AND ic.status = 1 AND fc.status = 1
+ORDER BY fc.dimension, fc.sort_order, fc.id;
+
+selectIngredientsByCategoryIds:
+SELECT DISTINCT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at
+FROM ingredient i
+JOIN ingredient_category ic ON i.id = ic.ingredient_id
+WHERE ic.category_id IN ?
+  AND i.status = 1
+  AND ic.status = 1
+ORDER BY i.pinyin, i.name;
+
+upsertIngredientDetail:
+INSERT OR REPLACE INTO ingredient_detail(
+    ingredient_id,
+    common_methods,
+    prep_tips,
+    eating_notes,
+    storage_tips,
+    health_note,
+    updated_at,
+    status
+) VALUES (?, ?, ?, ?, ?, ?, ?, 1);
+
+selectIngredientDetail:
+SELECT ingredient_id,
+       common_methods,
+       prep_tips,
+       eating_notes,
+       storage_tips,
+       health_note,
+       updated_at
+FROM ingredient_detail
+WHERE ingredient_id = ? AND status = 1;
+
+clearIngredientCareRules:
+UPDATE ingredient_care_rule
+SET status = 0
+WHERE ingredient_id = ?;
+
+upsertIngredientCareRule:
+INSERT OR REPLACE INTO ingredient_care_rule(ingredient_id, category_id, advice_level, reason, source, status)
+VALUES (?, ?, ?, ?, ?, 1);
+
+selectCareRulesByIngredient:
+SELECT cr.id,
+       cr.ingredient_id,
+       cr.category_id,
+       fc.name AS category_name,
+       cr.advice_level,
+       cr.reason,
+       cr.source
+FROM ingredient_care_rule cr
+JOIN food_category fc ON cr.category_id = fc.id
+WHERE cr.ingredient_id = ? AND cr.status = 1 AND fc.status = 1
+ORDER BY fc.sort_order, fc.id;
+
 -- ===== dish =====
 
 insertDish:
@@ -635,6 +742,24 @@ WHERE d.status = 1
    OR (di.status = 1 AND i.status = 1 AND i.name LIKE :kw)
    OR (di.status = 1 AND i.status = 1 AND i.alias LIKE :kw))
 ORDER BY d.preference DESC, d.name COLLATE NOCASE ASC;
+
+selectDishesByIngredientMatch:
+SELECT d.id,
+       d.name,
+       d.image_path,
+       d.thumbnail_path,
+       d.preference,
+       d.cooking_method_id,
+       COUNT(DISTINCT CASE WHEN di.ingredient_id IN :ingredientIds THEN di.ingredient_id END) AS match_count,
+       COUNT(DISTINCT di.ingredient_id) AS total_count
+FROM dish d
+JOIN dish_ingredient di ON d.id = di.dish_id
+WHERE d.status = 1
+  AND di.status = 1
+GROUP BY d.id
+HAVING match_count > 0
+ORDER BY match_count DESC, total_count ASC, d.preference DESC, d.name COLLATE NOCASE ASC
+LIMIT :limit;
 
 -- ===== dish_tag / dish_tag_rel =====
 

@@ -1,0 +1,24 @@
+-- [AI生成] v9 食材数据承载底座：详情扩展和通用调养规则。
+CREATE TABLE ingredient_detail (
+    ingredient_id INTEGER NOT NULL PRIMARY KEY REFERENCES ingredient(id) ON DELETE CASCADE,
+    common_methods TEXT NOT NULL DEFAULT '',
+    prep_tips TEXT NOT NULL DEFAULT '',
+    eating_notes TEXT NOT NULL DEFAULT '',
+    storage_tips TEXT NOT NULL DEFAULT '',
+    health_note TEXT NOT NULL DEFAULT '',
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE ingredient_care_rule (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    advice_level TEXT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX uq_ingredient_care_rule ON ingredient_care_rule(ingredient_id, category_id);
+CREATE INDEX idx_ingredient_care_rule_category ON ingredient_care_rule(category_id, advice_level);

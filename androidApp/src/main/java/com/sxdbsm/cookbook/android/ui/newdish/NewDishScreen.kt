@@ -26,6 +26,7 @@ import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerScreen
+import com.sxdbsm.cookbook.domain.model.Ingredient
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -50,6 +51,8 @@ fun NewDishScreen(
     var ingredientPickerOpen by remember { mutableStateOf(false) }
     var cookingMethodDialogOpen by remember { mutableStateOf(false) }
     var cookingMethodDraft by remember { mutableStateOf("") }
+    var duplicateIngredientNames by remember { mutableStateOf<List<String>>(emptyList()) } // [AI生成] 选择食材后用于提示已存在的食材名称。
+    var pendingNewIngredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) } // [AI生成] 用户确认重复提示后实际追加的新增食材。
     val context = LocalContext.current
 
     /**
@@ -332,7 +335,49 @@ fun NewDishScreen(
             excludeIngredientIds = emptySet(), // [AI修改] 不再过滤当前菜品已有食材，确保保存后进入“最近使用”的食材在再次打开选择器时可见；重复添加由 ViewModel 兜底。
             onDismiss = { ingredientPickerOpen = false },
             onConfirm = { selected ->
-                selected.forEach { vm.addIngredient(it) }
+                val existingIds = state.ingredients.map { it.ingredient.id }.toSet()
+                val duplicates = selected.filter { it.id in existingIds }
+                val additions = selected.filterNot { it.id in existingIds }
+                if (duplicates.isNotEmpty()) {
+                    duplicateIngredientNames = duplicates.map { it.displayNameText() }
+                    pendingNewIngredients = additions // [AI修改] 确认后只追加新增食材，已有食材的用量/备注不被覆盖。
+                } else {
+                    additions.forEach { vm.addIngredient(it) }
+                }
+            },
+        )
+    }
+
+    if (duplicateIngredientNames.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = {
+                duplicateIngredientNames = emptyList()
+                pendingNewIngredients = emptyList()
+            },
+            title = { Text("食材已存在") },
+            text = {
+                Text("食材 ${duplicateIngredientNames.joinToString("、")} 已经在菜品中存在。")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingNewIngredients.forEach { vm.addIngredient(it) }
+                        duplicateIngredientNames = emptyList()
+                        pendingNewIngredients = emptyList()
+                    },
+                ) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        duplicateIngredientNames = emptyList()
+                        pendingNewIngredients = emptyList()
+                    },
+                ) {
+                    Text("取消")
+                }
             },
         )
     }
@@ -420,17 +465,6 @@ private fun OperationStepsEditor(
                     modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "第${index + 1}步",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.weight(1f),
-                        )
-                        IconButton(onClick = { onRemoveStep(index) }, modifier = Modifier.size(32.dp)) {
-                            Icon(Icons.Outlined.Close, contentDescription = "删除步骤", modifier = Modifier.size(18.dp))
-                        }
-                    }
                     OutlinedTextField(
                         value = step.text,
                         onValueChange = { onUpdateStepText(index, it) },
@@ -446,6 +480,13 @@ private fun OperationStepsEditor(
                         maxCount = 3,
                         modifier = Modifier.fillMaxWidth(),
                     )
+                    Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                        TextButton(onClick = { onRemoveStep(index) }) {
+                            Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("删除")
+                        }
+                    } // [AI修改] 删除入口移到步骤卡片右下角，避免顶部空占位压缩输入区域。
                 }
             }
         }
@@ -518,6 +559,12 @@ private fun CookingMethodDialog(
         },
     )
 }
+
+/**
+ * 食材展示名称。[AI生成]
+ */
+private fun Ingredient.displayNameText(): String =
+    if (alias.isBlank()) name else "$name($alias)"
 
 /**
  * 简化版 FlowRow。[AI修改]

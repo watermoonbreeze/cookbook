@@ -38,6 +38,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         if (q.countUserPreferences().executeAsOne() == 0L) seedUserPreferences(now)
         seedFoundationIngredients(now, categoryIdsByCode) // [AI修改] 食材采用补齐式 JSON seed，并补齐默认 emoji。
         seedCrowdRules() // [AI生成] 慢病食材建议规则采用 JSON 补齐式 seed。
+        seedIngredientDetails(now) // [AI生成] 食材详情采用 JSON 补齐式 seed，支撑详情页直接展示做法和注意事项。
+        seedIngredientCareRules(categoryIdsByCode) // [AI生成] 通用调养规则进入新 care_rule 表，覆盖非 crowd_type 的病种/人群节点。
     }
 
     private fun seedCookingMethods(now: Long) {
@@ -236,6 +238,55 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             ?.let { json.decodeFromString(it) }
             ?: emptyList()
 
+    /**
+     * 灌入食材详情。[AI生成]
+     */
+    private fun seedIngredientDetails(now: Long) {
+        val q = db.cookbookQueries
+        loadIngredientDetails().forEach { detail ->
+            val ingredientId = q.selectIngredientIdByNameIncludingInactive(detail.ingredient).executeAsOneOrNull()?.id
+                ?: return@forEach
+            q.upsertIngredientDetail(
+                ingredient_id = ingredientId,
+                common_methods = detail.commonMethods,
+                prep_tips = detail.prepTips,
+                eating_notes = detail.eatingNotes,
+                storage_tips = detail.storageTips,
+                health_note = detail.healthNote,
+                updated_at = now,
+            )
+        }
+    }
+
+    private fun loadIngredientDetails(): List<SeedIngredientDetail> =
+        SeedResourceLoader.readText("seed/ingredient_details.json")
+            ?.let { json.decodeFromString(it) }
+            ?: emptyList()
+
+    /**
+     * 灌入新版调养规则。[AI生成]
+     */
+    private fun seedIngredientCareRules(categoryIdsByCode: Map<String, Long>) {
+        val q = db.cookbookQueries
+        loadIngredientCareRules().forEach { rule ->
+            val ingredientId = q.selectIngredientIdByNameIncludingInactive(rule.ingredient).executeAsOneOrNull()?.id
+                ?: return@forEach
+            val categoryId = categoryIdsByCode[rule.category] ?: return@forEach
+            q.upsertIngredientCareRule(
+                ingredient_id = ingredientId,
+                category_id = categoryId,
+                advice_level = rule.level,
+                reason = rule.reason,
+                source = "preset",
+            )
+        }
+    }
+
+    private fun loadIngredientCareRules(): List<SeedIngredientCareRule> =
+        SeedResourceLoader.readText("seed/ingredient_care_rules.json")
+            ?.let { json.decodeFromString(it) }
+            ?: emptyList()
+
     private companion object {
         const val DEFAULT_INGREDIENT_EMOJI = "🥗" // [AI生成] 所有兜底食材统一使用更清爽的沙拉图标。
     }
@@ -268,4 +319,22 @@ private data class SeedCrowdRule(
     val level: String,
     val reason: String = "",
     val dailyLimit: Double? = null,
+)
+
+@Serializable
+private data class SeedIngredientDetail(
+    val ingredient: String,
+    val commonMethods: String = "",
+    val prepTips: String = "",
+    val eatingNotes: String = "",
+    val storageTips: String = "",
+    val healthNote: String = "",
+)
+
+@Serializable
+private data class SeedIngredientCareRule(
+    val ingredient: String,
+    val category: String,
+    val level: String,
+    val reason: String = "",
 )

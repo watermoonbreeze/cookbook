@@ -23,6 +23,36 @@ data class Ingredient(
 )
 
 /**
+ * 食材详情扩展信息。[AI生成]
+ *
+ * 后续食材详情页、新增/编辑食材页共用这组字段，避免 UI 临时拼接文本。
+ */
+data class IngredientDetail(
+    val ingredientId: Long,
+    val commonMethods: String = "",
+    val prepTips: String = "",
+    val eatingNotes: String = "",
+    val storageTips: String = "",
+    val healthNote: String = "",
+    val updatedAt: Long = 0L,
+)
+
+/**
+ * 食材调养规则。[AI生成]
+ *
+ * 用于病种、人群、身体状态等“推荐/限量/避免”规则，关联到调养分类节点。
+ */
+data class IngredientCareRule(
+    val id: Long = 0L,
+    val ingredientId: Long,
+    val categoryId: Long,
+    val categoryName: String = "",
+    val adviceLevel: AdviceLevel,
+    val reason: String = "",
+    val source: String = "user",
+)
+
+/**
  * 食材建议等级。[AI修改]
  *
  * enum class 等价于 Java enum；companion object 类似 Java 里的 static 工具区。
