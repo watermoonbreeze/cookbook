@@ -401,8 +401,8 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
         require(trimmedName.isNotBlank()) { "分类名称不能为空" }
         parentId?.let { parent ->
             val parentCategory = get(parent)
-            require(parentCategory?.dimension == "general" && parentCategory.crowdTypeId == null) {
-                "只能在普通分类下新增子分类"
+            require(parentCategory?.isEditableUserGeneralCategory() == true) {
+                "只能在自定义分类下新增子分类"
             }
         }
         q.insertFoodCategory(

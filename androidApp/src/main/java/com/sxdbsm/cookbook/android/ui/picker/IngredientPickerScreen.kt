@@ -71,7 +71,6 @@ fun IngredientPickerScreen(
     var categoryParentIdDraft by remember { mutableStateOf<Long?>(null) }
     var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) } // [AI修改] 食材详情统一通过底部弹层展示，首页和菜品选择共用。
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
-    var filterOpen by remember { mutableStateOf(false) } // [AI生成] 食材筛选弹框开关。
     var dishMatchOpen by remember { mutableStateOf(false) } // [AI生成] 按已选食材找菜结果弹框。
 
     /**
@@ -138,9 +137,6 @@ fun IngredientPickerScreen(
                         }
                     },
                     actions = {
-                        TextButton(onClick = { filterOpen = true }) {
-                            Text(if (ui.filterCategoryIds.isEmpty()) "筛选" else "筛选(${ui.filterCategoryIds.size})")
-                        }
                         if (!selectionMode) {
                             IconButton(
                                 onClick = {
@@ -224,9 +220,8 @@ fun IngredientPickerScreen(
                                         selectedIngredient = null
                                         if (node.category.hasChildren) {
                                             vm.toggleExpand(node)
-                                        } else {
-                                            vm.selectCategory(node)
                                         }
+                                        vm.selectCategory(node) // [AI修改] 点击任意层级分类都立即筛选该分类及其子分类下的食材。
                                     },
                                 )
                             }
@@ -248,6 +243,16 @@ fun IngredientPickerScreen(
                                     selectedIngredient = ing // [AI修改] 点击食材统一先打开详情，是否加入已选由详情顶部按钮决定。
                                 },
                             )
+                        }
+                        if (ui.canLoadMoreIngredients) {
+                            item {
+                                OutlinedButton(
+                                    onClick = vm::loadMoreIngredients,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text("加载更多")
+                                }
+                            }
                         }
                     }
                 }
@@ -368,16 +373,6 @@ fun IngredientPickerScreen(
         )
     }
 
-    if (filterOpen) {
-        IngredientFilterDialog(
-            categories = ui.allCategories,
-            selectedIds = ui.filterCategoryIds,
-            onToggle = vm::toggleFilterCategory,
-            onClear = vm::clearFilters,
-            onDismiss = { filterOpen = false },
-        )
-    }
-
     if (dishMatchOpen) {
         DishMatchDialog(
             title = "可做菜品",
@@ -394,6 +389,12 @@ fun IngredientPickerScreen(
                 createDialogOpen = false
                 vm.clearCreateError()
             },
+            onAddCategory = {
+                categoryEditTarget = null
+                categoryNameDraft = ""
+                categoryParentIdDraft = null
+                categoryEditOpen = true
+            },
             onSave = vm::saveIngredientEditor,
         )
     }
@@ -405,6 +406,12 @@ fun IngredientPickerScreen(
             onDismiss = {
                 editingIngredient = null
                 vm.clearCreateError()
+            },
+            onAddCategory = {
+                categoryEditTarget = null
+                categoryNameDraft = ""
+                categoryParentIdDraft = null
+                categoryEditOpen = true
             },
             onSave = vm::saveIngredientEditor,
         )
@@ -447,7 +454,7 @@ fun IngredientPickerScreen(
 
     if (categoryManageOpen) {
         CategoryManageDialog(
-            categories = ui.allCategories,
+            categories = ui.allCategories.filter { it.isEditableUserGeneralCategory() },
             onDismiss = { categoryManageOpen = false },
             onAdd = {
                 categoryManageOpen = false
@@ -534,6 +541,7 @@ private fun IngredientEditorDialog(
     ingredient: Ingredient?,
     ui: IngredientPickerUiState,
     onDismiss: () -> Unit,
+    onAddCategory: () -> Unit,
     onSave: (
         Ingredient?,
         String,
@@ -558,10 +566,18 @@ private fun IngredientEditorDialog(
     var storageTips by remember(ingredient?.id) { mutableStateOf("") }
     var healthNote by remember(ingredient?.id) { mutableStateOf("") }
     var careRules by remember(ingredient?.id) { mutableStateOf<List<IngredientCareRule>>(emptyList()) }
+    var categoryPickerOpen by remember { mutableStateOf(false) } // [AI生成] 自定义食材分类选择器开关。
+    val isPreset = ingredient?.source == "preset"
+    val editableCustomCategories = ui.allCategories.filter { it.isEditableUserGeneralCategory() }
+    val selectedCategoryNames = editableCustomCategories
+        .filter { it.id in categoryIds }
+        .joinToString("，") { it.name }
 
     LaunchedEffect(ingredient?.id, ui.editorLoading, ui.editorCategoryIds, ui.editorDetail, ui.editorCareRules) {
         if (ingredient == null || !ui.editorLoading) {
-            categoryIds = ui.editorCategoryIds
+            categoryIds = if (ingredient?.source == "preset") emptySet() else ui.editorCategoryIds.filter { id ->
+                ui.allCategories.firstOrNull { it.id == id }?.isEditableUserGeneralCategory() == true
+            }.toSet()
             val detail = ui.editorDetail
             commonMethods = detail?.commonMethods.orEmpty()
             prepTips = detail?.prepTips.orEmpty()
@@ -636,9 +652,10 @@ private fun IngredientEditorDialog(
                     EditorSection("基础信息") {
                         OutlinedTextField(
                             value = name,
-                            onValueChange = { name = it },
+                            onValueChange = { if (!isPreset) name = it },
                             label = { Text("食材名称 *") },
                             singleLine = true,
+                            enabled = !isPreset,
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.medium,
                         )
@@ -650,11 +667,13 @@ private fun IngredientEditorDialog(
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.medium,
                         )
-                        UnitDropdown(
-                            units = ui.availableUnits,
-                            selectedUnitId = defaultUnitId,
-                            onSelect = { defaultUnitId = it },
-                        )
+                        if (!isPreset) {
+                            UnitDropdown(
+                                units = ui.availableUnits,
+                                selectedUnitId = defaultUnitId,
+                                onSelect = { defaultUnitId = it },
+                            )
+                        }
                         ImagePickerButton(
                             imagePaths = images,
                             thumbnailPaths = thumbnails,
@@ -667,33 +686,25 @@ private fun IngredientEditorDialog(
                         )
                     }
 
-                    EditorSection("分类归属") {
-                        CategoryMultiSelect(
-                            title = "常规分类",
-                            categories = ui.allCategories.filter { it.dimension == "general" && it.crowdTypeId == null },
-                            selectedIds = categoryIds,
-                            onToggle = { categoryIds = categoryIds.toggle(it) },
-                        )
-                        CategoryMultiSelect(
-                            title = "营养标签",
-                            categories = ui.allCategories.filter { it.dimension in nutritionDimensionsForEditor && !it.isNutritionGroupRoot() },
-                            selectedIds = categoryIds,
-                            onToggle = { categoryIds = categoryIds.toggle(it) },
-                        )
-                    }
+                    if (!isPreset) {
+                        EditorSection("分类归属") {
+                            Text(
+                                selectedCategoryNames.ifBlank { "未选择分类" },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (selectedCategoryNames.isBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                            )
+                            OutlinedButton(onClick = { categoryPickerOpen = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text("选择分类")
+                            }
+                        }
 
-                    CareRuleEditor(
-                        categories = ui.allCategories.filter { (it.dimension == "crowd" || it.crowdTypeId != null) && !it.isCareGroupRoot() },
-                        rules = careRules,
-                        onRulesChange = { careRules = it },
-                    )
-
-                    EditorSection("详情说明") {
-                        DetailTextField("常见做法", commonMethods) { commonMethods = it }
-                        DetailTextField("处理建议", prepTips) { prepTips = it }
-                        DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
-                        DetailTextField("保存建议", storageTips) { storageTips = it }
-                        DetailTextField("健康说明", healthNote) { healthNote = it }
+                        EditorSection("详情说明") {
+                            DetailTextField("常见做法", commonMethods) { commonMethods = it }
+                            DetailTextField("处理建议", prepTips) { prepTips = it }
+                            DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
+                            DetailTextField("保存建议", storageTips) { storageTips = it }
+                            DetailTextField("健康说明", healthNote) { healthNote = it }
+                        }
                     }
 
                     ui.createError?.let { error ->
@@ -703,6 +714,19 @@ private fun IngredientEditorDialog(
                 }
             }
         }
+    }
+
+    if (categoryPickerOpen) {
+        IngredientCategoryPickerDialog(
+            categories = editableCustomCategories,
+            selectedIds = categoryIds,
+            onToggle = { categoryIds = categoryIds.toggle(it) },
+            onAddCategory = {
+                categoryPickerOpen = false
+                onAddCategory()
+            },
+            onDismiss = { categoryPickerOpen = false },
+        )
     }
 }
 
@@ -755,99 +779,94 @@ private fun UnitDropdown(
 }
 
 /**
- * 分类多选区。[AI生成]
+ * 自定义食材分类选择器。[AI生成]
  */
 @Composable
-private fun CategoryMultiSelect(
-    title: String,
+private fun IngredientCategoryPickerDialog(
     categories: List<FoodCategory>,
     selectedIds: Set<Long>,
     onToggle: (Long) -> Unit,
+    onAddCategory: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
-    if (categories.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        categories.forEach { category ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onToggle(category.id) }
-                    .padding(vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Checkbox(checked = category.id in selectedIds, onCheckedChange = { onToggle(category.id) })
-                Text(category.displayWithParentHint(), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-            }
-        }
+    var expandedIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    val rows = remember(categories, expandedIds) {
+        buildCategoryPickerRows(categories, expandedIds)
     }
-}
-
-/**
- * 调养规则编辑区。[AI生成]
- */
-@Composable
-private fun CareRuleEditor(
-    categories: List<FoodCategory>,
-    rules: List<IngredientCareRule>,
-    onRulesChange: (List<IngredientCareRule>) -> Unit,
-) {
-    var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
-    var level by remember { mutableStateOf(AdviceLevel.RECOMMEND) }
-    var reason by remember { mutableStateOf("") }
-
-    EditorSection("调养建议") {
-        CareCategoryDropdown(categories, selectedCategoryId) { selectedCategoryId = it }
-        AdviceLevelDropdown(level) { level = it }
-        OutlinedTextField(
-            value = reason,
-            onValueChange = { reason = it },
-            label = { Text("原因说明") },
-            minLines = 2,
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
-        )
-        OutlinedButton(
-            onClick = {
-                val category = categories.firstOrNull { it.id == selectedCategoryId } ?: return@OutlinedButton
-                val next = rules.filterNot { it.categoryId == category.id } + IngredientCareRule(
-                    ingredientId = 0L,
-                    categoryId = category.id,
-                    categoryName = category.name,
-                    adviceLevel = level,
-                    reason = reason,
-                    source = "user",
-                )
-                onRulesChange(next)
-                selectedCategoryId = null
-                reason = ""
-            },
-            enabled = selectedCategoryId != null,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text("添加调养建议")
-        }
-        rules.forEach { rule ->
-            Row(
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("分类选择", modifier = Modifier.weight(1f))
+                IconButton(onClick = onAddCategory) {
+                    Icon(Icons.Outlined.Add, contentDescription = "新增分类")
+                }
+            }
+        },
+        text = {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                    .padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .heightIn(max = 460.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("${rule.categoryName.ifBlank { categories.firstOrNull { it.id == rule.categoryId }?.name.orEmpty() }} / ${rule.adviceLevel.label()}")
-                    if (rule.reason.isNotBlank()) {
-                        Text(rule.reason, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                if (categories.isEmpty()) {
+                    Text("暂无自定义分类，请先点击右上角 + 创建分类。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    rows.forEach { node ->
+                        val hasChildren = categories.any { it.parentId == node.category.id }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onToggle(node.category.id) }
+                                .padding(start = (8 + (node.level - 1) * 16).dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = node.category.id in selectedIds,
+                                onCheckedChange = { onToggle(node.category.id) },
+                            )
+                            Text(node.category.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                            if (hasChildren) {
+                                IconButton(
+                                    onClick = {
+                                        expandedIds = if (node.category.id in expandedIds) {
+                                            expandedIds - node.category.id
+                                        } else {
+                                            expandedIds + node.category.id
+                                        }
+                                    },
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    Text(if (node.category.id in expandedIds) "▾" else "▸")
+                                }
+                            }
+                        }
                     }
                 }
-                IconButton(onClick = { onRulesChange(rules.filterNot { it.categoryId == rule.categoryId }) }) {
-                    Icon(Icons.Outlined.Delete, contentDescription = "删除调养建议")
-                }
             }
-        }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("完成") }
+        },
+    )
+}
+
+private fun buildCategoryPickerRows(categories: List<FoodCategory>, expandedIds: Set<Long>): List<CategoryNode> {
+    val result = mutableListOf<CategoryNode>()
+    fun append(parentId: Long?, level: Int) {
+        categories
+            .filter { it.parentId == parentId }
+            .sortedWith(compareBy<FoodCategory> { it.sortOrder }.thenBy { it.id })
+            .forEach { category ->
+                result += CategoryNode(category = category, level = level, expanded = category.id in expandedIds)
+                if (category.id in expandedIds) append(category.id, level + 1)
+            }
     }
+    append(null, 1)
+    return result
 }
 
 @Composable
@@ -1106,57 +1125,6 @@ private fun Ingredient.displayNameText(): String =
     if (alias.isBlank()) name else "$name($alias)"
 
 /**
- * 食材筛选弹框。[AI生成]
- */
-@Composable
-private fun IngredientFilterDialog(
-    categories: List<FoodCategory>,
-    selectedIds: Set<Long>,
-    onToggle: (Long) -> Unit,
-    onClear: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("筛选食材") },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 480.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                CategoryMultiSelect(
-                    title = "常规分类",
-                    categories = categories.filter { it.dimension == "general" && it.crowdTypeId == null },
-                    selectedIds = selectedIds,
-                    onToggle = onToggle,
-                )
-                CategoryMultiSelect(
-                    title = "营养标签",
-                    categories = categories.filter { it.dimension in nutritionDimensionsForEditor && !it.isNutritionGroupRoot() },
-                    selectedIds = selectedIds,
-                    onToggle = onToggle,
-                )
-                CategoryMultiSelect(
-                    title = "调养分类",
-                    categories = categories.filter { (it.dimension == "crowd" || it.crowdTypeId != null) && !it.isCareGroupRoot() },
-                    selectedIds = selectedIds,
-                    onToggle = onToggle,
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("完成") }
-        },
-        dismissButton = {
-            TextButton(onClick = onClear, enabled = selectedIds.isNotEmpty()) { Text("清空") }
-        },
-    )
-}
-
-/**
  * 按食材找菜结果弹框。[AI生成]
  */
 @Composable
@@ -1328,9 +1296,7 @@ private fun CategoryEditDialog(
     onDismiss: () -> Unit,
     onSave: () -> Unit,
 ) {
-    val topGeneralCategories = categories.filter {
-        it.parentId == null && it.dimension == "general" && it.crowdTypeId == null
-    }
+    val customCategories = categories.filter { it.isEditableUserGeneralCategory() }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (editingCategory == null) "新增分类" else "编辑分类") },
@@ -1345,7 +1311,7 @@ private fun CategoryEditDialog(
                 )
                 if (editingCategory == null) {
                     CategoryParentDropdown(
-                        categories = topGeneralCategories,
+                        categories = customCategories,
                         selectedParentId = parentId,
                         onSelect = onParentChange,
                     )
@@ -1387,7 +1353,7 @@ private fun CategoryParentDropdown(
             )
             categories.forEach { category ->
                 DropdownMenuItem(
-                    text = { Text(category.name) },
+                    text = { Text(category.displayWithParentHint()) },
                     onClick = {
                         onSelect(category.id)
                         expanded = false

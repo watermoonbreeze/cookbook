@@ -71,8 +71,8 @@ data class IngredientPickerUiState(
     val detailInfo: IngredientDetail? = null,
     val detailCareRules: List<IngredientCareRule> = emptyList(),
     val detailDishMatches: List<DishIngredientMatch> = emptyList(),
-    val filterCategoryIds: Set<Long> = emptySet(),
     val filterDishMatches: List<DishIngredientMatch> = emptyList(),
+    val canLoadMoreIngredients: Boolean = false, // [AI生成] 分类筛选结果按 30 条一页展示，避免一次渲染过多食材。
 )
 
 private const val ALL_CATEGORY_ID = -1L // [AI生成] 虚拟分类：当前主分类下全部。
@@ -91,6 +91,8 @@ class IngredientPickerViewModel(
     private val _state = MutableStateFlow(IngredientPickerUiState()) // [AI修改] 内部可变选择器状态。
     val state: StateFlow<IngredientPickerUiState> = _state.asStateFlow() // [AI修改] 对 UI 暴露只读状态。
     private var searchJob: Job? = null // [AI修改] 食材搜索防抖任务，避免每个字符都访问数据库。
+    private var currentIngredientResult: List<Ingredient> = emptyList() // [AI生成] 保存当前查询全集，UI 只分页展示前 N 条。
+    private var currentIngredientPage: Int = 1 // [AI生成] 当前食材分页页码。
 
     // [AI修改] ViewModel 创建后立即加载分类和全部食材，页面首屏可直接显示。
     init { loadCategories(); loadAllIngredients(); loadUnits() }
@@ -104,6 +106,7 @@ class IngredientPickerViewModel(
             selectedIds = emptySet(),
             selectedIngredients = emptyList(),
             ingredients = _state.value.ingredients.filterNot { it.id in excludeIngredientIds },
+            canLoadMoreIngredients = currentIngredientResult.size > _state.value.ingredients.size,
             createError = null,
             operationError = null,
             lastCreatedIngredientId = null,
@@ -139,30 +142,21 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             val allCategories = current.allCategories.ifEmpty { categoryRepo.listAll() }
             val tops = allCategories.filter { it.parentId == null }
-            val ingredients = if (tab == IngredientMainTab.RECENT) {
-                ingredientRepo.listRecentlyUsed()
-            } else {
-                ingredientRepo.search("")
-            }
+            val ingredients = loadAllForTab(tab, "")
             _state.value = current.copy(
                 mainTab = tab,
                 keyword = "",
                 selectedCategoryId = ALL_CATEGORY_ID,
                 allCategories = allCategories,
                 tree = buildTreeForTab(tab, tops, allCategories),
-                ingredients = ingredients.withoutExcluded(),
             )
+            applyIngredientResult(ingredients.withoutExcluded(), resetPage = true)
         }
     }
 
     private fun loadAllIngredients() {
         viewModelScope.launch {
-            val ingredients = if (_state.value.mainTab == IngredientMainTab.RECENT) {
-                ingredientRepo.listRecentlyUsed()
-            } else {
-                ingredientRepo.search("")
-            }
-            _state.value = _state.value.copy(ingredients = ingredients.withoutExcluded())
+            applyIngredientResult(loadAllForTab(_state.value.mainTab, "").withoutExcluded(), resetPage = true)
         }
     }
 
@@ -178,16 +172,12 @@ class IngredientPickerViewModel(
     fun selectAll() {
         searchJob?.cancel()
         viewModelScope.launch {
-            val ingredients = if (_state.value.mainTab == IngredientMainTab.RECENT) {
-                ingredientRepo.listRecentlyUsed()
-            } else {
-                ingredientRepo.search("")
-            }
+            val ingredients = loadAllForTab(_state.value.mainTab, "")
             _state.value = _state.value.copy(
                 keyword = "", // [AI修改] 选择“全部”时清空搜索条件，避免旧关键词影响后续刷新。
                 selectedCategoryId = ALL_CATEGORY_ID,
-                ingredients = ingredients.withoutExcluded(),
             )
+            applyIngredientResult(ingredients.withoutExcluded(), resetPage = true)
         }
     }
 
@@ -221,14 +211,24 @@ class IngredientPickerViewModel(
     fun selectCategory(node: CategoryNode) {
         viewModelScope.launch {
             val cat = node.category
-            val crowdId = cat.crowdTypeId
-            val ingredients = if (crowdId != null) ingredientRepo.listByCrowd(crowdId)
-            else ingredientRepo.listByCategory(cat.id)
+            val ingredients = loadByCategoryWithChildren(cat)
             _state.value = _state.value.copy(
                 selectedCategoryId = cat.id,
-                ingredients = ingredients.withoutExcluded(),
             )
+            applyIngredientResult(ingredients.withoutExcluded(), resetPage = true)
         }
+    }
+
+    /**
+     * 继续展示下一页食材。[AI生成]
+     */
+    fun loadMoreIngredients() {
+        if (!_state.value.canLoadMoreIngredients) return
+        currentIngredientPage += 1
+        _state.value = _state.value.copy(
+            ingredients = currentIngredientResult.take(currentIngredientPage * PAGE_SIZE),
+            canLoadMoreIngredients = currentIngredientResult.size > currentIngredientPage * PAGE_SIZE,
+        )
     }
 
     /**
@@ -333,24 +333,6 @@ class IngredientPickerViewModel(
                 )
             }
         }
-    }
-
-    /**
-     * 切换筛选分类并刷新食材列表。[AI生成]
-     */
-    fun toggleFilterCategory(categoryId: Long) {
-        val next = if (categoryId in _state.value.filterCategoryIds) {
-            _state.value.filterCategoryIds - categoryId
-        } else {
-            _state.value.filterCategoryIds + categoryId
-        }
-        _state.value = _state.value.copy(filterCategoryIds = next)
-        viewModelScope.launch { reloadCurrentList() }
-    }
-
-    fun clearFilters() {
-        _state.value = _state.value.copy(filterCategoryIds = emptySet())
-        viewModelScope.launch { reloadCurrentList() }
     }
 
     /**
@@ -501,6 +483,9 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(creatingIngredient = true, createError = null, lastSavedIngredientId = null)
             runCatching {
+                if (ingredient?.source != "preset") {
+                    require(categoryIds.isNotEmpty()) { "请选择自定义分类" }
+                }
                 val ingredientId = ingredient?.id ?: ingredientRepo.createUserIngredient(
                     name = trimmedName,
                     alias = alias.trim(),
@@ -509,7 +494,16 @@ class IngredientPickerViewModel(
                     defaultUnitId = defaultUnitId,
                     categoryIds = categoryIds,
                 )
-                if (ingredient != null) {
+                if (ingredient?.source == "preset") {
+                    ingredientRepo.updateUserIngredient(
+                        id = ingredientId,
+                        name = ingredient.name,
+                        alias = alias.trim(),
+                        imagePath = imagePath.trim(),
+                        thumbnailPath = thumbnailPath.trim(),
+                        defaultUnitId = ingredient.defaultUnitId,
+                    )
+                } else if (ingredient != null) {
                     ingredientRepo.updateUserIngredient(
                         id = ingredientId,
                         name = trimmedName,
@@ -520,30 +514,32 @@ class IngredientPickerViewModel(
                     )
                     ingredientRepo.replaceIngredientCategories(ingredientId, categoryIds)
                 }
-                ingredientRepo.saveIngredientDetail(detail.copy(ingredientId = ingredientId))
-                ingredientRepo.replaceCareRules(
-                    ingredientId,
-                    careRules.map { it.copy(ingredientId = ingredientId, source = if (ingredient == null) "user" else it.source) },
-                )
+                if (ingredient?.source != "preset") {
+                    ingredientRepo.saveIngredientDetail(detail.copy(ingredientId = ingredientId))
+                    ingredientRepo.replaceCareRules(
+                        ingredientId,
+                        careRules.map { it.copy(ingredientId = ingredientId, source = if (ingredient == null) "user" else it.source) },
+                    )
+                }
                 ingredientId
             }.onSuccess { ingredientId ->
                 val savedIngredient = Ingredient(
                     id = ingredientId,
-                    name = trimmedName,
+                    name = if (ingredient?.source == "preset") ingredient.name else trimmedName,
                     alias = alias.trim(),
                     imagePath = imagePath.trim(),
                     thumbnailPath = thumbnailPath.trim(),
-                    defaultUnitId = defaultUnitId,
+                    defaultUnitId = if (ingredient?.source == "preset") ingredient.defaultUnitId else defaultUnitId,
                     source = ingredient?.source ?: "user",
                 )
                 _state.value = _state.value.copy(
                     creatingIngredient = false,
                     ingredients = _state.value.ingredients.map { if (it.id == ingredientId) it.copy(
-                        name = trimmedName,
+                        name = savedIngredient.name,
                         alias = alias.trim(),
                         imagePath = imagePath.trim(),
                         thumbnailPath = thumbnailPath.trim(),
-                        defaultUnitId = defaultUnitId,
+                        defaultUnitId = savedIngredient.defaultUnitId,
                     ) else it }, // [AI生成] 保存后立即替换当前列表对象，支撑详情弹层实时刷新。
                     selectedIds = if (ingredient == null) _state.value.selectedIds + ingredientId else _state.value.selectedIds,
                     selectedIngredients = if (ingredient == null) {
@@ -600,22 +596,76 @@ class IngredientPickerViewModel(
     private suspend fun reloadCurrentList(keywordOverride: String? = null) {
         val current = _state.value
         val keyword = keywordOverride ?: current.keyword
-        val ingredients = if (current.filterCategoryIds.isNotEmpty()) {
-            ingredientRepo.listByCategories(current.filterCategoryIds.toList())
-        } else when (val categoryId = current.selectedCategoryId) {
-            null, ALL_CATEGORY_ID -> if (current.mainTab == IngredientMainTab.RECENT) ingredientRepo.listRecentlyUsed() else ingredientRepo.search(keyword)
+        val ingredients = when (val categoryId = current.selectedCategoryId) {
+            null, ALL_CATEGORY_ID -> loadAllForTab(current.mainTab, keyword)
             else -> {
                 val node = current.tree.firstOrNull { it.category.id == categoryId }
-                val crowdId = node?.category?.crowdTypeId
-                if (crowdId != null) ingredientRepo.listByCrowd(crowdId) else ingredientRepo.listByCategory(categoryId)
+                if (node == null) emptyList() else loadByCategoryWithChildren(node.category)
             }
         }
-        val filtered = if (keyword.isBlank() || current.filterCategoryIds.isEmpty()) {
-            ingredients
+        val sourceFiltered = ingredients.filterForTabSource(current.mainTab)
+        val filtered = if (keyword.isBlank()) {
+            sourceFiltered
         } else {
-            ingredients.filter { it.name.contains(keyword, ignoreCase = true) || it.alias.contains(keyword, ignoreCase = true) || it.pinyin.contains(keyword, ignoreCase = true) }
+            sourceFiltered.filter { it.name.contains(keyword, ignoreCase = true) || it.alias.contains(keyword, ignoreCase = true) || it.pinyin.contains(keyword, ignoreCase = true) }
         }
-        _state.value = _state.value.copy(keyword = keyword, ingredients = filtered.withoutExcluded())
+        _state.value = _state.value.copy(keyword = keyword)
+        applyIngredientResult(filtered.withoutExcluded(), resetPage = true)
+    }
+
+    /**
+     * 按 Tab 读取“全部”食材。[AI生成]
+     */
+    private suspend fun loadAllForTab(tab: IngredientMainTab, keyword: String): List<Ingredient> =
+        when (tab) {
+            IngredientMainTab.RECENT -> ingredientRepo.listRecentlyUsed()
+            else -> ingredientRepo.search(keyword).filterForTabSource(tab)
+        }
+
+    /**
+     * 当前分类筛选包含该分类和所有后代分类。[AI生成]
+     */
+    private suspend fun loadByCategoryWithChildren(category: FoodCategory): List<Ingredient> {
+        val ids = expandCategoryIds(listOf(category.id))
+        val ingredients = ingredientRepo.listByCategories(ids)
+        return ingredients.filterForTabSource(_state.value.mainTab)
+    }
+
+    /**
+     * 展开分类 id 为自身 + 所有后代。[AI生成]
+     */
+    private fun expandCategoryIds(categoryIds: List<Long>): List<Long> {
+        val all = _state.value.allCategories
+        val result = linkedSetOf<Long>()
+        fun collect(id: Long) {
+            if (!result.add(id)) return
+            all.filter { it.parentId == id }.forEach { collect(it.id) }
+        }
+        categoryIds.forEach(::collect)
+        return result.toList()
+    }
+
+    /**
+     * 系统 Tab 只展示预设食材，自定义 Tab 只展示用户食材，最近保留全部来源。[AI生成]
+     */
+    private fun List<Ingredient>.filterForTabSource(tab: IngredientMainTab): List<Ingredient> =
+        when (tab) {
+            IngredientMainTab.RECENT -> this
+            IngredientMainTab.CUSTOM -> filter { it.source == "user" }
+            IngredientMainTab.GENERAL, IngredientMainTab.NUTRITION, IngredientMainTab.CARE -> filter { it.source != "user" }
+        }
+
+    /**
+     * 应用分页结果。[AI生成]
+     */
+    private fun applyIngredientResult(result: List<Ingredient>, resetPage: Boolean) {
+        currentIngredientResult = result
+        if (resetPage) currentIngredientPage = 1
+        val visibleCount = currentIngredientPage * PAGE_SIZE
+        _state.value = _state.value.copy(
+            ingredients = result.take(visibleCount),
+            canLoadMoreIngredients = result.size > visibleCount,
+        )
     }
 
     /**
@@ -670,7 +720,10 @@ class IngredientPickerViewModel(
                     }
             }
             IngredientMainTab.CUSTOM -> tops
-                .filter { it.source == "user" }
+                .filter { it.source == "user" } + allCategories.filter { category ->
+                    category.source == "user" && category.parentId != null && allCategories.firstOrNull { it.id == category.parentId }?.source != "user"
+                } // [AI生成] 兼容旧数据：历史上挂到系统分类下的用户分类，在新规则下提升为自定义根节点。
+                .distinctBy { it.id }
                 .map { category ->
                     CategoryNode(category.copy(hasChildren = allCategories.any { it.parentId == category.id && it.source == "user" }), level = 1)
                 }
@@ -704,6 +757,7 @@ class IngredientPickerViewModel(
 
     private companion object {
         val nutritionDimensions = setOf("nutrition", "gi", "purine", "sodium", "fat", "sugar")
+        const val PAGE_SIZE = 30 // [AI生成] 食材分类列表默认每页 30 个。
     }
 }
 
