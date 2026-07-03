@@ -46,5 +46,347 @@
     "eatingNotes": "高尿酸或痛风急性期人群应避免。",
     "storageTips": "鲜活贝类不宜久放，购买后尽快烹饪。",
     "healthNote": "贝类嘌呤相对较高，适合按个人情况限量。"
+  },
+  {
+    "ingredient": "大米",
+    "commonMethods": "焖饭、煮粥、做炒饭。",
+    "prepTips": "淘洗 1-2 次即可，过度搓洗会损失 B 族维生素。",
+    "eatingNotes": "血糖管理人群建议与糙米、杂豆搭配同煮。",
+    "storageTips": "密封防潮防虫，避免阳光直射。",
+    "healthNote": "精制白米 GI 较高，粗细搭配更利于血糖平稳。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "小米",
+    "commonMethods": "煮粥、蒸小米饭、与大米混煮。",
+    "prepTips": "轻轻淘洗一遍即可，小火慢熬出米油口感更好。",
+    "eatingNotes": "小米粥温和易消化，适合胃部不适时食用。",
+    "storageTips": "密封防潮保存，夏季可冷藏防虫。",
+    "healthNote": "全谷物且含 B 族维生素，是养胃的常用主食。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "玉米",
+    "commonMethods": "蒸煮整根、掰粒炒菜、煮汤。",
+    "prepTips": "保留内层薄衣蒸煮更香甜，煮制约 15 分钟。",
+    "eatingNotes": "替代部分精制主食时注意计入总碳水。",
+    "storageTips": "带皮冷藏可存 3-5 天，久存建议焯水后冷冻。",
+    "healthNote": "全谷物富含膳食纤维，有助增加饱腹感。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "红薯",
+    "commonMethods": "蒸、烤、煮粥、切块炖汤。",
+    "prepTips": "蒸制比烤制升糖更慢，切块大小均匀易熟。",
+    "eatingNotes": "易产气，胃肠敏感或腹泻期人群少吃。",
+    "storageTips": "常温阴凉通风保存，不宜冷藏以免变味。",
+    "healthNote": "富含膳食纤维和胡萝卜素，替代精制主食更健康。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "土豆",
+    "commonMethods": "炖、蒸、清炒土豆丝、煮汤。",
+    "prepTips": "切好后泡水防氧化变色，发芽变绿的部分不可食用。",
+    "eatingNotes": "作为主食替代米面时应减少当餐主食量；肾病控钾人群需焯水限量。",
+    "storageTips": "避光阴凉保存，防止发芽变绿。",
+    "healthNote": "高钾低脂，煮土豆比油炸做法健康得多。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "山药",
+    "commonMethods": "清蒸、炖汤、清炒山药片。",
+    "prepTips": "去皮时戴手套防止黏液致痒，切片后泡水防氧化。",
+    "eatingNotes": "属于淀粉类食材，食用时注意替代部分主食。",
+    "storageTips": "整根常温阴凉保存，切开后包保鲜膜冷藏。",
+    "healthNote": "质地细腻易消化，适合脾胃虚弱人群。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "面条",
+    "commonMethods": "汤面、拌面、炒面。",
+    "prepTips": "煮至软硬适中即可，过久易糊烂。",
+    "eatingNotes": "血糖管理人群注意控制份量，搭配蔬菜和蛋白质。",
+    "storageTips": "挂面密封防潮保存，鲜面需冷藏尽快食用。",
+    "healthNote": "精制面食 GI 偏高，煮软的烂面条适合胃肠不适时食用。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "白菜",
+    "commonMethods": "炖煮、清炒、做汤、腌渍前建议新鲜吃。",
+    "prepTips": "逐片掰开清洗，菜帮菜叶分开下锅受热更均匀。",
+    "eatingNotes": "性质温和，多数人群均可放心食用。",
+    "storageTips": "整棵用纸包裹冷藏可存放一周以上。",
+    "healthNote": "低嘌呤低热量，是慢病人群的百搭蔬菜。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "芹菜",
+    "commonMethods": "清炒、凉拌、榨汁、切末做馅。",
+    "prepTips": "撕去老筋口感更嫩，叶子营养高可一起食用。",
+    "eatingNotes": "胃肠敏感者建议切碎煮软后少量食用。",
+    "storageTips": "用湿纸包根部直立冷藏，保持水分。",
+    "healthNote": "高钾高纤维，适合高血压和便秘人群。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "西兰花",
+    "commonMethods": "焯水清炒、白灼、蒸制、做沙拉。",
+    "prepTips": "切小朵后盐水浸泡去虫，焯水 1-2 分钟保持翠绿。",
+    "eatingNotes": "甲状腺疾病人群适量食用即可，无需严格禁忌。",
+    "storageTips": "干燥冷藏 3-5 天内食用，久存易开花变黄。",
+    "healthNote": "低 GI 高纤维，富含维生素 C 和叶酸。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "胡萝卜",
+    "commonMethods": "炖煮、清炒、切丝凉拌、榨汁。",
+    "prepTips": "β-胡萝卜素为脂溶性，与少量油同烹吸收更好。",
+    "eatingNotes": "适量食用即可，过量可能出现皮肤暂时性黄染。",
+    "storageTips": "去缨后冷藏保存，避免与苹果同放加速变糠。",
+    "healthNote": "富含维生素 A 原，有益视力和皮肤健康。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "冬瓜",
+    "commonMethods": "煮汤、清炖、红烧。",
+    "prepTips": "去皮去瓤切块，久炖更入味。",
+    "eatingNotes": "利水且低钾低嘌呤，肾病和痛风人群较友好。",
+    "storageTips": "整个常温可久放，切开后保鲜膜包好冷藏尽快食用。",
+    "healthNote": "高水分低热量，适合控体重和控尿酸人群。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "黄瓜",
+    "commonMethods": "凉拌、生食、清炒、做汤。",
+    "prepTips": "盐水浸泡清洗表面，凉拌前拍裂更入味。",
+    "eatingNotes": "生食注意清洗干净；胃寒者少量生食。",
+    "storageTips": "擦干水分冷藏，3-5 天内食用。",
+    "healthNote": "热量极低水分足，是减重和控糖期的常备蔬菜。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "苦瓜",
+    "commonMethods": "清炒、凉拌、酿肉、煲汤。",
+    "prepTips": "去瓤后盐腌或焯水可减轻苦味。",
+    "eatingNotes": "性寒，脾胃虚寒者及孕妇不宜多吃。",
+    "storageTips": "冷藏保存 3-5 天内食用。",
+    "healthNote": "低糖低热量，适合血糖管理人群经常食用。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "茄子",
+    "commonMethods": "蒸茄子、红烧、炖菜、蒜泥凉拌。",
+    "prepTips": "茄子吸油量大，先蒸或干煸再调味可大幅减油。",
+    "eatingNotes": "油焖做法热量高，慢病人群优先选蒸拌。",
+    "storageTips": "常温阴凉存放 2-3 天，冷藏易冻伤起斑。",
+    "healthNote": "低热量蔬菜，紫皮含花青素，少油烹调更健康。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "西红柿",
+    "commonMethods": "生食、炒蛋、做汤、炖牛腩。",
+    "prepTips": "顶部划十字用开水烫后易去皮。",
+    "eatingNotes": "胃酸过多或溃疡活动期少量食用。",
+    "storageTips": "常温后熟，成熟后再冷藏。",
+    "healthNote": "低糖且富含番茄红素与维生素 C，熟吃更利于吸收。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "洋葱",
+    "commonMethods": "炒肉、凉拌、做汤底、烤制。",
+    "prepTips": "冷藏后再切或刀蘸水可减少刺激流泪。",
+    "eatingNotes": "易产气，腹泻或肠易激人群应少吃。",
+    "storageTips": "通风干燥处存放，切开后包好冷藏。",
+    "healthNote": "含硫化物和槲皮素，有益心血管健康。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "香菇",
+    "commonMethods": "炒菜、炖鸡、煲汤、做馅。",
+    "prepTips": "干香菇温水泡发，泡发水沉淀后可入汤提鲜。",
+    "eatingNotes": "嘌呤中等，痛风急性期少吃；肾病控钾人群限量。",
+    "storageTips": "鲜香菇冷藏 3-5 天，干香菇密封防潮。",
+    "healthNote": "富含鲜味物质和多糖，可减少味精和盐的使用。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "木耳",
+    "commonMethods": "凉拌、清炒、做汤。",
+    "prepTips": "冷水泡发 1-2 小时即可，泡发超过一天易滋生细菌不可食用。",
+    "eatingNotes": "泡发时间过长有米酵菌酸中毒风险，务必现泡现吃。",
+    "storageTips": "干木耳密封干燥保存，泡发后冷藏当天食用。",
+    "healthNote": "富含可溶性膳食纤维和铁，有益血脂和肠道健康。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "海带",
+    "commonMethods": "炖汤、凉拌、红烧。",
+    "prepTips": "干海带先泡发再蒸煮，加几滴醋更易炖软。",
+    "eatingNotes": "碘含量极高，甲亢人群禁食，甲减人群限量。",
+    "storageTips": "干海带密封保存，泡发后冷藏尽快食用。",
+    "healthNote": "富含碘和可溶性纤维，健康人群适量食用有益。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "紫菜",
+    "commonMethods": "做汤、包饭、凉拌。",
+    "prepTips": "无沙免洗型可直接入汤，普通紫菜先泡洗去沙。",
+    "eatingNotes": "含碘高，甲状腺疾病人群按病种控制；汤中少放盐。",
+    "storageTips": "密封防潮避光保存，受潮后风味变差。",
+    "healthNote": "高钾高碘，少量即可提鲜，有助减盐。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "南瓜",
+    "commonMethods": "蒸食、煮粥、炖汤、做饼。",
+    "prepTips": "老南瓜更甜面，切块蒸 15 分钟左右即熟。",
+    "eatingNotes": "GI 中等，血糖管理人群食用时应替代部分主食。",
+    "storageTips": "整个常温可放一个月，切开后去瓤冷藏。",
+    "healthNote": "富含胡萝卜素，质地软糯适合胃肠功能弱者。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "韭菜",
+    "commonMethods": "炒蛋、做馅、烤制。",
+    "prepTips": "根部泥沙多需仔细清洗，大火快炒避免出水。",
+    "eatingNotes": "粗纤维多，胃炎溃疡及腹泻人群少吃。",
+    "storageTips": "用纸包裹冷藏，尽快食用避免变蔫。",
+    "healthNote": "高纤维促进肠道蠕动，便秘人群可常吃。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "毛豆",
+    "commonMethods": "盐水煮、清炒、剥粒炒肉末。",
+    "prepTips": "剪去两端更入味，煮 8-10 分钟保持翠绿。",
+    "eatingNotes": "嘌呤中等，痛风急性期避免；注意控制盐水咸度。",
+    "storageTips": "带荚冷藏 2-3 天，焯水后冷冻可长期保存。",
+    "healthNote": "植物蛋白和膳食纤维丰富，是健康的下饭小菜。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "苹果",
+    "commonMethods": "直接生食、蒸苹果、煮水果茶。",
+    "prepTips": "带皮吃纤维更多，注意洗净表面果蜡。",
+    "eatingNotes": "腹泻期可吃蒸苹果，血糖管理人群每日 200 克以内。",
+    "storageTips": "冷藏保存，与其他果蔬分开放置以免催熟。",
+    "healthNote": "低 GI 水果，富含果胶，适合大多数慢病人群。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "香蕉",
+    "commonMethods": "直接生食、搭配燕麦酸奶。",
+    "prepTips": "表皮出现少量黑点时甜度最佳。",
+    "eatingNotes": "含糖和钾较高，糖尿病及肾病控钾人群需限量。",
+    "storageTips": "常温悬挂保存，不宜冷藏以免表皮变黑。",
+    "healthNote": "高钾水果有助控压，运动后补充能量方便。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "橙子",
+    "commonMethods": "直接生食、榨汁（建议整果吃）。",
+    "prepTips": "整果食用保留膳食纤维，比纯果汁更健康。",
+    "eatingNotes": "胃酸过多者避免空腹大量食用。",
+    "storageTips": "阴凉通风或冷藏保存，可放 1-2 周。",
+    "healthNote": "富含维生素 C 和钾，低 GI，适合日常水果选择。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "猪瘦肉",
+    "commonMethods": "炒肉丝、炖煮、做肉末蒸蛋。",
+    "prepTips": "逆纹切丝更嫩，可用少量淀粉抓腌。",
+    "eatingNotes": "痛风缓解期限量约 100 克/日；避免与高油做法搭配。",
+    "storageTips": "冷藏 1-2 天内食用，长期保存分装冷冻。",
+    "healthNote": "优质蛋白和血红素铁来源，选瘦弃肥更健康。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "五花肉",
+    "commonMethods": "红烧、卤制、蒸扣肉。",
+    "prepTips": "先焯水去腥，煸出多余油脂再调味可减油。",
+    "eatingNotes": "脂肪含量高，三高、脂肪肝和减重人群应避免或极少量。",
+    "storageTips": "冷藏 1-2 天内食用，冷冻可存 1-2 个月。",
+    "healthNote": "饱和脂肪高，建议以瘦肉、禽肉替代。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "牛肉",
+    "commonMethods": "炖牛腩、酱牛肉、炒牛柳、涮煮。",
+    "prepTips": "逆纹切片，炖煮加少量山楂或茶叶更易软烂。",
+    "eatingNotes": "痛风人群限量；冠心病人群每日红肉不超过 50 克。",
+    "storageTips": "冷藏 1-2 天内烹饪，分装冷冻避免反复解冻。",
+    "healthNote": "富含优质蛋白、铁、锌和维生素 B12。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "羊肉",
+    "commonMethods": "炖汤、涮煮、烤制、手抓。",
+    "prepTips": "冷水下锅焯去血沫，搭配白萝卜炖煮解腻去膻。",
+    "eatingNotes": "中嘌呤红肉，痛风人群限量；燥热体质少吃。",
+    "storageTips": "冷藏 1-2 天内食用，冷冻分装保存。",
+    "healthNote": "优质蛋白和铁的来源，冬季进补注意总量控制。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "鸡蛋",
+    "commonMethods": "水煮蛋、蒸蛋羹、炒蛋、做汤。",
+    "prepTips": "水煮 8-10 分钟全熟，蒸蛋羹加温水口感更嫩。",
+    "eatingNotes": "低嘌呤优质蛋白；高胆固醇血症者蛋黄每日不超过 1 个。",
+    "storageTips": "冷藏保存，大头朝上放置可延长保鲜。",
+    "healthNote": "氨基酸组成接近人体需要，是性价比最高的蛋白来源之一。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "豆腐",
+    "commonMethods": "麻婆豆腐、炖汤、凉拌、煎制。",
+    "prepTips": "焯水或盐水浸泡可去豆腥并更不易碎。",
+    "eatingNotes": "大豆加工后嘌呤降低，痛风缓解期可适量食用。",
+    "storageTips": "浸水冷藏并每日换水，1-2 天内食用。",
+    "healthNote": "植物优质蛋白和钙的来源，适合替代部分肉类。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "豆浆",
+    "commonMethods": "现磨饮用、煮粥、做豆浆面。",
+    "prepTips": "自制豆浆务必彻底煮沸，假沸后再煮 5 分钟以上。",
+    "eatingNotes": "未煮透的豆浆含胰蛋白酶抑制剂，可致胃肠不适。",
+    "storageTips": "现做现喝，冷藏不超过 24 小时。",
+    "healthNote": "无糖豆浆低脂低嘌呤加工品，适合多数慢病人群。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "鲈鱼",
+    "commonMethods": "清蒸、炖汤、红烧。",
+    "prepTips": "清蒸约 8-10 分钟，蒸前用姜葱料酒腌制去腥。",
+    "eatingNotes": "中嘌呤水产，痛风缓解期限量食用。",
+    "storageTips": "现杀现做，冷藏不超过 1 天。",
+    "healthNote": "低脂高蛋白，刺少肉嫩，适合老人孩子。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "虾",
+    "commonMethods": "白灼、清蒸、油焖、炒虾仁。",
+    "prepTips": "挑去虾线，白灼 2-3 分钟变红即熟。",
+    "eatingNotes": "中嘌呤，痛风急性期避免；海鲜过敏者禁食。",
+    "storageTips": "鲜虾当天食用，或去头分装冷冻。",
+    "healthNote": "高蛋白低脂肪，是减重和健身人群优选蛋白。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "三文鱼",
+    "commonMethods": "香煎、烤制、低温慢煮；生食需选刺身级。",
+    "prepTips": "煎制时先皮朝下中小火，锁住油脂口感更好。",
+    "eatingNotes": "生食注意来源可靠与冷链；痛风人群限量。",
+    "storageTips": "冷藏 1 天内食用，长期保存需冷冻。",
+    "healthNote": "富含 Omega-3 和维生素 D，有益心血管和骨骼健康。",
+    "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "酸奶",
+    "commonMethods": "直接食用、拌水果燕麦、做沙拉酱替代。",
+    "prepTips": "选配料表首位为生牛乳、无额外添加糖的产品。",
+    "eatingNotes": "控糖人群优选无糖款；乳糖不耐者也多可耐受酸奶。",
+    "storageTips": "全程冷藏，开封后当天吃完。",
+    "healthNote": "含益生菌和钙，有益肠道健康和骨骼。",
+    "ref": "日常食材维度整理"
   }
 ]
