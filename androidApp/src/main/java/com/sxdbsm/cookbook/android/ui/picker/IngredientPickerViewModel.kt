@@ -604,12 +604,35 @@ class IngredientPickerViewModel(
         }
 
     /**
-     * 当前分类筛选包含该分类和所有后代分类。[AI生成]
+     * 当前分类筛选包含该分类和所有后代分类。[AI修改]
+     *
+     * 调养 tab 的分类数据存在 ingredient_care_rule 表而非分类关联表，需要单独走调养规则聚合。
      */
     private suspend fun loadByCategoryWithChildren(category: FoodCategory): List<Ingredient> {
         val ids = expandCategoryIds(listOf(category.id))
-        val ingredients = ingredientRepo.listByCategories(ids)
-        return ingredients.filterForTabSource(_state.value.mainTab)
+        val tab = _state.value.mainTab
+        val ingredients = if (tab == IngredientMainTab.CARE) {
+            ingredientRepo.listByCareCategories(ids).dedupeByMostSevereAdvice()
+        } else {
+            ingredientRepo.listByCategories(ids)
+        }
+        return ingredients.filterForTabSource(tab)
+    }
+
+    /**
+     * 同一食材命中多个调养分类时按最严等级去重（避免>限量>推荐），并按 绿灯→黄灯→红灯 排序。[AI生成]
+     */
+    private fun List<Ingredient>.dedupeByMostSevereAdvice(): List<Ingredient> {
+        fun severity(level: AdviceLevel?): Int = when (level) {
+            AdviceLevel.AVOID -> 2
+            AdviceLevel.LIMIT -> 1
+            AdviceLevel.RECOMMEND -> 0
+            null -> -1
+        }
+        return groupBy { it.id }
+            .values
+            .map { rows -> rows.maxBy { severity(it.adviceLevel) } }
+            .sortedWith(compareBy({ severity(it.adviceLevel) }, { it.pinyin }, { it.name }))
     }
 
     /**

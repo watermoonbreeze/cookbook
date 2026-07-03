@@ -88,7 +88,7 @@ fun IngredientCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .defaultMinSize(minHeight = imageSize + 34.dp),
+                    .defaultMinSize(minHeight = imageSize + 48.dp), // [AI修改] 两行名称需要更高的最小高度。
             ) {
                 StoredImage(
                     imagePath = ingredient.imagePath,
@@ -104,15 +104,27 @@ fun IngredientCard(
                     imageHeight = imageSize,
                 )
                 Spacer(Modifier.height(4.dp))
+                // [AI修改] 名称改为两行展示：第一行食材名称，第二行(二级名称)；二级名称为空时保留占位行，保证网格高度一致。
                 Text(
-                    text = ingredient.displayNameText(), // [AI修改] 食材卡展示统一使用“食材名称(二级名称)”格式。
+                    text = ingredient.name,
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                        .padding(horizontal = 4.dp),
+                )
+                Text(
+                    text = if (ingredient.alias.isBlank()) " " else "(${ingredient.alias})",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
                 )
             }
             if (canEdit) {
@@ -178,7 +190,3 @@ fun IngredientCard(
         }
     }
 }
-
-// [AI生成] 通用食材卡本地展示名，避免各调用方重复拼接名称和二级名称。
-private fun Ingredient.displayNameText(): String =
-    if (alias.isBlank()) name else "$name($alias)"

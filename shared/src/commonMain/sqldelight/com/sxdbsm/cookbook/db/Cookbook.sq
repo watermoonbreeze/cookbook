@@ -632,6 +632,27 @@ WHERE ic.category_id IN ?
   AND ic.status = 1
 ORDER BY i.pinyin, i.name;
 
+-- [AI生成] 调养 tab 按病种分类通过调养规则聚合食材；剂量语义由 advice_level 表达，红绿灯分组在应用层完成。
+selectIngredientsByCareCategories:
+SELECT DISTINCT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at,
+       r.advice_level,
+       COALESCE(r.reason, '') AS reason
+FROM ingredient i
+JOIN ingredient_care_rule r ON r.ingredient_id = i.id
+WHERE r.category_id IN ?
+  AND i.status = 1
+  AND r.status = 1
+ORDER BY CASE r.advice_level WHEN 'recommend' THEN 0 WHEN 'limit' THEN 1 ELSE 2 END, i.pinyin, i.name;
+
 upsertIngredientDetail:
 INSERT OR REPLACE INTO ingredient_detail(
     ingredient_id,

@@ -215,6 +215,38 @@ class IngredientRepositoryTest {
         assertEquals(listOf("保留食材"), repo.listByCategories(listOf(categoryId)).map { it.name })
     }
 
+    @Test
+    fun listByCareCategoriesAggregatesIngredientsWithAdviceLevel() = runBlocking {
+        // [AI生成] 调养 tab 改为通过 ingredient_care_rule 聚合食材：验证按病种分类查询并附带建议等级/原因。
+        val db = RepositoryTestDatabase.create()
+        val q = db.cookbookQueries
+        val repo = IngredientRepository(db)
+        val goutCategoryId = insertCategory(q, name = "高尿酸血症与痛风", dimension = "crowd")
+        val otherCategoryId = insertCategory(q, name = "高血压", dimension = "crowd")
+
+        val eggId = repo.createUserIngredient(name = "鸡蛋测试")
+        repo.replaceCareRules(
+            eggId,
+            listOf(IngredientCareRule(ingredientId = eggId, categoryId = goutCategoryId, adviceLevel = AdviceLevel.RECOMMEND, reason = "低嘌呤")),
+        )
+        val liverId = repo.createUserIngredient(name = "猪肝测试")
+        repo.replaceCareRules(
+            liverId,
+            listOf(IngredientCareRule(ingredientId = liverId, categoryId = goutCategoryId, adviceLevel = AdviceLevel.AVOID, reason = "高嘌呤")),
+        )
+        val saltId = repo.createUserIngredient(name = "盐测试")
+        repo.replaceCareRules(
+            saltId,
+            listOf(IngredientCareRule(ingredientId = saltId, categoryId = otherCategoryId, adviceLevel = AdviceLevel.AVOID, reason = "高钠")),
+        )
+
+        val goutIngredients = repo.listByCareCategories(listOf(goutCategoryId))
+        assertEquals(listOf("鸡蛋测试", "猪肝测试").sorted(), goutIngredients.map { it.name }.sorted())
+        assertEquals(AdviceLevel.RECOMMEND, goutIngredients.first { it.name == "鸡蛋测试" }.adviceLevel)
+        assertEquals("高嘌呤", goutIngredients.first { it.name == "猪肝测试" }.adviceReason)
+        assertEquals(emptyList(), repo.listByCareCategories(emptyList()))
+    }
+
     /**
      * 测试内快速插入分类。[AI生成]
      */

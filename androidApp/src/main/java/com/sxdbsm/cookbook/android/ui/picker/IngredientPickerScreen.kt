@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -82,9 +83,9 @@ fun IngredientPickerScreen(
     LaunchedEffect(Unit) {
         vm.selectMainTab(ui.mainTab, force = true)
     } // [AI修改] 食材页和菜品选择食材统一启用同一套顶部主分类。
-    LaunchedEffect(selectedIngredient?.id) {
+    LaunchedEffect(selectedIngredient?.id, ui.lastSavedIngredientId) {
         selectedIngredient?.let { vm.loadIngredientDetail(it) }
-    }
+    } // [AI修改] 编辑保存后（lastSavedIngredientId 变化）重新加载详情，修复详情弹层不实时刷新的问题。
     LaunchedEffect(ui.ingredients, ui.selectedIngredients, selectedIngredient?.id) {
         val currentId = selectedIngredient?.id ?: return@LaunchedEffect
         val refreshed = (ui.ingredients + ui.selectedIngredients).firstOrNull { it.id == currentId }
@@ -228,6 +229,23 @@ fun IngredientPickerScreen(
                         }
                     }
                     // 右侧食材网格
+                    // [AI修改] 调养 tab 选中病种分类后按 绿灯/黄灯/红灯 分组展示，剂量语义来自调养规则 advice_level。
+                    val careGroups = if (ui.mainTab == IngredientMainTab.CARE && ui.selectedCategoryId != null) {
+                        listOf(
+                            AdviceLevel.RECOMMEND to "🟢 绿灯推荐",
+                            AdviceLevel.LIMIT to "🟡 黄灯限量",
+                            AdviceLevel.AVOID to "🔴 红灯禁忌",
+                        ).mapNotNull { (level, title) ->
+                            val group = ui.ingredients.filter { it.adviceLevel == level }
+                            if (group.isEmpty()) null else title to group
+                        } + listOfNotNull(
+                            ui.ingredients.filter { it.adviceLevel == null }
+                                .takeIf { it.isNotEmpty() }
+                                ?.let { "其他" to it },
+                        )
+                    } else {
+                        emptyList()
+                    }
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(3),
                         contentPadding = PaddingValues(12.dp),
@@ -235,14 +253,34 @@ fun IngredientPickerScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.weight(1f),
                     ) {
-                        items(ui.ingredients, key = { it.id }) { ing ->
-                            IngredientCard(
-                                ingredient = ing,
-                                selected = ing.id in ui.selectedIds,
-                                onClick = {
-                                    selectedIngredient = ing // [AI修改] 点击食材统一先打开详情，是否加入已选由详情顶部按钮决定。
-                                },
-                            )
+                        if (careGroups.isNotEmpty()) {
+                            careGroups.forEach { (title, group) ->
+                                item(key = "care-header-$title", span = { GridItemSpan(maxLineSpan) }) {
+                                    Text(
+                                        title,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                }
+                                items(group, key = { it.id }) { ing ->
+                                    IngredientCard(
+                                        ingredient = ing,
+                                        selected = ing.id in ui.selectedIds,
+                                        onClick = { selectedIngredient = ing },
+                                    )
+                                }
+                            }
+                        } else {
+                            items(ui.ingredients, key = { it.id }) { ing ->
+                                IngredientCard(
+                                    ingredient = ing,
+                                    selected = ing.id in ui.selectedIds,
+                                    onClick = {
+                                        selectedIngredient = ing // [AI修改] 点击食材统一先打开详情，是否加入已选由详情顶部按钮决定。
+                                    },
+                                )
+                            }
                         }
                         if (ui.canLoadMoreIngredients) {
                             item {
@@ -1144,12 +1182,36 @@ private fun IngredientDetailSheet(
                             if (info.healthNote.isNotBlank()) DetailLine("健康说明", info.healthNote)
                         }
                         if (dishMatches.isNotEmpty()) {
-                            DetailLine(
-                                label = "相关菜品",
-                                value = dishMatches.joinToString("\n") { match ->
-                                    "${match.dish.name}：命中 ${match.matchCount}/${match.totalIngredientCount}"
-                                },
-                            )
+                            // [AI修改] 相关菜品按烹饪方式分组：方式为一级标题、菜品为二级条目，默认平铺展开；
+                            // 多烹饪方式的菜品在每个方式组下都出现，无烹饪方式的归入"其他"。
+                            val groupedMatches = linkedMapOf<String, MutableList<DishIngredientMatch>>()
+                            dishMatches.forEach { match ->
+                                val methods = match.dish.cookingMethodNames
+                                    .ifEmpty { listOfNotNull(match.dish.cookingMethodName) }
+                                    .filter { it.isNotBlank() }
+                                    .ifEmpty { listOf("其他") }
+                                methods.forEach { method ->
+                                    groupedMatches.getOrPut(method) { mutableListOf() }.add(match)
+                                }
+                            }
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text("相关菜品", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                groupedMatches.forEach { (method, matches) ->
+                                    Text(
+                                        method,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                    matches.forEach { match ->
+                                        Text(
+                                            "　${match.dish.name}：命中 ${match.matchCount}/${match.totalIngredientCount}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         Divider()

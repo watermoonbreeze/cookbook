@@ -143,6 +143,20 @@ class IngredientRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 调养 tab：按病种分类通过调养规则聚合食材。[AI生成]
+     *
+     * 调养维度的数据在 ingredient_care_rule 表而非 ingredient_category 关联表；
+     * 返回的 Ingredient 附带 adviceLevel/adviceReason，同一食材命中多个分类时由调用方去重分组。
+     */
+    suspend fun listByCareCategories(categoryIds: List<Long>): List<Ingredient> = withContext(Dispatchers.Default) {
+        if (categoryIds.isEmpty()) return@withContext emptyList()
+        q.selectIngredientsByCareCategories(categoryIds) { id, name, alias, pinyin, imagePath, thumbnailPath, emoji, defaultUnitId, source, createdAt, adviceLevel, reason ->
+            mapIngredientRow(id, name, alias, pinyin, imagePath, thumbnailPath, emoji, defaultUnitId, source, createdAt)
+                .copy(adviceLevel = AdviceLevel.fromCode(adviceLevel), adviceReason = reason)
+        }.executeAsList()
+    }
+
+    /**
      * 重置食材分类关系。[AI生成]
      *
      * 新版新增/编辑食材会一次选择常规、营养、调养等多个分类，这里用事务保证关系整体替换。

@@ -1,0 +1,31 @@
+-- [AI生成] v10 调养模型统一：剂量语义（绿灯推荐/黄灯限量/红灯禁忌）统一由 ingredient_care_rule.advice_level 表达，
+-- 调养分类树只保留病种/人群层。旧库中指向剂量子分类的调养规则上移到病种大类（同食材同病种冲突时保留已有行），
+-- 剂量子分类软删除（seed JSON 已同步移除，补齐式导入不会重建）。
+
+UPDATE ingredient_care_rule
+SET category_id = (SELECT fc.parent_id FROM food_category fc WHERE fc.id = ingredient_care_rule.category_id)
+WHERE id IN (
+    SELECT MIN(r.id)
+    FROM ingredient_care_rule r
+    JOIN food_category fc ON fc.id = r.category_id
+    WHERE fc.dimension = 'crowd' AND fc.parent_id IS NOT NULL
+      AND fc.name IN ('绿灯推荐', '黄灯限量', '红灯禁忌')
+    GROUP BY r.ingredient_id, fc.parent_id
+)
+AND NOT EXISTS (
+    SELECT 1 FROM ingredient_care_rule r2
+    WHERE r2.ingredient_id = ingredient_care_rule.ingredient_id
+      AND r2.category_id = (SELECT fc3.parent_id FROM food_category fc3 WHERE fc3.id = ingredient_care_rule.category_id)
+);
+
+DELETE FROM ingredient_care_rule
+WHERE category_id IN (
+    SELECT id FROM food_category
+    WHERE dimension = 'crowd' AND parent_id IS NOT NULL
+      AND name IN ('绿灯推荐', '黄灯限量', '红灯禁忌')
+);
+
+UPDATE food_category
+SET status = 0
+WHERE dimension = 'crowd' AND parent_id IS NOT NULL
+  AND name IN ('绿灯推荐', '黄灯限量', '红灯禁忌');
