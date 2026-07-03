@@ -18,6 +18,7 @@ import com.sxdbsm.cookbook.domain.model.IngredientDetail
  * 覆盖食材创建、分类关联、软删除后常规查询不可见等核心行为。
  * <p>
  * [AI生成] 为食材选择和食材维护流程建立基础回归测试。
+ * [AI修改] 2026/07/03 补充 listByCategories 多分类聚合查询的去重与软删除回归测试。
  **/
 class IngredientRepositoryTest {
 
@@ -170,6 +171,48 @@ class IngredientRepositoryTest {
 
         repo.replaceCareRules(ingredientId, listOf(rules.last()))
         assertEquals(listOf("痛风黄灯"), repo.listCareRules(ingredientId).map { it.categoryName })
+    }
+
+    @Test
+    fun listByCategoriesAggregatesMultipleCategoriesWithoutDuplicates() = runBlocking {
+        // [AI生成] 覆盖食材界面"选分类逐层聚合子分类食材"依赖的多分类查询：并集 + 去重。
+        val db = RepositoryTestDatabase.create()
+        val q = db.cookbookQueries
+        val repo = IngredientRepository(db)
+        val parentCategoryId = insertCategory(q, name = "叶菜类", dimension = "general")
+        val childCategoryId = insertCategory(q, name = "十字花科", dimension = "general")
+        val otherCategoryId = insertCategory(q, name = "根茎类", dimension = "general")
+
+        val bothId = repo.createUserIngredient(name = "同属父子分类的食材")
+        repo.replaceIngredientCategories(bothId, listOf(parentCategoryId, childCategoryId))
+        val childOnlyId = repo.createUserIngredient(name = "仅子分类食材")
+        repo.replaceIngredientCategories(childOnlyId, listOf(childCategoryId))
+        val otherId = repo.createUserIngredient(name = "其他分类食材")
+        repo.replaceIngredientCategories(otherId, listOf(otherCategoryId))
+
+        val aggregated = repo.listByCategories(listOf(parentCategoryId, childCategoryId))
+        assertEquals(
+            listOf("同属父子分类的食材", "仅子分类食材").sorted(),
+            aggregated.map { it.name }.sorted(),
+        )
+        assertEquals(aggregated.size, aggregated.map { it.id }.distinct().size)
+    }
+
+    @Test
+    fun listByCategoriesDoesNotShowSoftDeletedIngredients() = runBlocking {
+        // [AI生成] 软删除食材不应再出现在分类聚合结果中。
+        val db = RepositoryTestDatabase.create()
+        val q = db.cookbookQueries
+        val repo = IngredientRepository(db)
+        val categoryId = insertCategory(q, name = "聚合分类", dimension = "general")
+        val keepId = repo.createUserIngredient(name = "保留食材")
+        repo.replaceIngredientCategories(keepId, listOf(categoryId))
+        val deletedId = repo.createUserIngredient(name = "已删除食材")
+        repo.replaceIngredientCategories(deletedId, listOf(categoryId))
+
+        repo.deleteUserIngredient(deletedId)
+
+        assertEquals(listOf("保留食材"), repo.listByCategories(listOf(categoryId)).map { it.name })
     }
 
     /**

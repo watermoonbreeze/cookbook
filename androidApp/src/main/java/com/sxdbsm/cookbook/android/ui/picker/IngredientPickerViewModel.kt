@@ -393,34 +393,6 @@ class IngredientPickerViewModel(
     }
 
     /**
-     * 编辑食材图片/名称。[AI修改]
-     *
-     * 修复9要求预设和自建食材都能编辑；删除逻辑仍只允许 `source=user`。
-     */
-    fun updateIngredient(ingredient: Ingredient, name: String, alias: String, imagePath: String, thumbnailPath: String) {
-        viewModelScope.launch {
-            runCatching {
-                ingredientRepo.updateUserIngredient(ingredient.id, name.trim(), alias.trim(), imagePath, thumbnailPath, ingredient.defaultUnitId)
-            }.onSuccess {
-                val refreshed = ingredient.copy(
-                    name = name.trim(),
-                    alias = alias.trim(),
-                    imagePath = imagePath,
-                    thumbnailPath = thumbnailPath,
-                )
-                _state.value = _state.value.copy(
-                    ingredients = _state.value.ingredients.map { if (it.id == ingredient.id) refreshed else it },
-                    selectedIngredients = _state.value.selectedIngredients.map { if (it.id == ingredient.id) refreshed else it },
-                ) // [AI生成] 编辑保存后先同步内存对象，避免列表/详情短时间显示旧名称。
-                reloadCurrentList()
-                _state.value = _state.value.copy(lastSavedIngredientId = ingredient.id)
-            }.onFailure {
-                _state.value = _state.value.copy(createError = "编辑失败")
-            }
-        }
-    }
-
-    /**
      * 加载完整食材编辑表单需要的关联数据。[AI生成]
      */
     fun loadIngredientEditor(ingredient: Ingredient?) {
@@ -512,7 +484,16 @@ class IngredientPickerViewModel(
                         thumbnailPath = thumbnailPath.trim(),
                         defaultUnitId = defaultUnitId,
                     )
-                    ingredientRepo.replaceIngredientCategories(ingredientId, categoryIds)
+                    // [AI修改] 编辑器 UI 只维护用户自建普通分类；保存时合并该食材既有的其他维度分类关联
+                    // （营养/调养/预设普通分类等），避免编辑自定义食材时这些关联被静默清空。
+                    val preservedCategoryIds = if (_state.value.editorIngredientId == ingredientId) {
+                        _state.value.editorCategoryIds.filterNot { id ->
+                            _state.value.allCategories.firstOrNull { it.id == id }?.isEditableUserGeneralCategory() == true
+                        }
+                    } else {
+                        emptyList()
+                    }
+                    ingredientRepo.replaceIngredientCategories(ingredientId, (categoryIds + preservedCategoryIds).distinct())
                 }
                 if (ingredient?.source != "preset") {
                     ingredientRepo.saveIngredientDetail(detail.copy(ingredientId = ingredientId))
@@ -719,10 +700,12 @@ class IngredientPickerViewModel(
                         CategoryNode(category.copy(hasChildren = allCategories.any { it.parentId == category.id && it.matchesTab(tab) }), level = 1)
                     }
             }
-            IngredientMainTab.CUSTOM -> tops
-                .filter { it.source == "user" } + allCategories.filter { category ->
+            // [AI修改] 拼接需先加括号再 distinct/map，否则链式调用只作用于第二个列表，产生 List<Any> 编译错误（遗留问题修复）。
+            IngredientMainTab.CUSTOM -> (
+                tops.filter { it.source == "user" } + allCategories.filter { category ->
                     category.source == "user" && category.parentId != null && allCategories.firstOrNull { it.id == category.parentId }?.source != "user"
                 } // [AI生成] 兼容旧数据：历史上挂到系统分类下的用户分类，在新规则下提升为自定义根节点。
+                )
                 .distinctBy { it.id }
                 .map { category ->
                     CategoryNode(category.copy(hasChildren = allCategories.any { it.parentId == category.id && it.source == "user" }), level = 1)
@@ -754,6 +737,10 @@ class IngredientPickerViewModel(
     // [AI生成] 调养顶部只显示具体人群/病种节点，隐藏“人群分类”聚合根。
     private fun FoodCategory.isCareGroupRoot(): Boolean =
         parentId == null && dimension == "crowd" && name == "人群分类"
+
+    // [AI生成] 与编辑器 UI 的可维护分类判定保持一致：仅用户自建的普通分类可在编辑器中增删。
+    private fun FoodCategory.isEditableUserGeneralCategory(): Boolean =
+        source == "user" && dimension == "general" && crowdTypeId == null
 
     private companion object {
         val nutritionDimensions = setOf("nutrition", "gi", "purine", "sodium", "fat", "sugar")

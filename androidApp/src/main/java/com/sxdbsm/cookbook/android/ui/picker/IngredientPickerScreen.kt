@@ -705,6 +705,13 @@ private fun IngredientEditorDialog(
                             DetailTextField("保存建议", storageTips) { storageTips = it }
                             DetailTextField("健康说明", healthNote) { healthNote = it }
                         }
+
+                        // [AI修改] 恢复"食材界面改造2"重构时丢失的调养建议编辑区：自定义食材可编辑所有内容（含调养规则）。
+                        CareRuleEditor(
+                            categories = ui.allCategories.filter { (it.dimension == "crowd" || it.crowdTypeId != null) && !it.isCareGroupRoot() },
+                            rules = careRules,
+                            onRulesChange = { careRules = it },
+                        )
                     }
 
                     ui.createError?.let { error ->
@@ -867,6 +874,73 @@ private fun buildCategoryPickerRows(categories: List<FoodCategory>, expandedIds:
     }
     append(null, 1)
     return result
+}
+
+/**
+ * 调养规则编辑区。[AI修改] 自"食材界面改造1"版本恢复，供自定义食材编辑调养建议。
+ */
+@Composable
+private fun CareRuleEditor(
+    categories: List<FoodCategory>,
+    rules: List<IngredientCareRule>,
+    onRulesChange: (List<IngredientCareRule>) -> Unit,
+) {
+    var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
+    var level by remember { mutableStateOf(AdviceLevel.RECOMMEND) }
+    var reason by remember { mutableStateOf("") }
+
+    EditorSection("调养建议") {
+        CareCategoryDropdown(categories, selectedCategoryId) { selectedCategoryId = it }
+        AdviceLevelDropdown(level) { level = it }
+        OutlinedTextField(
+            value = reason,
+            onValueChange = { reason = it },
+            label = { Text("原因说明") },
+            minLines = 2,
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium,
+        )
+        OutlinedButton(
+            onClick = {
+                val category = categories.firstOrNull { it.id == selectedCategoryId } ?: return@OutlinedButton
+                val next = rules.filterNot { it.categoryId == category.id } + IngredientCareRule(
+                    ingredientId = 0L,
+                    categoryId = category.id,
+                    categoryName = category.name,
+                    adviceLevel = level,
+                    reason = reason,
+                    source = "user",
+                )
+                onRulesChange(next)
+                selectedCategoryId = null
+                reason = ""
+            },
+            enabled = selectedCategoryId != null,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("添加调养建议")
+        }
+        rules.forEach { rule ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                    .padding(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("${rule.categoryName.ifBlank { categories.firstOrNull { it.id == rule.categoryId }?.name.orEmpty() }} / ${rule.adviceLevel.label()}")
+                    if (rule.reason.isNotBlank()) {
+                        Text(rule.reason, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+                IconButton(onClick = { onRulesChange(rules.filterNot { it.categoryId == rule.categoryId }) }) {
+                    Icon(Icons.Outlined.Delete, contentDescription = "删除调养建议")
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -1197,12 +1271,6 @@ private fun AdviceLevel.label(): String = when (this) {
 private fun Set<Long>.toggle(id: Long): Set<Long> =
     if (id in this) this - id else this + id
 
-private val nutritionDimensionsForEditor = setOf("nutrition", "gi", "purine", "sodium", "fat", "sugar") // [AI生成] 编辑器营养分类维度集合。
-
-// [AI生成] 编辑器/筛选器隐藏营养聚合根，只保留可直接归属的标签。
-private fun FoodCategory.isNutritionGroupRoot(): Boolean =
-    parentId == null && dimension == "nutrition" && name == "健康饮食"
-
 // [AI生成] 编辑器/筛选器隐藏调养聚合根，只保留具体病种、人群或建议节点。
 private fun FoodCategory.isCareGroupRoot(): Boolean =
     parentId == null && dimension == "crowd" && name == "人群分类"
@@ -1354,41 +1422,6 @@ private fun CategoryParentDropdown(
             categories.forEach { category ->
                 DropdownMenuItem(
                     text = { Text(category.displayWithParentHint()) },
-                    onClick = {
-                        onSelect(category.id)
-                        expanded = false
-                    },
-                )
-            }
-        }
-    }
-}
-
-/**
- * 新建食材时选择分类。[AI生成]
- */
-@Composable
-private fun CategoryDropdown(
-    categories: List<FoodCategory>,
-    selectedCategoryId: Long?,
-    onSelect: (Long) -> Unit,
-    enabled: Boolean,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val selectedName = categories.firstOrNull { it.id == selectedCategoryId }?.name.orEmpty()
-    Box {
-        OutlinedButton(
-            onClick = { expanded = true },
-            enabled = enabled,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(if (selectedName.isBlank()) "选择分类 *" else selectedName, modifier = Modifier.weight(1f))
-            Icon(Icons.Outlined.ExpandMore, contentDescription = null)
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            categories.forEach { category ->
-                DropdownMenuItem(
-                    text = { Text(category.name) },
                     onClick = {
                         onSelect(category.id)
                         expanded = false
