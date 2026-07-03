@@ -1,6 +1,27 @@
 # AGENTS.md
 
-本文件为 Codex 在本仓库中工作时提供指导。Claude Code 使用根目录 `CLAUDE.md`；两边配置相互独立，不互相读取，但核心项目规范应保持等价。
+本文件为 Codex 在本仓库中工作时提供指导。Claude Code 使用根目录 `CLAUDE.md`。
+
+## 公共 AI 上下文目录（必读）
+
+本项目为 Claude Code / Codex 双模式开发，**公共规范、经验、功能文档、上下文记忆统一存放在 `.ai-context/`**（说明见 `.ai-context/README.md`）：
+
+- **通用强制规则**：`.ai-context/rules/通用规则.md` —— 任务编排门禁、任务前快照、工程一致性、单元测试、AI 注释、构建环境等，**每次任务开始前遵守**
+- **经验手册**：`.ai-context/docs/experience/`（索引 `INDEX.md`，工程统一规范见 `09_工程统一规范.md`）
+- **功能/方案文档**：`.ai-context/docs/feature/`
+- **上下文记忆**：`.ai-context/docs/context_memory/`（双端共写共读，任务快照与阶段结论都写这里）
+
+## 双模式配置目录
+
+| 用途 | 位置 |
+|---|---|
+| 公共规则/经验/功能文档/上下文记忆/公共 hook | `.ai-context/`（唯一来源） |
+| Claude Code 入口与专属配置 | `CLAUDE.md`、`.claude/`（settings.json、agents/、hook 薄包装） |
+| Codex 入口与专属配置 | `AGENTS.md`、`.codex/`（settings.json、agents/、hook 薄包装） |
+| Claude 临时目录 | `temp/claude/` |
+| Codex 临时目录 | `temp/codex/` |
+
+原则（2026-07-03 起）：公共内容只维护 `.ai-context/` 一份，两侧入口都引用它；`.claude/` 与 `.codex/` 只保留各自工具必须放在原生目录的内容。旧的"两边各自维护等价副本"做法已废弃。
 
 ## 语言设置
 
@@ -8,27 +29,13 @@
 
 ## 临时目录
 
-除用户明确要求外，处理问题时需要创建的临时文件放在 `temp/codex/`。如任务需要兼容 Claude Code，可同步写入 `temp/claude/` 或在结果中说明只使用了 Codex 临时目录。
-
-## 双模式配置目录
-
-| 用途 | Claude Code | Codex |
-|---|---|---|
-| 项目主入口 | `CLAUDE.md` | `AGENTS.md` |
-| 项目配置目录 | `.claude/` | `.codex/` |
-| 上下文记忆 | `.claude/docs/context_memory/` | `.codex/docs/context_memory/` |
-| 经验手册 | `.claude/docs/experience/` | `.codex/docs/experience/` |
-| 功能文档 | `.claude/docs/feature/` | `.codex/docs/feature/` |
-| Hook 脚本档案 | `.claude/hooks/` | `.codex/hooks/` |
-| Agent 档案 | `.claude/agents/` | `.codex/agents/` |
-
-原则：Codex 工作时只依赖 `AGENTS.md` 和 `.codex/`；Claude Code 工作时只依赖 `CLAUDE.md` 和 `.claude/`。当需要双模式一致时，将同一条规则按两边各自格式分别维护，而不是让任一侧读取另一侧配置。
+除用户明确要求外，处理问题时需要创建的临时文件放在 `temp/codex/`。
 
 ## 项目概述
 
-Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 APP，核心价值是帮助用户解决“每天吃什么”的决策疲劳问题。项目基于 Kotlin Multiplatform (KMP) 跨平台架构，Android 端使用 Jetpack Compose，iOS 端使用 SwiftUI。
+Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 APP，核心价值是帮助用户解决"每天吃什么"的决策疲劳问题。项目基于 Kotlin Multiplatform (KMP) 跨平台架构，Android 端使用 Jetpack Compose，iOS 端使用 SwiftUI。
 
-当前处于 **MVP 阶段**，聚焦三个核心功能：快速记录每餐、查看历史菜单、从历史中复用菜单。详细规划见 `docs/` 目录和 `.codex/docs/feature/`。
+MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单）已完成，当前处于**功能扩展与打磨阶段**（食材体系、厨房小助手、搜索等已落地）。详细规划见 `docs/` 目录和 `.ai-context/docs/feature/`。
 
 ## 技术栈
 
@@ -60,12 +67,11 @@ Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 A
 # 运行 shared Android 单元测试（当前工程未注册 :shared:allTests）
 ./gradlew :shared:testDebugUnitTest
 
-# 仅运行 Android 单元测试
-./gradlew :shared:testDebugUnitTest
-
 # 清理构建产物
 ./gradlew clean
 ```
+
+> 构建环境注意：项目使用较高版本 AS/Gradle/JDK 开发，当前开发机可能无法编译；处理方式见 `.ai-context/rules/通用规则.md` 第八节。
 
 ## 规划文档
 
@@ -73,30 +79,13 @@ Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 A
 - `docs/产品规划方案.md` — 完整产品规划（MVP → 一期 → 二期）
 - `docs/MVP开发规划.md` — MVP 详细开发任务、数据模型、页面设计
 - `docs/技术栈与主题风格.md` — 技术选型与 Material3 主题配色规范
-- `.codex/docs/feature/MVP实施方案.md` — MVP 实施方案
-- `.codex/docs/feature/数据库设计方案.md` — 数据库设计方案
-- `.codex/docs/feature/界面探讨.md` — 界面方案和交互讨论
-- `.codex/docs/experience/09_工程统一规范.md` — KMP 架构、Android/iOS UI、数据库、代码风格与开发流程规范
+- `.ai-context/docs/feature/` — 实施方案（MVP 实施、数据库设计、食材体系重构、端侧 AI、UI 控件命名清单等）
 
 ## 工程一致性要求
 
-- **任务编排强制门禁**：[AI修改] 只要用户下达的是一个任务（包括开发、修复、优化、调研、文档、配置、审核等），开始执行前必须先走 `~/.codex/memories/workflow_auto_orchestration.md` 的阶段0评估定级；必须先告诉用户本次采用的模式/级别、原因、是否需要智能体分派。不得在未声明任务编排结果的情况下直接自行处理。
-- 开发类任务必须执行 Codex 自动任务编排流程：先读取 `~/.codex/memories/workflow_auto_orchestration.md`，完成阶段0评估定级并输出智能体分派表；标准/深度任务必须按流程用 Codex 子代理映射 DEV 角色参与，不得直接由主线程跳过分派。
-- 开发前必须按需读取 `.codex/docs/experience/09_工程统一规范.md`，保证 KMP 分层、平台 UI 风格、数据库和代码风格一致。
-- Android UI 采用 Material Design 3 与既有 Theme/ExtendedColors；iOS UI 采用 SwiftUI 与 iOS 原生交互风格。
-- 新增跨平台业务能力优先进入 `shared`，平台模块只承接各自 UI 与平台适配。
-- 修改数据库、主题、架构边界或公共组件时，同步更新对应 `.codex/docs/` 文档。
-
-## 上下文保护机制
-
-- 只要用户下达的是会执行命令、修改文件或产生项目决策的任务，阶段0任务编排声明之后、阶段1分析或实质操作之前，必须先保存“任务前上下文快照”到 `.codex/docs/context_memory/`。
-- 任务前上下文快照至少记录：用户最新需求、任务模式/级别、计划分派角色、当前已知项目状态、预计涉及文件/模块、主要风险和待验证项。
-- 纯问答且不执行命令、不修改文件、不产生项目决策时，可以不写快照，但需要在回复中明确说明原因。
-- 在长对话中，每完成一个重要任务节点后，主动将阶段性结论保存到 `.codex/docs/context_memory/`。
-- 双模式一致性任务中，如用户明确要求两边都可接续使用，则将同一份关键摘要按 Claude Code 目录规则另存到 `.claude/docs/context_memory/`；Codex 不读取 `.claude` 作为自身上下文来源。
-- 文件按主题或任务命名，只存结论、决策、待办、关键路径，不存冗长过程。
-- 单个文件控制在 100 行以内，超过时按子主题拆分。
-- 读取时按需加载当前任务相关文件，不全量读取。
+- **任务编排强制门禁**、**任务前上下文快照**、**单元测试纳入流程**、**AI 注释规范**等通用规则统一见 `.ai-context/rules/通用规则.md`，Codex 必须遵守；其中任务编排流程定义读 `~/.codex/memories/workflow_auto_orchestration.md`，标准/深度任务按流程用 Codex 子代理映射 DEV 角色参与，不得直接由主线程跳过分派。
+- 开发前必须按需读取 `.ai-context/docs/experience/09_工程统一规范.md`，保证 KMP 分层、平台 UI 风格、数据库和代码风格一致。
+- 修改数据库、主题、架构边界或公共组件时，同步更新对应 `.ai-context/docs/feature/` 文档。
 
 ## 自定义命令兼容
 
@@ -106,4 +95,4 @@ Codex 不保证自动注册 Claude Code 风格自定义 slash command。用户�
 - `/zongjie`：读取 `~/.codex/commands/zongjie.md`
 - `/fansi`：读取 `~/.codex/commands/fansi.md`
 
-执行这些命令时保持双模式独立：Codex 侧写 `.codex` / `AGENTS.md`；如果用户要求 Claude Code 也具备同等规则，再按 Claude Code 格式写入 `.claude` / `CLAUDE.md`。
+执行这些命令产出的项目级公共内容（经验、记忆、文档）写入 `.ai-context/`；仅 Codex 自身可识别的配置写 `.codex/`。

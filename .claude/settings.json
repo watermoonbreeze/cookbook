@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/pre-tool-use.js",
+            "command": "node .ai-context/hooks/pre-tool-use.js",
             "timeout": 5000
           }
         ]

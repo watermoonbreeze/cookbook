@@ -2,17 +2,30 @@
 
 本文件为 Claude Code (claude.ai/code) 在本仓库中工作时提供指导。
 
+## 公共 AI 上下文目录（必读）
+
+本项目为 Claude Code / Codex 双模式开发，**公共规范、经验、功能文档、上下文记忆统一存放在 `.ai-context/`**（说明见 `.ai-context/README.md`）：
+
+- **通用强制规则**：`.ai-context/rules/通用规则.md` —— 任务编排门禁、任务前快照、工程一致性、单元测试、AI 注释、构建环境等，**每次任务开始前遵守**
+- **经验手册**：`.ai-context/docs/experience/`（索引 `INDEX.md`，工程统一规范见 `09_工程统一规范.md`）
+- **功能/方案文档**：`.ai-context/docs/feature/`
+- **上下文记忆**：`.ai-context/docs/context_memory/`（双端共写共读，任务快照与阶段结论都写这里）
+
+`.claude/` 只保留 Claude Code 专属内容（settings.json、agents/、hook 薄包装）；公共内容一律放 `.ai-context/`，不再双份维护。
+
 ## 语言设置
-  **必须使用中文**与用户对话
+
+**必须使用中文**与用户对话。
 
 ## 临时目录
-  **除用户明确要求外处理解决问题需要创建的文件都必须放在temp/claude/这个临时目录下**
+
+除用户明确要求外，处理问题需要创建的临时文件放在 `temp/claude/`。
 
 ## 项目概述
 
 Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 APP，核心价值是帮助用户解决"每天吃什么"的决策疲劳问题。基于 Kotlin Multiplatform (KMP) 跨平台架构，Android 端使用 Jetpack Compose，iOS 端使用 SwiftUI。
 
-当前处于 **MVP 阶段**，聚焦三个核心功能：快速记录每餐、查看历史菜单、从历史中复用菜单。详细规划见 `docs/` 目录。
+MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单）已完成，当前处于**功能扩展与打磨阶段**（食材体系、厨房小助手、搜索等已落地）。详细规划见 `docs/` 目录和 `.ai-context/docs/feature/`。
 
 ## 技术栈
 
@@ -41,15 +54,14 @@ Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 A
 # 构建 shared 模块
 ./gradlew :shared:build
 
-# 运行共享模块通用测试
-./gradlew :shared:allTests
-
-# 仅运行 Android 单元测试
+# 运行 shared Android 单元测试（当前工程未注册 :shared:allTests）
 ./gradlew :shared:testDebugUnitTest
 
 # 清理构建产物
 ./gradlew clean
 ```
+
+> 构建环境注意：项目使用较高版本 AS/Gradle/JDK 开发，当前开发机可能无法编译；处理方式见 `.ai-context/rules/通用规则.md` 第八节。
 
 ## 规划文档
 
@@ -57,13 +69,4 @@ Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 A
 - `docs/产品规划方案.md` — 完整产品规划（MVP → 一期 → 二期）
 - `docs/MVP开发规划.md` — MVP 详细开发任务、数据模型、页面设计
 - `docs/技术栈与主题风格.md` — 技术选型与 Material3 主题配色规范
-
-## 上下文保护机制
-
-- 在长对话中，每完成一个重要任务节点（如完成一次分析、解决一个问题、做出关键决策）后，主动将该阶段的关键信息（分析结论、决策依据、待办事项、关键代码路径等）保存到当前项目下的 `.claude/docs/context_memory/` 目录
-- 按主题或任务命名文件，内容只存结论性信息，不存过程细节，确保脱离对话也能理解
-- 单个文件控制在100行以内，超过时按子主题拆分为多个文件
-- 当感知到对话较长（如已经超过多轮复杂交互）时，应加大保存频率
-- 读取时按需加载当前任务相关的文件，不全量读取
-- 新对话涉及相关主题时，顺便检查并清理过时内容
-- 此目录存放项目相关的具体分析结果；跨项目通用的经验和模式仍存放在 auto memory 中
+- `.ai-context/docs/feature/` — 实施方案（MVP 实施、数据库设计、食材体系重构、端侧 AI、UI 控件命名清单等）
