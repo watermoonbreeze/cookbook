@@ -47,21 +47,23 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 
 ## 常用命令
 
-```bash
-# 构建 Android 应用
-./gradlew :androidApp:assembleDebug
+统一使用 CLI 构建脚本（显式 JDK 17，原理与换机说明见 `.ai-context/rules/通用规则.md` 第八节）：
 
-# 构建 shared 模块
-./gradlew :shared:build
+```bash
+# 构建 Android 应用（Windows）
+scripts\build-cli.bat :androidApp:assembleDebug
 
 # 运行 shared Android 单元测试（当前工程未注册 :shared:allTests）
-./gradlew :shared:testDebugUnitTest
+scripts\build-cli.bat :shared:testDebugUnitTest
+
+# 构建 shared 模块
+scripts\build-cli.bat :shared:build
 
 # 清理构建产物
-./gradlew clean
+scripts\build-cli.bat clean
 ```
 
-> 构建环境注意：项目使用较高版本 AS/Gradle/JDK 开发，当前开发机可能无法编译；处理方式见 `.ai-context/rules/通用规则.md` 第八节。
+macOS/Linux 使用 `./scripts/build-cli.sh <任务>`。直接 `./gradlew` 依赖全局 `org.gradle.java.home=jdk-17`，可用但不作为标准入口。IDE（AS Hedgehog）当前打开本项目会报模块实体错误，不作为构建路径。
 
 ## 规划文档
 
