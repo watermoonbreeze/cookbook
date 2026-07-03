@@ -210,3 +210,21 @@
 |------|------|------|
 | 1 | chatlog「食材与菜品关联做法」第 2 条（自定义食材是否并入现有分类体系的展示策略） | 用户原话"暂时没想好"，未实现，待用户定夺 |
 | 2 | 编译验证 | 本机 JDK21+Gradle8.2 可能不兼容，若失败则跳过编译（用户已授权） |
+
+#### 决策 5：CLI 双轨构建方案（用户在线选定）
+- 备选：A. 保持现状+文档固化；B. 项目内 CLI 构建脚本；C. 项目 gradle.properties 固定 JDK
+- 选择：B（用户明确选择；随后确认 AS Hedgehog 打开项目报 Module entity 错误，CLI 定为标准构建路径）
+- 产出：scripts/build-cli.bat（.bat 需 ASCII 注释+CRLF，否则 GBK 代码页下解析乱；显式路径调用 gradlew 规避 NoDefaultCurrentDirectoryInExePath 环境）、scripts/build-cli.sh
+- 验证：--version JVM 17.0.16；:androidApp:assembleDebug BUILD SUCCESSFUL
+
+### Git 检查点
+
+| 序号 | Commit | 阶段 | 描述 |
+|------|--------|------|------|
+| 1 | 314979e | 阶段1-配置 | .ai-context 公共化，双入口统一引用 |
+| 2 | 06841f2 | 阶段3-实现 | 食材编辑收尾修复（调养编辑区恢复/分类丢失/遗留编译错误/死代码/单测） |
+| 3 | cf81b49 | 阶段4-构建 | CLI 双轨构建脚本 + 文档固化 |
+
+- 完成时间：2026-07-03
+- 验证结论：:shared:testDebugUnitTest 9/9 通过；:androidApp:assembleDebug 成功（均经 scripts/build-cli 与 gradlew 双路径实测）
+- 未推送；temp/claude/chatlog.md 为用户自行编辑，未纳入提交
