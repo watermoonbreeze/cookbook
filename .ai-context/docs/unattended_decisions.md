@@ -250,3 +250,13 @@
   1. 指纹守卫用"总指纹"（5文件合一）而非记录级 diff——工程更简单，"没变不写"已解决痛点，事务内全量 upsert 与增量体感无差。
   2. "更新基础数据"= 强制刷新（幂等 upsert）而非删除重建——防 ON DELETE CASCADE 误删被引用的用户数据。
   3. 自修正一坑：写 seed 元数据 key 后 user_preferences 非空，会使 count==0 守卫漏写用户默认偏好；改为按 THEME_MODE key 判断。
+
+---
+
+## 任务：食材失效状态 status/reason + 引用不断裂 + 回收站（2026-07-06）
+- 模式：常规授权实施；Git 检查点：f549afb（DB v11 / 10.sqm）
+- 关键决策：
+  1. 引用不断裂靠两处：菜品读食材去 i.status 过滤 + 删除自定义食材不再软删 dish_ingredient 关联。
+  2. 失效食材列表隐藏（保持 status=1 过滤）、仅菜品引用处灰显；自定义可恢复、预设跟后台数据包。
+  3. hardDelete 物理清关联（ingredient_id 无 CASCADE），并二次确认。
+  4. 预设 status 跟 JSON；受指纹守卫约束，存量默认 status=1，后台改 JSON 触发重跑才失效。
