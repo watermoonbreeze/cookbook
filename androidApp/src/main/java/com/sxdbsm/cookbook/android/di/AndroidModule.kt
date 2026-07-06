@@ -33,7 +33,7 @@ val androidModule = module {
     viewModel { NewDishViewModel(get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用。
     viewModel { TimelineViewModel(get()) }
-    viewModel { MineViewModel(get(), get(), get(), get()) }
+    viewModel { MineViewModel(get(), get(), get(), get(), get()) } // [AI修改] 追加 PresetDataSeeder 支持“更新基础数据”。
     viewModel { IngredientPickerViewModel(get(), get(), get()) }
     viewModel { DishPickerViewModel(get()) }
     viewModel { SearchViewModel(get(), get(), get()) }

@@ -21,26 +21,93 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
     /**
      * 检查并灌入缺失的预置数据。[AI修改]
+     *
+     * 性能优化（2026-07-03）：
+     * - 旧库 NULL 清洗只在首次执行一次（preferences 标记守卫），不再每次启动全表 UPDATE。
+     * - 字典类小表保持“表为空才写”。
+     * - 食材/分类/详情/调养等大批量补齐式内容改为“内容指纹守卫”：seed JSON 未变化时整段跳过，
+     *   避免每次启动重复覆写数百条记录；需要写入时整段包一个事务，把上千次独立 fsync 降为一次提交。
      */
     suspend fun seedIfNeeded() = withContext(Dispatchers.Default) {
         val q = db.cookbookQueries
         val now = DateTime.nowEpochSeconds()
-        q.sanitizeLegacyNullTextFields() // [AI生成] 兼容旧库 NULL 文本字段，避免 SQLDelight 非空映射 NPE。
-        q.sanitizeLegacyDishNullTextFields() // [AI生成] 菜品编辑加载前先修正旧数据空字段，避免图片/表单字段丢失。
 
+        // [AI修改] 旧库 NULL 文本字段清洗只需一次；用 preferences 标记避免每次启动重复全表 UPDATE。
+        if (q.selectPreference(PreferenceKeys.SEED_LEGACY_SANITIZED).executeAsOneOrNull()?.value_ != "1") {
+            db.transaction {
+                q.sanitizeLegacyNullTextFields()
+                q.sanitizeLegacyDishNullTextFields()
+            }
+            q.upsertPreference(PreferenceKeys.SEED_LEGACY_SANITIZED, "1", now)
+        }
+
+        // 字典类小表：表为空才写入。
         if (q.countCookingMethods().executeAsOne() == 0L) seedCookingMethods(now)
         if (q.countMeasurementUnits().executeAsOne() == 0L) seedMeasurementUnits()
         if (q.countCrowdTypes().executeAsOne() == 0L) seedCrowdTypes(now)
         if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes()
         ensureFlexibleSnackMealType() // [AI修改] 兼容旧库：补充“加餐”餐次，供添加餐食页按需手动选择时间。
         if (q.countDishTags().executeAsOne() == 0L) seedDishTags(now)
-        val categoryIdsByCode = seedFoodCategories(now) // [AI修改] 分类采用补齐式 JSON seed，旧库已有数据时仍能补新增分类。
-        if (q.countUserPreferences().executeAsOne() == 0L) seedUserPreferences(now)
-        seedFoundationIngredients(now, categoryIdsByCode) // [AI修改] 食材采用补齐式 JSON seed，并补齐默认 emoji。
-        seedCrowdRules() // [AI生成] 慢病食材建议规则采用 JSON 补齐式 seed。
-        seedIngredientDetails(now) // [AI生成] 食材详情采用 JSON 补齐式 seed，支撑详情页直接展示做法和注意事项。
-        seedIngredientCareRules(categoryIdsByCode) // [AI生成] 通用调养规则进入新 care_rule 表，覆盖非 crowd_type 的病种/人群节点。
+        // [AI修改] 按具体 key 判断而非表是否为空：user_preferences 现在还会存 seed 元数据 key（指纹/清洗标记），
+        // 不能再用 countUserPreferences==0 守卫，否则用户默认偏好会被漏写。
+        if (q.selectPreference(PreferenceKeys.THEME_MODE).executeAsOneOrNull() == null) seedUserPreferences(now)
+
+        // 大批量内容：内容指纹未变则整段跳过。
+        reseedContentIfChanged(now, force = false)
     }
+
+    /**
+     * 手动重置/更新基础数据。[AI生成]
+     *
+     * 供“我的-更新基础数据”入口调用：强制忽略内容指纹，重新用内置（未来可替换为远程拉取的）JSON
+     * 补齐式覆写预设内容，把预设食材/分类/详情/调养规则刷新到最新。
+     * 语义为“刷新预设”而非“删除重建”：只做幂等 upsert，不删除任何行，因此用户自建数据、
+     * 用户对预设食材的名称/图片修改、以及菜品对预设食材的引用关系都不受影响。
+     *
+     * @return 本次是否有内容写入（内容确有变化或强制刷新时为 true）。
+     */
+    suspend fun forceReseedBaseData(): Boolean = withContext(Dispatchers.Default) {
+        val now = DateTime.nowEpochSeconds()
+        reseedContentIfChanged(now, force = true)
+    }
+
+    /**
+     * 内容指纹守卫下的补齐式写入。[AI生成]
+     *
+     * 计算 seed JSON 内容指纹并与上次写入的指纹比对；未变化且非强制时直接返回、零写入。
+     * 需要写入时把分类/食材/详情/调养全套包进单个事务，保证要么整体成功要么回滚，且只提交一次。
+     */
+    private fun reseedContentIfChanged(now: Long, force: Boolean): Boolean {
+        val q = db.cookbookQueries
+        val categoriesJson = SeedResourceLoader.readText("seed/food_categories.json").orEmpty()
+        val ingredientsJson = SeedResourceLoader.readText("seed/ingredients.json").orEmpty()
+        val crowdRulesJson = SeedResourceLoader.readText("seed/crowd_rules.json").orEmpty()
+        val detailsJson = SeedResourceLoader.readText("seed/ingredient_details.json").orEmpty()
+        val careRulesJson = SeedResourceLoader.readText("seed/ingredient_care_rules.json").orEmpty()
+        val fingerprint = fingerprintOf(categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson)
+
+        val stored = q.selectPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT).executeAsOneOrNull()?.value_
+        if (!force && stored == fingerprint) return false // 内容未变，跳过全部内容 seed。
+
+        db.transaction {
+            val categoryIdsByCode = seedFoodCategories(now) // [AI修改] 分类补齐式 JSON seed。
+            seedFoundationIngredients(now, categoryIdsByCode) // [AI修改] 食材补齐式 JSON seed，并补齐默认 emoji。
+            seedCrowdRules() // [AI生成] 慢病食材建议规则补齐式 seed。
+            seedIngredientDetails(now) // [AI生成] 食材详情补齐式 seed。
+            seedIngredientCareRules(categoryIdsByCode) // [AI生成] 通用调养规则补齐式 seed。
+        }
+        q.upsertPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT, fingerprint, now)
+        return true
+    }
+
+    /**
+     * 计算 seed 内容指纹。[AI生成]
+     *
+     * 用各文件“长度 + 内容 hashCode”组合，长度参与降低碰撞概率；Kotlin 的 String.hashCode 跨平台稳定，
+     * 足以判断内容是否变化（最坏情况漏更新可由手动“更新基础数据”兜底）。
+     */
+    private fun fingerprintOf(vararg contents: String): String =
+        contents.joinToString("|") { "${it.length}:${it.hashCode()}" }
 
     private fun seedCookingMethods(now: Long) {
         val q = db.cookbookQueries

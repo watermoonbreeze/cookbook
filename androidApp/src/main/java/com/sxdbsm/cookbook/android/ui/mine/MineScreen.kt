@@ -36,6 +36,7 @@ fun MineScreen(
     val profiles by vm.profiles.collectAsStateWithLifecycle()
     val crowdTypes by vm.crowdTypes.collectAsStateWithLifecycle()
     val backups by vm.backups.collectAsStateWithLifecycle()
+    val updatingBaseData by vm.updatingBaseData.collectAsStateWithLifecycle()
     val logFiles by vm.logFiles.collectAsStateWithLifecycle()
     val selectedLogContent by vm.selectedLogContent.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -126,6 +127,24 @@ fun MineScreen(
         }
         SettingRow(icon = Icons.Outlined.Article, title = "日志查看", subtitle = "查看 /sdcard/cookbook/log/ 下的预测试日志", trailing = "▸") {
             logDialogOpen = true
+        }
+        // [AI生成] 更新基础数据：手动刷新预设食材/分类/详情/调养规则；后续可扩展为从后台拉取最新数据包。
+        SettingRow(
+            icon = Icons.Outlined.CloudSync,
+            title = "更新基础数据",
+            subtitle = if (updatingBaseData) "正在更新…" else "刷新预设食材与分类等基础数据",
+            trailing = if (updatingBaseData) "" else "▸",
+        ) {
+            if (!updatingBaseData) {
+                vm.updateBaseData { success, changed ->
+                    val msg = when {
+                        !success -> "更新失败，请稍后重试"
+                        changed -> "基础数据已更新"
+                        else -> "基础数据已是最新"
+                    }
+                    android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         GroupTitle("实用工具")

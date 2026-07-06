@@ -24,4 +24,10 @@ object PreferenceKeys {
     const val THEME_MODE = "theme_mode"
     const val HOME_RECENT_COUNT = "home_recent_count"
     const val HOME_POPULAR_COUNT = "home_popular_count"
+
+    // [AI生成] 基础数据 seed 内容指纹：记录上次写入的 seed JSON 指纹，内容未变时跳过整段补齐式写入。
+    const val SEED_CONTENT_FINGERPRINT = "seed_content_fingerprint"
+
+    // [AI生成] 旧库 NULL 文本字段清洗标记：清洗只需执行一次，避免每次启动全表 UPDATE。
+    const val SEED_LEGACY_SANITIZED = "seed_legacy_sanitized_v1"
 }

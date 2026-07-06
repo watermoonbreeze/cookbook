@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
+import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.HealthProfile
 import com.sxdbsm.cookbook.domain.model.ThemeMode
@@ -39,6 +40,7 @@ class MineViewModel(
     private val health: HealthProfileRepository,
     private val backup: BackupManager,
     private val logFileManager: LogFileManager,
+    private val seeder: PresetDataSeeder, // [AI生成] 供“更新基础数据”手动刷新预设内容。
 ) : ViewModel() {
 
     /**
@@ -64,6 +66,9 @@ class MineViewModel(
 
     private val _crowdTypes = MutableStateFlow<List<CrowdType>>(emptyList()) // [AI生成] 健康档案弹框展示系统支持的人群类型。
     val crowdTypes: StateFlow<List<CrowdType>> = _crowdTypes.asStateFlow()
+
+    private val _updatingBaseData = MutableStateFlow(false) // [AI生成] “更新基础数据”进行中标记，避免重复触发并驱动按钮 loading。
+    val updatingBaseData: StateFlow<Boolean> = _updatingBaseData.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -133,6 +138,24 @@ class MineViewModel(
             backup.deleteBackup(file)
             refreshBackups()
             onDone()
+        }
+    }
+
+    /**
+     * 手动更新/重置基础数据。[AI生成]
+     *
+     * 强制用内置（未来可替换为远程拉取的）预设 JSON 覆写基础食材/分类/详情/调养规则。
+     * 只做幂等 upsert，不删除数据，用户自建内容与引用关系不受影响。
+     *
+     * @param onDone 回调 (成功, 是否有内容写入)。
+     */
+    fun updateBaseData(onDone: (Boolean, Boolean) -> Unit = { _, _ -> }) {
+        if (_updatingBaseData.value) return // [AI生成] 进行中忽略重复点击。
+        viewModelScope.launch {
+            _updatingBaseData.value = true
+            val result = runCatching { seeder.forceReseedBaseData() }
+            _updatingBaseData.value = false
+            onDone(result.isSuccess, result.getOrDefault(false))
         }
     }
 }
