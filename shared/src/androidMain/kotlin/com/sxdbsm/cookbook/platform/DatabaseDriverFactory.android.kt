@@ -15,26 +15,13 @@ actual class DatabaseDriverFactory(private val context: Context) {
     actual fun createDriver(): SqlDriver {
         val databaseFile = resolveDatabaseFile(context.applicationContext)
         migrateInternalDatabaseIfNeeded(context.applicationContext, databaseFile)
-        val driver = AndroidSqliteDriver(
+        // [AI修改] 已移除 ensureLegacyColumns 幂等补列临时手段：ingredient.reason 现由 10.sqm 正式迁移承接，
+        // 全新安装走 Schema.create 自带该列，不再需要驱动侧重复 DDL（消除数据源冗余）。
+        return AndroidSqliteDriver(
             schema = CookbookDatabase.Schema,
             context = context,
             name = databaseFile.absolutePath,
         )
-        ensureLegacyColumns(driver)
-        return driver
-    }
-
-    /**
-     * 兼容旧库缺失列。[AI生成]
-     *
-     * `ingredient.reason` 曾随 schema 加入但遗漏了对应迁移文件，导致旧库升级后缺该列、
-     * 读取失效食材/菜品引用等查询会报 "no such column: reason"。这里幂等补列：
-     * 列已存在时 SQLite 抛 duplicate column 异常，直接忽略即可。
-     */
-    private fun ensureLegacyColumns(driver: SqlDriver) {
-        runCatching {
-            driver.execute(null, "ALTER TABLE ingredient ADD COLUMN reason TEXT NOT NULL DEFAULT ''", 0)
-        }
     }
 
     companion object {

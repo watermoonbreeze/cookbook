@@ -48,7 +48,9 @@ sqldelight {
     databases {
         create("CookbookDatabase") {
             packageName.set("com.sxdbsm.cookbook.db")
-            version = 8 // [AI修改] v8 新增菜品操作步骤表；数据库版本只能升不能降。
+            // [AI修改] 不在此设 version：SQLDelight 2.x 的 DB schema 版本由 `*.sqm` 迁移文件数自动推导
+            // （当前 1~10.sqm ⇒ Schema.version=11）。旧代码的 `version = 8` 其实泄漏成了 Gradle 项目版本、
+            // 与 DB 无关，是误导来源，已删除。新增表结构变更 = 新增 `N.sqm`，版本自动递增。
         }
     }
 }

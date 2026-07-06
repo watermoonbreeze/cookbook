@@ -1,0 +1,6 @@
+-- [AI生成] v10 -> v11：补齐 ingredient.reason 迁移。
+-- 背景：reason 列曾直接加入 Cookbook.sq（进入 Schema.create）却漏建迁移文件，
+-- 导致旧库沿迁移链升到 v10 后缺该列，读写 reason 的查询报 no such column。
+-- 全新安装走 Schema.create 已自带该列；本迁移让「迁移链重建结果」与 Schema.create 一致，
+-- 从而可去掉 DatabaseDriverFactory 里的幂等补列临时手段（地基对齐）。
+ALTER TABLE ingredient ADD COLUMN reason TEXT NOT NULL DEFAULT '';
