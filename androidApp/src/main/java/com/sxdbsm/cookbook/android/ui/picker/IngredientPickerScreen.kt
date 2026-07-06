@@ -494,14 +494,14 @@ fun IngredientPickerScreen(
             title = { Text("删除食材") },
             text = {
                 Text(
-                    "确定删除“${ingredient.displayNameText()}”吗？删除后，已关联菜品中的该食材也会被移除。",
+                    "确定删除“${ingredient.displayNameText()}”吗？删除后该食材将标记为失效并从食材列表隐藏；已关联菜品中仍会保留并灰显，不影响原有菜品。可在“已失效”中恢复。",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        // [AI修改] 删除用户自建食材前必须二次确认，避免级联删除菜品食材关联造成误删。
+                        // [AI修改] 删除=软失效保留：置失效并从列表隐藏，菜品引用灰显保留，可在“已失效”恢复。
                         vm.deleteIngredient(ingredient)
                         deletingIngredient = null
                         selectedIngredient = null
