@@ -39,7 +39,7 @@ class PresetDataSeederTest {
         assertTrue(allIngredients.any { it.name == "燕麦" }, "应包含慢病饮食常用食材：燕麦")
         assertTrue(allIngredients.first { it.name == "燕麦" }.emoji.isNotBlank(), "JSON 预设食材应写入默认 emoji")
         assertTrue(allIngredients.any { it.name == "低脂牛奶" }, "应包含高血压/DASH 常用低脂奶")
-        assertTrue(topCategories.any { it.name == "水果" }, "日常分类应包含水果")
+        assertTrue(topCategories.any { it.name == "水果类" }, "日常分类应包含水果类")
         assertTrue(nutritionChildren.any { it.name == "低 GI" }, "营养维度应包含低 GI")
         assertTrue(nutritionChildren.any { it.name == "高嘌呤" }, "营养维度应包含高嘌呤")
     }
