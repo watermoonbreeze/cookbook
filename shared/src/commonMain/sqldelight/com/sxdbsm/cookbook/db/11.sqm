@@ -1,0 +1,14 @@
+-- [AI生成] v11 -> v12：新增库存表 pantry（我家食材）。
+-- 独立表承载家庭在手食材：数量/单位/入库时间/临期/备注，status=1 在手、0 已移出。
+CREATE TABLE IF NOT EXISTS pantry (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    quantity REAL,
+    unit_id INTEGER REFERENCES measurement_unit(id),
+    added_at INTEGER NOT NULL,
+    expire_at INTEGER,
+    note TEXT NOT NULL DEFAULT '',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_pantry_ingredient ON pantry(ingredient_id);

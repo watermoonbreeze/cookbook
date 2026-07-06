@@ -8,6 +8,7 @@ import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
 import com.sxdbsm.cookbook.db.CookbookDatabase
@@ -28,6 +29,7 @@ val sharedModule: Module = module {
     single { CookingTimerRepository(get()) }
     single { FavoriteComboRepository(get(), get()) }
     single { IngredientRepository(get()) }
+    single { PantryRepository(get()) }
     single { FoodCategoryRepository(get()) }
     single { MealRecordRepository(get()) }
     single { PreferenceRepository(get()) }

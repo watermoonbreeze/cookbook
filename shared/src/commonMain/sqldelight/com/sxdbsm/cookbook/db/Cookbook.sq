@@ -281,6 +281,23 @@ CREATE TABLE cooking_timer_template (
 
 CREATE INDEX idx_cooking_timer_template_sort ON cooking_timer_template(sort_order, id);
 
+-- ========== 库存（我家食材） ==========
+
+-- [AI生成] 库存表：从预设/自定义食材加入的家庭在手食材（我家食材）。
+-- 独立表（非 ingredient 加列），以支持数量/入库时间/临期等家庭食材库信息与未来「临期提醒/按量配菜」。
+CREATE TABLE pantry (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    quantity REAL,
+    unit_id INTEGER REFERENCES measurement_unit(id),
+    added_at INTEGER NOT NULL,
+    expire_at INTEGER,
+    note TEXT NOT NULL DEFAULT '',
+    status INTEGER NOT NULL DEFAULT 1 -- 1=在手，0=已移出/用完（保留复购历史）
+);
+
+CREATE UNIQUE INDEX uq_pantry_ingredient ON pantry(ingredient_id);
+
 -- ============================================================
 -- 查询定义
 -- ============================================================
@@ -1124,3 +1141,38 @@ ORDER BY hp.created_at;
 
 deleteHealthProfile:
 UPDATE user_health_profile SET status = 0 WHERE crowd_type_id = ?;
+
+-- ===== pantry 库存（我家食材） =====
+
+-- [AI生成] 加入/更新库存：ingredient_id 唯一，冲突时整行替换（重新加入=刷新为在手）。
+-- 用 INSERT OR REPLACE 而非 ON CONFLICT DO UPDATE，兼容 Android 低版本 SQLite。
+upsertPantryItem:
+INSERT OR REPLACE INTO pantry(ingredient_id, quantity, unit_id, added_at, expire_at, note, status)
+VALUES (:ingredient_id, :quantity, :unit_id, :added_at, :expire_at, :note, 1);
+
+-- [AI生成] 库存 Tab：JOIN 出在手食材，列与 selectAllIngredients 对齐以复用 mapIngredientRow。
+selectPantryIngredients:
+SELECT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at
+FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1
+ORDER BY p.added_at DESC, i.pinyin;
+
+-- [AI生成] 在手食材 id 集合：用于详情/做法区标记「家里有」。
+selectPantryIngredientIds:
+SELECT ingredient_id FROM pantry WHERE status = 1;
+
+removeFromPantry:
+UPDATE pantry SET status = 0 WHERE ingredient_id = :ingredient_id;
+
+countPantry:
+SELECT COUNT(*) FROM pantry WHERE status = 1;
