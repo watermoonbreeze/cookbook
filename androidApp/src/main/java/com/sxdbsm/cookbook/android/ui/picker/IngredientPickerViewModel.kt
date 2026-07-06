@@ -73,6 +73,7 @@ data class IngredientPickerUiState(
     val detailDishMatches: List<DishIngredientMatch> = emptyList(),
     val filterDishMatches: List<DishIngredientMatch> = emptyList(),
     val canLoadMoreIngredients: Boolean = false, // [AI生成] 分类筛选结果按 30 条一页展示，避免一次渲染过多食材。
+    val inactiveIngredients: List<Ingredient> = emptyList(), // [AI生成] 回收站：失效的自定义食材列表。
 )
 
 private const val ALL_CATEGORY_ID = -1L // [AI生成] 虚拟分类：当前主分类下全部。
@@ -560,6 +561,42 @@ class IngredientPickerViewModel(
                 // [AI修改] 删除失败要反馈给 UI，避免外键或事务异常时用户误以为已删除。
                 _state.value = _state.value.copy(operationError = "删除失败，请稍后重试")
             }
+        }
+    }
+
+    /**
+     * 加载回收站（失效的自定义食材）。[AI生成]
+     */
+    fun loadInactiveIngredients() {
+        viewModelScope.launch {
+            runCatching { ingredientRepo.listInactiveUserIngredients() }
+                .onSuccess { _state.value = _state.value.copy(inactiveIngredients = it) }
+                .onFailure { _state.value = _state.value.copy(operationError = "加载已失效食材失败") }
+        }
+    }
+
+    /**
+     * 恢复失效的自定义食材。[AI生成]
+     */
+    fun restoreIngredient(ingredient: Ingredient) {
+        viewModelScope.launch {
+            runCatching { ingredientRepo.restoreUserIngredient(ingredient.id) }
+                .onSuccess {
+                    loadInactiveIngredients()
+                    reloadCurrentList()
+                }
+                .onFailure { _state.value = _state.value.copy(operationError = "恢复失败，请稍后重试") }
+        }
+    }
+
+    /**
+     * 彻底删除失效的自定义食材。[AI生成]
+     */
+    fun hardDeleteIngredient(ingredient: Ingredient) {
+        viewModelScope.launch {
+            runCatching { ingredientRepo.hardDeleteUserIngredient(ingredient.id) }
+                .onSuccess { loadInactiveIngredients() }
+                .onFailure { _state.value = _state.value.copy(operationError = "彻底删除失败，请稍后重试") }
         }
     }
 

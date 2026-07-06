@@ -232,36 +232,26 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             val unitId = units[seed.unit]?.id
             val pinyin = Pinyin.toPinyin(seed.name)
             val existing = q.selectIngredientIdByNameIncludingInactive(seed.name).executeAsOneOrNull()
-            val ingredientId = when {
-                existing == null -> {
-                    q.insertIngredient(
-                        name = seed.name,
-                        alias = seed.alias,
-                        pinyin = pinyin,
-                        image_path = "",
-                        thumbnail_path = "",
-                        emoji = seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI },
-                        default_unit_id = unitId,
-                        source = "preset",
-                        created_at = now,
-                    )
-                    q.lastInsertId().executeAsOne()
-                }
-                existing.status == 0L -> {
-                    q.restorePresetIngredient(
-                        alias = seed.alias,
-                        pinyin = pinyin,
-                        emoji = seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI },
-                        default_unit_id = unitId,
-                        id = existing.id,
-                    )
-                    existing.id
-                }
-                else -> {
-                    q.updateIngredientEmoji(seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI }, existing.id)
-                    existing.id
-                }
+            val ingredientId = if (existing == null) {
+                q.insertIngredient(
+                    name = seed.name,
+                    alias = seed.alias,
+                    pinyin = pinyin,
+                    image_path = "",
+                    thumbnail_path = "",
+                    emoji = seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI },
+                    default_unit_id = unitId,
+                    source = "preset",
+                    created_at = now,
+                )
+                q.lastInsertId().executeAsOne()
+            } else {
+                q.updateIngredientEmoji(seed.emoji.ifBlank { DEFAULT_INGREDIENT_EMOJI }, existing.id) // 补齐 JSON 维护的 emoji。
+                existing.id
             }
+
+            // [AI修改] 预设食材的有效/失效完全跟随后台数据包：JSON status=0 即下架（携带 reason），=1 即上架/恢复。
+            q.updatePresetIngredientStatus(status = seed.status.toLong(), reason = seed.reason, id = ingredientId)
 
             seed.categories.forEach { categoryCode ->
                 categoryIdsByCode[categoryCode]?.let { categoryId ->
@@ -377,6 +367,8 @@ internal data class SeedIngredient(
     val unit: String = "",
     val emoji: String = "🥗",
     val categories: List<String> = emptyList(),
+    val status: Int = 1, // [AI生成] 1 有效 / 0 失效（后台下架）；默认有效，兼容旧 JSON 无此字段。
+    val reason: String = "", // [AI生成] 失效原因，仅 status=0 时有意义。
 )
 
 @Serializable

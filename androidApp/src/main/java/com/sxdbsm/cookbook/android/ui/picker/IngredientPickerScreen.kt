@@ -73,6 +73,7 @@ fun IngredientPickerScreen(
     var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) } // [AI修改] 食材详情统一通过底部弹层展示，首页和菜品选择共用。
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var dishMatchOpen by remember { mutableStateOf(false) } // [AI生成] 按已选食材找菜结果弹框。
+    var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -207,6 +208,22 @@ fun IngredientPickerScreen(
                                         Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                                         Spacer(Modifier.width(4.dp))
                                         Text("管理分类")
+                                    }
+                                }
+                                item {
+                                    // [AI生成] 回收站入口：查看/恢复/彻底删除失效的自定义食材。
+                                    TextButton(
+                                        onClick = {
+                                            vm.loadInactiveIngredients()
+                                            recycleBinOpen = true
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                                    ) {
+                                        Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("已失效")
                                     }
                                 }
                             }
@@ -416,6 +433,15 @@ fun IngredientPickerScreen(
             title = "可做菜品",
             matches = ui.filterDishMatches,
             onDismiss = { dishMatchOpen = false },
+        )
+    }
+
+    if (recycleBinOpen) {
+        InactiveIngredientsDialog(
+            ingredients = ui.inactiveIngredients,
+            onRestore = { vm.restoreIngredient(it) },
+            onHardDelete = { vm.hardDeleteIngredient(it) },
+            onDismiss = { recycleBinOpen = false },
         )
     }
 
@@ -1030,6 +1056,78 @@ private fun AdviceLevelDropdown(
                 )
             }
         }
+    }
+}
+
+/**
+ * 失效食材回收站弹框。[AI生成]
+ *
+ * 列出失效（用户删除/后台下架）的自定义食材，可恢复为有效或彻底删除。
+ * 彻底删除会一并清除该食材在菜品中的引用，操作前二次确认。
+ */
+@Composable
+private fun InactiveIngredientsDialog(
+    ingredients: List<Ingredient>,
+    onRestore: (Ingredient) -> Unit,
+    onHardDelete: (Ingredient) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var pendingHardDelete by remember { mutableStateOf<Ingredient?>(null) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("已失效食材") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                if (ingredients.isEmpty()) {
+                    Text("暂无已失效的自定义食材", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    ingredients.forEach { ing ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    if (ing.alias.isBlank()) ing.name else "${ing.name}（${ing.alias}）",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                if (ing.reason.isNotBlank()) {
+                                    Text(ing.reason, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                            TextButton(onClick = { onRestore(ing) }) { Text("恢复") }
+                            TextButton(onClick = { pendingHardDelete = ing }) {
+                                Text("彻底删除", color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+    )
+
+    pendingHardDelete?.let { target ->
+        AlertDialog(
+            onDismissRequest = { pendingHardDelete = null },
+            title = { Text("彻底删除食材") },
+            text = { Text("将永久删除「${target.name}」，并清除它在所有菜品中的引用，无法恢复。确定继续？") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onHardDelete(target)
+                    pendingHardDelete = null
+                }) { Text("彻底删除", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { pendingHardDelete = null }) { Text("取消") } },
+        )
     }
 }
 

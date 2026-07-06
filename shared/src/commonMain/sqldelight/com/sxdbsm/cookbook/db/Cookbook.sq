@@ -43,7 +43,8 @@ CREATE TABLE ingredient (
     source TEXT NOT NULL DEFAULT 'preset',
     created_at INTEGER NOT NULL,
     last_referenced_at INTEGER NOT NULL DEFAULT 0,
-    status INTEGER NOT NULL DEFAULT 1
+    status INTEGER NOT NULL DEFAULT 1,
+    reason TEXT NOT NULL DEFAULT '' -- [AI生成] 失效原因：status=0 时说明为何失效（后台下架说明 / 用户删除）。
 );
 
 CREATE INDEX idx_ingredient_pinyin ON ingredient(pinyin);
@@ -516,10 +517,45 @@ UPDATE ingredient
 SET last_referenced_at = :last_referenced_at
 WHERE id = :id AND status = 1;
 
+-- [AI修改] 软删除自定义食材：置失效并记录失效原因；被菜品引用时仍在菜品里灰显保留。
 deleteUserIngredient:
 UPDATE ingredient
-SET status = 0
+SET status = 0, reason = :reason
+WHERE id = :id AND source = 'user';
+
+-- [AI生成] 恢复失效的自定义食材：清空失效原因、置回有效。
+restoreUserIngredient:
+UPDATE ingredient
+SET status = 1, reason = ''
 WHERE id = ? AND source = 'user';
+
+-- [AI生成] 彻底删除自定义食材（回收站硬删）：仅限用户自建；被引用的 dish_ingredient 关系随外键级联删除。
+hardDeleteUserIngredient:
+DELETE FROM ingredient
+WHERE id = ? AND source = 'user';
+
+-- [AI生成] 回收站：列出失效的自定义食材，供恢复/彻底删除。
+selectInactiveUserIngredients:
+SELECT id,
+       COALESCE(name, '') AS name,
+       COALESCE(alias, '') AS alias,
+       COALESCE(pinyin, '') AS pinyin,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
+       default_unit_id,
+       COALESCE(source, 'user') AS source,
+       COALESCE(created_at, 0) AS created_at,
+       COALESCE(reason, '') AS reason
+FROM ingredient
+WHERE status = 0 AND source = 'user'
+ORDER BY name COLLATE NOCASE ASC;
+
+-- [AI生成] 预设食材的有效/失效完全跟随后台数据包：seed 导入时同步 status 与失效原因。
+updatePresetIngredientStatus:
+UPDATE ingredient
+SET status = :status, reason = :reason
+WHERE id = :id AND source = 'preset';
 
 searchIngredients:
 SELECT id,
@@ -840,6 +876,8 @@ insertDishIngredient:
 INSERT OR REPLACE INTO dish_ingredient(dish_id, ingredient_id, quantity, unit_id, is_main, status)
 VALUES (?, ?, ?, ?, ?, 1);
 
+-- [AI修改] 去掉 i.status=1 过滤：菜品要保留对失效食材的引用（灰显 + 失效原因），
+-- 只按 di.status=1 判断该引用本身是否有效。同时读出食材 status/reason 供 UI 判断灰显。
 selectIngredientsOfDish:
 SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, di.is_main,
        COALESCE(i.name, '') AS ingredient_name,
@@ -849,11 +887,13 @@ SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, d
        COALESCE(i.thumbnail_path, '') AS thumbnail_path,
        COALESCE(i.emoji, '🥗') AS emoji,
        i.default_unit_id,
+       COALESCE(i.status, 1) AS ingredient_status,
+       COALESCE(i.reason, '') AS ingredient_reason,
        COALESCE(u.name, '') AS unit_name
 FROM dish_ingredient di
 JOIN ingredient i ON di.ingredient_id = i.id
 LEFT JOIN measurement_unit u ON di.unit_id = u.id
-WHERE di.dish_id = ? AND di.status = 1 AND i.status = 1
+WHERE di.dish_id = ? AND di.status = 1
 ORDER BY di.is_main DESC, di.id ASC;
 
 deleteIngredientsOfDish:
@@ -861,6 +901,10 @@ UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 
 deleteDishIngredientsByIngredient:
 UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
+
+-- [AI生成] 彻底删除食材时物理清除其菜品关联行（ingredient_id 无 ON DELETE CASCADE，需显式删除避免外键悬挂）。
+hardDeleteDishIngredientsByIngredient:
+DELETE FROM dish_ingredient WHERE ingredient_id = ?;
 
 -- ===== dish_step =====
 

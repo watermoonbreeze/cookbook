@@ -318,6 +318,8 @@ class DishRepository(private val db: CookbookDatabase) {
                     thumbnailPath = ing.thumbnail_path,
                     emoji = ing.emoji,
                     defaultUnitId = ing.default_unit_id,
+                    status = ing.ingredient_status.toInt(), // [AI生成] 携带失效态，供菜品里灰显失效食材。
+                    reason = ing.ingredient_reason,
                 ),
                 quantity = ing.quantity,
                 unitId = ing.unit_id,

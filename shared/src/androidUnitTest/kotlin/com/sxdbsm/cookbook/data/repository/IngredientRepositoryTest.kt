@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.data.repository
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.DishIngredient
@@ -245,6 +246,81 @@ class IngredientRepositoryTest {
         assertEquals(AdviceLevel.RECOMMEND, goutIngredients.first { it.name == "鸡蛋测试" }.adviceLevel)
         assertEquals("高嘌呤", goutIngredients.first { it.name == "猪肝测试" }.adviceReason)
         assertEquals(emptyList(), repo.listByCareCategories(emptyList()))
+    }
+
+    @Test
+    fun softDeletedIngredientStaysInDishButHiddenFromListAndRecycleBin() = runBlocking {
+        // [AI生成] 失效自定义食材：菜品引用处保留（带 status=0），从搜索列表隐藏，出现在回收站。
+        val db = RepositoryTestDatabase.create()
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val ingredientId = ingredientRepo.createUserIngredient(name = "待失效食材")
+        val dishId = dishRepo.saveDish(
+            id = 0,
+            name = "引用待失效食材的菜品",
+            cookingMethodId = null,
+            specialNote = "",
+            description = "",
+            imagePath = "",
+            thumbnailPath = "",
+            tagNames = emptyList(),
+            ingredients = listOf(DishIngredient(Ingredient(id = ingredientId, name = "待失效食材"))),
+        )
+
+        ingredientRepo.deleteUserIngredient(ingredientId, reason = "用户删除")
+
+        assertTrue(ingredientRepo.search("待失效食材").isEmpty(), "失效食材应从搜索列表隐藏")
+        val recycled = ingredientRepo.listInactiveUserIngredients()
+        assertEquals(listOf("待失效食材"), recycled.map { it.name }, "失效食材应进入回收站")
+        assertEquals("用户删除", recycled.first().reason, "回收站应显示失效原因")
+
+        val dishIngredients = dishRepo.getDishById(dishId)?.ingredients.orEmpty()
+        assertTrue(dishIngredients.any { it.ingredient.id == ingredientId }, "菜品引用应保留失效食材，不断裂")
+        assertEquals(0, dishIngredients.first { it.ingredient.id == ingredientId }.ingredient.status, "菜品里的失效食材应带 status=0 供灰显")
+    }
+
+    @Test
+    fun restoreBringsIngredientBackToList() = runBlocking {
+        // [AI生成] 恢复失效自定义食材后重新出现在搜索列表，且离开回收站。
+        val db = RepositoryTestDatabase.create()
+        val repo = IngredientRepository(db)
+        val id = repo.createUserIngredient(name = "可恢复食材")
+        repo.deleteUserIngredient(id)
+        assertTrue(repo.search("可恢复食材").isEmpty())
+
+        repo.restoreUserIngredient(id)
+
+        assertTrue(repo.search("可恢复食材").any { it.id == id }, "恢复后应重新可搜到")
+        assertTrue(repo.listInactiveUserIngredients().none { it.id == id }, "恢复后应离开回收站")
+    }
+
+    @Test
+    fun hardDeleteRemovesIngredientAndDishRelation() = runBlocking {
+        // [AI生成] 彻底删除失效食材：食材与其菜品关联一并清除。
+        val db = RepositoryTestDatabase.create()
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val ingredientId = ingredientRepo.createUserIngredient(name = "彻底删除食材")
+        val dishId = dishRepo.saveDish(
+            id = 0,
+            name = "引用彻底删除食材的菜品",
+            cookingMethodId = null,
+            specialNote = "",
+            description = "",
+            imagePath = "",
+            thumbnailPath = "",
+            tagNames = emptyList(),
+            ingredients = listOf(DishIngredient(Ingredient(id = ingredientId, name = "彻底删除食材"))),
+        )
+        ingredientRepo.deleteUserIngredient(ingredientId)
+
+        ingredientRepo.hardDeleteUserIngredient(ingredientId)
+
+        assertTrue(ingredientRepo.listInactiveUserIngredients().none { it.id == ingredientId }, "彻底删除后不应在回收站")
+        assertTrue(
+            dishRepo.getDishById(dishId)?.ingredients.orEmpty().none { it.ingredient.id == ingredientId },
+            "彻底删除后菜品不应再引用该食材",
+        )
     }
 
     /**

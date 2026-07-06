@@ -20,6 +20,10 @@ data class Ingredient(
     /** 仅在按人群分类查询时附带。[AI修改] */
     val adviceLevel: AdviceLevel? = null,
     val adviceReason: String = "",
+    /** 有效性：1 有效，0 失效。默认 1；仅在需要展示失效态（菜品引用、回收站）的查询里带真实值。[AI生成] */
+    val status: Int = 1,
+    /** 失效原因：status=0 时说明后台下架/用户删除等原因。[AI生成] */
+    val reason: String = "",
 )
 
 /**

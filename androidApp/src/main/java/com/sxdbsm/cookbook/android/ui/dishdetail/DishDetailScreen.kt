@@ -157,13 +157,25 @@ fun DishDetailScreen(
                         )
                     } else {
                         d.ingredients.forEach { item ->
+                            // [AI生成] 失效食材（后台下架/用户删除）在菜品里灰显保留，不断裂；名称后标注失效原因。
+                            val inactive = item.ingredient.status == 0
+                            val nameColor = if (inactive) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 12.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(item.ingredient.name, modifier = Modifier.weight(1f))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(item.ingredient.name, color = nameColor)
+                                    if (inactive) {
+                                        Text(
+                                            "已失效${item.ingredient.reason.takeIf { it.isNotBlank() }?.let { "·$it" }.orEmpty()}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.error,
+                                        )
+                                    }
+                                }
                                 val quantity = item.quantity?.let { "$it ${item.unitName}" } ?: "适量"
                                 Text(quantity, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 // [AI修改] 详情页食材只展示名称和用量，不再暴露“主料”标识。

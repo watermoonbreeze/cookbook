@@ -268,15 +268,54 @@ class IngredientRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 删除用户自建食材。[AI修改]
+     * 删除用户自建食材（软删除/失效）。[AI修改]
      *
-     * 预设食材不能删除；用户食材删除前先清理菜品-食材关联，避免外键失败或孤儿关联。
+     * 预设食材不能删除。改为“失效保留”语义：只置 status=0 并记录失效原因，
+     * **不再清理 dish_ingredient 关联**——被菜品引用的食材要在菜品里灰显保留、不断裂。
+     * 失效食材从食材列表/选择器隐藏，可在“已失效”回收站恢复或彻底删除。
      */
-    suspend fun deleteUserIngredient(id: Long) = withContext(Dispatchers.Default) {
+    suspend fun deleteUserIngredient(id: Long, reason: String = "用户删除") = withContext(Dispatchers.Default) {
+        q.deleteUserIngredient(reason = reason, id = id)
+    }
+
+    /**
+     * 恢复失效的自定义食材。[AI生成]
+     */
+    suspend fun restoreUserIngredient(id: Long) = withContext(Dispatchers.Default) {
+        q.restoreUserIngredient(id)
+    }
+
+    /**
+     * 彻底删除失效的自定义食材（回收站硬删）。[AI生成]
+     *
+     * 真删除；被菜品引用的 dish_ingredient 关系随外键级联清除，请在 UI 侧先提示用户确认。
+     */
+    suspend fun hardDeleteUserIngredient(id: Long) = withContext(Dispatchers.Default) {
         db.transaction {
-            q.deleteDishIngredientsByIngredient(id) // [AI修改] 先清理 dish_ingredient，确保删除不会留下无效关联。
-            q.deleteUserIngredient(id)
+            q.hardDeleteDishIngredientsByIngredient(id) // 物理清除菜品关联，避免外键悬挂。
+            q.hardDeleteUserIngredient(id)
         }
+    }
+
+    /**
+     * 回收站：列出失效的自定义食材。[AI生成]
+     */
+    suspend fun listInactiveUserIngredients(): List<Ingredient> = withContext(Dispatchers.Default) {
+        q.selectInactiveUserIngredients { id, name, alias, pinyin, imagePath, thumbnailPath, emoji, defaultUnitId, source, createdAt, reason ->
+            Ingredient(
+                id = id,
+                name = name,
+                alias = alias,
+                pinyin = pinyin,
+                imagePath = imagePath,
+                thumbnailPath = thumbnailPath,
+                emoji = emoji,
+                defaultUnitId = defaultUnitId,
+                source = source,
+                status = 0,
+                reason = reason,
+            )
+        }.executeAsList()
     }
 
     /**
