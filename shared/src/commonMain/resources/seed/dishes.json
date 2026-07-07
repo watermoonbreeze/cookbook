@@ -5,12 +5,37 @@
     "method": "炒",
     "description": "家常下饭菜，青椒清脆、肉丝嫩滑。",
     "ingredients": [
-      {"ingredient": "青椒", "main": true, "quantity": 200, "unit": "克"},
-      {"ingredient": "猪瘦肉", "quantity": 150, "unit": "克"},
-      {"ingredient": "生抽", "quantity": 1, "unit": "勺"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"},
-      {"ingredient": "大蒜", "quantity": 2, "unit": "瓣"}
+      {
+        "ingredient": "青椒",
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
+      },
+      {
+        "ingredient": "猪瘦肉",
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 2,
+        "unit": "瓣"
+      }
     ],
     "steps": [
       "青椒去蒂去籽切丝，猪瘦肉逆纹切丝，加少许生抽抓匀腌 10 分钟。",
@@ -25,12 +50,37 @@
     "method": "炒",
     "description": "国民家常菜，酸甜开胃、营养均衡。",
     "ingredients": [
-      {"ingredient": "西红柿", "main": true, "quantity": 2, "unit": "个"},
-      {"ingredient": "鸡蛋", "quantity": 3, "unit": "个"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"},
-      {"ingredient": "白糖", "quantity": 1, "unit": "少许"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"},
-      {"ingredient": "葱", "quantity": 1, "unit": "段"}
+      {
+        "ingredient": "西红柿",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "鸡蛋",
+        "quantity": 3,
+        "unit": "个"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "白糖",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "葱",
+        "quantity": 1,
+        "unit": "段"
+      }
     ],
     "steps": [
       "西红柿去皮切块，鸡蛋打散加少许盐。",
@@ -45,10 +95,27 @@
     "method": "炒",
     "description": "少油快手的深色蔬菜，清爽护绿。",
     "ingredients": [
-      {"ingredient": "油菜", "main": true, "quantity": 300, "unit": "克"},
-      {"ingredient": "大蒜", "quantity": 2, "unit": "瓣"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "油菜",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "油菜洗净沥干，蒜切片。",
@@ -62,11 +129,32 @@
     "method": "炒",
     "description": "干香微辣、脆爽下饭。",
     "ingredients": [
-      {"ingredient": "卷心菜", "main": true, "quantity": 400, "unit": "克"},
-      {"ingredient": "辣椒", "quantity": 2, "unit": "个"},
-      {"ingredient": "大蒜", "quantity": 3, "unit": "瓣"},
-      {"ingredient": "生抽", "quantity": 1, "unit": "勺"},
-      {"ingredient": "醋", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "卷心菜",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "辣椒",
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 3,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "醋",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "卷心菜手撕成片、洗净沥干，蒜切片、干辣椒剪段。",
@@ -81,11 +169,32 @@
     "method": "炒",
     "description": "爽脆酸辣，经典家常快手菜。",
     "ingredients": [
-      {"ingredient": "土豆", "main": true, "quantity": 2, "unit": "个"},
-      {"ingredient": "辣椒", "quantity": 1, "unit": "个"},
-      {"ingredient": "醋", "quantity": 1, "unit": "勺"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "土豆",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "辣椒",
+        "quantity": 1,
+        "unit": "个"
+      },
+      {
+        "ingredient": "醋",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "土豆去皮切细丝，用清水多次冲洗去淀粉、沥干。",
@@ -100,12 +209,37 @@
     "method": "蒸",
     "description": "鲜嫩少油，保留鱼肉本味。",
     "ingredients": [
-      {"ingredient": "鲈鱼", "main": true, "quantity": 1, "unit": "条"},
-      {"ingredient": "姜", "quantity": 3, "unit": "片"},
-      {"ingredient": "葱", "quantity": 2, "unit": "段"},
-      {"ingredient": "生抽", "quantity": 2, "unit": "勺"},
-      {"ingredient": "料酒", "quantity": 1, "unit": "勺"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "鲈鱼",
+        "main": true,
+        "quantity": 1,
+        "unit": "条"
+      },
+      {
+        "ingredient": "姜",
+        "quantity": 3,
+        "unit": "片"
+      },
+      {
+        "ingredient": "葱",
+        "quantity": 2,
+        "unit": "段"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "料酒",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "鲈鱼处理干净、两面划刀，抹料酒和姜片腌 10 分钟去腥。",
@@ -120,9 +254,22 @@
     "method": "煮",
     "description": "原汁原味，低油高蛋白。",
     "ingredients": [
-      {"ingredient": "虾", "main": true, "quantity": 300, "unit": "克"},
-      {"ingredient": "姜", "quantity": 3, "unit": "片"},
-      {"ingredient": "生抽", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "虾",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "姜",
+        "quantity": 3,
+        "unit": "片"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "虾剪去虾须、挑去虾线，洗净。",
@@ -136,10 +283,27 @@
     "method": "炒",
     "description": "翠绿爽口，低脂高纤维。",
     "ingredients": [
-      {"ingredient": "西兰花", "main": true, "quantity": 300, "unit": "克"},
-      {"ingredient": "大蒜", "quantity": 3, "unit": "瓣"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "西兰花",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 3,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "西兰花掰小朵、淡盐水浸泡后洗净。",
@@ -153,11 +317,32 @@
     "method": "凉拌",
     "description": "清爽解腻的开胃凉菜。",
     "ingredients": [
-      {"ingredient": "黄瓜", "main": true, "quantity": 2, "unit": "根"},
-      {"ingredient": "大蒜", "quantity": 2, "unit": "瓣"},
-      {"ingredient": "醋", "quantity": 1, "unit": "勺"},
-      {"ingredient": "生抽", "quantity": 1, "unit": "勺"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"}
+      {
+        "ingredient": "黄瓜",
+        "main": true,
+        "quantity": 2,
+        "unit": "根"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "醋",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      }
     ],
     "steps": [
       "黄瓜洗净拍裂切段，加少许盐腌 5 分钟、倒去水。",
@@ -171,10 +356,27 @@
     "method": "炖",
     "description": "清淡滋补，冬瓜解腻。",
     "ingredients": [
-      {"ingredient": "冬瓜", "main": true, "quantity": 400, "unit": "克"},
-      {"ingredient": "排骨", "quantity": 300, "unit": "克"},
-      {"ingredient": "姜", "quantity": 3, "unit": "片"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"}
+      {
+        "ingredient": "冬瓜",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "排骨",
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "姜",
+        "quantity": 3,
+        "unit": "片"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      }
     ],
     "steps": [
       "排骨焯水去血沫、洗净。",
@@ -189,12 +391,37 @@
     "method": "焖",
     "description": "麻辣鲜香、嫩滑下饭的川味经典。",
     "ingredients": [
-      {"ingredient": "豆腐", "main": true, "quantity": 400, "unit": "克"},
-      {"ingredient": "猪瘦肉", "quantity": 80, "unit": "克"},
-      {"ingredient": "豆瓣酱", "quantity": 1, "unit": "勺"},
-      {"ingredient": "花椒", "quantity": 1, "unit": "少许"},
-      {"ingredient": "大蒜", "quantity": 2, "unit": "瓣"},
-      {"ingredient": "葱", "quantity": 1, "unit": "段"}
+      {
+        "ingredient": "豆腐",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "猪瘦肉",
+        "quantity": 80,
+        "unit": "克"
+      },
+      {
+        "ingredient": "豆瓣酱",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花椒",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "葱",
+        "quantity": 1,
+        "unit": "段"
+      }
     ],
     "steps": [
       "豆腐切块、沸水加盐焯一下捞出，猪肉剁末。",
@@ -209,11 +436,32 @@
     "method": "炒",
     "description": "菌香配青菜，清淡有味。",
     "ingredients": [
-      {"ingredient": "香菇", "main": true, "quantity": 150, "unit": "克"},
-      {"ingredient": "油菜", "quantity": 300, "unit": "克"},
-      {"ingredient": "大蒜", "quantity": 2, "unit": "瓣"},
-      {"ingredient": "生抽", "quantity": 1, "unit": "勺"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "香菇",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "油菜",
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "香菇洗净切片、焯水，油菜洗净。",
@@ -227,11 +475,32 @@
     "method": "煮",
     "description": "快手鲜汤，补碘补钙。",
     "ingredients": [
-      {"ingredient": "紫菜", "main": true, "quantity": 10, "unit": "克"},
-      {"ingredient": "鸡蛋", "quantity": 1, "unit": "个"},
-      {"ingredient": "虾皮", "quantity": 5, "unit": "克"},
-      {"ingredient": "葱", "quantity": 1, "unit": "段"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"}
+      {
+        "ingredient": "紫菜",
+        "main": true,
+        "quantity": 10,
+        "unit": "克"
+      },
+      {
+        "ingredient": "鸡蛋",
+        "quantity": 1,
+        "unit": "个"
+      },
+      {
+        "ingredient": "虾皮",
+        "quantity": 5,
+        "unit": "克"
+      },
+      {
+        "ingredient": "葱",
+        "quantity": 1,
+        "unit": "段"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      }
     ],
     "steps": [
       "紫菜撕小片、虾皮温水冲洗，鸡蛋打散。",
@@ -246,10 +515,27 @@
     "method": "炒",
     "description": "脆嫩爽口的快手素菜。",
     "ingredients": [
-      {"ingredient": "豆芽", "main": true, "quantity": 300, "unit": "克"},
-      {"ingredient": "大蒜", "quantity": 2, "unit": "瓣"},
-      {"ingredient": "醋", "quantity": 1, "unit": "少许"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "豆芽",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "醋",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "豆芽掐去根须、洗净沥干。",
@@ -263,7 +549,12 @@
     "method": "蒸",
     "description": "无油无盐的天然甜味主食替代。",
     "ingredients": [
-      {"ingredient": "南瓜", "main": true, "quantity": 400, "unit": "克"}
+      {
+        "ingredient": "南瓜",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      }
     ],
     "steps": [
       "南瓜去皮去瓤，切厚块。",
@@ -276,16 +567,182 @@
     "method": "炖",
     "description": "暖胃家常，清淡少油。",
     "ingredients": [
-      {"ingredient": "白菜", "main": true, "quantity": 400, "unit": "克"},
-      {"ingredient": "豆腐", "quantity": 300, "unit": "克"},
-      {"ingredient": "盐", "quantity": 1, "unit": "少许"},
-      {"ingredient": "花生油", "quantity": 1, "unit": "勺"}
+      {
+        "ingredient": "白菜",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "豆腐",
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
     ],
     "steps": [
       "白菜洗净切块，豆腐切块。",
       "热油下白菜帮翻炒，加适量水烧开。",
       "下豆腐和白菜叶，小火炖 8 分钟。",
       "加盐调味即可。"
+    ]
+  },
+  {
+    "code": "suanrong_kongxincai",
+    "name": "蒜蓉空心菜",
+    "method": "炒",
+    "description": "蒜香浓郁、脆嫩爽口。",
+    "ingredients": [
+      {
+        "ingredient": "空心菜",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 3,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "盐",
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "空心菜洗净、梗叶分开，蒜切末。",
+      "热油爆香蒜末，先下梗炒软。",
+      "下叶大火快炒，加盐炒匀即出锅。"
+    ]
+  },
+  {
+    "code": "hongshao_jichi",
+    "name": "红烧鸡翅",
+    "method": "焖",
+    "description": "咸甜入味、色泽红亮的家常菜。",
+    "ingredients": [
+      {
+        "ingredient": "鸡翅",
+        "main": true,
+        "quantity": 8,
+        "unit": "个"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "老抽",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "姜",
+        "quantity": 3,
+        "unit": "片"
+      },
+      {
+        "ingredient": "白糖",
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "鸡翅两面划刀、焯水去腥。",
+      "热锅少油煎至两面金黄。",
+      "加姜片、生抽老抽和少许糖，加水没过。",
+      "小火焖 15 分钟，大火收汁即可。"
+    ]
+  },
+  {
+    "code": "liangban_muer",
+    "name": "凉拌木耳",
+    "method": "凉拌",
+    "description": "清爽开胃、脆嫩弹牙。",
+    "ingredients": [
+      {
+        "ingredient": "木耳",
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大蒜",
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "醋",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "生抽",
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "辣椒",
+        "quantity": 1,
+        "unit": "个"
+      }
+    ],
+    "steps": [
+      "干木耳冷水泡发、洗净，撕小朵。",
+      "沸水焯 2 分钟捞出过凉。",
+      "加蒜末、醋、生抽、辣椒拌匀。",
+      "腌 5 分钟入味即可。"
+    ]
+  },
+  {
+    "code": "curry_tudou",
+    "name": "咖喱土豆",
+    "method": "焖",
+    "description": "浓香下饭的咖喱炖菜。",
+    "ingredients": [
+      {
+        "ingredient": "土豆",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "咖喱",
+        "quantity": 2,
+        "unit": "块"
+      },
+      {
+        "ingredient": "洋葱",
+        "quantity": 1,
+        "unit": "个"
+      },
+      {
+        "ingredient": "花生油",
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "土豆去皮切块，洋葱切块。",
+      "热油炒香洋葱，下土豆略炒。",
+      "加水没过煮至土豆软。",
+      "关小火下咖喱块化开，收浓即可。"
     ]
   }
 ]

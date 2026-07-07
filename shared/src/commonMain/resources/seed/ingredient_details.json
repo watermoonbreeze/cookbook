@@ -1836,5 +1836,149 @@
     "eatingNotes": "同为高热量油脂，需计入每日用油。",
     "storageTips": "密封避光保存。",
     "healthNote": "含不饱和脂肪，控量是关键。"
+  },
+  {
+    "ingredient": "娃娃菜",
+    "commonMethods": "上汤娃娃菜、清炒、涮火锅。",
+    "prepTips": "对半剖开洗净，久煮更软甜。",
+    "eatingNotes": "普遍适宜，低热量。",
+    "storageTips": "冷藏保存，尽快食用。",
+    "healthNote": "白菜近亲，水分足、热量低。"
+  },
+  {
+    "ingredient": "空心菜",
+    "commonMethods": "蒜蓉清炒、腐乳炒。",
+    "prepTips": "梗叶分开下锅，急火快炒。",
+    "eatingNotes": "性凉，脾胃虚寒者适量。",
+    "storageTips": "冷藏且尽快食用，易发蔫。",
+    "healthNote": "深色蔬菜、含膳食纤维，低脂低热量。"
+  },
+  {
+    "ingredient": "秋葵",
+    "commonMethods": "白灼、清炒、凉拌。",
+    "prepTips": "整根焯水保黏液，切段易出黏。",
+    "eatingNotes": "普遍适宜，黏液护胃。",
+    "storageTips": "冷藏保存，避免碰伤发黑。",
+    "healthNote": "含黏性膳食纤维、低热量，控糖友好。"
+  },
+  {
+    "ingredient": "荷兰豆",
+    "commonMethods": "清炒、配虾仁、焯水凉拌。",
+    "prepTips": "撕去两侧筋，务必炒熟煮透。",
+    "eatingNotes": "同四季豆需彻底加热熟透。",
+    "storageTips": "冷藏保存，尽快食用。",
+    "healthNote": "含膳食纤维和维生素 C，脆嫩低脂。"
+  },
+  {
+    "ingredient": "芥菜",
+    "commonMethods": "炒食、做梅干菜、腌雪里蕻。",
+    "prepTips": "焯水去苦涩，鲜食急火快炒。",
+    "eatingNotes": "腌制品含盐高，高血压人群少吃。",
+    "storageTips": "鲜品冷藏，腌品密封。",
+    "healthNote": "深色蔬菜；腌制后钠高需注意。"
+  },
+  {
+    "ingredient": "杨梅",
+    "commonMethods": "鲜食、泡酒、煮汤。",
+    "prepTips": "淡盐水浸泡去虫后冲洗。",
+    "eatingNotes": "含果酸，胃酸过多者少吃。",
+    "storageTips": "冷藏且尽快食用，极易坏。",
+    "healthNote": "含花青素和有机酸，鲜食为主。"
+  },
+  {
+    "ingredient": "李子",
+    "commonMethods": "鲜食。",
+    "prepTips": "洗净直接食用，注意吐核。",
+    "eatingNotes": "性凉、果酸多，脾胃虚寒者适量。",
+    "storageTips": "常温后熟，软后冷藏。",
+    "healthNote": "含膳食纤维，GI 较低，适量食用。"
+  },
+  {
+    "ingredient": "木瓜",
+    "commonMethods": "鲜食、木瓜牛奶、炖汤。",
+    "prepTips": "去皮去籽切块。",
+    "eatingNotes": "含糖中等，糖尿病人群适量。",
+    "storageTips": "常温后熟，切开冷藏。",
+    "healthNote": "含胡萝卜素和木瓜蛋白酶。"
+  },
+  {
+    "ingredient": "甘蔗",
+    "commonMethods": "榨汁或直接嚼食。",
+    "prepTips": "去皮切段，嚼食吐渣。",
+    "eatingNotes": "含糖极高，糖尿病人群不宜。",
+    "storageTips": "常温阴凉短期存放。",
+    "healthNote": "以蔗糖为主、升糖快，控糖人群避免。"
+  },
+  {
+    "ingredient": "口蘑",
+    "commonMethods": "炒、做汤、涮锅。",
+    "prepTips": "擦净切片，彻底炒熟。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "冷藏保存，避免受潮。",
+    "healthNote": "低脂低热量、鲜味足，含膳食纤维。"
+  },
+  {
+    "ingredient": "鲍鱼",
+    "commonMethods": "清蒸、红烧、煲粥。",
+    "prepTips": "刷洗去黑膜和内脏，改花刀。",
+    "eatingNotes": "高嘌呤，痛风人群少吃。",
+    "storageTips": "鲜活冷藏、干品密封。",
+    "healthNote": "高蛋白低脂，但嘌呤高需注意。"
+  },
+  {
+    "ingredient": "鸡翅",
+    "commonMethods": "可乐鸡翅、红烧、烤翅。",
+    "prepTips": "两面划刀入味，去皮减脂。",
+    "eatingNotes": "带皮脂肪较高，高脂血症人群去皮。",
+    "storageTips": "冷藏 1-2 天、冷冻长期。",
+    "healthNote": "优质蛋白，去皮后更适合控脂。"
+  },
+  {
+    "ingredient": "猪肚",
+    "commonMethods": "爆炒、炖汤（猪肚鸡）。",
+    "prepTips": "面粉盐反复搓洗去黏液异味，焯水。",
+    "eatingNotes": "胆固醇较高，高脂血症人群控量。",
+    "storageTips": "冷藏当天食用或冷冻。",
+    "healthNote": "口感脆爽，胆固醇偏高、宜适量。"
+  },
+  {
+    "ingredient": "鹅蛋",
+    "commonMethods": "煮蛋、煎蛋、腌制。",
+    "prepTips": "冷水下锅煮约 10 分钟。",
+    "eatingNotes": "个大、胆固醇高，高脂血症人群控量。",
+    "storageTips": "冷藏保存。",
+    "healthNote": "优质蛋白，单个能量高于鸡蛋、宜适量。"
+  },
+  {
+    "ingredient": "蒸鱼豉油",
+    "commonMethods": "清蒸鱼、白灼菜淋汁。",
+    "prepTips": "起锅淋用，有它则少放盐。",
+    "eatingNotes": "含钠高，高血压人群控量。",
+    "storageTips": "阴凉避光，开封冷藏。",
+    "healthNote": "提鲜专用，本质高钠、计入钠摄入。"
+  },
+  {
+    "ingredient": "咖喱",
+    "commonMethods": "咖喱鸡、咖喱牛肉、咖喱土豆。",
+    "prepTips": "炒香后加水煮，块状咖喱含油盐。",
+    "eatingNotes": "市售咖喱块含油盐较高，三高人群控量。",
+    "storageTips": "密封防潮保存。",
+    "healthNote": "含姜黄等香料，但成品油盐偏高。"
+  },
+  {
+    "ingredient": "年糕",
+    "commonMethods": "炒年糕、火锅、汤年糕。",
+    "prepTips": "硬年糕泡软再烹，久煮易糊。",
+    "eatingNotes": "糯米制、GI 高且黏，糖尿病、胃弱者少吃。",
+    "storageTips": "冷藏泡水或冷冻保存。",
+    "healthNote": "高 GI 主食，控糖人群需限量。"
+  },
+  {
+    "ingredient": "米线",
+    "commonMethods": "过桥米线、酸辣米线、汤米线。",
+    "prepTips": "干米线泡软或煮软，冲凉防坨。",
+    "eatingNotes": "作主食替代，汤底油盐另计。",
+    "storageTips": "干品密封防潮。",
+    "healthNote": "以碳水为主，注意搭配的汤底油盐。"
   }
 ]
