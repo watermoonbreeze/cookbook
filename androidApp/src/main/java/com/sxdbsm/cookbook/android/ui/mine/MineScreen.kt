@@ -283,7 +283,7 @@ private fun AboutCookbookDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("关于 Cookbook") },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(
                     text = "Cookbook 是一款面向慢性病和健康饮食场景的本地菜单规划工具，帮助用户记录每日餐食、复用历史菜单，并逐步加入食材风险提示与智能推荐能力。",
                     style = MaterialTheme.typography.bodyMedium,
@@ -293,6 +293,28 @@ private fun AboutCookbookDialog(onDismiss: () -> Unit) {
                     text = "当前版本：v0.1.0",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(12.dp))
+                // [AI生成] 数据来源：如实说明食材数据的性质与参考出处，避免让用户误以为是权威核验数据。
+                Text(
+                    text = "数据来源",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "• 分类框架参考：《中国居民膳食指南（2022）》（中国营养学会）——食材大类划分依据。\n" +
+                        "• 食材条目与详情（做法、处理、保存等）：由 AI 依据公开的通用营养与烹饪常识整理。\n" +
+                        "• 营养、嘌呤、升糖指数（GI）等标签及三高/痛风等慢病提示：基于公开常识判断，尚未逐条经权威数据库核对。\n" +
+                        "• 拟采纳并逐步核对/替换的权威来源：《中国食物成分表（标准版）》（中国疾控中心营养与健康所）、相关慢病膳食指南（如高尿酸血症与痛风、2 型糖尿病膳食指南）。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = "免责声明：以上食材与营养内容当前为参考性整理，仅供日常饮食记录参考，不构成医疗或营养专业建议，具体请遵医嘱。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
                 )
                 Spacer(Modifier.height(12.dp))
                 Text(
