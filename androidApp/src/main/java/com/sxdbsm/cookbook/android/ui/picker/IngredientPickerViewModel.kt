@@ -931,7 +931,7 @@ class IngredientPickerViewModel(
         source == "user" && dimension == "general" && crowdTypeId == null
 
     private companion object {
-        val nutritionDimensions = setOf("nutrition", "gi", "purine", "sodium", "fat", "sugar")
+        val nutritionDimensions = setOf("nutrition", "gi", "purine", "sodium", "fat", "sugar", "season") // [AI修改] 应季(season)并入营养 Tab 维度，营养 Tab 可见「应季」分组。
         const val PAGE_SIZE = 30 // [AI生成] 食材分类列表默认每页 30 个。
     }
 }

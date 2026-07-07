@@ -123,5 +123,10 @@
   {"code":"care_hyperthyroidism","name":"甲状腺功能亢进","dimension":"crowd","parent":"care_thyroid","sort":10},
   {"code":"care_hypothyroidism","name":"甲状腺功能减退/桥本甲状腺炎","dimension":"crowd","parent":"care_thyroid","sort":20},
   {"code":"care_obesity","name":"肥胖症/减重饮食","dimension":"crowd","parent":"crowd","sort":120},
-  {"code":"care_homocysteine","name":"高同型半胱氨酸血症","dimension":"crowd","parent":"crowd","sort":130}
+  {"code":"care_homocysteine","name":"高同型半胱氨酸血症","dimension":"crowd","parent":"crowd","sort":130},
+  {"code":"season","name":"应季","dimension":"season","sort":300,"icon":"🗓"},
+  {"code":"season_spring","name":"春季","dimension":"season","parent":"season","sort":10,"icon":"🌱"},
+  {"code":"season_summer","name":"夏季","dimension":"season","parent":"season","sort":20,"icon":"☀️"},
+  {"code":"season_autumn","name":"秋季","dimension":"season","parent":"season","sort":30,"icon":"🍂"},
+  {"code":"season_winter","name":"冬季","dimension":"season","parent":"season","sort":40,"icon":"❄️"}
 ]
