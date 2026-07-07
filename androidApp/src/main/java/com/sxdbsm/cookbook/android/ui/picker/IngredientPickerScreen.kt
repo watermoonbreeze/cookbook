@@ -424,6 +424,7 @@ fun IngredientPickerScreen(
             detail = ui.detailInfo,
             careRules = ui.detailCareRules,
             dishMatches = ui.detailDishMatches,
+            enabledCareCategoryIds = ui.enabledCareCategoryIds,
             onDismiss = { selectedIngredient = null },
             onToggleSelection = {
                 vm.toggleSelection(ingredient) // [AI修改] 详情页右侧按钮按当前状态执行选择/取消选择。

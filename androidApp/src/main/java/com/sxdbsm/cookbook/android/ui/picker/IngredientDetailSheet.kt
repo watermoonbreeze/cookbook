@@ -43,6 +43,7 @@ internal fun IngredientDetailSheet(
     detail: IngredientDetail?,
     careRules: List<IngredientCareRule>,
     dishMatches: List<DishIngredientMatch>,
+    enabledCareCategoryIds: Set<Long> = emptySet(), // [AI生成] 用户健康档案病种，忌口区置顶高亮。
     onDismiss: () -> Unit,
     onToggleSelection: () -> Unit,
     onEdit: (() -> Unit)?,
@@ -133,70 +134,73 @@ internal fun IngredientDetailSheet(
                             }
                         }
 
-                        DetailLine(label = "来源", value = if (ingredient.source == "user") "用户创建" else "预设食材")
-                        ingredient.defaultUnitName.takeIf { it.isNotBlank() }?.let { unit ->
-                            DetailLine(label = "默认单位", value = unit)
-                        }
-                        if (categories.isNotEmpty()) {
-                            DetailLine(label = "分类", value = categories.joinToString("、") { it.name })
-                        }
-                        ingredient.adviceLevel?.let { level ->
-                            val label = when (level) {
-                                com.sxdbsm.cookbook.domain.model.AdviceLevel.RECOMMEND -> "推荐"
-                                com.sxdbsm.cookbook.domain.model.AdviceLevel.LIMIT -> "限量"
-                                com.sxdbsm.cookbook.domain.model.AdviceLevel.AVOID -> "避免"
-                            }
-                            DetailLine(label = "慢病建议", value = label)
-                        }
-                        if (ingredient.adviceReason.isNotBlank()) {
-                            DetailLine(label = "建议原因", value = ingredient.adviceReason)
-                        }
-                        if (careRules.isNotEmpty()) {
-                            DetailLine(
-                                label = "调养建议",
-                                value = careRules.joinToString("\n") { rule ->
-                                    "${rule.categoryName}: ${rule.adviceLevel.label()}${rule.reason.takeIf { it.isNotBlank() }?.let { "，$it" }.orEmpty()}"
-                                },
-                            )
-                        }
-                        detail?.let { info ->
-                            if (info.commonMethods.isNotBlank()) DetailLine("常见做法", info.commonMethods)
-                            if (info.prepTips.isNotBlank()) DetailLine("处理建议", info.prepTips)
-                            if (info.eatingNotes.isNotBlank()) DetailLine("食用注意", info.eatingNotes)
-                            if (info.storageTips.isNotBlank()) DetailLine("保存建议", info.storageTips)
-                            if (info.healthNote.isNotBlank()) DetailLine("健康说明", info.healthNote)
-                        }
-                        if (dishMatches.isNotEmpty()) {
-                            // [AI修改] 相关菜品按烹饪方式分组：方式为一级标题、菜品为二级条目，默认平铺展开；
-                            // 多烹饪方式的菜品在每个方式组下都出现，无烹饪方式的归入"其他"。
-                            val groupedMatches = linkedMapOf<String, MutableList<DishIngredientMatch>>()
-                            dishMatches.forEach { match ->
-                                val methods = match.dish.cookingMethodNames
-                                    .ifEmpty { listOfNotNull(match.dish.cookingMethodName) }
-                                    .filter { it.isNotBlank() }
-                                    .ifEmpty { listOf("其他") }
-                                methods.forEach { method ->
-                                    groupedMatches.getOrPut(method) { mutableListOf() }.add(match)
+                        // ① 🍳 做法：常见做法 + 相关菜品（按烹饪方式分组）
+                        val methodsText = detail?.commonMethods?.takeIf { it.isNotBlank() }
+                        if (methodsText != null || dishMatches.isNotEmpty()) {
+                            SectionTitle("🍳 做法")
+                            if (methodsText != null) DetailLine("常见做法", methodsText)
+                            if (dishMatches.isNotEmpty()) {
+                                // [AI修改] 相关菜品按烹饪方式分组：方式为一级标题、菜品为二级条目；多方式菜品每组都出现，无方式归"其他"。
+                                val groupedMatches = linkedMapOf<String, MutableList<DishIngredientMatch>>()
+                                dishMatches.forEach { match ->
+                                    match.dish.cookingMethodNames
+                                        .ifEmpty { listOfNotNull(match.dish.cookingMethodName) }
+                                        .filter { it.isNotBlank() }
+                                        .ifEmpty { listOf("其他") }
+                                        .forEach { method -> groupedMatches.getOrPut(method) { mutableListOf() }.add(match) }
                                 }
-                            }
-                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text("相关菜品", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                groupedMatches.forEach { (method, matches) ->
-                                    Text(
-                                        method,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    )
-                                    matches.forEach { match ->
-                                        Text(
-                                            "　${match.dish.name}：命中 ${match.matchCount}/${match.totalIngredientCount}",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                        )
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text("相关菜品", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    groupedMatches.forEach { (method, matches) ->
+                                        Text(method, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                                        matches.forEach { match ->
+                                            Text("　${match.dish.name}：命中 ${match.matchCount}/${match.totalIngredientCount}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                                        }
                                     }
                                 }
                             }
+                        }
+
+                        // ② 🩺 忌口/宜忌：调养建议（用户健康档案病种置顶高亮）+ 当前病种建议
+                        val sortedCare = careRules.sortedByDescending { it.categoryId in enabledCareCategoryIds }
+                        if (careRules.isNotEmpty() || ingredient.adviceLevel != null) {
+                            SectionTitle("🩺 忌口 / 宜忌")
+                            ingredient.adviceLevel?.let { level ->
+                                val lv = when (level) {
+                                    AdviceLevel.RECOMMEND -> "推荐"; AdviceLevel.LIMIT -> "限量"; AdviceLevel.AVOID -> "避免"
+                                }
+                                DetailLine("慢病建议", lv + ingredient.adviceReason.takeIf { it.isNotBlank() }?.let { "，$it" }.orEmpty())
+                            }
+                            sortedCare.forEach { rule ->
+                                CareRuleLine(rule, mine = rule.categoryId in enabledCareCategoryIds)
+                            }
+                        }
+
+                        // ③ 🥗 属性：品类 / 营养 / 应季（按维度拆分）
+                        val nutriDims = setOf("nutrition", "gi", "purine", "sodium", "fat", "sugar")
+                        val pinlei = categories.filter { it.dimension == "general" }
+                        val nutri = categories.filter { it.dimension in nutriDims }
+                        val season = categories.filter { it.dimension == "season" }
+                        if (pinlei.isNotEmpty() || nutri.isNotEmpty() || season.isNotEmpty()) {
+                            SectionTitle("🥗 属性")
+                            if (pinlei.isNotEmpty()) DetailLine("品类", pinlei.joinToString("、") { it.name })
+                            if (nutri.isNotEmpty()) DetailLine("营养", nutri.joinToString("·") { it.name })
+                            if (season.isNotEmpty()) DetailLine("应季", season.joinToString("、") { it.name })
+                        }
+
+                        // ④ 📋 处理与保存 + 来源
+                        detail?.let { info ->
+                            if (listOf(info.prepTips, info.eatingNotes, info.storageTips, info.healthNote).any { it.isNotBlank() }) {
+                                SectionTitle("📋 处理与保存")
+                                if (info.prepTips.isNotBlank()) DetailLine("处理建议", info.prepTips)
+                                if (info.eatingNotes.isNotBlank()) DetailLine("食用注意", info.eatingNotes)
+                                if (info.storageTips.isNotBlank()) DetailLine("保存建议", info.storageTips)
+                                if (info.healthNote.isNotBlank()) DetailLine("健康说明", info.healthNote)
+                            }
+                        }
+                        DetailLine(label = "来源", value = if (ingredient.source == "user") "用户创建" else "预设食材")
+                        ingredient.defaultUnitName.takeIf { it.isNotBlank() }?.let { unit ->
+                            DetailLine(label = "默认单位", value = unit)
                         }
 
                         Divider()
@@ -267,6 +271,46 @@ internal fun DetailLine(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+/**
+ * 详情四区小标题。[AI生成]
+ */
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 4.dp),
+    )
+}
+
+/**
+ * 忌口/调养建议行；命中用户健康档案病种时置顶高亮。[AI生成]
+ */
+@Composable
+private fun CareRuleLine(rule: IngredientCareRule, mine: Boolean) {
+    val text = "${rule.categoryName}：${rule.adviceLevel.label()}" +
+        rule.reason.takeIf { it.isNotBlank() }?.let { "，$it" }.orEmpty()
+    if (mine) {
+        Surface(
+            color = MaterialTheme.colorScheme.errorContainer,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                "【我的】$text",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            )
+        }
+    } else {
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 

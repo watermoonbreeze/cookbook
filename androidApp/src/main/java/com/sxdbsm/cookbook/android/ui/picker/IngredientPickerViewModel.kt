@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
+import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.domain.model.DishIngredientMatch
@@ -79,6 +80,7 @@ data class IngredientPickerUiState(
     val pantryIngredientIds: Set<Long> = emptySet(), // [AI生成] 在手库存食材 id 集合，用于详情按钮显示「加入/移出库存」与标记「家里有」。
     val searchResults: List<Ingredient> = emptyList(), // [AI生成] 全局搜索下拉结果（跨全库，不限当前 Tab）。
     val highlightIngredientId: Long? = null, // [AI生成] 搜索跳转后在网格中高亮定位的食材。
+    val enabledCareCategoryIds: Set<Long> = emptySet(), // [AI生成] 用户已启用的健康档案病种(care 分类 id)，详情忌口区置顶高亮。
 )
 
 private const val ALL_CATEGORY_ID = -1L // [AI生成] 虚拟分类：当前主分类下全部。
@@ -93,6 +95,7 @@ class IngredientPickerViewModel(
     private val categoryRepo: FoodCategoryRepository,
     private val dishRepo: DishRepository,
     private val pantryRepo: PantryRepository,
+    private val healthRepo: HealthProfileRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(IngredientPickerUiState()) // [AI修改] 内部可变选择器状态。
@@ -102,7 +105,18 @@ class IngredientPickerViewModel(
     private var currentIngredientPage: Int = 1 // [AI生成] 当前食材分页页码。
 
     // [AI修改] ViewModel 创建后立即加载分类和全部食材，页面首屏可直接显示。
-    init { loadCategories(); loadAllIngredients(); loadUnits(); loadPantryIds() }
+    init { loadCategories(); loadAllIngredients(); loadUnits(); loadPantryIds(); loadHealthProfiles() }
+
+    /**
+     * 监听已启用健康档案病种，供详情忌口区置顶高亮。[AI生成]
+     */
+    private fun loadHealthProfiles() {
+        viewModelScope.launch {
+            healthRepo.observeEnabled().collect { profiles ->
+                _state.value = _state.value.copy(enabledCareCategoryIds = profiles.map { it.crowdTypeId }.toSet())
+            }
+        }
+    }
 
     /**
      * 配置需要排除的食材。[AI修改]
