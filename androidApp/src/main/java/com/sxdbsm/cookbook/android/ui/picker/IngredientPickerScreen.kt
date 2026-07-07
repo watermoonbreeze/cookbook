@@ -1362,7 +1362,7 @@ private fun IngredientDetailSheet(
                                         modifier = Modifier.size(18.dp),
                                     )
                                     Spacer(Modifier.width(6.dp))
-                                    Text(if (inPantry) "移出库存" else "入库")
+                                    Text(if (inPantry) "出库" else "入库")
                                 }
                             }
                             onEdit?.let { edit ->
