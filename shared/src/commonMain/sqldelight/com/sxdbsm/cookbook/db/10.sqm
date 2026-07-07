@@ -1,6 +1,10 @@
--- [AI生成] v10 -> v11：补齐 ingredient.reason 迁移。
--- 背景：reason 列曾直接加入 Cookbook.sq（进入 Schema.create）却漏建迁移文件，
--- 导致旧库沿迁移链升到 v10 后缺该列，读写 reason 的查询报 no such column。
--- 全新安装走 Schema.create 已自带该列；本迁移让「迁移链重建结果」与 Schema.create 一致，
--- 从而可去掉 DatabaseDriverFactory 里的幂等补列临时手段（地基对齐）。
-ALTER TABLE ingredient ADD COLUMN reason TEXT NOT NULL DEFAULT '';
+-- [AI修改] v10 -> v11：空迁移（无操作）。
+-- 原本这里是 `ALTER TABLE ingredient ADD COLUMN reason ...`，但 reason 列早已进入 Schema.create，
+-- 导致「已有该列的旧库」升级时执行该 ALTER 会抛 duplicate column、迁移失败、初始化失败。
+-- SQLite 迁移无法「不存在才加列」，故此步改为无操作：
+--   · 全新安装：Schema.create 已自带 reason；
+--   · 缺列的旧库：由 DatabaseDriverFactory.ensureLegacyColumns 幂等补列（try-catch 吞 duplicate）。
+-- 用「建了即删的临时表」作无副作用占位（有效可执行语句，避免 SELECT 在部分驱动下的执行歧义）；
+-- 保留本文件仅作 v10->v11 版本占位，勿删（删除会造成迁移版本空洞）。
+CREATE TABLE IF NOT EXISTS _noop_v10 (x INTEGER);
+DROP TABLE IF EXISTS _noop_v10;
