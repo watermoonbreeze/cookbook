@@ -77,6 +77,8 @@ data class IngredientPickerUiState(
     val canLoadMoreIngredients: Boolean = false, // [AI生成] 分类筛选结果按 30 条一页展示，避免一次渲染过多食材。
     val inactiveIngredients: List<Ingredient> = emptyList(), // [AI生成] 回收站：失效的自定义食材列表。
     val pantryIngredientIds: Set<Long> = emptySet(), // [AI生成] 在手库存食材 id 集合，用于详情按钮显示「加入/移出库存」与标记「家里有」。
+    val searchResults: List<Ingredient> = emptyList(), // [AI生成] 全局搜索下拉结果（跨全库，不限当前 Tab）。
+    val highlightIngredientId: Long? = null, // [AI生成] 搜索跳转后在网格中高亮定位的食材。
 )
 
 private const val ALL_CATEGORY_ID = -1L // [AI生成] 虚拟分类：当前主分类下全部。
@@ -154,6 +156,8 @@ class IngredientPickerViewModel(
                 selectedCategoryId = ALL_CATEGORY_ID,
                 allCategories = allCategories,
                 tree = buildTreeForTab(tab, tops, allCategories),
+                searchResults = emptyList(),
+                highlightIngredientId = null, // [AI生成] 切 Tab 清掉搜索下拉与高亮。
             )
             applyIngredientResult(ingredients.withoutExcluded(), resetPage = true)
         }
@@ -165,13 +169,93 @@ class IngredientPickerViewModel(
         }
     }
 
+    /**
+     * 全局搜索关键词变化。[AI修改]
+     *
+     * 改为**全局下拉搜索**：跨全库（不限当前 Tab/分类）按字符包含匹配，结果放进 searchResults 供下拉展示；
+     * 不再过滤当前 Tab 网格。清空则收起下拉。
+     */
     fun setKeyword(kw: String) {
-        _state.value = _state.value.copy(keyword = kw)
+        _state.value = _state.value.copy(keyword = kw, highlightIngredientId = null)
         searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            delay(280) // [AI修改] 连续输入时只保留最后一次搜索，降低弹框卡顿。
-            reloadCurrentList(keywordOverride = kw)
+        if (kw.isBlank()) {
+            _state.value = _state.value.copy(searchResults = emptyList())
+            return
         }
+        searchJob = viewModelScope.launch {
+            delay(280) // [AI修改] 连续输入时只保留最后一次搜索，降低卡顿。
+            val results = ingredientRepo.search(kw).filterNot { it.id in _state.value.excludeIngredientIds }
+            _state.value = _state.value.copy(searchResults = results)
+        }
+    }
+
+    /**
+     * 点击搜索结果：跳到该食材所属分类并在网格高亮定位。[AI生成]
+     *
+     * 切到常规 Tab，选中该食材最具体的常规分类（展开分类树到它），加载该分类食材并高亮目标；不自动打开详情。
+     */
+    fun jumpToIngredient(ingredient: Ingredient) {
+        searchJob?.cancel()
+        viewModelScope.launch {
+            val all = _state.value.allCategories.ifEmpty { categoryRepo.listAll() }
+            fun depth(id: Long): Int {
+                var d = 0
+                var c = all.firstOrNull { it.id == id }
+                while (c?.parentId != null) { d++; c = all.firstOrNull { it.id == c!!.parentId } }
+                return d
+            }
+            val general = ingredientRepo.listCategories(ingredient.id)
+                .filter { it.dimension == "general" && it.crowdTypeId == null }
+            val target = general.maxByOrNull { depth(it.id) } ?: general.firstOrNull()
+            if (target == null) {
+                // 无常规分类（理论上不该发生）：切到常规全部并高亮。
+                _state.value = _state.value.copy(
+                    mainTab = IngredientMainTab.GENERAL,
+                    keyword = "",
+                    searchResults = emptyList(),
+                    selectedCategoryId = ALL_CATEGORY_ID,
+                    allCategories = all,
+                    tree = buildTreeForTab(IngredientMainTab.GENERAL, all.filter { it.parentId == null }, all),
+                    highlightIngredientId = ingredient.id,
+                )
+                applyIngredientResult(loadAllForTab(IngredientMainTab.GENERAL, "").withoutExcluded(), resetPage = true)
+                return@launch
+            }
+            val ingredients = loadByCategoryWithChildren(target).withoutExcluded()
+            _state.value = _state.value.copy(
+                mainTab = IngredientMainTab.GENERAL,
+                keyword = "",
+                searchResults = emptyList(),
+                selectedCategoryId = target.id,
+                allCategories = all,
+                tree = buildGeneralTreeExpandedTo(target.id, all),
+                highlightIngredientId = ingredient.id,
+            )
+            applyIngredientResult(ingredients, resetPage = true)
+        }
+    }
+
+    /**
+     * 构建常规分类树并沿目标分类的祖先链展开，使目标节点可见且选中。[AI生成]
+     */
+    private fun buildGeneralTreeExpandedTo(targetId: Long, all: List<FoodCategory>): List<CategoryNode> {
+        val ancestors = mutableSetOf<Long>()
+        var cur = all.firstOrNull { it.id == targetId }
+        while (cur != null) {
+            ancestors.add(cur.id)
+            cur = cur.parentId?.let { pid -> all.firstOrNull { it.id == pid } }
+        }
+        fun isGeneral(c: FoodCategory) = c.dimension == "general" && c.crowdTypeId == null && c.source != "user"
+        fun build(parentId: Long?, level: Int): List<CategoryNode> =
+            all.filter { it.parentId == parentId && isGeneral(it) }
+                .sortedBy { it.sortOrder }
+                .flatMap { cat ->
+                    val hasChildren = all.any { it.parentId == cat.id && isGeneral(it) }
+                    val expanded = hasChildren && cat.id in ancestors
+                    listOf(CategoryNode(cat.copy(hasChildren = hasChildren), level = level, expanded = expanded)) +
+                        if (expanded) build(cat.id, level + 1) else emptyList()
+                }
+        return build(null, 1)
     }
 
     fun selectAll() {
@@ -181,6 +265,7 @@ class IngredientPickerViewModel(
             _state.value = _state.value.copy(
                 keyword = "", // [AI修改] 选择“全部”时清空搜索条件，避免旧关键词影响后续刷新。
                 selectedCategoryId = ALL_CATEGORY_ID,
+                highlightIngredientId = null,
             )
             applyIngredientResult(ingredients.withoutExcluded(), resetPage = true)
         }
@@ -219,6 +304,7 @@ class IngredientPickerViewModel(
             val ingredients = loadByCategoryWithChildren(cat)
             _state.value = _state.value.copy(
                 selectedCategoryId = cat.id,
+                highlightIngredientId = null, // [AI生成] 手动切分类清掉搜索高亮。
             )
             applyIngredientResult(ingredients.withoutExcluded(), resetPage = true)
         }
@@ -658,24 +744,18 @@ class IngredientPickerViewModel(
     private fun List<Ingredient>.withoutExcluded(): List<Ingredient> =
         filterNot { it.id in _state.value.excludeIngredientIds }
 
-    private suspend fun reloadCurrentList(keywordOverride: String? = null) {
+    private suspend fun reloadCurrentList() {
         val current = _state.value
-        val keyword = keywordOverride ?: current.keyword
         val ingredients = when (val categoryId = current.selectedCategoryId) {
-            null, ALL_CATEGORY_ID -> loadAllForTab(current.mainTab, keyword)
+            null, ALL_CATEGORY_ID -> loadAllForTab(current.mainTab, "")
             else -> {
                 val node = current.tree.firstOrNull { it.category.id == categoryId }
                 if (node == null) emptyList() else loadByCategoryWithChildren(node.category)
             }
         }
+        // [AI修改] 搜索已解耦为全局下拉，网格不再按 keyword 过滤，只按 Tab 来源过滤。
         val sourceFiltered = ingredients.filterForTabSource(current.mainTab)
-        val filtered = if (keyword.isBlank()) {
-            sourceFiltered
-        } else {
-            sourceFiltered.filter { it.name.contains(keyword, ignoreCase = true) || it.alias.contains(keyword, ignoreCase = true) || it.pinyin.contains(keyword, ignoreCase = true) }
-        }
-        _state.value = _state.value.copy(keyword = keyword)
-        applyIngredientResult(filtered.withoutExcluded(), resetPage = true)
+        applyIngredientResult(sourceFiltered.withoutExcluded(), resetPage = true)
     }
 
     /**

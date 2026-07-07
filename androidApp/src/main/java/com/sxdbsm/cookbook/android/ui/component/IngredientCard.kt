@@ -54,6 +54,7 @@ fun IngredientCard(
     ingredient: Ingredient,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    highlighted: Boolean = false, // [AI生成] 搜索跳转后短暂高亮定位到该食材。
     imageSize: Dp = 64.dp,
     onClick: (() -> Unit)? = null,
     onEdit: (() -> Unit)? = null,
@@ -63,16 +64,20 @@ fun IngredientCard(
     var menuOpen by remember { mutableStateOf(false) }
     val canDelete = ingredient.source == "user" && onDelete != null
     val canEdit = onEdit != null || canDelete
-    val bg = if (selected) MaterialTheme.colorScheme.primaryContainer else placeholderBg(ingredient.id)
+    val bg = when {
+        selected -> MaterialTheme.colorScheme.primaryContainer
+        highlighted -> MaterialTheme.colorScheme.tertiaryContainer // [AI生成] 搜索定位高亮底色。
+        else -> placeholderBg(ingredient.id)
+    }
     val ext = ExtendedColorsHolder.current
 
     ElevatedCard(
         modifier = modifier
             .then(
-                if (selected) {
-                    Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.large)
-                } else {
-                    Modifier
+                when {
+                    selected -> Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.large)
+                    highlighted -> Modifier.border(2.dp, MaterialTheme.colorScheme.tertiary, MaterialTheme.shapes.large)
+                    else -> Modifier
                 },
             )
             .combinedClickable(

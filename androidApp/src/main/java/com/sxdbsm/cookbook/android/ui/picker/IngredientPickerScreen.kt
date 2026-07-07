@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -138,6 +139,16 @@ fun IngredientPickerScreen(
                         }
                     },
                 )
+                // [AI生成] 全局搜索下拉：有输入且有匹配时紧贴搜索框下方弹出，点结果跳到分类并高亮。
+                if (ui.searchResults.isNotEmpty()) {
+                    SearchResultsPanel(
+                        results = ui.searchResults,
+                        onPick = {
+                            selectedIngredient = null
+                            vm.jumpToIngredient(it)
+                        },
+                    )
+                }
                 ScrollableTabRow(
                     selectedTabIndex = IngredientMainTab.values().indexOf(ui.mainTab),
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -249,8 +260,16 @@ fun IngredientPickerScreen(
                     } else {
                         emptyList()
                     }
+                    val gridState = rememberLazyGridState()
+                    // [AI生成] 搜索跳转后滚动到高亮食材（跳转固定在常规 Tab、无 careGroups 头，index 即列表位置）。
+                    LaunchedEffect(ui.highlightIngredientId, ui.ingredients) {
+                        val hid = ui.highlightIngredientId ?: return@LaunchedEffect
+                        val idx = ui.ingredients.indexOfFirst { it.id == hid }
+                        if (idx >= 0) gridState.animateScrollToItem(idx)
+                    }
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(3),
+                        state = gridState,
                         contentPadding = PaddingValues(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -270,6 +289,7 @@ fun IngredientPickerScreen(
                                     IngredientCard(
                                         ingredient = ing,
                                         selected = ing.id in ui.selectedIds,
+                                        highlighted = ing.id == ui.highlightIngredientId,
                                         onClick = { selectedIngredient = ing },
                                     )
                                 }
@@ -279,6 +299,7 @@ fun IngredientPickerScreen(
                                 IngredientCard(
                                     ingredient = ing,
                                     selected = ing.id in ui.selectedIds,
+                                    highlighted = ing.id == ui.highlightIngredientId,
                                     onClick = {
                                         selectedIngredient = ing // [AI修改] 点击食材统一先打开详情，是否加入已选由详情顶部按钮决定。
                                     },
@@ -597,6 +618,50 @@ fun IngredientPickerScreen(
                 TextButton(onClick = { categoryDeleteTarget = null }) { Text("取消") }
             },
         )
+    }
+}
+
+/**
+ * 全局搜索结果下拉面板。[AI生成]
+ *
+ * 紧贴搜索框下方弹出，跨全库匹配的食材列表；点某项跳到其所属分类并高亮。
+ */
+@Composable
+private fun SearchResultsPanel(
+    results: List<Ingredient>,
+    onPick: (Ingredient) -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 4.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
+            items(results, key = { it.id }) { ing ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onPick(ing) }
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(ing.emoji.ifBlank { "🥗" }, style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        if (ing.alias.isBlank()) ing.name else "${ing.name}(${ing.alias})",
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        if (ing.source == "user") "自定义" else "预设",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Divider()
+            }
+        }
     }
 }
 
