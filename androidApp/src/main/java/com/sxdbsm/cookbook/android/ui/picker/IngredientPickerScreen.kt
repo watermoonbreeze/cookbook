@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -74,7 +75,6 @@ fun IngredientPickerScreen(
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var dishMatchOpen by remember { mutableStateOf(false) } // [AI生成] 按已选食材找菜结果弹框。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
-    var pendingPantryOnCreate by remember { mutableStateOf(false) } // [AI生成] “新建食材入库”：创建成功后自动加入库存。
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -312,43 +312,17 @@ fun IngredientPickerScreen(
                         }
                     }
                 }
-                // 库存 Tab 管理模式底部：从食材库添加 / 新建食材入库
+                // [AI修改] 库存 Tab 下方小提示：入库入口统一在食材详情，这里只作说明，不再放添加按钮。
                 if (!selectionMode && ui.mainTab == IngredientMainTab.PANTRY) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 2.dp,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            OutlinedButton(
-                                onClick = { vm.selectMainTab(IngredientMainTab.GENERAL) }, // [AI生成] 跳到常规浏览，点食材详情即可加入库存。
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text("从食材库添加")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    pendingPantryOnCreate = true
-                                    vm.clearCreateError()
-                                    vm.loadIngredientEditor(null)
-                                    createDialogOpen = true
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
-                            ) {
-                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text("新建食材入库")
-                            }
-                        }
-                    }
+                    Text(
+                        "从现有食材中添加入库",
+                        style = MaterialTheme.typography.labelSmall, // [AI生成] 小两号提示字号。
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                    )
                 }
                 // 底部固定栏
                 if (selectionMode && ui.selectedIds.isNotEmpty()) {
@@ -498,7 +472,6 @@ fun IngredientPickerScreen(
             ui = ui,
             onDismiss = {
                 createDialogOpen = false
-                pendingPantryOnCreate = false // [AI生成] 取消新建则不入库。
                 vm.clearCreateError()
             },
             onAddCategory = {
@@ -530,14 +503,9 @@ fun IngredientPickerScreen(
     }
 
     LaunchedEffect(ui.lastSavedIngredientId) {
-        val savedId = ui.lastSavedIngredientId
-        if (savedId != null) {
+        if (ui.lastSavedIngredientId != null) {
             createDialogOpen = false
             editingIngredient = null
-            if (pendingPantryOnCreate) {
-                vm.addToPantry(savedId) // [AI生成] “新建食材入库”：创建成功后自动加入库存。
-                pendingPantryOnCreate = false
-            }
         }
     }
 
@@ -1394,7 +1362,7 @@ private fun IngredientDetailSheet(
                                         modifier = Modifier.size(18.dp),
                                     )
                                     Spacer(Modifier.width(6.dp))
-                                    Text(if (inPantry) "移出库存" else "加入库存")
+                                    Text(if (inPantry) "移出库存" else "入库")
                                 }
                             }
                             onEdit?.let { edit ->
