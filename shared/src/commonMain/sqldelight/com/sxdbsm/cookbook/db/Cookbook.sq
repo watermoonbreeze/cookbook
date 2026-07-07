@@ -759,6 +759,10 @@ insertDish:
 INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, thumbnail_path, source, created_at, updated_at)
 VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?);
 
+-- [AI生成] 预设菜补齐式 seed 用：按名判断预设菜是否已存在，避免重复插入。
+selectPresetDishIdByName:
+SELECT id FROM dish WHERE name = ? AND source = 'preset' AND status = 1 LIMIT 1;
+
 updateDish:
 UPDATE dish
 SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, thumbnail_path = ?, updated_at = ?

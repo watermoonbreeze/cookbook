@@ -112,6 +112,26 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun seedCreatesPresetDishesWithMainIngredientAndSteps() = runBlocking {
+        // [AI生成] 验证预设经典菜：写入 dish（source=preset）+ 主料(is_main) + 步骤，且重复 seed 不重复插入。
+        val db = RepositoryTestDatabase.create()
+        val seeder = PresetDataSeeder(db)
+        seeder.seedIfNeeded()
+        val q = db.cookbookQueries
+
+        val dish = q.selectAllDishes().executeAsList().firstOrNull { it.name == "青椒炒肉丝" }
+        assertTrue(dish != null, "应生成预设菜：青椒炒肉丝")
+        assertEquals("preset", dish!!.source, "预设菜来源应为 preset")
+        val dishIngredients = q.selectIngredientsOfDish(dish.id).executeAsList()
+        assertTrue(dishIngredients.any { it.ingredient_name == "青椒" && it.is_main == 1L }, "青椒应作为主料(is_main)")
+        assertTrue(q.selectStepsOfDish(dish.id).executeAsList().isNotEmpty(), "预设菜应有做法步骤")
+
+        val dishCountBefore = q.selectAllDishes().executeAsList().size
+        seeder.forceReseedBaseData()
+        assertEquals(dishCountBefore, q.selectAllDishes().executeAsList().size, "重复 seed 不应重复插入预设菜")
+    }
+
+    @Test
     fun forceReseedIsIdempotentAndKeepsUserData() = runBlocking {
         // [AI生成] “更新基础数据”强制重跑：内容不变时数据条数不变，且不删除/覆盖用户自建食材。
         val db = RepositoryTestDatabase.create()

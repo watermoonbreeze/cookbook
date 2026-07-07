@@ -84,7 +84,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val crowdRulesJson = SeedResourceLoader.readText("seed/crowd_rules.json").orEmpty()
         val detailsJson = SeedResourceLoader.readText("seed/ingredient_details.json").orEmpty()
         val careRulesJson = SeedResourceLoader.readText("seed/ingredient_care_rules.json").orEmpty()
-        val fingerprint = fingerprintOf(categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson)
+        val dishesJson = SeedResourceLoader.readText("seed/dishes.json").orEmpty()
+        val fingerprint = fingerprintOf(categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson)
 
         val stored = q.selectPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT).executeAsOneOrNull()?.value_
         if (!force && stored == fingerprint) return false // 内容未变，跳过全部内容 seed。
@@ -95,6 +96,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             seedCrowdRules() // [AI生成] 慢病食材建议规则补齐式 seed。
             seedIngredientDetails(now) // [AI生成] 食材详情补齐式 seed。
             seedIngredientCareRules(categoryIdsByCode) // [AI生成] 通用调养规则补齐式 seed。
+            seedDishes(now) // [AI生成] 预设经典做法菜品补齐式 seed（关联主料/烹饪方式/配料/步骤）。
         }
         q.upsertPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT, fingerprint, now)
         return true
@@ -336,7 +338,66 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     private companion object {
         const val DEFAULT_INGREDIENT_EMOJI = "🥗" // [AI生成] 所有兜底食材统一使用更清爽的沙拉图标。
     }
+
+    /**
+     * 预设经典做法菜品补齐式 seed。[AI生成]
+     *
+     * 每道菜按名解析烹饪方式/主料/配料/单位，写入 dish + dish_cooking_method_rel + dish_ingredient + dish_step。
+     * 幂等：同名预设菜已存在则跳过（不覆盖，避免影响用户已引用/收藏）；食材名解析不到则跳过该配料。
+     */
+    private fun seedDishes(now: Long) {
+        val q = db.cookbookQueries
+        val methodIds = q.selectAllCookingMethods().executeAsList().associate { it.name to it.id }
+        val unitIds = q.selectAllMeasurementUnits().executeAsList().associate { it.name to it.id }
+        loadDishes().forEach dish@{ seed ->
+            if (q.selectPresetDishIdByName(seed.name).executeAsOneOrNull() != null) return@dish // 已存在则跳过。
+            val methodId = methodIds[seed.method]
+            q.insertDish(
+                name = seed.name,
+                cooking_method_id = methodId,
+                special_note = "",
+                description = seed.description,
+                image_path = "",
+                thumbnail_path = "",
+                source = "preset",
+                created_at = now,
+                updated_at = now,
+            )
+            val dishId = q.lastInsertId().executeAsOne()
+            if (methodId != null) q.linkDishCookingMethod(dishId, methodId)
+            seed.ingredients.forEach ing@{ di ->
+                val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id ?: return@ing
+                q.insertDishIngredient(dishId, ingredientId, di.quantity, unitIds[di.unit], if (di.main) 1L else 0L)
+            }
+            seed.steps.forEachIndexed { idx, text ->
+                q.insertDishStep(dishId, (idx + 1).toLong(), text, "", "", now, now)
+            }
+        }
+    }
+
+    private fun loadDishes(): List<SeedDish> =
+        SeedResourceLoader.readText("seed/dishes.json")
+            ?.let { json.decodeFromString(it) }
+            ?: emptyList()
 }
+
+@Serializable
+private data class SeedDish(
+    val code: String = "",
+    val name: String,
+    val method: String = "",
+    val description: String = "",
+    val ingredients: List<SeedDishIngredient> = emptyList(),
+    val steps: List<String> = emptyList(),
+)
+
+@Serializable
+private data class SeedDishIngredient(
+    val ingredient: String,
+    val main: Boolean = false,
+    val quantity: Double? = null,
+    val unit: String = "",
+)
 
 @Serializable
 private data class SeedFoodCategory(
