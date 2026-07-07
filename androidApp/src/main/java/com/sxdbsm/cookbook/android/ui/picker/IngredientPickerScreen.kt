@@ -74,6 +74,7 @@ fun IngredientPickerScreen(
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var dishMatchOpen by remember { mutableStateOf(false) } // [AI生成] 按已选食材找菜结果弹框。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
+    var pendingPantryOnCreate by remember { mutableStateOf(false) } // [AI生成] “新建食材入库”：创建成功后自动加入库存。
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -176,8 +177,8 @@ fun IngredientPickerScreen(
                     }
                 }
                 Row(Modifier.weight(1f).fillMaxWidth()) {
-                    // 左侧分类树
-                    if (ui.mainTab != IngredientMainTab.RECENT) {
+                    // 左侧分类树（最近/库存平铺，无左树）
+                    if (ui.mainTab != IngredientMainTab.RECENT && ui.mainTab != IngredientMainTab.PANTRY) {
                         LazyColumn(
                             modifier = Modifier
                                 .width(120.dp)
@@ -311,6 +312,44 @@ fun IngredientPickerScreen(
                         }
                     }
                 }
+                // 库存 Tab 管理模式底部：从食材库添加 / 新建食材入库
+                if (!selectionMode && ui.mainTab == IngredientMainTab.PANTRY) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 2.dp,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            OutlinedButton(
+                                onClick = { vm.selectMainTab(IngredientMainTab.GENERAL) }, // [AI生成] 跳到常规浏览，点食材详情即可加入库存。
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("从食材库添加")
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    pendingPantryOnCreate = true
+                                    vm.clearCreateError()
+                                    vm.loadIngredientEditor(null)
+                                    createDialogOpen = true
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
+                            ) {
+                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("新建食材入库")
+                            }
+                        }
+                    }
+                }
                 // 底部固定栏
                 if (selectionMode && ui.selectedIds.isNotEmpty()) {
                     Surface(
@@ -425,6 +464,14 @@ fun IngredientPickerScreen(
             } else {
                 null
             },
+            inPantry = ingredient.id in ui.pantryIngredientIds,
+            onTogglePantry = if (!selectionMode) {
+                {
+                    if (ingredient.id in ui.pantryIngredientIds) vm.removeFromPantry(ingredient) else vm.addToPantry(ingredient)
+                }
+            } else {
+                null
+            },
         )
     }
 
@@ -451,6 +498,7 @@ fun IngredientPickerScreen(
             ui = ui,
             onDismiss = {
                 createDialogOpen = false
+                pendingPantryOnCreate = false // [AI生成] 取消新建则不入库。
                 vm.clearCreateError()
             },
             onAddCategory = {
@@ -482,9 +530,14 @@ fun IngredientPickerScreen(
     }
 
     LaunchedEffect(ui.lastSavedIngredientId) {
-        if (ui.lastSavedIngredientId != null) {
+        val savedId = ui.lastSavedIngredientId
+        if (savedId != null) {
             createDialogOpen = false
             editingIngredient = null
+            if (pendingPantryOnCreate) {
+                vm.addToPantry(savedId) // [AI生成] “新建食材入库”：创建成功后自动加入库存。
+                pendingPantryOnCreate = false
+            }
         }
     }
 
@@ -1162,6 +1215,8 @@ private fun IngredientDetailSheet(
     onToggleSelection: () -> Unit,
     onEdit: (() -> Unit)?,
     onDelete: (() -> Unit)?,
+    inPantry: Boolean = false, // [AI生成] 当前食材是否已在库存。
+    onTogglePantry: (() -> Unit)? = null, // [AI生成] 加入/移出库存，仅管理模式提供。
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -1315,7 +1370,7 @@ private fun IngredientDetailSheet(
                         Divider()
                         Text("以上建议仅作为日常饮食记录参考。", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
-                    if (!selectionMode && (onEdit != null || onDelete != null)) {
+                    if (!selectionMode && (onEdit != null || onDelete != null || onTogglePantry != null)) {
                         Divider()
                         Row(
                             modifier = Modifier
@@ -1323,6 +1378,25 @@ private fun IngredientDetailSheet(
                                 .padding(horizontal = 20.dp, vertical = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
+                            onTogglePantry?.let { toggle ->
+                                OutlinedButton(
+                                    onClick = toggle,
+                                    modifier = Modifier.weight(1f),
+                                    colors = if (inPantry) {
+                                        ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                    } else {
+                                        ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary)
+                                    },
+                                ) {
+                                    Icon(
+                                        if (inPantry) Icons.Outlined.Delete else Icons.Outlined.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(if (inPantry) "移出库存" else "加入库存")
+                                }
+                            }
                             onEdit?.let { edit ->
                                 OutlinedButton(
                                     onClick = edit,

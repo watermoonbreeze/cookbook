@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
+import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.domain.model.DishIngredientMatch
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.FoodCategory
@@ -33,6 +34,7 @@ data class CategoryNode(
  */
 enum class IngredientMainTab(val label: String) {
     RECENT("最近"),
+    PANTRY("库存"), // [AI生成] 我家食材（在手库存），无左侧分类树、平铺展示。
     GENERAL("常规"),
     NUTRITION("营养"),
     CARE("调养"),
@@ -74,6 +76,7 @@ data class IngredientPickerUiState(
     val filterDishMatches: List<DishIngredientMatch> = emptyList(),
     val canLoadMoreIngredients: Boolean = false, // [AI生成] 分类筛选结果按 30 条一页展示，避免一次渲染过多食材。
     val inactiveIngredients: List<Ingredient> = emptyList(), // [AI生成] 回收站：失效的自定义食材列表。
+    val pantryIngredientIds: Set<Long> = emptySet(), // [AI生成] 在手库存食材 id 集合，用于详情按钮显示「加入/移出库存」与标记「家里有」。
 )
 
 private const val ALL_CATEGORY_ID = -1L // [AI生成] 虚拟分类：当前主分类下全部。
@@ -87,6 +90,7 @@ class IngredientPickerViewModel(
     private val ingredientRepo: IngredientRepository,
     private val categoryRepo: FoodCategoryRepository,
     private val dishRepo: DishRepository,
+    private val pantryRepo: PantryRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(IngredientPickerUiState()) // [AI修改] 内部可变选择器状态。
@@ -96,7 +100,7 @@ class IngredientPickerViewModel(
     private var currentIngredientPage: Int = 1 // [AI生成] 当前食材分页页码。
 
     // [AI修改] ViewModel 创建后立即加载分类和全部食材，页面首屏可直接显示。
-    init { loadCategories(); loadAllIngredients(); loadUnits() }
+    init { loadCategories(); loadAllIngredients(); loadUnits(); loadPantryIds() }
 
     /**
      * 配置需要排除的食材。[AI修改]
@@ -600,6 +604,49 @@ class IngredientPickerViewModel(
         }
     }
 
+    /**
+     * 加载在手库存食材 id 集合。[AI生成]
+     */
+    private fun loadPantryIds() {
+        viewModelScope.launch {
+            runCatching { pantryRepo.pantryIngredientIds() }
+                .onSuccess { _state.value = _state.value.copy(pantryIngredientIds = it) }
+        }
+    }
+
+    /**
+     * 加入库存（我家食材）。[AI生成]
+     */
+    fun addToPantry(ingredient: Ingredient) = addToPantry(ingredient.id)
+
+    /**
+     * 按 id 加入库存（供「新建食材入库」创建后直接入库）。[AI生成]
+     */
+    fun addToPantry(ingredientId: Long) {
+        viewModelScope.launch {
+            runCatching { pantryRepo.addToPantry(ingredientId) }
+                .onSuccess {
+                    _state.value = _state.value.copy(pantryIngredientIds = _state.value.pantryIngredientIds + ingredientId)
+                    if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
+                }
+                .onFailure { _state.value = _state.value.copy(operationError = "加入库存失败，请稍后重试") }
+        }
+    }
+
+    /**
+     * 移出库存（软失效，保留复购历史）。[AI生成]
+     */
+    fun removeFromPantry(ingredient: Ingredient) {
+        viewModelScope.launch {
+            runCatching { pantryRepo.removeFromPantry(ingredient.id) }
+                .onSuccess {
+                    _state.value = _state.value.copy(pantryIngredientIds = _state.value.pantryIngredientIds - ingredient.id)
+                    if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
+                }
+                .onFailure { _state.value = _state.value.copy(operationError = "移出库存失败，请稍后重试") }
+        }
+    }
+
     fun clearCreateError() {
         _state.value = _state.value.copy(createError = null)
     }
@@ -637,6 +684,7 @@ class IngredientPickerViewModel(
     private suspend fun loadAllForTab(tab: IngredientMainTab, keyword: String): List<Ingredient> =
         when (tab) {
             IngredientMainTab.RECENT -> ingredientRepo.listRecentlyUsed()
+            IngredientMainTab.PANTRY -> pantryRepo.listPantryIngredients() // [AI生成] 库存 Tab：在手食材，平铺展示。
             else -> ingredientRepo.search(keyword).filterForTabSource(tab)
         }
 
@@ -691,7 +739,7 @@ class IngredientPickerViewModel(
      */
     private fun List<Ingredient>.filterForTabSource(tab: IngredientMainTab): List<Ingredient> =
         when (tab) {
-            IngredientMainTab.RECENT -> this
+            IngredientMainTab.RECENT, IngredientMainTab.PANTRY -> this // [AI修改] 最近/库存保留全部来源。
             IngredientMainTab.CUSTOM -> filter { it.source == "user" }
             IngredientMainTab.GENERAL, IngredientMainTab.NUTRITION, IngredientMainTab.CARE -> filter { it.source != "user" }
         }
@@ -730,7 +778,7 @@ class IngredientPickerViewModel(
         allCategories: List<FoodCategory>,
     ): List<CategoryNode> =
         when (tab) {
-            IngredientMainTab.RECENT -> emptyList()
+            IngredientMainTab.RECENT, IngredientMainTab.PANTRY -> emptyList() // [AI修改] 最近/库存无左侧分类树。
             IngredientMainTab.GENERAL -> tops
                 .filter { it.source != "user" && it.dimension == "general" && it.crowdTypeId == null }
                 .map { category ->
@@ -774,7 +822,7 @@ class IngredientPickerViewModel(
 
     private fun List<FoodCategory>.filterForTab(tab: IngredientMainTab): List<FoodCategory> =
         when (tab) {
-            IngredientMainTab.RECENT -> emptyList()
+            IngredientMainTab.RECENT, IngredientMainTab.PANTRY -> emptyList()
             IngredientMainTab.GENERAL -> filter { it.matchesTab(tab) }
             IngredientMainTab.NUTRITION -> filter { it.matchesTab(tab) }
             IngredientMainTab.CARE -> filter { it.matchesTab(tab) }
@@ -783,7 +831,7 @@ class IngredientPickerViewModel(
 
     private fun FoodCategory.matchesTab(tab: IngredientMainTab): Boolean =
         when (tab) {
-            IngredientMainTab.RECENT -> false
+            IngredientMainTab.RECENT, IngredientMainTab.PANTRY -> false
             IngredientMainTab.GENERAL -> dimension == "general" && crowdTypeId == null
             IngredientMainTab.NUTRITION -> dimension in nutritionDimensions
             IngredientMainTab.CARE -> dimension == "crowd" || crowdTypeId != null
