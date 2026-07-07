@@ -388,5 +388,261 @@
     "storageTips": "全程冷藏，开封后当天吃完。",
     "healthNote": "含益生菌和钙，有益肠道健康和骨骼。",
     "ref": "日常食材维度整理"
+  },
+  {
+    "ingredient": "面粉",
+    "commonMethods": "和面做馒头、面条、饼、饺子皮等主食。",
+    "prepTips": "按用途选高/中/低筋；和面水量分次加，揉至光滑醒面。",
+    "eatingNotes": "精制白面升糖较快，三高及糖尿病人群宜搭杂粮、控制份量。",
+    "storageTips": "密封防潮防虫，阴凉干燥处保存。",
+    "healthNote": "以碳水为主，全麦粉膳食纤维更高、更适合控糖。"
+  },
+  {
+    "ingredient": "大麦",
+    "commonMethods": "煮粥、做杂粮饭，或炒制大麦茶。",
+    "prepTips": "提前浸泡 1-2 小时更易煮软。",
+    "eatingNotes": "膳食纤维高，肠胃虚弱者适量。",
+    "storageTips": "密封防潮，阴凉处保存。",
+    "healthNote": "低 GI、富含 β-葡聚糖，有助平稳血糖血脂。"
+  },
+  {
+    "ingredient": "荠菜",
+    "commonMethods": "做馅、煮汤、清炒或凉拌。",
+    "prepTips": "择洗干净、焯水去涩后再烹调。",
+    "eatingNotes": "性凉，脾胃虚寒者适量。",
+    "storageTips": "洗净沥干冷藏，2-3 天内食用。",
+    "healthNote": "富含钙和膳食纤维，低脂低热量。"
+  },
+  {
+    "ingredient": "香椿",
+    "commonMethods": "香椿炒蛋、凉拌或做椿芽饼。",
+    "prepTips": "食用前务必沸水焯烫 1 分钟以降低亚硝酸盐。",
+    "eatingNotes": "含硝酸盐，需焯水后食用，一次不宜过量。",
+    "storageTips": "焯水后沥干冷冻保存更持久。",
+    "healthNote": "香气独特，焯水后更安全，低热量。"
+  },
+  {
+    "ingredient": "马兰头",
+    "commonMethods": "焯水凉拌（马兰头拌香干）或清炒。",
+    "prepTips": "焯水后挤干切碎。",
+    "eatingNotes": "性凉，脾胃虚寒者适量。",
+    "storageTips": "洗净沥干冷藏，尽快食用。",
+    "healthNote": "深色野菜，膳食纤维和矿物质丰富。"
+  },
+  {
+    "ingredient": "葡萄干",
+    "commonMethods": "直接当零食，或入粥、烘焙、拌酸奶。",
+    "prepTips": "食用前可温水冲洗。",
+    "eatingNotes": "含糖量很高，糖尿病及减重人群仅少量、并计入当日碳水。",
+    "storageTips": "密封防潮，阴凉处保存。",
+    "healthNote": "能量密度高，含钾和铁，但糖分集中需控量。"
+  },
+  {
+    "ingredient": "桂圆干",
+    "commonMethods": "煮糖水、泡茶或入汤炖煮。",
+    "prepTips": "去壳去核后使用。",
+    "eatingNotes": "糖分高、偏温补，糖尿病及易上火者少量。",
+    "storageTips": "密封防潮防虫。",
+    "healthNote": "含糖高、能量密集，控糖人群需限量。"
+  },
+  {
+    "ingredient": "兔肉",
+    "commonMethods": "红烧、爆炒、炖汤。",
+    "prepTips": "焯水去腥，切块后再烹调。",
+    "eatingNotes": "较易消化，普遍适宜。",
+    "storageTips": "冷藏 1-2 天，长期冷冻。",
+    "healthNote": "高蛋白、低脂低胆固醇，适合三高及减重人群。"
+  },
+  {
+    "ingredient": "驴肉",
+    "commonMethods": "酱驴肉、炖煮，或做驴肉火烧。",
+    "prepTips": "焯水去血沫后慢炖入味。",
+    "eatingNotes": "普遍适宜，痛风急性期少量。",
+    "storageTips": "冷藏短期、冷冻长期。",
+    "healthNote": "高蛋白低脂，铁含量较高。"
+  },
+  {
+    "ingredient": "鱼丸",
+    "commonMethods": "煮汤、火锅、烫食。",
+    "prepTips": "冷冻鱼丸无需解冻，水开下锅浮起即熟。",
+    "eatingNotes": "加工品含钠和淀粉较高，高血压人群少放盐、控份量。",
+    "storageTips": "-18℃ 冷冻保存，开封尽快食用。",
+    "healthNote": "方便但钠和添加剂偏高，不宜多吃。"
+  },
+  {
+    "ingredient": "速冻水饺",
+    "commonMethods": "水煮、煎（锅贴）或蒸。",
+    "prepTips": "无需解冻，水开下锅、点两次凉水煮至浮起。",
+    "eatingNotes": "馅料含盐含油，蘸料再加盐会更高，三高人群控量少蘸。",
+    "storageTips": "全程 -18℃ 冷冻，避免反复解冻。",
+    "healthNote": "主食加馅料一体，注意整体油盐与份量。"
+  },
+  {
+    "ingredient": "汤圆",
+    "commonMethods": "水煮或酒酿汤圆。",
+    "prepTips": "水开下锅，浮起后再煮 1-2 分钟。",
+    "eatingNotes": "糯米皮升糖快、馅料高糖高油，糖尿病人群严格限量。",
+    "storageTips": "-18℃ 冷冻，防裂防粘。",
+    "healthNote": "高 GI 高能量，控糖控脂人群浅尝即止。"
+  },
+  {
+    "ingredient": "方便面",
+    "commonMethods": "沸水冲泡或下锅煮，加青菜鸡蛋更均衡。",
+    "prepTips": "调料包减半使用可降钠。",
+    "eatingNotes": "油炸面饼加调料包高钠高脂，三高人群尽量少吃、弃汤。",
+    "storageTips": "常温阴凉干燥处，注意保质期。",
+    "healthNote": "营养单一、油盐高，偶尔应急并搭配蔬菜蛋白。"
+  },
+  {
+    "ingredient": "自热米饭",
+    "commonMethods": "加水触发发热包，等待加热即食。",
+    "prepTips": "在通风处操作，避免烫伤。",
+    "eatingNotes": "配菜多为高钠加工品，高血压人群慎选。",
+    "storageTips": "常温保存，注意保质期与发热包完好。",
+    "healthNote": "应急便利，油盐偏高、蔬菜不足。"
+  },
+  {
+    "ingredient": "午餐肉",
+    "commonMethods": "煎、火锅、三明治夹食。",
+    "prepTips": "开罐后煎香更佳。",
+    "eatingNotes": "加工肉，高钠高脂，三高及痛风人群尽量少吃。",
+    "storageTips": "未开罐常温，开罐后冷藏尽快食用。",
+    "healthNote": "含亚硝酸盐、钠脂高，不宜作日常主蛋白。"
+  },
+  {
+    "ingredient": "鱼罐头",
+    "commonMethods": "直接食用、拌饭或做沙拉。",
+    "prepTips": "油浸型可沥油，减少油脂摄入。",
+    "eatingNotes": "含钠较高，高血压人群选低盐款并控量。",
+    "storageTips": "未开常温、开罐后移入密封盒冷藏。",
+    "healthNote": "提供优质蛋白和部分 Omega-3，但注意钠。"
+  },
+  {
+    "ingredient": "水果罐头",
+    "commonMethods": "直接食用或做甜品配料。",
+    "prepTips": "沥去糖水可减少糖分摄入。",
+    "eatingNotes": "糖水含糖高，糖尿病人群尽量选原味鲜果替代。",
+    "storageTips": "未开常温、开罐后冷藏尽快食用。",
+    "healthNote": "维生素有损失、糖分偏高，鲜果更优。"
+  },
+  {
+    "ingredient": "料理包",
+    "commonMethods": "加热即食，配米饭或面。",
+    "prepTips": "按说明水浴或微波加热。",
+    "eatingNotes": "多为高油高钠，三高人群控量、搭配新鲜蔬菜。",
+    "storageTips": "冷冻或冷藏按包装说明。",
+    "healthNote": "便利但蔬菜少、油盐高，不宜长期依赖。"
+  },
+  {
+    "ingredient": "番茄酱",
+    "commonMethods": "炒菜提味、蘸食、做糖醋汁。",
+    "prepTips": "区分无糖番茄膏与含糖番茄沙司。",
+    "eatingNotes": "番茄沙司含糖含钠，控糖控压人群看标签、少用。",
+    "storageTips": "开封后冷藏，尽快用完。",
+    "healthNote": "含番茄红素，但成品多加糖盐，宜少量。"
+  },
+  {
+    "ingredient": "甜面酱",
+    "commonMethods": "蘸酱（京酱肉丝、烤鸭）、炒酱。",
+    "prepTips": "味咸偏甜，用量宜少。",
+    "eatingNotes": "高钠高糖，三高及糖尿病人群少蘸。",
+    "storageTips": "冷藏保存，避免受潮。",
+    "healthNote": "调味用量小即可，注意隐形糖盐。"
+  },
+  {
+    "ingredient": "沙拉酱",
+    "commonMethods": "拌沙拉、蔬果、三明治。",
+    "prepTips": "可用无糖酸奶部分替代降脂。",
+    "eatingNotes": "以油脂为主、热量很高，减重及高脂血症人群少用。",
+    "storageTips": "开封冷藏，避免污染。",
+    "healthNote": "热量密集，蔬果本身健康、别被酱毁掉。"
+  },
+  {
+    "ingredient": "蒜薹",
+    "commonMethods": "蒜薹炒肉、清炒。",
+    "prepTips": "掐去老根，切段快炒。",
+    "eatingNotes": "膳食纤维较粗，胃肠敏感者适量。",
+    "storageTips": "冷藏保鲜，3-5 天内食用。",
+    "healthNote": "含膳食纤维和大蒜素，低脂低热量。"
+  },
+  {
+    "ingredient": "茭白",
+    "commonMethods": "清炒、油焖或与肉丝同炒。",
+    "prepTips": "去外壳老皮，切片焯水去草酸。",
+    "eatingNotes": "含草酸，肾结石人群焯水后食用。",
+    "storageTips": "带壳冷藏更耐放。",
+    "healthNote": "低嘌呤低热量、膳食纤维丰富。"
+  },
+  {
+    "ingredient": "荸荠",
+    "commonMethods": "生食、煮糖水、炒菜或做丸子配料。",
+    "prepTips": "削皮洗净，生食务必洗净去皮。",
+    "eatingNotes": "生长于水田，需洗净去皮防寄生虫。",
+    "storageTips": "带泥冷藏更耐存。",
+    "healthNote": "清甜多汁、低脂，含钾。"
+  },
+  {
+    "ingredient": "牛腩",
+    "commonMethods": "番茄炖牛腩、萝卜炖牛腩、咖喱。",
+    "prepTips": "焯水去血沫，小火慢炖至软烂。",
+    "eatingNotes": "带筋膜脂肪，高脂血症人群去可见脂肪、控量。",
+    "storageTips": "冷藏 1-2 天，冷冻长期。",
+    "healthNote": "优质蛋白与铁丰富，脂肪高于瘦肉需控量。"
+  },
+  {
+    "ingredient": "羊排",
+    "commonMethods": "烤、红烧、清炖。",
+    "prepTips": "焯水或腌制去膻，慢烤慢炖更嫩。",
+    "eatingNotes": "脂肪较高，三高及痛风人群少量。",
+    "storageTips": "冷藏短期、冷冻长期。",
+    "healthNote": "蛋白与铁丰富，脂肪偏高注意份量。"
+  },
+  {
+    "ingredient": "章鱼",
+    "commonMethods": "凉拌、爆炒、涮煮。",
+    "prepTips": "搓洗去黏液，焯烫至卷曲即熟，久煮变硬。",
+    "eatingNotes": "高嘌呤，痛风急性期避免、缓解期少量。",
+    "storageTips": "冷藏尽快食用或冷冻。",
+    "healthNote": "高蛋白低脂，但嘌呤高、痛风需注意。"
+  },
+  {
+    "ingredient": "海蜇",
+    "commonMethods": "凉拌海蜇丝、海蜇拌黄瓜。",
+    "prepTips": "反复浸泡冲洗去盐去矾，焯烫时间要短。",
+    "eatingNotes": "加工含盐含铝，充分泡洗，高血压人群控量。",
+    "storageTips": "盐渍海蜇密封冷藏。",
+    "healthNote": "低脂低热量，注意加工残留的盐与矾。"
+  },
+  {
+    "ingredient": "鹌鹑蛋",
+    "commonMethods": "卤蛋、煮蛋、烧菜配料。",
+    "prepTips": "冷水下锅煮 4-5 分钟，过凉好剥壳。",
+    "eatingNotes": "胆固醇集中，高脂血症人群控量。",
+    "storageTips": "冷藏保存，尽快食用。",
+    "healthNote": "优质蛋白，营养与鸡蛋相近，个小易超量。"
+  },
+  {
+    "ingredient": "奶粉",
+    "commonMethods": "温水冲调，或用于烘焙、冲麦片。",
+    "prepTips": "按比例用 40-50℃ 温水冲调，避免结块。",
+    "eatingNotes": "选脱脂/低脂款更适合三高；乳糖不耐者慎选。",
+    "storageTips": "开封后密封防潮，尽快用完。",
+    "healthNote": "富含钙和蛋白，冲调后接近液态奶。"
+  },
+  {
+    "ingredient": "黄油",
+    "commonMethods": "烘焙、煎食、涂抹面包。",
+    "prepTips": "冷藏保持固态，室温软化后好涂抹。",
+    "eatingNotes": "饱和脂肪高，高脂血症及冠心病人群严格限量。",
+    "storageTips": "密封冷藏，可冷冻长期保存。",
+    "healthNote": "饱和脂肪与热量很高，宜少量。"
+  },
+  {
+    "ingredient": "葵花籽",
+    "commonMethods": "炒制当零食，或入烘焙、沙拉。",
+    "prepTips": "选原味少盐款，避免多味重盐。",
+    "eatingNotes": "油脂热量高，减重及高脂血症人群控量。",
+    "storageTips": "密封防潮防哈喇，阴凉保存。",
+    "healthNote": "含不饱和脂肪和维生素 E，但热量高需限量。"
   }
 ]
