@@ -2,7 +2,9 @@ package com.sxdbsm.cookbook.android.ui.mine
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -89,14 +91,41 @@ fun MineScreen(
                     modifier = Modifier.size(40.dp),
                 )
                 Spacer(Modifier.width(12.dp))
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text("Cookbook 用户", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        if (profiles.isEmpty()) "还没设置健康档案，点击去选择" else "健康档案：${profiles.joinToString { it.crowdName }}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    if (profiles.isEmpty()) {
+                        Text(
+                            "还没设置健康档案，点击去选择",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else {
+                        // [AI修改] 健康档案标签横向滚动展示，档案多时可滑动查看全部。
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            profiles.forEach { profile ->
+                                Surface(
+                                    shape = RoundedCornerShape(50),
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                ) {
+                                    Text(
+                                        profile.crowdName,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -402,7 +431,8 @@ private fun HealthProfileDialog(
         onDismissRequest = onDismiss,
         title = { Text("个人健康档案") },
         text = {
-            Column {
+            // [AI修改] 病种统一到调养类后可达十余项，弹框内容需可纵向滚动。
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 if (crowdTypes.isEmpty()) {
                     Text("暂无可选健康档案")
                 } else {

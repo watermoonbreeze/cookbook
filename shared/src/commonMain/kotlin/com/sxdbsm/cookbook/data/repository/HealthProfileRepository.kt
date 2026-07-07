@@ -21,10 +21,13 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
     private val q = db.cookbookQueries
 
     /**
-     * 读取系统支持的全部健康人群类型。[AI修改]
+     * 读取可选的健康档案病种。[AI修改]
+     *
+     * 统一到调养病种：来源为 food_category（dimension=crowd 的 care_ 病种），覆盖全部调养类。
+     * 仍复用 CrowdType 作为「id+名称」承载，description 为空（food_category 无描述）。
      */
     suspend fun listAllCrowdTypes(): List<CrowdType> = withContext(Dispatchers.Default) {
-        q.selectAllCrowdTypes().executeAsList().map { CrowdType(it.id, it.name, it.description) }
+        q.selectCareCategories().executeAsList().map { CrowdType(it.id, it.name, "") }
     }
 
     /**
@@ -34,7 +37,7 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
         q.selectEnabledHealthProfiles().asFlow().mapToList(Dispatchers.Default).map { rows ->
             rows.map {
                 HealthProfile(
-                    crowdTypeId = it.crowd_type_id,
+                    crowdTypeId = it.care_category_id,
                     crowdName = it.crowd_name,
                     crowdDescription = it.crowd_description,
                     enabled = it.enabled == 1L,
@@ -48,7 +51,7 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
     suspend fun listAll(): List<HealthProfile> = withContext(Dispatchers.Default) {
         q.selectAllHealthProfiles().executeAsList().map {
             HealthProfile(
-                crowdTypeId = it.crowd_type_id,
+                crowdTypeId = it.care_category_id,
                 crowdName = it.crowd_name,
                 crowdDescription = it.crowd_description,
                 enabled = it.enabled == 1L,

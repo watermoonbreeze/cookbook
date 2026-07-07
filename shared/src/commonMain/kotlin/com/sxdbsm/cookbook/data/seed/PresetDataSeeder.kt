@@ -196,19 +196,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             categoryIdsByCode[seed.code] = ensureCategory(seed, parentId)
         }
 
-        val crowdParentId = categoryIdsByCode["crowd"]
-        if (crowdParentId != null) {
-            q.selectAllCrowdTypes().executeAsList().forEachIndexed { idx, crowd ->
-                val seed = SeedFoodCategory(
-                    code = "crowd_${crowd.id}",
-                    name = crowd.name,
-                    dimension = "crowd",
-                    parent = "crowd",
-                    sort = ((idx + 1) * 10).toLong(),
-                )
-                ensureCategory(seed, crowdParentId, crowd.id)
-            }
-        }
+        // [AI修改] 不再从 crowd_type 生成 crowd_${id} 调养分类：调养病种统一走 food_categories.json 的 care_ 节点，
+        // 健康档案与调养 Tab / care rule 共用同一套 care_ 病种，避免两套病种重复。
         return categoryIdsByCode
     }
 

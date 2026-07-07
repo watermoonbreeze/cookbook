@@ -1,0 +1,16 @@
+-- [AI生成] v12 -> v13：健康档案统一到调养病种。
+-- 1) user_health_profile 由引用 crowd_type 改为引用 food_category（care_ 病种）。
+--    旧列 crowd_type_id 存的是 crowd_type id、与新病种不对应，直接重建（用户重新勾选即可，病种更全）。
+DROP TABLE IF EXISTS user_health_profile;
+CREATE TABLE user_health_profile (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    care_category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_health_profile ON user_health_profile(care_category_id);
+
+-- 2) 软删除旧库中由 crowd_type 生成的 crowd_${id} 调养分类（crowd_type_id 非空），
+--    避免调养 Tab 与健康档案同时出现 crowd_ 与 care_ 两套重复病种。
+UPDATE food_category SET status = 0 WHERE dimension = 'crowd' AND crowd_type_id IS NOT NULL;

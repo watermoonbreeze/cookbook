@@ -253,15 +253,17 @@ CREATE TABLE user_preferences (
     status INTEGER NOT NULL DEFAULT 1
 );
 
+-- [AI修改] 健康档案统一到调养病种：改为引用 food_category（dimension=crowd 的 care_ 病种），
+-- 与调养 Tab / ingredient_care_rule 同一套病种，不再用旧 crowd_type（仅 4 项）。
 CREATE TABLE user_health_profile (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    crowd_type_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
+    care_category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
     enabled INTEGER NOT NULL DEFAULT 1,
     created_at INTEGER NOT NULL,
     status INTEGER NOT NULL DEFAULT 1
 );
 
-CREATE UNIQUE INDEX uq_user_health_profile ON user_health_profile(crowd_type_id);
+CREATE UNIQUE INDEX uq_user_health_profile ON user_health_profile(care_category_id);
 
 -- ========== 厨房小助手 ==========
 
@@ -1120,27 +1122,36 @@ SELECT * FROM user_preferences WHERE status = 1;
 -- ===== user_health_profile =====
 
 insertHealthProfile:
-INSERT OR REPLACE INTO user_health_profile(crowd_type_id, enabled, created_at, status) VALUES (?, 1, ?, 1);
+INSERT OR REPLACE INTO user_health_profile(care_category_id, enabled, created_at, status) VALUES (?, 1, ?, 1);
 
 updateHealthProfileEnabled:
-UPDATE user_health_profile SET enabled = ?, status = 1 WHERE crowd_type_id = ?;
+UPDATE user_health_profile SET enabled = ?, status = 1 WHERE care_category_id = ?;
 
+-- [AI修改] 健康档案病种改从 food_category（调养病种）JOIN；food_category 无描述，描述列返回空串占位。
 selectEnabledHealthProfiles:
-SELECT hp.*, ct.name AS crowd_name, ct.description AS crowd_description
+SELECT hp.*, fc.name AS crowd_name, '' AS crowd_description
 FROM user_health_profile hp
-JOIN crowd_type ct ON hp.crowd_type_id = ct.id
-WHERE hp.enabled = 1 AND hp.status = 1 AND ct.status = 1
-ORDER BY hp.created_at;
+JOIN food_category fc ON hp.care_category_id = fc.id
+WHERE hp.enabled = 1 AND hp.status = 1 AND fc.status = 1
+ORDER BY fc.sort_order, hp.created_at;
 
 selectAllHealthProfiles:
-SELECT hp.*, ct.name AS crowd_name, ct.description AS crowd_description
+SELECT hp.*, fc.name AS crowd_name, '' AS crowd_description
 FROM user_health_profile hp
-JOIN crowd_type ct ON hp.crowd_type_id = ct.id
-WHERE hp.status = 1 AND ct.status = 1
-ORDER BY hp.created_at;
+JOIN food_category fc ON hp.care_category_id = fc.id
+WHERE hp.status = 1 AND fc.status = 1
+ORDER BY fc.sort_order, hp.created_at;
 
 deleteHealthProfile:
-UPDATE user_health_profile SET status = 0 WHERE crowd_type_id = ?;
+UPDATE user_health_profile SET status = 0 WHERE care_category_id = ?;
+
+-- [AI生成] 健康档案可选病种 = 调养维度（dimension=crowd）下的具体病种；排除聚合根「人群分类」，
+-- 且排除旧 crowd_type 生成的 crowd_${id} 分类（那些 crowd_type_id 非空）。
+selectCareCategories:
+SELECT id, name, sort_order
+FROM food_category
+WHERE dimension = 'crowd' AND parent_id IS NOT NULL AND crowd_type_id IS NULL AND status = 1
+ORDER BY sort_order, id;
 
 -- ===== pantry 库存（我家食材） =====
 
