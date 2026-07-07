@@ -57,6 +57,7 @@ fun SearchScreen(
     onBack: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
+    onOpenIngredients: () -> Unit = {}, // [AI生成] 点食材搜索结果跳到食材页。
     vm: SearchViewModel = koinViewModel(),
 ) {
     val ui by vm.state.collectAsStateWithLifecycle()
@@ -140,6 +141,7 @@ fun SearchScreen(
                                 IngredientCard(
                                     ingredient = ingredient,
                                     modifier = Modifier.width(96.dp),
+                                    onClick = onOpenIngredients, // [AI生成] 点食材结果跳到食材页(具体高亮定位待后续跨屏传参)。
                                 )
                             }
                         }

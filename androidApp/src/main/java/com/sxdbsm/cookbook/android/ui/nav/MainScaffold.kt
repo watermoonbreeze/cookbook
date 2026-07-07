@@ -140,6 +140,7 @@ fun MainScaffold() {
                     onBack = { nav.popBackStack() },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                    onOpenIngredients = { nav.navigateRootTab(Routes.INGREDIENTS) }, // [AI生成] 点食材结果切到食材页。
                 )
             }
             composable(Routes.ADD_MEAL) {
