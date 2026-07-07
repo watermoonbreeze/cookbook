@@ -1,49 +1,11 @@
 package com.sxdbsm.cookbook.android.ui.picker
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sxdbsm.cookbook.android.ui.component.AppSearchField
-import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
-import com.sxdbsm.cookbook.android.ui.component.IngredientCard
-import com.sxdbsm.cookbook.android.ui.component.StoredImage
-import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
-import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
-import com.sxdbsm.cookbook.domain.model.DishIngredientMatch
 import com.sxdbsm.cookbook.domain.model.FoodCategory
 import com.sxdbsm.cookbook.domain.model.Ingredient
-import com.sxdbsm.cookbook.domain.model.IngredientCareRule
-import com.sxdbsm.cookbook.domain.model.IngredientDetail
-import com.sxdbsm.cookbook.domain.model.MeasurementUnit
-import org.koin.androidx.compose.koinViewModel
 
 // [AI生成] 食材选择器共享扩展函数（显示名/分类提示/调养等级/可编辑判定等）
 // 由 IngredientPickerScreen.kt 拆分而来（阶段1界面重构），保持同包同行为，不改逻辑。
