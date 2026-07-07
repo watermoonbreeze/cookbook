@@ -1516,5 +1516,325 @@
     "eatingNotes": "含钠，高血压人群控量。",
     "storageTips": "密封防潮防结块。",
     "healthNote": "增鲜为主，含钠需与盐一并计入。"
+  },
+  {
+    "ingredient": "花椒",
+    "commonMethods": "炝锅、卤料、做花椒油。",
+    "prepTips": "干花椒小火焙香更出味，用量宜少。",
+    "eatingNotes": "普遍适宜，痔疮或胃溃疡者少用。",
+    "storageTips": "密封避光防潮。",
+    "healthNote": "麻香调味，用量小；可借香味减少用盐。"
+  },
+  {
+    "ingredient": "八角",
+    "commonMethods": "卤味、红烧、炖肉的常用香料。",
+    "prepTips": "整颗投入慢炖，出锅前捞出。",
+    "eatingNotes": "调味用量少，普遍适宜。",
+    "storageTips": "密封避光防潮。",
+    "healthNote": "增香为主，几乎不影响热量与钠。"
+  },
+  {
+    "ingredient": "桂皮",
+    "commonMethods": "卤料、炖肉、煮茶。",
+    "prepTips": "掰小块使用，慢炖出香。",
+    "eatingNotes": "用量少，孕期慎用大量。",
+    "storageTips": "密封避光防潮。",
+    "healthNote": "增香为主，用量小。"
+  },
+  {
+    "ingredient": "孜然",
+    "commonMethods": "烤肉、炒羊肉、烤串调味。",
+    "prepTips": "起锅前撒或腌肉时用，焙香更浓。",
+    "eatingNotes": "偏温燥，易上火者少用。",
+    "storageTips": "密封避光防潮。",
+    "healthNote": "标志性烤香，用量小、可减少对盐的依赖。"
+  },
+  {
+    "ingredient": "胡椒",
+    "commonMethods": "汤羹、炒菜、腌肉去腥提味。",
+    "prepTips": "现磨黑胡椒香气最足，白胡椒更温和。",
+    "eatingNotes": "胃肠敏感者少用，用量小。",
+    "storageTips": "密封避光防潮。",
+    "healthNote": "增香增味，用量小、几乎不含钠。"
+  },
+  {
+    "ingredient": "香叶",
+    "commonMethods": "卤水、炖肉、西式炖菜。",
+    "prepTips": "1-2 片即可，久炖出香后捞出。",
+    "eatingNotes": "用量少，普遍适宜。",
+    "storageTips": "密封避光防潮。",
+    "healthNote": "增香为主，热量钠可忽略。"
+  },
+  {
+    "ingredient": "五香粉",
+    "commonMethods": "腌肉、卤味、面食调味。",
+    "prepTips": "腌制或起锅前少量撒入。",
+    "eatingNotes": "复合香料，用量宜少。",
+    "storageTips": "密封防潮防结块。",
+    "healthNote": "多种香料复配，调味用、用量小。"
+  },
+  {
+    "ingredient": "平菇",
+    "commonMethods": "清炒、做汤、涮火锅。",
+    "prepTips": "撕成小朵，彻底炒熟。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "冷藏保存，避免受潮发黏。",
+    "healthNote": "低脂低热量、含膳食纤维，菌菇嘌呤中等。"
+  },
+  {
+    "ingredient": "茶树菇",
+    "commonMethods": "炖鸡汤、干煸、炒肉。",
+    "prepTips": "泡软去根，久炖更香。",
+    "eatingNotes": "膳食纤维较粗，胃弱者适量。",
+    "storageTips": "干品密封防潮，鲜品冷藏。",
+    "healthNote": "含膳食纤维、低脂，风味浓郁。"
+  },
+  {
+    "ingredient": "草菇",
+    "commonMethods": "清炒、做汤、烩菜。",
+    "prepTips": "现买现做，久放易开伞变质。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "冷藏且尽快食用，不耐存。",
+    "healthNote": "低热量、含膳食纤维，鲜嫩易熟。"
+  },
+  {
+    "ingredient": "蟹味菇",
+    "commonMethods": "涮锅、清炒、做汤。",
+    "prepTips": "切去根部撕散，彻底煮熟。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "冷藏保存，避免受潮。",
+    "healthNote": "口感脆嫩、低脂低热量。"
+  },
+  {
+    "ingredient": "银耳",
+    "commonMethods": "煮银耳羹、炖汤。",
+    "prepTips": "泡发后去黄蒂，撕小朵久炖出胶。",
+    "eatingNotes": "羹品少加糖，糖尿病人群尤其注意。",
+    "storageTips": "干品密封防潮，泡发后尽快用。",
+    "healthNote": "含植物胶质和膳食纤维、低热量，别被糖毁掉。"
+  },
+  {
+    "ingredient": "猴头菇",
+    "commonMethods": "炖汤、煲鸡、素菜。",
+    "prepTips": "泡发挤去黄水去苦，反复漂洗。",
+    "eatingNotes": "普遍适宜，养胃食材。",
+    "storageTips": "干品密封防潮。",
+    "healthNote": "含膳食纤维、低脂，口感似肉。"
+  },
+  {
+    "ingredient": "内酯豆腐",
+    "commonMethods": "凉拌、做汤、蒸食。",
+    "prepTips": "质地嫩滑，轻拿轻放防碎。",
+    "eatingNotes": "普遍适宜，优质植物蛋白。",
+    "storageTips": "冷藏保存，开盒尽快食用。",
+    "healthNote": "水分高、蛋白优质、低脂，控糖控脂友好。"
+  },
+  {
+    "ingredient": "冻豆腐",
+    "commonMethods": "涮火锅、炖菜，吸味多汁。",
+    "prepTips": "普通豆腐冷冻后成蜂窝状即成。",
+    "eatingNotes": "吸汤汁易带盐油，火锅注意整体咸度。",
+    "storageTips": "-18℃ 冷冻保存。",
+    "healthNote": "植物蛋白，孔隙吸味、注意汤底油盐。"
+  },
+  {
+    "ingredient": "油豆腐",
+    "commonMethods": "红烧、涮锅、酿肉。",
+    "prepTips": "可焯水去部分油再烹。",
+    "eatingNotes": "经过油炸、脂肪较高，控脂人群适量。",
+    "storageTips": "冷藏尽快食用或冷冻。",
+    "healthNote": "由豆腐油炸而成，蛋白高但脂肪也高。"
+  },
+  {
+    "ingredient": "青豆",
+    "commonMethods": "清炒、配菜、煮饭。",
+    "prepTips": "鲜青豆焯水后炒，干青豆需泡煮。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "鲜品冷藏、干品密封防潮。",
+    "healthNote": "植物蛋白和膳食纤维丰富。"
+  },
+  {
+    "ingredient": "黄花鱼",
+    "commonMethods": "红烧、清蒸、干煎。",
+    "prepTips": "去鳞去内脏，两面煎定型。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "冷藏当天食用或冷冻。",
+    "healthNote": "优质蛋白、肉质细嫩、刺少，适合老人小孩。"
+  },
+  {
+    "ingredient": "鲳鱼",
+    "commonMethods": "清蒸、红烧、干煎。",
+    "prepTips": "刮净表面，划几刀入味。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "冷藏当天或冷冻。",
+    "healthNote": "刺少肉嫩、含 Omega-3，适合家常。"
+  },
+  {
+    "ingredient": "罗非鱼",
+    "commonMethods": "红烧、烤鱼、清蒸。",
+    "prepTips": "去腥线和黑膜，煎后烧制。",
+    "eatingNotes": "嘌呤中等，痛风缓解期适量。",
+    "storageTips": "冷藏当天或冷冻。",
+    "healthNote": "高蛋白低脂、实惠，刺少易食。"
+  },
+  {
+    "ingredient": "龙利鱼",
+    "commonMethods": "香煎、清蒸、做鱼柳。",
+    "prepTips": "解冻擦干再煎，注意区分巴沙鱼。",
+    "eatingNotes": "普遍适宜，注意选购正品。",
+    "storageTips": "-18℃ 冷冻，解冻后当天食用。",
+    "healthNote": "无刺低脂高蛋白，适合三高及老人小孩。"
+  },
+  {
+    "ingredient": "河虾",
+    "commonMethods": "白灼、油焖、椒盐。",
+    "prepTips": "剪须去虾线，鲜活现做。",
+    "eatingNotes": "高嘌呤高胆固醇，痛风、高脂血症人群少吃。",
+    "storageTips": "鲜活冷藏保湿，尽快食用。",
+    "healthNote": "补钙优质蛋白，但嘌呤胆固醇高需限量。"
+  },
+  {
+    "ingredient": "蛏子",
+    "commonMethods": "葱姜爆炒、白灼。",
+    "prepTips": "淡盐水养吐沙，急火快炒。",
+    "eatingNotes": "高嘌呤，痛风人群急性期避免、缓解期少量。",
+    "storageTips": "养水冷藏，当天食用。",
+    "healthNote": "含锌和蛋白，贝类嘌呤高、需注意。"
+  },
+  {
+    "ingredient": "田螺",
+    "commonMethods": "爆炒、煮汤（螺蛳粉）。",
+    "prepTips": "养水吐泥数日、剪尾，彻底煮熟。",
+    "eatingNotes": "高嘌呤且需彻底做熟防寄生虫。",
+    "storageTips": "养水冷藏短期。",
+    "healthNote": "低脂高蛋白，但嘌呤高、务必熟透。"
+  },
+  {
+    "ingredient": "泥鳅",
+    "commonMethods": "炖汤、红烧、钻豆腐。",
+    "prepTips": "养水吐泥，宰杀洗净黏液。",
+    "eatingNotes": "嘌呤中等，需彻底做熟。",
+    "storageTips": "养水冷藏，当天食用。",
+    "healthNote": "高蛋白低脂、含钙，务必熟透食用。"
+  },
+  {
+    "ingredient": "石榴",
+    "commonMethods": "剥食籽粒或榨汁。",
+    "prepTips": "顶部切口沿白膜分块好取籽。",
+    "eatingNotes": "含糖中等，糖尿病人群适量、优选整果。",
+    "storageTips": "冷藏保存，耐放。",
+    "healthNote": "含多酚抗氧化物，整果比果汁更利于控糖。"
+  },
+  {
+    "ingredient": "柿子",
+    "commonMethods": "鲜食（脆柿/软柿）或做柿饼。",
+    "prepTips": "空腹及与高蛋白同食易结石，饭后适量。",
+    "eatingNotes": "含糖和鞣酸，糖尿病人群限量、勿空腹多吃。",
+    "storageTips": "硬柿常温后熟，软后冷藏。",
+    "healthNote": "含膳食纤维，但糖分和鞣酸需注意。"
+  },
+  {
+    "ingredient": "无花果",
+    "commonMethods": "鲜食或做果干、煮汤。",
+    "prepTips": "洗净直接食用，成熟后软甜。",
+    "eatingNotes": "鲜果糖分中等，果干含糖高需控量。",
+    "storageTips": "鲜果冷藏尽快食用，果干密封。",
+    "healthNote": "含膳食纤维和多酚，鲜果优于高糖果干。"
+  },
+  {
+    "ingredient": "桑葚",
+    "commonMethods": "鲜食、泡酒、煮膏。",
+    "prepTips": "淡盐水浸泡后冲洗，会染色。",
+    "eatingNotes": "性偏凉，脾胃虚寒者适量。",
+    "storageTips": "冷藏且尽快食用，极易出水。",
+    "healthNote": "含花青素和铁，抗氧化、GI 较低。"
+  },
+  {
+    "ingredient": "山竹",
+    "commonMethods": "剥壳食用果肉。",
+    "prepTips": "捏软后掰开，避免紫壳汁染衣。",
+    "eatingNotes": "性凉，脾胃虚寒者适量。",
+    "storageTips": "常温阴凉短期，冷藏更久。",
+    "healthNote": "口感清甜、含膳食纤维，热量适中。"
+  },
+  {
+    "ingredient": "榴莲",
+    "commonMethods": "鲜食果肉或做甜品。",
+    "prepTips": "闻香捏软判断成熟度。",
+    "eatingNotes": "糖和脂肪都高、能量极高，三高及减重人群严格限量。",
+    "storageTips": "果肉冷藏或冷冻保存。",
+    "healthNote": "高糖高脂高能量，浅尝即止、忌配酒。"
+  },
+  {
+    "ingredient": "椰子",
+    "commonMethods": "喝椰汁、刮椰肉、煲汤。",
+    "prepTips": "打孔取汁，撬壳取肉。",
+    "eatingNotes": "椰肉饱和脂肪高，高脂血症人群少吃。",
+    "storageTips": "整只常温、开壳后冷藏尽快食用。",
+    "healthNote": "椰汁清爽，但椰肉饱和脂肪偏高需控量。"
+  },
+  {
+    "ingredient": "枇杷",
+    "commonMethods": "鲜食或煮枇杷膏。",
+    "prepTips": "去皮去核，现吃现剥。",
+    "eatingNotes": "含糖中等，糖尿病人群适量。",
+    "storageTips": "冷藏保存，避免碰压。",
+    "healthNote": "含胡萝卜素和膳食纤维，润肺常见。"
+  },
+  {
+    "ingredient": "皮蛋",
+    "commonMethods": "凉拌（皮蛋豆腐）、皮蛋瘦肉粥。",
+    "prepTips": "剥壳切瓣，选无铅工艺产品。",
+    "eatingNotes": "含钠，胃肠敏感及高血压人群适量。",
+    "storageTips": "常温阴凉或冷藏。",
+    "healthNote": "风味独特，钠偏高、宜适量。"
+  },
+  {
+    "ingredient": "炼乳",
+    "commonMethods": "涂抹、做甜品、冲饮。",
+    "prepTips": "用量宜少，可用鲜奶替代部分。",
+    "eatingNotes": "含糖极高，糖尿病人群尽量不用。",
+    "storageTips": "开罐后冷藏尽快用完。",
+    "healthNote": "加糖浓缩乳，糖分很高、需严格控量。"
+  },
+  {
+    "ingredient": "淡奶油",
+    "commonMethods": "打发做蛋糕、煮浓汤。",
+    "prepTips": "冷藏状态打发更稳定。",
+    "eatingNotes": "脂肪和热量很高，三高及减重人群少用。",
+    "storageTips": "冷藏保存，勿冷冻分层。",
+    "healthNote": "乳脂含量高、热量密集，宜少量。"
+  },
+  {
+    "ingredient": "薏米",
+    "commonMethods": "煮薏米红豆水、煮粥。",
+    "prepTips": "提前浸泡数小时更易煮软。",
+    "eatingNotes": "性偏凉、有滑利，孕期慎大量食用。",
+    "storageTips": "密封防潮防虫。",
+    "healthNote": "低 GI、含膳食纤维，常与红豆同煮。"
+  },
+  {
+    "ingredient": "小麦",
+    "commonMethods": "磨粉做面食，或煮麦仁粥。",
+    "prepTips": "整粒麦仁需长时间浸泡熬煮。",
+    "eatingNotes": "全麦保留麸皮，肠胃虚弱者适量。",
+    "storageTips": "密封防潮防虫。",
+    "healthNote": "全谷物膳食纤维高，精加工后损失较多。"
+  },
+  {
+    "ingredient": "玉米油",
+    "commonMethods": "炒菜、煎制的常用油。",
+    "prepTips": "控量使用，避免反复高温。",
+    "eatingNotes": "高热量油脂，计入每日 25-30 克用油。",
+    "storageTips": "密封避光防氧化。",
+    "healthNote": "以不饱和脂肪为主，仍需控制总量。"
+  },
+  {
+    "ingredient": "大豆油",
+    "commonMethods": "日常炒菜的常见油。",
+    "prepTips": "热锅冷油、控量使用。",
+    "eatingNotes": "同为高热量油脂，需计入每日用油。",
+    "storageTips": "密封避光保存。",
+    "healthNote": "含不饱和脂肪，控量是关键。"
   }
 ]
