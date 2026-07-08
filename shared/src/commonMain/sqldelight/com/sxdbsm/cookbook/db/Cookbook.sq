@@ -1082,10 +1082,12 @@ WHERE mrd.meal_record_id = ? AND mrd.status = 1 AND d.status = 1
 ORDER BY mrd.sort_order, d.name;
 
 -- [AI修改] 批量读取多条餐食记录下的菜品，减少首页计划和食历窗口的 N+1 查询。
+-- [AI修改] 去掉 d.status=1：菜品软删后历史餐食仍要显示当时吃的菜(与食材保留引用一致)；
+-- 菜品库列表另用带 status=1 的查询，软删菜不进库、只留在历史。
 selectDishesOfMealRecords:
 SELECT mrd.meal_record_id, d.*, mrd.sort_order FROM dish d
 JOIN meal_record_dish mrd ON d.id = mrd.dish_id
-WHERE mrd.meal_record_id IN ? AND mrd.status = 1 AND d.status = 1
+WHERE mrd.meal_record_id IN ? AND mrd.status = 1
 ORDER BY mrd.meal_record_id, mrd.sort_order, d.name;
 
 selectDishIdsByMealDate:

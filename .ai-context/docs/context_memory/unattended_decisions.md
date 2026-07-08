@@ -24,4 +24,7 @@
 
 - **阶段1 ✅ P1 IO Dispatcher**（commit `[unattended]`）：新增 `expect val ioDispatcher` + Android actual=Dispatchers.IO；8 repo + RecommendationDataSource 共 91 处 `Dispatchers.Default`→`ioDispatcher`；build+单测过。
 - **阶段2 ⏸ DI 平台化 → 待确认**：shared 只有 koin.core（无 koin-android）。移平台注册进 shared androidMain 需加 koin-android 依赖 + 用 androidContext()，且 DI 解析错误是**运行时崩溃**、无设备编译验不出——无人值守不擅自做。
-- **阶段3 代码审计**（删除一致性 + 图片持久化）：派 Explore 只读审计，按发现做安全修复。
+- **阶段3 代码审计 + 修复**（删除一致性 + 图片持久化）：
+  - ✅ **修复(中危)删除一致性**：`selectDishesOfMealRecords` 去掉 `d.status=1` → 菜品软删后食历仍显示当时吃的菜（与食材保留引用 pattern 一致；菜品库另用带 status=1 的查询不受影响）。build+MealRecord 测试过。**属行为变更，用户可 review**。
+  - ⏭ **不做(低危)图片路径去重**：审计建议用 zip 按对 distinct，但会假设 image/thumbnail 两列表等长；旧数据可能长度不等→zip 截断丢图，引入回归。原问题近不可能触发，不冒险。留待需要时按"补齐长度再配对"做。
+  - ✅ 图片持久化整体**无问题**：存 `/sdcard/cookbook/img/` 绝对路径、原图+缩略图、重启可回源。
