@@ -7,6 +7,7 @@ import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
+import android.os.SystemClock
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -121,7 +122,7 @@ fun CookingTimerScreen(
         if (resetTargetId != null) {
             timers = timers.map {
                 if (it.id == resetTargetId && it.status == TimerStatus.FINISHED) {
-                    it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds)
+                    it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds, endAtElapsed = null)
                 } else {
                     it
                 }
@@ -142,18 +143,23 @@ fun CookingTimerScreen(
     LaunchedEffect(timers.any { it.status == TimerStatus.RUNNING }) {
         while (timers.any { it.status == TimerStatus.RUNNING }) {
             delay(1000)
+            // [AI修改] 剩余时间按墙钟(endAtElapsed - now)计算，而非每秒 -1；
+            // 息屏/后台时本循环虽被系统挂起，恢复后按真实流逝时间刷新，倒计时不再“停走”。
+            val now = SystemClock.elapsedRealtime()
             var finishedTimer: CookingTimerItem? = null
             timers = timers.map { timer ->
                 if (timer.status != TimerStatus.RUNNING) {
                     timer
                 } else {
-                    val nextRemaining = (timer.remainingSeconds - 1).coerceAtLeast(0)
+                    val end = timer.endAtElapsed
+                    val nextRemaining = if (end != null) remainingFrom(end, now) else (timer.remainingSeconds - 1).coerceAtLeast(0)
                     if (timer.remainingSeconds > 0 && nextRemaining == 0) {
-                        finishedTimer = timer.copy(remainingSeconds = 0, status = TimerStatus.FINISHED)
+                        finishedTimer = timer.copy(remainingSeconds = 0, status = TimerStatus.FINISHED, endAtElapsed = null)
                     }
                     timer.copy(
                         remainingSeconds = nextRemaining,
                         status = if (nextRemaining == 0) TimerStatus.FINISHED else TimerStatus.RUNNING,
+                        endAtElapsed = if (nextRemaining == 0) null else timer.endAtElapsed,
                     ) // [AI生成] 倒计时归零后进入完成告警态，等待用户点击记录或停止按钮确认。
                 }
             }
@@ -272,21 +278,34 @@ fun CookingTimerScreen(
                             timers = timers.map {
                                 if (it.id == timer.id) {
                                     val remaining = if (it.remainingSeconds <= 0) it.durationSeconds else it.remainingSeconds
-                                    it.copy(status = TimerStatus.RUNNING, remainingSeconds = remaining)
+                                    // [AI修改] 开始/继续时锚定墙钟结束时刻，供息屏后按真实时间算剩余。
+                                    it.copy(
+                                        status = TimerStatus.RUNNING,
+                                        remainingSeconds = remaining,
+                                        endAtElapsed = SystemClock.elapsedRealtime() + remaining * 1000L,
+                                    )
                                 } else {
                                     it
                                 }
                             }
                         },
                         onPause = {
-                            timers = timers.map { if (it.id == timer.id) it.copy(status = TimerStatus.PAUSED) else it }
+                            timers = timers.map {
+                                if (it.id == timer.id) {
+                                    // [AI修改] 暂停时按墙钟结算真实剩余（含息屏期间流逝），并清除结束时刻。
+                                    val rem = it.endAtElapsed?.let { end -> remainingFrom(end, SystemClock.elapsedRealtime()) } ?: it.remainingSeconds
+                                    it.copy(status = TimerStatus.PAUSED, remainingSeconds = rem, endAtElapsed = null)
+                                } else {
+                                    it
+                                }
+                            }
                         },
                         onStop = {
                             if (timer.status == TimerStatus.FINISHED) {
                                 stopActiveAlarm(resetTimerId = timer.id)
                             }
                             timers = timers.map {
-                                if (it.id == timer.id) it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds) else it
+                                if (it.id == timer.id) it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds, endAtElapsed = null) else it
                             }
                         },
                         onEdit = {
@@ -554,7 +573,16 @@ private data class CookingTimerItem(
     val sortOrder: Int = 0,
     val status: TimerStatus = TimerStatus.IDLE,
     val editing: Boolean = false,
+    // [AI生成] 运行中的目标结束时刻（elapsedRealtime，息屏也走时）；剩余时间按墙钟从它算，
+    // 避免息屏时 delay 循环被系统挂起导致倒计时停走。仅 RUNNING 时有值。
+    val endAtElapsed: Long? = null,
 )
+
+/**
+ * 按墙钟(elapsedRealtime)计算剩余秒数，向上取整。[AI生成]
+ */
+private fun remainingFrom(endAtElapsed: Long, nowElapsed: Long): Int =
+    (((endAtElapsed - nowElapsed) + 999) / 1000).toInt().coerceAtLeast(0)
 
 private fun parseDurationSeconds(minutesText: String, secondsText: String): Int? {
     val minutes = minutesText.ifBlank { "0" }.toIntOrNull() ?: return null
