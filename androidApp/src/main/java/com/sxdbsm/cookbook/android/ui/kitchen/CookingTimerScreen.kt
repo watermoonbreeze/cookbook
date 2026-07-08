@@ -71,6 +71,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.data.repository.CookingTimerRepository
+import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.domain.model.CookingTimerTemplate
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -91,6 +92,7 @@ import org.koin.compose.koinInject
 fun CookingTimerScreen(
     onBack: () -> Unit,
     repo: CookingTimerRepository = koinInject(),
+    prefs: PreferenceRepository = koinInject(), // [AI生成] 持久化运行中计时器，App 被杀重开可恢复倒计时显示。
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -141,8 +143,32 @@ fun CookingTimerScreen(
     }
 
     LaunchedEffect(Unit) {
-        timers = repo.listTemplates().map { it.toTimerItem() }
+        val loadedTimers = repo.listTemplates().map { it.toTimerItem() }
+        // [AI生成] 恢复运行态：持久化存的是墙钟结束时刻，重开按它算剩余并重锚 elapsedRealtime；
+        // 已过期的显示为完成（响铃由之前注册的系统闹钟处理，不重复响）。
+        val running = parseRunningTimers(prefs.get(KEY_RUNNING_TIMERS))
+        val nowWall = System.currentTimeMillis()
+        val nowElapsed = SystemClock.elapsedRealtime()
+        timers = loadedTimers.map { t ->
+            val endWall = running[t.id] ?: return@map t
+            val remaining = (((endWall - nowWall) + 999) / 1000).toInt()
+            if (remaining > 0) {
+                t.copy(status = TimerStatus.RUNNING, remainingSeconds = remaining, endAtElapsed = nowElapsed + remaining * 1000L)
+            } else {
+                t.copy(status = TimerStatus.FINISHED, remainingSeconds = 0, endAtElapsed = null)
+            }
+        }
         loaded = true
+    }
+
+    // [AI生成] 运行中计时器集合变化时（开始/暂停/停止/完成）持久化墙钟结束时刻；tick 每秒只改 remaining、不触发此保存。
+    val runningSnapshot = timers.filter { it.status == TimerStatus.RUNNING && it.endAtElapsed != null }
+    LaunchedEffect(loaded, runningSnapshot.map { it.id to it.endAtElapsed }) {
+        if (!loaded) return@LaunchedEffect
+        val now = SystemClock.elapsedRealtime()
+        val nowWall = System.currentTimeMillis()
+        val encoded = runningSnapshot.joinToString(",") { "${it.id}:${nowWall + (it.endAtElapsed!! - now)}" }
+        prefs.set(KEY_RUNNING_TIMERS, encoded)
     }
 
     // [AI生成] A13+ 请求通知权限（未授时铃声仍会响，只是不显示到点通知）。
@@ -602,6 +628,21 @@ private data class CookingTimerItem(
  */
 private fun remainingFrom(endAtElapsed: Long, nowElapsed: Long): Int =
     (((endAtElapsed - nowElapsed) + 999) / 1000).toInt().coerceAtLeast(0)
+
+private const val KEY_RUNNING_TIMERS = "cooking_timer_running" // [AI生成] 持久化运行中计时器的偏好 key。
+
+/**
+ * 解析持久化的运行中计时器：格式 "id:endWallMillis,id:endWallMillis"。[AI生成]
+ */
+private fun parseRunningTimers(raw: String?): Map<Long, Long> {
+    if (raw.isNullOrBlank()) return emptyMap()
+    return raw.split(",").mapNotNull { entry ->
+        val parts = entry.split(":")
+        val id = parts.getOrNull(0)?.toLongOrNull()
+        val endWall = parts.getOrNull(1)?.toLongOrNull()
+        if (id != null && endWall != null) id to endWall else null
+    }.toMap()
+}
 
 private fun parseDurationSeconds(minutesText: String, secondsText: String): Int? {
     val minutes = minutesText.ifBlank { "0" }.toIntOrNull() ?: return null
