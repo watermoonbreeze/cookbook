@@ -34,6 +34,7 @@ val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { BackupManager(context = androidContext(), driverProvider = { get() }) }
     single { LogFileManager() } // [AI生成] 我的页日志查看读取 /sdcard/cookbook/log/。
+    single { com.sxdbsm.cookbook.android.ui.ingredients.IngredientJumpBus() } // [AI生成] 跨屏跳到具体食材总线。
 
     // [AI生成] AI 运行时切换框架：按 AiRuntimeConfig 路由到 Mock/云端/端侧；加端侧只需扩这里的映射。
     single { CloudAiRuntime(get()) }

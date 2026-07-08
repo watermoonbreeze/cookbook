@@ -1,8 +1,13 @@
 package com.sxdbsm.cookbook.android.ui.ingredients
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerScreen
+import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 /**
  * @File : IngredientsScreen
@@ -13,15 +18,28 @@ import org.koin.androidx.compose.koinViewModel
  * 复用食材选择器的分类、搜索、新增、编辑、删除和分类管理能力，但以底部 Tab 页面形式展示。
  * <p>
  * [AI生成] 任务10将食材从菜品选择弹窗提升为与菜品同等级的一级入口。
+ * [AI修改] 消费 IngredientJumpBus，从全局搜索点食材结果时跳到该食材并高亮。
  **/
 @Composable
 fun IngredientsScreen() {
+    val vm: IngredientPickerViewModel = koinViewModel()
+    val jumpBus: IngredientJumpBus = koinInject()
+    val pending by jumpBus.pending.collectAsStateWithLifecycle()
+
+    // [AI生成] 收到跨屏跳转请求 → 复用成熟的 jumpToIngredient 定位高亮，随后清空。
+    LaunchedEffect(pending) {
+        pending?.let {
+            vm.jumpToIngredient(it)
+            jumpBus.consume()
+        }
+    }
+
     IngredientPickerScreen(
         excludeIngredientIds = emptySet(),
         onDismiss = {},
         onConfirm = {},
         asDialog = false,
         selectionMode = false,
-        vm = koinViewModel(),
+        vm = vm,
     )
 }

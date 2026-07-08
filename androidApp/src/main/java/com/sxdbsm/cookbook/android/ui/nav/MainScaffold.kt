@@ -28,6 +28,8 @@ import com.sxdbsm.cookbook.android.ui.addmeal.AddDayFoodScreen
 import com.sxdbsm.cookbook.android.ui.kitchen.CookingTimerScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiRecommendScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiSettingsScreen
+import com.sxdbsm.cookbook.android.ui.ingredients.IngredientJumpBus
+import org.koin.compose.koinInject
 import com.sxdbsm.cookbook.android.ui.dishdetail.DishDetailScreen
 import com.sxdbsm.cookbook.android.ui.dishes.DishesScreen
 import com.sxdbsm.cookbook.android.ui.home.HomeScreen
@@ -53,6 +55,7 @@ fun MainScaffold(
     val current by nav.currentBackStackEntryAsState()
     val currentRoute = current?.destination?.route
     val context = LocalContext.current
+    val ingredientJumpBus: IngredientJumpBus = koinInject() // [AI生成] 搜索点食材→跳到该食材总线。
     var lastBackAt by remember { mutableStateOf(0L) }
 
     // [AI生成] 点击计时通知 → 进入烹饪计时页（非首页）。
@@ -165,7 +168,10 @@ fun MainScaffold(
                     onBack = { nav.popBackStack() },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
-                    onOpenIngredients = { nav.navigateRootTab(Routes.INGREDIENTS) }, // [AI生成] 点食材结果切到食材页。
+                    onOpenIngredient = { ingredient -> // [AI修改] 点食材结果：设置跳转总线 + 切到食材页定位高亮。
+                        ingredientJumpBus.request(ingredient)
+                        nav.navigateRootTab(Routes.INGREDIENTS)
+                    },
                 )
             }
             composable(Routes.ADD_MEAL) {

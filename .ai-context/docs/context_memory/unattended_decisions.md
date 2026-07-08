@@ -28,3 +28,7 @@
   - ✅ **修复(中危)删除一致性**：`selectDishesOfMealRecords` 去掉 `d.status=1` → 菜品软删后食历仍显示当时吃的菜（与食材保留引用 pattern 一致；菜品库另用带 status=1 的查询不受影响）。build+MealRecord 测试过。**属行为变更，用户可 review**。
   - ⏭ **不做(低危)图片路径去重**：审计建议用 zip 按对 distinct，但会假设 image/thumbnail 两列表等长；旧数据可能长度不等→zip 截断丢图，引入回归。原问题近不可能触发，不冒险。留待需要时按"补齐长度再配对"做。
   - ✅ 图片持久化整体**无问题**：存 `/sdcard/cookbook/img/` 绝对路径、原图+缩略图、重启可回源。
+- **阶段4 ✅ 首页搜索"跳到具体食材并高亮"**（原待确认项，重估后安全落地）：
+  - 新增 `IngredientJumpBus`(单例) 跨屏传食材；搜索点食材 → request()+跳食材页；IngredientsScreen 消费 → 复用成熟 `jumpToIngredient` 定位高亮 → consume。
+  - **失效模式优雅**：若跨 Tab 时序未收到，只退回"跳到食材页"当前行为，**无回归风险**——故安全执行。
+  - build 过。**跳转/高亮的视觉效果需真机确认**（时序类逻辑编译验不出，但复用已验证的 jumpToIngredient，且失败降级到旧行为）。

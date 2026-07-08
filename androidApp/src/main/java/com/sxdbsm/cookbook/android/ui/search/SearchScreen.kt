@@ -57,7 +57,7 @@ fun SearchScreen(
     onBack: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
-    onOpenIngredients: () -> Unit = {}, // [AI生成] 点食材搜索结果跳到食材页。
+    onOpenIngredient: (com.sxdbsm.cookbook.domain.model.Ingredient) -> Unit = {}, // [AI修改] 点食材结果跳到该食材并高亮。
     vm: SearchViewModel = koinViewModel(),
 ) {
     val ui by vm.state.collectAsStateWithLifecycle()
@@ -141,7 +141,7 @@ fun SearchScreen(
                                 IngredientCard(
                                     ingredient = ingredient,
                                     modifier = Modifier.width(96.dp),
-                                    onClick = onOpenIngredients, // [AI生成] 点食材结果跳到食材页(具体高亮定位待后续跨屏传参)。
+                                    onClick = { onOpenIngredient(ingredient) }, // [AI修改] 点食材结果跳到该食材并高亮。
                                 )
                             }
                         }
