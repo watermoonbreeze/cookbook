@@ -12,7 +12,7 @@ import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.Dish
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.withContext
 
 /**
@@ -36,7 +36,7 @@ class RecommendationDataSource(
     private val q = db.cookbookQueries
 
     /** 聚合规则引擎输入。[AI生成] */
-    suspend fun gather(recentLimit: Long = RECENT_LIMIT): RecommendationInput = withContext(Dispatchers.Default) {
+    suspend fun gather(recentLimit: Long = RECENT_LIMIT): RecommendationInput = withContext(ioDispatcher) {
         val pantryIds = pantryRepo.pantryIngredientIds()
         val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
 

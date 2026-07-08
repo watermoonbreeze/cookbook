@@ -6,7 +6,7 @@ import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.PreferenceKeys
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -23,28 +23,28 @@ class PreferenceRepository(private val db: CookbookDatabase) {
      * 监听主题模式。[AI修改]
      */
     fun observeThemeMode(): Flow<ThemeMode> =
-        q.selectPreference(PreferenceKeys.THEME_MODE).asFlow().mapToOneOrNull(Dispatchers.Default).map { row ->
+        q.selectPreference(PreferenceKeys.THEME_MODE).asFlow().mapToOneOrNull(ioDispatcher).map { row ->
             ThemeMode.fromCode(row?.value_)
         }
 
     /**
      * 写入主题模式。[AI修改]
      */
-    suspend fun setThemeMode(mode: ThemeMode) = withContext(Dispatchers.Default) {
+    suspend fun setThemeMode(mode: ThemeMode) = withContext(ioDispatcher) {
         q.upsertPreference(PreferenceKeys.THEME_MODE, mode.code, DateTime.nowEpochSeconds())
     }
 
     /**
      * 读取任意偏好 key。[AI修改]
      */
-    suspend fun get(key: String): String? = withContext(Dispatchers.Default) {
+    suspend fun get(key: String): String? = withContext(ioDispatcher) {
         q.selectPreference(key).executeAsOneOrNull()?.value_
     }
 
     /**
      * 写入任意偏好 key。[AI修改]
      */
-    suspend fun set(key: String, value: String) = withContext(Dispatchers.Default) {
+    suspend fun set(key: String, value: String) = withContext(ioDispatcher) {
         q.upsertPreference(key, value, DateTime.nowEpochSeconds())
     }
 }

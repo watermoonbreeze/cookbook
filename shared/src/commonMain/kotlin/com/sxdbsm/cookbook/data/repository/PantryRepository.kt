@@ -5,7 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
@@ -27,12 +27,12 @@ class PantryRepository(private val db: CookbookDatabase) {
      * 监听在手食材列表（库存 Tab 数据源）。[AI生成]
      */
     fun observePantryIngredients(): Flow<List<Ingredient>> =
-        q.selectPantryIngredients(::mapIngredientRow).asFlow().mapToList(Dispatchers.Default)
+        q.selectPantryIngredients(::mapIngredientRow).asFlow().mapToList(ioDispatcher)
 
     /**
      * 一次性读取在手食材列表。[AI生成]
      */
-    suspend fun listPantryIngredients(): List<Ingredient> = withContext(Dispatchers.Default) {
+    suspend fun listPantryIngredients(): List<Ingredient> = withContext(ioDispatcher) {
         q.selectPantryIngredients(::mapIngredientRow).executeAsList()
     }
 
@@ -47,7 +47,7 @@ class PantryRepository(private val db: CookbookDatabase) {
         unitId: Long? = null,
         expireAt: Long? = null,
         note: String = "",
-    ) = withContext(Dispatchers.Default) {
+    ) = withContext(ioDispatcher) {
         q.upsertPantryItem(
             ingredient_id = ingredientId,
             quantity = quantity,
@@ -61,21 +61,21 @@ class PantryRepository(private val db: CookbookDatabase) {
     /**
      * 移出库存（软失效，保留复购历史）。[AI生成]
      */
-    suspend fun removeFromPantry(ingredientId: Long) = withContext(Dispatchers.Default) {
+    suspend fun removeFromPantry(ingredientId: Long) = withContext(ioDispatcher) {
         q.removeFromPantry(ingredientId)
     }
 
     /**
      * 在手食材 id 集合，供详情/做法区标记「家里有」。[AI生成]
      */
-    suspend fun pantryIngredientIds(): Set<Long> = withContext(Dispatchers.Default) {
+    suspend fun pantryIngredientIds(): Set<Long> = withContext(ioDispatcher) {
         q.selectPantryIngredientIds().executeAsList().toSet()
     }
 
     /**
      * 在手食材数量。[AI生成]
      */
-    suspend fun count(): Long = withContext(Dispatchers.Default) {
+    suspend fun count(): Long = withContext(ioDispatcher) {
         q.countPantry().executeAsOne()
     }
 

@@ -9,7 +9,7 @@ import com.sxdbsm.cookbook.domain.model.MealRecord
 import com.sxdbsm.cookbook.domain.model.MealSection
 import com.sxdbsm.cookbook.domain.model.MealType
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -29,7 +29,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      * 监听全部餐次类型。[AI修改]
      */
     fun observeMealTypes(): Flow<List<MealType>> =
-        q.selectAllMealTypes().asFlow().mapToList(Dispatchers.Default).map { rows ->
+        q.selectAllMealTypes().asFlow().mapToList(ioDispatcher).map { rows ->
             rows.map {
                 MealType(
                     id = it.id,
@@ -39,7 +39,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     isFixed = it.is_fixed == 1L,
                 )
             }
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(ioDispatcher)
 
     /**
      * 一次性读取餐次类型。[AI修改]
@@ -60,9 +60,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      */
     fun observeDayMealCard(date: LocalDate): Flow<DayMealCardData> {
         val dateStr = DateTime.formatDate(date)
-        return q.selectMealRecordsByDate(dateStr).asFlow().mapToList(Dispatchers.Default).map { records ->
+        return q.selectMealRecordsByDate(dateStr).asFlow().mapToList(ioDispatcher).map { records ->
             buildDayMealCard(date, records)
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(ioDispatcher)
     }
 
     /** 主页用：只展示今天及未来真实存在的两条餐食记录。[AI修改] */
@@ -70,7 +70,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         val todayStr = DateTime.formatDate(today)
         return q.selectUpcomingMealRecords(todayStr, 2)
             .asFlow()
-            .mapToList(Dispatchers.Default)
+            .mapToList(ioDispatcher)
             .map { records ->
                 records
                     .groupBy { it.date }
@@ -81,7 +81,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                         buildDayMealCard(date, rows, plan = date > today)
                     }
             }
-            .flowOn(Dispatchers.Default)
+            .flowOn(ioDispatcher)
     }
 
     /**
@@ -92,12 +92,12 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     fun observeTimelineCards(limit: Long = 60): Flow<List<DayMealCardData>> =
         q.selectDistinctDates(limit = limit, offset = 0)
             .asFlow()
-            .mapToList(Dispatchers.Default)
+            .mapToList(ioDispatcher)
             .map { dates ->
                 val today = DateTime.today()
                 dates.map { dateStr -> buildDayMealCard(DateTime.parseDate(dateStr), q.selectMealRecordsByDate(dateStr).executeAsList(), plan = DateTime.parseDate(dateStr) > today) }
             }
-            .flowOn(Dispatchers.Default)
+            .flowOn(ioDispatcher)
 
     /**
      * 监听食历中真实存在餐食记录的日期。[AI生成]
@@ -107,16 +107,16 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     fun observeTimelineDates(): Flow<List<LocalDate>> =
         q.selectTimelineDatesAsc()
             .asFlow()
-            .mapToList(Dispatchers.Default)
+            .mapToList(ioDispatcher)
             .map { rows -> rows.map { DateTime.parseDate(it) } }
-            .flowOn(Dispatchers.Default)
+            .flowOn(ioDispatcher)
 
     /**
      * 批量读取指定日期的食历卡片。[AI生成]
      *
      * ViewModel 负责分页选择日期窗口，Repository 只按这些有记录日期批量读取 meal_record。
      */
-    suspend fun loadTimelineCardsByDates(dates: List<LocalDate>): List<DayMealCardData> = withContext(Dispatchers.Default) {
+    suspend fun loadTimelineCardsByDates(dates: List<LocalDate>): List<DayMealCardData> = withContext(ioDispatcher) {
         if (dates.isEmpty()) return@withContext emptyList()
         val dateStrings = dates.map { DateTime.formatDate(it) }
         val records = q.selectMealRecordsByDates(dateStrings).executeAsList()
@@ -129,7 +129,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      * 支持按日期文本命中，也支持按餐食关联菜品名称命中；返回整天餐食卡片供搜索页展示。
      */
     suspend fun searchMealCards(keyword: String, limit: Long = 20, offset: Long = 0): List<DayMealCardData> =
-        withContext(Dispatchers.Default) {
+        withContext(ioDispatcher) {
             val trimmed = keyword.trim()
             if (trimmed.isBlank()) return@withContext emptyList()
             val dateRows = q.searchMealDates("%$trimmed%", limit, offset).executeAsList()
@@ -151,24 +151,24 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             end = DateTime.formatDate(endDate),
         )
             .asFlow()
-            .mapToList(Dispatchers.Default)
+            .mapToList(ioDispatcher)
             .map { records ->
                 buildDayMealCards(startDate, endDate, records)
             }
-            .flowOn(Dispatchers.Default)
+            .flowOn(ioDispatcher)
     }
 
     /**
      * 分页读取有餐食记录的日期。[AI修改]
      */
-    suspend fun listDistinctDates(limit: Long, offset: Long): List<LocalDate> = withContext(Dispatchers.Default) {
+    suspend fun listDistinctDates(limit: Long, offset: Long): List<LocalDate> = withContext(ioDispatcher) {
         q.selectDistinctDates(limit = limit, offset = offset).executeAsList().map { DateTime.parseDate(it) }
     }
 
     /**
      * 读取某天完整卡片。[AI修改]
      */
-    suspend fun loadDayMealCard(date: LocalDate, today: LocalDate): DayMealCardData = withContext(Dispatchers.Default) {
+    suspend fun loadDayMealCard(date: LocalDate, today: LocalDate): DayMealCardData = withContext(ioDispatcher) {
         val records = q.selectMealRecordsByDate(DateTime.formatDate(date)).executeAsList()
         buildDayMealCard(date, records, plan = date > today)
     }
@@ -176,7 +176,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     /**
      * 查询当前记录的最小/最大日期。[AI修改]
      */
-    suspend fun dateRange(): Pair<LocalDate?, LocalDate?> = withContext(Dispatchers.Default) {
+    suspend fun dateRange(): Pair<LocalDate?, LocalDate?> = withContext(ioDispatcher) {
         val row = q.selectMinAndMaxDate().executeAsOneOrNull() ?: return@withContext null to null
         val min = row.min_date?.let { DateTime.parseDate(it) }
         val max = row.max_date?.let { DateTime.parseDate(it) }
@@ -192,7 +192,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         mealTime: LocalTime,
         note: String,
         dishIds: List<Long>,
-    ): Long = withContext(Dispatchers.Default) {
+    ): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
         var recordId = 0L
         db.transaction {
@@ -223,7 +223,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     suspend fun saveDayMeals(
         date: LocalDate,
         meals: List<DayMealDraft>,
-    ): List<Long> = withContext(Dispatchers.Default) {
+    ): List<Long> = withContext(ioDispatcher) {
         val dateStr = DateTime.formatDate(date)
         val now = DateTime.nowEpochSeconds()
         val recordIds = mutableListOf<Long>()
@@ -259,7 +259,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      * 复用采用“目标日整日替换”策略，与添加/编辑餐食页保存语义一致；这样用户看到的目标日期餐食
      * 和源日期完全一致，也避免同一天出现重复餐次。
      */
-    suspend fun copyDayMeals(sourceDate: LocalDate, targetDate: LocalDate): List<Long> = withContext(Dispatchers.Default) {
+    suspend fun copyDayMeals(sourceDate: LocalDate, targetDate: LocalDate): List<Long> = withContext(ioDispatcher) {
         val sourceMeals = loadDayMealsForEdit(sourceDate).map { meal ->
             DayMealDraft(
                 mealTypeId = meal.mealTypeId,
@@ -275,7 +275,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     /**
      * 读取某天餐食用于编辑页回填。[AI修改]
      */
-    suspend fun loadDayMealsForEdit(date: LocalDate): List<MealRecordEditData> = withContext(Dispatchers.Default) {
+    suspend fun loadDayMealsForEdit(date: LocalDate): List<MealRecordEditData> = withContext(ioDispatcher) {
         val records = q.selectMealRecordsByDate(DateTime.formatDate(date)).executeAsList()
         val dishesByRecord = buildDishesByMealRecord(records.map { it.id })
         records.map { rec ->

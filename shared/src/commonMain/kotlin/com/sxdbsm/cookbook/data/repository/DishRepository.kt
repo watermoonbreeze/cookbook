@@ -13,7 +13,7 @@ import com.sxdbsm.cookbook.domain.model.DishStep
 import com.sxdbsm.cookbook.domain.model.CookingMethod
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -34,7 +34,7 @@ class DishRepository(private val db: CookbookDatabase) {
      *
      * 新建/编辑菜品页需要展示下拉候选；返回领域模型，避免 UI 直接依赖 SQLDelight 行类型。
      */
-    suspend fun listCookingMethods(): List<CookingMethod> = withContext(Dispatchers.Default) {
+    suspend fun listCookingMethods(): List<CookingMethod> = withContext(ioDispatcher) {
         q.selectAllCookingMethods().executeAsList().map { row ->
             CookingMethod(id = row.id, name = row.name)
         }
@@ -45,7 +45,7 @@ class DishRepository(private val db: CookbookDatabase) {
      *
      * 新建/编辑菜品页支持多个烹饪方式；每个手动输入项都会先落到字典表，再写入关联表。
      */
-    suspend fun ensureCookingMethod(name: String): Long? = withContext(Dispatchers.Default) {
+    suspend fun ensureCookingMethod(name: String): Long? = withContext(ioDispatcher) {
         val trimmed = name.trim()
         if (trimmed.isBlank()) return@withContext null
         q.insertCookingMethod(trimmed, "user", DateTime.nowEpochSeconds())
@@ -67,7 +67,7 @@ class DishRepository(private val db: CookbookDatabase) {
      * `Flow<List<...>>` 类似一个可持续推送数据变化的 Observable；数据库变更后 UI 会自动收到新列表。
      */
     fun observeAllDishes(): Flow<List<DishMini>> =
-        q.selectAllDishes().asFlow().mapToList(Dispatchers.Default).map { rows ->
+        q.selectAllDishes().asFlow().mapToList(ioDispatcher).map { rows ->
             buildDishMinis(
                 rows.map { row ->
                     DishMiniSource(
@@ -80,13 +80,13 @@ class DishRepository(private val db: CookbookDatabase) {
                     )
                 },
             )
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(ioDispatcher)
 
     /**
      * 监听喜爱度最高的菜品。[AI修改]
      */
     fun observePopularDishes(limit: Long = 6): Flow<List<DishMini>> =
-        q.selectDishesByPopularity(limit).asFlow().mapToList(Dispatchers.Default).map { rows ->
+        q.selectDishesByPopularity(limit).asFlow().mapToList(ioDispatcher).map { rows ->
             buildDishMinis(
                 rows.map { row ->
                     DishMiniSource(
@@ -99,13 +99,13 @@ class DishRepository(private val db: CookbookDatabase) {
                     )
                 },
             )
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(ioDispatcher)
 
     /**
      * 监听最近创建或更新的菜品。[AI修改]
      */
     fun observeRecentDishes(limit: Long = 6): Flow<List<DishMini>> =
-        q.selectDishesByRecent(limit).asFlow().mapToList(Dispatchers.Default).map { rows ->
+        q.selectDishesByRecent(limit).asFlow().mapToList(ioDispatcher).map { rows ->
             buildDishMinis(
                 rows.map { row ->
                     DishMiniSource(
@@ -118,14 +118,14 @@ class DishRepository(private val db: CookbookDatabase) {
                     )
                 },
             )
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(ioDispatcher)
 
     /**
      * 按关键词搜索菜品。[AI修改]
      *
      * `suspend` 表示这是协程挂起函数，调用方要在协程里调用，类似异步方法但不用写回调。
      */
-    suspend fun searchDishes(keyword: String): List<DishMini> = withContext(Dispatchers.Default) {
+    suspend fun searchDishes(keyword: String): List<DishMini> = withContext(ioDispatcher) {
         if (keyword.isBlank()) {
             buildDishMinis(
                 q.selectAllDishes().executeAsList().map { row ->
@@ -161,7 +161,7 @@ class DishRepository(private val db: CookbookDatabase) {
      *
      * 返回命中食材数和菜品总食材数，UI 可据此展示“食材齐全/差几项/部分匹配”。
      */
-    suspend fun findDishesByIngredients(ingredientIds: List<Long>, limit: Long = 50): List<DishIngredientMatch> = withContext(Dispatchers.Default) {
+    suspend fun findDishesByIngredients(ingredientIds: List<Long>, limit: Long = 50): List<DishIngredientMatch> = withContext(ioDispatcher) {
         val ids = ingredientIds.distinct()
         if (ids.isEmpty()) return@withContext emptyList()
         q.selectDishesByIngredientMatch(ids, limit).executeAsList().map { row ->
@@ -185,7 +185,7 @@ class DishRepository(private val db: CookbookDatabase) {
      *
      * 添加餐食页从“新建菜品”返回后只拿到新菜品 id，需要补成 `DishMini` 才能加入餐食模块。
      */
-    suspend fun getDishMiniById(id: Long): DishMini? = withContext(Dispatchers.Default) {
+    suspend fun getDishMiniById(id: Long): DishMini? = withContext(ioDispatcher) {
         q.selectDishById(id).executeAsOneOrNull()?.let { row ->
             buildDishMini(
                 id = row.id,
@@ -284,14 +284,14 @@ class DishRepository(private val db: CookbookDatabase) {
      * 监听某个菜品详情。[AI修改]
      */
     fun observeDishById(id: Long): Flow<Dish?> =
-        q.selectDishForEditById(id).asFlow().mapToOneOrNull(Dispatchers.Default).map { row ->
+        q.selectDishForEditById(id).asFlow().mapToOneOrNull(ioDispatcher).map { row ->
             row?.let { loadFullDish(it) }
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(ioDispatcher)
 
     /**
      * 一次性读取某个菜品详情。[AI修改]
      */
-    suspend fun getDishById(id: Long): Dish? = withContext(Dispatchers.Default) {
+    suspend fun getDishById(id: Long): Dish? = withContext(ioDispatcher) {
         q.selectDishForEditById(id).executeAsOneOrNull()?.let { row -> loadFullDish(row) }
     }
 
@@ -371,7 +371,7 @@ class DishRepository(private val db: CookbookDatabase) {
         tagNames: List<String>,
         ingredients: List<DishIngredient>,
         steps: List<DishStep> = emptyList(),
-    ): Long = withContext(Dispatchers.Default) {
+    ): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
         var dishId = id
         db.transaction {
@@ -456,7 +456,7 @@ class DishRepository(private val db: CookbookDatabase) {
     /**
      * 删除用户菜品。[AI修改]
      */
-    suspend fun deleteDish(id: Long) = withContext(Dispatchers.Default) {
+    suspend fun deleteDish(id: Long) = withContext(ioDispatcher) {
         db.transaction {
             q.deleteFavoriteComboDishesByDish(id) // [AI生成] favorite_combo_dish 对 dish 没有级联删除，先清关联避免外键失败。
             q.deleteDish(id)
@@ -466,7 +466,7 @@ class DishRepository(private val db: CookbookDatabase) {
     /**
      * 查询菜品被哪些餐食记录引用。[AI生成]
      */
-    suspend fun listMealReferencesByDish(id: Long): List<DishMealReference> = withContext(Dispatchers.Default) {
+    suspend fun listMealReferencesByDish(id: Long): List<DishMealReference> = withContext(ioDispatcher) {
         q.selectMealReferencesByDish(id).executeAsList().map { row ->
             DishMealReference(
                 date = row.date,

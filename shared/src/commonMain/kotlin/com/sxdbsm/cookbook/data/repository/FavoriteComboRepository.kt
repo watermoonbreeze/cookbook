@@ -3,7 +3,7 @@ package com.sxdbsm.cookbook.data.repository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.withContext
 
 /**
@@ -25,7 +25,7 @@ class FavoriteComboRepository(
     /**
      * 读取全部有效组合及其菜品。[AI生成]
      */
-    suspend fun listCombos(): List<FavoriteCombo> = withContext(Dispatchers.Default) {
+    suspend fun listCombos(): List<FavoriteCombo> = withContext(ioDispatcher) {
         q.selectAllCombos().executeAsList().map { combo ->
             val dishRows = q.selectDishesOfCombo(combo.id).executeAsList()
             val dishes = dishRepo.buildDishMinis(
@@ -47,7 +47,7 @@ class FavoriteComboRepository(
     /**
      * 创建收藏组合。[AI生成]
      */
-    suspend fun createCombo(name: String, dishIds: List<Long>): Long = withContext(Dispatchers.Default) {
+    suspend fun createCombo(name: String, dishIds: List<Long>): Long = withContext(ioDispatcher) {
         val trimmed = name.trim()
         require(trimmed.isNotBlank()) { "组合名称不能为空" }
         val distinctDishIds = dishIds.distinct()
@@ -64,7 +64,7 @@ class FavoriteComboRepository(
     /**
      * 软删除收藏组合。[AI生成]
      */
-    suspend fun deleteCombo(id: Long) = withContext(Dispatchers.Default) {
+    suspend fun deleteCombo(id: Long) = withContext(ioDispatcher) {
         q.deleteCombo(id)
     }
 }

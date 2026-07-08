@@ -3,7 +3,7 @@ package com.sxdbsm.cookbook.data.repository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.CookingTimerTemplate
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.withContext
 
 /**
@@ -19,7 +19,7 @@ import kotlinx.coroutines.withContext
 class CookingTimerRepository(private val db: CookbookDatabase) {
     private val q = db.cookbookQueries // [AI生成] SQLDelight 生成的查询入口。
 
-    suspend fun listTemplates(): List<CookingTimerTemplate> = withContext(Dispatchers.Default) {
+    suspend fun listTemplates(): List<CookingTimerTemplate> = withContext(ioDispatcher) {
         q.selectAllCookingTimerTemplates().executeAsList().map { row ->
             CookingTimerTemplate(
                 id = row.id,
@@ -33,7 +33,7 @@ class CookingTimerRepository(private val db: CookbookDatabase) {
         }
     }
 
-    suspend fun saveTemplate(template: CookingTimerTemplate): Long = withContext(Dispatchers.Default) {
+    suspend fun saveTemplate(template: CookingTimerTemplate): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
         if (template.id <= 0) {
             val nextSortOrder = q.selectAllCookingTimerTemplates().executeAsList().size
@@ -62,7 +62,7 @@ class CookingTimerRepository(private val db: CookbookDatabase) {
         }
     }
 
-    suspend fun deleteTemplate(id: Long) = withContext(Dispatchers.Default) {
+    suspend fun deleteTemplate(id: Long) = withContext(ioDispatcher) {
         q.softDeleteCookingTimerTemplate(
             updated_at = DateTime.nowEpochSeconds(),
             id = id,

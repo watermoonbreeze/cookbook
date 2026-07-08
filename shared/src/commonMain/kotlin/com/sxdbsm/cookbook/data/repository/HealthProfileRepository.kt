@@ -6,7 +6,7 @@ import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.HealthProfile
 import com.sxdbsm.cookbook.util.DateTime
-import kotlinx.coroutines.Dispatchers
+import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -26,7 +26,7 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
      * 统一到调养病种：来源为 food_category（dimension=crowd 的 care_ 病种），覆盖全部调养类。
      * 仍复用 CrowdType 作为「id+名称」承载，description 为空（food_category 无描述）。
      */
-    suspend fun listAllCrowdTypes(): List<CrowdType> = withContext(Dispatchers.Default) {
+    suspend fun listAllCrowdTypes(): List<CrowdType> = withContext(ioDispatcher) {
         q.selectCareCategories().executeAsList().map { CrowdType(it.id, it.name, "") }
     }
 
@@ -34,7 +34,7 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
      * 监听已启用的健康档案。[AI修改]
      */
     fun observeEnabled(): Flow<List<HealthProfile>> =
-        q.selectEnabledHealthProfiles().asFlow().mapToList(Dispatchers.Default).map { rows ->
+        q.selectEnabledHealthProfiles().asFlow().mapToList(ioDispatcher).map { rows ->
             rows.map {
                 HealthProfile(
                     crowdTypeId = it.care_category_id,
@@ -43,12 +43,12 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
                     enabled = it.enabled == 1L,
                 )
             }
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(ioDispatcher)
 
     /**
      * 读取全部健康档案，不只包含启用项。[AI修改]
      */
-    suspend fun listAll(): List<HealthProfile> = withContext(Dispatchers.Default) {
+    suspend fun listAll(): List<HealthProfile> = withContext(ioDispatcher) {
         q.selectAllHealthProfiles().executeAsList().map {
             HealthProfile(
                 crowdTypeId = it.care_category_id,
@@ -62,15 +62,15 @@ class HealthProfileRepository(private val db: CookbookDatabase) {
     /**
      * 新增并启用一个健康档案。[AI修改]
      */
-    suspend fun add(crowdTypeId: Long) = withContext(Dispatchers.Default) {
+    suspend fun add(crowdTypeId: Long) = withContext(ioDispatcher) {
         q.insertHealthProfile(crowdTypeId, DateTime.nowEpochSeconds())
         q.updateHealthProfileEnabled(1, crowdTypeId)
     }
 
     /** 禁用健康档案但保留记录。[AI修改] */
-    suspend fun disable(crowdTypeId: Long) = withContext(Dispatchers.Default) { q.updateHealthProfileEnabled(0, crowdTypeId) }
+    suspend fun disable(crowdTypeId: Long) = withContext(ioDispatcher) { q.updateHealthProfileEnabled(0, crowdTypeId) }
     /** 重新启用健康档案。[AI修改] */
-    suspend fun enable(crowdTypeId: Long) = withContext(Dispatchers.Default) { q.updateHealthProfileEnabled(1, crowdTypeId) }
+    suspend fun enable(crowdTypeId: Long) = withContext(ioDispatcher) { q.updateHealthProfileEnabled(1, crowdTypeId) }
     /** 删除健康档案记录。[AI修改] */
-    suspend fun remove(crowdTypeId: Long) = withContext(Dispatchers.Default) { q.deleteHealthProfile(crowdTypeId) }
+    suspend fun remove(crowdTypeId: Long) = withContext(ioDispatcher) { q.deleteHealthProfile(crowdTypeId) }
 }
