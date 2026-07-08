@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.sxdbsm.cookbook.android.MainActivity
 
 /**
  * @File : TimerAlarm
@@ -134,6 +135,23 @@ class TimerAlarmReceiver : BroadcastReceiver() {
             stopIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
+        // [AI生成] 点击通知进 App；全屏意图拉起锁屏全屏提醒(自动亮屏)。
+        val openPi = PendingIntent.getActivity(
+            context,
+            id + CONTENT_REQUEST_OFFSET,
+            Intent(context, MainActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val fullScreenPi = PendingIntent.getActivity(
+            context,
+            id + FULLSCREEN_REQUEST_OFFSET,
+            Intent(context, TimerAlertActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(TimerAlarm.EXTRA_TIMER_ID, id.toLong())
+                putExtra(TimerAlarm.EXTRA_NAME, name)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
         val notification = NotificationCompat.Builder(context, TimerAlarm.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("计时结束")
@@ -141,7 +159,9 @@ class TimerAlarmReceiver : BroadcastReceiver() {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(false)
-            .setOngoing(true)
+            .setOngoing(true) // 长驻，点“停止”或回 App 停止后才消失。
+            .setContentIntent(openPi) // 点击通知进入 App。
+            .setFullScreenIntent(fullScreenPi, true) // 息屏/锁屏时弹全屏提醒并点亮屏幕。
             .addAction(0, "停止", stopPi)
             .build()
         runCatching { NotificationManagerCompat.from(context).notify(id, notification) }
@@ -149,6 +169,8 @@ class TimerAlarmReceiver : BroadcastReceiver() {
 
     companion object {
         private const val STOP_REQUEST_OFFSET = 100000 // [AI生成] 停止 PendingIntent 的 requestCode 偏移，避开 fire 的 timerId。
+        private const val CONTENT_REQUEST_OFFSET = 200000 // [AI生成] 点击进 App 的 requestCode 偏移。
+        private const val FULLSCREEN_REQUEST_OFFSET = 300000 // [AI生成] 全屏提醒的 requestCode 偏移。
         private val active = mutableMapOf<Int, Ringtone>() // [AI生成] timerId -> 正在响的铃声，支持多计时器分别停止。
 
         /** 停止某计时器的铃声并消通知。[AI生成] */

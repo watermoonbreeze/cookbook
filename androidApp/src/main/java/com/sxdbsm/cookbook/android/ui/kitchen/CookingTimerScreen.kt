@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import com.sxdbsm.cookbook.android.kitchen.CookingTimerService
 import com.sxdbsm.cookbook.android.kitchen.TimerAlarm
 import android.content.Intent
 import android.media.Ringtone
@@ -167,8 +168,10 @@ fun CookingTimerScreen(
         if (!loaded) return@LaunchedEffect
         val now = SystemClock.elapsedRealtime()
         val nowWall = System.currentTimeMillis()
-        val encoded = runningSnapshot.joinToString(",") { "${it.id}:${nowWall + (it.endAtElapsed!! - now)}" }
-        prefs.set(KEY_RUNNING_TIMERS, encoded)
+        val running = runningSnapshot.map { it.id to (nowWall + (it.endAtElapsed!! - now)) }
+        prefs.set(KEY_RUNNING_TIMERS, running.joinToString(",") { "${it.first}:${it.second}" })
+        // [AI生成] 同步前台服务：有运行中计时器则常驻通知+保活，全部结束/暂停则停止服务。
+        CookingTimerService.sync(context, running.map { it.second })
     }
 
     // [AI生成] A13+ 请求通知权限（未授时铃声仍会响，只是不显示到点通知）。
