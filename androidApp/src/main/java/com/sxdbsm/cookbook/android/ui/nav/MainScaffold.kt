@@ -185,6 +185,7 @@ fun MainScaffold(
                     },
                     editDate = date,
                     presetDishIds = presetDishIds,
+                    onOpenAiRecommend = { nav.navigate(Routes.AI_RECOMMEND) },
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
                     onCreatedDishConsumed = {
                         AppLogger.d("MealFlow", "consume createdDishId: value=$createdDishId") // [AI生成] 记录导航结果消费，避免重复回填。

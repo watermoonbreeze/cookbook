@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Event
@@ -88,6 +89,7 @@ fun AddDayFoodScreen(
     createdDishId: Long? = null,
     presetDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐"选它"带入的菜品。
     onCreatedDishConsumed: () -> Unit = {},
+    onOpenAiRecommend: () -> Unit = {}, // [AI生成] 加餐页想不出吃啥 → AI 推荐。
     vm: AddMealViewModel = koinViewModel(),
 ) {
     // [AI修改] 页面订阅 ViewModel 状态，任何字段变化都会触发相关 UI 重组。
@@ -138,6 +140,9 @@ fun AddDayFoodScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onOpenAiRecommend) { // [AI生成] AI 推荐入口。
+                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI 推荐")
+                    }
                     Button(
                         onClick = { vm.save() },
                         enabled = state.canSave,
