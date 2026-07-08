@@ -1,7 +1,11 @@
 package com.sxdbsm.cookbook.android.ui.kitchen
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import com.sxdbsm.cookbook.android.kitchen.TimerAlarm
 import android.content.Intent
 import android.media.Ringtone
 import android.media.RingtoneManager
@@ -117,6 +121,7 @@ fun CookingTimerScreen(
     fun stopActiveAlarm(resetTimerId: Long? = null) {
         activeRingtone?.stop()
         val resetTargetId = resetTimerId ?: activeAlarmTimerId
+        resetTargetId?.let { TimerAlarm.cancel(context, it) } // [AI生成] 同时停系统闹钟铃声/消通知（含背景响铃后回 App 停止）。
         activeRingtone = null
         activeAlarmTimerId = null
         if (resetTargetId != null) {
@@ -138,6 +143,16 @@ fun CookingTimerScreen(
     LaunchedEffect(Unit) {
         timers = repo.listTemplates().map { it.toTimerItem() }
         loaded = true
+    }
+
+    // [AI生成] A13+ 请求通知权限（未授时铃声仍会响，只是不显示到点通知）。
+    val notifPermLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     LaunchedEffect(timers.any { it.status == TimerStatus.RUNNING }) {
@@ -164,6 +179,8 @@ fun CookingTimerScreen(
                 }
             }
             finishedTimer?.let { timer ->
+                // [AI生成] 前台已检测到完成：取消/停系统闹钟，改由前台响铃，避免与闹钟双响。
+                TimerAlarm.cancel(context, timer.id)
                 activeRingtone?.stop()
                 activeRingtone = playTimerFinishedSound(context, timer.ringtoneUri)
                 activeAlarmTimerId = timer.id
@@ -275,21 +292,21 @@ fun CookingTimerScreen(
                         timer = timer,
                         onStart = {
                             stopActiveAlarm()
+                            val now = SystemClock.elapsedRealtime()
                             timers = timers.map {
                                 if (it.id == timer.id) {
                                     val remaining = if (it.remainingSeconds <= 0) it.durationSeconds else it.remainingSeconds
-                                    // [AI修改] 开始/继续时锚定墙钟结束时刻，供息屏后按真实时间算剩余。
-                                    it.copy(
-                                        status = TimerStatus.RUNNING,
-                                        remainingSeconds = remaining,
-                                        endAtElapsed = SystemClock.elapsedRealtime() + remaining * 1000L,
-                                    )
+                                    // [AI修改] 开始/继续时锚定墙钟结束时刻，供息屏后按真实时间算剩余；并注册系统精确闹钟到点响铃。
+                                    val endAt = now + remaining * 1000L
+                                    TimerAlarm.schedule(context, it.id, it.name, it.ringtoneUri, endAt)
+                                    it.copy(status = TimerStatus.RUNNING, remainingSeconds = remaining, endAtElapsed = endAt)
                                 } else {
                                     it
                                 }
                             }
                         },
                         onPause = {
+                            TimerAlarm.cancel(context, timer.id) // [AI生成] 暂停取消到点闹钟。
                             timers = timers.map {
                                 if (it.id == timer.id) {
                                     // [AI修改] 暂停时按墙钟结算真实剩余（含息屏期间流逝），并清除结束时刻。
@@ -301,6 +318,7 @@ fun CookingTimerScreen(
                             }
                         },
                         onStop = {
+                            TimerAlarm.cancel(context, timer.id) // [AI生成] 停止取消到点闹钟并停铃。
                             if (timer.status == TimerStatus.FINISHED) {
                                 stopActiveAlarm(resetTimerId = timer.id)
                             }
@@ -312,6 +330,7 @@ fun CookingTimerScreen(
                             timers = timers.map { if (it.id == timer.id) it.copy(editing = true) else it }
                         },
                         onDelete = {
+                            TimerAlarm.cancel(context, timer.id) // [AI生成] 删除取消到点闹钟。
                             stopActiveAlarm()
                             timers = timers.filterNot { it.id == timer.id }
                             if (timer.id > 0) {
