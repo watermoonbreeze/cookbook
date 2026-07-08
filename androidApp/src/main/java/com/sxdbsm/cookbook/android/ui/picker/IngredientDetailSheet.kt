@@ -176,16 +176,11 @@ internal fun IngredientDetailSheet(
                             }
                         }
 
-                        // ③ 🥗 属性：品类 / 营养 / 应季（按维度拆分）
-                        val nutriDims = setOf("nutrition", "gi", "purine", "sodium", "fat", "sugar")
-                        val pinlei = categories.filter { it.dimension == "general" }
-                        val nutri = categories.filter { it.dimension in nutriDims }
-                        val season = categories.filter { it.dimension == "season" }
-                        if (pinlei.isNotEmpty() || nutri.isNotEmpty() || season.isNotEmpty()) {
+                        // ③ 🥗 属性：品类 / 营养 / 应季（按维度分组，统一走 groupByDimension/DimensionRows）
+                        val dimensionGroups = categories.groupByDimension()
+                        if (!dimensionGroups.isEmpty) {
                             SectionTitle("🥗 属性")
-                            if (pinlei.isNotEmpty()) DetailLine("品类", pinlei.joinToString("、") { it.name })
-                            if (nutri.isNotEmpty()) DetailLine("营养", nutri.joinToString("·") { it.name })
-                            if (season.isNotEmpty()) DetailLine("应季", season.joinToString("、") { it.name })
+                            DimensionRows(dimensionGroups)
                         }
 
                         // ④ 📋 处理与保存 + 来源

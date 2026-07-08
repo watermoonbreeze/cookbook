@@ -330,75 +330,28 @@ fun IngredientPickerScreen(
                             .padding(horizontal = 16.dp, vertical = 10.dp),
                     )
                 }
-                // 底部固定栏
+                // 底部固定栏：仅选择模式且有已选时出现。
                 if (selectionMode && ui.selectedIds.isNotEmpty()) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 2.dp,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f),
-                            ) {
-                                Text(
-                                    "已选 ${ui.selectedIds.size} 项",
-                                    modifier = Modifier
-                                        .clickable { selectedMenuOpen = true }, // [AI生成] 点击已选数量打开左下跟随弹框。
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                DropdownMenu(
-                                    expanded = selectedMenuOpen,
-                                    onDismissRequest = { selectedMenuOpen = false },
-                                ) {
-                                    ui.selectedIngredients.forEach { ingredient ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    ingredient.displayNameText(),
-                                                    maxLines = 1,
-                                                )
-                                            },
-                                            onClick = {
-                                                selectedMenuOpen = false
-                                                selectedIngredient = ingredient // [AI生成] 从已选弹框点击食材时打开同一个详情弹层。
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    vm.clearCreateError()
-                                    vm.loadIngredientEditor(null)
-                                    createDialogOpen = true
-                                },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
-                            ) { Text("+ 添加食材") }
-                            Spacer(Modifier.width(8.dp))
-                            OutlinedButton(
-                                onClick = {
-                                    vm.findDishesBySelectedIngredients()
-                                    dishMatchOpen = true
-                                },
-                                enabled = ui.selectedIds.isNotEmpty(),
-                            ) { Text("找菜") }
-                            Spacer(Modifier.width(8.dp))
-                            Button(
-                                onClick = {
-                                    onConfirm(vm.confirmSelected())
-                                    onDismiss()
-                                },
-                                enabled = ui.selectedIds.isNotEmpty(),
-                            ) { Text("完成") }
-                        }
-                    }
+                    SelectionBottomBar(
+                        selectedCount = ui.selectedIds.size,
+                        selectedIngredients = ui.selectedIngredients,
+                        menuOpen = selectedMenuOpen,
+                        onMenuOpenChange = { selectedMenuOpen = it },
+                        onPickSelected = { selectedIngredient = it },
+                        onAddIngredient = {
+                            vm.clearCreateError()
+                            vm.loadIngredientEditor(null)
+                            createDialogOpen = true
+                        },
+                        onFindDishes = {
+                            vm.findDishesBySelectedIngredients()
+                            dishMatchOpen = true
+                        },
+                        onConfirm = {
+                            onConfirm(vm.confirmSelected())
+                            onDismiss()
+                        },
+                    )
                 }
             }
         }
@@ -619,6 +572,63 @@ fun IngredientPickerScreen(
                 TextButton(onClick = { categoryDeleteTarget = null }) { Text("取消") }
             },
         )
+    }
+}
+
+/**
+ * 选择模式底部固定栏（已选项 + 添加/找菜/完成）。[AI生成]
+ *
+ * 从主编排抽出，把"选择模式专属"的底栏收敛成命名组件，减少主体里散落的 selectionMode 分叉。
+ */
+@Composable
+private fun SelectionBottomBar(
+    selectedCount: Int,
+    selectedIngredients: List<Ingredient>,
+    menuOpen: Boolean,
+    onMenuOpenChange: (Boolean) -> Unit,
+    onPickSelected: (Ingredient) -> Unit,
+    onAddIngredient: () -> Unit,
+    onFindDishes: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                Text(
+                    "已选 $selectedCount 项",
+                    modifier = Modifier.clickable { onMenuOpenChange(true) }, // [AI生成] 点击已选数量打开左下跟随弹框。
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { onMenuOpenChange(false) }) {
+                    selectedIngredients.forEach { ingredient ->
+                        DropdownMenuItem(
+                            text = { Text(ingredient.displayNameText(), maxLines = 1) },
+                            onClick = {
+                                onMenuOpenChange(false)
+                                onPickSelected(ingredient) // [AI生成] 从已选弹框点击食材时打开同一个详情弹层。
+                            },
+                        )
+                    }
+                }
+            }
+            OutlinedButton(
+                onClick = onAddIngredient,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
+            ) { Text("+ 添加食材") }
+            Spacer(Modifier.width(8.dp))
+            OutlinedButton(onClick = onFindDishes, enabled = selectedCount > 0) { Text("找菜") }
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = onConfirm, enabled = selectedCount > 0) { Text("完成") }
+        }
     }
 }
 
