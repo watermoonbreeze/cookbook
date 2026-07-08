@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.sxdbsm.cookbook.android.MainActivity
+import com.sxdbsm.cookbook.android.util.AppLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,6 +36,7 @@ import kotlinx.coroutines.launch
 class CookingTimerService : Service() {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var tickJob: Job? = null
+    private var lastEndWalls: List<Long> = emptyList() // [AI生成] 被系统重启且 intent 为 null 时的兜底数据。
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -43,9 +45,19 @@ class CookingTimerService : Service() {
             stopSelfSafely()
             return START_NOT_STICKY
         }
-        val endWalls = intent?.getLongArrayExtra(EXTRA_END_WALLS)?.toList().orEmpty()
+        // [AI修改] 被系统重启(intent 可能为 null)且无数据时不自毁：读取上次 endWalls；仍为空才停止。
+        val endWalls = intent?.getLongArrayExtra(EXTRA_END_WALLS)?.toList() ?: lastEndWalls
+        lastEndWalls = endWalls
+        AppLogger.d("TimerSvc", "onStartCommand endWalls=${endWalls.size}")
         ensureChannel(this)
-        startForegroundCompat(buildNotification(endWalls))
+        try {
+            startForegroundCompat(buildNotification(endWalls))
+            AppLogger.d("TimerSvc", "startForeground ok")
+        } catch (t: Throwable) {
+            AppLogger.e("TimerSvc", "startForeground failed", t) // [AI生成] 前台服务起步失败排查（如 FGS 类型/后台启动限制）。
+            stopSelf()
+            return START_NOT_STICKY
+        }
         tickJob?.cancel()
         tickJob = scope.launch {
             while (isActive) {
@@ -59,7 +71,7 @@ class CookingTimerService : Service() {
                 delay(1000)
             }
         }
-        return START_STICKY
+        return START_REDELIVER_INTENT // [AI修改] 被杀后系统重启时重投最后一个带 endWalls 的 intent。
     }
 
     override fun onDestroy() {
@@ -110,6 +122,8 @@ class CookingTimerService : Service() {
             .setSilent(true)
             .setContentIntent(openPi)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            // [AI修改] 强制立即显示：前台服务通知默认有最多 10 秒延迟显示，导致“点开始不立刻出现、离开界面才出现”。
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
     }
 
@@ -141,9 +155,12 @@ class CookingTimerService : Service() {
             if (endWalls.isEmpty()) {
                 intent.action = ACTION_STOP
                 runCatching { context.startService(intent) }
+                    .onFailure { AppLogger.e("TimerSvc", "stop startService failed", it) }
             } else {
                 intent.putExtra(EXTRA_END_WALLS, endWalls.toLongArray())
+                AppLogger.d("TimerSvc", "sync start FGS, endWalls=${endWalls.size}")
                 runCatching { ContextCompat.startForegroundService(context, intent) }
+                    .onFailure { AppLogger.e("TimerSvc", "startForegroundService failed", it) }
             }
         }
     }

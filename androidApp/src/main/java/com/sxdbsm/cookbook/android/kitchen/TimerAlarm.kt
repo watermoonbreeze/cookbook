@@ -111,6 +111,16 @@ class TimerAlarmReceiver : BroadcastReceiver() {
 
     private fun fire(context: Context, id: Int, name: String, ringtoneUri: String) {
         TimerAlarm.ensureChannel(context)
+        // [AI生成] 尽力点亮屏幕（配合全屏提醒），旧版本有效；新版本主要靠 fullScreenIntent。
+        runCatching {
+            val pm = context.getSystemService(android.os.PowerManager::class.java)
+            @Suppress("DEPRECATION")
+            val wl = pm?.newWakeLock(
+                android.os.PowerManager.FULL_WAKE_LOCK or android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or android.os.PowerManager.ON_AFTER_RELEASE,
+                "cookbook:timer_alert",
+            )
+            wl?.acquire(10_000L)
+        }
         // 1) 播放铃声（ALARM 流，循环），按 id 持有以便分别停止。
         runCatching {
             val uri = ringtoneUri.takeIf { it.isNotBlank() }?.let(Uri::parse)
