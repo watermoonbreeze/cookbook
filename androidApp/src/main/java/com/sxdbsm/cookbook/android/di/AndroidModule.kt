@@ -10,6 +10,8 @@ import com.sxdbsm.cookbook.android.ui.mine.MineViewModel
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerViewModel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerViewModel
 import com.sxdbsm.cookbook.android.ui.search.SearchViewModel
+import com.sxdbsm.cookbook.android.ui.ai.AiRecommendViewModel
+import com.sxdbsm.cookbook.android.ui.ai.AiSettingsViewModel
 import com.sxdbsm.cookbook.android.util.LogFileManager
 import com.sxdbsm.cookbook.ai.AiRuntime
 import com.sxdbsm.cookbook.ai.AiRuntimeType
@@ -57,4 +59,6 @@ val androidModule = module {
     viewModel { IngredientPickerViewModel(get(), get(), get(), get(), get()) } // [AI修改] 追加 Pantry/HealthProfile 支持库存 Tab 与忌口高亮。
     viewModel { DishPickerViewModel(get()) }
     viewModel { SearchViewModel(get(), get(), get()) }
+    viewModel { AiRecommendViewModel(get(), get()) } // [AI生成] AI 推荐(取数层+编排器)。
+    viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
 }

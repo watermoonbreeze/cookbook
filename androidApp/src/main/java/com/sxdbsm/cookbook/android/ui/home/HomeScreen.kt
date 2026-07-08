@@ -11,6 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,6 +40,7 @@ fun HomeScreen(
     onOpenSearch: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
+    onOpenAiRecommend: () -> Unit = {},
     vm: HomeViewModel = koinViewModel(),
 ) {
     // [AI修改] collectAsStateWithLifecycle 会按 Android 生命周期订阅 StateFlow，避免后台页面继续无意义刷新。
@@ -76,6 +81,38 @@ fun HomeScreen(
             .padding(padding)
             .fillMaxSize(),
     ) {
+        // [AI生成] AI 推荐下一餐入口卡。
+        item {
+            Surface(
+                onClick = onOpenAiRecommend,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("🤖", style = MaterialTheme.typography.headlineMedium)
+                    Column(modifier = Modifier.padding(start = 12.dp)) {
+                        Text(
+                            "AI 推荐下一餐",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Text(
+                            "用你现有的食材，帮你搭配今天吃什么",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                }
+            }
+        }
+
         // [AI修改] 热门菜品横向列表。
         item { SectionHeader(title = "🔥 热门", action = "更多 ▸", onActionClick = onOpenDishes) }
         if (ui.popular.isEmpty()) {

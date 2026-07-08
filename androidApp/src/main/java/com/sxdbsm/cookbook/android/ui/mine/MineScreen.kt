@@ -32,6 +32,8 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun MineScreen(
     onOpenCookingTimer: () -> Unit,
+    onOpenAiSettings: () -> Unit = {},
+    onOpenAiRecommend: () -> Unit = {},
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -183,6 +185,20 @@ fun MineScreen(
             subtitle = "烹饪计时等实用工具",
             trailing = "▸",
         ) { kitchenDialogOpen = true }
+        // [AI生成] AI 助手独立分组：推荐入口 + 配置管理。
+        GroupTitle("AI 助手")
+        SettingRow(
+            icon = Icons.Outlined.AutoAwesome,
+            title = "AI 推荐下一餐",
+            subtitle = "用现有食材帮你搭配今天吃什么",
+            trailing = "▸",
+        ) { onOpenAiRecommend() }
+        SettingRow(
+            icon = Icons.Outlined.Settings,
+            title = "AI 设置",
+            subtitle = "模型来源与 API Key",
+            trailing = "▸",
+        ) { onOpenAiSettings() }
 
         GroupTitle("关于")
         SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") {

@@ -22,6 +22,8 @@ object Routes {
     const val SEARCH = "search"
     const val MINE = "mine"
     const val COOKING_TIMER = "cooking_timer"
+    const val AI_RECOMMEND = "ai_recommend" // [AI生成] AI 推荐下一餐
+    const val AI_SETTINGS = "ai_settings" // [AI生成] AI 设置(Key/运行时)
 
     fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}"
 

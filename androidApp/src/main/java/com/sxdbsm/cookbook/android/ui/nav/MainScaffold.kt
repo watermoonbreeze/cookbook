@@ -26,6 +26,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sxdbsm.cookbook.android.ui.addmeal.AddDayFoodScreen
 import com.sxdbsm.cookbook.android.ui.kitchen.CookingTimerScreen
+import com.sxdbsm.cookbook.android.ui.ai.AiRecommendScreen
+import com.sxdbsm.cookbook.android.ui.ai.AiSettingsScreen
 import com.sxdbsm.cookbook.android.ui.dishdetail.DishDetailScreen
 import com.sxdbsm.cookbook.android.ui.dishes.DishesScreen
 import com.sxdbsm.cookbook.android.ui.home.HomeScreen
@@ -112,6 +114,7 @@ fun MainScaffold(
                     onOpenSearch = { nav.navigate(Routes.SEARCH) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                    onOpenAiRecommend = { nav.navigate(Routes.AI_RECOMMEND) },
                 )
             }
             composable(Routes.TIMELINE) {
@@ -141,10 +144,18 @@ fun MainScaffold(
             composable(Routes.MINE) {
                 MineScreen(
                     onOpenCookingTimer = { nav.navigate(Routes.COOKING_TIMER) },
+                    onOpenAiSettings = { nav.navigate(Routes.AI_SETTINGS) },
+                    onOpenAiRecommend = { nav.navigate(Routes.AI_RECOMMEND) },
                 )
             }
             composable(Routes.COOKING_TIMER) {
                 CookingTimerScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.AI_RECOMMEND) {
+                AiRecommendScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.AI_SETTINGS) {
+                AiSettingsScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.SEARCH) {
                 SearchScreen(
