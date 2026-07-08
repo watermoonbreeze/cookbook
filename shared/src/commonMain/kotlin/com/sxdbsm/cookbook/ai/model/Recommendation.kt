@@ -74,3 +74,13 @@ data class MealSuggestion(
     val reason: String, // 一句人话理由
     val cookingHint: String? = null, // 按在手辅料给的做法建议
 )
+
+/** 推荐结果来源：模型 / 规则兜底 / 无候选。[AI生成] */
+enum class RecommendationSource { MODEL, RULE_FALLBACK, EMPTY }
+
+/** 推荐最终结果（建议 + 规则候选 + 来源）。[AI生成] */
+data class RecommendationResult(
+    val suggestions: List<MealSuggestion>,
+    val candidates: List<DishCandidate>,
+    val source: RecommendationSource,
+)
