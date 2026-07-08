@@ -59,6 +59,7 @@ class AiRecommendViewModel(
         val suggestions = result.suggestions.map { s ->
             val dishes = s.dishIds.mapNotNull { byId[it] }
             SuggestionUi(
+                dishIds = dishes.map { it.id },
                 dishNames = dishes.map { it.name },
                 reason = s.reason,
                 cookingHint = s.cookingHint,
@@ -85,6 +86,7 @@ data class AiRecommendUiState(
 
 /** 一个餐次组合的展示模型。[AI生成] */
 data class SuggestionUi(
+    val dishIds: List<Long>,
     val dishNames: List<String>,
     val reason: String,
     val cookingHint: String?,

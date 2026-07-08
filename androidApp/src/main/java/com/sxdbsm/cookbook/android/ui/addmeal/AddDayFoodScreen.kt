@@ -86,6 +86,7 @@ fun AddDayFoodScreen(
     onAddNewDish: () -> Unit,
     editDate: LocalDate? = null,
     createdDishId: Long? = null,
+    presetDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐"选它"带入的菜品。
     onCreatedDishConsumed: () -> Unit = {},
     vm: AddMealViewModel = koinViewModel(),
 ) {
@@ -108,9 +109,9 @@ fun AddDayFoodScreen(
             onBack()
         }
     }
-    LaunchedEffect(editDate) {
-        AppLogger.d("MealFlow", "configure by editDate effect: editDate=$editDate currentDate=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 记录入口日期配置，排查返回后是否误重载旧餐食。
-        vm.configure(editDate) // [AI修改] 入口日期只做初始化配置；返回新建菜品时避免重新加载数据库旧餐食覆盖未保存编辑。
+    LaunchedEffect(editDate, presetDishIds) {
+        AppLogger.d("MealFlow", "configure by editDate effect: editDate=$editDate preset=$presetDishIds currentDate=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 记录入口日期配置，排查返回后是否误重载旧餐食。
+        vm.configure(editDate, presetDishIds) // [AI修改] 入口日期做初始化配置；带 AI 推荐预填时并入菜品。
     }
     LaunchedEffect(createdDishId) {
         val dishId = createdDishId?.takeIf { it > 0 } ?: return@LaunchedEffect

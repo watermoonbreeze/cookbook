@@ -44,6 +44,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AiRecommendScreen(
     onBack: () -> Unit,
+    onPickMeal: (List<Long>) -> Unit = {},
     vm: AiRecommendViewModel = koinViewModel(),
 ) {
     val state = vm.state
@@ -78,7 +79,7 @@ fun AiRecommendScreen(
                     SourceBadge(state.source)
                     Spacer(Modifier.height(8.dp))
                     state.suggestions.forEachIndexed { index, s ->
-                        SuggestionCard(index + 1, s)
+                        SuggestionCard(index + 1, s, onPick = { onPickMeal(s.dishIds) })
                         Spacer(Modifier.height(12.dp))
                     }
                     OutlinedButton(
@@ -111,7 +112,7 @@ private fun SourceBadge(source: RecommendationSource?) {
 }
 
 @Composable
-private fun SuggestionCard(index: Int, s: SuggestionUi) {
+private fun SuggestionCard(index: Int, s: SuggestionUi, onPick: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = MaterialTheme.shapes.medium,
@@ -149,6 +150,8 @@ private fun SuggestionCard(index: Int, s: SuggestionUi) {
                 Spacer(Modifier.height(4.dp))
                 Text("⚠ 注意限量：${s.limitNotes.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             }
+            Spacer(Modifier.height(10.dp))
+            Button(onClick = onPick, modifier = Modifier.fillMaxWidth()) { Text("选它，去记这一餐") }
         }
     }
 }

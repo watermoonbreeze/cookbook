@@ -152,7 +152,10 @@ fun MainScaffold(
                 CookingTimerScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.AI_RECOMMEND) {
-                AiRecommendScreen(onBack = { nav.popBackStack() })
+                AiRecommendScreen(
+                    onBack = { nav.popBackStack() },
+                    onPickMeal = { dishIds -> nav.navigate(Routes.addMealWithDishes(dishIds)) },
+                )
             }
             composable(Routes.AI_SETTINGS) {
                 AiSettingsScreen(onBack = { nav.popBackStack() })
@@ -167,10 +170,13 @@ fun MainScaffold(
             }
             composable(Routes.ADD_MEAL) {
                 val date = it.arguments?.getString("date")?.takeIf { value -> value.isNotBlank() }?.let(DateTime::parseDate)
+                val presetDishIds = it.arguments?.getString("dishIds")
+                    ?.split(",")?.mapNotNull { id -> id.toLongOrNull() }?.filter { id -> id > 0 }
+                    ?: emptyList() // [AI生成] AI 推荐"选它"带入的菜品 id。
                 val createdDishId by it.savedStateHandle
                     .getStateFlow(KEY_CREATED_DISH_ID, -1L)
                     .collectAsStateWithLifecycle()
-                AppLogger.d("MealFlow", "nav addmeal args: route=${it.destination.route} date=$date createdDishId=$createdDishId") // [AI生成] 记录添加/编辑餐食路由参数和新建菜品回传 id。
+                AppLogger.d("MealFlow", "nav addmeal args: route=${it.destination.route} date=$date preset=$presetDishIds createdDishId=$createdDishId") // [AI生成] 记录添加/编辑餐食路由参数和新建菜品回传 id。
                 AddDayFoodScreen(
                     onBack = { nav.popBackStack() },
                     onAddNewDish = {
@@ -178,6 +184,7 @@ fun MainScaffold(
                         nav.navigate(Routes.newDish())
                     },
                     editDate = date,
+                    presetDishIds = presetDishIds,
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
                     onCreatedDishConsumed = {
                         AppLogger.d("MealFlow", "consume createdDishId: value=$createdDishId") // [AI生成] 记录导航结果消费，避免重复回填。

@@ -16,7 +16,7 @@ object Routes {
     const val HOME = "home"
     const val TIMELINE = "timeline"
     const val TIMELINE_FULL = "timeline_full"
-    const val ADD_MEAL = "addmeal?date={date}"
+    const val ADD_MEAL = "addmeal?date={date}&dishIds={dishIds}"
     const val DISHES = "dishes"
     const val INGREDIENTS = "ingredients"
     const val SEARCH = "search"
@@ -25,7 +25,11 @@ object Routes {
     const val AI_RECOMMEND = "ai_recommend" // [AI生成] AI 推荐下一餐
     const val AI_SETTINGS = "ai_settings" // [AI生成] AI 设置(Key/运行时)
 
-    fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}"
+    fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}&dishIds="
+
+    // [AI生成] AI 推荐"选它"：带入菜品 id 到加餐页预填（用户确认后再保存）。
+    fun addMealWithDishes(dishIds: List<Long>, date: String? = null) =
+        "addmeal?date=${date.orEmpty()}&dishIds=${dishIds.joinToString(",")}"
 
     const val NEW_DISH = "newdish/{dishId}/{importDishId}"
     fun newDish(dishId: Long? = null) = "newdish/${dishId ?: -1L}/-1"
