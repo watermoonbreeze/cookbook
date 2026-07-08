@@ -20,6 +20,17 @@
 - **AI S4 端侧模型(LiteRT-LM)**：大工程，占位已留，待专门规划。
 - **P0 存储权限合规**：用户明确暂不做（无上架计划）。
 
+## 本轮收尾总结（2026-07-08 无人值守）
+
+**已完成并提交（本地，`[unattended]` 前缀，未 push）：**
+1. P1 IO Dispatcher（91 处 → 专用 IO 池）
+2. 删除一致性修复（菜品软删后食历保留当时吃的菜）
+3. 首页搜索点食材 → 跳到该食材并高亮（`IngredientJumpBus`）
+
+**共 4 个功能/修复提交 + 若干文档提交，全部 build/单测通过。均未 push（等用户回来）。**
+
+**结论**：待办里**清晰安全、可编译验证**的项已做完。其余项（见下方待确认队列）都需用户**决策/真机/依赖抉择**，无人值守下按规则不擅自动，等用户返回定夺。
+
 ## 决策/进展日志
 
 - **阶段1 ✅ P1 IO Dispatcher**（commit `[unattended]`）：新增 `expect val ioDispatcher` + Android actual=Dispatchers.IO；8 repo + RecommendationDataSource 共 91 处 `Dispatchers.Default`→`ioDispatcher`；build+单测过。
