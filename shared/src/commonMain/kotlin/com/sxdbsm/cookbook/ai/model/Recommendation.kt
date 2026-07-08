@@ -42,14 +42,15 @@ data class HealthConstraints(
 /**
  * 规则筛过的安全候选菜（可做 + 不犯忌）。[AI生成]
  *
- * 主料一定在手（否则已被剔除）；辅料在手/缺用于模型给做法建议。
+ * 方案A：可做性=所有非调料食材在手（调料默认常备）。主料/辅料名仅用于展示；
+ * 在手调料/香辛料的丰富度用于给模型做“做法”建议（有葱姜蒜酱→红烧/爆炒，只有盐油→清蒸/白灼）。
  */
 data class DishCandidate(
     val id: Long,
     val name: String,
-    val mainOnHand: List<String>, // 在手主料
-    val secondaryOnHand: List<String>, // 在手辅料 → 决定做法
-    val secondaryMissing: List<String>, // 缺的辅料 → 可提示/换做法
+    val mainNames: List<String>, // 主料(展示)
+    val secondaryNames: List<String>, // 辅料(展示)
+    val seasoningsOnHand: List<String>, // 在手的调料/香辛料 → 做法建议依据
     val limitHits: List<String>, // 命中“限量”的食材(保留但提示)
     val isRecent: Boolean, // 最近吃过(去重降权)
     val score: Double, // 规则打分，降序排列

@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
  * @File : HealthRuleEngineTest
  * @Time : 2026/07/08
  * @Author : SXD-AI
- * @Desc : 推荐规则引擎单测（合成数据，验证可做性/犯忌/限量/去重/打分逻辑）
+ * @Desc : 推荐规则引擎单测（方案A：可做性=非调料齐；调料按角色识别、默认常备）
  * <p>
  * [AI生成] S0：用合成菜品证明规则正确，不依赖 seed 数据质量与模型。
  **/
@@ -27,24 +27,25 @@ class HealthRuleEngineTest {
     private fun sea(id: Long, name: String) = RuleDishIngredient(id, name, IngredientRole.SEASONING)
 
     @Test
-    fun `主料齐则可做，主料缺则剔除`() {
-        // 西红柿炒鸡蛋：主料 番茄(101)+鸡蛋(102)，调料 盐(901)。
-        val dish = RuleDish(1, "西红柿炒鸡蛋", listOf(main(101, "番茄"), main(102, "鸡蛋"), sea(901, "盐")))
+    fun `非调料齐则可做，非调料缺则剔除`() {
+        // 西红柿炒鸡蛋：番茄+鸡蛋(非调料，都得有)，盐(调料)。
+        val dish = RuleDish(1, "西红柿炒鸡蛋", listOf(main(101, "番茄"), sec(102, "鸡蛋"), sea(901, "盐")))
 
-        // 主料齐 → 可做
+        // 番茄+鸡蛋齐 → 可做（即便盐不在手）
         val ok = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 102), HealthConstraints())
         assertEquals(1, ok.size)
-        assertEquals(setOf("番茄", "鸡蛋"), ok.first().mainOnHand.toSet())
+        assertEquals(listOf("番茄"), ok.first().mainNames)
+        assertEquals(listOf("鸡蛋"), ok.first().secondaryNames)
 
-        // 缺鸡蛋 → 不可做，剔除
-        val missing = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101), HealthConstraints())
+        // 缺鸡蛋(非调料) → 不可做，剔除
+        val missing = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 901), HealthConstraints())
         assertTrue(missing.isEmpty())
     }
 
     @Test
     fun `调料不在手也不影响可做性`() {
         val dish = RuleDish(1, "清炒油菜", listOf(main(101, "油菜"), sea(901, "盐"), sea(902, "油")))
-        // 只有主料在手、调料不在手 → 仍可做
+        // 只有非调料(油菜)在手、调料不在手 → 仍可做
         val result = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101), HealthConstraints())
         assertEquals(1, result.size)
     }
@@ -77,17 +78,17 @@ class HealthRuleEngineTest {
     }
 
     @Test
-    fun `辅料齐度高的排前面`() {
-        val full = RuleDish(1, "红烧肉(辅料全)", listOf(main(101, "五花肉"), sec(201, "姜"), sec(202, "冰糖")))
-        val bare = RuleDish(2, "红烧肉(缺辅料)", listOf(main(102, "五花肉2"), sec(203, "姜2"), sec(204, "冰糖2")))
+    fun `在手调料越全做法越丰富排前面`() {
+        // 两菜非调料都在手、都可做；A 的调料(姜蒜)在手更全 → 排前。
+        val rich = RuleDish(1, "红烧肉(调料全)", listOf(main(101, "五花肉"), sea(901, "姜"), sea(902, "蒜")))
+        val bare = RuleDish(2, "白煮肉(缺调料)", listOf(main(102, "五花肉2"), sea(903, "姜2"), sea(904, "蒜2")))
         val result = engine.evaluate(
-            listOf(bare, full), // 故意乱序放入
-            pantryIngredientIds = setOf(101, 102, 201, 202), // full 辅料齐，bare 缺
+            listOf(bare, rich), // 故意乱序
+            pantryIngredientIds = setOf(101, 102, 901, 902), // rich 调料齐，bare 调料缺
             HealthConstraints(),
         )
-        assertEquals(1L, result.first().id) // 辅料齐的排前
-        val bareCand = result.first { it.id == 2L }
-        assertEquals(setOf("姜2", "冰糖2"), bareCand.secondaryMissing.toSet())
+        assertEquals(1L, result.first().id) // 调料全的排前
+        assertEquals(setOf("姜", "蒜"), result.first().seasoningsOnHand.toSet())
     }
 
     @Test
@@ -106,14 +107,14 @@ class HealthRuleEngineTest {
     }
 
     @Test
-    fun `无主料标注时退化为非调料齐`() {
-        // 没有任何 MAIN，只有辅料+调料
-        val dish = RuleDish(1, "杂拌", listOf(sec(201, "黄瓜"), sec(202, "木耳"), sea(901, "盐")))
-        // 缺木耳 → 退化规则要求非调料齐 → 不可做
-        val missing = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(201), HealthConstraints())
+    fun `辅料属于非调料必须在手`() {
+        // 木耳作为辅料(非调料) → 方案A 下也算可做性必需。
+        val dish = RuleDish(1, "木耳炒肉", listOf(main(101, "猪肉"), sec(201, "木耳"), sea(901, "盐")))
+        // 缺木耳 → 不可做
+        val missing = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101), HealthConstraints())
         assertTrue(missing.isEmpty())
-        // 非调料齐(黄瓜+木耳) → 可做
-        val ok = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(201, 202), HealthConstraints())
+        // 猪肉+木耳齐 → 可做
+        val ok = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 201), HealthConstraints())
         assertEquals(1, ok.size)
     }
 }

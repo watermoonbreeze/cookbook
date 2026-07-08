@@ -32,10 +32,10 @@ class HealthRuleEngine {
         constraints: HealthConstraints,
         recentDishIds: Set<Long> = emptySet(),
     ): List<DishCandidate> = dishes.mapNotNull { dish ->
-        val mains = dish.ingredients.filter { it.role == IngredientRole.MAIN }
-        // 可做性：主料齐即可做；若菜没标主料，退化为“所有非调料齐”，避免空主料被判恒可做。
-        val required = mains.ifEmpty { dish.ingredients.filter { it.role != IngredientRole.SEASONING } }
-        val makeable = required.all { it.ingredientId in pantryIngredientIds }
+        val nonSeasoning = dish.ingredients.filter { it.role != IngredientRole.SEASONING }
+        val seasonings = dish.ingredients.filter { it.role == IngredientRole.SEASONING }
+        // 方案A 可做性：所有非调料食材在手即可做（调料默认常备，不参与判定）。
+        val makeable = nonSeasoning.all { it.ingredientId in pantryIngredientIds }
         if (!makeable) return@mapNotNull null
 
         // 犯忌：含任一 avoid 食材 → 直接剔除（硬约束）。
@@ -43,23 +43,21 @@ class HealthRuleEngine {
         if (hasAvoid) return@mapNotNull null
 
         val limitHits = dish.ingredients.filter { it.ingredientId in constraints.limitIngredientIds }
-        val secondary = dish.ingredients.filter { it.role == IngredientRole.SECONDARY }
-        val secOnHand = secondary.filter { it.ingredientId in pantryIngredientIds }
-        val secMissing = secondary.filter { it.ingredientId !in pantryIngredientIds }
+        val seasoningsOnHand = seasonings.filter { it.ingredientId in pantryIngredientIds }
         val isRecent = dish.id in recentDishIds
 
-        // 打分：基础分 + 辅料齐度加分 - 最近吃过 - 限量项。
-        val secondaryCoverage = if (secondary.isEmpty()) 1.0 else secOnHand.size.toDouble() / secondary.size
-        var score = 1.0 + secondaryCoverage
+        // 打分：基础分 + 在手调料丰富度(可给更丰富做法) - 最近吃过 - 限量项。
+        val seasoningRichness = if (seasonings.isEmpty()) 0.0 else seasoningsOnHand.size.toDouble() / seasonings.size
+        var score = BASE_SCORE + SEASONING_WEIGHT * seasoningRichness
         if (isRecent) score -= RECENT_PENALTY
         score -= LIMIT_PENALTY * limitHits.size
 
         DishCandidate(
             id = dish.id,
             name = dish.name,
-            mainOnHand = required.map { it.name }, // 已保证在手
-            secondaryOnHand = secOnHand.map { it.name },
-            secondaryMissing = secMissing.map { it.name },
+            mainNames = dish.ingredients.filter { it.role == IngredientRole.MAIN }.map { it.name },
+            secondaryNames = dish.ingredients.filter { it.role == IngredientRole.SECONDARY }.map { it.name },
+            seasoningsOnHand = seasoningsOnHand.map { it.name },
             limitHits = limitHits.map { it.name },
             isRecent = isRecent,
             score = score,
@@ -67,6 +65,8 @@ class HealthRuleEngine {
     }.sortedByDescending { it.score }
 
     companion object {
+        private const val BASE_SCORE = 1.0
+        private const val SEASONING_WEIGHT = 0.5 // 在手调料越全，可做的做法越丰富，略加分。
         private const val RECENT_PENALTY = 0.5 // 最近吃过降权，鼓励多样性。
         private const val LIMIT_PENALTY = 0.3 // 每个限量食材的降权。
     }
