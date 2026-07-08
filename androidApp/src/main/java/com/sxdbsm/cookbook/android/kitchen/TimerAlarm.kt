@@ -149,7 +149,10 @@ class TimerAlarmReceiver : BroadcastReceiver() {
         val openPi = PendingIntent.getActivity(
             context,
             id + CONTENT_REQUEST_OFFSET,
-            Intent(context, MainActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP },
+            Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(MainActivity.EXTRA_OPEN_TIMER, true) // [AI生成] 点击进烹饪计时页。
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val fullScreenPi = PendingIntent.getActivity(

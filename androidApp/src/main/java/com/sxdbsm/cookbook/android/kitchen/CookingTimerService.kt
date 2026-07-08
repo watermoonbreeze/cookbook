@@ -111,7 +111,10 @@ class CookingTimerService : Service() {
         val openPi = PendingIntent.getActivity(
             this,
             0,
-            Intent(this, MainActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_CLEAR_TOP },
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(MainActivity.EXTRA_OPEN_TIMER, true) // [AI生成] 点击进烹饪计时页。
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)

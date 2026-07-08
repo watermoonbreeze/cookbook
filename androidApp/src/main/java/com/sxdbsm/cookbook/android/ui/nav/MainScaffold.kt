@@ -43,12 +43,23 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * Scaffold 类似一个页面框架：底部栏、悬浮按钮、内容区都在这里统一装配。
  */
 @Composable
-fun MainScaffold() {
+fun MainScaffold(
+    openTimer: Boolean = false, // [AI生成] 计时通知点击请求打开烹饪计时页。
+    onTimerConsumed: () -> Unit = {},
+) {
     val nav = rememberNavController()
     val current by nav.currentBackStackEntryAsState()
     val currentRoute = current?.destination?.route
     val context = LocalContext.current
     var lastBackAt by remember { mutableStateOf(0L) }
+
+    // [AI生成] 点击计时通知 → 进入烹饪计时页（非首页）。
+    LaunchedEffect(openTimer) {
+        if (openTimer) {
+            if (currentRoute != Routes.COOKING_TIMER) nav.navigate(Routes.COOKING_TIMER)
+            onTimerConsumed()
+        }
+    }
 
     val showBottomBar = currentRoute in bottomTabs.map { it.route } // [AI修改] 详情/编辑页隐藏底部栏。
 

@@ -60,6 +60,11 @@ class MainActivity : ComponentActivity() {
 
     private val prefs: PreferenceRepository by inject() // [AI修改] 从 Koin 获取 shared 层偏好仓库。
     private val seeder: PresetDataSeeder by inject() // [AI修改] 授权并创建公共目录后再初始化预置数据。
+    private val openTimerRequested = mutableStateOf(false) // [AI生成] 通知点击请求打开烹饪计时页。
+
+    companion object {
+        const val EXTRA_OPEN_TIMER = "open_cooking_timer" // [AI生成] 计时通知点击打开计时页的 intent extra key。
+    }
     private val legacyStoragePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) {
@@ -71,6 +76,7 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false) // [AI修改] 开启沉浸式布局，让 Compose 内容延伸到状态栏/导航栏区域。
         window.statusBarColor = Color.TRANSPARENT // [AI修改] 状态栏透明，交给页面背景承接。
         window.navigationBarColor = Color.TRANSPARENT // [AI修改] 导航栏透明，底部栏自行提供背景。
+        if (intent?.getBooleanExtra(EXTRA_OPEN_TIMER, false) == true) openTimerRequested.value = true // [AI生成] 计时通知点击进入。
         val initialStorageReady = preparePublicStorageIfAllowed()
         setContent {
             var storageReady by remember { mutableStateOf(initialStorageReady) }
@@ -85,6 +91,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_OPEN_TIMER, false)) openTimerRequested.value = true // [AI生成] App 已在前台时点击计时通知也能跳转。
     }
 
     /**
@@ -169,7 +181,10 @@ class MainActivity : ComponentActivity() {
             }
         }
         CookbookTheme(themeMode = mode) {
-            MainScaffold()
+            MainScaffold(
+                openTimer = openTimerRequested.value,
+                onTimerConsumed = { openTimerRequested.value = false },
+            )
         }
     }
 
