@@ -13,26 +13,31 @@
       },
       {
         "ingredient": "猪瘦肉",
+        "main": true,
         "quantity": 150,
         "unit": "克"
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 2,
         "unit": "瓣"
       }
@@ -58,26 +63,31 @@
       },
       {
         "ingredient": "鸡蛋",
+        "main": true,
         "quantity": 3,
         "unit": "个"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "白糖",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "葱",
+        "main": false,
         "quantity": 1,
         "unit": "段"
       }
@@ -103,16 +113,19 @@
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 2,
         "unit": "瓣"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -137,21 +150,25 @@
       },
       {
         "ingredient": "辣椒",
+        "main": false,
         "quantity": 2,
         "unit": "个"
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 3,
         "unit": "瓣"
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "醋",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -177,21 +194,25 @@
       },
       {
         "ingredient": "辣椒",
+        "main": false,
         "quantity": 1,
         "unit": "个"
       },
       {
         "ingredient": "醋",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -217,26 +238,31 @@
       },
       {
         "ingredient": "姜",
+        "main": false,
         "quantity": 3,
         "unit": "片"
       },
       {
         "ingredient": "葱",
+        "main": false,
         "quantity": 2,
         "unit": "段"
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 2,
         "unit": "勺"
       },
       {
         "ingredient": "料酒",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -262,11 +288,13 @@
       },
       {
         "ingredient": "姜",
+        "main": false,
         "quantity": 3,
         "unit": "片"
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -291,16 +319,19 @@
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 3,
         "unit": "瓣"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -325,21 +356,25 @@
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 2,
         "unit": "瓣"
       },
       {
         "ingredient": "醋",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       }
@@ -364,16 +399,19 @@
       },
       {
         "ingredient": "排骨",
+        "main": true,
         "quantity": 300,
         "unit": "克"
       },
       {
         "ingredient": "姜",
+        "main": false,
         "quantity": 3,
         "unit": "片"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       }
@@ -399,26 +437,31 @@
       },
       {
         "ingredient": "猪瘦肉",
+        "main": true,
         "quantity": 80,
         "unit": "克"
       },
       {
         "ingredient": "豆瓣酱",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "花椒",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 2,
         "unit": "瓣"
       },
       {
         "ingredient": "葱",
+        "main": false,
         "quantity": 1,
         "unit": "段"
       }
@@ -444,21 +487,25 @@
       },
       {
         "ingredient": "油菜",
+        "main": true,
         "quantity": 300,
         "unit": "克"
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 2,
         "unit": "瓣"
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -483,21 +530,25 @@
       },
       {
         "ingredient": "鸡蛋",
+        "main": true,
         "quantity": 1,
         "unit": "个"
       },
       {
         "ingredient": "虾皮",
+        "main": true,
         "quantity": 5,
         "unit": "克"
       },
       {
         "ingredient": "葱",
+        "main": false,
         "quantity": 1,
         "unit": "段"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       }
@@ -523,16 +574,19 @@
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 2,
         "unit": "瓣"
       },
       {
         "ingredient": "醋",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -575,16 +629,19 @@
       },
       {
         "ingredient": "豆腐",
+        "main": true,
         "quantity": 300,
         "unit": "克"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -610,16 +667,19 @@
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 3,
         "unit": "瓣"
       },
       {
         "ingredient": "盐",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
@@ -644,21 +704,25 @@
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 2,
         "unit": "勺"
       },
       {
         "ingredient": "老抽",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "姜",
+        "main": false,
         "quantity": 3,
         "unit": "片"
       },
       {
         "ingredient": "白糖",
+        "main": false,
         "quantity": 1,
         "unit": "少许"
       }
@@ -684,21 +748,25 @@
       },
       {
         "ingredient": "大蒜",
+        "main": false,
         "quantity": 2,
         "unit": "瓣"
       },
       {
         "ingredient": "醋",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "生抽",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       },
       {
         "ingredient": "辣椒",
+        "main": false,
         "quantity": 1,
         "unit": "个"
       }
@@ -724,16 +792,19 @@
       },
       {
         "ingredient": "咖喱",
+        "main": false,
         "quantity": 2,
         "unit": "块"
       },
       {
         "ingredient": "洋葱",
+        "main": true,
         "quantity": 1,
         "unit": "个"
       },
       {
         "ingredient": "花生油",
+        "main": false,
         "quantity": 1,
         "unit": "勺"
       }
