@@ -19,6 +19,14 @@ enum class IngredientRole {
     SEASONING, // 调料：默认常备，不影响可做性
 }
 
+/** 取数层聚合好的规则引擎完整输入。[AI生成] */
+data class RecommendationInput(
+    val dishes: List<RuleDish>,
+    val pantryIngredientIds: Set<Long>,
+    val constraints: HealthConstraints,
+    val recentDishIds: Set<Long>,
+)
+
 /** 规则引擎输入的菜品（已把食材按角色标好）。[AI生成] */
 data class RuleDish(
     val id: Long,

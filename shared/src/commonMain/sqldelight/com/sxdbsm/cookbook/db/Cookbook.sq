@@ -687,6 +687,28 @@ WHERE ic.category_id IN ?
   AND ic.status = 1
 ORDER BY i.pinyin, i.name;
 
+-- [AI生成] 调料/油脂类食材 id（AI 推荐"可做性=非调料齐"用；调料默认常备）。
+-- 按稳定根类名「调味品」「油脂类」及其子类识别，不依赖分类 id。
+selectSeasoningIngredientIds:
+SELECT DISTINCT ic.ingredient_id
+FROM ingredient_category ic
+JOIN food_category fc ON fc.id = ic.category_id
+WHERE ic.status = 1 AND fc.status = 1
+  AND (
+    fc.name IN ('调味品', '油脂类')
+    OR fc.parent_id IN (SELECT id FROM food_category WHERE name IN ('调味品', '油脂类') AND status = 1)
+  );
+
+-- [AI生成] 最近吃过的菜 id（按最近食用日期倒序，去重限量）；AI 推荐去重降权用。
+selectRecentEatenDishIds:
+SELECT mrd.dish_id
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+WHERE mr.status = 1 AND mrd.status = 1
+GROUP BY mrd.dish_id
+ORDER BY MAX(mr.date) DESC
+LIMIT ?;
+
 -- [AI生成] 调养 tab 按病种分类通过调养规则聚合食材；剂量语义由 advice_level 表达，红绿灯分组在应用层完成。
 selectIngredientsByCareCategories:
 SELECT DISTINCT i.id,

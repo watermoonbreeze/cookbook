@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.di
 
 import app.cash.sqldelight.db.SqlDriver
+import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.CookingTimerRepository
 import com.sxdbsm.cookbook.data.repository.FavoriteComboRepository
@@ -34,4 +35,6 @@ val sharedModule: Module = module {
     single { MealRecordRepository(get()) }
     single { PreferenceRepository(get()) }
     single { HealthProfileRepository(get()) }
+    // [AI生成] AI 推荐取数层(S0)：聚合库存/菜品/忌口/最近餐 → 规则引擎输入。
+    single { RecommendationDataSource(get(), get(), get(), get(), get()) }
 }
