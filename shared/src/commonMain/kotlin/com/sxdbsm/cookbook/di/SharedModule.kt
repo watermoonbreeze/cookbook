@@ -1,8 +1,7 @@
 package com.sxdbsm.cookbook.di
 
 import app.cash.sqldelight.db.SqlDriver
-import com.sxdbsm.cookbook.ai.AiRuntime
-import com.sxdbsm.cookbook.ai.MockAiRuntime
+import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.ai.RecommendationOrchestrator
 import com.sxdbsm.cookbook.data.repository.DishRepository
@@ -40,7 +39,7 @@ val sharedModule: Module = module {
     single { HealthProfileRepository(get()) }
     // [AI生成] AI 推荐取数层(S0)：聚合库存/菜品/忌口/最近餐 → 规则引擎输入。
     single { RecommendationDataSource(get(), get(), get(), get(), get()) }
-    // [AI生成] AI 推荐(S1)：AiRuntime 默认 Mock(走规则兜底)，S2 由 androidApp 换成 CloudAiRuntime。
-    single<AiRuntime> { MockAiRuntime() }
+    // [AI生成] AI 运行时配置(云/端/Key)；AiRuntime 具体实现由 androidModule 绑定 SwitchableAiRuntime。
+    single { AiRuntimeConfig(get()) }
     single { RecommendationOrchestrator(get()) }
 }

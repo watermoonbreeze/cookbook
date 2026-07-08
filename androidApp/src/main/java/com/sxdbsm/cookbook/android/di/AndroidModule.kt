@@ -11,6 +11,12 @@ import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerViewModel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerViewModel
 import com.sxdbsm.cookbook.android.ui.search.SearchViewModel
 import com.sxdbsm.cookbook.android.util.LogFileManager
+import com.sxdbsm.cookbook.ai.AiRuntime
+import com.sxdbsm.cookbook.ai.AiRuntimeType
+import com.sxdbsm.cookbook.ai.MockAiRuntime
+import com.sxdbsm.cookbook.ai.SwitchableAiRuntime
+import com.sxdbsm.cookbook.android.ai.CloudAiRuntime
+import com.sxdbsm.cookbook.android.ai.OnDeviceAiRuntime
 import com.sxdbsm.cookbook.platform.BackupManager
 import com.sxdbsm.cookbook.platform.DatabaseDriverFactory
 import org.koin.android.ext.koin.androidContext
@@ -26,6 +32,20 @@ val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
     single { BackupManager(context = androidContext(), driverProvider = { get() }) }
     single { LogFileManager() } // [AI生成] 我的页日志查看读取 /sdcard/cookbook/log/。
+
+    // [AI生成] AI 运行时切换框架：按 AiRuntimeConfig 路由到 Mock/云端/端侧；加端侧只需扩这里的映射。
+    single { CloudAiRuntime(get()) }
+    single { OnDeviceAiRuntime() }
+    single<AiRuntime> {
+        SwitchableAiRuntime(
+            config = get(),
+            runtimes = mapOf(
+                AiRuntimeType.MOCK to MockAiRuntime(),
+                AiRuntimeType.CLOUD to get<CloudAiRuntime>(),
+                AiRuntimeType.ON_DEVICE to get<OnDeviceAiRuntime>(),
+            ),
+        )
+    }
 
     viewModel { HomeViewModel(get(), get(), get()) } // [AI修改] 首页主题弹框需要读取/写入主题偏好。
     viewModel { DishesViewModel(get(), get()) }
