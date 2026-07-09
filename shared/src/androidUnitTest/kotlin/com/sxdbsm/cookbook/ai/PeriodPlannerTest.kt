@@ -31,16 +31,25 @@ class PeriodPlannerTest {
     @Test
     fun `天数与餐次数量正确`() {
         val dishes = (1L..20L).map { dish(it) }
-        val plan = planner.plan(dishes, days = 3, mealNames = meals, dishesPerMeal = 2)
+        val plan = planner.plan(dishes, days = 3, mealNames = meals, dishesMin = 2, dishesMax = 2)
         assertEquals(3, plan.days.size)
         assertEquals(3, plan.days[0].meals.size)
         assertEquals(2, plan.days[0].meals[0].dishes.size)
     }
 
     @Test
+    fun `每餐菜数在2到5之间`() {
+        val dishes = (1L..40L).map { dish(it, main = listOf("料$it")) }
+        val plan = planner.plan(dishes, days = 5, mealNames = meals, dishesMin = 2, dishesMax = 5, seed = 3)
+        val counts = plan.days.flatMap { it.meals }.map { it.dishes.size }
+        assertTrue(counts.all { it in 2..5 }, "每餐菜数应在2~5: $counts")
+        assertTrue(counts.toSet().size > 1, "菜数应有变化而非固定: $counts")
+    }
+
+    @Test
     fun `天数封顶30`() {
         val dishes = (1L..30L).map { dish(it) }
-        val plan = planner.plan(dishes, days = 100, mealNames = meals, dishesPerMeal = 1)
+        val plan = planner.plan(dishes, days = 100, mealNames = meals, dishesMin = 1, dishesMax = 1)
         assertEquals(30, plan.days.size)
     }
 
@@ -48,7 +57,7 @@ class PeriodPlannerTest {
     fun `忌口菜被剔除`() {
         val plan = planner.plan(
             listOf(dish(1), dish(2, avoid = true)),
-            days = 1, mealNames = listOf("中餐"), dishesPerMeal = 1,
+            days = 1, mealNames = listOf("中餐"), dishesMin = 1, dishesMax = 1,
         )
         val ids = plan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }
         assertTrue(2L !in ids)
@@ -58,7 +67,7 @@ class PeriodPlannerTest {
     fun `健康档案下利健康占比不低于80%`() {
         val healthy = (1L..10L).map { dish(it, main = listOf("m$it"), healthy = true) }
         val unhealthy = (11L..15L).map { dish(it, main = listOf("m$it"), healthy = false) }
-        val plan = planner.plan(healthy + unhealthy, days = 3, mealNames = meals, dishesPerMeal = 2, healthAware = true)
+        val plan = planner.plan(healthy + unhealthy, days = 3, mealNames = meals, dishesMin = 2, dishesMax = 2, healthAware = true)
         assertTrue(plan.healthyRatio >= 0.8, "healthyRatio=${plan.healthyRatio}")
     }
 
@@ -66,7 +75,7 @@ class PeriodPlannerTest {
     fun `应季菜优先`() {
         val plan = planner.plan(
             listOf(dish(1, season = setOf("夏季")), dish(2)),
-            days = 1, mealNames = listOf("中餐"), dishesPerMeal = 1, currentSeason = "夏季",
+            days = 1, mealNames = listOf("中餐"), dishesMin = 1, dishesMax = 1, currentSeason = "夏季",
         )
         assertEquals(1L, plan.days[0].meals[0].dishes[0].id)
     }
@@ -75,7 +84,7 @@ class PeriodPlannerTest {
     fun `早餐档只选早餐菜午晚选非早餐菜`() {
         val plan = planner.plan(
             listOf(dish(1, breakfast = true), dish(2, breakfast = false)),
-            days = 1, mealNames = listOf("早餐", "中餐"), dishesPerMeal = 1,
+            days = 1, mealNames = listOf("早餐", "中餐"), dishesMin = 1, dishesMax = 1,
         )
         val bfDishes = plan.days[0].meals.first { it.mealName == "早餐" }.dishes.map { it.id }
         val lunchDishes = plan.days[0].meals.first { it.mealName == "中餐" }.dishes.map { it.id }
@@ -85,10 +94,10 @@ class PeriodPlannerTest {
 
     @Test
     fun `候选充足时尽量不重复同一道菜`() {
-        val dishes = (1L..30L).map { dish(it, main = listOf("料$it")) }
-        val plan = planner.plan(dishes, days = 2, mealNames = meals, dishesPerMeal = 2, seed = 7)
+        val dishes = (1L..60L).map { dish(it, main = listOf("料$it")) }
+        val plan = planner.plan(dishes, days = 2, mealNames = meals, dishesMin = 2, dishesMax = 2, seed = 7)
         val ids = plan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }
-        // 12 个坑、30 个候选，应无重复
+        // 每餐固定 2 道、12 个坑、60 个候选，应无重复
         assertEquals(ids.size, ids.toSet().size)
     }
 }

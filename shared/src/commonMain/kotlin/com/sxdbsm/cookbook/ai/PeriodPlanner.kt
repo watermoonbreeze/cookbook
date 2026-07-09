@@ -38,7 +38,8 @@ class PeriodPlanner {
      * @param candidates 候选菜(已算好营养/季节/健康标记)
      * @param days 天数(1~30)
      * @param mealNames 每天餐次名(如 早餐/中餐/晚餐)
-     * @param dishesPerMeal 每餐菜数
+     * @param dishesMin 每餐最少菜数
+     * @param dishesMax 每餐最多菜数(每餐在 [min,max] 内随机，让菜量有变化)
      * @param currentSeason 当前季节(春/夏/秋/冬)
      * @param healthAware 是否结合健康档案(保≥80%利健康)
      * @param seed 换一换随机种子(打散同分候选)
@@ -47,11 +48,14 @@ class PeriodPlanner {
         candidates: List<PlanDish>,
         days: Int,
         mealNames: List<String>,
-        dishesPerMeal: Int = 2,
+        dishesMin: Int = 2,
+        dishesMax: Int = 5,
         currentSeason: String = "",
         healthAware: Boolean = false,
         seed: Long = 0,
     ): PeriodPlan {
+        val lo = dishesMin.coerceAtLeast(1)
+        val hi = dishesMax.coerceAtLeast(lo)
         val pool = candidates.filterNot { it.hasAvoid } // 忌口硬剔除
         if (pool.isEmpty() || days <= 0 || mealNames.isEmpty()) {
             return PeriodPlan(emptyList(), healthAware, 0.0)
@@ -73,8 +77,10 @@ class PeriodPlanner {
             for (mealName in mealNames) {
                 // [AI修改] 餐次适配 + 早餐软硬搭配：早餐档只从早餐菜选，且偶数位取硬(主食/蛋)、奇数位取软(粥/饮)。
                 val isBreakfastMeal = mealName.contains("早")
-                val chosen = ArrayList<PlanDish>(dishesPerMeal)
-                for (idx in 0 until dishesPerMeal) {
+                // [AI修改] 每餐菜数在 [min,max] 内随机(种子驱动)，不再固定，让菜量有变化。
+                val dishesThisMeal = if (hi <= lo) lo else rnd.nextInt(lo, hi + 1)
+                val chosen = ArrayList<PlanDish>(dishesThisMeal)
+                for (idx in 0 until dishesThisMeal) {
                     val pool = mealPool(shuffled, isBreakfastMeal, idx).ifEmpty { shuffled }
                     val needHealthy = healthAware && healthyPicked.toDouble() / (totalPicked + 1) < HEALTHY_TARGET
                     val avail = pool.filter { it !in chosen && (!needHealthy || it.isHealthy) }

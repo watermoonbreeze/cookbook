@@ -62,7 +62,8 @@ class AiPlanViewModel(
                     ctx = ctx,
                     days = state.days,
                     mealNames = names,
-                    dishesPerMeal = DISHES_PER_MEAL,
+                    dishesMin = DISHES_MIN,
+                    dishesMax = DISHES_MAX,
                     seed = Random.nextLong(),
                     useModel = aiConfig.isModelReady(),
                 )
@@ -99,7 +100,8 @@ class AiPlanViewModel(
     }
 
     companion object {
-        private const val DISHES_PER_MEAL = 2
+        private const val DISHES_MIN = 2 // [AI修改] 每餐至少 2 道。
+        private const val DISHES_MAX = 5 // [AI修改] 每餐最多 5 道，每餐在 2~5 内随机。
         private val PLAN_MEAL_CODES = setOf("BREAKFAST", "LUNCH", "DINNER") // [AI生成] 周期规划只早/中/晚。
     }
 }

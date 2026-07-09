@@ -35,14 +35,15 @@ class PlanOrchestrator(
         ctx: PlanContext,
         days: Int,
         mealNames: List<String>,
-        dishesPerMeal: Int,
+        dishesMin: Int,
+        dishesMax: Int,
         seed: Long,
         useModel: Boolean,
     ): PlanResult {
-        fun rule() = planner.plan(ctx.dishes, days, mealNames, dishesPerMeal, ctx.season, ctx.healthAware, seed)
+        fun rule() = planner.plan(ctx.dishes, days, mealNames, dishesMin, dishesMax, ctx.season, ctx.healthAware, seed)
         if (!useModel || ctx.dishes.isEmpty()) return PlanResult(rule(), byAi = false)
 
-        val prompt = buildPrompt(ctx, days, mealNames, dishesPerMeal)
+        val prompt = buildPrompt(ctx, days, mealNames, dishesMin, dishesMax)
         val raw = runCatching { runtime.complete(prompt) }.getOrNull()?.getOrNull()
         // AI 解析出的按天菜谱（按 AI 输出顺序对齐到第 0..N 天，每天为「餐次名→餐」映射）。
         val aiDays = raw?.let { parseAiDays(it, ctx, mealNames) }
@@ -83,10 +84,10 @@ class PlanOrchestrator(
         return PeriodPlan(dayPlans, ctx.healthAware, ratio)
     }
 
-    private fun buildPrompt(ctx: PlanContext, days: Int, mealNames: List<String>, dishesPerMeal: Int): LlmRequest {
+    private fun buildPrompt(ctx: PlanContext, days: Int, mealNames: List<String>, dishesMin: Int, dishesMax: Int): LlmRequest {
         val system = buildString {
             append("你是家庭膳食规划助手，为用户排 $days 天的菜谱。")
-            append("只能从给定候选菜的 id 里挑，不能编造。每天餐次为：${mealNames.joinToString("、")}，每餐 $dishesPerMeal 道菜。")
+            append("只能从给定候选菜的 id 里挑，不能编造。每天餐次为：${mealNames.joinToString("、")}，每餐 $dishesMin~$dishesMax 道菜(按餐次丰盛度合理安排、不必都一样)。")
             append("规则：早餐只用标注[早餐]的菜且软硬搭配(如 紫薯+牛奶)；正餐用标注[正餐]的菜；")
             append("尽量不重复同一道菜/同一主料；结合应季与营养维度多样；")
             if (ctx.healthAware) append("用户有健康档案，至少80%的菜要标注[利健康]、且优先遵循《中国居民膳食指南》等权威建议；")
