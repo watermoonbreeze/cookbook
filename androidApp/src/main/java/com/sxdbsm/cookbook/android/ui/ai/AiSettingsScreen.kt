@@ -12,17 +12,12 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -32,11 +27,11 @@ import org.koin.androidx.compose.koinViewModel
 
 /**
  * @File : AiSettingsScreen
- * @Time : 2026/07/08
+ * @Time : 2026/07/09
  * @Author : SXD-AI
- * @Desc : AI 设置页（填云端 API Key + 选运行时）
+ * @Desc : AI 设置页（三档来源 + 云端选模型 + 按厂商 Key 设置/编辑）
  * <p>
- * [AI生成] S3：Key 只存本机、不上传；端侧选项占位待接入。
+ * [AI修改] 云端可下拉选择具体模型(多厂商)，未配置 Key 弹框输入、已配置可编辑；改动即时生效。
  **/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,15 +40,14 @@ fun AiSettingsScreen(
     vm: AiSettingsViewModel = koinViewModel(),
 ) {
     val state = vm.state
+    var keyDialogOpen by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("AI 设置") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
-                    }
+                    IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }
                 },
             )
         },
@@ -67,33 +61,21 @@ fun AiSettingsScreen(
         ) {
             Text("模型来源", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
-            RuntimeOption("云端（智谱 GLM-4-Flash，免费）", AiRuntimeType.CLOUD, state.type, enabled = true) { vm.onTypeChange(it) }
-            RuntimeOption("规则推荐（不用模型，离线可用）", AiRuntimeType.MOCK, state.type, enabled = true) { vm.onTypeChange(it) }
-            RuntimeOption("端侧本地模型（待接入）", AiRuntimeType.ON_DEVICE, state.type, enabled = false) { vm.onTypeChange(it) }
 
-            Spacer(Modifier.height(16.dp))
-            Text("云端 API Key", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(4.dp))
-            OutlinedTextField(
-                value = state.apiKey,
-                onValueChange = vm::onKeyChange,
-                placeholder = { Text("粘贴智谱 GLM 的 API Key") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "Key 只保存在本机，不上传、不写日志。未填 Key 或无网络时自动回退为规则推荐。\n申请方式见文档《AI_API_KEY申请指南》。",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            Spacer(Modifier.height(20.dp))
-            Button(onClick = { vm.save() }, modifier = Modifier.fillMaxWidth()) { Text("保存") }
-            if (state.savedTip != null) {
-                Spacer(Modifier.height(8.dp))
-                Text(state.savedTip, color = MaterialTheme.colorScheme.primary)
+            // —— 云端 ——
+            RuntimeOption("云端大模型", AiRuntimeType.CLOUD, state.type, enabled = true) { vm.onTypeChange(it) }
+            if (state.type == AiRuntimeType.CLOUD) {
+                CloudSection(
+                    state = state,
+                    onSelectModel = { vm.onSelectModel(it) },
+                    onEditKey = { keyDialogOpen = true },
+                )
             }
+
+            // —— 规则 ——
+            RuntimeOption("规则推荐（不用模型，离线可用）", AiRuntimeType.MOCK, state.type, enabled = true) { vm.onTypeChange(it) }
+            // —— 端侧 ——
+            RuntimeOption("端侧本地模型（待接入）", AiRuntimeType.ON_DEVICE, state.type, enabled = false) { vm.onTypeChange(it) }
 
             Spacer(Modifier.height(20.dp))
             Text(
@@ -103,6 +85,107 @@ fun AiSettingsScreen(
             )
         }
     }
+
+    if (keyDialogOpen) {
+        val model = vm.selectedModel()
+        KeyDialog(
+            vendorName = model.vendorName,
+            initial = state.keyByVendor[model.vendor].orEmpty(),
+            onConfirm = { key ->
+                vm.onSaveVendorKey(model.vendor, key)
+                keyDialogOpen = false
+            },
+            onDismiss = { keyDialogOpen = false },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CloudSection(
+    state: AiSettingsUiState,
+    onSelectModel: (String) -> Unit,
+    onEditKey: () -> Unit,
+) {
+    val model = state.models.firstOrNull { it.id == state.selectedModelId } ?: state.models.first()
+    val vendorKey = state.keyByVendor[model.vendor].orEmpty()
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.padding(start = 40.dp, end = 4.dp, bottom = 8.dp)) {
+        // 模型下拉
+        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+            OutlinedTextField(
+                value = model.displayName,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("模型") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+            )
+            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                state.models.forEach { m ->
+                    DropdownMenuItem(
+                        text = { Text(m.displayName) },
+                        onClick = {
+                            onSelectModel(m.id)
+                            expanded = false
+                        },
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        // Key 状态 + 设置/编辑
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                if (vendorKey.isBlank()) "${model.vendorName}密钥：未配置" else "${model.vendorName}密钥：已配置 ${maskKey(vendorKey)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = if (vendorKey.isBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onEditKey) { Text(if (vendorKey.isBlank()) "设置密钥" else "编辑") }
+        }
+        Text(
+            "Key 只保存在本机；未配置/无网络时自动回退规则推荐。申请见文档《AI_API_KEY申请指南》。",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun KeyDialog(
+    vendorName: String,
+    initial: String,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var text by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("$vendorName API Key") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text("粘贴 $vendorName 的 API Key") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "同厂商多个模型共用一个 Key，只保存在本机。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = { TextButton(onClick = { onConfirm(text) }) { Text("保存") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+    )
 }
 
 @Composable
@@ -121,7 +204,6 @@ private fun RuntimeOption(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(selected = value == selected, onClick = { if (enabled) onSelect(value) }, enabled = enabled)
-        Spacer(Modifier.height(0.dp))
         Text(
             label,
             style = MaterialTheme.typography.bodyMedium,
@@ -130,3 +212,7 @@ private fun RuntimeOption(
         )
     }
 }
+
+/** 打码显示 Key，只露头尾。[AI生成] */
+private fun maskKey(key: String): String =
+    if (key.length <= 8) "••••" else "${key.take(4)}••••${key.takeLast(4)}"

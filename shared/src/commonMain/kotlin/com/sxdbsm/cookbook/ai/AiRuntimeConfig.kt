@@ -29,19 +29,35 @@ class AiRuntimeConfig(private val prefs: PreferenceRepository) {
     suspend fun activeType(): AiRuntimeType = AiRuntimeType.from(prefs.get(KEY_TYPE))
     suspend fun setActiveType(type: AiRuntimeType) = prefs.set(KEY_TYPE, type.name)
 
-    suspend fun cloudApiKey(): String = prefs.get(KEY_CLOUD_KEY).orEmpty()
-    suspend fun setCloudApiKey(key: String) = prefs.set(KEY_CLOUD_KEY, key.trim())
+    /** 当前选中的云端模型。[AI生成] */
+    suspend fun selectedModel(): CloudModel = CloudModels.byId(prefs.get(KEY_MODEL_ID))
+    suspend fun setSelectedModelId(id: String) = prefs.set(KEY_MODEL_ID, id)
 
-    /** 是否已具备真实模型能力（云端已填 Key）。[AI生成] */
+    /** 某厂商的 key（同厂多模型共用）；默认厂商兼容迁移旧的单一 key。[AI生成] */
+    suspend fun vendorApiKey(vendor: String): String {
+        prefs.get(vendorKey(vendor))?.takeIf { it.isNotBlank() }?.let { return it }
+        if (vendor == CloudModels.DEFAULT.vendor) {
+            prefs.get(KEY_CLOUD_KEY_LEGACY)?.takeIf { it.isNotBlank() }?.let { return it }
+        }
+        return ""
+    }
+    suspend fun setVendorApiKey(vendor: String, key: String) = prefs.set(vendorKey(vendor), key.trim())
+
+    /** 当前选中模型对应厂商的 key。[AI生成] */
+    suspend fun currentCloudApiKey(): String = vendorApiKey(selectedModel().vendor)
+
+    /** 是否已具备真实模型能力（云端且选中模型的厂商已填 Key）。[AI生成] */
     suspend fun isModelReady(): Boolean = when (activeType()) {
-        AiRuntimeType.CLOUD -> cloudApiKey().isNotBlank()
+        AiRuntimeType.CLOUD -> currentCloudApiKey().isNotBlank()
         AiRuntimeType.ON_DEVICE -> false // 端侧未接入
         AiRuntimeType.MOCK -> false
     }
 
     companion object {
         const val KEY_TYPE = "ai_runtime_type"
-        const val KEY_CLOUD_KEY = "ai_cloud_api_key"
+        const val KEY_MODEL_ID = "ai_cloud_model_id"
+        const val KEY_CLOUD_KEY_LEGACY = "ai_cloud_api_key" // 旧单一 key，迁移到默认厂商。
+        private fun vendorKey(vendor: String) = "ai_cloud_key_$vendor"
     }
 }
 

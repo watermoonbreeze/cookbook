@@ -7,15 +7,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.AiRuntimeType
+import com.sxdbsm.cookbook.ai.CloudModel
+import com.sxdbsm.cookbook.ai.CloudModels
 import kotlinx.coroutines.launch
 
 /**
  * @File : AiSettingsViewModel
- * @Time : 2026/07/08
+ * @Time : 2026/07/09
  * @Author : SXD-AI
- * @Desc : AI 设置 ViewModel（云端 Key + 运行时选择）
+ * @Desc : AI 设置 ViewModel（三档来源 + 云端选模型 + 按厂商 Key，改动即时生效）
  * <p>
- * [AI生成] S3：Key 只存本机偏好；切换运行时(云/Mock/端侧)即时生效。
+ * [AI修改] 云端模型可下拉选择(多厂商框架)，Key 按厂商存、可设置/编辑；来源/模型/Key 改动即时持久化。
  **/
 class AiSettingsViewModel(private val config: AiRuntimeConfig) : ViewModel() {
 
@@ -23,32 +25,51 @@ class AiSettingsViewModel(private val config: AiRuntimeConfig) : ViewModel() {
         private set
 
     init {
-        viewModelScope.launch {
-            state = state.copy(apiKey = config.cloudApiKey(), type = config.activeType(), loaded = true)
-        }
+        reload()
     }
 
-    fun onKeyChange(value: String) {
-        state = state.copy(apiKey = value, savedTip = null)
+    private fun reload() {
+        viewModelScope.launch {
+            val vendors = CloudModels.ALL.map { it.vendor }.distinct()
+            state = state.copy(
+                type = config.activeType(),
+                selectedModelId = config.selectedModel().id,
+                keyByVendor = vendors.associateWith { config.vendorApiKey(it) },
+                loaded = true,
+            )
+        }
     }
 
     fun onTypeChange(type: AiRuntimeType) {
-        state = state.copy(type = type, savedTip = null)
-    }
-
-    fun save() {
         viewModelScope.launch {
-            config.setCloudApiKey(state.apiKey)
-            config.setActiveType(state.type)
-            state = state.copy(savedTip = "已保存")
+            config.setActiveType(type)
+            state = state.copy(type = type)
         }
     }
+
+    fun onSelectModel(modelId: String) {
+        viewModelScope.launch {
+            config.setSelectedModelId(modelId)
+            state = state.copy(selectedModelId = modelId)
+        }
+    }
+
+    /** 保存某厂商 Key（设置/编辑弹框确定时）。[AI生成] */
+    fun onSaveVendorKey(vendor: String, key: String) {
+        viewModelScope.launch {
+            config.setVendorApiKey(vendor, key)
+            state = state.copy(keyByVendor = state.keyByVendor + (vendor to key.trim()))
+        }
+    }
+
+    fun selectedModel(): CloudModel = CloudModels.byId(state.selectedModelId)
 }
 
 /** AI 设置 UI 状态。[AI生成] */
 data class AiSettingsUiState(
-    val apiKey: String = "",
     val type: AiRuntimeType = AiRuntimeType.CLOUD,
+    val models: List<CloudModel> = CloudModels.ALL,
+    val selectedModelId: String = CloudModels.DEFAULT.id,
+    val keyByVendor: Map<String, String> = emptyMap(), // vendor -> key（状态展示用）
     val loaded: Boolean = false,
-    val savedTip: String? = null,
 )

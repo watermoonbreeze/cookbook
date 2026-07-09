@@ -25,24 +25,25 @@ import java.net.URL
 class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
 
     override suspend fun complete(request: LlmRequest): Result<String> = withContext(Dispatchers.IO) {
-        val key = config.cloudApiKey()
+        val model = config.selectedModel()
+        val key = config.currentCloudApiKey()
         if (key.isBlank()) {
-            return@withContext Result.failure(IllegalStateException("AI API Key 未配置"))
+            return@withContext Result.failure(IllegalStateException("${model.vendorName} API Key 未配置"))
         }
-        val body = GlmProtocol.buildRequestBody(MODEL, request.system, request.user, request.temperature)
+        val body = GlmProtocol.buildRequestBody(model.model, request.system, request.user, request.temperature)
         var lastError: Throwable? = null
         repeat(MAX_ATTEMPTS) { attempt ->
-            val result = runCatching { postOnce(key, body) }
+            val result = runCatching { postOnce(model.endpoint, key, body) }
             result.onSuccess { return@withContext Result.success(it) }
             lastError = result.exceptionOrNull()
-            AppLogger.w("CloudAi", "attempt ${attempt + 1} failed: ${lastError?.message}") // 仅记错误摘要，不记内容。
+            AppLogger.w("CloudAi", "[${model.id}] attempt ${attempt + 1} failed: ${lastError?.message}") // 仅记错误摘要，不记内容。
         }
         Result.failure(lastError ?: IOException("unknown"))
     }
 
-    private fun postOnce(key: String, body: String): String {
+    private fun postOnce(endpoint: String, key: String, body: String): String {
         val started = System.currentTimeMillis()
-        val conn = (URL(ENDPOINT).openConnection() as HttpURLConnection).apply {
+        val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
             connectTimeout = CONNECT_TIMEOUT
             readTimeout = READ_TIMEOUT
@@ -64,9 +65,7 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
     }
 
     companion object {
-        // 智谱 GLM 开放平台，OpenAI 兼容 chat/completions。
-        private const val ENDPOINT = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-        private const val MODEL = "glm-4-flash" // 免费模型。
+        // endpoint/model 来自 CloudModels（选中模型），支持多厂商 OpenAI 兼容接口。
         private const val CONNECT_TIMEOUT = 15000
         private const val READ_TIMEOUT = 30000
         private const val MAX_ATTEMPTS = 2 // 首次失败重试一次。
