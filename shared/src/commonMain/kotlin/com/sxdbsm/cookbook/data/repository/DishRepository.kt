@@ -77,6 +77,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
+                        source = row.source,
                     )
                 },
             )
@@ -96,6 +97,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
+                        source = row.source,
                     )
                 },
             )
@@ -115,6 +117,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
+                        source = row.source,
                     )
                 },
             )
@@ -136,6 +139,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
+                        source = row.source,
                     )
                 },
             )
@@ -150,6 +154,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         thumbnailPath = row.thumbnail_path,
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
+                        source = row.source,
                     )
                 },
             )
@@ -173,6 +178,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     thumbnailPath = row.thumbnail_path,
                     preference = row.preference.toInt(),
                     cookingMethodId = row.cooking_method_id,
+                    source = row.source,
                 ),
                 matchCount = row.match_count.toInt(),
                 totalIngredientCount = row.total_count.toInt(),
@@ -194,6 +200,7 @@ class DishRepository(private val db: CookbookDatabase) {
                 thumbnailPath = row.thumbnail_path,
                 preference = row.preference.toInt(), // [AI修改] SQLDelight 表实体整数为 Long，领域列表模型使用 Int。
                 cookingMethodId = row.cooking_method_id,
+                source = row.source,
             )
         }
     }
@@ -229,6 +236,7 @@ class DishRepository(private val db: CookbookDatabase) {
                 preference = source.preference,
                 cookingMethodName = methodNames.firstOrNull(),
                 cookingMethodNames = methodNames,
+                source = source.source,
             )
         }
     }
@@ -243,6 +251,7 @@ class DishRepository(private val db: CookbookDatabase) {
         val thumbnailPath: String,
         val preference: Int,
         val cookingMethodId: Long?,
+        val source: String = "user",
     )
 
     /**
@@ -266,6 +275,7 @@ class DishRepository(private val db: CookbookDatabase) {
         thumbnailPath: String,
         preference: Int,
         cookingMethodId: Long?,
+        source: String = "user",
     ): DishMini =
         buildDishMinis(
             listOf(
@@ -276,6 +286,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     thumbnailPath = thumbnailPath,
                     preference = preference,
                     cookingMethodId = cookingMethodId,
+                    source = source,
                 ),
             ),
         ).first()

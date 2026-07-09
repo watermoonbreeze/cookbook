@@ -144,7 +144,7 @@ private fun SuggestionCard(index: Int, s: SuggestionUi, onPick: () -> Unit) {
             }
             if (s.onHandIngredients.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
-                Text("用到在手：${s.onHandIngredients.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("用到库存：${s.onHandIngredients.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (s.limitNotes.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))

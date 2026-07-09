@@ -284,10 +284,13 @@ fun DishesScreen(
             text = { Text("选择操作") },
             confirmButton = {
                 Column(horizontalAlignment = Alignment.End) {
-                    TextButton(onClick = {
-                        dropdownDish = null
-                        onEditDish(d.id)
-                    }) { Text("编辑") }
+                    // [AI修改] 预设菜隐藏"编辑"，改用"基于此另存"(等同导入复制)后编辑。
+                    if (d.source != "preset") {
+                        TextButton(onClick = {
+                            dropdownDish = null
+                            onEditDish(d.id)
+                        }) { Text("编辑") }
+                    }
                     TextButton(onClick = {
                         dropdownDish = null
                         onCopyDish(d.id)

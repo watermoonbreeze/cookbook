@@ -72,6 +72,7 @@ data class DishMini(
     val mainIngredientNames: List<String> = emptyList(),
     val cookingMethodName: String? = null,
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 列表/搜索中展示多个烹饪方式。
+    val source: String = "user", // [AI生成] 'preset'=预设(不可直接编辑,复制后编辑)/'user'=自建。
 )
 
 /**

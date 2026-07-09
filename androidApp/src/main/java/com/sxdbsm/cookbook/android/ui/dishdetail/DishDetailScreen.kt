@@ -56,11 +56,13 @@ fun DishDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { dish?.let { onEdit(it.id) } },
-                        enabled = dish != null,
-                    ) {
-                        Icon(Icons.Outlined.Edit, contentDescription = "编辑")
+                    // [AI修改] 预设菜隐藏编辑（如需修改可在"创建菜品"里导入该菜后编辑，等同复制）；自建菜正常编辑。
+                    dish?.let { d ->
+                        if (d.source != "preset") {
+                            IconButton(onClick = { onEdit(d.id) }) {
+                                Icon(Icons.Outlined.Edit, contentDescription = "编辑")
+                            }
+                        }
                     }
                 },
             )

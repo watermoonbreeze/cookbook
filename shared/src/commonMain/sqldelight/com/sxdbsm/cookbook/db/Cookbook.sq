@@ -852,6 +852,7 @@ SELECT d.id,
        d.thumbnail_path,
        d.preference,
        d.cooking_method_id,
+       d.source,
        COUNT(DISTINCT CASE WHEN di.ingredient_id IN :ingredientIds THEN di.ingredient_id END) AS match_count,
        COUNT(DISTINCT di.ingredient_id) AS total_count
 FROM dish d
