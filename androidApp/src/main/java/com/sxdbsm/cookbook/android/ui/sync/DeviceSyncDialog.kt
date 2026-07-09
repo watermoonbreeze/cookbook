@@ -186,7 +186,8 @@ private fun ReceivePane(state: DeviceSyncUiState, vm: DeviceSyncViewModel) {
                     setDesiredBarcodeFormats(com.journeyapps.barcodescanner.ScanOptions.QR_CODE)
                     setPrompt("对准发送端的二维码")
                     setBeepEnabled(false)
-                    setOrientationLocked(false)
+                    setOrientationLocked(true) // [AI修改] 固定竖屏，不跟随传感器横屏。
+                    setCaptureActivity(PortraitCaptureActivity::class.java) // [AI修改] 用竖屏扫码页。
                 }
                 scanLauncher.launch(options)
             },

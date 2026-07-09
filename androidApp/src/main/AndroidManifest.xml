@@ -56,6 +56,13 @@
             android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:theme="@style/AppTheme" />
+        <!-- [AI生成] 双设备同传扫码页：固定竖屏，避免 zxing 默认横屏。 -->
+        <activity
+            android:name=".ui.sync.PortraitCaptureActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:stateNotNeeded="true"
+            android:theme="@style/AppTheme" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
