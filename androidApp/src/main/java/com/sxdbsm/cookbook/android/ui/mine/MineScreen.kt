@@ -34,6 +34,7 @@ fun MineScreen(
     onOpenCookingTimer: () -> Unit,
     onOpenAiSettings: () -> Unit = {},
     onOpenAiRecommend: () -> Unit = {},
+    onOpenAiPlan: () -> Unit = {},
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -193,6 +194,12 @@ fun MineScreen(
             subtitle = "用现有食材帮你搭配今天吃什么",
             trailing = "▸",
         ) { onOpenAiRecommend() }
+        SettingRow(
+            icon = Icons.Outlined.AutoAwesome,
+            title = "周期规划",
+            subtitle = "按季节/营养/健康规划 1~30 天菜谱",
+            trailing = "▸",
+        ) { onOpenAiPlan() }
         SettingRow(
             icon = Icons.Outlined.Settings,
             title = "AI 设置",

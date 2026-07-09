@@ -28,6 +28,7 @@ import com.sxdbsm.cookbook.android.ui.addmeal.AddDayFoodScreen
 import com.sxdbsm.cookbook.android.ui.kitchen.CookingTimerScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiRecommendScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiSettingsScreen
+import com.sxdbsm.cookbook.android.ui.ai.AiPlanScreen
 import com.sxdbsm.cookbook.android.ui.ingredients.IngredientJumpBus
 import org.koin.compose.koinInject
 import com.sxdbsm.cookbook.android.ui.dishdetail.DishDetailScreen
@@ -149,6 +150,7 @@ fun MainScaffold(
                     onOpenCookingTimer = { nav.navigate(Routes.COOKING_TIMER) },
                     onOpenAiSettings = { nav.navigate(Routes.AI_SETTINGS) },
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
+                    onOpenAiPlan = { nav.navigate(Routes.AI_PLAN) },
                 )
             }
             composable(Routes.COOKING_TIMER) {
@@ -174,6 +176,9 @@ fun MainScaffold(
             }
             composable(Routes.AI_SETTINGS) {
                 AiSettingsScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.AI_PLAN) {
+                AiPlanScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.SEARCH) {
                 SearchScreen(

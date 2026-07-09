@@ -62,4 +62,5 @@ val androidModule = module {
     viewModel { SearchViewModel(get(), get(), get()) }
     viewModel { AiRecommendViewModel(get(), get()) } // [AI生成] AI 推荐(取数层+编排器)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
+    viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get()) } // [AI生成] 周期规划(取数层+餐食仓库)。
 }

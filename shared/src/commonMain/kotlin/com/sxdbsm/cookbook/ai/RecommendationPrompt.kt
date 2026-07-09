@@ -23,6 +23,10 @@ object RecommendationPrompt {
             append("每一餐搭配 2~3 个菜，共给 $mealCount 个不同的餐。")
             append("根据每个菜在手的调料，给一句简短做法建议（有葱姜蒜酱→红烧/爆炒，只有盐油→清蒸/白灼）。")
             append("优先选择标注「利调养」的菜、尽量少选标注「注意限量」的菜（候选已按利于健康排序，靠前更优）。")
+            if (constraints.labels.isNotEmpty()) {
+                append("用户有健康档案，请优先遵循《中国居民膳食指南》等权威膳食建议（如三高少盐少油、痛风低嘌呤、糖尿病低GI），")
+                append("并严格遵守候选上标注的「利调养/注意限量」——这些是硬约束，不得违背。")
+            }
             append("严格输出 JSON，不要多余文字。")
         }
         val user = buildString {
