@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.ai.model.RecommendMode
+import com.sxdbsm.cookbook.ai.model.RecommendationSource
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -49,7 +50,8 @@ fun AiRecommendScreen(
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-        if (state.dishItems.isEmpty() && state.emptyHint == null && !state.loading) vm.recommend()
+        // [AI修改] 进页面由 VM 判定：规则模式自动推荐；配置了 AI 模型则等用户点击「开始推荐」，不自动调云端。
+        vm.start()
     }
     LaunchedEffect(planState.saved) {
         if (planState.saved) snackbar.showSnackbar("已保存到未来 ${planState.plan?.days?.size ?: 0} 天计划")
@@ -109,12 +111,27 @@ fun AiRecommendScreen(
                     state.loading -> LoadingBlock()
                     state.error != null -> CenterHint(state.error) { vm.recommend() }
                     state.emptyHint != null -> CenterHint(state.emptyHint) { vm.recommend() }
+                    // [AI生成] 配置了 AI 模型：不自动推荐，展示开始按钮，由用户主动触发云端调用。
+                    state.pendingManual -> CenterHint(
+                        text = "已配置 AI 模型，点击后由模型为你搭配这一餐",
+                        buttonLabel = "开始推荐",
+                        onRetry = { vm.recommend() },
+                    )
                     else -> {
                         Text(
                             "勾选想做的菜，点下方「确定」加入这一餐。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        // [AI生成] 配置了模型但本次由规则兜底(模型未返回有效结果)，如实标注。
+                        if (state.modelReady && state.source == RecommendationSource.RULE_FALLBACK) {
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                "⚠ 本次由规则兜底生成（模型未返回有效结果）",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.tertiary,
+                            )
+                        }
                         Spacer(Modifier.height(4.dp))
                         LazyColumn(modifier = Modifier.weight(1f)) {
                             items(state.dishItems, key = { it.id }) { item ->
@@ -172,13 +189,13 @@ private fun LoadingBlock() {
 }
 
 @Composable
-private fun CenterHint(text: String, onRetry: () -> Unit) {
+private fun CenterHint(text: String, buttonLabel: String = "重新推荐", onRetry: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onRetry) { Text("重新推荐") }
+        Button(onClick = onRetry) { Text(buttonLabel) }
     }
 }

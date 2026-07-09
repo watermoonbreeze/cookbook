@@ -60,7 +60,7 @@ val androidModule = module {
     viewModel { IngredientPickerViewModel(get(), get(), get(), get(), get()) } // [AI修改] 追加 Pantry/HealthProfile 支持库存 Tab 与忌口高亮。
     viewModel { DishPickerViewModel(get()) }
     viewModel { SearchViewModel(get(), get(), get()) }
-    viewModel { AiRecommendViewModel(get(), get()) } // [AI生成] AI 推荐(取数层+编排器)。
+    viewModel { AiRecommendViewModel(get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置; 配置了模型不自动推荐)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
     viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置)。
 }

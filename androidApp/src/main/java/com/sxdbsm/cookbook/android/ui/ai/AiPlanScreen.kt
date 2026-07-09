@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -51,9 +52,12 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
         }
         if (state.season.isNotBlank() && state.plan != null) {
             Spacer(Modifier.height(6.dp))
+            // [AI生成] AI 生成但有餐次由规则补充时，如实标注，避免误认为全部由 AI 生成。
+            val partialRule = state.byAi && state.plan.days.any { d -> d.meals.any { it.fromRule } }
             Text(
                 buildString {
                     append(if (state.byAi) "🤖 AI 规划" else "📋 规则规划")
+                    if (partialRule) append("（部分餐次由规则补充，已在下方标注）")
                     append(" · 当前季节：${state.season}（应季优先）")
                     if (state.healthAware) append(" · 已结合健康档案（利健康≥80%，参考膳食指南整理）")
                 },
@@ -96,7 +100,24 @@ private fun DayCard(day: DayPlan) {
             Text("第 ${day.dayIndex + 1} 天", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             day.meals.forEach { meal ->
                 Spacer(Modifier.height(8.dp))
-                Text(meal.mealName, style = MaterialTheme.typography.titleSmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(meal.mealName, style = MaterialTheme.typography.titleSmall)
+                    if (meal.fromRule) {
+                        // [AI生成] 该餐 AI 未覆盖、由规则补充，标注区分。
+                        Spacer(Modifier.width(6.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = MaterialTheme.shapes.small,
+                        ) {
+                            Text(
+                                "规则补充",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                            )
+                        }
+                    }
+                }
                 meal.dishes.forEach { d ->
                     Spacer(Modifier.height(2.dp))
                     Text("· ${d.name}", style = MaterialTheme.typography.bodyMedium)

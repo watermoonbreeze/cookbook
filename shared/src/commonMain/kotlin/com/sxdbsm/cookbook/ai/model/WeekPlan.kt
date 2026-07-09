@@ -38,6 +38,7 @@ data class PlannedDish(
 data class PlannedMeal(
     val mealName: String,
     val dishes: List<PlannedDish>,
+    val fromRule: Boolean = false, // [AI生成] 该餐是否由规则/本地补充(AI 未覆盖时)，UI 需标注区分
 )
 
 /** 一天的餐次安排。[AI生成] */

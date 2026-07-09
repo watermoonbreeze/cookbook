@@ -73,7 +73,10 @@ class PlanOrchestrator(
             val aiDay = aiDays.getOrNull(i)
             val ruleDay = rulePlan.days.getOrNull(i)
             val meals = mealNames.mapIndexedNotNull { p, name ->
-                val meal = aiDay?.mealFor(name, p) ?: ruleDay?.meals?.firstOrNull { it.mealName == name }
+                val aiMeal = aiDay?.mealFor(name, p)
+                // AI 有该餐→用 AI；否则取规则同名餐并标注 fromRule(供 UI 标示"规则补充")。
+                val meal = aiMeal
+                    ?: ruleDay?.meals?.firstOrNull { it.mealName == name }?.copy(fromRule = true)
                 if (meal == null || meal.dishes.isEmpty()) return@mapIndexedNotNull null
                 meal.dishes.forEach { d -> byId[d.id]?.let { if (it.isHealthy) healthy++; total++ } }
                 meal
