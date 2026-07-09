@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.ai.model.RecommendationSource
+import com.sxdbsm.cookbook.ai.model.RecommendMode
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -71,6 +73,10 @@ fun AiRecommendScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             Spacer(Modifier.height(8.dp))
+            // [AI生成] 取材模式：库存推荐（仅在手食材）/ 随机推荐（整个食材库）。
+            ModeToggle(mode = state.mode, onChange = { vm.recommend(it) })
+            Spacer(Modifier.height(4.dp))
+            val onHandLabel = if (state.mode == RecommendMode.RANDOM) "主料" else "用到库存"
             when {
                 state.loading -> LoadingBlock()
                 state.error != null -> CenterHint(state.error) { vm.recommend() }
@@ -79,7 +85,7 @@ fun AiRecommendScreen(
                     SourceBadge(state.source)
                     Spacer(Modifier.height(8.dp))
                     state.suggestions.forEachIndexed { index, s ->
-                        SuggestionCard(index + 1, s, onPick = { onPickMeal(s.dishIds) })
+                        SuggestionCard(index + 1, s, onHandLabel, onPick = { onPickMeal(s.dishIds) })
                         Spacer(Modifier.height(12.dp))
                     }
                     OutlinedButton(
@@ -99,6 +105,23 @@ fun AiRecommendScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModeToggle(mode: RecommendMode, onChange: (RecommendMode) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = mode == RecommendMode.PANTRY,
+            onClick = { if (mode != RecommendMode.PANTRY) onChange(RecommendMode.PANTRY) },
+            label = { Text("库存推荐") },
+        )
+        FilterChip(
+            selected = mode == RecommendMode.RANDOM,
+            onClick = { if (mode != RecommendMode.RANDOM) onChange(RecommendMode.RANDOM) },
+            label = { Text("随机推荐") },
+        )
+    }
+}
+
 @Composable
 private fun SourceBadge(source: RecommendationSource?) {
     val (text, color) = when (source) {
@@ -112,7 +135,7 @@ private fun SourceBadge(source: RecommendationSource?) {
 }
 
 @Composable
-private fun SuggestionCard(index: Int, s: SuggestionUi, onPick: () -> Unit) {
+private fun SuggestionCard(index: Int, s: SuggestionUi, onHandLabel: String, onPick: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = MaterialTheme.shapes.medium,
@@ -144,7 +167,7 @@ private fun SuggestionCard(index: Int, s: SuggestionUi, onPick: () -> Unit) {
             }
             if (s.onHandIngredients.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
-                Text("用到库存：${s.onHandIngredients.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("$onHandLabel：${s.onHandIngredients.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (s.limitNotes.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))

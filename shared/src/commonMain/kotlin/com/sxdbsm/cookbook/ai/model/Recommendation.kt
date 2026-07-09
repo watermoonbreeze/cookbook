@@ -12,6 +12,12 @@ package com.sxdbsm.cookbook.ai.model
  * [AI生成] S0：先把契约与纯规则引擎立起来，不依赖模型、可单测。
  **/
 
+/** 推荐取材范围。[AI生成] */
+enum class RecommendMode {
+    PANTRY, // 通过库存：只从在手食材出发
+    RANDOM, // 随机推荐：从整个食材库出发(相当于都可做)
+}
+
 /** 食材在菜品中的角色。[AI生成] */
 enum class IngredientRole {
     MAIN, // 主料：决定“可做性”，必须在手

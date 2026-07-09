@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.ai
 import com.sxdbsm.cookbook.ai.model.HealthConstraints
 import com.sxdbsm.cookbook.ai.model.IngredientRole
 import com.sxdbsm.cookbook.ai.model.RecommendationInput
+import com.sxdbsm.cookbook.ai.model.RecommendMode
 import com.sxdbsm.cookbook.ai.model.RuleDish
 import com.sxdbsm.cookbook.ai.model.RuleDishIngredient
 import com.sxdbsm.cookbook.data.repository.DishRepository
@@ -36,11 +37,15 @@ class RecommendationDataSource(
     private val q = db.cookbookQueries
 
     /** 聚合规则引擎输入。[AI生成] */
-    suspend fun gather(recentLimit: Long = RECENT_LIMIT): RecommendationInput = withContext(ioDispatcher) {
-        val pantryIds = pantryRepo.pantryIngredientIds()
+    suspend fun gather(mode: RecommendMode = RecommendMode.PANTRY, recentLimit: Long = RECENT_LIMIT): RecommendationInput = withContext(ioDispatcher) {
+        // [AI修改] 取材范围：库存=在手食材；随机=整个食材库(相当于都可做)。
+        val pantryIds = when (mode) {
+            RecommendMode.PANTRY -> pantryRepo.pantryIngredientIds()
+            RecommendMode.RANDOM -> q.selectAllIngredientIds().executeAsList().toSet()
+        }
         val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
 
-        // 候选菜：与在手食材有交集的菜(预筛)，再取全食材做角色标注。
+        // 候选菜：与可用食材有交集的菜(预筛)，再取全食材做角色标注。
         val candidateDishIds = if (pantryIds.isEmpty()) {
             emptyList()
         } else {

@@ -687,6 +687,10 @@ WHERE ic.category_id IN ?
   AND ic.status = 1
 ORDER BY i.pinyin, i.name;
 
+-- [AI生成] 全部有效食材 id（AI"随机推荐"从整个食材库取，而非仅库存）。
+selectAllIngredientIds:
+SELECT id FROM ingredient WHERE status = 1;
+
 -- [AI生成] 调料/油脂类食材 id（AI 推荐"可做性=非调料齐"用；调料默认常备）。
 -- 按稳定根类名「调味品」「油脂类」及其子类识别，不依赖分类 id。
 selectSeasoningIngredientIds:

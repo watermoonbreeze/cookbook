@@ -10,7 +10,9 @@ import com.sxdbsm.cookbook.ai.RecommendationOrchestrator
 import com.sxdbsm.cookbook.ai.model.RecommendationInput
 import com.sxdbsm.cookbook.ai.model.RecommendationResult
 import com.sxdbsm.cookbook.ai.model.RecommendationSource
+import com.sxdbsm.cookbook.ai.model.RecommendMode
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 /**
  * @File : AiRecommendViewModel
@@ -31,32 +33,33 @@ class AiRecommendViewModel(
     var state by mutableStateOf(AiRecommendUiState())
         private set
 
-    private var rotation = 0 // [AI生成] 换一换轮次：每次推荐递增，轮转候选让兜底也换出不同组合。
+    private var rotation = 0 // [AI生成] 库存模式的换一换轮次：每次递增轮转候选。
 
-    /** 触发推荐（首次进入 / 换一换）。[AI生成] */
-    fun recommend() {
-        val currentRotation = rotation++
+    /** 触发推荐（首次进入 / 换一换 / 切换取材模式）。[AI生成] */
+    fun recommend(mode: RecommendMode = state.mode) {
+        // [AI修改] 随机模式用随机轮转让每次结果不同；库存模式递增轮转。
+        val rot = if (mode == RecommendMode.RANDOM) Random.nextInt(RANDOM_ROTATION_BOUND) else rotation++
         viewModelScope.launch {
-            state = state.copy(loading = true, error = null)
+            state = state.copy(loading = true, error = null, mode = mode)
             runCatching {
-                val input = dataSource.gather()
-                input to orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = currentRotation)
+                val input = dataSource.gather(mode)
+                input to orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { (input, result) ->
-                state = mapResult(input, result)
+                state = mapResult(input, result, mode)
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
             }
         }
     }
 
-    private fun mapResult(input: RecommendationInput, result: RecommendationResult): AiRecommendUiState {
+    private fun mapResult(input: RecommendationInput, result: RecommendationResult, mode: RecommendMode): AiRecommendUiState {
         if (result.source == RecommendationSource.EMPTY || result.suggestions.isEmpty()) {
-            val hint = if (input.pantryIngredientIds.isEmpty()) {
-                "先把家里现有的食材加入库存，我才能帮你搭配～"
-            } else {
-                "现有食材还凑不齐一道菜，去补充点主料吧"
+            val hint = when {
+                mode == RecommendMode.RANDOM -> "菜品库里还没有可推荐的菜，先去添加些菜品吧"
+                input.pantryIngredientIds.isEmpty() -> "先把家里现有的食材加入库存，我才能帮你搭配～"
+                else -> "现有食材还凑不齐一道菜，去补充点主料吧"
             }
-            return AiRecommendUiState(loading = false, emptyHint = hint, source = result.source)
+            return AiRecommendUiState(loading = false, emptyHint = hint, source = result.source, mode = mode)
         }
         val byId = result.candidates.associateBy { it.id }
         val suggestions = result.suggestions.map { s ->
@@ -70,11 +73,12 @@ class AiRecommendViewModel(
                 limitNotes = dishes.flatMap { it.limitHits }.distinct(),
             )
         }.filter { it.dishNames.isNotEmpty() }
-        return AiRecommendUiState(loading = false, suggestions = suggestions, source = result.source)
+        return AiRecommendUiState(loading = false, suggestions = suggestions, source = result.source, mode = mode)
     }
 
     companion object {
         private const val MEAL_COUNT = 3
+        private const val RANDOM_ROTATION_BOUND = 1000 // [AI生成] 随机模式的随机轮转上界。
     }
 }
 
@@ -85,6 +89,7 @@ data class AiRecommendUiState(
     val source: RecommendationSource? = null,
     val emptyHint: String? = null,
     val error: String? = null,
+    val mode: RecommendMode = RecommendMode.PANTRY, // [AI生成] 当前取材模式。
 )
 
 /** 一个餐次组合的展示模型。[AI生成] */
