@@ -37,10 +37,13 @@ class DeviceSyncViewModel(
 
     private var serverSocket: ServerSocket? = null
     private var serverJob: Job? = null
+    private var receiveSocket: Socket? = null // [AI修改] 持有接收端 socket，便于 reset/onCleared 主动关闭解阻塞
+    @Volatile private var cancelling = false // [AI修改] 区分「主动取消/关闭」与「真实异常」，避免吞掉真实错误
 
     /** 作为发送端：创建备份并开始等待接收端连接。[AI生成] */
     fun startSend() {
         if (state.sending) return
+        cancelling = false
         state = state.copy(sending = true, status = "正在准备备份…", error = null, done = false)
         viewModelScope.launch {
             val prep = runCatching {
@@ -67,11 +70,12 @@ class DeviceSyncViewModel(
         }
     }
 
-    /** 后台等待一个连接，校验码匹配后发送 zip。[AI生成] */
+    /** 后台等待一个连接，校验码匹配后发送 zip。[AI修改] */
     private fun serveOnce(server: ServerSocket, fileName: String, code: String) {
         serverJob = viewModelScope.launch(Dispatchers.IO) {
             val result = runCatching {
                 server.accept().use { sock ->
+                    sock.soTimeout = HANDSHAKE_TIMEOUT_MS // [AI修改] 握手读超时，防异常连接不发换行导致永久阻塞/OOM
                     val given = sock.getInputStream().bufferedReader().readLine()?.trim()
                     if (given != code) {
                         "REJECT" // 校验码不符
@@ -84,13 +88,13 @@ class DeviceSyncViewModel(
                 }
             }
             withContext(Dispatchers.Main) {
-                when {
-                    result.getOrNull() == "OK" ->
-                        state = state.copy(sending = false, status = null, done = true, error = null, code = "")
-                    result.getOrNull() == "REJECT" ->
-                        state = state.copy(sending = false, status = null, error = "校验码不匹配，已拒绝连接")
-                    else ->
-                        state = state.copy(sending = false, status = null, error = state.error) // 取消/关闭不覆盖既有提示
+                // [AI修改] 主动取消/关闭时 accept 因 close 抛异常，状态由 cancelSend/reset 决定，这里不覆盖。
+                if (cancelling) return@withContext
+                when (result.getOrNull()) {
+                    "OK" -> state = state.copy(sending = false, status = null, done = true, error = null, code = "")
+                    "REJECT" -> state = state.copy(sending = false, status = null, code = "", error = "校验码不匹配，已拒绝连接")
+                    // 真实 IO 异常：如实报错，不再静默吞掉。
+                    else -> state = state.copy(sending = false, status = null, code = "", error = result.exceptionOrNull()?.message ?: "发送失败，请重试")
                 }
                 stopServer()
             }
@@ -105,17 +109,22 @@ class DeviceSyncViewModel(
             state = state.copy(error = "请填写完整的 IP、端口和校验码")
             return
         }
+        cancelling = false
         state = state.copy(receiving = true, status = "正在连接…", error = null, done = false)
         viewModelScope.launch {
             val result = runCatching {
                 withContext(Dispatchers.IO) {
                     Socket().use { sock ->
+                        receiveSocket = sock // [AI修改] 记录以便 reset/onCleared 主动关闭解阻塞
+                        sock.soTimeout = RECEIVE_TIMEOUT_MS // [AI修改] 读超时，防对端掉线未发FIN导致永久阻塞
                         sock.connect(InetSocketAddress(ip.trim(), port), CONNECT_TIMEOUT_MS)
                         sock.getOutputStream().apply { write((code.trim() + "\n").toByteArray()); flush() }
                         backup.importFrom(sock.getInputStream()) // 直接把socket流落地并恢复
                     }
                 }
             }
+            receiveSocket = null
+            if (cancelling) return@launch // 主动关闭时不改状态
             result.onSuccess {
                 state = state.copy(receiving = false, status = null, done = true, error = null)
             }.onFailure {
@@ -130,17 +139,20 @@ class DeviceSyncViewModel(
         state = state.copy(sending = false, status = null, code = "")
     }
 
-    /** 关闭弹框时清理。[AI生成] */
+    /** 关闭弹框时清理。[AI修改] */
     fun reset() {
         stopServer()
         state = DeviceSyncUiState()
     }
 
     private fun stopServer() {
+        cancelling = true // [AI修改] 标记主动停止，让 accept/receive 抛出的异常按取消处理、不误报错误
         serverJob?.cancel()
         serverJob = null
         runCatching { serverSocket?.close() }
         serverSocket = null
+        runCatching { receiveSocket?.close() } // 解阻塞接收端
+        receiveSocket = null
     }
 
     override fun onCleared() {
@@ -148,18 +160,26 @@ class DeviceSyncViewModel(
         super.onCleared()
     }
 
-    /** 取本机 WiFi/局域网 IPv4。[AI生成] */
+    /**
+     * 取本机 WiFi/局域网 IPv4。[AI修改]
+     *
+     * 多网卡(WiFi+热点+VPN)下易选错网卡致对端连不上：过滤 loopback/link-local(169.254)/IPv6，
+     * wlan 网卡优先，并优先私网段(site-local: 192.168./10./172.16-31.)。
+     */
     private fun localWifiIp(): String? =
         runCatching {
-            NetworkInterface.getNetworkInterfaces().toList()
+            val addrs = NetworkInterface.getNetworkInterfaces().toList()
                 .filter { it.isUp && !it.isLoopback && !it.isVirtual }
+                .sortedByDescending { it.name?.startsWith("wlan") == true } // wlan 优先
                 .flatMap { it.inetAddresses.toList() }
-                .firstOrNull { !it.isLoopbackAddress && it.hostAddress?.contains(':') == false }
-                ?.hostAddress
+                .filter { !it.isLoopbackAddress && !it.isLinkLocalAddress && it.hostAddress?.contains(':') == false }
+            (addrs.firstOrNull { it.isSiteLocalAddress } ?: addrs.firstOrNull())?.hostAddress
         }.getOrNull()
 
     companion object {
         private const val CONNECT_TIMEOUT_MS = 8000
+        private const val HANDSHAKE_TIMEOUT_MS = 15000 // 发送端等接收端发校验码
+        private const val RECEIVE_TIMEOUT_MS = 60000 // 接收端读 zip 的单次读超时(掉线兜底)
     }
 }
 

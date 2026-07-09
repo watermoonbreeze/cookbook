@@ -145,20 +145,34 @@ private fun ReceivePane(state: DeviceSyncUiState, vm: DeviceSyncViewModel) {
     var port by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
     var manualOpen by remember { mutableStateOf(false) }
+    var scanConfirm by remember { mutableStateOf<Triple<String, String, String>?>(null) } // [AI修改] 扫码后待二次确认(覆盖不可逆)
 
-    // [AI生成] 扫码：读到本应用二维码后自动填入并立即连接接收。
+    // [AI修改] 扫码：读到本应用二维码后填入并弹二次确认，确认后再接收(覆盖本机数据不可逆)。
     val scanLauncher = rememberLauncherForActivityResult(
         com.journeyapps.barcodescanner.ScanContract(),
     ) { result ->
         val contents = result.contents
         if (contents != null) {
-            val parsed = SyncQr.parse(contents)
-            if (parsed != null) {
-                val (pIp, pPort, pCode) = parsed
-                ip = pIp; port = pPort; code = pCode
-                vm.startReceive(pIp, pPort, pCode)
+            SyncQr.parse(contents)?.let { parsed ->
+                ip = parsed.first; port = parsed.second; code = parsed.third
+                scanConfirm = parsed
             }
         }
+    }
+
+    scanConfirm?.let { (pIp, pPort, pCode) ->
+        AlertDialog(
+            onDismissRequest = { scanConfirm = null },
+            title = { Text("确认接收") },
+            text = { Text("将从 $pIp 接收数据并**覆盖本机现有数据**，此操作不可撤销。确定继续？") },
+            confirmButton = {
+                TextButton(onClick = {
+                    scanConfirm = null
+                    vm.startReceive(pIp, pPort, pCode)
+                }) { Text("确认接收", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { scanConfirm = null }) { Text("取消") } },
+        )
     }
 
     Column(Modifier.fillMaxWidth()) {
