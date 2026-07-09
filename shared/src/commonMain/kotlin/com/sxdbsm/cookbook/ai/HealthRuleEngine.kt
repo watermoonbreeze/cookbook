@@ -43,14 +43,16 @@ class HealthRuleEngine {
         if (hasAvoid) return@mapNotNull null
 
         val limitHits = dish.ingredients.filter { it.ingredientId in constraints.limitIngredientIds }
+        val recommendHits = dish.ingredients.filter { it.ingredientId in constraints.recommendIngredientIds }
         val seasoningsOnHand = seasonings.filter { it.ingredientId in pantryIngredientIds }
         val isRecent = dish.id in recentDishIds
 
-        // 打分：基础分 + 在手调料丰富度(可给更丰富做法) - 最近吃过 - 限量项。
+        // 打分：基础 + 调养推荐加分(利健康靠前) + 在手调料丰富度 - 限量(不利靠后) - 最近吃过。
         val seasoningRichness = if (seasonings.isEmpty()) 0.0 else seasoningsOnHand.size.toDouble() / seasonings.size
         var score = BASE_SCORE + SEASONING_WEIGHT * seasoningRichness
-        if (isRecent) score -= RECENT_PENALTY
+        score += RECOMMEND_BONUS * recommendHits.size
         score -= LIMIT_PENALTY * limitHits.size
+        if (isRecent) score -= RECENT_PENALTY
 
         DishCandidate(
             id = dish.id,
@@ -59,6 +61,7 @@ class HealthRuleEngine {
             secondaryNames = dish.ingredients.filter { it.role == IngredientRole.SECONDARY }.map { it.name },
             seasoningsOnHand = seasoningsOnHand.map { it.name },
             limitHits = limitHits.map { it.name },
+            recommendHits = recommendHits.map { it.name },
             isRecent = isRecent,
             score = score,
         )
@@ -67,7 +70,8 @@ class HealthRuleEngine {
     companion object {
         private const val BASE_SCORE = 1.0
         private const val SEASONING_WEIGHT = 0.5 // 在手调料越全，可做的做法越丰富，略加分。
+        private const val RECOMMEND_BONUS = 0.6 // [AI生成] 每个调养推荐食材的加分(利健康的菜靠前)。
         private const val RECENT_PENALTY = 0.5 // 最近吃过降权，鼓励多样性。
-        private const val LIMIT_PENALTY = 0.3 // 每个限量食材的降权。
+        private const val LIMIT_PENALTY = 0.4 // [AI修改] 每个限量食材的降权(不利健康的菜靠后)。
     }
 }

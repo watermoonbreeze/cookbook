@@ -22,6 +22,7 @@ object RecommendationPrompt {
             append("只能从给定候选菜里挑选，不能编造候选之外的菜。")
             append("每一餐搭配 2~3 个菜，共给 $mealCount 个不同的餐。")
             append("根据每个菜在手的调料，给一句简短做法建议（有葱姜蒜酱→红烧/爆炒，只有盐油→清蒸/白灼）。")
+            append("优先选择标注「利调养」的菜、尽量少选标注「注意限量」的菜（候选已按利于健康排序，靠前更优）。")
             append("严格输出 JSON，不要多余文字。")
         }
         val user = buildString {
@@ -33,6 +34,7 @@ object RecommendationPrompt {
                 append("- id=").append(c.id).append(" ").append(c.name)
                 append("｜主料:").append(c.mainNames.joinToString("、").ifEmpty { "-" })
                 if (c.seasoningsOnHand.isNotEmpty()) append("｜在手调料:").append(c.seasoningsOnHand.joinToString("、"))
+                if (c.recommendHits.isNotEmpty()) append("｜利调养:").append(c.recommendHits.joinToString("、"))
                 if (c.limitHits.isNotEmpty()) append("｜注意限量:").append(c.limitHits.joinToString("、"))
                 append("\n")
             }

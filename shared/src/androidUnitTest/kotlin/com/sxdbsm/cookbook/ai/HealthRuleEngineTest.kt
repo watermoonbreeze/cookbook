@@ -107,6 +107,16 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `利于调养的菜(含推荐食材)排前面`() {
+        val healthy = RuleDish(1, "清蒸鲈鱼", listOf(main(101, "鲈鱼")))
+        val plain = RuleDish(2, "清炒白菜", listOf(main(102, "白菜")))
+        val constraints = HealthConstraints(recommendIngredientIds = setOf(101)) // 鲈鱼利于调养
+        val result = engine.evaluate(listOf(plain, healthy), pantryIngredientIds = setOf(101, 102), constraints)
+        assertEquals(1L, result.first().id) // 含推荐食材的排前
+        assertEquals(listOf("鲈鱼"), result.first { it.id == 1L }.recommendHits)
+    }
+
+    @Test
     fun `辅料属于非调料必须在手`() {
         // 木耳作为辅料(非调料) → 方案A 下也算可做性必需。
         val dish = RuleDish(1, "木耳炒肉", listOf(main(101, "猪肉"), sec(201, "木耳"), sea(901, "盐")))

@@ -50,6 +50,7 @@ data class RuleDishIngredient(
 data class HealthConstraints(
     val avoidIngredientIds: Set<Long> = emptySet(), // 忌口(避免)：含则剔除
     val limitIngredientIds: Set<Long> = emptySet(), // 限量：保留但降权+提示
+    val recommendIngredientIds: Set<Long> = emptySet(), // [AI生成] 调养推荐：含则加分(利于健康档案的菜靠前)
     val labels: List<String> = emptyList(), // 粗约束标签，喂给模型(如 "忌高嘌呤","低钠")
 )
 
@@ -66,6 +67,7 @@ data class DishCandidate(
     val secondaryNames: List<String>, // 辅料(展示)
     val seasoningsOnHand: List<String>, // 在手的调料/香辛料 → 做法建议依据
     val limitHits: List<String>, // 命中“限量”的食材(保留但提示)
+    val recommendHits: List<String>, // [AI生成] 命中调养“推荐”的食材(利于健康，加分+展示)
     val isRecent: Boolean, // 最近吃过(去重降权)
     val score: Double, // 规则打分，降序排列
 )

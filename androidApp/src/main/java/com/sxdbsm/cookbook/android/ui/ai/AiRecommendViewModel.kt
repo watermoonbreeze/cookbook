@@ -71,6 +71,7 @@ class AiRecommendViewModel(
                 cookingHint = s.cookingHint,
                 onHandIngredients = dishes.flatMap { it.mainNames }.distinct(),
                 limitNotes = dishes.flatMap { it.limitHits }.distinct(),
+                healthGood = dishes.flatMap { it.recommendHits }.distinct(),
             )
         }.filter { it.dishNames.isNotEmpty() }
         return AiRecommendUiState(loading = false, suggestions = suggestions, source = result.source, mode = mode)
@@ -100,4 +101,5 @@ data class SuggestionUi(
     val cookingHint: String?,
     val onHandIngredients: List<String>,
     val limitNotes: List<String>,
+    val healthGood: List<String> = emptyList(), // [AI生成] 利于调养的食材(绿色提示)
 )

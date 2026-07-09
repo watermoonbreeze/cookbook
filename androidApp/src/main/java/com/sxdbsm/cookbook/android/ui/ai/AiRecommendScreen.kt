@@ -169,6 +169,10 @@ private fun SuggestionCard(index: Int, s: SuggestionUi, onHandLabel: String, onP
                 Spacer(Modifier.height(4.dp))
                 Text("$onHandLabel：${s.onHandIngredients.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            if (s.healthGood.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text("✓ 利于调养：${s.healthGood.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            }
             if (s.limitNotes.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
                 Text("⚠ 注意限量：${s.limitNotes.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)

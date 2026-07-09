@@ -59,6 +59,7 @@ class RecommendationDataSource(
         val careIngredients = if (careCategoryIds.isEmpty()) emptyList() else ingredientRepo.listByCareCategories(careCategoryIds)
         val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
+        val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
         val labels = enabledProfiles.map { "关注:${it.crowdName}" } // 粗标签给模型(不含敏感明细)
 
         val recentDishIds = q.selectRecentEatenDishIds(recentLimit).executeAsList().toSet()
@@ -66,7 +67,12 @@ class RecommendationDataSource(
         RecommendationInput(
             dishes = dishes,
             pantryIngredientIds = pantryIds,
-            constraints = HealthConstraints(avoidIngredientIds = avoidIds, limitIngredientIds = limitIds, labels = labels),
+            constraints = HealthConstraints(
+                avoidIngredientIds = avoidIds,
+                limitIngredientIds = limitIds,
+                recommendIngredientIds = recommendIds,
+                labels = labels,
+            ),
             recentDishIds = recentDishIds,
         )
     }
