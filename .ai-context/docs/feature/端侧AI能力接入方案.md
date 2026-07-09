@@ -94,6 +94,12 @@ shared Repository / UseCase / SQLDelight
 - 比较 `Qwen2.5-0.5B-Instruct`、`Qwen2.5-1.5B-Instruct`、官方 Gemma 小模型在 JSON 稳定性、中文菜名、慢病解释上的表现。[AI生成]
 - 验收指标：JSON 可解析率 > 95%；禁忌食材不应主动推荐；输出可被 App 规则层过滤。[AI生成]
 
+### 实施进度补记（2026-07-09）
+
+- **设备自测 Step1 已落地**：AI 设置「端侧」档下「测试本机能否流畅运行」，按 内存/CPU核数/arm64 预估流畅度等级（流畅/可用/偏慢/不建议）。代码 `androidApp/.../ai/DeviceAiCapability.kt`。当前为规格预估，模型接入后升级为真实 tok/s 实测。
+- **运行时库选型建议（Step2 待定，AI 建议）**：首轮优先 **MediaPipe LLM Inference（`com.google.mediapipe:tasks-genai`）**——现成 Maven、能跑 Gemma/Qwen `.task`、当前最可落地；后续再按官方方向迁移 LiteRT-LM。切换框架已就位（`SwitchableAiRuntime`+`OnDeviceAiRuntime` 占位），实装只改 `OnDeviceAiRuntime.complete()`，业务零改动。
+- **Step2 待办**：引 native 依赖 + 模型导入/下载(不打进 APK) + 实装推理 + 自测升级实测；均需真机验证。
+
 ### 第 1 步：Android 工程闭环
 
 - 新增 `AiRuntime` 抽象和 Android LiteRT-LM 适配器。[AI生成]

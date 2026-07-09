@@ -75,7 +75,8 @@ fun AiSettingsScreen(
             // —— 规则 ——
             RuntimeOption("规则推荐（不用模型，离线可用）", AiRuntimeType.MOCK, state.type, enabled = true) { vm.onTypeChange(it) }
             // —— 端侧 ——
-            RuntimeOption("端侧本地模型（待接入）", AiRuntimeType.ON_DEVICE, state.type, enabled = false) { vm.onTypeChange(it) }
+            RuntimeOption("端侧本地模型（接入中）", AiRuntimeType.ON_DEVICE, state.type, enabled = false) { vm.onTypeChange(it) }
+            OnDeviceSelfTestSection() // [AI生成] 端侧设备自测：先给流畅度预估，让用户对能否流畅使用有预期。
 
             Spacer(Modifier.height(20.dp))
             Text(
@@ -186,6 +187,50 @@ private fun KeyDialog(
         confirmButton = { TextButton(onClick = { onConfirm(text) }) { Text("保存") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
     )
+}
+
+/**
+ * 端侧模型「设备自测」区。[AI生成]
+ *
+ * 端侧模型运行时尚在接入(Step2)，此处先提供「测试本机能否流畅运行」的规格预估，让用户有预期。
+ */
+@Composable
+private fun OnDeviceSelfTestSection() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var report by remember { mutableStateOf<com.sxdbsm.cookbook.android.ai.DeviceAiReport?>(null) }
+
+    Column(modifier = Modifier.padding(start = 40.dp, end = 4.dp, bottom = 8.dp)) {
+        OutlinedButton(onClick = { report = com.sxdbsm.cookbook.android.ai.DeviceAiCapability.evaluate(context) }) {
+            Text(if (report == null) "测试本机能否流畅运行" else "重新测试")
+        }
+        report?.let { r ->
+            Spacer(Modifier.height(8.dp))
+            val gradeColor = when (r.grade) {
+                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.SMOOTH -> MaterialTheme.colorScheme.primary
+                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.USABLE -> MaterialTheme.colorScheme.tertiary
+                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.SLOW -> MaterialTheme.colorScheme.error
+                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.UNSUPPORTED -> MaterialTheme.colorScheme.error
+            }
+            Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("流畅度预估：", style = MaterialTheme.typography.bodyMedium)
+                        Text(r.grade.label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = gradeColor)
+                    }
+                    Spacer(Modifier.height(2.dp))
+                    Text(r.grade.desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(6.dp))
+                    Text(r.specLine(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "为规格预估（内存/CPU/架构），非真实推理实测；端侧模型接入后可实测生成速度。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }
 
 @Composable
