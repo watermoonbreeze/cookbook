@@ -71,7 +71,11 @@ actual class BackupManager(
         Unit
     }
 
-    /** SAF 导出：把已有备份文件写入用户选择位置的输出流。[AI生成] */
+    /**
+     * SAF 导出：把已有备份文件写入用户选择位置的输出流。[AI修改]
+     *
+     * 契约：**不关闭传入的 output**（只 flush），关闭由调用方负责（SAF Uri 流/socket 流各自 use 管理）。
+     */
     suspend fun exportTo(fileName: String, output: OutputStream) = withContext(Dispatchers.IO) {
         val source = File(backupDir, fileName)
         require(source.exists()) { "Backup file not found: $fileName" }
@@ -81,30 +85,33 @@ actual class BackupManager(
     }
 
     /**
-     * SAF 导入：把外部 zip 流落地到 backups/ 后立即恢复。[AI生成]
+     * SAF/同传 导入：把外部 zip 流落地到 backups/ 后立即恢复。[AI修改]
      *
-     * 落地一份便于用户在列表中看到来源；随后按同一路径恢复数据库与图片。
+     * 落地一份便于在列表看到来源；落地或恢复任一失败都删除半成品文件，避免残留损坏"备份"污染列表。
      */
     suspend fun importFrom(input: InputStream): BackupInfo = withContext(Dispatchers.IO) {
         val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val landed = File(backupDir, "backup_imported_$ts$BACKUP_EXT")
-        landed.outputStream().use { input.copyTo(it) }
-        landed.inputStream().use { restoreFromZipStream(it) }
+        try {
+            landed.outputStream().use { input.copyTo(it) } // 传输中断会抛异常
+            landed.inputStream().use { restoreFromZipStream(it) }
+        } catch (e: Throwable) {
+            landed.delete() // [AI修改] 半个文件/恢复失败清理，勿留损坏备份
+            throw e
+        }
         pruneOldBackups(keep = MAX_KEEP)
         landed.toBackupInfo()
     }
 
-    /** 生成完整备份 zip：db(+wal/shm) + img 全部图片 + manifest。[AI生成] */
+    /** 生成完整备份 zip：db + img 全部图片 + manifest。[AI修改] */
     private fun writeBackupZip(target: File) {
         require(currentDb.exists()) { "Database file not found: ${currentDb.absolutePath}" }
-        // [AI修改] 强制 checkpoint，把 WAL 写回主库，保证只打包主库也不丢最近写入。
-        runCatching { driverProvider().execute(null, "PRAGMA wal_checkpoint(FULL);", 0) }
+        // [AI修改] TRUNCATE checkpoint：把 WAL 写回主库并清空 WAL 文件，只打包主库即为一致快照，避免 WAL/主库版本错配。
+        runCatching { driverProvider().execute(null, "PRAGMA wal_checkpoint(TRUNCATE);", 0) }
 
         ZipOutputStream(target.outputStream().buffered()).use { zip ->
-            // 数据库主文件及配套 WAL/SHM。
+            // 只打包主库（已 checkpoint 回写），不带 WAL/SHM，恢复时从干净主库重建。
             zip.putFile(dbName, currentDb)
-            File(currentDb.parentFile, "$dbName-wal").takeIf { it.exists() }?.let { zip.putFile("$dbName-wal", it) }
-            File(currentDb.parentFile, "$dbName-shm").takeIf { it.exists() }?.let { zip.putFile("$dbName-shm", it) }
             // 全部图片（原图+缩略图）。
             imgDir.listFiles()?.filter { it.isFile }?.forEach { img ->
                 zip.putFile("$IMG_ENTRY_PREFIX${img.name}", img)
@@ -123,26 +130,30 @@ actual class BackupManager(
     }
 
     /**
-     * 从 zip 流恢复：校验 manifest → 覆盖 db(+wal/shm) → 释放图片。[AI生成]
+     * 从 zip 流恢复：白名单解压到 staging → 校验 manifest → **原子覆盖主库(带回滚)** → 释放图片。[AI修改]
      *
-     * 恢复前先关连接、清旧 WAL/SHM，避免 SQLite 使用陈旧 WAL 导致数据错乱。
+     * 关键点：① 只提取白名单条目(主库/img/manifest)，忽略异常条目；② 覆盖主库前把现有库存到回滚区，
+     * 覆盖失败即还原，避免中途失败破坏现有 db；③ 备份不含 WAL/SHM，恢复时强制删目标 WAL/SHM 让 SQLite 从干净主库重建。
+     * 注意：关闭的是全局单例 driver，恢复后需重启应用才能用新库（UI 已提示；驱动热重建见待办）。
      */
     private fun restoreFromZipStream(input: InputStream) {
-        // 先读取到临时目录，便于先校验 manifest 再决定是否覆盖。
         val staging = File(backupDir, "_restore_staging").apply { deleteRecursively(); mkdirs() }
         try {
             ZipInputStream(input.buffered()).use { zip ->
                 var entry: ZipEntry? = zip.nextEntry
                 while (entry != null) {
-                    val name = entry.name
                     if (!entry.isDirectory) {
-                        val safeName = name.substringAfterLast('/').ifEmpty { name }
+                        val name = entry.name
+                        val safeName = name.substringAfterLast('/')
+                        // [AI修改] 白名单：仅主库 / img 条目 / manifest，其余异常条目忽略。
                         val out = when {
                             name == MANIFEST_ENTRY -> File(staging, MANIFEST_ENTRY)
-                            name.startsWith(IMG_ENTRY_PREFIX) -> File(staging, "img_$safeName")
-                            else -> File(staging, "db_$safeName")
+                            name == dbName -> File(staging, "db_$dbName")
+                            name.startsWith(IMG_ENTRY_PREFIX) && safeName.isNotEmpty() &&
+                                !safeName.contains('/') && !safeName.contains('\\') -> File(staging, "img_$safeName")
+                            else -> null
                         }
-                        out.outputStream().use { zip.copyTo(it) }
+                        out?.outputStream()?.use { zip.copyTo(it) }
                     }
                     zip.closeEntry()
                     entry = zip.nextEntry
@@ -160,17 +171,21 @@ actual class BackupManager(
 
             // 关闭当前连接，降低覆盖被占用概率。
             runCatching { driverProvider().close() }
-            // 覆盖主库并清理旧 WAL/SHM。
-            dbFile.copyTo(currentDb, overwrite = true)
-            listOf("-wal", "-shm").forEach { suffix ->
-                val staged = File(staging, "db_$dbName$suffix")
-                val dest = File(currentDb.parentFile, "$dbName$suffix")
-                if (staged.exists()) staged.copyTo(dest, overwrite = true) else dest.delete()
+            // [AI修改] 原子覆盖主库：先把现有库存回滚区，覆盖失败即还原，防中途失败破坏现有 db。
+            val rollback = File(staging, "rollback_$dbName")
+            val hadDb = currentDb.exists()
+            if (hadDb) currentDb.copyTo(rollback, overwrite = true)
+            try {
+                dbFile.copyTo(currentDb, overwrite = true)
+                listOf("-wal", "-shm").forEach { File(currentDb.parentFile, "$dbName$it").delete() } // 备份不含，强制删让 SQLite 重建
+            } catch (e: Throwable) {
+                if (hadDb) runCatching { rollback.copyTo(currentDb, overwrite = true) }
+                throw e
             }
-            // 释放图片：覆盖同名，不删除现有多余文件（避免误删）。
+            // 释放图片：best-effort 覆盖同名，不删现有多余文件（避免误删）；单张失败不回滚已恢复的 db。
             imgDir.mkdirs()
             staging.listFiles { f -> f.isFile && f.name.startsWith("img_") }?.forEach { staged ->
-                staged.copyTo(File(imgDir, staged.name.removePrefix("img_")), overwrite = true)
+                runCatching { staged.copyTo(File(imgDir, staged.name.removePrefix("img_")), overwrite = true) }
             }
         } finally {
             staging.deleteRecursively()
