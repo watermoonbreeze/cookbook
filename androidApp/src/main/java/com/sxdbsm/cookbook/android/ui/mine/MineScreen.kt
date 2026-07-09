@@ -48,6 +48,7 @@ fun MineScreen(
     var themeDialogOpen by remember { mutableStateOf(false) }
     var healthDialogOpen by remember { mutableStateOf(false) }
     var backupDialogOpen by remember { mutableStateOf(false) }
+    var deviceSyncDialogOpen by remember { mutableStateOf(false) } // [AI生成] 双设备局域网同传弹框。
     var logDialogOpen by remember { mutableStateOf(false) }
     var kitchenDialogOpen by remember { mutableStateOf(false) }
     var aboutDialogOpen by remember { mutableStateOf(false) }
@@ -193,10 +194,13 @@ fun MineScreen(
         ) { themeDialogOpen = true }
 
         GroupTitle("数据")
-        SettingRow(icon = Icons.Outlined.Save, title = "本地备份与恢复", subtitle = "创建、恢复或删除本地备份", trailing = "▸") {
+        SettingRow(icon = Icons.Outlined.Save, title = "备份与恢复", subtitle = "创建、导出、导入完整备份（含菜品照片）", trailing = "▸") {
             backupDialogOpen = true
         }
-        SettingRow(icon = Icons.Outlined.Article, title = "日志查看", subtitle = "查看 /sdcard/cookbook/log/ 下的预测试日志", trailing = "▸") {
+        SettingRow(icon = Icons.Outlined.Share, title = "双设备数据同传", subtitle = "同一 WiFi 下把数据直传到另一台设备", trailing = "▸") {
+            deviceSyncDialogOpen = true
+        }
+        SettingRow(icon = Icons.Outlined.Article, title = "日志查看", subtitle = "查看应用运行与崩溃日志", trailing = "▸") {
             logDialogOpen = true
         }
         // [AI生成] 更新基础数据：手动刷新预设食材/分类/详情/调养规则；后续可扩展为从后台拉取最新数据包。
@@ -298,6 +302,12 @@ fun MineScreen(
                 // [AI生成] 允许任意类型，兼容部分文件管理器对自定义后缀识别为 octet-stream。
                 importLauncher.launch(arrayOf("application/octet-stream", "application/zip", "*/*"))
             },
+        )
+    }
+
+    if (deviceSyncDialogOpen) {
+        com.sxdbsm.cookbook.android.ui.sync.DeviceSyncDialog(
+            onDismiss = { deviceSyncDialogOpen = false },
         )
     }
 
