@@ -98,7 +98,7 @@ fun HomeScreen(
                     Text("🤖", style = MaterialTheme.typography.headlineMedium)
                     Column(modifier = Modifier.padding(start = 12.dp)) {
                         Text(
-                            "AI 推荐下一餐",
+                            "AI 推荐",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
