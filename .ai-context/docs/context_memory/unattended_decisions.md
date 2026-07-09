@@ -57,3 +57,25 @@
 - DI 平台化：需加 koin-android 依赖 + 运行时才验得出，暂缓（同上轮结论）。
 
 **本轮动作**：对本会话改动跑 4 路并行代码审核(存储备份/双设备同传/图片AI/架构规范)，汇总后修确认的真实问题，多轮 build+单测，符合工程规范的优化一并做。findings 与修复见下方续记。
+
+### 审核结果与修复（4路并行审核 → 5批修复）
+
+**4 路独立审核**（存储备份/双设备同传/图片AI/架构规范）共发现真实问题，已按"数据安全>真实bug>工程规范"修复：
+
+**批1 备份数据安全**（`fix(backup)`）：恢复原子化+回滚(防中途失败破坏现有db)；TRUNCATE checkpoint 只打包主库(消除wal/主库版本错配)；importFrom失败清理半成品；zip白名单解压；exportTo/expect KDoc订正。
+**批2 同传健壮性**（`fix(sync)`）：接收/握手读 SO_TIMEOUT(防掉线永久阻塞/OOM)；持有receiveSocket可主动关闭；cancelling标志区分主动取消vs真实异常(不再吞错)；localWifiIp过滤link-local+wlan优先+私网段(修多网卡选错)；扫码后二次确认(覆盖不可逆)。
+**批3 图片/AI**（`fix(image/ai)`）：PlanOrchestrator统计改花括号消分号隐患；DeviceAiGrade阈值7.5→7.0；过时"存储权限"文案→"请重试"；类注释路径订正；删未用常量；图片文件名加随机后缀防同毫秒碰撞。
+**批4 工程债+测试**（`refactor(test)`）：SyncPayload(协议)、DeviceAiGrade+gradeFor(阈值) 下沉 shared，补 SyncPayloadTest/DeviceAiGradingTest 单测（androidApp原零测试覆盖）。
+
+**验证**：clean 后完整构建 + 全部单测 = **14类68用例0失败**；androidApp assembleDebug 通过。
+
+**复核判为非bug（未改，记录）**：`deleteTempCameraFile` 实际可删(FileProvider `camera_cache` 根名映射，lastPathSegment 即文件名)；两列表 distinct 因文件名带时间戳唯一实际不触发。
+
+**待确认/后续（无人值守不做）**：
+- 恢复后驱动热重建/自动重启进程：现关单例 driver 无重建，UI已提示"重启应用"、本轮已补原子化防损坏；彻底解决需改 DI 单例生命周期或恢复后强制重启，属架构改动+需真机验，留待确认。
+- iOS BackupManager actual：iOS target 当前注释、不编译，不影响；启用 iOS 时补。
+- 过时 `/sdcard/cookbook/log` 注释(AppLogger/LogFileManager/MineViewModel/AndroidModule 各1处)：纯注释、零风险，为守 ≤15 文件规范本轮未动，5分钟可扫尾。
+- 备份并发写 torn-page：minSdk21 无 VACUUM INTO；手动触发低并发 + TRUNCATE checkpoint 已缓解，接受。
+- StoredImage 预览无缓存、二维码主线程生成：低价值性能项，留后。
+
+**结论**：审核发现的**数据安全与真实bug已全部修复并测试通过**；工程债(可测逻辑下沉+单测)已补；其余为需真机/架构决策/纯注释项，按无人值守规范记入待确认。均 `[unattended]` 本地提交，未 push。
