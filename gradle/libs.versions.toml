@@ -25,6 +25,9 @@ koin = "3.5.3"
 # Paging
 paging = "3.2.1"
 
+# 二维码（生成+扫描，双设备同传用）
+zxing-embedded = "4.3.0"
+
 [libraries]
 # Kotlin / 测试
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -66,6 +69,9 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", versi
 # Paging (Compose)
 androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
+
+# 二维码（生成+扫描）
+zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-embedded" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -70,4 +70,7 @@ dependencies {
     // Paging (Compose)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
+
+    // 二维码（双设备同传：发送端生成、接收端扫描）
+    implementation(libs.zxing.android.embedded)
 }

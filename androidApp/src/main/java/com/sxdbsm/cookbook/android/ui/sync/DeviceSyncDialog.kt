@@ -25,8 +25,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -93,8 +95,20 @@ private fun SendPane(state: DeviceSyncUiState, vm: DeviceSyncViewModel) {
         when {
             state.done -> Text("✅ 已发送到另一台设备", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
             state.sending && state.code.isNotBlank() -> {
-                Text("请在接收端填写：", style = MaterialTheme.typography.bodyMedium)
+                Text("让另一台设备「接收」并扫描此二维码：", style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
+                val qr = remember(state.localIp, state.port, state.code) {
+                    runCatching { SyncQr.bitmap(SyncQr.encode(state.localIp, state.port, state.code)) }.getOrNull()
+                }
+                if (qr != null) {
+                    androidx.compose.foundation.Image(
+                        bitmap = qr.asImageBitmap(),
+                        contentDescription = "同传二维码",
+                        modifier = Modifier.fillMaxWidth().height(220.dp),
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Text("扫不了可手动输入：", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.medium,
@@ -130,30 +144,65 @@ private fun ReceivePane(state: DeviceSyncUiState, vm: DeviceSyncViewModel) {
     var ip by remember { mutableStateOf("") }
     var port by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
+    var manualOpen by remember { mutableStateOf(false) }
+
+    // [AI生成] 扫码：读到本应用二维码后自动填入并立即连接接收。
+    val scanLauncher = rememberLauncherForActivityResult(
+        com.journeyapps.barcodescanner.ScanContract(),
+    ) { result ->
+        val contents = result.contents
+        if (contents != null) {
+            val parsed = SyncQr.parse(contents)
+            if (parsed != null) {
+                val (pIp, pPort, pCode) = parsed
+                ip = pIp; port = pPort; code = pCode
+                vm.startReceive(pIp, pPort, pCode)
+            }
+        }
+    }
+
     Column(Modifier.fillMaxWidth()) {
         if (state.done) {
             Text("✅ 已导入并恢复，建议重新打开应用", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
             return
         }
-        OutlinedTextField(value = ip, onValueChange = { ip = it }, label = { Text("IP 地址") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(6.dp))
-        OutlinedTextField(value = port, onValueChange = { port = it.filter { c -> c.isDigit() } }, label = { Text("端口") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(6.dp))
-        OutlinedTextField(value = code, onValueChange = { code = it.filter { c -> c.isDigit() } }, label = { Text("校验码") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(10.dp))
+        Text(
+            "⚠ 接收将用对方数据覆盖本机现有数据。",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+        )
+        Spacer(Modifier.height(8.dp))
         if (state.receiving) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(8.dp))
                 Text(state.status ?: "接收中…", style = MaterialTheme.typography.bodySmall)
             }
-        } else {
-            Text(
-                "⚠ 接收将用对方数据覆盖本机现有数据。",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-            )
+            return
+        }
+        Button(
+            onClick = {
+                val options = com.journeyapps.barcodescanner.ScanOptions().apply {
+                    setDesiredBarcodeFormats(com.journeyapps.barcodescanner.ScanOptions.QR_CODE)
+                    setPrompt("对准发送端的二维码")
+                    setBeepEnabled(false)
+                    setOrientationLocked(false)
+                }
+                scanLauncher.launch(options)
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text("扫码接收") }
+        Spacer(Modifier.height(6.dp))
+        TextButton(onClick = { manualOpen = !manualOpen }, modifier = Modifier.fillMaxWidth()) {
+            Text(if (manualOpen) "收起手动输入" else "无法扫码？手动输入")
+        }
+        if (manualOpen) {
+            OutlinedTextField(value = ip, onValueChange = { ip = it }, label = { Text("IP 地址") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(6.dp))
+            OutlinedTextField(value = port, onValueChange = { port = it.filter { c -> c.isDigit() } }, label = { Text("端口") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(6.dp))
+            OutlinedTextField(value = code, onValueChange = { code = it.filter { c -> c.isDigit() } }, label = { Text("校验码") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(8.dp))
             FilledTonalButton(onClick = { vm.startReceive(ip, port, code) }, modifier = Modifier.fillMaxWidth()) { Text("连接并接收") }
         }
     }

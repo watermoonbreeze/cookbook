@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.sxdbsm.cookbook.platform.CookbookStorage
 import kotlinx.coroutines.Dispatchers
@@ -123,6 +124,16 @@ fun ImagePickerButton(
             errorMessage = "拍照已取消或未生成照片"
         }
     }
+    // [AI生成] 声明 CAMERA 权限后，拍照(ACTION_IMAGE_CAPTURE)需运行时授予；授予后再启动相机。
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            val uri = createCameraUri(context)
+            pendingCameraUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            errorMessage = "需要相机权限才能拍照"
+        }
+    }
 
     Column(modifier = modifier) {
         OutlinedButton(
@@ -183,9 +194,14 @@ fun ImagePickerButton(
                 TextButton(
                     onClick = {
                         chooserOpen = false
-                        val uri = createCameraUri(context)
-                        pendingCameraUri = uri
-                        cameraLauncher.launch(uri)
+                        // [AI修改] 已声明 CAMERA：先确认已授权再拍照，未授权则申请。
+                        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            val uri = createCameraUri(context)
+                            pendingCameraUri = uri
+                            cameraLauncher.launch(uri)
+                        } else {
+                            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                        }
                     },
                 ) {
                     Icon(Icons.Outlined.AddAPhoto, contentDescription = null)

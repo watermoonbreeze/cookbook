@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- [AI生成] 双设备同传扫码 + 拍照均用相机；声明后拍照(ACTION_IMAGE_CAPTURE)也需运行时授予 CAMERA。 -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <!-- [AI修改] P0 存储合规：数据改存 app 专属目录(getExternalFilesDir)，无需任何外部存储权限；已移除 MANAGE_EXTERNAL_STORAGE / WRITE / READ。 -->
     <!-- [AI生成] 烹饪计时到点提醒：精确闹钟(息屏/Doze也准时) + 通知 -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
