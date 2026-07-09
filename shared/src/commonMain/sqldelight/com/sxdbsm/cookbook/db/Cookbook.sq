@@ -691,6 +691,13 @@ ORDER BY i.pinyin, i.name;
 selectAllIngredientIds:
 SELECT id FROM ingredient WHERE status = 1;
 
+-- [AI生成] 各食材的营养维度/应季分类（周期规划做营养均衡与应季优先）。
+selectNutritionSeasonTags:
+SELECT ic.ingredient_id, fc.name AS tag_name, fc.dimension AS dim
+FROM ingredient_category ic
+JOIN food_category fc ON fc.id = ic.category_id
+WHERE ic.status = 1 AND fc.status = 1 AND fc.dimension IN ('nutrition', 'season');
+
 -- [AI生成] 调料/油脂类食材 id（AI 推荐"可做性=非调料齐"用；调料默认常备）。
 -- 按稳定根类名「调味品」「油脂类」及其子类识别，不依赖分类 id。
 selectSeasoningIngredientIds:

@@ -2,6 +2,8 @@ package com.sxdbsm.cookbook.ai
 
 import com.sxdbsm.cookbook.ai.model.HealthConstraints
 import com.sxdbsm.cookbook.ai.model.IngredientRole
+import com.sxdbsm.cookbook.ai.model.PlanContext
+import com.sxdbsm.cookbook.ai.model.PlanDish
 import com.sxdbsm.cookbook.ai.model.RecommendationInput
 import com.sxdbsm.cookbook.ai.model.RecommendMode
 import com.sxdbsm.cookbook.ai.model.RuleDish
@@ -13,6 +15,7 @@ import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.Dish
+import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.withContext
 
@@ -75,6 +78,52 @@ class RecommendationDataSource(
             ),
             recentDishIds = recentDishIds,
         )
+    }
+
+    /** 周期规划取数：全库菜品 + 营养/应季标签 + 健康标记 + 当前季节。[AI生成] */
+    suspend fun gatherForPlan(): PlanContext = withContext(ioDispatcher) {
+        val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
+        // 健康约束
+        val enabledProfiles = healthRepo.listAll().filter { it.enabled }
+        val careCategoryIds = enabledProfiles.map { it.crowdTypeId }
+        val careIngredients = if (careCategoryIds.isEmpty()) emptyList() else ingredientRepo.listByCareCategories(careCategoryIds)
+        val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
+        val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
+        val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
+        val healthAware = enabledProfiles.isNotEmpty()
+        // 营养/应季标签(按食材)
+        val tagRows = q.selectNutritionSeasonTags().executeAsList()
+        val nutritionByIng = tagRows.filter { it.dim == "nutrition" }.groupBy({ it.ingredient_id }, { it.tag_name }).mapValues { it.value.toSet() }
+        val seasonByIng = tagRows.filter { it.dim == "season" }.groupBy({ it.ingredient_id }, { it.tag_name }).mapValues { it.value.toSet() }
+        // 全库菜品 → PlanDish
+        val allDishIds = q.selectAllDishes().executeAsList().map { it.id }
+        val dishes = allDishIds.mapNotNull { dishRepo.getDishById(it) }.map { d ->
+            val ings = d.ingredients
+            val ingIds = ings.map { it.ingredient.id }
+            val avoidHits = ings.filter { it.ingredient.id in avoidIds }
+            val limitHits = ings.filter { it.ingredient.id in limitIds }
+            val recommendHits = ings.filter { it.ingredient.id in recommendIds }
+            PlanDish(
+                id = d.id,
+                name = d.name,
+                mainNames = ings.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name },
+                nutritionTags = ingIds.flatMap { nutritionByIng[it].orEmpty() }.toSet(),
+                seasonTags = ingIds.flatMap { seasonByIng[it].orEmpty() }.toSet(),
+                isHealthy = healthAware && recommendHits.isNotEmpty() && limitHits.isEmpty() && avoidHits.isEmpty(),
+                hasAvoid = avoidHits.isNotEmpty(),
+                recommendHits = recommendHits.map { it.ingredient.name }.distinct(),
+                limitHits = limitHits.map { it.ingredient.name }.distinct(),
+            )
+        }
+        PlanContext(dishes = dishes, season = currentSeason(), healthAware = healthAware)
+    }
+
+    /** 当前季节（按月份）。[AI生成] */
+    private fun currentSeason(): String = when (DateTime.today().monthNumber) {
+        in 3..5 -> "春季"
+        in 6..8 -> "夏季"
+        in 9..11 -> "秋季"
+        else -> "冬季"
     }
 
     /** 纯规则推荐（S0 端到端产物，不依赖模型）。[AI生成] */

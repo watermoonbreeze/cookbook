@@ -44,6 +44,13 @@ data class DayPlan(
     val meals: List<PlannedMeal>,
 )
 
+/** 周期规划取数结果：候选菜 + 当前季节 + 是否有健康档案。[AI生成] */
+data class PlanContext(
+    val dishes: List<PlanDish>,
+    val season: String, // 春季/夏季/秋季/冬季
+    val healthAware: Boolean,
+)
+
 /** N(1~30)天完整计划。[AI生成] */
 data class PeriodPlan(
     val days: List<DayPlan>,
