@@ -143,9 +143,16 @@ fun IngredientPickerScreen(
                 if (ui.searchResults.isNotEmpty()) {
                     SearchResultsPanel(
                         results = ui.searchResults,
+                        selectionMode = selectionMode,
+                        selectedIds = ui.selectedIds,
+                        pantryIds = ui.pantryIngredientIds,
                         onPick = {
                             selectedIngredient = null
                             vm.jumpToIngredient(it)
+                        },
+                        onToggleSelect = { vm.toggleSelection(it) },
+                        onTogglePantry = { ing ->
+                            if (ing.id in ui.pantryIngredientIds) vm.removeFromPantry(ing) else vm.addToPantry(ing)
                         },
                     )
                 }
@@ -640,7 +647,12 @@ private fun SelectionBottomBar(
 @Composable
 private fun SearchResultsPanel(
     results: List<Ingredient>,
+    selectionMode: Boolean, // [AI生成] true=菜品选食材(选择/已选)；false=食材管理(入库/出库)
+    selectedIds: Set<Long>,
+    pantryIds: Set<Long>,
     onPick: (Ingredient) -> Unit,
+    onToggleSelect: (Ingredient) -> Unit,
+    onTogglePantry: (Ingredient) -> Unit,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -653,22 +665,34 @@ private fun SearchResultsPanel(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onPick(ing) }
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                        .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(ing.emoji.ifBlank { "🥗" }, style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.width(12.dp))
+                    // [AI修改] 左：食材名 +（预设/自定义）。
+                    Text(ing.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
                     Text(
-                        if (ing.alias.isBlank()) ing.name else "${ing.name}(${ing.alias})",
-                        style = MaterialTheme.typography.bodyLarge,
-                        maxLines = 1,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(
-                        if (ing.source == "user") "自定义" else "预设",
+                        "（${if (ing.source == "user") "自定义" else "预设"}）",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
                     )
+                    // [AI修改] 右：菜品模式=选择/已选；管理模式=入库/出库。
+                    val compact = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
+                    if (selectionMode) {
+                        if (ing.id in selectedIds) {
+                            FilledTonalButton(onClick = { onToggleSelect(ing) }, contentPadding = compact) { Text("已选") }
+                        } else {
+                            OutlinedButton(onClick = { onToggleSelect(ing) }, contentPadding = compact) { Text("选择") }
+                        }
+                    } else {
+                        if (ing.id in pantryIds) {
+                            OutlinedButton(onClick = { onTogglePantry(ing) }, contentPadding = compact) { Text("出库") }
+                        } else {
+                            Button(onClick = { onTogglePantry(ing) }, contentPadding = compact) { Text("入库") }
+                        }
+                    }
                 }
                 Divider()
             }
