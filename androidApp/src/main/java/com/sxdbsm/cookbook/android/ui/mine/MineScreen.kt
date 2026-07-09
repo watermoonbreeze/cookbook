@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.mine
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
@@ -51,6 +52,45 @@ fun MineScreen(
     var kitchenDialogOpen by remember { mutableStateOf(false) }
     var aboutDialogOpen by remember { mutableStateOf(false) }
     var selectedLogFileName by remember { mutableStateOf<String?>(null) }
+    var pendingExportFile by remember { mutableStateOf<String?>(null) } // [AI生成] 待导出的备份文件名(等 SAF 选好目标位置)。
+
+    // [AI生成] SAF 导出：把选中备份写到用户选择的位置(下载/网盘/U盘)。
+    val exportLauncher = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/octet-stream"),
+    ) { uri ->
+        val file = pendingExportFile
+        pendingExportFile = null
+        if (uri != null && file != null) {
+            val out = runCatching { context.contentResolver.openOutputStream(uri) }.getOrNull()
+            if (out != null) {
+                vm.exportBackup(file, out) { ok ->
+                    android.widget.Toast.makeText(context, if (ok) "备份已导出" else "导出失败", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                android.widget.Toast.makeText(context, "导出失败：无法写入所选位置", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    // [AI生成] SAF 导入：选一个 .ckbk 备份文件并恢复。
+    val importLauncher = rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) {
+            val input = runCatching { context.contentResolver.openInputStream(uri) }.getOrNull()
+            if (input != null) {
+                vm.importBackup(input) { ok ->
+                    android.widget.Toast.makeText(
+                        context,
+                        if (ok) "已导入并恢复，建议重新打开应用" else "导入失败：文件无效或版本不兼容",
+                        android.widget.Toast.LENGTH_LONG,
+                    ).show()
+                    if (ok) backupDialogOpen = false
+                }
+            } else {
+                android.widget.Toast.makeText(context, "导入失败：无法读取所选文件", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     LaunchedEffect(backupDialogOpen) {
         if (backupDialogOpen) vm.refreshBackups()
@@ -249,6 +289,14 @@ fun MineScreen(
                 vm.deleteBackup(file) {
                     android.widget.Toast.makeText(context, "备份已删除", android.widget.Toast.LENGTH_SHORT).show()
                 }
+            },
+            onExport = { file ->
+                pendingExportFile = file
+                exportLauncher.launch(file) // [AI生成] 以备份文件名作为建议保存名。
+            },
+            onImport = {
+                // [AI生成] 允许任意类型，兼容部分文件管理器对自定义后缀识别为 octet-stream。
+                importLauncher.launch(arrayOf("application/octet-stream", "application/zip", "*/*"))
             },
         )
     }
@@ -503,17 +551,32 @@ private fun BackupManageDialog(
     onCreate: () -> Unit,
     onRestore: (String) -> Unit,
     onDelete: (String) -> Unit,
+    onExport: (String) -> Unit,
+    onImport: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("本地备份与恢复") },
+        title = { Text("备份与恢复") },
         text = {
-            Column {
-                Button(onClick = onCreate, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Outlined.Save, contentDescription = null)
-                    Spacer(Modifier.width(6.dp))
-                    Text("创建备份")
+            Column(
+                modifier = Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = onCreate, modifier = Modifier.weight(1f)) {
+                        Icon(Icons.Outlined.Save, contentDescription = null)
+                        Spacer(Modifier.width(6.dp))
+                        Text("创建备份")
+                    }
+                    OutlinedButton(onClick = onImport, modifier = Modifier.weight(1f)) {
+                        Text("导入文件")
+                    }
                 }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "备份为完整包(含菜品照片)。导出后可换台设备「导入文件」恢复。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(Modifier.height(12.dp))
                 if (backups.isEmpty()) {
                     Text("暂无备份", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -523,6 +586,7 @@ private fun BackupManageDialog(
                             backup = backup,
                             onRestore = { onRestore(backup.fileName) },
                             onDelete = { onDelete(backup.fileName) },
+                            onExport = { onExport(backup.fileName) },
                         )
                     }
                 }
@@ -539,6 +603,7 @@ private fun BackupRow(
     backup: BackupInfo,
     onRestore: () -> Unit,
     onDelete: () -> Unit,
+    onExport: () -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(backup.fileName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
@@ -548,6 +613,7 @@ private fun BackupRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = onExport) { Text("导出") }
             TextButton(onClick = onRestore) { Text("恢复") }
             TextButton(onClick = onDelete) { Text("删除", color = MaterialTheme.colorScheme.error) }
         }

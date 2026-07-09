@@ -141,6 +141,25 @@ class MineViewModel(
         }
     }
 
+    /** 导出备份到用户选择的位置（SAF 输出流）。[AI生成] */
+    fun exportBackup(fileName: String, output: java.io.OutputStream, onDone: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val ok = runCatching { backup.exportTo(fileName, output) }.isSuccess
+            runCatching { output.close() }
+            onDone(ok)
+        }
+    }
+
+    /** 从用户选择的备份文件导入并恢复（SAF 输入流）。[AI生成] */
+    fun importBackup(input: java.io.InputStream, onDone: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val ok = runCatching { backup.importFrom(input) }.isSuccess
+            runCatching { input.close() }
+            refreshBackups()
+            onDone(ok)
+        }
+    }
+
     /**
      * 手动更新/重置基础数据。[AI生成]
      *
