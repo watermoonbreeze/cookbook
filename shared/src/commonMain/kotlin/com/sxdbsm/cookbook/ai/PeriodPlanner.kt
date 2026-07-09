@@ -58,12 +58,15 @@ class PeriodPlanner {
         for (day in 0 until days.coerceAtMost(MAX_DAYS)) {
             val meals = ArrayList<PlannedMeal>(mealNames.size)
             for (mealName in mealNames) {
+                // [AI生成] 餐次适配：早餐档只从早餐菜里选，午晚从非早餐菜选，符合中式饮食。
+                val isBreakfastMeal = mealName.contains("早")
+                val mealPool = shuffled.filter { it.isBreakfast == isBreakfastMeal }.ifEmpty { shuffled }
                 val chosen = ArrayList<PlanDish>(dishesPerMeal)
                 repeat(dishesPerMeal) {
                     // [AI修改] 若这一口选不健康会使占比跌破 80% 则强制健康，保证全程 ≥80%。
                     val needHealthy = healthAware && healthyPicked.toDouble() / (totalPicked + 1) < HEALTHY_TARGET
-                    val avail = shuffled.filter { it !in chosen && (!needHealthy || it.isHealthy) }
-                        .ifEmpty { shuffled.filter { it !in chosen } }
+                    val avail = mealPool.filter { it !in chosen && (!needHealthy || it.isHealthy) }
+                        .ifEmpty { mealPool.filter { it !in chosen } }
                     val pick = avail.maxByOrNull { score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition) }
                         ?: return@repeat
                     chosen += pick

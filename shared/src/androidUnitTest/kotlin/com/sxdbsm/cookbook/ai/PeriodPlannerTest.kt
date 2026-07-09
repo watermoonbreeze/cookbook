@@ -25,7 +25,8 @@ class PeriodPlannerTest {
         season: Set<String> = emptySet(),
         healthy: Boolean = false,
         avoid: Boolean = false,
-    ) = PlanDish(id, "菜$id", main, nutrition, season, healthy, avoid)
+        breakfast: Boolean = false,
+    ) = PlanDish(id, "菜$id", main, nutrition, season, healthy, avoid, breakfast)
 
     @Test
     fun `天数与餐次数量正确`() {
@@ -68,6 +69,18 @@ class PeriodPlannerTest {
             days = 1, mealNames = listOf("午餐"), dishesPerMeal = 1, currentSeason = "夏季",
         )
         assertEquals(1L, plan.days[0].meals[0].dishes[0].id)
+    }
+
+    @Test
+    fun `早餐档只选早餐菜午晚选非早餐菜`() {
+        val plan = planner.plan(
+            listOf(dish(1, breakfast = true), dish(2, breakfast = false)),
+            days = 1, mealNames = listOf("早餐", "午餐"), dishesPerMeal = 1,
+        )
+        val bfDishes = plan.days[0].meals.first { it.mealName == "早餐" }.dishes.map { it.id }
+        val lunchDishes = plan.days[0].meals.first { it.mealName == "午餐" }.dishes.map { it.id }
+        assertTrue(1L in bfDishes && 2L !in bfDishes, "早餐应只出早餐菜: $bfDishes")
+        assertTrue(2L in lunchDishes && 1L !in lunchDishes, "午餐应只出非早餐菜: $lunchDishes")
     }
 
     @Test

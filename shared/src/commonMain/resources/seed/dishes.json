@@ -815,5 +815,155 @@
       "加水没过煮至土豆软。",
       "关小火下咖喱块化开，收浓即可。"
     ]
+  },
+  {
+    "code": "xiaomi_zhou",
+    "name": "小米粥",
+    "method": "煮",
+    "description": "经典中式早餐，养胃暖身、易消化。",
+    "ingredients": [
+      {
+        "ingredient": "小米",
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大米",
+        "main": false,
+        "quantity": 20,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "小米淘洗干净。",
+      "加足量水大火烧开转小火。",
+      "熬煮20-30分钟至粘稠即可。"
+    ]
+  },
+  {
+    "code": "shui_zhu_dan",
+    "name": "水煮蛋",
+    "method": "煮",
+    "description": "优质蛋白早餐首选，简单快手。",
+    "ingredients": [
+      {
+        "ingredient": "鸡蛋",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      }
+    ],
+    "steps": [
+      "鸡蛋冷水下锅。",
+      "水开后煮6-8分钟。",
+      "过凉水剥壳即可。"
+    ]
+  },
+  {
+    "code": "dou_jiang",
+    "name": "豆浆",
+    "method": "煮",
+    "description": "传统早餐饮品，植物蛋白丰富。",
+    "ingredients": [
+      {
+        "ingredient": "黄豆",
+        "main": true,
+        "quantity": 60,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "黄豆提前泡发。",
+      "加水打浆。",
+      "煮沸后再煮几分钟，滤渣饮用。"
+    ]
+  },
+  {
+    "code": "zheng_dan_geng",
+    "name": "蒸蛋羹",
+    "method": "蒸",
+    "description": "嫩滑蒸蛋，老少皆宜的早餐。",
+    "ingredients": [
+      {
+        "ingredient": "鸡蛋",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "鸡蛋打散加1.5倍温水和少许盐。",
+      "过筛去泡，盖保鲜膜。",
+      "中火蒸8-10分钟至凝固。"
+    ]
+  },
+  {
+    "code": "yanmai_niunai",
+    "name": "燕麦牛奶",
+    "method": "煮",
+    "description": "高纤维+优质蛋白的营养早餐。",
+    "ingredients": [
+      {
+        "ingredient": "燕麦",
+        "main": true,
+        "quantity": 40,
+        "unit": "克"
+      },
+      {
+        "ingredient": "牛奶",
+        "main": true,
+        "quantity": 250,
+        "unit": "毫升"
+      }
+    ],
+    "steps": [
+      "牛奶加热。",
+      "放入燕麦。",
+      "小火煮3-5分钟至软糯。"
+    ]
+  },
+  {
+    "code": "yangchun_mian",
+    "name": "阳春面",
+    "method": "煮",
+    "description": "清淡热汤面，暖胃早餐。",
+    "ingredients": [
+      {
+        "ingredient": "面条",
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
+      },
+      {
+        "ingredient": "葱",
+        "main": false,
+        "quantity": 1,
+        "unit": "段"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "水烧开下面条煮熟。",
+      "碗中放盐、葱花、少许油。",
+      "冲入面汤，放入面条即可。"
+    ]
   }
 ]

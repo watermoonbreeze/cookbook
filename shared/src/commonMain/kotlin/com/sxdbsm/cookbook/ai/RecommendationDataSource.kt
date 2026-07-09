@@ -111,6 +111,7 @@ class RecommendationDataSource(
                 seasonTags = ingIds.flatMap { seasonByIng[it].orEmpty() }.toSet(),
                 isHealthy = healthAware && recommendHits.isNotEmpty() && limitHits.isEmpty() && avoidHits.isEmpty(),
                 hasAvoid = avoidHits.isNotEmpty(),
+                isBreakfast = BREAKFAST_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 按菜名判早餐菜(符合中式饮食)。
                 recommendHits = recommendHits.map { it.ingredient.name }.distinct(),
                 limitHits = limitHits.map { it.ingredient.name }.distinct(),
             )
@@ -147,6 +148,8 @@ class RecommendationDataSource(
     )
 
     companion object {
+        // [AI生成] 早餐菜关键词(菜名含则视为早餐菜)。
+        private val BREAKFAST_KEYWORDS = listOf("粥", "蛋羹", "豆浆", "牛奶", "燕麦", "面", "馒头", "包子", "水煮蛋")
         private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数。
         private const val DISH_PREFILTER_LIMIT = 100L // 与在手食材有交集的候选菜上限。
     }
