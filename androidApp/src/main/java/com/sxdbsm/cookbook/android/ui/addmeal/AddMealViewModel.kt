@@ -82,6 +82,7 @@ class AddMealViewModel(
     private var configured = false // [AI生成] 标记外部入口是否已指定，避免 init 默认日期覆盖编辑日期。
     private var pendingEditDate: LocalDate? = null
     private var pendingPresetDishIds: List<Long> = emptyList() // [AI生成] AI 推荐"选它"带入的菜品，加载完块后并入第一块。
+    private var presetApplied = false // [AI生成] 预填只应用一次，避免返回时路由参数不变导致重复重载。
     private var loadJob: Job? = null
 
     init {
@@ -102,8 +103,10 @@ class AddMealViewModel(
      * editDate 优先；新建入口会取“今天”或最后计划日期的后一天，避免 init 默认加载和编辑入口 setDate 竞态。
      */
     fun configure(editDate: LocalDate? = null, presetDishIds: List<Long> = emptyList()) {
-        // [AI生成] 带 AI 推荐预填时强制按目标日期重载并并入菜品，跳过“已配置则保留”短路。
-        if (presetDishIds.isNotEmpty()) {
+        // [AI修改] 预填只应用一次：路由里的 presetDishIds 在返回时不变，若不加 presetApplied 守卫，
+        // 从餐次进 AI 推荐再返回会重复触发重载、清掉用户新加的餐次块。
+        if (presetDishIds.isNotEmpty() && !presetApplied) {
+            presetApplied = true
             pendingPresetDishIds = presetDishIds
             configured = true
             pendingEditDate = editDate
