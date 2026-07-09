@@ -87,9 +87,11 @@ fun AddDayFoodScreen(
     onAddNewDish: () -> Unit,
     editDate: LocalDate? = null,
     createdDishId: Long? = null,
-    presetDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐"选它"带入的菜品。
+    presetDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐"选它"带入的菜品(从首页进入时新建整餐)。
     onCreatedDishConsumed: () -> Unit = {},
-    onOpenAiRecommend: () -> Unit = {}, // [AI生成] 加餐页想不出吃啥 → AI 推荐。
+    onOpenAiForBlock: () -> Unit = {}, // [AI生成] 从某餐次块进入 AI 推荐。
+    aiPickedDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐回传给餐次块的菜品 id。
+    onAiPickedConsumed: () -> Unit = {},
     vm: AddMealViewModel = koinViewModel(),
 ) {
     // [AI修改] 页面订阅 ViewModel 状态，任何字段变化都会触发相关 UI 重组。
@@ -101,6 +103,16 @@ fun AddDayFoodScreen(
     var comboPickerBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
     var saveComboBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
     var comboNameDraft by rememberSaveable { mutableStateOf("") }
+    var aiTargetBlockId by rememberSaveable { mutableStateOf<Long?>(null) } // [AI生成] 记录哪个餐次块发起了 AI 推荐。
+
+    // [AI生成] AI 推荐从餐次块进入并"选它"回传：把菜品加入发起的那个餐次块。
+    LaunchedEffect(aiPickedDishIds) {
+        if (aiPickedDishIds.isEmpty()) return@LaunchedEffect
+        val target = aiTargetBlockId ?: state.activeBlockId
+        if (target != null) vm.addDishesByIds(target, aiPickedDishIds)
+        aiTargetBlockId = null
+        onAiPickedConsumed()
+    }
 
     LaunchedEffect(Unit) {
         AppLogger.d("MealFlow", "AddDayFoodScreen enter: editDate=$editDate createdDishId=$createdDishId") // [AI生成] 记录添加/编辑餐食页入口参数，便于排查路由与状态是否匹配。
@@ -140,9 +152,6 @@ fun AddDayFoodScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onOpenAiRecommend) { // [AI生成] AI 推荐入口。
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI 推荐")
-                    }
                     Button(
                         onClick = { vm.save() },
                         enabled = state.canSave,
@@ -212,6 +221,11 @@ fun AddDayFoodScreen(
                     onRemoveDish = { dishId -> vm.removeDish(block.id, dishId) },
                     onNoteChange = { vm.setNote(block.id, it) },
                     onRemoveBlock = { vm.removeMealBlock(block.id) },
+                    onAiRecommend = { // [AI生成] 从该餐次块进入 AI 推荐，回传后加入本块。
+                        vm.setActiveBlock(block.id)
+                        aiTargetBlockId = block.id
+                        onOpenAiForBlock()
+                    },
                     onOpenCombos = { comboPickerBlockId = block.id },
                     onSaveCombo = {
                         comboNameDraft = comboNameForBlock(
@@ -332,6 +346,7 @@ private fun MealBlockCard(
     onRemoveBlock: () -> Unit,
     onOpenCombos: () -> Unit,
     onSaveCombo: () -> Unit,
+    onAiRecommend: () -> Unit,
     hasCombos: Boolean,
 ) {
     ElevatedCard(
@@ -386,6 +401,11 @@ private fun MealBlockCard(
                         Spacer(Modifier.width(4.dp))
                         Text("添加菜品", color = MaterialTheme.colorScheme.tertiary)
                     }
+                    TextButton(onClick = onAiRecommend, modifier = Modifier.fillMaxWidth()) { // [AI生成] 餐次块内 AI 推荐入口。
+                        Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text("AI 推荐", color = MaterialTheme.colorScheme.primary)
+                    }
                     if (hasCombos) {
                         TextButton(onClick = onOpenCombos, modifier = Modifier.fillMaxWidth()) {
                             Text("选择收藏组合", color = MaterialTheme.colorScheme.tertiary)
@@ -417,6 +437,9 @@ private fun MealBlockCard(
                     }
                     TextButton(onClick = onAddDish) {
                         Icon(Icons.Outlined.Add, contentDescription = null)
+                    }
+                    TextButton(onClick = onAiRecommend) { // [AI生成] 餐次块内 AI 推荐入口。
+                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI 推荐")
                     }
                 }
                 Row(

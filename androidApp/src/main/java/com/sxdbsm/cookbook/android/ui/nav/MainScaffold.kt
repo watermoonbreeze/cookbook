@@ -117,7 +117,7 @@ fun MainScaffold(
                     onOpenSearch = { nav.navigate(Routes.SEARCH) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
-                    onOpenAiRecommend = { nav.navigate(Routes.AI_RECOMMEND) },
+                    onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
                 )
             }
             composable(Routes.TIMELINE) {
@@ -148,16 +148,28 @@ fun MainScaffold(
                 MineScreen(
                     onOpenCookingTimer = { nav.navigate(Routes.COOKING_TIMER) },
                     onOpenAiSettings = { nav.navigate(Routes.AI_SETTINGS) },
-                    onOpenAiRecommend = { nav.navigate(Routes.AI_RECOMMEND) },
+                    onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
                 )
             }
             composable(Routes.COOKING_TIMER) {
                 CookingTimerScreen(onBack = { nav.popBackStack() })
             }
-            composable(Routes.AI_RECOMMEND) {
+            composable(
+                route = Routes.AI_RECOMMEND,
+                arguments = listOf(navArgument("returnResult") { type = NavType.BoolType; defaultValue = false }),
+            ) { entry ->
+                val returnResult = entry.arguments?.getBoolean("returnResult") ?: false
                 AiRecommendScreen(
                     onBack = { nav.popBackStack() },
-                    onPickMeal = { dishIds -> nav.navigate(Routes.addMealWithDishes(dishIds)) },
+                    onPickMeal = { dishIds ->
+                        if (returnResult) {
+                            // [AI生成] 从餐次块进入：把菜品回传给上一页(加餐页)对应餐次，不新开页面。
+                            nav.previousBackStackEntry?.savedStateHandle?.set(KEY_AI_PICKED_DISHES, dishIds.toLongArray())
+                            nav.popBackStack()
+                        } else {
+                            nav.navigate(Routes.addMealWithDishes(dishIds))
+                        }
+                    },
                 )
             }
             composable(Routes.AI_SETTINGS) {
@@ -182,7 +194,10 @@ fun MainScaffold(
                 val createdDishId by it.savedStateHandle
                     .getStateFlow(KEY_CREATED_DISH_ID, -1L)
                     .collectAsStateWithLifecycle()
-                AppLogger.d("MealFlow", "nav addmeal args: route=${it.destination.route} date=$date preset=$presetDishIds createdDishId=$createdDishId") // [AI生成] 记录添加/编辑餐食路由参数和新建菜品回传 id。
+                val aiPicked by it.savedStateHandle
+                    .getStateFlow(KEY_AI_PICKED_DISHES, LongArray(0))
+                    .collectAsStateWithLifecycle()
+                AppLogger.d("MealFlow", "nav addmeal args: route=${it.destination.route} date=$date preset=$presetDishIds createdDishId=$createdDishId aiPicked=${aiPicked.toList()}") // [AI生成] 记录添加/编辑餐食路由参数和回传 id。
                 AddDayFoodScreen(
                     onBack = { nav.popBackStack() },
                     onAddNewDish = {
@@ -191,7 +206,9 @@ fun MainScaffold(
                     },
                     editDate = date,
                     presetDishIds = presetDishIds,
-                    onOpenAiRecommend = { nav.navigate(Routes.AI_RECOMMEND) },
+                    onOpenAiForBlock = { nav.navigate(Routes.aiRecommendForMeal()) }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。
+                    aiPickedDishIds = aiPicked.toList(),
+                    onAiPickedConsumed = { it.savedStateHandle[KEY_AI_PICKED_DISHES] = LongArray(0) },
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
                     onCreatedDishConsumed = {
                         AppLogger.d("MealFlow", "consume createdDishId: value=$createdDishId") // [AI生成] 记录导航结果消费，避免重复回填。
@@ -232,6 +249,7 @@ fun MainScaffold(
     }
 }
 
+private const val KEY_AI_PICKED_DISHES = "aiPickedDishes" // [AI生成] AI 推荐从餐次进入时回传菜品 id 的导航结果 key。
 private const val KEY_CREATED_DISH_ID = "createdDishId" // [AI生成] 添加餐食页从新建菜品页接收新菜品 id 的导航结果 key。
 
 /**

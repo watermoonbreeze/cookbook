@@ -228,6 +228,15 @@ class AddMealViewModel(
         addDishes(blockId, combo.dishes) // [AI生成] 组合复用只把组合内菜品加入当前餐食模块，不改变组合本身。
     }
 
+    /** [AI生成] AI 推荐"选它"从餐次进入时，把菜品直接加入该餐次块。 */
+    fun addDishesByIds(blockId: Long, ids: List<Long>) {
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            val dishes = ids.mapNotNull { dishRepo.getDishMiniById(it) }
+            if (dishes.isNotEmpty()) addDishes(blockId, dishes)
+        }
+    }
+
     fun saveCurrentBlockAsCombo(blockId: Long, name: String) {
         val block = _state.value.mealBlocks.firstOrNull { it.id == blockId } ?: return
         if (block.dishes.isEmpty()) return
