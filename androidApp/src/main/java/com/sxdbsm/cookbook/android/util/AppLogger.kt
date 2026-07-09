@@ -30,13 +30,13 @@ object AppLogger {
     @Volatile private var crashHandlerInstalled = false
 
     /**
-     * 初始化文件日志依赖的 Context。[AI生成]
+     * 初始化文件日志依赖的 Context。[AI修改]
      *
-     * 必须在 `/sdcard/cookbook` 权限通过且 log 目录创建后调用。
+     * P0 后日志落在 app 专属目录 log/，无需权限。
      */
     fun init(context: Context) {
         appContext = context.applicationContext
-        d("AppLogger", "file logger initialized: dir=${CookbookStorage.publicRoot().absolutePath}/${CookbookStorage.LOG_DIR_NAME}")
+        d("AppLogger", "file logger initialized: dir=${CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME, context).absolutePath}")
     }
 
     /**
@@ -107,8 +107,8 @@ object AppLogger {
     }
 
     private fun writeLine(context: Context, level: String, tag: String, message: String, throwable: Throwable?) {
-        if (!CookbookStorage.hasPublicStorageAccess(context)) return
-        val dir = CookbookStorage.requirePublicSubDir(CookbookStorage.LOG_DIR_NAME)
+        // [AI修改] P0：日志写 app 专属目录 log/，无需权限。
+        val dir = CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME, context)
         val now = Date()
         val file = File(dir, "${dayFormat.format(now)}.log")
         val line = buildString {

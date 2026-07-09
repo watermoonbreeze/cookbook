@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android
 import android.app.Application
 import com.sxdbsm.cookbook.android.di.androidModule
 import com.sxdbsm.cookbook.di.sharedModule
+import com.sxdbsm.cookbook.platform.CookbookStorage
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -17,6 +18,7 @@ import org.koin.core.logger.Level
 class CookbookApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        CookbookStorage.init(this) // [AI生成] P0：尽早存下 app Context，存储目录改用 app 专属目录、无需权限门禁。
         startKoin {
             androidLogger(Level.INFO)
             androidContext(this@CookbookApplication)

@@ -26,15 +26,11 @@ actual class BackupManager(
     private val dbName get() = DatabaseDriverFactory.DB_NAME
 
     private val backupDir: File
-        get() = CookbookStorage.requirePublicSubDir("backups")
+        get() = CookbookStorage.requireSubDir("backups", context)
 
     private val currentDb: File
-        get() {
-            check(CookbookStorage.hasPublicStorageAccess(context)) {
-                "备份数据库前必须先获取 /sdcard/cookbook 访问权限"
-            } // [AI修改] 数据库已迁移到公共目录，备份必须读取同一个真实库文件。
-            return File(CookbookStorage.requirePublicSubDir(CookbookStorage.DB_DIR_NAME), dbName)
-        }
+        // [AI修改] P0：库在 app 专属目录，备份读取同一真实库文件，无需权限。
+        get() = File(CookbookStorage.requireSubDir(CookbookStorage.DB_DIR_NAME, context), dbName)
 
     actual suspend fun createBackup(): BackupInfo = withContext(Dispatchers.IO) {
         val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())

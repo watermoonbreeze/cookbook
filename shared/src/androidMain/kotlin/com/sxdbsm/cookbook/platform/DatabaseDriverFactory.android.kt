@@ -44,15 +44,13 @@ actual class DatabaseDriverFactory(private val context: Context) {
 }
 
 private fun resolveDatabaseFile(context: Context): File {
-    check(CookbookStorage.hasPublicStorageAccess(context)) {
-        "创建数据库前必须先获取 /sdcard/cookbook 访问权限"
-    } // [AI修改] 修复12要求授权后才能创建数据库，避免提前落到 app 专属目录。
-    CookbookStorage.migrateAppSpecificCookbookToPublic(context) // [AI修改] 授权后先迁移旧 app 专属 cookbook 目录。
-    val dir = CookbookStorage.requirePublicSubDir(CookbookStorage.DB_DIR_NAME)
+    // [AI修改] P0：数据库落在 app 专属目录，创建无需任何权限。
+    val dir = CookbookStorage.requireSubDir(CookbookStorage.DB_DIR_NAME, context)
     return File(dir, DatabaseDriverFactory.DB_NAME)
 }
 
 private fun migrateInternalDatabaseIfNeeded(context: Context, targetDb: File) {
+    // [AI修改] 仅兼容更早期把库放在内部 getDatabasePath 的历史安装；best-effort，失败不影响新库创建。
     val sourceDb = context.getDatabasePath(DatabaseDriverFactory.DB_NAME)
     if (!sourceDb.exists() || targetDb.exists()) return
     targetDb.parentFile?.mkdirs()

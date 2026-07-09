@@ -312,11 +312,8 @@ private fun encodeJpegAroundLimit(bitmap: Bitmap, targetBytes: Int, maxBytes: In
 }
 
 private fun cookbookImageDir(context: Context): File {
-    check(CookbookStorage.hasPublicStorageAccess(context)) {
-        "保存图片前必须先获取 /sdcard/cookbook 访问权限"
-    } // [AI修改] 图片统一保存到 /sdcard/cookbook/img，不再回退到 app 专属目录。
-    CookbookStorage.migrateAppSpecificCookbookToPublic(context)
-    return CookbookStorage.requirePublicSubDir(CookbookStorage.IMG_DIR_NAME)
+    // [AI修改] P0：图片保存到 app 专属目录 img/，无需任何权限。
+    return CookbookStorage.requireSubDir(CookbookStorage.IMG_DIR_NAME, context)
 }
 
 private fun timestampFileName(): String =

@@ -18,7 +18,7 @@ class LogFileManager {
      * 读取日志文件列表，按文件名倒序展示最近日期。[AI生成]
      */
     fun listLogFiles(): List<LogFileInfo> {
-        val dir = CookbookStorage.requirePublicSubDir(CookbookStorage.LOG_DIR_NAME)
+        val dir = CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME)
         return dir.listFiles { file -> file.isFile && file.name.endsWith(".log") }
             ?.sortedByDescending { it.name }
             ?.map { file -> LogFileInfo(fileName = file.name, sizeBytes = file.length()) }
@@ -30,7 +30,7 @@ class LogFileManager {
      */
     fun readLog(fileName: String): String {
         require(fileName.endsWith(".log") && !fileName.contains(File.separatorChar)) { "非法日志文件名" }
-        val file = File(CookbookStorage.requirePublicSubDir(CookbookStorage.LOG_DIR_NAME), fileName)
+        val file = File(CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME), fileName)
         if (!file.exists()) return ""
         return file.readText()
     }

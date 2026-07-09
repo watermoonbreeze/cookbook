@@ -1,16 +1,10 @@
 package com.sxdbsm.cookbook.android
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,7 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,14 +27,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.nav.MainScaffold
 import com.sxdbsm.cookbook.android.ui.theme.CookbookTheme
 import com.sxdbsm.cookbook.android.util.AppLogger
@@ -65,30 +53,16 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val EXTRA_OPEN_TIMER = "open_cooking_timer" // [AI生成] 计时通知点击打开计时页的 intent extra key。
     }
-    private val legacyStoragePermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-    ) {
-        // [AI生成] Android 9 及以下运行时权限回调后重算状态；Android 11+ 走系统设置页后由 ON_RESUME 处理。
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false) // [AI修改] 开启沉浸式布局，让 Compose 内容延伸到状态栏/导航栏区域。
         window.statusBarColor = Color.TRANSPARENT // [AI修改] 状态栏透明，交给页面背景承接。
         window.navigationBarColor = Color.TRANSPARENT // [AI修改] 导航栏透明，底部栏自行提供背景。
         if (intent?.getBooleanExtra(EXTRA_OPEN_TIMER, false) == true) openTimerRequested.value = true // [AI生成] 计时通知点击进入。
-        val initialStorageReady = preparePublicStorageIfAllowed()
+        prepareStorage() // [AI修改] P0：数据改存 app 专属目录，无需权限门禁，直接准备目录即可。
         setContent {
-            var storageReady by remember { mutableStateOf(initialStorageReady) }
             CookbookTheme(themeMode = ThemeMode.SYSTEM) {
-                if (storageReady) {
-                    CookbookAppContent()
-                } else {
-                    StoragePermissionScreen(
-                        onRequestPermission = { requestCookbookStoragePermission() },
-                        onCheckPermission = { storageReady = preparePublicStorageIfAllowed() },
-                    )
-                }
+                CookbookAppContent()
             }
         }
     }
@@ -100,40 +74,17 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * 授权后先准备公共目录，再允许 App 读取数据库。[AI生成]
+     * 准备 app 专属存储目录并启动文件日志。[AI修改]
+     *
+     * P0 存储合规后数据落在 app 专属目录，创建无需任何权限，失败也不阻塞（由后续初始化重试兜底）。
      */
-    private fun preparePublicStorageIfAllowed(): Boolean =
+    private fun prepareStorage() {
         runCatching {
-            if (!CookbookStorage.hasPublicStorageAccess(this)) return false
-            CookbookStorage.migrateAppSpecificCookbookToPublic(this)
-            CookbookStorage.requirePublicSubDir(CookbookStorage.DB_DIR_NAME)
-            CookbookStorage.requirePublicSubDir(CookbookStorage.IMG_DIR_NAME)
-            CookbookStorage.requirePublicSubDir(CookbookStorage.LOG_DIR_NAME)
-            AppLogger.init(this) // [AI生成] 授权并创建 log 目录后启动文件日志，预测试可导出 /sdcard/cookbook/log/。
-            AppLogger.installCrashHandler() // [AI生成] 预测试期间把未捕获崩溃摘要写入同一份日期日志。
-            true
-        }.getOrDefault(false)
-
-    /**
-     * 根据 Android 版本申请创建 `/sdcard/cookbook` 所需权限。[AI生成]
-     */
-    private fun requestCookbookStoragePermission() {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                val uri = Uri.parse("package:$packageName")
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
-                runCatching { startActivity(intent) }
-                    .onFailure { startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
-            }
-            Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q -> {
-                legacyStoragePermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    ),
-                )
-            }
-            else -> Unit
+            CookbookStorage.requireSubDir(CookbookStorage.DB_DIR_NAME)
+            CookbookStorage.requireSubDir(CookbookStorage.IMG_DIR_NAME)
+            CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME)
+            AppLogger.init(this) // [AI生成] 创建 log 目录后启动文件日志，内测可在应用内「日志查看」读取。
+            AppLogger.installCrashHandler() // [AI生成] 把未捕获崩溃摘要写入同一份日期日志。
         }
     }
 
@@ -218,50 +169,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    private fun StoragePermissionScreen(
-        onRequestPermission: () -> Unit,
-        onCheckPermission: () -> Unit,
-    ) {
-        val lifecycleOwner = LocalLifecycleOwner.current
-        DisposableEffect(lifecycleOwner) {
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_RESUME) onCheckPermission()
-            }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-        }
-        Surface(color = MaterialTheme.colorScheme.background) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    text = "需要存储权限",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = "应用会把数据库和照片统一保存到 /sdcard/cookbook/。授权后才会创建 db 和 img 目录，并迁移旧数据。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(24.dp))
-                Button(onClick = onRequestPermission) {
-                    Text(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) "打开所有文件访问权限" else "授权读写存储")
-                }
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q &&
-                    ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    LaunchedEffect(Unit) { onCheckPermission() }
-                }
-            }
-        }
-    }
 }
