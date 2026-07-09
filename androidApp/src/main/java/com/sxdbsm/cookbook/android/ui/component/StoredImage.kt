@@ -140,7 +140,8 @@ private fun rememberImageBitmap(path: String?, preview: Boolean): ImageBitmap? {
                             BitmapFactory.decodeStream(stream, null, options)
                         }
                     } else {
-                        BitmapFactory.decodeFile(uri.path ?: File(path).absolutePath, options)
+                        // [AI修改] 相对文件名→按当前 img 目录解析；兼容历史绝对路径。
+                        BitmapFactory.decodeFile(resolveImageFile(context, path).absolutePath, options)
                     }
                     bitmap?.asImageBitmap()?.also { imageBitmap ->
                         // [AI修改] 只缓存列表缩略图；预览大图不进缓存，避免占用过多内存。
@@ -151,6 +152,22 @@ private fun rememberImageBitmap(path: String?, preview: Boolean): ImageBitmap? {
         }
     }
     return image
+}
+
+/**
+ * 把存储的图片路径解析为真实文件。[AI生成]
+ *
+ * 新数据存的是相对文件名 → 拼当前 img 目录；历史绝对路径若仍存在则直接用，
+ * 否则按文件名回落到当前 img 目录（自愈：目录迁移后仍能按文件名命中）。
+ */
+private fun resolveImageFile(context: android.content.Context, path: String): File {
+    val direct = File(path)
+    if (direct.isAbsolute && direct.exists()) return direct
+    val imgDir = com.sxdbsm.cookbook.platform.CookbookStorage.requireSubDir(
+        com.sxdbsm.cookbook.platform.CookbookStorage.IMG_DIR_NAME,
+        context,
+    )
+    return File(imgDir, direct.name)
 }
 
 private fun imageOptions(preview: Boolean): BitmapFactory.Options =

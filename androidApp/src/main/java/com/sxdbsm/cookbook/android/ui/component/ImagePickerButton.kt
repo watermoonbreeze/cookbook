@@ -238,7 +238,8 @@ private fun saveImagePair(context: Context, sourceUri: Uri): StoredImagePair? = 
     thumbFile.writeBytes(encodeJpegAroundLimit(thumbBitmap, THUMB_TARGET_BYTES, THUMB_MAX_BYTES))
     originalBitmap.recycle()
     thumbBitmap.recycle()
-    StoredImagePair(imagePath = imageFile.absolutePath, thumbnailPath = thumbFile.absolutePath)
+    // [AI修改] P0/同传：只存文件名(相对)，读取时按当前 img 目录解析；便于完整备份与跨设备迁移。
+    StoredImagePair(imagePath = imageFile.name, thumbnailPath = thumbFile.name)
 }.getOrNull()
 
 /**
