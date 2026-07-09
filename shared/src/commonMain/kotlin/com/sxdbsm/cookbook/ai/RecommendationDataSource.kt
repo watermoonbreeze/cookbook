@@ -112,6 +112,7 @@ class RecommendationDataSource(
                 isHealthy = healthAware && recommendHits.isNotEmpty() && limitHits.isEmpty() && avoidHits.isEmpty(),
                 hasAvoid = avoidHits.isNotEmpty(),
                 isBreakfast = BREAKFAST_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 按菜名判早餐菜(符合中式饮食)。
+                breakfastSoft = BREAKFAST_SOFT_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 软/饮 vs 硬/主食(软硬搭配)。
                 recommendHits = recommendHits.map { it.ingredient.name }.distinct(),
                 limitHits = limitHits.map { it.ingredient.name }.distinct(),
             )
@@ -149,7 +150,9 @@ class RecommendationDataSource(
 
     companion object {
         // [AI生成] 早餐菜关键词(菜名含则视为早餐菜)。
-        private val BREAKFAST_KEYWORDS = listOf("粥", "蛋羹", "豆浆", "牛奶", "燕麦", "面", "馒头", "包子", "水煮蛋")
+        private val BREAKFAST_KEYWORDS = listOf("粥", "蛋羹", "豆浆", "豆奶", "牛奶", "燕麦", "面", "馒头", "包子", "水煮蛋", "薯", "南瓜", "玉米")
+        // [AI生成] 早餐软/饮类关键词(其余早餐菜视为硬/主食，用于软硬搭配)。
+        private val BREAKFAST_SOFT_KEYWORDS = listOf("粥", "豆浆", "豆奶", "牛奶", "燕麦", "蛋羹", "面")
         private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数。
         private const val DISH_PREFILTER_LIMIT = 100L // 与在手食材有交集的候选菜上限。
     }

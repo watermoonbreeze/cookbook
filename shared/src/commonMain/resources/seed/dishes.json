@@ -965,5 +965,62 @@
       "碗中放盐、葱花、少许油。",
       "冲入面汤，放入面条即可。"
     ]
+  },
+  {
+    "code": "zheng_hongshu",
+    "name": "蒸红薯",
+    "method": "蒸",
+    "description": "香甜软糯，膳食纤维丰富的早餐主食。",
+    "ingredients": [
+      {
+        "ingredient": "红薯",
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "红薯洗净。",
+      "上锅蒸20分钟至软。",
+      "去皮食用。"
+    ]
+  },
+  {
+    "code": "zheng_zishu",
+    "name": "蒸紫薯",
+    "method": "蒸",
+    "description": "花青素丰富、饱腹感强的早餐主食。",
+    "ingredients": [
+      {
+        "ingredient": "紫薯",
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "紫薯洗净。",
+      "上锅蒸20分钟至软。",
+      "去皮食用。"
+    ]
+  },
+  {
+    "code": "zhu_yumi",
+    "name": "煮玉米",
+    "method": "煮",
+    "description": "清甜玉米，粗粮早餐好选择。",
+    "ingredients": [
+      {
+        "ingredient": "玉米",
+        "main": true,
+        "quantity": 1,
+        "unit": "根"
+      }
+    ],
+    "steps": [
+      "玉米去皮留少许内叶。",
+      "冷水下锅煮15-20分钟。",
+      "捞出食用。"
+    ]
   }
 ]

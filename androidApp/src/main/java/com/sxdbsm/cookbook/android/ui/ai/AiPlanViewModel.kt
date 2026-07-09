@@ -35,7 +35,7 @@ class AiPlanViewModel(
 
     init {
         viewModelScope.launch {
-            mealTypes = mealRepo.listMealTypes().filter { it.isFixed }
+            mealTypes = mealRepo.listMealTypes().filter { it.code in PLAN_MEAL_CODES }
         }
     }
 
@@ -48,9 +48,9 @@ class AiPlanViewModel(
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, saved = false)
             runCatching {
-                if (mealTypes.isEmpty()) mealTypes = mealRepo.listMealTypes().filter { it.isFixed }
+                if (mealTypes.isEmpty()) mealTypes = mealRepo.listMealTypes().filter { it.code in PLAN_MEAL_CODES }
                 val ctx = dataSource.gatherForPlan()
-                val names = mealTypes.map { it.name }.ifEmpty { listOf("早餐", "午餐", "晚餐") }
+                val names = mealTypes.map { it.name }.ifEmpty { listOf("早餐", "中餐", "晚餐") }
                 val plan = PeriodPlanner().plan(
                     candidates = ctx.dishes,
                     days = state.days,
@@ -94,6 +94,7 @@ class AiPlanViewModel(
 
     companion object {
         private const val DISHES_PER_MEAL = 2
+        private val PLAN_MEAL_CODES = setOf("BREAKFAST", "LUNCH", "DINNER") // [AI生成] 周期规划只早/中/晚。
     }
 }
 

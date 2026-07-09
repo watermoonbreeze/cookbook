@@ -58,17 +58,16 @@ class PeriodPlanner {
         for (day in 0 until days.coerceAtMost(MAX_DAYS)) {
             val meals = ArrayList<PlannedMeal>(mealNames.size)
             for (mealName in mealNames) {
-                // [AI生成] 餐次适配：早餐档只从早餐菜里选，午晚从非早餐菜选，符合中式饮食。
+                // [AI修改] 餐次适配 + 早餐软硬搭配：早餐档只从早餐菜选，且偶数位取硬(主食/蛋)、奇数位取软(粥/饮)。
                 val isBreakfastMeal = mealName.contains("早")
-                val mealPool = shuffled.filter { it.isBreakfast == isBreakfastMeal }.ifEmpty { shuffled }
                 val chosen = ArrayList<PlanDish>(dishesPerMeal)
-                repeat(dishesPerMeal) {
-                    // [AI修改] 若这一口选不健康会使占比跌破 80% 则强制健康，保证全程 ≥80%。
+                for (idx in 0 until dishesPerMeal) {
+                    val pool = mealPool(shuffled, isBreakfastMeal, idx).ifEmpty { shuffled }
                     val needHealthy = healthAware && healthyPicked.toDouble() / (totalPicked + 1) < HEALTHY_TARGET
-                    val avail = mealPool.filter { it !in chosen && (!needHealthy || it.isHealthy) }
-                        .ifEmpty { mealPool.filter { it !in chosen } }
+                    val avail = pool.filter { it !in chosen && (!needHealthy || it.isHealthy) }
+                        .ifEmpty { pool.filter { it !in chosen } }
                     val pick = avail.maxByOrNull { score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition) }
-                        ?: return@repeat
+                        ?: break
                     chosen += pick
                     usedDishIds[pick.id] = (usedDishIds[pick.id] ?: 0) + 1
                     pick.mainNames.forEach { usedMainCounts[it] = (usedMainCounts[it] ?: 0) + 1 }
@@ -82,6 +81,14 @@ class PeriodPlanner {
         }
         val ratio = if (totalPicked == 0) 0.0 else healthyPicked.toDouble() / totalPicked
         return PeriodPlan(dayPlans, healthAware, ratio)
+    }
+
+    /** 该餐次该位次的候选池：非早餐=非早餐菜；早餐按软硬搭配(偶数位硬/主食、奇数位软/饮)。[AI生成] */
+    private fun mealPool(all: List<PlanDish>, isBreakfast: Boolean, pickIdx: Int): List<PlanDish> {
+        if (!isBreakfast) return all.filter { !it.isBreakfast }
+        val bf = all.filter { it.isBreakfast }
+        val wantSoft = pickIdx % 2 == 1
+        return bf.filter { it.breakfastSoft == wantSoft }.ifEmpty { bf }
     }
 
     private fun score(
