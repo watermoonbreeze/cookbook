@@ -13,12 +13,16 @@ import kotlinx.serialization.json.Json
  * @File : PlanOrchestrator
  * @Time : 2026/07/09
  * @Author : SXD-AI
- * @Desc : 周期规划编排（有 AI 走 AI、失败/无 key 回退规则 PeriodPlanner）
+ * @Desc : 周期规划编排（配置了 AI 就以 AI 为准，AI 排多少用多少、缺的天/餐用规则补齐）
  * <p>
- * 有云端模型时让模型在安全候选里排 N 天菜谱(遵循餐次适宜/营养/季节/健康与膳食指南)，输出严格 JSON；
- * 任何环节失败(无 key/无网/解析失败/结果不完整)都回退到纯规则 PeriodPlanner。菜品说明统一由 planDishReason 生成。
+ * 有云端模型时让模型在安全候选里排 N 天菜谱(遵循餐次适宜/营养/季节/健康与膳食指南)，输出严格 JSON。
+ * 处理策略[AI修改]：AI 成功排出的天/餐直接采用；AI 没覆盖到的（少排的天、某天缺的餐、名字对不上的餐）
+ * 逐一用纯规则 PeriodPlanner 的对应位置补齐——即「AI 排多少用多少，缺的补规则」；
+ * 仅当 AI 一天都没排出来(无 key/无网/解析全失败)才整份走规则。
+ * 两条不可放开的底线始终生效：只能挑真实候选 id(否则保存映射不到菜)、忌口菜在数据源侧已被硬过滤出候选池。
+ * 菜品说明统一由 planDishReason 生成。
  * <p>
- * [AI生成] Req: 配置了 AI 则优先 AI 生成周期计划。
+ * [AI生成] Req: 配置了 AI 则以纯 AI 为准，缺口用规则补齐。
  **/
 class PlanOrchestrator(
     private val runtime: AiRuntime,
@@ -26,7 +30,7 @@ class PlanOrchestrator(
 ) {
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    /** 生成计划：useModel 且成功→AI，否则规则。返回(计划, 是否AI生成)。[AI生成] */
+    /** 生成计划：配置了 AI 就以 AI 为准、缺口补规则；AI 彻底失败才整份走规则。返回(计划, 是否含AI)。[AI修改] */
     suspend fun plan(
         ctx: PlanContext,
         days: Int,
@@ -40,8 +44,43 @@ class PlanOrchestrator(
 
         val prompt = buildPrompt(ctx, days, mealNames, dishesPerMeal)
         val raw = runCatching { runtime.complete(prompt) }.getOrNull()?.getOrNull()
-        val aiPlan = raw?.let { buildFromModel(it, ctx, mealNames, days) }
-        return if (aiPlan != null) PlanResult(aiPlan, byAi = true) else PlanResult(rule(), byAi = false)
+        // AI 解析出的按天菜谱（按 AI 输出顺序对齐到第 0..N 天，每天为「餐次名→餐」映射）。
+        val aiDays = raw?.let { parseAiDays(it, ctx, mealNames) }
+        // AI 一天都没排出来 → 整份走规则（唯一的整份兜底）。
+        if (aiDays.isNullOrEmpty()) return PlanResult(rule(), byAi = false)
+        // AI 排多少用多少，缺的天/餐用规则对应位置补齐。
+        val merged = mergeAiWithRule(aiDays, rule(), ctx, mealNames, days)
+        return PlanResult(merged, byAi = true)
+    }
+
+    /**
+     * 用规则计划补齐 AI 未覆盖的天/餐。[AI生成]
+     *
+     * 逐天逐餐：优先取 AI 该天该餐；AI 没有则取规则同位置的餐；都没有则空。
+     */
+    private fun mergeAiWithRule(
+        aiDays: List<AiDay>,
+        rulePlan: PeriodPlan,
+        ctx: PlanContext,
+        mealNames: List<String>,
+        days: Int,
+    ): PeriodPlan {
+        val byId = ctx.dishes.associateBy { it.id }
+        var healthy = 0
+        var total = 0
+        val dayPlans = (0 until days).map { i ->
+            val aiDay = aiDays.getOrNull(i)
+            val ruleDay = rulePlan.days.getOrNull(i)
+            val meals = mealNames.mapIndexedNotNull { p, name ->
+                val meal = aiDay?.mealFor(name, p) ?: ruleDay?.meals?.firstOrNull { it.mealName == name }
+                if (meal == null || meal.dishes.isEmpty()) return@mapIndexedNotNull null
+                meal.dishes.forEach { d -> byId[d.id]?.let { if (it.isHealthy) healthy++; total++ } }
+                meal
+            }
+            DayPlan(i, meals)
+        }.filter { it.meals.isNotEmpty() }
+        val ratio = if (total == 0) 0.0 else healthy.toDouble() / total
+        return PeriodPlan(dayPlans, ctx.healthAware, ratio)
     }
 
     private fun buildPrompt(ctx: PlanContext, days: Int, mealNames: List<String>, dishesPerMeal: Int): LlmRequest {
@@ -70,26 +109,38 @@ class PlanOrchestrator(
         return LlmRequest(system = system, user = user)
     }
 
-    /** 解析模型 JSON 并映射为 PeriodPlan；不完整/无效返回 null（交由规则兜底）。[AI生成] */
-    private fun buildFromModel(raw: String, ctx: PlanContext, mealNames: List<String>, days: Int): PeriodPlan? {
+    /**
+     * 解析模型 JSON 为按天菜谱；解析失败/无任何有效餐返回 null（交由规则整份兜底）。[AI修改]
+     *
+     * 只做「取真实候选 id、去空餐」，不再因为天数不足/菜少而整份丢弃——缺口留给规则补齐。
+     */
+    private fun parseAiDays(raw: String, ctx: PlanContext, mealNames: List<String>): List<AiDay>? {
         val jsonText = extractJson(raw) ?: return null
         val parsed = runCatching { json.decodeFromString<RawPlan>(jsonText) }.getOrNull() ?: return null
         val byId = ctx.dishes.associateBy { it.id }
-        var healthy = 0
-        var total = 0
-        val dayPlans = parsed.days.mapIndexed { di, rd ->
+        val aiDays = parsed.days.map { rd ->
             val meals = rd.meals.mapNotNull { rm ->
-                val dishes = rm.dishIds.mapNotNull { byId[it] }
+                val dishes = rm.dishIds.mapNotNull { byId[it] } // 只保留真实候选（底线：不采信编造的 id）
                 if (dishes.isEmpty()) return@mapNotNull null
-                dishes.forEach { if (it.isHealthy) healthy++; total++ }
                 PlannedMeal(rm.name, dishes.map { PlannedDish(it.id, it.name, planDishReason(it, ctx.season)) })
             }
-            DayPlan(di, meals)
-        }.filter { it.meals.isNotEmpty() }
-        // 结果太不完整则视为失败，回退规则。
-        if (dayPlans.size < days || total < days) return null
-        val ratio = if (total == 0) 0.0 else healthy.toDouble() / total
-        return PeriodPlan(dayPlans, ctx.healthAware, ratio)
+            AiDay(meals, mealNames)
+        }
+        // 全部为空（AI 一道有效菜都没排出）视为失败。
+        return if (aiDays.any { it.meals.isNotEmpty() }) aiDays else null
+    }
+
+    /** AI 排出的一天：优先按餐次名匹配；仅当整天都没用标准餐次名时才按位置对齐。[AI生成] */
+    private class AiDay(val meals: List<PlannedMeal>, expectedNames: List<String>) {
+        // 该天是否用了任一标准餐次名——用了就严格按名匹配，避免把晚餐错当中餐。
+        private val nameAligned = meals.any { it.mealName in expectedNames }
+
+        fun mealFor(name: String, p: Int): PlannedMeal? =
+            if (nameAligned) {
+                meals.firstOrNull { it.mealName == name }
+            } else {
+                meals.getOrNull(p)?.let { PlannedMeal(name, it.dishes) } // 命名完全漂移时才按位置采用，归一为规则餐次名
+            }
     }
 
     private fun extractJson(raw: String): String? {
