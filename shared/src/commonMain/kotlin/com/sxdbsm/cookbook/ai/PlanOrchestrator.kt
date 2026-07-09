@@ -78,7 +78,12 @@ class PlanOrchestrator(
                 val meal = aiMeal
                     ?: ruleDay?.meals?.firstOrNull { it.mealName == name }?.copy(fromRule = true)
                 if (meal == null || meal.dishes.isEmpty()) return@mapIndexedNotNull null
-                meal.dishes.forEach { d -> byId[d.id]?.let { if (it.isHealthy) healthy++; total++ } }
+                meal.dishes.forEach { d ->
+                    byId[d.id]?.let { // [AI修改] 显式花括号，避免 `if(..) a++; b++` 分号内联被误改
+                        if (it.isHealthy) healthy++
+                        total++
+                    }
+                }
                 meal
             }
             DayPlan(i, meals)

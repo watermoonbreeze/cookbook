@@ -57,7 +57,8 @@ object DeviceAiCapability {
         val arm64 = abis.contains("arm64-v8a")
         val grade = when {
             !arm64 -> DeviceAiGrade.UNSUPPORTED // 端侧运行时基本只支持 arm64
-            totalRamGb >= 7.5 && cores >= 8 -> DeviceAiGrade.SMOOTH
+            // [AI修改] 阈值按 GiB(系统预留后标称8GB约7.2~7.5GiB)：7.0 让主流8GB机进 SMOOTH。
+            totalRamGb >= 7.0 && cores >= 8 -> DeviceAiGrade.SMOOTH
             totalRamGb >= 5.5 -> DeviceAiGrade.USABLE
             totalRamGb >= 3.5 -> DeviceAiGrade.SLOW
             else -> DeviceAiGrade.UNSUPPORTED

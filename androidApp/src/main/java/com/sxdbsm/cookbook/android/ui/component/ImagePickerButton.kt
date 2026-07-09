@@ -57,8 +57,8 @@ data class StoredImagePair(
 /**
  * 系统图片选择按钮。[AI修改]
  *
- * 支持拍照或从相册选择，最多保存 3 张图片。图片进入业务字段前会保存到
- * `/sdcard/cookbook/img/`，`image_path` 保存原图，`thumbnail_path` 保存缩略图。[AI修改]
+ * 支持拍照或从相册选择，最多保存 3 张图片。图片进入业务字段前会保存到 app 专属目录
+ * `getExternalFilesDir/cookbook/img/`，`image_path`/`thumbnail_path` 存**相对文件名**(读取时按当前 img 目录解析)。[AI修改]
  */
 @Composable
 fun ImagePickerButton(
@@ -87,7 +87,7 @@ fun ImagePickerButton(
                     }
                 }
                 if (saved.isEmpty()) {
-                    errorMessage = "图片保存失败，请确认存储权限后重试"
+                    errorMessage = "图片保存失败，请重试"
                 } else {
                     // [AI修改] image_path 保存原图路径，thumbnail_path 保存缩略图路径，多图仍沿用 `|` 分隔规则。
                     onImagesChanged(
@@ -116,7 +116,7 @@ fun ImagePickerButton(
                     )
                     deleteTempCameraFile(context.applicationContext, uri)
                 } else {
-                    errorMessage = "照片保存失败，请确认存储权限后重试"
+                    errorMessage = "照片保存失败，请重试"
                 }
                 processing = false
             }
@@ -333,8 +333,9 @@ private fun cookbookImageDir(context: Context): File {
     return CookbookStorage.requireSubDir(CookbookStorage.IMG_DIR_NAME, context)
 }
 
+// [AI修改] 加随机后缀，防多选/同毫秒保存时 baseName 碰撞导致文件互相覆盖。
 private fun timestampFileName(): String =
-    SimpleDateFormat("yyyyMMddHHmmssS", Locale.US).format(Date())
+    SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.US).format(Date()) + "_" + (1000..9999).random()
 
 private fun highestPowerOfTwoAtMost(value: Int): Int {
     var result = 1
@@ -355,7 +356,6 @@ fun encodeImagePaths(paths: List<String>): String = paths.joinToString("|")
 fun decodeImagePaths(text: String): List<String> =
     text.split("|").map { it.trim() }.filter { it.isNotEmpty() }.take(3)
 
-private const val IMAGE_MAX_BYTES = 10 * 1024
 private const val ORIGINAL_MAX_SIDE = 1600
 private const val ORIGINAL_QUALITY = 88
 private const val THUMB_MAX_SIDE = 360
