@@ -23,6 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.ai.AiRuntimeType
+import com.sxdbsm.cookbook.ai.DeviceAiGrade
+import com.sxdbsm.cookbook.android.ai.DeviceAiCapability
+import com.sxdbsm.cookbook.android.ai.DeviceAiReport
+import androidx.compose.ui.platform.LocalContext
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -196,20 +200,20 @@ private fun KeyDialog(
  */
 @Composable
 private fun OnDeviceSelfTestSection() {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    var report by remember { mutableStateOf<com.sxdbsm.cookbook.android.ai.DeviceAiReport?>(null) }
+    val context = LocalContext.current
+    var report by remember { mutableStateOf<DeviceAiReport?>(null) }
 
     Column(modifier = Modifier.padding(start = 40.dp, end = 4.dp, bottom = 8.dp)) {
-        OutlinedButton(onClick = { report = com.sxdbsm.cookbook.android.ai.DeviceAiCapability.evaluate(context) }) {
+        OutlinedButton(onClick = { report = DeviceAiCapability.evaluate(context) }) {
             Text(if (report == null) "测试本机能否流畅运行" else "重新测试")
         }
         report?.let { r ->
             Spacer(Modifier.height(8.dp))
             val gradeColor = when (r.grade) {
-                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.SMOOTH -> MaterialTheme.colorScheme.primary
-                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.USABLE -> MaterialTheme.colorScheme.tertiary
-                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.SLOW -> MaterialTheme.colorScheme.error
-                com.sxdbsm.cookbook.android.ai.DeviceAiGrade.UNSUPPORTED -> MaterialTheme.colorScheme.error
+                DeviceAiGrade.SMOOTH -> MaterialTheme.colorScheme.primary
+                DeviceAiGrade.USABLE -> MaterialTheme.colorScheme.tertiary
+                DeviceAiGrade.SLOW -> MaterialTheme.colorScheme.error
+                DeviceAiGrade.UNSUPPORTED -> MaterialTheme.colorScheme.error
             }
             Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
