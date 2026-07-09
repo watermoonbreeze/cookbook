@@ -9,6 +9,7 @@ import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.util.DateTime
+import kotlinx.datetime.LocalDate
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -60,5 +61,10 @@ class HomeViewModel(
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { prefs.setThemeMode(mode) } // [AI生成] 用户选择后立即写入偏好，MainActivity 会自动响应重组。
+    }
+
+    /** 删除指定日期的全部餐食（首页计划 Flow 会自动刷新）。[AI生成] */
+    fun deleteDay(date: LocalDate) {
+        viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }
     }
 }

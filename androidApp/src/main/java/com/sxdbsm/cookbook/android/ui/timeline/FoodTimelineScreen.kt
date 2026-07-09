@@ -51,6 +51,7 @@ fun FoodTimelineScreen(
     var initialScrollDone by remember { mutableStateOf(false) }
     var calendarOpen by remember { mutableStateOf(false) }
     var copySourceDate by remember { mutableStateOf<LocalDate?>(null) }
+    var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除餐食的日期(确认弹窗)。
 
     LaunchedEffect(state.scrollRequestVersion, state.scrollTargetIndex, state.pages.size) {
         if (state.scrollTargetIndex >= 0 && state.pages.isNotEmpty()) {
@@ -141,6 +142,7 @@ fun FoodTimelineScreen(
                         data = card,
                         onEditClick = { onEditMealDate(card.date) },
                         onCopyClick = { copySourceDate = card.date },
+                        onDeleteClick = { deleteDate = card.date }, // [AI生成] 删除该日餐食(带确认)。
                         onDishClick = { dish -> onOpenDish(dish.id) }, // [AI修改] 食历餐食卡片内的菜品 block 点击进入菜品详情。
                     )
                 }
@@ -172,6 +174,21 @@ fun FoodTimelineScreen(
                 vm.copyDayMeals(sourceDate, targetDate)
                 copySourceDate = null
             },
+        )
+    }
+
+    deleteDate?.let { date ->
+        AlertDialog(
+            onDismissRequest = { deleteDate = null },
+            title = { Text("删除餐食") },
+            text = { Text("确定删除 ${DateTime.formatDate(date)} 的全部餐食吗？此操作不可撤销。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.deleteDay(date)
+                    deleteDate = null
+                }) { Text("删除", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { deleteDate = null }) { Text("取消") } },
         )
     }
 }

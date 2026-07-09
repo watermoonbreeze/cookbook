@@ -47,6 +47,7 @@ fun HomeScreen(
     val ui by vm.uiState.collectAsStateWithLifecycle()
     val mode by vm.themeMode.collectAsStateWithLifecycle()
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
+    var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除计划餐食的日期(确认弹窗)。
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 页面 Scaffold 不再额外添加系统栏避让，配合透明状态栏形成沉浸式。
         topBar = {
@@ -162,6 +163,7 @@ fun HomeScreen(
                         data = card,
                         onDishClick = { dish -> onOpenDish(dish.id) },
                         onEditClick = { onEditMealDate(card.date) },
+                        onDeleteClick = { deleteDate = card.date }, // [AI生成] 删除该日计划餐食(带确认)。
                     )
                 }
             }
@@ -178,6 +180,21 @@ fun HomeScreen(
                 themeDialogOpen = false
             },
             onDismiss = { themeDialogOpen = false },
+        )
+    }
+
+    deleteDate?.let { date ->
+        AlertDialog(
+            onDismissRequest = { deleteDate = null },
+            title = { Text("删除餐食") },
+            text = { Text("确定删除 $date 的全部餐食吗？此操作不可撤销。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.deleteDay(date)
+                    deleteDate = null
+                }) { Text("删除", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { deleteDate = null }) { Text("取消") } },
         )
     }
 }

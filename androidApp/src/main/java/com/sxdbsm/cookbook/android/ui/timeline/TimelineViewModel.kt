@@ -150,6 +150,15 @@ class TimelineViewModel(
         }
     }
 
+    /** 删除指定日期的全部餐食（食历 Flow 会自动刷新）。[AI生成] */
+    fun deleteDay(date: LocalDate) {
+        viewModelScope.launch {
+            runCatching { repo.deleteDayMeals(date) }
+                .onSuccess { _state.value = _state.value.copy(copyMessage = "已删除 ${DateTime.formatDate(date)} 的餐食", copyError = null) }
+                .onFailure { e -> _state.value = _state.value.copy(copyMessage = null, copyError = e.message ?: "删除失败，请稍后重试") }
+        }
+    }
+
     fun consumeCopyMessage() {
         if (_state.value.copyMessage == null && _state.value.copyError == null) return
         _state.value = _state.value.copy(copyMessage = null, copyError = null)

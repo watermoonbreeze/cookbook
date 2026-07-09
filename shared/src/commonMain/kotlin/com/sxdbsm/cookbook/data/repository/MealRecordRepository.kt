@@ -294,6 +294,15 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      */
     suspend fun deleteMealRecord(id: Long) = q.deleteMealRecord(id)
 
+    /** 删除指定日期的全部餐食（记录 + 记录-菜品关联）。[AI生成] */
+    suspend fun deleteDayMeals(date: LocalDate) = withContext(ioDispatcher) {
+        val dateStr = DateTime.formatDate(date)
+        db.transaction {
+            q.deleteMealRecordDishesByDate(dateStr)
+            q.deleteMealRecordsByDate(dateStr)
+        }
+    }
+
     /**
      * 将数据库行组装成 UI 可直接渲染的一天餐食卡片。[AI修改]
      */
