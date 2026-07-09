@@ -5,7 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.ai.AiRuntime
+import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.PeriodPlanner
+import com.sxdbsm.cookbook.ai.PlanOrchestrator
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.ai.model.PeriodPlan
 import com.sxdbsm.cookbook.data.repository.DayMealDraft
@@ -26,11 +29,14 @@ import kotlin.random.Random
 class AiPlanViewModel(
     private val dataSource: RecommendationDataSource,
     private val mealRepo: MealRecordRepository,
+    aiRuntime: AiRuntime,
+    private val aiConfig: AiRuntimeConfig,
 ) : ViewModel() {
 
     var state by mutableStateOf(AiPlanUiState())
         private set
 
+    private val orchestrator = PlanOrchestrator(aiRuntime)
     private var mealTypes: List<MealType> = emptyList()
 
     init {
@@ -51,18 +57,18 @@ class AiPlanViewModel(
                 if (mealTypes.isEmpty()) mealTypes = mealRepo.listMealTypes().filter { it.code in PLAN_MEAL_CODES }
                 val ctx = dataSource.gatherForPlan()
                 val names = mealTypes.map { it.name }.ifEmpty { listOf("早餐", "中餐", "晚餐") }
-                val plan = PeriodPlanner().plan(
-                    candidates = ctx.dishes,
+                // [AI修改] 配置了 AI 则优先 AI 生成，失败/无 key 回退规则 PeriodPlanner。
+                val result = orchestrator.plan(
+                    ctx = ctx,
                     days = state.days,
                     mealNames = names,
                     dishesPerMeal = DISHES_PER_MEAL,
-                    currentSeason = ctx.season,
-                    healthAware = ctx.healthAware,
                     seed = Random.nextLong(),
+                    useModel = aiConfig.isModelReady(),
                 )
-                Triple(plan, ctx.season, ctx.healthAware)
-            }.onSuccess { (plan, season, healthAware) ->
-                state = state.copy(loading = false, plan = plan, season = season, healthAware = healthAware)
+                Triple(result, ctx.season, ctx.healthAware)
+            }.onSuccess { (result, season, healthAware) ->
+                state = state.copy(loading = false, plan = result.plan, season = season, healthAware = healthAware, byAi = result.byAi)
             }.onFailure {
                 state = state.copy(loading = false, error = "生成失败，请稍后再试")
             }
@@ -107,5 +113,6 @@ data class AiPlanUiState(
     val plan: PeriodPlan? = null,
     val season: String = "",
     val healthAware: Boolean = false,
+    val byAi: Boolean = false, // [AI生成] 本次计划是否由 AI 生成(否则规则)。
     val error: String? = null,
 )

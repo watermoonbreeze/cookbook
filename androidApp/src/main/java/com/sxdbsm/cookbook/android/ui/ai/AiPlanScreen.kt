@@ -53,7 +53,8 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
             Spacer(Modifier.height(6.dp))
             Text(
                 buildString {
-                    append("当前季节：${state.season}（应季优先）")
+                    append(if (state.byAi) "🤖 AI 规划" else "📋 规则规划")
+                    append(" · 当前季节：${state.season}（应季优先）")
                     if (state.healthAware) append(" · 已结合健康档案（利健康≥80%，参考膳食指南整理）")
                 },
                 style = MaterialTheme.typography.bodySmall,

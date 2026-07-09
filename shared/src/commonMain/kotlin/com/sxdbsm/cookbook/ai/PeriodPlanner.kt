@@ -19,6 +19,17 @@ import kotlin.random.Random
  * <p>
  * [AI生成] 周期规划：营养按维度标签均衡，不重复，季节适配，健康档案≥80%。
  **/
+/** 一道计划菜的侧重点说明(主料/应季/营养/利调养/适量)，规则与 AI 计划共用。[AI生成] */
+internal fun planDishReason(dish: PlanDish, season: String): String {
+    val parts = mutableListOf<String>()
+    if (dish.mainNames.isNotEmpty()) parts += "主料：${dish.mainNames.joinToString("、")}"
+    if (season.isNotBlank() && (season in dish.seasonTags || "应季" in dish.seasonTags)) parts += "应季"
+    if (dish.nutritionTags.isNotEmpty()) parts += "营养：${dish.nutritionTags.take(2).joinToString("、")}"
+    if (dish.recommendHits.isNotEmpty()) parts += "✓利于调养：${dish.recommendHits.joinToString("、")}"
+    if (dish.limitHits.isNotEmpty()) parts += "⚠适量：${dish.limitHits.joinToString("、")}"
+    return parts.joinToString("　·　")
+}
+
 class PeriodPlanner {
 
     /**
@@ -26,7 +37,7 @@ class PeriodPlanner {
      *
      * @param candidates 候选菜(已算好营养/季节/健康标记)
      * @param days 天数(1~30)
-     * @param mealNames 每天餐次名(如 早餐/午餐/晚餐)
+     * @param mealNames 每天餐次名(如 早餐/中餐/晚餐)
      * @param dishesPerMeal 每餐菜数
      * @param currentSeason 当前季节(春/夏/秋/冬)
      * @param healthAware 是否结合健康档案(保≥80%利健康)
@@ -47,6 +58,8 @@ class PeriodPlanner {
         }
         val rnd = Random(seed)
         val shuffled = pool.shuffled(rnd) // 打散，让同分不同种子换出不同计划
+        // [AI生成] 每菜一个小随机抖动(< 应季/健康加分)：强信号仍优先，同分菜每次生成不同。
+        val jitter = shuffled.associate { it.id to rnd.nextDouble() * JITTER }
 
         val usedDishIds = mutableMapOf<Long, Int>() // 菜 → 已用次数
         val usedMainCounts = mutableMapOf<String, Int>() // 主料 → 已用次数
@@ -66,8 +79,10 @@ class PeriodPlanner {
                     val needHealthy = healthAware && healthyPicked.toDouble() / (totalPicked + 1) < HEALTHY_TARGET
                     val avail = pool.filter { it !in chosen && (!needHealthy || it.isHealthy) }
                         .ifEmpty { pool.filter { it !in chosen } }
-                    val pick = avail.maxByOrNull { score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition) }
-                        ?: break
+                    // [AI修改] 分数 + 随机抖动：强信号(应季/健康)仍优先，同分菜每次"生成"换出不同组合。
+                    val pick = avail.maxByOrNull {
+                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition) + (jitter[it.id] ?: 0.0)
+                    } ?: break
                     chosen += pick
                     usedDishIds[pick.id] = (usedDishIds[pick.id] ?: 0) + 1
                     pick.mainNames.forEach { usedMainCounts[it] = (usedMainCounts[it] ?: 0) + 1 }
@@ -113,18 +128,11 @@ class PeriodPlanner {
         return s
     }
 
-    private fun buildReason(dish: PlanDish, season: String): String {
-        val parts = mutableListOf<String>()
-        if (dish.mainNames.isNotEmpty()) parts += "主料：${dish.mainNames.joinToString("、")}"
-        if (season.isNotBlank() && (season in dish.seasonTags || "应季" in dish.seasonTags)) parts += "应季"
-        if (dish.nutritionTags.isNotEmpty()) parts += "营养：${dish.nutritionTags.take(2).joinToString("、")}"
-        if (dish.recommendHits.isNotEmpty()) parts += "✓利于调养：${dish.recommendHits.joinToString("、")}"
-        if (dish.limitHits.isNotEmpty()) parts += "⚠适量：${dish.limitHits.joinToString("、")}"
-        return parts.joinToString("　·　")
-    }
+    private fun buildReason(dish: PlanDish, season: String): String = planDishReason(dish, season)
 
     companion object {
         const val MAX_DAYS = 30
+        private const val JITTER = 0.5 // [AI生成] 随机抖动幅度(< 应季0.8/健康0.6)，兼顾质量与"每次不同"。
         private const val HEALTHY_TARGET = 0.8 // 有档案时利健康占比目标≥80%。
         private const val BASE = 1.0
         private const val SEASON_BONUS = 0.8

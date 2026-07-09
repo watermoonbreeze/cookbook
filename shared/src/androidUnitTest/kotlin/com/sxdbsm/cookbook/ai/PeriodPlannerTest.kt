@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class PeriodPlannerTest {
 
     private val planner = PeriodPlanner()
-    private val meals = listOf("早餐", "午餐", "晚餐")
+    private val meals = listOf("早餐", "中餐", "晚餐")
 
     private fun dish(
         id: Long,
@@ -48,7 +48,7 @@ class PeriodPlannerTest {
     fun `忌口菜被剔除`() {
         val plan = planner.plan(
             listOf(dish(1), dish(2, avoid = true)),
-            days = 1, mealNames = listOf("午餐"), dishesPerMeal = 1,
+            days = 1, mealNames = listOf("中餐"), dishesPerMeal = 1,
         )
         val ids = plan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }
         assertTrue(2L !in ids)
@@ -66,7 +66,7 @@ class PeriodPlannerTest {
     fun `应季菜优先`() {
         val plan = planner.plan(
             listOf(dish(1, season = setOf("夏季")), dish(2)),
-            days = 1, mealNames = listOf("午餐"), dishesPerMeal = 1, currentSeason = "夏季",
+            days = 1, mealNames = listOf("中餐"), dishesPerMeal = 1, currentSeason = "夏季",
         )
         assertEquals(1L, plan.days[0].meals[0].dishes[0].id)
     }
@@ -75,12 +75,12 @@ class PeriodPlannerTest {
     fun `早餐档只选早餐菜午晚选非早餐菜`() {
         val plan = planner.plan(
             listOf(dish(1, breakfast = true), dish(2, breakfast = false)),
-            days = 1, mealNames = listOf("早餐", "午餐"), dishesPerMeal = 1,
+            days = 1, mealNames = listOf("早餐", "中餐"), dishesPerMeal = 1,
         )
         val bfDishes = plan.days[0].meals.first { it.mealName == "早餐" }.dishes.map { it.id }
-        val lunchDishes = plan.days[0].meals.first { it.mealName == "午餐" }.dishes.map { it.id }
+        val lunchDishes = plan.days[0].meals.first { it.mealName == "中餐" }.dishes.map { it.id }
         assertTrue(1L in bfDishes && 2L !in bfDishes, "早餐应只出早餐菜: $bfDishes")
-        assertTrue(2L in lunchDishes && 1L !in lunchDishes, "午餐应只出非早餐菜: $lunchDishes")
+        assertTrue(2L in lunchDishes && 1L !in lunchDishes, "中餐应只出非早餐菜: $lunchDishes")
     }
 
     @Test
