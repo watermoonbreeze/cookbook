@@ -31,13 +31,16 @@ class AiRecommendViewModel(
     var state by mutableStateOf(AiRecommendUiState())
         private set
 
+    private var rotation = 0 // [AI生成] 换一换轮次：每次推荐递增，轮转候选让兜底也换出不同组合。
+
     /** 触发推荐（首次进入 / 换一换）。[AI生成] */
     fun recommend() {
+        val currentRotation = rotation++
         viewModelScope.launch {
             state = state.copy(loading = true, error = null)
             runCatching {
                 val input = dataSource.gather()
-                input to orchestrator.recommend(input, mealCount = MEAL_COUNT)
+                input to orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = currentRotation)
             }.onSuccess { (input, result) ->
                 state = mapResult(input, result)
             }.onFailure {

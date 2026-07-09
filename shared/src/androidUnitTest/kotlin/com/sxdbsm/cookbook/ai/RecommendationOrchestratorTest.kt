@@ -81,4 +81,22 @@ class RecommendationOrchestratorTest {
         val result = orch.recommend(input, mealCount = 3)
         assertEquals(RecommendationSource.RULE_FALLBACK, result.source)
     }
+
+    @Test
+    fun `换一换轮转让兜底换出不同组合`() = runBlocking {
+        // 6 个都可做的候选，兜底每餐2菜；rotation 变化应换出不同菜。
+        val many = (1L..6L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
+        val bigInput = RecommendationInput(
+            dishes = many,
+            pantryIngredientIds = (101L..106L).toSet(),
+            constraints = HealthConstraints(),
+            recentDishIds = emptySet(),
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime()) // 走兜底(确定性)
+        val r0 = orch.recommend(bigInput, mealCount = 1, rotation = 0).suggestions.first().dishIds
+        val r1 = orch.recommend(bigInput, mealCount = 1, rotation = 1).suggestions.first().dishIds
+        assertEquals(RecommendationSource.RULE_FALLBACK, orch.recommend(bigInput, mealCount = 1, rotation = 0).source)
+        // 轮转后首个组合的菜应不同(兜底不再原地打转)
+        assertTrue(r0 != r1, "换一换应换出不同组合: r0=$r0 r1=$r1")
+    }
 }

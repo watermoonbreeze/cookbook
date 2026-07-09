@@ -27,11 +27,16 @@ class RecommendationOrchestrator(
      * @param input 取数层聚合的输入（RecommendationDataSource.gather()）
      * @param mealCount 推荐几个不同的餐
      */
-    suspend fun recommend(input: RecommendationInput, mealCount: Int = DEFAULT_MEAL_COUNT): RecommendationResult {
-        val candidates = engine.evaluate(input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds)
-        if (candidates.isEmpty()) {
-            return RecommendationResult(emptyList(), candidates, RecommendationSource.EMPTY)
+    suspend fun recommend(
+        input: RecommendationInput,
+        mealCount: Int = DEFAULT_MEAL_COUNT,
+        rotation: Int = 0, // [AI生成] "换一换"轮次：轮转候选窗口，让规则兜底也能换出不同组合。
+    ): RecommendationResult {
+        val evaluated = engine.evaluate(input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds)
+        if (evaluated.isEmpty()) {
+            return RecommendationResult(emptyList(), evaluated, RecommendationSource.EMPTY)
         }
+        val candidates = rotate(evaluated, rotation)
 
         val prompt = RecommendationPrompt.build(candidates, input.constraints, mealCount)
         val raw = runCatching { runtime.complete(prompt) }.getOrNull()?.getOrNull()
@@ -58,6 +63,13 @@ class RecommendationOrchestrator(
             .map { it.copy(dishIds = it.dishIds.filter { id -> id in validIds }.distinct()) }
             .filter { it.dishIds.size in 1..MAX_DISHES_PER_MEAL }
             .take(mealCount)
+    }
+
+    /** 轮转候选窗口：rotation=0 保持分数最优在前；>0 时按每餐菜数平移，供"换一换"换出不同组合。[AI生成] */
+    private fun rotate(candidates: List<DishCandidate>, rotation: Int): List<DishCandidate> {
+        if (candidates.isEmpty() || rotation <= 0) return candidates
+        val offset = (rotation * FALLBACK_DISHES_PER_MEAL) % candidates.size
+        return if (offset == 0) candidates else candidates.drop(offset) + candidates.take(offset)
     }
 
     /** 纯规则兜底：把规则 top 候选按每餐 2 菜切成 mealCount 餐。[AI生成] */
