@@ -1088,6 +1088,13 @@ UPDATE dish
        updated_at = ?
  WHERE id = ?;
 
+-- [AI生成] 某菜品被做过(记入餐食)的次数与最近日期(菜品详情"做过N次")。
+selectDishCookStats:
+SELECT COUNT(*) AS cnt, MAX(mr.date) AS last_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id AND mr.status = 1
+WHERE mrd.dish_id = ? AND mrd.status = 1;
+
 selectDishesOfMealRecord:
 SELECT d.*, mrd.sort_order FROM dish d
 JOIN meal_record_dish mrd ON d.id = mrd.dish_id

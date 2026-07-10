@@ -244,6 +244,16 @@ class IngredientRepository(private val db: CookbookDatabase) {
         q.selectAllMeasurementUnits().executeAsList().map { MeasurementUnit(id = it.id, name = it.name) }
     }
 
+    /** 一组食材的营养维度标签(去重)。[AI生成] 菜品详情营养概要(标签版)。 */
+    suspend fun nutritionTagsOf(ingredientIds: List<Long>): List<String> = withContext(ioDispatcher) {
+        if (ingredientIds.isEmpty()) return@withContext emptyList()
+        val set = ingredientIds.toSet()
+        q.selectNutritionSeasonTags().executeAsList()
+            .filter { it.dim == "nutrition" && it.ingredient_id in set }
+            .map { it.tag_name }
+            .distinct()
+    }
+
     /**
      * 编辑食材基础信息。[AI修改]
      *

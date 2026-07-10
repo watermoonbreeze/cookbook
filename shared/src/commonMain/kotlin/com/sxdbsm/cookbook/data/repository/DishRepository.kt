@@ -474,6 +474,12 @@ class DishRepository(private val db: CookbookDatabase) {
         }
     }
 
+    /** 菜品做过(记入餐食)的次数与最近日期。[AI生成] 详情页"做过N次"。 */
+    suspend fun cookStats(dishId: Long): Pair<Int, String?> = withContext(ioDispatcher) {
+        val r = q.selectDishCookStats(dishId).executeAsOne()
+        r.cnt.toInt() to r.last_date
+    }
+
     /**
      * 查询菜品被哪些餐食记录引用。[AI生成]
      */

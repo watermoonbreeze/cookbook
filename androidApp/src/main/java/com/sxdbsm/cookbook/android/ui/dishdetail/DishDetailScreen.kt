@@ -10,6 +10,7 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -113,6 +114,10 @@ fun DishDetailScreen(
                     }
                 }
             }
+
+            // [AI生成] 详情洞察：库存可做/缺料/采购、健康适宜、做过次数、营养概要。
+            LaunchedEffect(d.id) { vm.loadInsights(d) }
+            vm.insights?.let { DishInsightsSection(it) }
 
             if (d.tags.isNotEmpty()) {
                 FormFieldLabel("标签", topPadding = 18.dp, bottomPadding = 8.dp)
@@ -241,5 +246,59 @@ fun DishDetailScreen(
                 Text(d.description, style = MaterialTheme.typography.bodyLarge)
             }
         }
+    }
+}
+
+/** 菜品详情"状态"卡：库存可做/缺料/采购、健康适宜、做过次数、营养概要。[AI生成] */
+@Composable
+private fun DishInsightsSection(insights: DishInsights) {
+    FormFieldLabel("状态", topPadding = 18.dp, bottomPadding = 8.dp)
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (insights.usingPantry) {
+                if (insights.canCook) {
+                    InsightLine("🥘 库存", "现在可做", MaterialTheme.colorScheme.primary)
+                } else {
+                    if (insights.purchaseNames.isNotEmpty()) InsightLine("🛒 需采购", insights.purchaseNames.joinToString("、"), MaterialTheme.colorScheme.error)
+                    if (insights.shortageNames.isNotEmpty()) InsightLine("⚠ 库存不足", insights.shortageNames.joinToString("、"), MaterialTheme.colorScheme.error)
+                }
+            }
+            if (insights.hasHealthProfile) {
+                when {
+                    insights.avoidNames.isNotEmpty() -> InsightLine("🚫 不适合", "含忌口：${insights.avoidNames.joinToString("、")}", MaterialTheme.colorScheme.error)
+                    insights.limitNames.isNotEmpty() -> InsightLine("⚠ 慎吃", "限量：${insights.limitNames.joinToString("、")}", MaterialTheme.colorScheme.tertiary)
+                    insights.recommendNames.isNotEmpty() -> InsightLine("✅ 有益", "含推荐：${insights.recommendNames.joinToString("、")}", MaterialTheme.colorScheme.primary)
+                    else -> InsightLine("💚 健康", "无忌口/限量，适合", MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            val cookText = if (insights.cookedCount <= 0) "还没做过" else buildString {
+                append("做过 ${insights.cookedCount} 次")
+                insights.lastCookedDate?.let { append("，最近 $it") }
+            }
+            InsightLine("🍽 记录", cookText, MaterialTheme.colorScheme.onSurfaceVariant)
+            if (insights.nutritionTags.isNotEmpty()) {
+                InsightLine("🥗 营养", insights.nutritionTags.joinToString("、"), MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (insights.hasHealthProfile || insights.nutritionTags.isNotEmpty()) {
+                Text(
+                    "健康/营养为参考整理、非权威，忌口与用量请以医嘱为准。",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InsightLine(label: String, value: String, valueColor: androidx.compose.ui.graphics.Color) {
+    Row {
+        Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(76.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(value, style = MaterialTheme.typography.bodyMedium, color = valueColor, modifier = Modifier.weight(1f))
     }
 }
