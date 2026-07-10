@@ -26,6 +26,7 @@ object Routes {
     fun aiRecommend() = "ai_recommend?returnResult=false" // 从首页/我的进入：选它开新加餐页
     fun aiRecommendForMeal() = "ai_recommend?returnResult=true" // 从餐次块进入：选它回传该餐次
     const val AI_SETTINGS = "ai_settings" // [AI生成] AI 设置(Key/运行时)
+    const val FEATURE_SETTINGS = "feature_settings" // [AI生成] 功能设置(分步执行等开关)
 
     fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}&dishIds="
 

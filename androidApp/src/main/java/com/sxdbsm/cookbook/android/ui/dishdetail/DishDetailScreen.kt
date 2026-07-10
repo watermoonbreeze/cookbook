@@ -43,6 +43,10 @@ fun DishDetailScreen(
 ) {
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
     val dish by vm.observeDish(dishId).collectAsStateWithLifecycle(initialValue = null)
+    // [AI生成] 分步执行开关(功能设置)：关闭时详情页不展示"开始分步烹饪"。
+    val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
+    val stepMode by prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
+        .collectAsStateWithLifecycle(false)
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
@@ -199,16 +203,18 @@ fun DishDetailScreen(
 
             if (d.steps.isNotEmpty()) {
                 FormFieldLabel("操作步骤", topPadding = 18.dp, bottomPadding = 8.dp)
-                // [AI生成] 一键进入分步烹饪全屏。
-                Button(
-                    onClick = { onStartCook(d.id) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("开始分步烹饪")
+                // [AI生成] 仅"分步执行"开启时提供一键进入分步烹饪全屏。
+                if (stepMode) {
+                    Button(
+                        onClick = { onStartCook(d.id) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(Icons.Outlined.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("开始分步烹饪")
+                    }
+                    Spacer(Modifier.height(12.dp))
                 }
-                Spacer(Modifier.height(12.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     d.steps.forEach { step ->
                         OutlinedCard(

@@ -47,6 +47,10 @@ fun NewDishScreen(
 ) {
     // [AI修改] 表单状态来自 ViewModel，局部弹窗开关用 remember 存在当前 Composable 内。
     val state by vm.state.collectAsStateWithLifecycle()
+    // [AI生成] 分步执行开关(功能设置)：关闭时步骤不显示"步骤N"序号。
+    val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
+    val stepModeEnabled by prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
+        .collectAsStateWithLifecycle(false)
     var tagInputOpen by remember { mutableStateOf(false) }
     var newTagText by remember { mutableStateOf("") }
     var importPickerOpen by remember { mutableStateOf(false) }
@@ -282,6 +286,7 @@ fun NewDishScreen(
                 },
                 onRemoveStep = vm::removeStep,
                 onMoveStep = vm::moveStep,
+                showStepNumber = stepModeEnabled,
             )
 
             FormFieldLabel("特殊说明")
@@ -443,6 +448,7 @@ private fun OperationStepsEditor(
     onUpdateStepImages: (Int, List<String>, List<String>) -> Unit,
     onRemoveStep: (Int) -> Unit,
     onMoveStep: (Int, Boolean) -> Unit, // [AI生成] (index, toStart) 上移/下移
+    showStepNumber: Boolean, // [AI生成] 分步执行开启时才显示"步骤N"序号
 ) {
     FormFieldLabel("操作步骤")
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -469,13 +475,15 @@ private fun OperationStepsEditor(
                     modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    // [AI生成] 步骤序号 + 上移/下移，实现步骤排序。
+                    // [AI生成] 上移/下移始终可用；"步骤N"序号仅在分步执行开启时显示（用户不希望强制编号）。
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            "步骤 ${index + 1}",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold,
-                        )
+                        if (showStepNumber) {
+                            Text(
+                                "步骤 ${index + 1}",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
                         Spacer(Modifier.weight(1f))
                         IconButton(onClick = { onMoveStep(index, true) }, enabled = index > 0, modifier = Modifier.size(36.dp)) {
                             Icon(Icons.Outlined.KeyboardArrowUp, contentDescription = "上移", modifier = Modifier.size(20.dp))

@@ -35,6 +35,21 @@ class PreferenceRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 监听布尔开关偏好。[AI生成]
+     *
+     * 存储值 "1"=true / 其它=false；无记录时返回 default。供功能设置页开关响应式驱动 UI。
+     */
+    fun observeFlag(key: String, default: Boolean): Flow<Boolean> =
+        q.selectPreference(key).asFlow().mapToOneOrNull(ioDispatcher).map { row ->
+            row?.value_?.let { it == "1" } ?: default
+        }
+
+    /**
+     * 写入布尔开关偏好。[AI生成]
+     */
+    suspend fun setFlag(key: String, value: Boolean) = set(key, if (value) "1" else "0")
+
+    /**
      * 读取任意偏好 key。[AI修改]
      */
     suspend fun get(key: String): String? = withContext(ioDispatcher) {

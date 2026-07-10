@@ -25,6 +25,9 @@ object PreferenceKeys {
     const val HOME_RECENT_COUNT = "home_recent_count"
     const val HOME_POPULAR_COUNT = "home_popular_count"
 
+    // [AI生成] 分步执行开关：开启后菜品操作步骤显示"步骤N"序号并可进入分步烹饪；默认关(只按用户书写顺序展示)。
+    const val STEP_MODE_ENABLED = "step_mode_enabled"
+
     // [AI生成] 基础数据 seed 内容指纹：记录上次写入的 seed JSON 指纹，内容未变时跳过整段补齐式写入。
     const val SEED_CONTENT_FINGERPRINT = "seed_content_fingerprint"
 

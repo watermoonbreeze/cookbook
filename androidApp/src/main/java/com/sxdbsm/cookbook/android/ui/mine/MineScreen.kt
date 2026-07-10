@@ -35,6 +35,7 @@ fun MineScreen(
     onOpenCookingTimer: () -> Unit,
     onOpenAiSettings: () -> Unit = {},
     onOpenAiRecommend: () -> Unit = {},
+    onOpenFeatureSettings: () -> Unit = {},
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -180,6 +181,14 @@ fun MineScreen(
             subtitle = if (profiles.isEmpty()) "未设置" else profiles.joinToString { it.crowdName },
             trailing = "▸",
         ) { healthDialogOpen = true }
+
+        GroupTitle("通用")
+        SettingRow(
+            icon = Icons.Outlined.Tune,
+            title = "功能设置",
+            subtitle = "分步执行、库存等功能开关",
+            trailing = "▸",
+        ) { onOpenFeatureSettings() }
 
         GroupTitle("外观")
         SettingRow(
