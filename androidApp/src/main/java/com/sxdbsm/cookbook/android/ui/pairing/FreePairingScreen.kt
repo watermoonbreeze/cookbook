@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Refresh
@@ -106,7 +106,7 @@ fun FreePairingScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    itemsIndexed(state.suggestions) { i, s ->
+                    items(state.suggestions) { s ->
                         OutlinedCard(
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.large,

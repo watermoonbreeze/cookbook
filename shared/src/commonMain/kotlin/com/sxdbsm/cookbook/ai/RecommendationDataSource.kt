@@ -115,9 +115,12 @@ class RecommendationDataSource(
         return when {
             cats.any { it.contains("蛋") } -> PairRole.EGG
             cats.any { it.contains("肉") || it.contains("禽") || it.contains("水产") || it.contains("鱼") || it.contains("虾") || it.contains("海") } -> PairRole.PROTEIN
-            cats.any { it.contains("豆") || it.contains("坚果") } -> PairRole.BEAN
+            // [AI修改] 蔬菜优先于豆：鲜豆类蔬菜(毛豆/四季豆/豆芽/荷兰豆)祖先链含"蔬菜类"，
+            // 用"蔬/菌/藻"匹配(不用泛"菜"以免命中"预制菜类"把料理包误判为蔬菜)。
+            cats.any { it.contains("蔬") || it.contains("菌") || it.contains("藻") } -> PairRole.VEGETABLE
+            // BEAN 只认"大豆/豆制品/坚果"，不用泛"豆"(否则鲜豆类蔬菜被误判为植物蛋白)。
+            cats.any { it.contains("大豆") || it.contains("豆制品") || it.contains("坚果") } -> PairRole.BEAN
             cats.any { it.contains("主食") || it.contains("谷") || it.contains("薯") || it.contains("稻") || it.contains("麦") || it.contains("米") } -> PairRole.STAPLE
-            cats.any { it.contains("蔬") || it.contains("菌") || it.contains("藻") || it.contains("菜") } -> PairRole.VEGETABLE
             else -> PairRole.OTHER
         }
     }

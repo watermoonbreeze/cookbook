@@ -28,6 +28,9 @@ class FreePairingEngineTest {
         val first = out.first()
         assertEquals(listOf("五花肉", "土豆"), first.items)
         assertEquals("红烧", first.method, "有老抽/蚝油+荤 → 红烧")
+        // hint 必须用食材名而非对象串(防 "$p" 内插整个 data class)
+        assertTrue(first.hint.contains("五花肉") && first.hint.contains("土豆"), "hint 应含食材名")
+        assertFalse(first.hint.contains("PairIngredient"), "hint 不应内插对象")
     }
 
     @Test

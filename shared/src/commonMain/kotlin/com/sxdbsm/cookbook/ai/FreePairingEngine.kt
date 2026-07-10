@@ -46,18 +46,18 @@ object FreePairingEngine {
         // 荤 × 素：主搭配
         for (p in proteins) for (v in veggies) {
             val m = methodFor(hasProtein = true, seasonings)
-            if (add(listOf(p.name, v.name), m, "$p 配 $v，${m}即可")) return out.toList()
+            if (add(listOf(p.name, v.name), m, "${p.name} 配 ${v.name}，${m}即可")) return out.toList()
         }
         // 蛋 × 素
         for (e in eggs) for (v in veggies) {
-            if (add(listOf(e.name, v.name), "炒", "$e 与 $v 同炒，家常快手")) return out.toList()
+            if (add(listOf(e.name, v.name), "炒", "${e.name} 与 ${v.name} 同炒，家常快手")) return out.toList()
         }
         // 豆制品 × 素/荤
         for (b in beans) {
             val partner = veggies.firstOrNull()?.name ?: proteins.firstOrNull()?.name
             val items = listOfNotNull(b.name, partner)
             val m = methodFor(hasProtein = proteins.isNotEmpty(), seasonings)
-            if (add(items, m, "$b 搭配$m，补充植物蛋白")) return out.toList()
+            if (add(items, m, "${b.name} 搭配$m，补充植物蛋白")) return out.toList()
         }
         // 无荤蛋豆：纯素搭配(两两)或素+主食
         if (proteins.isEmpty() && eggs.isEmpty() && beans.isEmpty()) {
@@ -65,7 +65,7 @@ object FreePairingEngine {
                 if (add(listOf(veggies[i].name, veggies[j].name), "清炒", "两样素菜同炒，清爽")) return out.toList()
             }
             for (v in veggies) for (s in staples) {
-                if (add(listOf(s.name, v.name), "煮", "$s 配 $v，简单一餐")) return out.toList()
+                if (add(listOf(s.name, v.name), "煮", "${s.name} 配 ${v.name}，简单一餐")) return out.toList()
             }
         }
         return out.toList()
