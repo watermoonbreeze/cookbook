@@ -244,6 +244,14 @@ fun MainScaffold(
                     onBack = { nav.popBackStack() },
                     onEdit = { id -> nav.navigate(Routes.newDish(id)) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) }, // [AI生成] 相关菜品跳转
+                    onStartCook = { id -> nav.navigate(Routes.cookMode(id)) }, // [AI生成] 进入分步烹饪
+                )
+            }
+            composable(Routes.COOK_MODE) { entry ->
+                val dishId = entry.arguments?.getString("dishId")?.toLongOrNull() ?: return@composable
+                com.sxdbsm.cookbook.android.ui.cook.CookModeScreen(
+                    dishId = dishId,
+                    onBack = { nav.popBackStack() },
                 )
             }
         }

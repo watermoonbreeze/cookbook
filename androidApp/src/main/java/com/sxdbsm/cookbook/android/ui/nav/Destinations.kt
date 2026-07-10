@@ -39,6 +39,9 @@ object Routes {
 
     const val DISH_DETAIL = "dish/{dishId}"
     fun dishDetail(dishId: Long) = "dish/$dishId"
+
+    const val COOK_MODE = "cook/{dishId}" // [AI生成] 分步烹饪全屏
+    fun cookMode(dishId: Long) = "cook/$dishId"
 }
 
 /**

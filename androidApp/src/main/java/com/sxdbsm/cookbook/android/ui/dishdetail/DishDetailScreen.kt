@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +38,7 @@ fun DishDetailScreen(
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
     onOpenDish: (Long) -> Unit = {}, // [AI生成] 相关菜品跳转
+    onStartCook: (Long) -> Unit = {}, // [AI生成] 进入分步烹饪
     vm: DishDetailViewModel = koinViewModel(),
 ) {
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
@@ -197,6 +199,16 @@ fun DishDetailScreen(
 
             if (d.steps.isNotEmpty()) {
                 FormFieldLabel("操作步骤", topPadding = 18.dp, bottomPadding = 8.dp)
+                // [AI生成] 一键进入分步烹饪全屏。
+                Button(
+                    onClick = { onStartCook(d.id) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Outlined.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("开始分步烹饪")
+                }
+                Spacer(Modifier.height(12.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     d.steps.forEach { step ->
                         OutlinedCard(
