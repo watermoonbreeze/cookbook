@@ -150,6 +150,7 @@ fun MainScaffold(
                     onOpenAiSettings = { nav.navigate(Routes.AI_SETTINGS) },
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
                     onOpenFeatureSettings = { nav.navigate(Routes.FEATURE_SETTINGS) },
+                    onOpenShoppingList = { nav.navigate(Routes.SHOPPING_LIST) },
                 )
             }
             composable(Routes.COOKING_TIMER) {
@@ -157,6 +158,9 @@ fun MainScaffold(
             }
             composable(Routes.FEATURE_SETTINGS) {
                 com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.SHOPPING_LIST) {
+                com.sxdbsm.cookbook.android.ui.shopping.ShoppingListScreen(onBack = { nav.popBackStack() })
             }
             composable(
                 route = Routes.AI_RECOMMEND,

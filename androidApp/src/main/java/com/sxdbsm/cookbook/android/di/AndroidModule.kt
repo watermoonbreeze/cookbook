@@ -63,6 +63,7 @@ val androidModule = module {
     viewModel { AiRecommendViewModel(get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置; 配置了模型不自动推荐)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
     viewModel { com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsViewModel(get()) } // [AI生成] 功能设置(分步执行等开关)。
+    viewModel { com.sxdbsm.cookbook.android.ui.shopping.ShoppingListViewModel(get()) } // [AI生成] 采购清单聚合。
     single { com.sxdbsm.cookbook.android.sync.SelectiveSyncBundler(get()) } // [AI生成] 选择性同步打包/合并。
     viewModel { com.sxdbsm.cookbook.android.ui.sync.DeviceSyncViewModel(get(), get()) } // [AI修改] 双设备同传(整库替换/选择性合并)。
     viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置)。

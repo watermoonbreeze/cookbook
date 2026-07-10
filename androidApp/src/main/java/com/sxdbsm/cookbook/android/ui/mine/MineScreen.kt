@@ -36,6 +36,7 @@ fun MineScreen(
     onOpenAiSettings: () -> Unit = {},
     onOpenAiRecommend: () -> Unit = {},
     onOpenFeatureSettings: () -> Unit = {},
+    onOpenShoppingList: () -> Unit = {},
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -232,6 +233,12 @@ fun MineScreen(
         }
 
         GroupTitle("实用工具")
+        SettingRow(
+            icon = Icons.Outlined.ShoppingCart,
+            title = "采购清单",
+            subtitle = "汇总今天及未来餐食需采购/缺料的食材",
+            trailing = "▸",
+        ) { onOpenShoppingList() }
         SettingRow(
             icon = Icons.Outlined.SoupKitchen,
             title = "厨房小助手",
