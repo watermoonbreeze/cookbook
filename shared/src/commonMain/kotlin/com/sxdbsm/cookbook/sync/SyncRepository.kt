@@ -4,6 +4,7 @@ import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FavoriteComboRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
+import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.DishIngredient
@@ -34,6 +35,7 @@ class SyncRepository(
     private val pantryRepo: PantryRepository,
     private val healthRepo: HealthProfileRepository,
     private val favoriteRepo: FavoriteComboRepository,
+    private val mealRepo: MealRecordRepository,
 ) {
     private val q = db.cookbookQueries
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = false }
@@ -207,6 +209,26 @@ class SyncRepository(
                     favAdded++
                 }
             }
+        }
+
+        // 餐食历史：按(date,餐次)合并——存在则替换该餐的菜。餐次按 code、菜品按名解析。
+        for (m in bundle.meals) {
+            val code = m.mealTypeCode.trim()
+            if (code.isEmpty() || m.date.isBlank()) continue
+            val mealTypeId = q.selectMealTypeIdByCode(code).executeAsOneOrNull() ?: continue
+            val dishIds = m.dishNames.mapNotNull { resolveDishId(it) }.distinct()
+            if (dishIds.isEmpty()) continue
+            q.selectMealRecordIdByDateType(m.date, mealTypeId).executeAsOneOrNull()?.let { old ->
+                db.transaction { q.deleteMealRecordDishesHard(old); q.deleteMealRecordHard(old) }
+            }
+            mealRepo.save(
+                date = DateTime.parseDate(m.date),
+                mealTypeId = mealTypeId,
+                mealTime = runCatching { DateTime.parseTime(m.mealTime) }.getOrElse { DateTime.parseTime("12:00") },
+                note = m.note,
+                dishIds = dishIds,
+            )
+            mealsMerged++
         }
 
         SyncImportResult(

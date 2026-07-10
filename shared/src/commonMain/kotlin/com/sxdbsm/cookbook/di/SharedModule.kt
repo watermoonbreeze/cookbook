@@ -43,5 +43,5 @@ val sharedModule: Module = module {
     single { AiRuntimeConfig(get()) }
     single { RecommendationOrchestrator(get()) }
     // [AI生成] 选择性同步：导出/合并导入 菜品/食材/库存/健康/收藏/餐食。
-    single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get()) }
+    single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get(), get()) }
 }

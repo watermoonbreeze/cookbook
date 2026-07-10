@@ -1277,6 +1277,17 @@ WHERE mrd.meal_record_id = ? AND mrd.status = 1 ORDER BY mrd.sort_order;
 selectMealTypeIdByCode:
 SELECT id FROM meal_type WHERE code = ? LIMIT 1;
 
+-- [AI生成] 按(日期,餐次)取餐记录 id(导入合并键)。
+selectMealRecordIdByDateType:
+SELECT id FROM meal_record WHERE date = ? AND meal_type_id = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 硬删餐记录及其菜(导入替换同餐)。
+deleteMealRecordDishesHard:
+DELETE FROM meal_record_dish WHERE meal_record_id = ?;
+
+deleteMealRecordHard:
+DELETE FROM meal_record WHERE id = ?;
+
 -- [AI生成] 派生占用：所有餐食(含计划)里用到「在手食材」的菜，按时间顺序排队，供份数分配判不足。
 selectPantryUsageChrono:
 SELECT di.ingredient_id AS ingredient_id,

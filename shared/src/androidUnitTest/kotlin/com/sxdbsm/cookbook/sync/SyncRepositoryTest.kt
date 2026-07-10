@@ -7,8 +7,10 @@ import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.RepositoryTestDatabase
 import com.sxdbsm.cookbook.db.CookbookDatabase
+import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.Ingredient
+import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,6 +30,7 @@ class SyncRepositoryTest {
     private fun sync(db: CookbookDatabase) = SyncRepository(
         db, DishRepository(db), IngredientRepository(db), PantryRepository(db),
         HealthProfileRepository(db), FavoriteComboRepository(db, DishRepository(db)),
+        com.sxdbsm.cookbook.data.repository.MealRecordRepository(db),
     )
 
     private fun seedSource(db: com.sxdbsm.cookbook.db.CookbookDatabase) = runBlocking {
@@ -120,5 +123,31 @@ class SyncRepositoryTest {
         assertEquals(1, res.favoritesAdded)
         val combos = FavoriteComboRepository(dst, DishRepository(dst)).listCombos()
         assertTrue(combos.any { c -> c.name == "我的最爱" && c.dishes.any { it.name == "土豆炖肉" } })
+    }
+
+    @Test
+    fun `餐食历史同步-按日期餐次合并且菜品重映射`() = runBlocking {
+        val src = RepositoryTestDatabase.create()
+        src.cookbookQueries.insertMealType("LUNCH", "中餐", "12:00", 1L, "preset")
+        seedSource(src) // 建 土豆炖肉
+        val dishId = src.cookbookQueries.selectUserDishIdByName("土豆炖肉").executeAsOneOrNull()
+        assertNotNull(dishId)
+        val lunchId = src.cookbookQueries.selectMealTypeIdByCode("LUNCH").executeAsOneOrNull()
+        assertNotNull(lunchId)
+        MealRecordRepository(src).save(DateTime.parseDate("2026-07-10"), lunchId, DateTime.parseTime("12:00"), "午饭", listOf(dishId))
+
+        val bundle = sync(src).export(SyncSelection(meals = true))
+        assertTrue(bundle.meals.any { it.date == "2026-07-10" && it.mealTypeCode == "LUNCH" && it.dishNames.contains("土豆炖肉") })
+        assertTrue(bundle.dishes.any { it.name == "土豆炖肉" }) // 依赖菜品自带
+
+        val dst = RepositoryTestDatabase.create()
+        dst.cookbookQueries.insertMealType("LUNCH", "中餐", "12:00", 1L, "preset")
+        val res = sync(dst).import(bundle)
+        assertEquals(1, res.mealsMerged)
+        val dstLunchId = dst.cookbookQueries.selectMealTypeIdByCode("LUNCH").executeAsOneOrNull()
+        assertNotNull(dstLunchId)
+        val recId = dst.cookbookQueries.selectMealRecordIdByDateType("2026-07-10", dstLunchId).executeAsOneOrNull()
+        assertNotNull(recId)
+        Unit
     }
 }
