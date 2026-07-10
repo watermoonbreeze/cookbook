@@ -8,6 +8,9 @@ import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.MealRecord
 import com.sxdbsm.cookbook.domain.model.MealSection
 import com.sxdbsm.cookbook.domain.model.MealType
+import com.sxdbsm.cookbook.pantry.MealDishKey
+import com.sxdbsm.cookbook.pantry.PantryAllocation
+import com.sxdbsm.cookbook.pantry.PantryUsage
 import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -410,6 +413,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         } else {
             q.selectTagsByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.name })
         }
+        val shortages = pantryShortages() // [AI生成] 派生占用：每道菜在此餐次的缺料食材
         return rows.groupBy { it.meal_record_id }.mapValues { entry ->
             entry.value.map { row ->
                 DishMini(
@@ -420,9 +424,25 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     tags = tagsByDish[row.id].orEmpty(),
                     preference = row.preference.toInt(),
                     cookingMethodName = row.cooking_method_id?.let { cookingMethodNames[it] },
+                    shortageIngredients = shortages[MealDishKey(row.meal_record_id, row.id)].orEmpty(),
                 )
             }
         }
+    }
+
+    /**
+     * 计算每道菜在其餐次的缺料库存食材(派生, 不落库)。[AI生成]
+     *
+     * 全局按时间序对每个在库食材的使用排队，前 `份数` 个够、其余不足；含计划餐。
+     * 无库存食材时直接空，零开销。
+     */
+    private fun pantryShortages(): Map<MealDishKey, List<String>> {
+        val servings = q.selectPantryServings().executeAsList()
+            .associate { it.ingredient_id to it.serving_count.toInt() }
+        if (servings.isEmpty()) return emptyMap()
+        val usages = q.selectPantryUsageChrono().executeAsList()
+            .map { PantryUsage(it.ingredient_id, it.ingredient_name, it.meal_record_id, it.dish_id) }
+        return PantryAllocation.shortages(servings, usages)
     }
 }
 

@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -145,7 +146,27 @@ private fun MealSectionRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(section.dishes, key = { it.id }) { dish ->
-                    DishMiniCard(dish = dish, onClick = { onDishClick?.invoke(dish) })
+                    val shortage = dish.shortageIngredients.distinct()
+                    // [AI生成] 库存不足的菜半透明灰显 + 下方标注缺料食材，加份数后自动恢复。
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
+                        DishMiniCard(
+                            dish = dish,
+                            onClick = { onDishClick?.invoke(dish) },
+                            modifier = if (shortage.isNotEmpty()) Modifier.alpha(0.4f) else Modifier,
+                        )
+                        if (shortage.isNotEmpty()) {
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "缺：${shortage.joinToString("、")}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            )
+                        }
+                    }
                 }
             }
         }
