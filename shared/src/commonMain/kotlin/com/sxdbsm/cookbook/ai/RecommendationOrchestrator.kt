@@ -32,7 +32,7 @@ class RecommendationOrchestrator(
         mealCount: Int = DEFAULT_MEAL_COUNT,
         rotation: Int = 0, // [AI生成] "换一换"轮次：轮转候选窗口，让规则兜底也能换出不同组合。
     ): RecommendationResult {
-        val evaluated = engine.evaluate(input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds)
+        val evaluated = engine.evaluate(input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds, input.shortageIngredientIds)
         if (evaluated.isEmpty()) {
             return RecommendationResult(emptyList(), evaluated, RecommendationSource.EMPTY)
         }

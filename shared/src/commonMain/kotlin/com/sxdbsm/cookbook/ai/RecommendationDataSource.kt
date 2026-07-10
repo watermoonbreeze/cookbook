@@ -67,6 +67,15 @@ class RecommendationDataSource(
 
         val recentDishIds = q.selectRecentEatenDishIds(recentLimit).executeAsList().toSet()
 
+        // [AI生成] 库存不足食材：在库但可用份数(份数-今天及过去占用)≤0；含它的菜仍推荐但排后+标不足。仅库存模式。
+        val shortageIds = if (mode == RecommendMode.PANTRY) {
+            val servings = pantryRepo.servingCounts()
+            val consumed = pantryRepo.consumedUntilToday()
+            servings.filter { (id, c) -> c - (consumed[id] ?: 0) <= 0 }.keys
+        } else {
+            emptySet()
+        }
+
         RecommendationInput(
             dishes = dishes,
             pantryIngredientIds = pantryIds,
@@ -77,6 +86,7 @@ class RecommendationDataSource(
                 labels = labels,
             ),
             recentDishIds = recentDishIds,
+            shortageIngredientIds = shortageIds,
         )
     }
 

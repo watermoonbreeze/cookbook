@@ -31,6 +31,7 @@ class HealthRuleEngine {
         pantryIngredientIds: Set<Long>,
         constraints: HealthConstraints,
         recentDishIds: Set<Long> = emptySet(),
+        shortageIngredientIds: Set<Long> = emptySet(), // [AI生成] 可用份数≤0 的在库食材
     ): List<DishCandidate> = dishes.mapNotNull { dish ->
         val nonSeasoning = dish.ingredients.filter { it.role != IngredientRole.SEASONING }
         val seasonings = dish.ingredients.filter { it.role == IngredientRole.SEASONING }
@@ -49,10 +50,14 @@ class HealthRuleEngine {
 
         // 打分：基础 + 调养推荐加分(利健康靠前) + 在手调料丰富度 - 限量(不利靠后) - 最近吃过。
         val seasoningRichness = if (seasonings.isEmpty()) 0.0 else seasoningsOnHand.size.toDouble() / seasonings.size
+        // [AI生成] 库存不足：非调料食材可用份数≤0 → 仍推荐但大幅降权排到最后，并记录短料名。
+        val shortageNames = nonSeasoning.filter { it.ingredientId in shortageIngredientIds }.map { it.name }
+
         var score = BASE_SCORE + SEASONING_WEIGHT * seasoningRichness
         score += RECOMMEND_BONUS * recommendHits.size
         score -= LIMIT_PENALTY * limitHits.size
         if (isRecent) score -= RECENT_PENALTY
+        if (shortageNames.isNotEmpty()) score -= SHORTAGE_PENALTY // 短料菜排到充足菜之后
 
         DishCandidate(
             id = dish.id,
@@ -64,6 +69,7 @@ class HealthRuleEngine {
             recommendHits = recommendHits.map { it.name },
             isRecent = isRecent,
             score = score,
+            shortageNames = shortageNames,
         )
     }.sortedByDescending { it.score }
 
@@ -73,5 +79,6 @@ class HealthRuleEngine {
         private const val RECOMMEND_BONUS = 0.6 // [AI生成] 每个调养推荐食材的加分(利健康的菜靠前)。
         private const val RECENT_PENALTY = 0.5 // 最近吃过降权，鼓励多样性。
         private const val LIMIT_PENALTY = 0.4 // [AI修改] 每个限量食材的降权(不利健康的菜靠后)。
+        private const val SHORTAGE_PENALTY = 100.0 // [AI生成] 库存不足菜大幅降权，排到所有充足菜之后(仍保留推荐)。
     }
 }

@@ -31,6 +31,7 @@ data class RecommendationInput(
     val pantryIngredientIds: Set<Long>,
     val constraints: HealthConstraints,
     val recentDishIds: Set<Long>,
+    val shortageIngredientIds: Set<Long> = emptySet(), // [AI生成] 在库但可用份数≤0的食材：含它的菜仍推荐但排后+标"库存不足"
 )
 
 /** 规则引擎输入的菜品（已把食材按角色标好）。[AI生成] */
@@ -70,6 +71,7 @@ data class DishCandidate(
     val recommendHits: List<String>, // [AI生成] 命中调养“推荐”的食材(利于健康，加分+展示)
     val isRecent: Boolean, // 最近吃过(去重降权)
     val score: Double, // 规则打分，降序排列
+    val shortageNames: List<String> = emptyList(), // [AI生成] 库存不足的食材名(份数用尽)：非空则本菜排后并标"库存不足"
 )
 
 /** 模型输出：3 个下一餐组合，每餐 2~3 菜。[AI生成] */

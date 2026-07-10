@@ -78,6 +78,24 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `库存不足的菜仍推荐但排后并标短料`() {
+        val enough = RuleDish(1, "青菜汤", listOf(main(101, "青菜")))
+        val short = RuleDish(2, "红烧肉", listOf(main(102, "猪肉")))
+        // 猪肉(102)在库但份数用尽 → shortageIngredientIds
+        val result = engine.evaluate(
+            listOf(short, enough), // 故意把不足的放前面，验证会被排到后面
+            pantryIngredientIds = setOf(101, 102),
+            HealthConstraints(),
+            shortageIngredientIds = setOf(102),
+        )
+        assertEquals(2, result.size) // 不足的没被剔除，仍推荐
+        assertEquals(1L, result.first().id) // 充足的青菜汤排前
+        val shortCand = result.first { it.id == 2L }
+        assertEquals(listOf("猪肉"), shortCand.shortageNames) // 标出短料
+        assertTrue(result.first().shortageNames.isEmpty())
+    }
+
+    @Test
     fun `在手调料越全做法越丰富排前面`() {
         // 两菜非调料都在手、都可做；A 的调料(姜蒜)在手更全 → 排前。
         val rich = RuleDish(1, "红烧肉(调料全)", listOf(main(101, "五花肉"), sea(901, "姜"), sea(902, "蒜")))
