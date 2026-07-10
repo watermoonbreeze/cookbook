@@ -79,21 +79,22 @@ class AiRecommendViewModel(
         if (result.source == RecommendationSource.EMPTY || result.candidates.isEmpty()) {
             val hint = when {
                 mode == RecommendMode.RANDOM -> "菜品库里还没有可推荐的菜，先去添加些菜品吧"
-                else -> "库存里的食材还凑不齐一道菜，先去把在手食材加入库存吧～"
+                else -> "库存里还没有能用到的食材，先把家里的主料/食材加入库存吧～"
             }
             return AiRecommendUiState(loading = false, emptyHint = hint, source = result.source, mode = mode, modelReady = modelReady)
         }
-        val onHandLabel = if (mode == RecommendMode.RANDOM) "主料" else "用到库存"
-        val items = result.candidates.take(MAX_ITEMS).map { c -> DishItemUi(id = c.id, name = c.name, note = buildNote(c, onHandLabel)) }
+        val items = result.candidates.take(MAX_ITEMS).map { c -> DishItemUi(id = c.id, name = c.name, note = buildNote(c, mode)) }
         return AiRecommendUiState(loading = false, dishItems = items, source = result.source, mode = mode, modelReady = modelReady)
     }
 
-    /** 组装一道菜的说明：用到库存/利于调养/做法/注意限量。[AI生成] */
-    private fun buildNote(c: DishCandidate, onHandLabel: String): String {
+    /** 组装一道菜的说明：用到库存/还差什么/利于调养/做法/注意限量。[AI修改] */
+    private fun buildNote(c: DishCandidate, mode: RecommendMode): String {
         val parts = mutableListOf<String>()
-        if (c.shortageNames.isNotEmpty()) parts += "⚠库存不足：${c.shortageNames.joinToString("、")}" // [AI生成] 份数用尽仍推荐但标识
-        if (c.missingNames.isNotEmpty()) parts += "🛒还需采购：${c.missingNames.joinToString("、")}" // [AI生成] 主料齐但辅料缺，标出需补
-        if (c.mainNames.isNotEmpty()) parts += "$onHandLabel：${c.mainNames.joinToString("、")}"
+        if (c.shortageNames.isNotEmpty()) parts += "⚠库存不足：${c.shortageNames.joinToString("、")}" // 份数用尽仍推荐但标识
+        // [AI修改] 物尽其用：库存模式突出"用到你库存的食材"与"还差什么(可自行采购)"，让用户按缺料自己选。
+        if (mode == RecommendMode.PANTRY && c.onHandNames.isNotEmpty()) parts += "用到库存：${c.onHandNames.joinToString("、")}"
+        if (c.missingNames.isNotEmpty()) parts += "🛒还差：${c.missingNames.joinToString("、")}"
+        if (c.mainNames.isNotEmpty()) parts += "主料：${c.mainNames.joinToString("、")}"
         if (c.recommendHits.isNotEmpty()) parts += "✓利于调养：${c.recommendHits.joinToString("、")}"
         if (c.seasoningsOnHand.isNotEmpty()) parts += "可做法：${c.seasoningsOnHand.joinToString("、")}"
         if (c.limitHits.isNotEmpty()) parts += "⚠注意限量：${c.limitHits.joinToString("、")}"

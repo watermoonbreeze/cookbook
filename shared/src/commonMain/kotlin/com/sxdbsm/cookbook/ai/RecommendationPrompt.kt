@@ -37,9 +37,10 @@ object RecommendationPrompt {
             candidates.forEach { c ->
                 append("- id=").append(c.id).append(" ").append(c.name)
                 append("｜主料:").append(c.mainNames.joinToString("、").ifEmpty { "-" })
+                if (c.onHandNames.isNotEmpty()) append("｜在手:").append(c.onHandNames.joinToString("、")) // [AI生成] 用到你库存的食材(物尽其用)
                 if (c.seasoningsOnHand.isNotEmpty()) append("｜在手调料:").append(c.seasoningsOnHand.joinToString("、"))
                 if (c.recommendHits.isNotEmpty()) append("｜利调养:").append(c.recommendHits.joinToString("、"))
-                if (c.missingNames.isNotEmpty()) append("｜还需采购:").append(c.missingNames.joinToString("、")) // [AI生成] 主料齐但辅料缺，供模型措辞提示
+                if (c.missingNames.isNotEmpty()) append("｜还差:").append(c.missingNames.joinToString("、")) // [AI生成] 缺的主料/辅料，供模型措辞提示
                 if (c.limitHits.isNotEmpty()) append("｜注意限量:").append(c.limitHits.joinToString("、"))
                 append("\n")
             }

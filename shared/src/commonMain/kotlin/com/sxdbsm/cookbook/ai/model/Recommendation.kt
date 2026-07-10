@@ -72,7 +72,8 @@ data class DishCandidate(
     val isRecent: Boolean, // 最近吃过(去重降权)
     val score: Double, // 规则打分，降序排列
     val shortageNames: List<String> = emptyList(), // [AI生成] 库存不足的食材名(份数用尽)：非空则本菜排后并标"库存不足"
-    val missingNames: List<String> = emptyList(), // [AI生成] 需采购的辅料名(主料齐但辅料不在库)：非空则本菜排后并标"还需采购"
+    val missingNames: List<String> = emptyList(), // [AI生成] 缺的非调料食材名(主料/辅料不在库)：列出让用户知道少什么、可自行采购
+    val onHandNames: List<String> = emptyList(), // [AI生成] 用到你库存的非调料食材名(物尽其用高亮)
 )
 
 /** 模型输出：3 个下一餐组合，每餐 2~3 菜。[AI生成] */

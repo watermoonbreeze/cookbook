@@ -35,17 +35,14 @@ class HealthRuleEngine {
     ): List<DishCandidate> = dishes.mapNotNull { dish ->
         val nonSeasoning = dish.ingredients.filter { it.role != IngredientRole.SEASONING }
         val seasonings = dish.ingredients.filter { it.role == IngredientRole.SEASONING }
-        val mains = dish.ingredients.filter { it.role == IngredientRole.MAIN }
-        // [AI修改] 方案A'：放宽可做性——有主料的菜「主料齐即可推荐」(缺辅料记为「还需采购」并降权，让齐备菜靠前)；
-        // 无主料的菜(如纯汤/凉拌)按「非调料齐」兜底。避免"有主料却因缺一味辅料整菜被丢"(如库存有五花肉却不推红烧肉)。
-        val makeable = if (mains.isNotEmpty()) {
-            mains.all { it.ingredientId in pantryIngredientIds }
-        } else {
-            nonSeasoning.all { it.ingredientId in pantryIngredientIds }
-        }
-        if (!makeable) return@mapNotNull null
-        // 缺的非调料食材(不在库)=还需采购的辅料；主料已保证在手。
+        // [AI修改] 方案A''(物尽其用)：只要该菜用到**至少一个在手的非调料食材**就推荐，
+        // 缺的非调料(主料/辅料)全部列出让用户看到缺什么、自行选择；齐备的排前、缺得多的排后。
+        // 调料常备不计入(避免"有盐就推所有菜")。满足用户"库存有的都要用上、少什么也要列出来"。
+        val onHandNonSeasoning = nonSeasoning.filter { it.ingredientId in pantryIngredientIds }
+        if (onHandNonSeasoning.isEmpty()) return@mapNotNull null
+        // 缺的非调料食材(不在库)=还需采购的主料/辅料，全部列出。
         val missingNames = nonSeasoning.filter { it.ingredientId !in pantryIngredientIds }.map { it.name }
+        val onHandNames = onHandNonSeasoning.map { it.name } // 用到你库存的食材(非调料)
 
         // 犯忌：含任一 avoid 食材 → 直接剔除（硬约束）。
         val hasAvoid = dish.ingredients.any { it.ingredientId in constraints.avoidIngredientIds }
@@ -80,6 +77,7 @@ class HealthRuleEngine {
             score = score,
             shortageNames = shortageNames,
             missingNames = missingNames,
+            onHandNames = onHandNames,
         )
     }.sortedByDescending { it.score }
 
