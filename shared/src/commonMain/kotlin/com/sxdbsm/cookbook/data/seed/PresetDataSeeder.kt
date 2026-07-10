@@ -118,14 +118,14 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
     private fun seedCookingMethods(now: Long) {
         val q = db.cookbookQueries
-        listOf("炒", "蒸", "煮", "炖", "烤", "凉拌", "煎", "炸", "焖", "卤").forEach { name ->
+        PRESET_COOKING_METHODS.forEach { name ->
             q.insertCookingMethod(name, "preset", now)
         }
     }
 
     private fun seedMeasurementUnits() {
         val q = db.cookbookQueries
-        listOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "碗", "块", "根", "条", "段", "瓣", "只", "适量", "少许").forEach { name ->
+        PRESET_MEASUREMENT_UNITS.forEach { name ->
             q.insertMeasurementUnit(name, "preset")
         }
     }
@@ -272,8 +272,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
      */
     internal fun validateDishSeedForTest(): List<String> {
         val ingredientNames = loadIngredients().map { it.name }.toSet()
-        val methods = setOf("炒", "蒸", "煮", "炖", "烤", "凉拌", "煎", "炸", "焖", "卤")
-        val units = setOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "碗", "块", "根", "条", "段", "瓣", "只", "适量", "少许")
+        val methods = PRESET_COOKING_METHODS.toSet() // [AI修改] 与 seedCookingMethods 同源，避免硬编码副本漂移。
+        val units = PRESET_MEASUREMENT_UNITS.toSet() // [AI修改] 与 seedMeasurementUnits 同源。
         val problems = mutableListOf<String>()
         loadDishes().forEach { d ->
             if (d.method.isNotBlank() && d.method !in methods) problems += "[${d.name}] 未知烹饪方式:${d.method}"
@@ -364,6 +364,11 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
     private companion object {
         const val DEFAULT_INGREDIENT_EMOJI = "🥗" // [AI生成] 所有兜底食材统一使用更清爽的沙拉图标。
+
+        // [AI生成] 预设烹饪方式/计量单位全集：seed 写入与 dishes.json 引用完整性校验共用同一份，避免硬编码副本漂移。
+        val PRESET_COOKING_METHODS = listOf("炒", "蒸", "煮", "炖", "烤", "凉拌", "煎", "炸", "焖", "卤")
+        val PRESET_MEASUREMENT_UNITS =
+            listOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "碗", "块", "根", "条", "段", "瓣", "只", "适量", "少许")
     }
 
     /**

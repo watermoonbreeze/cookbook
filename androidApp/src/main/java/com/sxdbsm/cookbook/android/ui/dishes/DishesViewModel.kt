@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
-import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -60,7 +59,6 @@ data class DishDeleteState(
  */
 class DishesViewModel(
     private val dishRepo: DishRepository,
-    @Suppress("unused") private val mealRepo: MealRecordRepository,
 ) : ViewModel() {
 
     private val _keyword = MutableStateFlow("") // [AI修改] 搜索框文本。

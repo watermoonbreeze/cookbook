@@ -51,7 +51,7 @@ val androidModule = module {
     }
 
     viewModel { HomeViewModel(get(), get(), get()) } // [AI修改] 首页主题弹框需要读取/写入主题偏好。
-    viewModel { DishesViewModel(get(), get()) }
+    viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { DishDetailViewModel(get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养
     viewModel { NewDishViewModel(get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用。

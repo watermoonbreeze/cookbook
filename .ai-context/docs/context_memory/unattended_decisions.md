@@ -30,6 +30,10 @@
 
 ### 5 轮整体审查记录
 - 每轮：全量 build + :shared 单测 + 多维代码审查(正确性/架构一致性/Compose/数据安全/KMP)，发现即修复再回测。
+- **Round1** 基线：clean 全量 build SUCCESSFUL + 89 单测绿。
+- **Round2** 5 代理多维审查→修复(`9bcfce6`)：①相关菜品漏传 related(真 bug 修复) ②LaunchedEffect(d) ③observeFlag remember ④热度前3取全局 ⑤空态文案分场景 ⑥步骤图 key+注释。DI 全匹配无崩、seed/采购口径一致、无迁移。build+89 绿。
+- **Round3** 对抗验证修复(1-4 全通过, 5 步骤图 key 遗留=与既有一致的理论边界不可达) + 深挖 pantry/shopping：无必修 bug，采购三处等价、缺料 rank vs remaining 属合理设计差异、窗口无 off-by-one、日期回填不会错。仅精修 DishDetailViewModel 缺料口径注释(零风险)。
+- **Round4** 整体/规范/死代码 sweep + 完整性批判(进行中)。
 
 ## 执行计划（安全优先，可编译/单测验证的工程任务先做）
 

@@ -95,9 +95,12 @@ fun DishesScreen(
         ui.all.groupBy { dishInitial(it.name) }.toSortedMap()
     }
     val showPopular = ui.popular.isNotEmpty() && ui.keyword.isBlank()
-    val letterIndexMap = remember(sections, showPopular) {
+    // [AI修改] 筛选 chip 行(availableMethods/tags 非空时渲染)也占一个 item，需计入字母跳转偏移，否则 A-Z 跳转偏 1。
+    val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
+    val letterIndexMap = remember(sections, showPopular, hasFilterRow) {
         var index = 1 + if (showPopular) 2 else 0 // [AI修改] 首项为下拉刷新提示，需要计入索引偏移。
         index += 1 // TabRow sticky header
+        if (hasFilterRow) index += 1 // 筛选 chip 行
         buildMap {
             sections.forEach { (letter, dishes) ->
                 put(letter, index)

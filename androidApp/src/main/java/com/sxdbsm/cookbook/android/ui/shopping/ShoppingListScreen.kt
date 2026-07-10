@@ -163,8 +163,8 @@ private fun ShoppingRow(item: ShoppingItem, checked: Boolean, onToggle: () -> Un
                 color = if (checked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
             )
             val sub = buildString {
-                append("涉及 ${item.mealCount} 餐")
-                if (item.dates.isNotEmpty()) append(" · ${item.dates.first()}${if (item.dates.size > 1) " 起" else ""}")
+                append("${item.dates.size} 天要用")
+                if (item.dates.isNotEmpty()) append(" · 最近 ${item.dates.first()}")
             }
             Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

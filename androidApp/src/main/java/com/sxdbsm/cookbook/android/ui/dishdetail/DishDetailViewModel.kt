@@ -43,8 +43,10 @@ class DishDetailViewModel(
         val ingIds = dish.ingredients.map { it.ingredient.id }
 
         // 库存：主料不在库→采购、在库当前剩余份数≤0→缺；无库存则不判。
-        // 注：详情页回答"以现有库存现在能否做这道菜"，用全局 remaining()；这与食历卡片按餐次
-        // 时间序 rank 分配的缺料口径(PantryAllocation.shortages)语义不同(卡片针对具体排期餐)，属预期差异。
+        // 注：详情页回答"以现有库存现在能否做这道菜"，用全局 remaining()——窗口是 [入库日, 今天] 闭区间，
+        // 扣掉截至今天所有已发生餐 + 今日排期餐的占用(不预支未来)。故同一天多餐争用同一在库食材、或历史餐
+        // 已把份数占光时，详情页会比食历卡片更早报"缺"。这是"现在整体能否做(保守)" vs 卡片按餐次时间序
+        // rank 判"这张排期餐是否轮得到(乐观, PantryAllocation.shortages 只对 date>=今天的餐标缺)"的固有语义差异，非 bug。
         val servings = pantryRepo.servingCounts()
         val usingPantry = servings.isNotEmpty()
         val remaining = if (usingPantry) pantryRepo.remaining() else emptyMap()
