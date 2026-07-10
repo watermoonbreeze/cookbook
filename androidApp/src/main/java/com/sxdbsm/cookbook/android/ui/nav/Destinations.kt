@@ -28,6 +28,7 @@ object Routes {
     const val AI_SETTINGS = "ai_settings" // [AI生成] AI 设置(Key/运行时)
     const val FEATURE_SETTINGS = "feature_settings" // [AI生成] 功能设置(分步执行等开关)
     const val SHOPPING_LIST = "shopping_list" // [AI生成] 采购清单(今天及未来餐食采购/缺料汇总)
+    const val FREE_PAIRING = "free_pairing" // [AI生成] 食材自由搭配(离线规则轻搭配)
 
     fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}&dishIds="
 

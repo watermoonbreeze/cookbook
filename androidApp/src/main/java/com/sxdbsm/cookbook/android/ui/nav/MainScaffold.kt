@@ -151,6 +151,7 @@ fun MainScaffold(
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
                     onOpenFeatureSettings = { nav.navigate(Routes.FEATURE_SETTINGS) },
                     onOpenShoppingList = { nav.navigate(Routes.SHOPPING_LIST) },
+                    onOpenFreePairing = { nav.navigate(Routes.FREE_PAIRING) },
                 )
             }
             composable(Routes.COOKING_TIMER) {
@@ -161,6 +162,9 @@ fun MainScaffold(
             }
             composable(Routes.SHOPPING_LIST) {
                 com.sxdbsm.cookbook.android.ui.shopping.ShoppingListScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.FREE_PAIRING) {
+                com.sxdbsm.cookbook.android.ui.pairing.FreePairingScreen(onBack = { nav.popBackStack() })
             }
             composable(
                 route = Routes.AI_RECOMMEND,

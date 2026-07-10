@@ -92,6 +92,37 @@ class RecommendationDataSource(
     }
 
     /**
+     * 食材自由搭配（离线规则轻搭配）。[AI生成]
+     *
+     * 取在手食材，按大类(荤/素/蛋/豆/主食/调味)分类后交给 FreePairingEngine 拼搭配建议。
+     * 不依赖已有菜品、不调 AI，完全离线。
+     */
+    suspend fun freePairing(maxSuggestions: Int = 8): List<PairingSuggestion> = withContext(ioDispatcher) {
+        val pantry = pantryRepo.listPantryIngredients()
+        if (pantry.isEmpty()) return@withContext emptyList()
+        val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
+        val pairs = mutableListOf<PairIngredient>()
+        for (ing in pantry) { // suspend classifyPairRole 不能放进非挂起的 .map lambda
+            pairs += PairIngredient(ing.name, classifyPairRole(ing.id, seasoningIds))
+        }
+        FreePairingEngine.suggest(pairs, maxSuggestions)
+    }
+
+    /** 按食材 general 大类判定搭配角色。[AI生成] */
+    private suspend fun classifyPairRole(ingredientId: Long, seasoningIds: Set<Long>): PairRole {
+        if (ingredientId in seasoningIds) return PairRole.SEASONING
+        val cats = ingredientRepo.listCategories(ingredientId).filter { it.dimension == "general" }.map { it.name }
+        return when {
+            cats.any { it.contains("蛋") } -> PairRole.EGG
+            cats.any { it.contains("肉") || it.contains("禽") || it.contains("水产") || it.contains("鱼") || it.contains("虾") || it.contains("海") } -> PairRole.PROTEIN
+            cats.any { it.contains("豆") || it.contains("坚果") } -> PairRole.BEAN
+            cats.any { it.contains("主食") || it.contains("谷") || it.contains("薯") || it.contains("稻") || it.contains("麦") || it.contains("米") } -> PairRole.STAPLE
+            cats.any { it.contains("蔬") || it.contains("菌") || it.contains("藻") || it.contains("菜") } -> PairRole.VEGETABLE
+            else -> PairRole.OTHER
+        }
+    }
+
+    /**
      * 给规划标注库存「采购/缺料」。[AI生成]
      *
      * 按当前库存快照对每道菜主料判定：不在库→采购、在库但份数不够→缺料(跨规划多天按天序分配剩余份数)。
