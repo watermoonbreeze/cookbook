@@ -42,4 +42,6 @@ val sharedModule: Module = module {
     // [AI生成] AI 运行时配置(云/端/Key)；AiRuntime 具体实现由 androidModule 绑定 SwitchableAiRuntime。
     single { AiRuntimeConfig(get()) }
     single { RecommendationOrchestrator(get()) }
+    // [AI生成] 选择性同步(P1)：导出/合并导入 菜品+食材。
+    single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get()) }
 }

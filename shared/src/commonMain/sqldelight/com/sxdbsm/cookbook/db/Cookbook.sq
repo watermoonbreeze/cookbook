@@ -1225,6 +1225,31 @@ SELECT ingredient_id, serving_count FROM pantry WHERE status = 1;
 selectPantryStock:
 SELECT ingredient_id, serving_count, added_at FROM pantry WHERE status = 1;
 
+-- ========== 选择性同步(P1) ==========
+-- [AI生成] 自建食材(导出用)。
+selectSyncUserIngredients:
+SELECT id, name, alias, emoji, image_path, thumbnail_path FROM ingredient WHERE source = 'user' AND status = 1;
+
+-- [AI生成] 按名取食材基本信息(导出被菜品引用的食材, 可能是预设)。
+selectSyncIngredientByName:
+SELECT id, name, alias, emoji, image_path, thumbnail_path FROM ingredient WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 食材详情(导出用)。
+selectSyncIngredientDetail:
+SELECT common_methods, prep_tips, eating_notes, storage_tips, health_note FROM ingredient_detail WHERE ingredient_id = ? AND status = 1;
+
+-- [AI生成] 按名取在库食材 id(导入时解析食材引用)。
+selectActiveIngredientIdByName:
+SELECT id FROM ingredient WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 自建菜品 id(导出用)。
+selectSyncUserDishIds:
+SELECT id FROM dish WHERE source = 'user' AND status = 1;
+
+-- [AI生成] 按名取自建菜品 id(导入合并键)。
+selectUserDishIdByName:
+SELECT id FROM dish WHERE name = ? AND source = 'user' AND status = 1 LIMIT 1;
+
 -- [AI生成] 派生占用：所有餐食(含计划)里用到「在手食材」的菜，按时间顺序排队，供份数分配判不足。
 selectPantryUsageChrono:
 SELECT di.ingredient_id AS ingredient_id,
