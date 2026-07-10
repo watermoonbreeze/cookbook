@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android.ui.ai
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -120,9 +121,19 @@ private fun DayCard(day: DayPlan) {
                 }
                 meal.dishes.forEach { d ->
                     Spacer(Modifier.height(2.dp))
-                    Text("· ${d.name}", style = MaterialTheme.typography.bodyMedium)
-                    if (d.reason.isNotBlank()) {
-                        Text("　${d.reason}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    // [AI生成] 库存不足(缺料/采购)的菜半透明灰显 + 标注，与食历缺料样式一致。
+                    val lack = d.shortageNames.isNotEmpty() || d.purchaseNames.isNotEmpty()
+                    Column(modifier = if (lack) Modifier.alpha(0.45f) else Modifier) {
+                        Text("· ${d.name}", style = MaterialTheme.typography.bodyMedium)
+                        if (d.reason.isNotBlank()) {
+                            Text("　${d.reason}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    if (d.purchaseNames.isNotEmpty()) {
+                        Text("　🛒 采购：${d.purchaseNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                    }
+                    if (d.shortageNames.isNotEmpty()) {
+                        Text("　⚠ 缺：${d.shortageNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     }
                 }
             }

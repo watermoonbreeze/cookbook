@@ -32,6 +32,8 @@ data class PlannedDish(
     val id: Long,
     val name: String,
     val reason: String, // 为什么推荐/好处/注意点
+    val shortageNames: List<String> = emptyList(), // [AI生成] 库存有但份数不够的主料 → "缺"
+    val purchaseNames: List<String> = emptyList(), // [AI生成] 库存里没有的主料 → "采购"
 )
 
 /** 一餐(如早餐)的若干菜。[AI生成] */

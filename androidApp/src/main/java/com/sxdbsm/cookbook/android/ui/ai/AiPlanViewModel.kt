@@ -67,9 +67,12 @@ class AiPlanViewModel(
                     seed = Random.nextLong(),
                     useModel = aiConfig.isModelReady(),
                 )
-                Triple(result, ctx.season, ctx.healthAware)
-            }.onSuccess { (result, season, healthAware) ->
-                state = state.copy(loading = false, plan = result.plan, season = season, healthAware = healthAware, byAi = result.byAi)
+                // [AI生成] 标注库存采购/缺料(主料)：不在库→采购、在库份数不够→缺料。
+                val annotatedPlan = dataSource.annotatePlanWithPantry(result.plan)
+                Triple(annotatedPlan, ctx.season to ctx.healthAware, result.byAi)
+            }.onSuccess { (annotatedPlan, seasonHealth, byAi) ->
+                val (season, healthAware) = seasonHealth
+                state = state.copy(loading = false, plan = annotatedPlan, season = season, healthAware = healthAware, byAi = byAi)
             }.onFailure {
                 state = state.copy(loading = false, error = "生成失败，请稍后再试")
             }

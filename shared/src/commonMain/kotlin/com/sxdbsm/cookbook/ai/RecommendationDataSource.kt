@@ -2,8 +2,11 @@ package com.sxdbsm.cookbook.ai
 
 import com.sxdbsm.cookbook.ai.model.HealthConstraints
 import com.sxdbsm.cookbook.ai.model.IngredientRole
+import com.sxdbsm.cookbook.ai.model.PeriodPlan
 import com.sxdbsm.cookbook.ai.model.PlanContext
 import com.sxdbsm.cookbook.ai.model.PlanDish
+import com.sxdbsm.cookbook.pantry.PantryPlanAnnotator
+import com.sxdbsm.cookbook.pantry.PlanMainIngredient
 import com.sxdbsm.cookbook.ai.model.RecommendationInput
 import com.sxdbsm.cookbook.ai.model.RecommendMode
 import com.sxdbsm.cookbook.ai.model.RuleDish
@@ -88,6 +91,24 @@ class RecommendationDataSource(
             recentDishIds = recentDishIds,
             shortageIngredientIds = shortageIds,
         )
+    }
+
+    /**
+     * 给规划标注库存「采购/缺料」。[AI生成]
+     *
+     * 按当前库存快照对每道菜主料判定：不在库→采购、在库但份数不够→缺料(跨规划多天按天序分配剩余份数)。
+     */
+    suspend fun annotatePlanWithPantry(plan: PeriodPlan): PeriodPlan = withContext(ioDispatcher) {
+        if (plan.days.isEmpty()) return@withContext plan
+        val dishIds = plan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
+        val mainByDish = dishIds.associateWith { id ->
+            dishRepo.getDishById(id)?.ingredients?.filter { it.isMain }
+                ?.map { PlanMainIngredient(it.ingredient.id, it.ingredient.name) }.orEmpty()
+        }
+        val servings = pantryRepo.servingCounts()
+        val consumed = pantryRepo.consumedUntilToday()
+        val remaining = servings.mapValues { (id, c) -> (c - (consumed[id] ?: 0)).coerceAtLeast(0) }
+        PantryPlanAnnotator.annotate(plan, mainByDish, servings.keys, remaining)
     }
 
     /** 周期规划取数：全库菜品 + 营养/应季标签 + 健康标记 + 当前季节。[AI生成] */
