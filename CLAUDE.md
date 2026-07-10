@@ -32,7 +32,8 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 > 每条一行、命令式、可识别；详情见 `.ai-context/docs/experience/06_问题与踩坑.md`。
 
 - SQLDelight：改 `.sq` 表结构必须同步加 `N.sqm` 迁移；DB 真实版本由 `.sqm` 文件数推导（build.gradle `version` 无效），判断版本看生成的 `Schema.version`。
-- SQLDelight 新迁移文件名 = 目录里**最大 `N.sqm` + 1**（现有到 `12.sqm` 就建 `13.sqm`，别按版本号命名成 14）；命名错会漏迁移/版本乱。
+- SQLDelight 新迁移文件名 = 目录里**最大 `N.sqm` + 1**（现有到 `13.sqm` 就建 `14.sqm`，别按版本号命名）；命名错会漏迁移/版本乱。
+- 给表**加列**要一次改全：CREATE TABLE 也加该列（全新装走 Schema.create 不跑迁移）+ 新 `N.sqm` `ALTER ADD COLUMN`（列序与 CREATE 一致，都追加末尾）+ insertX/updateX 及**所有调用点**传参 + 显式列 SELECT 手动加 + 所有构造该模型处读新列 + 领域模型加字段（漏 loadFullDish 构造会 "Cannot find parameter"）；seed 补齐式对**已存在行**要单独幂等 UPDATE（放"已存在则跳过"判断之前）。
 - SQLDelight 方言是 `sqlite_3_18`，**无 UPSERT**（`ON CONFLICT DO UPDATE` 编译失败）：累加/幂等改 `INSERT OR IGNORE` + `UPDATE ... x=x+:d` 两步放同一 `db.transaction{}`。
 - DB 恢复/覆盖库必须**原子+回滚**：覆盖 `currentDb` 前先存回滚区，失败即还原（否则中途失败毁库）；关的是单例 driver，恢复后需重启应用。
 - SQLDelight **单列 SELECT** 的 `executeAsList()` 返回 `List<列类型>`（如 `List<String>`），不是行对象——别 `.map{it.name}`（编译失败）。
