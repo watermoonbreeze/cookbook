@@ -1250,6 +1250,33 @@ SELECT id FROM dish WHERE source = 'user' AND status = 1;
 selectUserDishIdByName:
 SELECT id FROM dish WHERE name = ? AND source = 'user' AND status = 1 LIMIT 1;
 
+-- [AI生成] 按名取菜品 id(任意来源, 导入时解析收藏/餐食的菜品引用)。
+selectDishIdByNameAny:
+SELECT id FROM dish WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 库存(带食材名, 导出用)。
+selectSyncPantry:
+SELECT i.name AS ingredient_name, p.serving_count AS serving_count
+FROM pantry p JOIN ingredient i ON i.id = p.ingredient_id
+WHERE p.status = 1;
+
+-- [AI生成] 餐食记录(带餐次code, 导出用)。
+selectSyncMeals:
+SELECT mr.id AS meal_record_id, mr.date AS date, mt.code AS meal_type_code, mr.meal_time AS meal_time, mr.note AS note
+FROM meal_record mr JOIN meal_type mt ON mt.id = mr.meal_type_id
+WHERE mr.status = 1
+ORDER BY mr.date, mr.meal_time;
+
+-- [AI生成] 某餐记录下的菜品名(导出用)。
+selectSyncMealDishNames:
+SELECT d.name AS name FROM meal_record_dish mrd
+JOIN dish d ON d.id = mrd.dish_id AND d.status = 1
+WHERE mrd.meal_record_id = ? AND mrd.status = 1 ORDER BY mrd.sort_order;
+
+-- [AI生成] 按 code 取餐次 id(导入解析餐食)。
+selectMealTypeIdByCode:
+SELECT id FROM meal_type WHERE code = ? LIMIT 1;
+
 -- [AI生成] 派生占用：所有餐食(含计划)里用到「在手食材」的菜，按时间顺序排队，供份数分配判不足。
 selectPantryUsageChrono:
 SELECT di.ingredient_id AS ingredient_id,

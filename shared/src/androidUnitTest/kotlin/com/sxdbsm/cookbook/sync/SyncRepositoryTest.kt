@@ -1,8 +1,12 @@
 package com.sxdbsm.cookbook.sync
 
 import com.sxdbsm.cookbook.data.repository.DishRepository
+import com.sxdbsm.cookbook.data.repository.FavoriteComboRepository
+import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
+import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.RepositoryTestDatabase
+import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import kotlinx.coroutines.runBlocking
@@ -20,6 +24,11 @@ import kotlin.test.assertTrue
  * [AI生成] 覆盖：导出→导入到另一库(按名合并+ID重映射)、同名不重复、重复导入更新不新增。
  **/
 class SyncRepositoryTest {
+
+    private fun sync(db: CookbookDatabase) = SyncRepository(
+        db, DishRepository(db), IngredientRepository(db), PantryRepository(db),
+        HealthProfileRepository(db), FavoriteComboRepository(db, DishRepository(db)),
+    )
 
     private fun seedSource(db: com.sxdbsm.cookbook.db.CookbookDatabase) = runBlocking {
         val ingRepo = IngredientRepository(db)
@@ -42,7 +51,7 @@ class SyncRepositoryTest {
     fun `导出后导入到另一库-按名合并且食材重映射`() = runBlocking {
         val src = RepositoryTestDatabase.create()
         seedSource(src)
-        val bundle = SyncRepository(src, DishRepository(src), IngredientRepository(src)).export(includeIngredients = true, includeDishes = true)
+        val bundle = sync(src).export(SyncSelection(ingredients = true, dishes = true))
         // 导出内容
         assertTrue(bundle.dishes.any { it.name == "土豆炖肉" })
         assertTrue(bundle.ingredients.any { it.name == "猪肉" } && bundle.ingredients.any { it.name == "土豆" })
@@ -50,7 +59,7 @@ class SyncRepositoryTest {
         // 导入到空库(目标 id 与源不同也应正确重映射)
         val dst = RepositoryTestDatabase.create()
         val dstDishRepo = DishRepository(dst)
-        val result = SyncRepository(dst, dstDishRepo, IngredientRepository(dst)).import(bundle)
+        val result = sync(dst).import(bundle)
         assertEquals(1, result.dishesAdded)
         assertTrue(result.ingredientsAdded >= 2)
 
@@ -67,14 +76,49 @@ class SyncRepositoryTest {
     fun `重复导入更新不新增`() = runBlocking {
         val src = RepositoryTestDatabase.create()
         seedSource(src)
-        val bundle = SyncRepository(src, DishRepository(src), IngredientRepository(src)).export(true, true)
+        val bundle = sync(src).export(SyncSelection(ingredients = true, dishes = true))
 
         val dst = RepositoryTestDatabase.create()
-        val sync = SyncRepository(dst, DishRepository(dst), IngredientRepository(dst))
+        val sync = sync(dst)
         sync.import(bundle)
         val second = sync.import(bundle) // 再导一次
         assertEquals(0, second.dishesAdded) // 同名不新增
         assertEquals(1, second.dishesUpdated) // 而是更新
         assertEquals(0, second.ingredientsAdded) // 食材同名复用
+    }
+
+    @Test
+    fun `库存同步-份数按名合并且自带食材`() = runBlocking {
+        val src = RepositoryTestDatabase.create()
+        val porkId = IngredientRepository(src).createUserIngredient(name = "猪肉")
+        PantryRepository(src).addServings(porkId, 3)
+        val bundle = sync(src).export(SyncSelection(pantry = true))
+        assertTrue(bundle.pantry.any { it.ingredientName == "猪肉" && it.servingCount == 3 })
+        assertTrue(bundle.ingredients.any { it.name == "猪肉" }) // 依赖食材自带
+
+        val dst = RepositoryTestDatabase.create()
+        val res = sync(dst).import(bundle)
+        assertTrue(res.pantryMerged >= 1)
+        val dstPorkId = dst.cookbookQueries.selectActiveIngredientIdByName("猪肉").executeAsOneOrNull()
+        assertNotNull(dstPorkId)
+        assertEquals(3, PantryRepository(dst).remaining()[dstPorkId])
+    }
+
+    @Test
+    fun `收藏组合同步-按菜品名重映射`() = runBlocking {
+        val src = RepositoryTestDatabase.create()
+        seedSource(src) // 建 土豆炖肉
+        val dishId = src.cookbookQueries.selectUserDishIdByName("土豆炖肉").executeAsOneOrNull()
+        assertNotNull(dishId)
+        FavoriteComboRepository(src, DishRepository(src)).createCombo("我的最爱", listOf(dishId))
+        val bundle = sync(src).export(SyncSelection(favorites = true))
+        assertTrue(bundle.favorites.any { it.name == "我的最爱" && it.dishNames.contains("土豆炖肉") })
+        assertTrue(bundle.dishes.any { it.name == "土豆炖肉" }) // 依赖菜品自带
+
+        val dst = RepositoryTestDatabase.create()
+        val res = sync(dst).import(bundle)
+        assertEquals(1, res.favoritesAdded)
+        val combos = FavoriteComboRepository(dst, DishRepository(dst)).listCombos()
+        assertTrue(combos.any { c -> c.name == "我的最爱" && c.dishes.any { it.name == "土豆炖肉" } })
     }
 }

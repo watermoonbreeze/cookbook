@@ -19,6 +19,40 @@ data class SyncBundle(
     val schemaVersion: Int, // 生成时 DB Schema 版本(导入时校验不高于本机)
     val ingredients: List<SyncIngredient> = emptyList(),
     val dishes: List<SyncDish> = emptyList(),
+    val pantry: List<SyncPantry> = emptyList(), // P2 库存
+    val healthCrowds: List<String> = emptyList(), // P2 健康档案(启用的人群/病种名)
+    val favorites: List<SyncFavorite> = emptyList(), // P2 收藏组合
+    val meals: List<SyncMeal> = emptyList(), // P3 餐食历史
+)
+
+/** 要同步的数据域选择。[AI生成] 选某域自动带依赖(库存/收藏/餐食→其食材/菜品)。 */
+data class SyncSelection(
+    val ingredients: Boolean = false,
+    val dishes: Boolean = false,
+    val pantry: Boolean = false,
+    val health: Boolean = false,
+    val favorites: Boolean = false,
+    val meals: Boolean = false,
+) {
+    val any: Boolean get() = ingredients || dishes || pantry || health || favorites || meals
+}
+
+/** 库存条目(合并键=ingredientName)。[AI生成] */
+@Serializable
+data class SyncPantry(val ingredientName: String, val servingCount: Int)
+
+/** 收藏组合(合并键=name; 菜品按名引用)。[AI生成] */
+@Serializable
+data class SyncFavorite(val name: String, val dishNames: List<String> = emptyList())
+
+/** 餐食记录(合并键=date+mealTypeCode; 菜品按名引用)。[AI生成] */
+@Serializable
+data class SyncMeal(
+    val date: String,
+    val mealTypeCode: String,
+    val mealTime: String,
+    val note: String = "",
+    val dishNames: List<String> = emptyList(),
 )
 
 /** 同步的食材(自建 + 被菜品引用的)。[AI生成] 合并键=name。 */
@@ -75,4 +109,8 @@ data class SyncImportResult(
     val ingredientsAdded: Int = 0,
     val dishesAdded: Int = 0,
     val dishesUpdated: Int = 0,
+    val pantryMerged: Int = 0,
+    val healthMerged: Int = 0,
+    val favoritesAdded: Int = 0,
+    val mealsMerged: Int = 0,
 )
