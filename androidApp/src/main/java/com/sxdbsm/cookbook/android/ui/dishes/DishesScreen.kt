@@ -212,14 +212,14 @@ fun DishesScreen(
                     containerColor = MaterialTheme.colorScheme.surface,
                 ) {
                     listOf(
-                        DishesSortTab.RECENT to "最近",
-                        DishesSortTab.FAVORITE to "喜爱",
-                        DishesSortTab.ALL to "全部",
-                    ).forEach { (tab, label) ->
+                        Triple(DishesSortTab.RECENT, "最近", ui.recentCount),
+                        Triple(DishesSortTab.FAVORITE, "喜爱", ui.favoriteCount),
+                        Triple(DishesSortTab.ALL, "全部", ui.allCount),
+                    ).forEach { (tab, label, count) ->
                         Tab(
                             selected = ui.sortTab == tab,
                             onClick = { vm.setSortTab(tab) },
-                            text = { Text(label) },
+                            text = { Text("$label $count") }, // [AI生成] Tab 旁标注对应菜品数
                         )
                     }
                 }

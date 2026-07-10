@@ -35,6 +35,9 @@ data class DishesUiState(
     val selectedTag: String? = null, // [AI生成] 标签筛选
     val availableMethods: List<String> = emptyList(), // 当前列表可选烹饪方式
     val availableTags: List<String> = emptyList(), // 当前列表可选标签
+    val recentCount: Int = 0, // [AI生成] 最近 Tab 菜品数(=全部)
+    val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
+    val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
 )
 
 /**
@@ -96,9 +99,13 @@ class DishesViewModel(
         val filtered = raw.filter { d ->
             (method == null || method in d.cookingMethodNames) && (tag == null || tag in d.tags)
         }
+        // [AI生成] 喜爱 Tab 只显示已评分菜品，其计数与展示一致；最近/全部为全部菜。
+        val favorites = filtered.filter { it.preference > 0 }
+        val listForTab = if (tab == DishesSortTab.FAVORITE) favorites else filtered
         DishesUiState(
-            popular = popular, all = sortDishes(filtered, tab), keyword = kw, sortTab = tab,
+            popular = popular, all = sortDishes(listForTab, tab), keyword = kw, sortTab = tab,
             selectedMethod = method, selectedTag = tag, availableMethods = methods, availableTags = tags,
+            recentCount = filtered.size, favoriteCount = favorites.size, allCount = filtered.size,
         )
     }
 
