@@ -124,7 +124,8 @@ CREATE TABLE dish (
     source TEXT NOT NULL DEFAULT 'user',
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
-    status INTEGER NOT NULL DEFAULT 1
+    status INTEGER NOT NULL DEFAULT 1,
+    cuisine TEXT NOT NULL DEFAULT '' -- [AI生成] 菜系(家常菜/川菜/粤菜等)，空=未分类；参考中国传统八大菜系整理。
 );
 
 CREATE INDEX idx_dish_preference ON dish(preference DESC);
@@ -790,16 +791,20 @@ ORDER BY fc.sort_order, fc.id;
 -- ===== dish =====
 
 insertDish:
-INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, thumbnail_path, source, created_at, updated_at)
-VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, thumbnail_path, source, created_at, updated_at, cuisine)
+VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- [AI生成] 预设菜补齐式 seed 用：按名判断预设菜是否已存在，避免重复插入。
 selectPresetDishIdByName:
 SELECT id FROM dish WHERE name = ? AND source = 'preset' AND status = 1 LIMIT 1;
 
+-- [AI生成] 给已存在的预设菜补菜系(幂等，仅当前为空才补)；seedDishes 对已存在菜跳过插入，故单列补齐。
+updatePresetDishCuisineByName:
+UPDATE dish SET cuisine = :cuisine WHERE name = :name AND source = 'preset' AND cuisine = '';
+
 updateDish:
 UPDATE dish
-SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, thumbnail_path = ?, updated_at = ?
+SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, thumbnail_path = ?, updated_at = ?, cuisine = ?
 WHERE id = ?;
 
 deleteDish:
@@ -823,7 +828,8 @@ SELECT id,
        COALESCE(thumbnail_path, '') AS thumbnail_path,
        COALESCE(source, 'user') AS source,
        COALESCE(created_at, 0) AS created_at,
-       COALESCE(updated_at, 0) AS updated_at
+       COALESCE(updated_at, 0) AS updated_at,
+       COALESCE(cuisine, '') AS cuisine
 FROM dish
 WHERE id = ? AND status = 1;
 

@@ -274,9 +274,11 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val ingredientNames = loadIngredients().map { it.name }.toSet()
         val methods = PRESET_COOKING_METHODS.toSet() // [AI修改] 与 seedCookingMethods 同源，避免硬编码副本漂移。
         val units = PRESET_MEASUREMENT_UNITS.toSet() // [AI修改] 与 seedMeasurementUnits 同源。
+        val cuisines = com.sxdbsm.cookbook.domain.model.Cuisines.ALL.toSet()
         val problems = mutableListOf<String>()
         loadDishes().forEach { d ->
             if (d.method.isNotBlank() && d.method !in methods) problems += "[${d.name}] 未知烹饪方式:${d.method}"
+            if (d.cuisine.isNotBlank() && d.cuisine !in cuisines) problems += "[${d.name}] 未知菜系:${d.cuisine}"
             if (d.ingredients.none { it.main }) problems += "[${d.name}] 缺主料"
             d.ingredients.forEach { di ->
                 if (di.ingredient !in ingredientNames) problems += "[${d.name}] 未知食材:${di.ingredient}"
@@ -382,6 +384,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val methodIds = q.selectAllCookingMethods().executeAsList().associate { it.name to it.id }
         val unitIds = q.selectAllMeasurementUnits().executeAsList().associate { it.name to it.id }
         loadDishes().forEach dish@{ seed ->
+            // [AI生成] 先给已存在的预设菜补菜系(幂等，仅当前为空才补)，再判断是否跳过插入——老库升级也能拿到菜系。
+            if (seed.cuisine.isNotBlank()) q.updatePresetDishCuisineByName(cuisine = seed.cuisine, name = seed.name)
             if (q.selectPresetDishIdByName(seed.name).executeAsOneOrNull() != null) return@dish // 已存在则跳过。
             val methodId = methodIds[seed.method]
             q.insertDish(
@@ -394,6 +398,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                 source = "preset",
                 created_at = now,
                 updated_at = now,
+                cuisine = seed.cuisine,
             )
             val dishId = q.lastInsertId().executeAsOne()
             if (methodId != null) q.linkDishCookingMethod(dishId, methodId)
@@ -419,6 +424,7 @@ private data class SeedDish(
     val name: String,
     val method: String = "",
     val description: String = "",
+    val cuisine: String = "", // [AI生成] 菜系(家常菜/川菜等)
     val ingredients: List<SeedDishIngredient> = emptyList(),
     val steps: List<String> = emptyList(),
 )

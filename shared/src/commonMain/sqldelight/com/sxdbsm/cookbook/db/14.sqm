@@ -1,0 +1,3 @@
+-- [AI生成] v14 -> v15：给 dish 增加 cuisine(菜系) 列。
+-- 新列不存在于旧库，ALTER ADD COLUMN 安全（非对已有列）；全新安装由 Schema.create 自带该列、不走本迁移。
+ALTER TABLE dish ADD COLUMN cuisine TEXT NOT NULL DEFAULT '';

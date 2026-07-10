@@ -13,6 +13,8 @@ import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -234,6 +236,18 @@ fun NewDishScreen(
                     },
                     modifier = Modifier.height(32.dp),
                 )
+            }
+
+            // [AI生成] 菜系选择：单选，再点已选项可清空(留空=未分类)。
+            FormFieldLabel("菜系")
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                items(com.sxdbsm.cookbook.domain.model.Cuisines.ALL, key = { it }) { c ->
+                    FilterChip(
+                        selected = state.cuisine == c,
+                        onClick = { vm.setCuisine(if (state.cuisine == c) "" else c) },
+                        label = { Text(c) },
+                    )
+                }
             }
 
             FormFieldLabel("食材清单")

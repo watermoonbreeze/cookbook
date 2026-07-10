@@ -19,6 +19,7 @@ data class Dish(
     val imagePath: String = "",
     val thumbnailPath: String = "", // [AI生成] 缩略图路径，列表优先展示；为空时回退 imagePath。
     val source: String = "user",
+    val cuisine: String = "", // [AI生成] 菜系(家常菜/川菜等)，空=未分类。
     val createdAt: Long = 0,
     val updatedAt: Long = 0,
     val tags: List<String> = emptyList(), // [AI修改] 只读 List；修改时用 copy(tags = 新列表)。
@@ -73,6 +74,7 @@ data class DishMini(
     val cookingMethodName: String? = null,
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 列表/搜索中展示多个烹饪方式。
     val source: String = "user", // [AI生成] 'preset'=预设(不可直接编辑,复制后编辑)/'user'=自建。
+    val cuisine: String = "", // [AI生成] 菜系(家常菜/川菜等)，空=未分类；用于列表按菜系筛选。
     val shortageIngredients: List<String> = emptyList(), // [AI生成] 该菜在此餐次缺料的库存食材名(份数用尽)；非空则灰显"缺"
     val purchaseIngredients: List<String> = emptyList(), // [AI生成] 该菜主料不在库存的食材名(需采购)；非空则灰显"采购"
 )

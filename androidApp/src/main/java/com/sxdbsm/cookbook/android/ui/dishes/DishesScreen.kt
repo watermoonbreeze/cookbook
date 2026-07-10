@@ -96,7 +96,7 @@ fun DishesScreen(
     }
     val showPopular = ui.popular.isNotEmpty() && ui.keyword.isBlank()
     // [AI修改] 筛选 chip 行(availableMethods/tags 非空时渲染)也占一个 item，需计入字母跳转偏移，否则 A-Z 跳转偏 1。
-    val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
+    val hasFilterRow = ui.availableCuisines.isNotEmpty() || ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
     val letterIndexMap = remember(sections, showPopular, hasFilterRow) {
         var index = 1 + if (showPopular) 2 else 0 // [AI修改] 首项为下拉刷新提示，需要计入索引偏移。
         index += 1 // TabRow sticky header
@@ -229,14 +229,17 @@ fun DishesScreen(
                 }
             }
 
-            // [AI生成] 烹饪方式/标签筛选(横滑, 再点取消)。
-            if (ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()) {
+            // [AI生成] 菜系/烹饪方式/标签筛选(横滑, 再点取消)。
+            if (ui.availableCuisines.isNotEmpty() || ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()) {
                 item(key = "dish-filters") {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background),
                     ) {
+                        items(ui.availableCuisines, key = { "c-$it" }) { c ->
+                            FilterChip(selected = ui.selectedCuisine == c, onClick = { vm.toggleCuisineFilter(c) }, label = { Text(c) })
+                        }
                         items(ui.availableMethods, key = { "m-$it" }) { m ->
                             FilterChip(selected = ui.selectedMethod == m, onClick = { vm.toggleMethodFilter(m) }, label = { Text(m) })
                         }
@@ -249,7 +252,7 @@ fun DishesScreen(
 
             if (ui.all.isEmpty()) {
                 // [AI修改] 空态按原因区分：筛选无果 / 喜爱页无评分 / 真的一道菜都没有(引导添加)。
-                val filtersActive = ui.selectedMethod != null || ui.selectedTag != null || ui.keyword.isNotBlank()
+                val filtersActive = ui.selectedMethod != null || ui.selectedTag != null || ui.selectedCuisine != null || ui.keyword.isNotBlank()
                 val emptyText = when {
                     filtersActive -> "没有符合筛选的菜品"
                     ui.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜品\n给菜品评分后会出现在这里"

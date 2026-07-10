@@ -125,6 +125,9 @@ class PresetDataSeederTest {
         val dishIngredients = q.selectIngredientsOfDish(dish.id).executeAsList()
         assertTrue(dishIngredients.any { it.ingredient_name == "青椒" && it.is_main == 1L }, "青椒应作为主料(is_main)")
         assertTrue(q.selectStepsOfDish(dish.id).executeAsList().isNotEmpty(), "预设菜应有做法步骤")
+        assertEquals("家常菜", dish.cuisine, "预设菜应写入菜系(青椒炒肉丝=家常菜)") // [AI生成] 菜系独立字段回归
+        val mapo = q.selectAllDishes().executeAsList().first { it.name == "麻婆豆腐" }
+        assertEquals("川菜", mapo.cuisine, "地域招牌应标对应菜系(麻婆豆腐=川菜)")
 
         val dishCountBefore = q.selectAllDishes().executeAsList().size
         seeder.forceReseedBaseData()

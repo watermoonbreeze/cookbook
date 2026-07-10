@@ -258,6 +258,10 @@ fun DishDetailScreen(
                 }
             }
 
+            if (d.cuisine.isNotBlank()) {
+                FormFieldLabel("菜系", topPadding = 18.dp, bottomPadding = 8.dp)
+                Text(d.cuisine, style = MaterialTheme.typography.bodyLarge)
+            }
             val cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() }
             if (cookingMethodNames.isNotEmpty()) {
                 FormFieldLabel("烹饪方式", topPadding = 18.dp, bottomPadding = 8.dp)

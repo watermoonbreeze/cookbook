@@ -78,6 +78,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                         source = row.source,
+                        cuisine = row.cuisine,
                     )
                 },
             )
@@ -98,6 +99,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                         source = row.source,
+                        cuisine = row.cuisine,
                     )
                 },
             )
@@ -118,6 +120,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                         source = row.source,
+                        cuisine = row.cuisine,
                     )
                 },
             )
@@ -140,6 +143,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                         source = row.source,
+                        cuisine = row.cuisine,
                     )
                 },
             )
@@ -155,6 +159,7 @@ class DishRepository(private val db: CookbookDatabase) {
                         preference = row.preference.toInt(),
                         cookingMethodId = row.cooking_method_id,
                         source = row.source,
+                        cuisine = row.cuisine,
                     )
                 },
             )
@@ -237,6 +242,7 @@ class DishRepository(private val db: CookbookDatabase) {
                 cookingMethodName = methodNames.firstOrNull(),
                 cookingMethodNames = methodNames,
                 source = source.source,
+                cuisine = source.cuisine,
             )
         }
     }
@@ -252,6 +258,7 @@ class DishRepository(private val db: CookbookDatabase) {
         val preference: Int,
         val cookingMethodId: Long?,
         val source: String = "user",
+        val cuisine: String = "", // [AI生成] 菜系
     )
 
     /**
@@ -276,6 +283,7 @@ class DishRepository(private val db: CookbookDatabase) {
         preference: Int,
         cookingMethodId: Long?,
         source: String = "user",
+        cuisine: String = "",
     ): DishMini =
         buildDishMinis(
             listOf(
@@ -287,6 +295,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     preference = preference,
                     cookingMethodId = cookingMethodId,
                     source = source,
+                    cuisine = cuisine,
                 ),
             ),
         ).first()
@@ -359,6 +368,7 @@ class DishRepository(private val db: CookbookDatabase) {
             imagePath = row.image_path,
             thumbnailPath = row.thumbnail_path,
             source = row.source,
+            cuisine = row.cuisine,
             createdAt = row.created_at,
             updatedAt = row.updated_at,
             tags = tags,
@@ -382,6 +392,7 @@ class DishRepository(private val db: CookbookDatabase) {
         tagNames: List<String>,
         ingredients: List<DishIngredient>,
         steps: List<DishStep> = emptyList(),
+        cuisine: String = "", // [AI生成] 菜系(可空)
     ): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
         var dishId = id
@@ -400,6 +411,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     source = "user",
                     created_at = now,
                     updated_at = now,
+                    cuisine = cuisine,
                 )
                 dishId = q.lastInsertId().executeAsOne()
             } else {
@@ -411,6 +423,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     image_path = imagePath,
                     thumbnail_path = thumbnailPath,
                     updated_at = now,
+                    cuisine = cuisine,
                     id = id,
                 )
             }

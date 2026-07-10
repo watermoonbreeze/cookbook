@@ -20,6 +20,14 @@ import kotlinx.coroutines.launch
  */
 enum class DishesSortTab { RECENT, FAVORITE, ALL }
 
+/** 列表排序 + 三种筛选合并载体(供 combine 一路传递)。[AI生成] */
+private data class ViewOpts(
+    val sortTab: DishesSortTab,
+    val method: String?,
+    val tag: String?,
+    val cuisine: String?,
+)
+
 /**
  * 菜品页 UI 状态。[AI修改]
  */
@@ -32,8 +40,10 @@ data class DishesUiState(
     val deleteState: DishDeleteState = DishDeleteState(),
     val selectedMethod: String? = null, // [AI生成] 烹饪方式筛选
     val selectedTag: String? = null, // [AI生成] 标签筛选
+    val selectedCuisine: String? = null, // [AI生成] 菜系筛选
     val availableMethods: List<String> = emptyList(), // 当前列表可选烹饪方式
     val availableTags: List<String> = emptyList(), // 当前列表可选标签
+    val availableCuisines: List<String> = emptyList(), // 当前列表可选菜系
     val recentCount: Int = 0, // [AI生成] 最近 Tab 菜品数(前30, 与该 Tab 实际展示一致)
     val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
@@ -68,6 +78,7 @@ class DishesViewModel(
     private val _deleteState = MutableStateFlow(DishDeleteState()) // [AI生成] 长按删除前的引用检查/确认弹框状态。
     private val _methodFilter = MutableStateFlow<String?>(null) // [AI生成] 烹饪方式筛选
     private val _tagFilter = MutableStateFlow<String?>(null) // [AI生成] 标签筛选
+    private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] 菜系筛选
     private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
 
     private companion object {
@@ -85,18 +96,23 @@ class DishesViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // [AI生成] 排序+筛选合并为一路(combine 最多 5 路)。
-    private val viewOpts = kotlinx.coroutines.flow.combine(_sortTab, _methodFilter, _tagFilter) { s, m, t -> Triple(s, m, t) }
+    private val viewOpts = kotlinx.coroutines.flow.combine(
+        _sortTab, _methodFilter, _tagFilter, _cuisineFilter,
+    ) { s, m, t, c -> ViewOpts(s, m, t, c) }
 
     private val baseState = kotlinx.coroutines.flow.combine(
         popular, allObserved, _list, _keyword, viewOpts,
     ) { popular, observed, searched, kw, opts ->
-        val (tab, method, tag) = opts
+        val (tab, method, tag, cuisine) = opts
         val raw = if (kw.isBlank()) observed else searched
         // 可选筛选项从筛选前列表派生，避免选中后选项消失。
         val methods = raw.flatMap { it.cookingMethodNames }.filter { it.isNotBlank() }.distinct().sorted()
         val tags = raw.flatMap { it.tags }.filter { it.isNotBlank() }.distinct().sorted()
+        val cuisines = raw.map { it.cuisine }.filter { it.isNotBlank() }.distinct().sorted()
         val filtered = raw.filter { d ->
-            (method == null || method in d.cookingMethodNames) && (tag == null || tag in d.tags)
+            (method == null || method in d.cookingMethodNames) &&
+                (tag == null || tag in d.tags) &&
+                (cuisine == null || cuisine == d.cuisine)
         }
         // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
@@ -108,7 +124,8 @@ class DishesViewModel(
         }
         DishesUiState(
             popular = popular, all = sortDishes(listForTab, tab), keyword = kw, sortTab = tab,
-            selectedMethod = method, selectedTag = tag, availableMethods = methods, availableTags = tags,
+            selectedMethod = method, selectedTag = tag, selectedCuisine = cuisine,
+            availableMethods = methods, availableTags = tags, availableCuisines = cuisines,
             recentCount = recentList.size, favoriteCount = favorites.size, allCount = filtered.size,
         )
     }
@@ -135,6 +152,9 @@ class DishesViewModel(
 
     /** 选/取消 标签筛选。[AI生成] */
     fun toggleTagFilter(tag: String) { _tagFilter.value = if (_tagFilter.value == tag) null else tag }
+
+    /** 选/取消 菜系筛选。[AI生成] */
+    fun toggleCuisineFilter(cuisine: String) { _cuisineFilter.value = if (_cuisineFilter.value == cuisine) null else cuisine }
 
     fun refresh() {
         searchNow(_keyword.value, force = true)

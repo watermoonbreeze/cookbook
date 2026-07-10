@@ -36,6 +36,7 @@ data class NewDishUiState(
     val steps: List<DishStep> = emptyList(), // [AI生成] 菜品操作步骤草稿，保存时随菜品事务一起落库。
     val specialNote: String = "",
     val description: String = "",
+    val cuisine: String = "", // [AI生成] 菜系(可空)
     val imagePath: String = "",
     val thumbnailPath: String = "",
     val loading: Boolean = false,
@@ -145,6 +146,7 @@ class NewDishViewModel(
                             editingId = d.id,
                             name = d.name,
                             tags = d.tags,
+                            cuisine = d.cuisine,
                             cookingMethodId = d.cookingMethodId,
                             cookingMethodName = d.cookingMethodName,
                             cookingMethodInput = d.cookingMethodName.orEmpty(),
@@ -192,6 +194,7 @@ class NewDishViewModel(
             editingId = null,    // 始终新建
             name = d.name,
             tags = (d.tags + "#复制").distinct(),
+            cuisine = d.cuisine,
             cookingMethodId = d.cookingMethodId,
             cookingMethodName = d.cookingMethodName,
             cookingMethodInput = d.cookingMethodName.orEmpty(),
@@ -258,6 +261,7 @@ class NewDishViewModel(
             cookingMethodId = null,
         )
     }
+    fun setCuisine(v: String) { _state.value = _state.value.copy(cuisine = v) } // [AI生成] 菜系选择(再选同一个可清空)
     fun setSpecialNote(v: String) { _state.value = _state.value.copy(specialNote = v) }
     fun setDescription(v: String) { _state.value = _state.value.copy(description = v) }
     fun setImagePath(v: String) { _state.value = _state.value.copy(imagePath = v) } // [AI生成] 保存最多 3 张菜品图片 URI。
@@ -385,6 +389,7 @@ class NewDishViewModel(
                     tagNames = s.tags,
                     ingredients = s.ingredients,
                     steps = s.steps,
+                    cuisine = s.cuisine,
                 )
             }.onSuccess { savedId ->
                 AppLogger.event(
