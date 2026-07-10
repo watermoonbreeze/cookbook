@@ -61,6 +61,7 @@ fun IngredientPickerScreen(
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var dishMatchOpen by remember { mutableStateOf(false) } // [AI生成] 按已选食材找菜结果弹框。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
+    var pantryServingDialogFor by remember { mutableStateOf<Ingredient?>(null) } // [AI生成] 搜索结果入库时的份数选择弹窗目标。
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -152,7 +153,8 @@ fun IngredientPickerScreen(
                         },
                         onToggleSelect = { vm.toggleSelection(it) },
                         onTogglePantry = { ing ->
-                            if (ing.id in ui.pantryIngredientIds) vm.removeFromPantry(ing) else vm.addToPantry(ing)
+                            // [AI修改] 入库时弹份数选择；已在库则出库。
+                            if (ing.id in ui.pantryIngredientIds) vm.removeFromPantry(ing) else pantryServingDialogFor = ing
                         },
                     )
                 }
@@ -431,6 +433,18 @@ fun IngredientPickerScreen(
         )
     }
 
+    // [AI生成] 搜索结果入库：先选份数(1~99)再入库。
+    pantryServingDialogFor?.let { ing ->
+        PantryServingDialog(
+            ingredientName = ing.name,
+            onConfirm = { count ->
+                vm.addServings(ing.id, count)
+                pantryServingDialogFor = null
+            },
+            onDismiss = { pantryServingDialogFor = null },
+        )
+    }
+
     if (createDialogOpen) {
         IngredientEditorDialog(
             ingredient = null,
@@ -696,5 +710,36 @@ private fun SearchResultsPanel(
             }
         }
     }
+}
+
+/**
+ * 入库份数选择弹窗。[AI生成]
+ *
+ * 搜索结果入库时先选份数(1~99)，与详情表份数管理一致；份数=可做几次菜。
+ */
+@Composable
+private fun PantryServingDialog(
+    ingredientName: String,
+    onConfirm: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var count by remember { mutableStateOf(1) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("入库：$ingredientName") },
+        text = {
+            Column {
+                Text("份数 = 可做几次菜", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedButton(onClick = { if (count > 1) count-- }, enabled = count > 1) { Text("－") }
+                    Text("$count 份", style = MaterialTheme.typography.titleLarge)
+                    OutlinedButton(onClick = { if (count < 99) count++ }) { Text("＋") }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { onConfirm(count) }) { Text("入库") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+    )
 }
 
