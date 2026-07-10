@@ -88,7 +88,12 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val fingerprint = fingerprintOf(categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson)
 
         val stored = q.selectPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT).executeAsOneOrNull()?.value_
-        if (!force && stored == fingerprint) return false // 内容未变，跳过全部内容 seed。
+        if (!force && stored == fingerprint) {
+            // [AI生成] 指纹一致跳过——排查"改了 seed 却没生效/新菜没出现"时看这条日志(需 force 或重装)。
+            com.sxdbsm.cookbook.platform.CookbookLog.d("Seed", "内容指纹未变，跳过 seed (force=$force)")
+            return false
+        }
+        com.sxdbsm.cookbook.platform.CookbookLog.d("Seed", "执行内容 seed (force=$force, 指纹变化=${stored != fingerprint})")
 
         db.transaction {
             val categoryIdsByCode = seedFoodCategories(now) // [AI修改] 分类补齐式 JSON seed。

@@ -5,6 +5,7 @@ import com.sxdbsm.cookbook.domain.model.ShoppingItem
 import com.sxdbsm.cookbook.domain.model.ShoppingReason
 import com.sxdbsm.cookbook.pantry.PantryAllocation
 import com.sxdbsm.cookbook.pantry.PantryUsage
+import com.sxdbsm.cookbook.platform.CookbookLog
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.withContext
@@ -65,13 +66,15 @@ class ShoppingListRepository(
             }
         }
 
-        acc.values
+        val result = acc.values
             .map { it.toItem(resolveId(it.name)) }
             .sortedWith(
                 compareByDescending<ShoppingItem> { it.reason == ShoppingReason.PURCHASE }
                     .thenByDescending { it.mealCount }
                     .thenBy { it.ingredientName },
             )
+        CookbookLog.d("ShoppingList", "aggregate today=$todayStr -> ${result.size} 项")
+        result
     }
 
     private fun resolveId(name: String): Long? = q.selectActiveIngredientIdByName(name).executeAsOneOrNull()

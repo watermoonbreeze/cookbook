@@ -67,4 +67,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    // [AI生成] JVM 单测里 android.util.Log 等 SDK 桩方法默认抛异常；返回默认值使 shared 的 CookbookLog(委托 Log) 在测试中无副作用。
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
