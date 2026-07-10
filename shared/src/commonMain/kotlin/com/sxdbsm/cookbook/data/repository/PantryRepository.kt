@@ -65,12 +65,17 @@ class PantryRepository(private val db: CookbookDatabase) {
      *
      * 份数=可做几次菜。0 份食材不消失、可继续加；已有则累加并置在手。
      */
-    suspend fun addServings(ingredientId: Long, delta: Int = 1) = withContext(ioDispatcher) {
-        if (delta == 0) return@withContext
-        val now = DateTime.nowEpochSeconds()
-        db.transaction { // [AI修改] SQLite3.18 无 UPSERT，两步(建缺项→累加)放事务内保证原子
-            q.insertPantryIfAbsent(ingredient_id = ingredientId, added_at = now)
-            q.incrementPantryServings(delta = delta.toLong(), added_at = now, ingredient_id = ingredientId)
+    suspend fun addServings(ingredientId: Long, delta: Int = 1) {
+        if (delta <= 0) return
+        // [AI修改] 结算为「当前剩余 + 新加」并从现在起重新计窗口：
+        // 避免份数为0后重加时，把入库日之前已消耗的份数重复计入(份数=当前剩余+delta, 而非旧份数累加)。
+        val currentRemaining = remaining()[ingredientId] ?: 0
+        withContext(ioDispatcher) {
+            val now = DateTime.nowEpochSeconds()
+            db.transaction { // SQLite3.18 无 UPSERT，两步(建缺项→结算)放事务内保证原子
+                q.insertPantryIfAbsent(ingredient_id = ingredientId, added_at = now)
+                q.activatePantry(serving_count = (currentRemaining + delta).toLong(), added_at = now, ingredient_id = ingredientId)
+            }
         }
     }
 

@@ -1202,14 +1202,15 @@ upsertPantryItem:
 INSERT OR REPLACE INTO pantry(ingredient_id, quantity, unit_id, added_at, expire_at, note, status)
 VALUES (:ingredient_id, :quantity, :unit_id, :added_at, :expire_at, :note, 1);
 
--- [AI生成] 加份数(续加累加)第一步：无则建(份数0, 在手)；有则忽略。SQLite3.18无UPSERT, 故两步(事务内)。
+-- [AI生成] 加份数第一步：无则建(份数0, 在手)；有则忽略。SQLite3.18无UPSERT, 故两步(事务内)。
 insertPantryIfAbsent:
 INSERT OR IGNORE INTO pantry(ingredient_id, added_at, status, serving_count)
 VALUES (:ingredient_id, :added_at, 1, 0);
 
--- [AI生成] 加份数第二步：份数 += delta 并置在手、刷新入库时间。
-incrementPantryServings:
-UPDATE pantry SET serving_count = serving_count + :delta, status = 1, added_at = :added_at
+-- [AI生成] 加份数第二步：结算为「当前剩余+新加」的绝对份数, 重置入库时间(窗口), 置在手。
+-- 避免为0后重加把已消耗的重复计入(份数=当前剩余+delta, 而非旧份数累加)。
+activatePantry:
+UPDATE pantry SET serving_count = :serving_count, added_at = :added_at, status = 1
 WHERE ingredient_id = :ingredient_id;
 
 -- [AI生成] 显式设置份数(编辑/减少)。
