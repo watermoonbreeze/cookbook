@@ -39,6 +39,7 @@ object RecommendationPrompt {
                 append("｜主料:").append(c.mainNames.joinToString("、").ifEmpty { "-" })
                 if (c.seasoningsOnHand.isNotEmpty()) append("｜在手调料:").append(c.seasoningsOnHand.joinToString("、"))
                 if (c.recommendHits.isNotEmpty()) append("｜利调养:").append(c.recommendHits.joinToString("、"))
+                if (c.missingNames.isNotEmpty()) append("｜还需采购:").append(c.missingNames.joinToString("、")) // [AI生成] 主料齐但辅料缺，供模型措辞提示
                 if (c.limitHits.isNotEmpty()) append("｜注意限量:").append(c.limitHits.joinToString("、"))
                 append("\n")
             }

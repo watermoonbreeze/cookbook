@@ -92,6 +92,7 @@ class AiRecommendViewModel(
     private fun buildNote(c: DishCandidate, onHandLabel: String): String {
         val parts = mutableListOf<String>()
         if (c.shortageNames.isNotEmpty()) parts += "⚠库存不足：${c.shortageNames.joinToString("、")}" // [AI生成] 份数用尽仍推荐但标识
+        if (c.missingNames.isNotEmpty()) parts += "🛒还需采购：${c.missingNames.joinToString("、")}" // [AI生成] 主料齐但辅料缺，标出需补
         if (c.mainNames.isNotEmpty()) parts += "$onHandLabel：${c.mainNames.joinToString("、")}"
         if (c.recommendHits.isNotEmpty()) parts += "✓利于调养：${c.recommendHits.joinToString("、")}"
         if (c.seasoningsOnHand.isNotEmpty()) parts += "可做法：${c.seasoningsOnHand.joinToString("、")}"

@@ -27,19 +27,24 @@ class HealthRuleEngineTest {
     private fun sea(id: Long, name: String) = RuleDishIngredient(id, name, IngredientRole.SEASONING)
 
     @Test
-    fun `非调料齐则可做，非调料缺则剔除`() {
-        // 西红柿炒鸡蛋：番茄+鸡蛋(非调料，都得有)，盐(调料)。
+    fun `主料齐即可做，缺辅料标还需采购，缺主料才剔除`() {
+        // 西红柿炒鸡蛋：番茄(主料)+鸡蛋(辅料)，盐(调料)。方案A'：主料齐即可推荐。
         val dish = RuleDish(1, "西红柿炒鸡蛋", listOf(main(101, "番茄"), sec(102, "鸡蛋"), sea(901, "盐")))
 
-        // 番茄+鸡蛋齐 → 可做（即便盐不在手）
-        val ok = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 102), HealthConstraints())
-        assertEquals(1, ok.size)
-        assertEquals(listOf("番茄"), ok.first().mainNames)
-        assertEquals(listOf("鸡蛋"), ok.first().secondaryNames)
+        // 番茄+鸡蛋齐 → 可做且无缺
+        val full = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 102), HealthConstraints())
+        assertEquals(1, full.size)
+        assertEquals(listOf("番茄"), full.first().mainNames)
+        assertTrue(full.first().missingNames.isEmpty())
 
-        // 缺鸡蛋(非调料) → 不可做，剔除
-        val missing = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 901), HealthConstraints())
-        assertTrue(missing.isEmpty())
+        // 主料番茄齐、辅料鸡蛋缺 → 仍可做，标"还需采购：鸡蛋"
+        val partial = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 901), HealthConstraints())
+        assertEquals(1, partial.size)
+        assertEquals(listOf("鸡蛋"), partial.first().missingNames)
+
+        // 主料番茄缺 → 剔除
+        val noMain = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(102, 901), HealthConstraints())
+        assertTrue(noMain.isEmpty())
     }
 
     @Test
@@ -135,14 +140,34 @@ class HealthRuleEngineTest {
     }
 
     @Test
-    fun `辅料属于非调料必须在手`() {
-        // 木耳作为辅料(非调料) → 方案A 下也算可做性必需。
+    fun `缺辅料仍可做但标还需采购，缺主料才剔除`() {
+        // 木耳作为辅料(非调料)：方案A' 下缺辅料不再整菜剔除，只标"还需采购"并降权。
         val dish = RuleDish(1, "木耳炒肉", listOf(main(101, "猪肉"), sec(201, "木耳"), sea(901, "盐")))
-        // 缺木耳 → 不可做
-        val missing = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101), HealthConstraints())
-        assertTrue(missing.isEmpty())
-        // 猪肉+木耳齐 → 可做
+        // 主料猪肉齐、缺木耳(辅料) → 仍可做，missingNames=[木耳]
+        val partial = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101), HealthConstraints())
+        assertEquals(1, partial.size)
+        assertEquals(listOf("木耳"), partial.first().missingNames)
+        // 猪肉+木耳齐 → 可做无缺
         val ok = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 201), HealthConstraints())
         assertEquals(1, ok.size)
+        assertTrue(ok.first().missingNames.isEmpty())
+        // 缺主料猪肉 → 剔除
+        val noMain = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(201), HealthConstraints())
+        assertTrue(noMain.isEmpty())
+    }
+
+    @Test
+    fun `辅料齐备的菜排在缺辅料的菜前面`() {
+        // 两菜主料都在手；一齐备一缺辅料 → 齐备的排前，缺的仍推荐并标还需采购。
+        val full = RuleDish(1, "番茄炒蛋", listOf(main(101, "番茄"), sec(102, "鸡蛋")))
+        val partial = RuleDish(2, "青椒炒肉", listOf(main(103, "青椒"), sec(201, "肉")))
+        val result = engine.evaluate(
+            listOf(partial, full), // 故意把缺辅料的放前面
+            pantryIngredientIds = setOf(101, 102, 103), // full 齐备; partial 缺辅料 201
+            HealthConstraints(),
+        )
+        assertEquals(2, result.size) // 都推荐
+        assertEquals(1L, result.first().id) // 齐备的排前
+        assertEquals(listOf("肉"), result.first { it.id == 2L }.missingNames)
     }
 }
