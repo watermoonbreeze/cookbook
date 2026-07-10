@@ -35,7 +35,7 @@ data class DishesUiState(
     val selectedTag: String? = null, // [AI生成] 标签筛选
     val availableMethods: List<String> = emptyList(), // 当前列表可选烹饪方式
     val availableTags: List<String> = emptyList(), // 当前列表可选标签
-    val recentCount: Int = 0, // [AI生成] 最近 Tab 菜品数(=全部)
+    val recentCount: Int = 0, // [AI生成] 最近 Tab 菜品数(前30, 与该 Tab 实际展示一致)
     val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
 )

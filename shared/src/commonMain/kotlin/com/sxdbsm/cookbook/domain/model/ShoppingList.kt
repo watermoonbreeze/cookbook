@@ -15,7 +15,7 @@ data class ShoppingItem(
     val ingredientId: Long?, // 名字解析不到时为 null（仍展示名字）
     val ingredientName: String,
     val reason: ShoppingReason,
-    val mealCount: Int, // 出现在多少个"餐-菜"里（同一食材跨多餐累加）
+    val mealCount: Int, // 涉及餐次数：采购项=该主料出现的全部未来餐-菜数；缺料项=被判缺料(超库存)的餐-菜数
     val dates: List<String>, // 涉及的日期（yyyy-MM-dd，去重升序）
 )
 

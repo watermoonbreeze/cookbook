@@ -48,9 +48,11 @@ fun NewDishScreen(
     // [AI修改] 表单状态来自 ViewModel，局部弹窗开关用 remember 存在当前 Composable 内。
     val state by vm.state.collectAsStateWithLifecycle()
     // [AI生成] 分步执行开关(功能设置)：关闭时步骤不显示"步骤N"序号。
+    // [AI修改] observeFlag 用 remember 缓存，避免每次重组新建 Flow 反复订阅查库。
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
-    val stepModeEnabled by prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
-        .collectAsStateWithLifecycle(false)
+    val stepModeEnabled by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
+    }.collectAsStateWithLifecycle(false)
     var tagInputOpen by remember { mutableStateOf(false) }
     var newTagText by remember { mutableStateOf("") }
     var importPickerOpen by remember { mutableStateOf(false) }

@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -44,9 +45,11 @@ fun DishDetailScreen(
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
     val dish by vm.observeDish(dishId).collectAsStateWithLifecycle(initialValue = null)
     // [AI生成] 分步执行开关(功能设置)：关闭时详情页不展示"开始分步烹饪"。
+    // [AI修改] observeFlag 用 remember 缓存，避免每次重组新建 Flow 反复订阅查库。
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
-    val stepMode by prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
-        .collectAsStateWithLifecycle(false)
+    val stepMode by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
+    }.collectAsStateWithLifecycle(false)
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
@@ -124,7 +127,7 @@ fun DishDetailScreen(
             }
 
             // [AI生成] 详情洞察：库存可做/缺料/采购、健康适宜、做过次数、营养概要。
-            LaunchedEffect(d.id) { vm.loadInsights(d) }
+            LaunchedEffect(d) { vm.loadInsights(d) } // [AI修改] key 用整个 d：同菜编辑后(id不变)洞察/相关菜品也重算。
             vm.insights?.let { DishInsightsSection(it) }
 
             if (d.tags.isNotEmpty()) {
@@ -233,7 +236,10 @@ fun DishDetailScreen(
                                 val stepThumbnails = decodeImagePaths(step.thumbnailPath)
                                 if (stepImages.isNotEmpty()) {
                                     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        items(stepImages.mapIndexed { imageIndex, path -> path to stepThumbnails.getOrNull(imageIndex).orEmpty() }) { (path, thumbnailPath) ->
+                                        items(
+                                            stepImages.mapIndexed { imageIndex, path -> path to stepThumbnails.getOrNull(imageIndex).orEmpty() },
+                                            key = { it.first }, // [AI修改] 补 key，与相关菜品/详情图列表一致，避免增删图错位。
+                                        ) { (path, thumbnailPath) ->
                                             StoredImage(
                                                 imagePath = path,
                                                 thumbnailPath = thumbnailPath,

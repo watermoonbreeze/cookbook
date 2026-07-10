@@ -42,7 +42,9 @@ class DishDetailViewModel(
     private suspend fun computeInsights(dish: Dish): DishInsights {
         val ingIds = dish.ingredients.map { it.ingredient.id }
 
-        // 库存：主料不在库→采购、在库份数不够→缺；无库存则不判。
+        // 库存：主料不在库→采购、在库当前剩余份数≤0→缺；无库存则不判。
+        // 注：详情页回答"以现有库存现在能否做这道菜"，用全局 remaining()；这与食历卡片按餐次
+        // 时间序 rank 分配的缺料口径(PantryAllocation.shortages)语义不同(卡片针对具体排期餐)，属预期差异。
         val servings = pantryRepo.servingCounts()
         val usingPantry = servings.isNotEmpty()
         val remaining = if (usingPantry) pantryRepo.remaining() else emptyMap()
@@ -85,6 +87,7 @@ class DishDetailViewModel(
             cookedCount = stats.first,
             lastCookedDate = stats.second,
             nutritionTags = nutrition,
+            related = related, // [AI修改] 修复：此前漏传导致"相关菜品"永不显示。
         )
     }
 }

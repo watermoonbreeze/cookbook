@@ -82,14 +82,15 @@ fun DishesScreen(
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
     var pullDistance by remember { mutableStateOf(0f) }
-    val hotRankById = remember(ui.all) {
-        ui.all
+    val hotRankById = remember(ui.popular) {
+        // [AI修改] 热度前3取自全局 popular(preference DESC)，而非受"最近30/筛选"缩窄的 ui.all，保持全局语义。
+        ui.popular
             .filter { it.preference > 0 }
             .sortedByDescending { it.preference }
             .take(3)
             .mapIndexed { index, dish -> dish.id to index + 1 }
             .toMap()
-    } // [AI修改] 菜品 Item 右侧喜爱值前 3 名显示热度标识。
+    } // 菜品 Item 右侧喜爱值前 3 名显示热度标识。
     val sections = remember(ui.all) {
         ui.all.groupBy { dishInitial(it.name) }.toSortedMap()
     }
@@ -244,7 +245,14 @@ fun DishesScreen(
             }
 
             if (ui.all.isEmpty()) {
-                item { EmptyState(text = "没有符合筛选的菜品", icon = "🥗") }
+                // [AI修改] 空态按原因区分：筛选无果 / 喜爱页无评分 / 真的一道菜都没有(引导添加)。
+                val filtersActive = ui.selectedMethod != null || ui.selectedTag != null || ui.keyword.isNotBlank()
+                val emptyText = when {
+                    filtersActive -> "没有符合筛选的菜品"
+                    ui.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜品\n给菜品评分后会出现在这里"
+                    else -> "还没有菜品\n点击右上角 + 添加"
+                }
+                item { EmptyState(text = emptyText, icon = "🥗") }
             } else if (ui.sortTab == DishesSortTab.ALL) {
                 sections.forEach { (letter, dishes) ->
                     item(key = "section-$letter") {
