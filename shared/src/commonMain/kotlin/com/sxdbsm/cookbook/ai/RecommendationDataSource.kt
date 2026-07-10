@@ -100,15 +100,17 @@ class RecommendationDataSource(
      */
     suspend fun annotatePlanWithPantry(plan: PeriodPlan): PeriodPlan = withContext(ioDispatcher) {
         if (plan.days.isEmpty()) return@withContext plan
+        val servings0 = pantryRepo.servingCounts()
+        // [AI生成] 库存完全为空(未用库存功能)时不标注，避免整份规划全标"采购"灰显打扰。
+        if (servings0.isEmpty()) return@withContext plan
         val dishIds = plan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
         val mainByDish = dishIds.associateWith { id ->
             dishRepo.getDishById(id)?.ingredients?.filter { it.isMain }
                 ?.map { PlanMainIngredient(it.ingredient.id, it.ingredient.name) }.orEmpty()
         }
-        val servings = pantryRepo.servingCounts()
         val consumed = pantryRepo.consumedUntilToday()
-        val remaining = servings.mapValues { (id, c) -> (c - (consumed[id] ?: 0)).coerceAtLeast(0) }
-        PantryPlanAnnotator.annotate(plan, mainByDish, servings.keys, remaining)
+        val remaining = servings0.mapValues { (id, c) -> (c - (consumed[id] ?: 0)).coerceAtLeast(0) }
+        PantryPlanAnnotator.annotate(plan, mainByDish, servings0.keys, remaining)
     }
 
     /** 周期规划取数：全库菜品 + 营养/应季标签 + 健康标记 + 当前季节。[AI生成] */

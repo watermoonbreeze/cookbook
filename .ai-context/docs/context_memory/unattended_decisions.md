@@ -92,3 +92,11 @@
 - 若 PlanDish 无食材 id，则给 PlanDish 补主料 ingredientId 列表(gatherForPlan)，AiPlanViewModel 计算采购/缺料标到 PlannedDish 供 UI 展示。
 
 **验证**：每步 build + 单测；≤15 文件；[unattended] 提交不 push。探查结果与实现细节续记于下。
+
+### 实现结果（2026-07-10 吃饭时段）
+- **请求1 搜索入库份数** ✅：`SearchResultsPanel` 入库→`PantryServingDialog`(1~99份)→addServings。
+- **请求2 周期规划采购/缺料** ✅：`PlannedDish` 加 shortageNames/purchaseNames；`PantryPlanAnnotator`(纯,可测,按天序分配剩余份数, 只判主料)；`RecommendationDataSource.annotatePlanWithPantry`(查主料+库存快照); AiPlanViewModel 生成后标注; AiPlanScreen 缺/采购菜半透明+"🛒采购:X"/"⚠缺:X"。
+- **自评修复**：库存完全为空(未用库存功能)时**不标注**，避免整份规划全标采购灰显打扰。
+- 验证: 全部单测 78 用例 0 失败(+PantryPlanAnnotatorTest); androidApp 构建通过。
+- 决策: 采购只判主料(盐油等调料不标); 规划按当前剩余份数为预算跨天分配(规划本就"涉及后续采购")。
+- 均 [unattended] 本地提交, 未 push。
