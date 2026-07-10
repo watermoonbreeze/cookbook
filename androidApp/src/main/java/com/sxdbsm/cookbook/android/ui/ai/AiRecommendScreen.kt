@@ -60,7 +60,19 @@ fun AiRecommendScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("AI 推荐") },
+                title = {
+                    // [AI生成] 标题后标注当前推荐来源：云端AI模型/本地模型/离线规则。
+                    Column {
+                        Text("AI 推荐")
+                        if (state.engineLabel.isNotBlank()) {
+                            Text(
+                                "推荐来源：${state.engineLabel}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                },
                 navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") } },
             )
         },

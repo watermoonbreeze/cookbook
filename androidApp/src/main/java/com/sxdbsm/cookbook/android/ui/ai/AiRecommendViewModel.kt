@@ -46,11 +46,28 @@ class AiRecommendViewModel(
         started = true
         viewModelScope.launch {
             if (aiConfig.isModelReady()) {
-                state = state.copy(modelReady = true, pendingManual = true)
+                state = state.copy(
+                    modelReady = true,
+                    pendingManual = true,
+                    engineLabel = engineLabelOf(aiConfig.activeType(), modelReady = true, source = null),
+                )
             } else {
                 recommend(state.mode)
             }
         }
+    }
+
+    /** 计算推荐来源标注。[AI生成] 实际由规则兜底时如实标注离线规则。 */
+    private fun engineLabelOf(
+        type: com.sxdbsm.cookbook.ai.AiRuntimeType,
+        modelReady: Boolean,
+        source: RecommendationSource?,
+    ): String = when {
+        source == RecommendationSource.RULE_FALLBACK -> "离线规则（模型兜底）"
+        !modelReady -> "离线规则"
+        type == com.sxdbsm.cookbook.ai.AiRuntimeType.CLOUD -> "云端 AI 模型"
+        type == com.sxdbsm.cookbook.ai.AiRuntimeType.ON_DEVICE -> "本地模型"
+        else -> "离线规则"
     }
 
     /** 触发推荐（首次 / 换一换 / 切模式）。[AI生成] */
@@ -62,7 +79,8 @@ class AiRecommendViewModel(
                 val input = dataSource.gather(mode)
                 orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { result ->
-                state = mapResult(result, mode, modelReady = state.modelReady)
+                val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
+                state = mapResult(result, mode, modelReady = state.modelReady).copy(engineLabel = label)
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
             }
@@ -119,6 +137,7 @@ data class AiRecommendUiState(
     val mode: RecommendMode = RecommendMode.PANTRY,
     val modelReady: Boolean = false, // [AI生成] 是否已配置 AI 模型(配置了则不自动推荐)。
     val pendingManual: Boolean = false, // [AI生成] 等待用户手动点击「开始推荐」(配置了 AI 模型时)。
+    val engineLabel: String = "", // [AI生成] 当前推荐来源标注：云端AI模型/本地模型/离线规则。
 )
 
 /** 单道推荐菜的展示模型。[AI生成] */

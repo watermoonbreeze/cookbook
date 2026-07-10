@@ -123,8 +123,14 @@ private fun DayCard(day: DayPlan) {
                     Spacer(Modifier.height(2.dp))
                     // [AI生成] 库存不足(缺料/采购)的菜半透明灰显 + 标注，与食历缺料样式一致。
                     val lack = d.shortageNames.isNotEmpty() || d.purchaseNames.isNotEmpty()
-                    Column(modifier = if (lack) Modifier.alpha(0.45f) else Modifier) {
-                        Text("· ${d.name}", style = MaterialTheme.typography.bodyMedium)
+                    Column(modifier = if (lack) Modifier.alpha(0.6f) else Modifier) { // [AI修改] 0.45→0.6, 缺料菜也保持可读
+                        // [AI修改] 菜名显式用 onSurface 深色 + Medium 字重，避免在 surfaceVariant 卡片上默认淡色看不清。
+                        Text(
+                            "· ${d.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
                         if (d.reason.isNotBlank()) {
                             Text("　${d.reason}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
