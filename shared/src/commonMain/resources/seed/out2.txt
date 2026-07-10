@@ -1,0 +1,17 @@
+菠菜 : general=['蔬菜类', '叶菜类'] => VEGETABLE
+毛豆 : general=['蔬菜类', '鲜豆类'] => VEGETABLE
+四季豆 : general=['蔬菜类', '鲜豆类'] => VEGETABLE
+香菇 : general=['菌藻类', '食用菌类'] => VEGETABLE
+紫菜 : general=['菌藻类', '藻类'] => VEGETABLE
+黄豆 : general=['大豆及坚果', '大豆类'] => BEAN
+土豆 : general=['谷薯主食类', '根茎类', '薯芋类'] => STAPLE
+料理包 : general=['方便食品', '预制菜类'] => OTHER
+西红柿 : general=['蔬菜类', '茄果类'] => VEGETABLE
+洋葱 : general=['蔬菜类', '葱蒜类'] => VEGETABLE
+白萝卜 : general=['蔬菜类', '根茎类'] => VEGETABLE
+大白菜 : NOT FOUND
+油麦菜 : general=['蔬菜类', '叶菜类'] => VEGETABLE
+豆腐 : general=['大豆及坚果', '豆制品类'] => BEAN
+豆芽 : general=['蔬菜类', '鲜豆类'] => VEGETABLE
+荷兰豆 : general=['蔬菜类', '鲜豆类'] => VEGETABLE
+花生 : general=['大豆及坚果', '种子类'] => BEAN
