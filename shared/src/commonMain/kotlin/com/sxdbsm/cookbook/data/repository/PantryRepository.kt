@@ -4,6 +4,8 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.Ingredient
+import com.sxdbsm.cookbook.pantry.PantryAllocation
+import com.sxdbsm.cookbook.pantry.PantryUsage
 import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -83,14 +85,20 @@ class PantryRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 今天及过去已占用份数(ingredient_id -> 已用次数)，不含未来计划。[AI生成]
+     * 每个在库食材的剩余份数(ingredient_id -> 剩余)。[AI修改]
      *
-     * 用于「剩余份数」展示与库存推荐可用份数：剩余 = max(0, 份数 - 已占用)。
+     * "入库日起"窗口：剩余 = 份数 - 入库日(added_at)起到今天已用掉的份数；入库日之前的餐(含很久以前)不占用。
+     * 供「剩余份数」展示、库存推荐可用份数、周期规划预算。
      */
-    suspend fun consumedUntilToday(today: String = DateTime.formatDate(DateTime.today())): Map<Long, Int> =
-        withContext(ioDispatcher) {
-            q.selectPantryConsumedUntil(today).executeAsList().associate { it.ingredient_id to it.used.toInt() }
-        }
+    suspend fun remaining(): Map<Long, Int> = withContext(ioDispatcher) {
+        val stock = q.selectPantryStock().executeAsList()
+        if (stock.isEmpty()) return@withContext emptyMap()
+        val servings = stock.associate { it.ingredient_id to it.serving_count.toInt() }
+        val addedDate = stock.associate { it.ingredient_id to DateTime.epochSecondsToDate(it.added_at) }
+        val usages = q.selectPantryUsageChrono().executeAsList()
+            .map { PantryUsage(it.ingredient_id, it.ingredient_name, it.meal_record_id, it.dish_id, it.meal_date) }
+        PantryAllocation.remaining(servings, addedDate, usages, DateTime.formatDate(DateTime.today()))
+    }
 
     /**
      * 移出库存（软失效，保留复购历史；份数清零，再入库从新计）。[AI修改]

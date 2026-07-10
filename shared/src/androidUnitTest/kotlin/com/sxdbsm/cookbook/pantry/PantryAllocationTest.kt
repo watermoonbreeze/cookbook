@@ -15,8 +15,8 @@ import kotlin.test.assertTrue
 class PantryAllocationTest {
 
     private val PORK = 1L
-    private fun use(mealId: Long, dishId: Long, name: String = "猪肉", ing: Long = PORK) =
-        PantryUsage(ingredientId = ing, ingredientName = name, mealRecordId = mealId, dishId = dishId)
+    private fun use(mealId: Long, dishId: Long, name: String = "猪肉", ing: Long = PORK, date: String = "2026-07-10") =
+        PantryUsage(ingredientId = ing, ingredientName = name, mealRecordId = mealId, dishId = dishId, date = date)
 
     @Test
     fun `份数为0时全部不足`() {
@@ -61,5 +61,49 @@ class PantryAllocationTest {
         val usages = listOf(use(1, 10))
         val short = PantryAllocation.shortages(mapOf(PORK to 1), usages)
         assertTrue(short.isEmpty())
+    }
+
+    @Test
+    fun `入库日起的历史餐占份数但只今天起标缺料`() {
+        // 库存0份；昨天(mr1)与今天(mr2)各用1次猪肉。昨天占 rank1(不标)、今天 rank2>0(标)。
+        val usages = listOf(
+            use(1, 10, date = "2026-07-09"), // 昨天(入库日起、但<今天)
+            use(2, 20, date = "2026-07-10"), // 今天
+        )
+        val short = PantryAllocation.shortages(mapOf(PORK to 0), usages, onlyFromDate = "2026-07-10")
+        assertTrue(short[MealDishKey(1, 10)] == null) // 昨天不标(已吃过)
+        assertEquals(listOf("猪肉"), short[MealDishKey(2, 20)]) // 今天标
+    }
+
+    @Test
+    fun `剩余按入库日窗口算_入库前的餐不占用`() {
+        // 猪肉份数2；入库日=7/10。7/1(入库前)用了1次不该占；7/10用1次占。剩余=2-1=1。
+        val usages = listOf(
+            use(1, 10, date = "2026-07-01"), // 入库前
+            use(2, 20, date = "2026-07-10"), // 入库日(今天)
+        )
+        val remaining = PantryAllocation.remaining(
+            servingCounts = mapOf(PORK to 2),
+            addedDate = mapOf(PORK to "2026-07-10"),
+            usagesChrono = usages,
+            today = "2026-07-10",
+        )
+        assertEquals(1, remaining[PORK]) // 只算入库日起的1次
+    }
+
+    @Test
+    fun `剩余不含未来计划占用`() {
+        // 份数2；今天用1、明天(计划)用1。剩余=2-1(仅到今天)=1，计划不减剩余。
+        val usages = listOf(
+            use(1, 10, date = "2026-07-10"),
+            use(2, 20, date = "2026-07-11"),
+        )
+        val remaining = PantryAllocation.remaining(
+            servingCounts = mapOf(PORK to 2),
+            addedDate = mapOf(PORK to "2026-07-10"),
+            usagesChrono = usages,
+            today = "2026-07-10",
+        )
+        assertEquals(1, remaining[PORK])
     }
 }

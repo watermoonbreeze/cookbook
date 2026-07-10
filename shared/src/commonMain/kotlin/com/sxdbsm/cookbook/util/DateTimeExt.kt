@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.util
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -18,6 +19,10 @@ object DateTime {
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     fun nowEpochSeconds(): Long = Clock.System.now().epochSeconds
+
+    /** epoch 秒 → 本地日期字符串(yyyy-MM-dd)。[AI生成] 供库存"入库日窗口"比较餐食日期。 */
+    fun epochSecondsToDate(seconds: Long): String =
+        Instant.fromEpochSeconds(seconds).toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
 
     fun parseDate(text: String): LocalDate = LocalDate.parse(text)
 

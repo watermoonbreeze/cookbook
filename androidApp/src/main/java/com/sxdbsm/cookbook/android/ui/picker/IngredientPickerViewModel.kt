@@ -717,8 +717,7 @@ class IngredientPickerViewModel(
             runCatching {
                 val ids = pantryRepo.pantryIngredientIds()
                 val servings = pantryRepo.servingCounts()
-                val consumed = pantryRepo.consumedUntilToday()
-                val remaining = servings.mapValues { (id, c) -> (c - (consumed[id] ?: 0)).coerceAtLeast(0) }
+                val remaining = pantryRepo.remaining() // [AI修改] "入库日起"窗口剩余份数
                 Triple(ids, remaining, servings)
             }.onSuccess { (ids, remaining, servings) ->
                 _state.value = _state.value.copy(pantryIngredientIds = ids, pantryRemaining = remaining, pantryServings = servings)

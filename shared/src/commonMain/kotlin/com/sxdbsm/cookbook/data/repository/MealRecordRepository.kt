@@ -437,12 +437,16 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      * 无库存食材时直接空，零开销。
      */
     private fun pantryShortages(): Map<MealDishKey, List<String>> {
-        val servings = q.selectPantryServings().executeAsList()
-            .associate { it.ingredient_id to it.serving_count.toInt() }
-        if (servings.isEmpty()) return emptyMap()
+        val stock = q.selectPantryStock().executeAsList()
+        if (stock.isEmpty()) return emptyMap()
+        val servings = stock.associate { it.ingredient_id to it.serving_count.toInt() }
+        val addedDate = stock.associate { it.ingredient_id to DateTime.epochSecondsToDate(it.added_at) }
+        val today = DateTime.formatDate(DateTime.today())
+        // [AI修改] "入库日起"窗口：只算入库日(added_at)起的餐；入库日到昨天占份数但不标缺料，只今天及未来标。
         val usages = q.selectPantryUsageChrono().executeAsList()
-            .map { PantryUsage(it.ingredient_id, it.ingredient_name, it.meal_record_id, it.dish_id) }
-        return PantryAllocation.shortages(servings, usages)
+            .map { PantryUsage(it.ingredient_id, it.ingredient_name, it.meal_record_id, it.dish_id, it.meal_date) }
+            .filter { u -> addedDate[u.ingredientId]?.let { u.date >= it } == true } // 入库日之前的餐不占用
+        return PantryAllocation.shortages(servings, usages, onlyFromDate = today)
     }
 }
 

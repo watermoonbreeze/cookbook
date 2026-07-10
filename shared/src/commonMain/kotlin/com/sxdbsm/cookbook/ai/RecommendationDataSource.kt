@@ -70,11 +70,9 @@ class RecommendationDataSource(
 
         val recentDishIds = q.selectRecentEatenDishIds(recentLimit).executeAsList().toSet()
 
-        // [AI生成] 库存不足食材：在库但可用份数(份数-今天及过去占用)≤0；含它的菜仍推荐但排后+标不足。仅库存模式。
+        // [AI生成] 库存不足食材：可用份数(入库日起窗口的剩余)≤0；含它的菜仍推荐但排后+标不足。仅库存模式。
         val shortageIds = if (mode == RecommendMode.PANTRY) {
-            val servings = pantryRepo.servingCounts()
-            val consumed = pantryRepo.consumedUntilToday()
-            servings.filter { (id, c) -> c - (consumed[id] ?: 0) <= 0 }.keys
+            pantryRepo.remaining().filterValues { it <= 0 }.keys
         } else {
             emptySet()
         }
@@ -108,8 +106,7 @@ class RecommendationDataSource(
             dishRepo.getDishById(id)?.ingredients?.filter { it.isMain }
                 ?.map { PlanMainIngredient(it.ingredient.id, it.ingredient.name) }.orEmpty()
         }
-        val consumed = pantryRepo.consumedUntilToday()
-        val remaining = servings0.mapValues { (id, c) -> (c - (consumed[id] ?: 0)).coerceAtLeast(0) }
+        val remaining = pantryRepo.remaining() // [AI修改] "入库日起"窗口剩余份数作预算
         PantryPlanAnnotator.annotate(plan, mainByDish, servings0.keys, remaining)
     }
 
