@@ -406,13 +406,11 @@ fun IngredientPickerScreen(
                 null
             },
             inPantry = ingredient.id in ui.pantryIngredientIds,
-            onTogglePantry = if (!selectionMode) {
-                {
-                    if (ingredient.id in ui.pantryIngredientIds) vm.removeFromPantry(ingredient) else vm.addToPantry(ingredient)
-                }
-            } else {
-                null
-            },
+            onTogglePantry = if (!selectionMode) ({ vm.removeFromPantry(ingredient) }) else null, // [AI修改] 仅承担出库
+            pantryRemaining = ui.pantryRemaining[ingredient.id] ?: 0,
+            pantryServing = ui.pantryServings[ingredient.id] ?: 0,
+            onAddServings = if (!selectionMode) ({ count -> vm.addServings(ingredient.id, count) }) else null,
+            onSetServings = if (!selectionMode) ({ count -> vm.setServings(ingredient.id, count) }) else null,
         )
     }
 

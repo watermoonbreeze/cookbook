@@ -78,6 +78,8 @@ data class IngredientPickerUiState(
     val canLoadMoreIngredients: Boolean = false, // [AI生成] 分类筛选结果按 30 条一页展示，避免一次渲染过多食材。
     val inactiveIngredients: List<Ingredient> = emptyList(), // [AI生成] 回收站：失效的自定义食材列表。
     val pantryIngredientIds: Set<Long> = emptySet(), // [AI生成] 在手库存食材 id 集合，用于详情按钮显示「加入/移出库存」与标记「家里有」。
+    val pantryRemaining: Map<Long, Int> = emptyMap(), // [AI生成] 库存剩余份数(份数-今天及过去占用)，库存Tab展示；0=已用尽仍在库。
+    val pantryServings: Map<Long, Int> = emptyMap(), // [AI生成] 库存原始份数(用户提供总量)，用于减份数。
     val searchResults: List<Ingredient> = emptyList(), // [AI生成] 全局搜索下拉结果（跨全库，不限当前 Tab）。
     val highlightIngredientId: Long? = null, // [AI生成] 搜索跳转后在网格中高亮定位的食材。
     val enabledCareCategoryIds: Set<Long> = emptySet(), // [AI生成] 用户已启用的健康档案病种(care 分类 id)，详情忌口区置顶高亮。
@@ -705,28 +707,46 @@ class IngredientPickerViewModel(
     }
 
     /**
-     * 加载在手库存食材 id 集合。[AI生成]
+     * 加载在手库存食材 id 集合与剩余份数。[AI修改]
      */
     private fun loadPantryIds() {
+        refreshPantryState()
+    }
+
+    /** 刷新库存 id 集合 + 剩余份数(份数-今天及过去占用)。[AI生成] */
+    private fun refreshPantryState() {
         viewModelScope.launch {
-            runCatching { pantryRepo.pantryIngredientIds() }
-                .onSuccess { _state.value = _state.value.copy(pantryIngredientIds = it) }
+            runCatching {
+                val ids = pantryRepo.pantryIngredientIds()
+                val servings = pantryRepo.servingCounts()
+                val consumed = pantryRepo.consumedUntilToday()
+                val remaining = servings.mapValues { (id, c) -> (c - (consumed[id] ?: 0)).coerceAtLeast(0) }
+                Triple(ids, remaining, servings)
+            }.onSuccess { (ids, remaining, servings) ->
+                _state.value = _state.value.copy(pantryIngredientIds = ids, pantryRemaining = remaining, pantryServings = servings)
+            }
         }
     }
 
     /**
-     * 加入库存（我家食材）。[AI生成]
+     * 加入库存（我家食材），默认加 1 份。[AI修改]
      */
-    fun addToPantry(ingredient: Ingredient) = addToPantry(ingredient.id)
+    fun addToPantry(ingredient: Ingredient) = addServings(ingredient.id, 1)
 
     /**
-     * 按 id 加入库存（供「新建食材入库」创建后直接入库）。[AI生成]
+     * 按 id 加入库存（供「新建食材入库」创建后直接入库），默认 1 份。[AI修改]
      */
-    fun addToPantry(ingredientId: Long) {
+    fun addToPantry(ingredientId: Long) = addServings(ingredientId, 1)
+
+    /**
+     * 加份数（续加累加，不覆盖）。[AI生成]
+     */
+    fun addServings(ingredientId: Long, count: Int) {
+        if (count <= 0) return
         viewModelScope.launch {
-            runCatching { pantryRepo.addToPantry(ingredientId) }
+            runCatching { pantryRepo.addServings(ingredientId, count) }
                 .onSuccess {
-                    _state.value = _state.value.copy(pantryIngredientIds = _state.value.pantryIngredientIds + ingredientId)
+                    refreshPantryState()
                     if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
                 }
                 .onFailure { _state.value = _state.value.copy(operationError = "加入库存失败，请稍后重试") }
@@ -734,13 +754,24 @@ class IngredientPickerViewModel(
     }
 
     /**
-     * 移出库存（软失效，保留复购历史）。[AI生成]
+     * 设置份数（用于库存 Tab 减少份数）。[AI生成]
+     */
+    fun setServings(ingredientId: Long, count: Int) {
+        viewModelScope.launch {
+            runCatching { pantryRepo.setServings(ingredientId, count) }
+                .onSuccess { refreshPantryState() }
+                .onFailure { _state.value = _state.value.copy(operationError = "更新份数失败，请稍后重试") }
+        }
+    }
+
+    /**
+     * 移出库存（软失效，保留复购历史；份数清零）。[AI修改]
      */
     fun removeFromPantry(ingredient: Ingredient) {
         viewModelScope.launch {
             runCatching { pantryRepo.removeFromPantry(ingredient.id) }
                 .onSuccess {
-                    _state.value = _state.value.copy(pantryIngredientIds = _state.value.pantryIngredientIds - ingredient.id)
+                    refreshPantryState()
                     if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
                 }
                 .onFailure { _state.value = _state.value.copy(operationError = "移出库存失败，请稍后重试") }

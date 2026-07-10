@@ -49,7 +49,11 @@ internal fun IngredientDetailSheet(
     onEdit: (() -> Unit)?,
     onDelete: (() -> Unit)?,
     inPantry: Boolean = false, // [AI生成] 当前食材是否已在库存。
-    onTogglePantry: (() -> Unit)? = null, // [AI生成] 加入/移出库存，仅管理模式提供。
+    onTogglePantry: (() -> Unit)? = null, // [AI生成] 出库(移出库存)，仅管理模式提供。
+    pantryRemaining: Int = 0, // [AI生成] 库存剩余份数(份数-今天及过去占用)。
+    pantryServing: Int = 0, // [AI生成] 库存总份数(用户提供)。
+    onAddServings: ((Int) -> Unit)? = null, // [AI生成] 入库/加份数(累加)。
+    onSetServings: ((Int) -> Unit)? = null, // [AI生成] 设置份数(减份数用)。
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -201,7 +205,20 @@ internal fun IngredientDetailSheet(
                         Divider()
                         Text("以上建议仅作为日常饮食记录参考。", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
-                    if (!selectionMode && (onEdit != null || onDelete != null || onTogglePantry != null)) {
+                    // [AI生成] 库存份数管理区：未入库→选份数入库；已入库→显示剩余份数+加/减+出库。
+                    if (!selectionMode && onAddServings != null) {
+                        Divider()
+                        PantryServingSection(
+                            ingredientId = ingredient.id,
+                            inPantry = inPantry,
+                            remaining = pantryRemaining,
+                            serving = pantryServing,
+                            onAddServings = onAddServings,
+                            onSetServings = onSetServings,
+                            onRemove = onTogglePantry,
+                        )
+                    }
+                    if (!selectionMode && (onEdit != null || onDelete != null)) {
                         Divider()
                         Row(
                             modifier = Modifier
@@ -209,25 +226,6 @@ internal fun IngredientDetailSheet(
                                 .padding(horizontal = 20.dp, vertical = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            onTogglePantry?.let { toggle ->
-                                OutlinedButton(
-                                    onClick = toggle,
-                                    modifier = Modifier.weight(1f),
-                                    colors = if (inPantry) {
-                                        ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                                    } else {
-                                        ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary)
-                                    },
-                                ) {
-                                    Icon(
-                                        if (inPantry) Icons.Outlined.Delete else Icons.Outlined.Add,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                    Spacer(Modifier.width(6.dp))
-                                    Text(if (inPantry) "出库" else "入库")
-                                }
-                            }
                             onEdit?.let { edit ->
                                 OutlinedButton(
                                     onClick = edit,
@@ -257,6 +255,59 @@ internal fun IngredientDetailSheet(
     }
 }
 
+
+/**
+ * 库存份数管理区。[AI生成]
+ *
+ * 未入库：选份数(默认1)后「入库」；已入库：显示剩余份数 + 加/减份数 + 出库。
+ * 份数=可做几次菜；剩余=份数-今天及过去占用(0仍在库、可继续加)。
+ */
+@Composable
+private fun PantryServingSection(
+    ingredientId: Long,
+    inPantry: Boolean,
+    remaining: Int,
+    serving: Int,
+    onAddServings: (Int) -> Unit,
+    onSetServings: ((Int) -> Unit)?,
+    onRemove: (() -> Unit)?,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (inPantry) {
+            Text(
+                buildString {
+                    append("库存剩余 $remaining 份")
+                    if (serving != remaining) append("（共 $serving 份）")
+                },
+                style = MaterialTheme.typography.titleSmall,
+                color = if (remaining == 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onSetServings?.invoke((serving - 1).coerceAtLeast(0)) }, enabled = onSetServings != null && serving > 0) { Text("－") }
+                OutlinedButton(onClick = { onAddServings(1) }) { Text("＋ 加1份") }
+                Spacer(Modifier.weight(1f))
+                onRemove?.let { TextButton(onClick = it) { Text("出库", color = MaterialTheme.colorScheme.error) } }
+            }
+        } else {
+            var addCount by remember(ingredientId) { mutableStateOf(1) }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("入库份数", style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(onClick = { if (addCount > 1) addCount-- }, enabled = addCount > 1) { Text("－") }
+                Text("$addCount", style = MaterialTheme.typography.titleMedium)
+                OutlinedButton(onClick = { if (addCount < 99) addCount++ }) { Text("＋") }
+                Spacer(Modifier.weight(1f))
+                Button(onClick = { onAddServings(addCount) }) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("入库")
+                }
+            }
+        }
+    }
+}
 
 /**
  * 食材详情中的键值行。[AI生成]
