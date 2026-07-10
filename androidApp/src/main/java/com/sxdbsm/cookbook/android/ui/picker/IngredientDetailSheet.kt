@@ -285,6 +285,12 @@ private fun PantryServingSection(
                 style = MaterialTheme.typography.titleSmall,
                 color = if (remaining == 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
             )
+            // [AI生成] 说明"份"含义，回应用户"共X份是什么意思"：份=还能做几次，餐食自动扣减。
+            Text(
+                "1 份 = 够做一次这道菜；记录/计划的餐会自动扣减，剩余用完可点「＋加1份」补充",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = { onSetServings?.invoke((serving - 1).coerceAtLeast(0)) }, enabled = onSetServings != null && serving > 0) { Text("－") }
                 OutlinedButton(onClick = { onAddServings(1) }) { Text("＋ 加1份") }

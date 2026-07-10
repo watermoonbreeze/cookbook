@@ -65,4 +65,45 @@ class PantryRepositoryTest {
         assertEquals(1L, pantry.count(), "移出后应能再次加入库存")
         assertTrue(pantry.pantryIngredientIds().contains(id))
     }
+
+    @Test
+    fun addServingsVisiblyIncreasesRemainingEvenWhenTodayMealConsumesIt() = runBlocking {
+        // [AI生成] 修复"当天有餐时加1份没反应"：剩0共1 + 今天一餐用到 → 加1份后剩余应=1、共2。
+        val db = RepositoryTestDatabase.create()
+        val q = db.cookbookQueries
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val pantry = PantryRepository(db)
+
+        q.insertMealType("LUNCH", "午餐", "12:00", 2, "preset")
+        val lunchId = q.lastInsertId().executeAsOne()
+        val porkId = ingredientRepo.createUserIngredient(name = "五花肉")
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "红烧肉", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(),
+            ingredients = listOf(
+                com.sxdbsm.cookbook.domain.model.DishIngredient(
+                    ingredient = com.sxdbsm.cookbook.domain.model.Ingredient(id = porkId, name = "五花肉"),
+                    isMain = true,
+                ),
+            ),
+        )
+        val today = com.sxdbsm.cookbook.util.DateTime.today()
+        mealRepo.saveDayMeals(
+            today,
+            listOf(DayMealDraft(lunchId, kotlinx.datetime.LocalTime(12, 0), "", listOf(dishId))),
+        )
+
+        // 构造"剩0 共1"：入库并置 1 份，今天这一餐把它占光。
+        pantry.addToPantry(porkId)
+        pantry.setServings(porkId, 1)
+        assertEquals(0, pantry.remaining()[porkId], "前置：今天餐占光后剩余应为 0")
+        assertEquals(1, pantry.servingCounts()[porkId], "前置：共 1 份")
+
+        // 加 1 份：剩余应可见 +1，而非旧 bug 的仍 0。
+        pantry.addServings(porkId, 1)
+        assertEquals(1, pantry.remaining()[porkId], "加1份后剩余应=1(修复前会仍为0)")
+        assertEquals(2, pantry.servingCounts()[porkId], "加1份后共份数应=2")
+    }
 }

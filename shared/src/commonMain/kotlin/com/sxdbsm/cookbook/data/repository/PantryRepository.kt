@@ -67,14 +67,20 @@ class PantryRepository(private val db: CookbookDatabase) {
      */
     suspend fun addServings(ingredientId: Long, delta: Int = 1) {
         if (delta <= 0) return
-        // [AI修改] 结算为「当前剩余 + 新加」并从现在起重新计窗口：
-        // 避免份数为0后重加时，把入库日之前已消耗的份数重复计入(份数=当前剩余+delta, 而非旧份数累加)。
+        // [AI修改] 结算式 + 今日占用补偿，保证"加 N 份 → 剩余可见 +N"：
+        //  - 份数 = 当前剩余 + delta + 今日已占用，并从现在起重新计窗口。
+        //  - 结算基线(当前剩余)避免份数为0后重加把入库日之前的历史欠账重复计入。
+        //  - 重置窗口后今日的餐会被再次扣减 → 补回「今日占用」，否则当天有餐时加份数无可见变化(旧 bug)。
         val currentRemaining = remaining()[ingredientId] ?: 0
         withContext(ioDispatcher) {
+            val todayStr = DateTime.formatDate(DateTime.today())
+            val todayConsumed = q.selectPantryUsageChrono().executeAsList()
+                .count { it.ingredient_id == ingredientId && it.meal_date == todayStr }
             val now = DateTime.nowEpochSeconds()
+            val newServing = currentRemaining + delta + todayConsumed
             db.transaction { // SQLite3.18 无 UPSERT，两步(建缺项→结算)放事务内保证原子
                 q.insertPantryIfAbsent(ingredient_id = ingredientId, added_at = now)
-                q.activatePantry(serving_count = (currentRemaining + delta).toLong(), added_at = now, ingredient_id = ingredientId)
+                q.activatePantry(serving_count = newServing.toLong(), added_at = now, ingredient_id = ingredientId)
             }
         }
     }
