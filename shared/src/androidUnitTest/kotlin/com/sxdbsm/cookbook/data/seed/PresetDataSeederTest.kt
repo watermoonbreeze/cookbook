@@ -132,6 +132,14 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun dishSeedJsonHasNoDanglingReferences() {
+        // [AI生成] D5 扩充红线守卫：每道预设菜的食材名/烹饪方式/单位都必须能解析，否则 seeder 静默跳过导致少关联。
+        val db = RepositoryTestDatabase.create()
+        val problems = PresetDataSeeder(db).validateDishSeedForTest()
+        assertTrue(problems.isEmpty(), "预设菜 JSON 存在无法解析的引用：$problems")
+    }
+
+    @Test
     fun forceReseedIsIdempotentAndKeepsUserData() = runBlocking {
         // [AI生成] “更新基础数据”强制重跑：内容不变时数据条数不变，且不删除/覆盖用户自建食材。
         val db = RepositoryTestDatabase.create()

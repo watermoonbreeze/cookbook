@@ -259,6 +259,28 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
     internal fun loadIngredientsForTest(): List<SeedIngredient> = loadIngredients() // [AI生成] 单元测试校验 JSON 维护质量。
 
+    /**
+     * 校验预设菜 JSON 引用完整性：食材名/烹饪方式/单位是否都能解析。[AI生成]
+     *
+     * seeder 对解析不到的食材/方式/单位会静默跳过（不崩但少关联），故用单测守住。
+     * 返回问题列表，空表示全部可解析；对齐 DB 实际 seed 的方式与单位全集。
+     */
+    internal fun validateDishSeedForTest(): List<String> {
+        val ingredientNames = loadIngredients().map { it.name }.toSet()
+        val methods = setOf("炒", "蒸", "煮", "炖", "烤", "凉拌", "煎", "炸", "焖", "卤")
+        val units = setOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "碗", "块", "根", "条", "段", "瓣", "只", "适量", "少许")
+        val problems = mutableListOf<String>()
+        loadDishes().forEach { d ->
+            if (d.method.isNotBlank() && d.method !in methods) problems += "[${d.name}] 未知烹饪方式:${d.method}"
+            if (d.ingredients.none { it.main }) problems += "[${d.name}] 缺主料"
+            d.ingredients.forEach { di ->
+                if (di.ingredient !in ingredientNames) problems += "[${d.name}] 未知食材:${di.ingredient}"
+                if (di.unit.isNotBlank() && di.unit !in units) problems += "[${d.name}] 未知单位:${di.unit}"
+            }
+        }
+        return problems
+    }
+
     private fun loadIngredients(): List<SeedIngredient> =
         SeedResourceLoader.readText("seed/ingredients.json")
             ?.let { json.decodeFromString(it) }
