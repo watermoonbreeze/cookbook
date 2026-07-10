@@ -74,6 +74,7 @@ class DishesViewModel(
 
     private companion object {
         private const val TAG = "DishActions" // [AI生成] 菜品列表操作统一日志 Tag，便于排查长按编辑/删除。
+        private const val LIST_LIMIT = 30 // [AI生成] "最近"(updated_at DESC)与"喜爱"(preference DESC) Tab 各只展示前 30 个；"全部"才展示所有。
     }
 
     /**
@@ -99,13 +100,18 @@ class DishesViewModel(
         val filtered = raw.filter { d ->
             (method == null || method in d.cookingMethodNames) && (tag == null || tag in d.tags)
         }
-        // [AI生成] 喜爱 Tab 只显示已评分菜品，其计数与展示一致；最近/全部为全部菜。
-        val favorites = filtered.filter { it.preference > 0 }
-        val listForTab = if (tab == DishesSortTab.FAVORITE) favorites else filtered
+        // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部展示所有。计数与各 Tab 展示一致。
+        val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
+        val recentList = filtered.take(LIST_LIMIT)
+        val listForTab = when (tab) {
+            DishesSortTab.RECENT -> recentList
+            DishesSortTab.FAVORITE -> favorites
+            DishesSortTab.ALL -> filtered
+        }
         DishesUiState(
             popular = popular, all = sortDishes(listForTab, tab), keyword = kw, sortTab = tab,
             selectedMethod = method, selectedTag = tag, availableMethods = methods, availableTags = tags,
-            recentCount = filtered.size, favoriteCount = favorites.size, allCount = filtered.size,
+            recentCount = recentList.size, favoriteCount = favorites.size, allCount = filtered.size,
         )
     }
 
