@@ -73,7 +73,8 @@ data class DishMini(
     val cookingMethodName: String? = null,
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 列表/搜索中展示多个烹饪方式。
     val source: String = "user", // [AI生成] 'preset'=预设(不可直接编辑,复制后编辑)/'user'=自建。
-    val shortageIngredients: List<String> = emptyList(), // [AI生成] 该菜在此餐次缺料的库存食材名(份数用尽)；非空则灰显"食材不足"
+    val shortageIngredients: List<String> = emptyList(), // [AI生成] 该菜在此餐次缺料的库存食材名(份数用尽)；非空则灰显"缺"
+    val purchaseIngredients: List<String> = emptyList(), // [AI生成] 该菜主料不在库存的食材名(需采购)；非空则灰显"采购"
 )
 
 /**

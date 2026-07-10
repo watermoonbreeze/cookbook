@@ -413,9 +413,10 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         } else {
             q.selectTagsByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.name })
         }
-        val shortages = pantryShortages() // [AI生成] 派生占用：每道菜在此餐次的缺料食材
+        val flags = pantryCardFlags() // [AI生成] 派生：每道菜在此餐次的缺料(份数不够)+采购(主料不在库)
         return rows.groupBy { it.meal_record_id }.mapValues { entry ->
             entry.value.map { row ->
+                val key = MealDishKey(row.meal_record_id, row.id)
                 DishMini(
                     id = row.id,
                     name = row.name,
@@ -424,29 +425,45 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     tags = tagsByDish[row.id].orEmpty(),
                     preference = row.preference.toInt(),
                     cookingMethodName = row.cooking_method_id?.let { cookingMethodNames[it] },
-                    shortageIngredients = shortages[MealDishKey(row.meal_record_id, row.id)].orEmpty(),
+                    shortageIngredients = flags.shortage[key].orEmpty(),
+                    purchaseIngredients = flags.purchase[key].orEmpty(),
                 )
             }
         }
     }
 
+    private class PantryCardFlags(
+        val shortage: Map<MealDishKey, List<String>>,
+        val purchase: Map<MealDishKey, List<String>>,
+    )
+
     /**
-     * 计算每道菜在其餐次的缺料库存食材(派生, 不落库)。[AI生成]
+     * 计算每道菜在其餐次的库存标注(派生, 不落库)。[AI修改]
      *
-     * 全局按时间序对每个在库食材的使用排队，前 `份数` 个够、其余不足；含计划餐。
-     * 无库存食材时直接空，零开销。
+     * - 缺料：在库主料按"入库日起"窗口排队，超出份数(只今天及未来标)。
+     * - 采购：今天及未来餐食里主料**不在库存**的食材。
+     * 无库存食材(未用库存功能)时直接空，零开销。
      */
-    private fun pantryShortages(): Map<MealDishKey, List<String>> {
+    private fun pantryCardFlags(): PantryCardFlags {
         val stock = q.selectPantryStock().executeAsList()
-        if (stock.isEmpty()) return emptyMap()
+        if (stock.isEmpty()) return PantryCardFlags(emptyMap(), emptyMap())
         val servings = stock.associate { it.ingredient_id to it.serving_count.toInt() }
         val addedDate = stock.associate { it.ingredient_id to DateTime.epochSecondsToDate(it.added_at) }
+        val pantryIds = servings.keys
         val today = DateTime.formatDate(DateTime.today())
-        // [AI修改] "入库日起"窗口：只算入库日(added_at)起的餐；入库日到昨天占份数但不标缺料，只今天及未来标。
+        // 缺料：入库日起占份数、只今天及未来标。
         val usages = q.selectPantryUsageChrono().executeAsList()
             .map { PantryUsage(it.ingredient_id, it.ingredient_name, it.meal_record_id, it.dish_id, it.meal_date) }
-            .filter { u -> addedDate[u.ingredientId]?.let { u.date >= it } == true } // 入库日之前的餐不占用
-        return PantryAllocation.shortages(servings, usages, onlyFromDate = today)
+            .filter { u -> addedDate[u.ingredientId]?.let { u.date >= it } == true }
+        val shortage = PantryAllocation.shortages(servings, usages, onlyFromDate = today)
+        // 采购：今天及未来餐食里主料不在库存。
+        val purchase = LinkedHashMap<MealDishKey, MutableList<String>>()
+        q.selectMainIngredientUsageFromDate(today).executeAsList().forEach { r ->
+            if (r.ingredient_id !in pantryIds) {
+                purchase.getOrPut(MealDishKey(r.meal_record_id, r.dish_id)) { mutableListOf() }.add(r.ingredient_name)
+            }
+        }
+        return PantryCardFlags(shortage, purchase.mapValues { it.value.distinct() })
     }
 }
 

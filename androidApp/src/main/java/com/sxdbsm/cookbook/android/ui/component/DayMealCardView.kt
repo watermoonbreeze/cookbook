@@ -147,30 +147,42 @@ private fun MealSectionRow(
             ) {
                 items(section.dishes, key = { it.id }) { dish ->
                     val shortage = dish.shortageIngredients.distinct()
-                    // [AI生成] 库存不足的菜半透明灰显 + 下方标注缺料食材，加份数后自动恢复。
+                    val purchase = dish.purchaseIngredients.distinct()
+                    val lack = shortage.isNotEmpty() || purchase.isNotEmpty()
+                    // [AI生成] 缺料(份数不够)/采购(不在库)的菜半透明灰显 + 下方标注，加份数/入库后自动恢复。
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
                         DishMiniCard(
                             dish = dish,
                             onClick = { onDishClick?.invoke(dish) },
-                            modifier = if (shortage.isNotEmpty()) Modifier.alpha(0.4f) else Modifier,
+                            modifier = if (lack) Modifier.alpha(0.4f) else Modifier,
                         )
+                        if (purchase.isNotEmpty()) {
+                            Spacer(Modifier.height(2.dp))
+                            LackText("采：${purchase.joinToString("、")}")
+                        }
                         if (shortage.isNotEmpty()) {
                             Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = "缺：${shortage.joinToString("、")}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            )
+                            LackText("缺：${shortage.joinToString("、")}")
                         }
                     }
                 }
             }
         }
     }
+}
+
+/** 缺料/采购小标签(80dp 卡片下方，居中省略)。[AI生成] */
+@Composable
+private fun LackText(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.error,
+        maxLines = 1,
+        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+    )
 }
 
 /**

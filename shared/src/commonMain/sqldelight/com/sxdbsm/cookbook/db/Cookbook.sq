@@ -1240,6 +1240,19 @@ JOIN ingredient i ON i.id = di.ingredient_id
 WHERE mrd.status = 1
 ORDER BY di.ingredient_id, mr.date, mr.meal_time, mr.created_at, mrd.sort_order;
 
+-- [AI生成] 今天及未来餐食里每道菜的主料使用(含食材名)，供餐卡"采购"判定(主料不在库→采购)。
+selectMainIngredientUsageFromDate:
+SELECT mrd.meal_record_id AS meal_record_id,
+       mrd.dish_id AS dish_id,
+       di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name,
+       mr.date AS meal_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id AND mr.status = 1
+JOIN dish_ingredient di ON di.dish_id = mrd.dish_id AND di.status = 1 AND di.is_main = 1
+JOIN ingredient i ON i.id = di.ingredient_id
+WHERE mrd.status = 1 AND mr.date >= :today;
+
 
 -- [AI生成] 库存 Tab：JOIN 出在手食材，列与 selectAllIngredients 对齐以复用 mapIngredientRow。
 selectPantryIngredients:
