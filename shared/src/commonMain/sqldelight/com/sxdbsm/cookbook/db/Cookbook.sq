@@ -295,7 +295,8 @@ CREATE TABLE pantry (
     added_at INTEGER NOT NULL,
     expire_at INTEGER,
     note TEXT NOT NULL DEFAULT '',
-    status INTEGER NOT NULL DEFAULT 1 -- 1=在手，0=已移出/用完（保留复购历史）
+    status INTEGER NOT NULL DEFAULT 1, -- 1=在手，0=已移出/用完（保留复购历史）
+    serving_count INTEGER NOT NULL DEFAULT 0 -- [AI生成] 份数=可做几次菜(用户提供总量)；剩余由派生占用算，不落库
 );
 
 CREATE UNIQUE INDEX uq_pantry_ingredient ON pantry(ingredient_id);
@@ -1201,6 +1202,48 @@ upsertPantryItem:
 INSERT OR REPLACE INTO pantry(ingredient_id, quantity, unit_id, added_at, expire_at, note, status)
 VALUES (:ingredient_id, :quantity, :unit_id, :added_at, :expire_at, :note, 1);
 
+-- [AI生成] 加份数(续加累加)第一步：无则建(份数0, 在手)；有则忽略。SQLite3.18无UPSERT, 故两步(事务内)。
+insertPantryIfAbsent:
+INSERT OR IGNORE INTO pantry(ingredient_id, added_at, status, serving_count)
+VALUES (:ingredient_id, :added_at, 1, 0);
+
+-- [AI生成] 加份数第二步：份数 += delta 并置在手、刷新入库时间。
+incrementPantryServings:
+UPDATE pantry SET serving_count = serving_count + :delta, status = 1, added_at = :added_at
+WHERE ingredient_id = :ingredient_id;
+
+-- [AI生成] 显式设置份数(编辑/减少)。
+setPantryServings:
+UPDATE pantry SET serving_count = :serving_count WHERE ingredient_id = :ingredient_id;
+
+-- [AI生成] 在手食材的份数映射(ingredient_id -> serving_count)，供派生占用与库存展示。
+selectPantryServings:
+SELECT ingredient_id, serving_count FROM pantry WHERE status = 1;
+
+-- [AI生成] 派生占用：所有餐食(含计划)里用到「在手食材」的菜，按时间顺序排队，供份数分配判不足。
+selectPantryUsageChrono:
+SELECT di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name,
+       mrd.meal_record_id AS meal_record_id,
+       mrd.dish_id AS dish_id
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id AND mr.status = 1
+JOIN dish_ingredient di ON di.dish_id = mrd.dish_id AND di.status = 1
+JOIN pantry p ON p.ingredient_id = di.ingredient_id AND p.status = 1
+JOIN ingredient i ON i.id = di.ingredient_id
+WHERE mrd.status = 1
+ORDER BY di.ingredient_id, mr.date, mr.meal_time, mr.created_at, mrd.sort_order;
+
+-- [AI生成] 今天及过去已占用份数(不含未来计划)，供「剩余」展示与库存推荐可用份数。
+selectPantryConsumedUntil:
+SELECT di.ingredient_id AS ingredient_id, COUNT(*) AS used
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id AND mr.status = 1
+JOIN dish_ingredient di ON di.dish_id = mrd.dish_id AND di.status = 1
+JOIN pantry p ON p.ingredient_id = di.ingredient_id AND p.status = 1
+WHERE mrd.status = 1 AND mr.date <= :today
+GROUP BY di.ingredient_id;
+
 -- [AI生成] 库存 Tab：JOIN 出在手食材，列与 selectAllIngredients 对齐以复用 mapIngredientRow。
 selectPantryIngredients:
 SELECT i.id,
@@ -1223,7 +1266,7 @@ selectPantryIngredientIds:
 SELECT ingredient_id FROM pantry WHERE status = 1;
 
 removeFromPantry:
-UPDATE pantry SET status = 0 WHERE ingredient_id = :ingredient_id;
+UPDATE pantry SET status = 0, serving_count = 0 WHERE ingredient_id = :ingredient_id;
 
 countPantry:
 SELECT COUNT(*) FROM pantry WHERE status = 1;

@@ -59,7 +59,41 @@ class PantryRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 移出库存（软失效，保留复购历史）。[AI生成]
+     * 加份数（续加累加，不覆盖）。[AI生成]
+     *
+     * 份数=可做几次菜。0 份食材不消失、可继续加；已有则累加并置在手。
+     */
+    suspend fun addServings(ingredientId: Long, delta: Int = 1) = withContext(ioDispatcher) {
+        if (delta == 0) return@withContext
+        val now = DateTime.nowEpochSeconds()
+        db.transaction { // [AI修改] SQLite3.18 无 UPSERT，两步(建缺项→累加)放事务内保证原子
+            q.insertPantryIfAbsent(ingredient_id = ingredientId, added_at = now)
+            q.incrementPantryServings(delta = delta.toLong(), added_at = now, ingredient_id = ingredientId)
+        }
+    }
+
+    /** 显式设置份数（编辑/减少）。[AI生成] */
+    suspend fun setServings(ingredientId: Long, count: Int) = withContext(ioDispatcher) {
+        q.setPantryServings(serving_count = count.coerceAtLeast(0).toLong(), ingredient_id = ingredientId)
+    }
+
+    /** 在手食材份数映射(ingredient_id -> 份数)。[AI生成] */
+    suspend fun servingCounts(): Map<Long, Int> = withContext(ioDispatcher) {
+        q.selectPantryServings().executeAsList().associate { it.ingredient_id to (it.serving_count.toInt()) }
+    }
+
+    /**
+     * 今天及过去已占用份数(ingredient_id -> 已用次数)，不含未来计划。[AI生成]
+     *
+     * 用于「剩余份数」展示与库存推荐可用份数：剩余 = max(0, 份数 - 已占用)。
+     */
+    suspend fun consumedUntilToday(today: String = DateTime.formatDate(DateTime.today())): Map<Long, Int> =
+        withContext(ioDispatcher) {
+            q.selectPantryConsumedUntil(today).executeAsList().associate { it.ingredient_id to it.used.toInt() }
+        }
+
+    /**
+     * 移出库存（软失效，保留复购历史；份数清零，再入库从新计）。[AI修改]
      */
     suspend fun removeFromPantry(ingredientId: Long) = withContext(ioDispatcher) {
         q.removeFromPantry(ingredientId)
