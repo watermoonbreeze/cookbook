@@ -31,6 +31,10 @@ data class DishesUiState(
     val sortTab: DishesSortTab = DishesSortTab.RECENT,
     val refreshing: Boolean = false,
     val deleteState: DishDeleteState = DishDeleteState(),
+    val selectedMethod: String? = null, // [AI生成] 烹饪方式筛选
+    val selectedTag: String? = null, // [AI生成] 标签筛选
+    val availableMethods: List<String> = emptyList(), // 当前列表可选烹饪方式
+    val availableTags: List<String> = emptyList(), // 当前列表可选标签
 )
 
 /**
@@ -61,6 +65,8 @@ class DishesViewModel(
     private val _list = MutableStateFlow<List<DishMini>>(emptyList()) // [AI修改] 搜索结果列表。
     private val _refreshing = MutableStateFlow(false) // [AI生成] 下拉刷新状态。
     private val _deleteState = MutableStateFlow(DishDeleteState()) // [AI生成] 长按删除前的引用检查/确认弹框状态。
+    private val _methodFilter = MutableStateFlow<String?>(null) // [AI生成] 烹饪方式筛选
+    private val _tagFilter = MutableStateFlow<String?>(null) // [AI生成] 标签筛选
     private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
 
     private companion object {
@@ -76,11 +82,24 @@ class DishesViewModel(
     private val allObserved: StateFlow<List<DishMini>> = dishRepo.observeAllDishes()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // [AI生成] 排序+筛选合并为一路(combine 最多 5 路)。
+    private val viewOpts = kotlinx.coroutines.flow.combine(_sortTab, _methodFilter, _tagFilter) { s, m, t -> Triple(s, m, t) }
+
     private val baseState = kotlinx.coroutines.flow.combine(
-        popular, allObserved, _list, _keyword, _sortTab,
-    ) { popular, observed, searched, kw, tab ->
-        val list = if (kw.isBlank()) observed else searched
-        DishesUiState(popular = popular, all = sortDishes(list, tab), keyword = kw, sortTab = tab)
+        popular, allObserved, _list, _keyword, viewOpts,
+    ) { popular, observed, searched, kw, opts ->
+        val (tab, method, tag) = opts
+        val raw = if (kw.isBlank()) observed else searched
+        // 可选筛选项从筛选前列表派生，避免选中后选项消失。
+        val methods = raw.flatMap { it.cookingMethodNames }.filter { it.isNotBlank() }.distinct().sorted()
+        val tags = raw.flatMap { it.tags }.filter { it.isNotBlank() }.distinct().sorted()
+        val filtered = raw.filter { d ->
+            (method == null || method in d.cookingMethodNames) && (tag == null || tag in d.tags)
+        }
+        DishesUiState(
+            popular = popular, all = sortDishes(filtered, tab), keyword = kw, sortTab = tab,
+            selectedMethod = method, selectedTag = tag, availableMethods = methods, availableTags = tags,
+        )
     }
 
     val uiState: StateFlow<DishesUiState> = kotlinx.coroutines.flow.combine(
@@ -99,6 +118,12 @@ class DishesViewModel(
     }
 
     fun setSortTab(tab: DishesSortTab) { _sortTab.value = tab }
+
+    /** 选/取消 烹饪方式筛选(再点同一项取消)。[AI生成] */
+    fun toggleMethodFilter(method: String) { _methodFilter.value = if (_methodFilter.value == method) null else method }
+
+    /** 选/取消 标签筛选。[AI生成] */
+    fun toggleTagFilter(tag: String) { _tagFilter.value = if (_tagFilter.value == tag) null else tag }
 
     fun refresh() {
         searchNow(_keyword.value, force = true)

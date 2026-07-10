@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.component.StarRating
 import com.sxdbsm.cookbook.android.ui.component.StoredImage
@@ -35,6 +36,7 @@ fun DishDetailScreen(
     dishId: Long,
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
+    onOpenDish: (Long) -> Unit = {}, // [AI生成] 相关菜品跳转
     vm: DishDetailViewModel = koinViewModel(),
 ) {
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
@@ -244,6 +246,15 @@ fun DishDetailScreen(
             if (d.description.isNotBlank()) {
                 FormFieldLabel("描述", topPadding = 18.dp, bottomPadding = 8.dp)
                 Text(d.description, style = MaterialTheme.typography.bodyLarge)
+            }
+            // [AI生成] 相关菜品：同主料的其它菜，点击可跳转。
+            vm.insights?.related?.takeIf { it.isNotEmpty() }?.let { related ->
+                FormFieldLabel("相关菜品", topPadding = 18.dp, bottomPadding = 8.dp)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(related, key = { it.id }) { rd ->
+                        DishMiniCard(dish = rd, onClick = { onOpenDish(rd.id) })
+                    }
+                }
             }
         }
     }

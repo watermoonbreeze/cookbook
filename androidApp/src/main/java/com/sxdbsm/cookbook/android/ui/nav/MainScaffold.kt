@@ -243,6 +243,7 @@ fun MainScaffold(
                     dishId = dishId,
                     onBack = { nav.popBackStack() },
                     onEdit = { id -> nav.navigate(Routes.newDish(id)) },
+                    onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) }, // [AI生成] 相关菜品跳转
                 )
             }
         }

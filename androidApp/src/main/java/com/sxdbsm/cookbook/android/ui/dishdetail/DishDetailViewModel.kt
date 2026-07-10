@@ -69,6 +69,11 @@ class DishDetailViewModel(
         val stats = dishRepo.cookStats(dish.id)
         val nutrition = ingredientRepo.nutritionTagsOf(ingIds)
 
+        // 相关菜品：与本菜共享主料的其它菜(按共享数排序)。
+        val mainIds = dish.ingredients.filter { it.isMain }.map { it.ingredient.id }
+        val related = if (mainIds.isEmpty()) emptyList()
+        else dishRepo.findDishesByIngredients(mainIds, limit = 12).map { it.dish }.filter { it.id != dish.id }.take(8)
+
         return DishInsights(
             usingPantry = usingPantry,
             purchaseNames = purchase.distinct(),
@@ -96,6 +101,7 @@ data class DishInsights(
     val cookedCount: Int,
     val lastCookedDate: String?,
     val nutritionTags: List<String>,
+    val related: List<com.sxdbsm.cookbook.domain.model.DishMini> = emptyList(),
 ) {
     /** 当前库存能否直接做（在用库存且无采购无缺料）。 */
     val canCook: Boolean get() = usingPantry && purchaseNames.isEmpty() && shortageNames.isEmpty()

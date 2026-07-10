@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -224,8 +225,26 @@ fun DishesScreen(
                 }
             }
 
+            // [AI生成] 烹饪方式/标签筛选(横滑, 再点取消)。
+            if (ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()) {
+                item(key = "dish-filters") {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background),
+                    ) {
+                        items(ui.availableMethods, key = { "m-$it" }) { m ->
+                            FilterChip(selected = ui.selectedMethod == m, onClick = { vm.toggleMethodFilter(m) }, label = { Text(m) })
+                        }
+                        items(ui.availableTags, key = { "t-$it" }) { t ->
+                            FilterChip(selected = ui.selectedTag == t, onClick = { vm.toggleTagFilter(t) }, label = { Text("#$t") })
+                        }
+                    }
+                }
+            }
+
             if (ui.all.isEmpty()) {
-                item { EmptyState(text = "还没有菜品\n点击右上 + 号添加", icon = "🥗") }
+                item { EmptyState(text = "没有符合筛选的菜品", icon = "🥗") }
             } else if (ui.sortTab == DishesSortTab.ALL) {
                 sections.forEach { (letter, dishes) ->
                     item(key = "section-$letter") {
