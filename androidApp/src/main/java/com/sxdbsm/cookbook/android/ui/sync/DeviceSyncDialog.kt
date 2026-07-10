@@ -3,7 +3,6 @@ package com.sxdbsm.cookbook.android.ui.sync
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
@@ -64,7 +63,8 @@ fun DeviceSyncDialog(
         },
         title = { Text("双设备数据同传") },
         text = {
-            Column {
+            // [AI修改] 整个弹框内容可滚动，避免选择内容展开后底部按钮被遮、无法滚动。
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Text(
                     "两台设备连同一 WiFi。一台「发送」，另一台「接收」并填写发送端显示的连接信息。",
                     style = MaterialTheme.typography.bodySmall,
@@ -157,7 +157,8 @@ private fun SendSelectionPane(vm: DeviceSyncViewModel) {
     var favorites by remember { mutableStateOf(false) }
     var meals by remember { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(max = 340.dp)) {
+    // [AI修改] 不再内层滚动(外层弹框已可滚动, 同向嵌套会冲突)。
+    Column(Modifier.fillMaxWidth()) {
         Text("选择同步内容", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Text(
             "「全部」会覆盖对方数据（适合换新机）；其余为「合并」——只把选中内容加/更新到对方，不动其它。",
