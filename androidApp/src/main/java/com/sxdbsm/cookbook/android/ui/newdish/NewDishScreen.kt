@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.*
@@ -279,6 +281,7 @@ fun NewDishScreen(
                     vm.updateStepImages(index, encodeImagePaths(images), encodeImagePaths(thumbnails))
                 },
                 onRemoveStep = vm::removeStep,
+                onMoveStep = vm::moveStep,
             )
 
             FormFieldLabel("特殊说明")
@@ -439,6 +442,7 @@ private fun OperationStepsEditor(
     onUpdateStepText: (Int, String) -> Unit,
     onUpdateStepImages: (Int, List<String>, List<String>) -> Unit,
     onRemoveStep: (Int) -> Unit,
+    onMoveStep: (Int, Boolean) -> Unit, // [AI生成] (index, toStart) 上移/下移
 ) {
     FormFieldLabel("操作步骤")
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -465,6 +469,21 @@ private fun OperationStepsEditor(
                     modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
+                    // [AI生成] 步骤序号 + 上移/下移，实现步骤排序。
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            "步骤 ${index + 1}",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Spacer(Modifier.weight(1f))
+                        IconButton(onClick = { onMoveStep(index, true) }, enabled = index > 0, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Outlined.KeyboardArrowUp, contentDescription = "上移", modifier = Modifier.size(20.dp))
+                        }
+                        IconButton(onClick = { onMoveStep(index, false) }, enabled = index < steps.size - 1, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Outlined.KeyboardArrowDown, contentDescription = "下移", modifier = Modifier.size(20.dp))
+                        }
+                    }
                     OutlinedTextField(
                         value = step.text,
                         onValueChange = { onUpdateStepText(index, it) },

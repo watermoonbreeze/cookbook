@@ -339,6 +339,21 @@ class NewDishViewModel(
     }
 
     /**
+     * 上移/下移某个操作步骤并重排序号。[AI生成]
+     *
+     * @param toStart true=上移，false=下移；越界不动。
+     */
+    fun moveStep(index: Int, toStart: Boolean) {
+        val steps = _state.value.steps
+        val target = if (toStart) index - 1 else index + 1
+        if (index !in steps.indices || target !in steps.indices) return
+        val reordered = steps.toMutableList().apply {
+            val tmp = this[index]; this[index] = this[target]; this[target] = tmp
+        }.mapIndexed { i, step -> step.copy(sortOrder = i) }
+        _state.value = _state.value.copy(steps = reordered)
+    }
+
+    /**
      * 删除某个操作步骤并重排序号。[AI生成]
      */
     fun removeStep(index: Int) {
