@@ -190,11 +190,12 @@ internal fun IngredientEditorDialog(
                     }
 
                     if (!isPreset) {
-                        EditorSection("分类归属") {
+                        EditorSection("分类归属（可选）") {
                             Text(
-                                selectedCategoryNames.ifBlank { "未选择分类" },
+                                // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
+                                selectedCategoryNames.ifBlank { "未选择分类（可不选，保存后在「全部」查看）" },
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = if (selectedCategoryNames.isBlank()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             OutlinedButton(onClick = { categoryPickerOpen = true }, modifier = Modifier.fillMaxWidth()) {
                                 Text("选择分类")

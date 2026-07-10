@@ -562,9 +562,7 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(creatingIngredient = true, createError = null, lastSavedIngredientId = null)
             runCatching {
-                if (ingredient?.source != "preset") {
-                    require(categoryIds.isNotEmpty()) { "请选择自定义分类" }
-                }
+                // [AI修改] 分类不再必选：自定义食材可不选分类直接保存，在「自定义-全部」中查看(search 不按分类 join)。
                 val ingredientId = ingredient?.id ?: ingredientRepo.createUserIngredient(
                     name = trimmedName,
                     alias = alias.trim(),
