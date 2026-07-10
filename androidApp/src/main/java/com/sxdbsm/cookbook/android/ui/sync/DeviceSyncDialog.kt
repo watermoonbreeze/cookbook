@@ -1,7 +1,11 @@
 package com.sxdbsm.cookbook.android.ui.sync
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,8 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -32,6 +38,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.sxdbsm.cookbook.sync.SyncSelection
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -134,7 +141,66 @@ private fun SendPane(state: DeviceSyncUiState, vm: DeviceSyncViewModel) {
                 Spacer(Modifier.width(8.dp))
                 Text(state.status ?: "准备中…", style = MaterialTheme.typography.bodySmall)
             }
-            else -> Button(onClick = { vm.startSend() }, modifier = Modifier.fillMaxWidth()) { Text("生成并等待接收") }
+            else -> SendSelectionPane(vm)
+        }
+    }
+}
+
+/** 发送前选择同步内容(全部=替换 / 具体域=合并)，每项带说明。[AI生成] */
+@Composable
+private fun SendSelectionPane(vm: DeviceSyncViewModel) {
+    var full by remember { mutableStateOf(true) }
+    var ingredients by remember { mutableStateOf(false) }
+    var dishes by remember { mutableStateOf(false) }
+    var pantry by remember { mutableStateOf(false) }
+    var health by remember { mutableStateOf(false) }
+    var favorites by remember { mutableStateOf(false) }
+    var meals by remember { mutableStateOf(false) }
+
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(max = 340.dp)) {
+        Text("选择同步内容", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+        Text(
+            "「全部」会覆盖对方数据（适合换新机）；其余为「合并」——只把选中内容加/更新到对方，不动其它。",
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(4.dp))
+        ModeRow("全部（覆盖对方）", "本机全部数据完整搬到对方并覆盖。", full) { full = true }
+        ModeRow("选择内容（合并）", "只把下面选中的加/更新到对方。", !full) { full = false }
+        if (!full) {
+            CategoryCheck("菜品库（菜谱）", "自建菜品，含食材/做法/图片", dishes) { dishes = it }
+            CategoryCheck("餐食历史（食历）", "吃过/计划的餐，自动带相关菜品与食材", meals) { meals = it }
+            CategoryCheck("库存（家里有啥）", "当前在手食材及份数", pantry) { pantry = it }
+            CategoryCheck("食材库", "自建食材，含详情/图片", ingredients) { ingredients = it }
+            CategoryCheck("健康档案", "关注的人群/病种", health) { health = it }
+            CategoryCheck("收藏组合", "收藏的菜品搭配", favorites) { favorites = it }
+        }
+        Spacer(Modifier.height(8.dp))
+        val sel = if (full) null else SyncSelection(ingredients, dishes, pantry, health, favorites, meals)
+        val canSend = full || (sel?.any == true)
+        Button(onClick = { vm.startSend(sel) }, enabled = canSend, modifier = Modifier.fillMaxWidth()) {
+            Text("生成并等待接收")
+        }
+    }
+}
+
+@Composable
+private fun ModeRow(label: String, desc: String, selected: Boolean, onSelect: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable { onSelect() }.padding(vertical = 4.dp), verticalAlignment = Alignment.Top) {
+        RadioButton(selected = selected, onClick = onSelect)
+        Column(Modifier.padding(start = 4.dp)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            Text(desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun CategoryCheck(label: String, desc: String, checked: Boolean, onCheck: (Boolean) -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable { onCheck(!checked) }.padding(vertical = 2.dp), verticalAlignment = Alignment.Top) {
+        Checkbox(checked = checked, onCheckedChange = onCheck)
+        Column(Modifier.padding(start = 4.dp)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+            Text(desc, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

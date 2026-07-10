@@ -5,7 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.android.sync.SelectiveSyncBundler
 import com.sxdbsm.cookbook.platform.BackupManager
+import com.sxdbsm.cookbook.platform.CookbookStorage
+import com.sxdbsm.cookbook.sync.SyncSelection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -30,6 +33,7 @@ import kotlin.random.Random
  **/
 class DeviceSyncViewModel(
     private val backup: BackupManager,
+    private val bundler: SelectiveSyncBundler, // [AI修改] 选择性同步打包/合并
 ) : ViewModel() {
 
     var state by mutableStateOf(DeviceSyncUiState())
@@ -39,22 +43,30 @@ class DeviceSyncViewModel(
     private var serverJob: Job? = null
     private var receiveSocket: Socket? = null // [AI修改] 持有接收端 socket，便于 reset/onCleared 主动关闭解阻塞
     @Volatile private var cancelling = false // [AI修改] 区分「主动取消/关闭」与「真实异常」，避免吞掉真实错误
+    private var sendSelection: SyncSelection? = null // [AI修改] null=全部(整库替换); 非空=选择性(合并)
+    private var sendFileName: String? = null // 全部模式的备份文件名
 
-    /** 作为发送端：创建备份并开始等待接收端连接。[AI生成] */
-    fun startSend() {
+    /**
+     * 作为发送端：准备并等待接收端连接。[AI修改]
+     *
+     * @param selection null=同步全部(整库替换)；非空=选择性(合并)。
+     */
+    fun startSend(selection: SyncSelection?) {
         if (state.sending) return
         cancelling = false
-        state = state.copy(sending = true, status = "正在准备备份…", error = null, done = false)
+        sendSelection = selection
+        state = state.copy(sending = true, status = "正在准备…", error = null, done = false)
         viewModelScope.launch {
             val prep = runCatching {
-                val info = backup.createBackup() // 完整包(含图片)
+                val fileName = if (selection == null) backup.createBackup().fileName else null // 全部才预生成整库包
                 val ip = localWifiIp() ?: error("未获取到局域网 IP，请确认已连接 WiFi")
                 val server = ServerSocket(0) // 随机可用端口
-                Triple(info.fileName, ip, server)
+                Triple(fileName, ip, server)
             }
             prep.onFailure {
                 state = state.copy(sending = false, error = it.message ?: "准备失败", status = null)
             }.onSuccess { (fileName, ip, server) ->
+                sendFileName = fileName
                 serverSocket = server
                 val code = Random.nextInt(1000, 10000).toString()
                 state = state.copy(
@@ -65,13 +77,13 @@ class DeviceSyncViewModel(
                     status = "等待另一台设备连接…",
                     error = null,
                 )
-                serveOnce(server, fileName, code)
+                serveOnce(server, code)
             }
         }
     }
 
-    /** 后台等待一个连接，校验码匹配后发送 zip。[AI修改] */
-    private fun serveOnce(server: ServerSocket, fileName: String, code: String) {
+    /** 后台等待一个连接，校验码匹配后发送 zip(全部备份 或 选择性包)。[AI修改] */
+    private fun serveOnce(server: ServerSocket, code: String) {
         serverJob = viewModelScope.launch(Dispatchers.IO) {
             val result = runCatching {
                 server.accept().use { sock ->
@@ -81,7 +93,9 @@ class DeviceSyncViewModel(
                         "REJECT" // 校验码不符
                     } else {
                         sock.getOutputStream().use { out ->
-                            backup.exportTo(fileName, out) // 复用导出流逻辑发送 zip
+                            val sel = sendSelection
+                            if (sel == null) backup.exportTo(sendFileName!!, out) // 全部：整库包
+                            else bundler.writeTo(sel, out) // 选择性：data.json+图片
                         }
                         "OK"
                     }
@@ -119,7 +133,7 @@ class DeviceSyncViewModel(
                         sock.soTimeout = RECEIVE_TIMEOUT_MS // [AI修改] 读超时，防对端掉线未发FIN导致永久阻塞
                         sock.connect(InetSocketAddress(ip.trim(), port), CONNECT_TIMEOUT_MS)
                         sock.getOutputStream().apply { write((code.trim() + "\n").toByteArray()); flush() }
-                        backup.importFrom(sock.getInputStream()) // 直接把socket流落地并恢复
+                        receiveAndImport(sock.getInputStream()) // [AI修改] 自动识别 全部替换/选择性合并
                     }
                 }
             }
@@ -130,6 +144,21 @@ class DeviceSyncViewModel(
             }.onFailure {
                 state = state.copy(receiving = false, status = null, error = it.message ?: "接收失败，请检查两台设备是否同一 WiFi")
             }
+        }
+    }
+
+    /** 落地接收到的 zip，自动识别 全部替换/选择性合并。[AI生成] */
+    private suspend fun receiveAndImport(input: java.io.InputStream) {
+        val tmp = java.io.File(CookbookStorage.requireSubDir("_recv"), "in.zip")
+        try {
+            tmp.outputStream().use { input.copyTo(it) }
+            if (SelectiveSyncBundler.isSelective(tmp)) {
+                tmp.inputStream().use { bundler.importFrom(it) } // 选择性合并
+            } else {
+                tmp.inputStream().use { backup.importFrom(it) } // 整库替换
+            }
+        } finally {
+            tmp.delete()
         }
     }
 
