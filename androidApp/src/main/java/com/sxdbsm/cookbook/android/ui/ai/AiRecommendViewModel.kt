@@ -136,6 +136,7 @@ class AiRecommendViewModel(
         if (c.missingNames.isNotEmpty()) parts += "🛒还差：${c.missingNames.joinToString("、")}"
         if (c.mainNames.isNotEmpty()) parts += "主料：${c.mainNames.joinToString("、")}"
         if (c.recommendHits.isNotEmpty()) parts += "✓利于调养：${c.recommendHits.joinToString("、")}"
+        if (c.cookingCautions.isNotEmpty()) parts += "🧂做法建议：${c.cookingCautions.joinToString("、")}" // 调料忌口/限量转做法提示(少盐/少糖)
         if (c.seasoningsOnHand.isNotEmpty()) parts += "可做法：${c.seasoningsOnHand.joinToString("、")}"
         if (c.limitHits.isNotEmpty()) parts += "⚠注意限量：${c.limitHits.joinToString("、")}"
         return parts.joinToString("　·　")

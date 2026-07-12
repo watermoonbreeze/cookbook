@@ -114,6 +114,19 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `调料忌口不判菜品忌口_转为做法提示少盐少糖`() {
+        // 盐(调料)对高血压忌口、白糖(调料)对糖尿病忌口：不能让每道放盐的菜都忌口，
+        // 而是转成做法提示"少盐/少糖"，菜照常推荐、不排到最后。
+        val dish = RuleDish(1, "西红柿炒鸡蛋", listOf(main(101, "西红柿"), main(102, "鸡蛋"), sea(901, "盐"), sea(902, "白糖")))
+        val constraints = HealthConstraints(avoidIngredientIds = setOf(901, 902)) // 盐、白糖忌口(都是调料)
+        val result = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 102), constraints)
+        assertEquals(1, result.size)
+        val c = result.first()
+        assertTrue(c.avoidNames.isEmpty(), "调料不判菜品忌口")
+        assertEquals(setOf("少盐", "少糖"), c.cookingCautions.toSet()) // 转做法提示
+    }
+
+    @Test
     fun `在手调料越全做法越丰富排前面`() {
         // 两菜非调料都在手、都可做；A 的调料(姜蒜)在手更全 → 排前。
         val rich = RuleDish(1, "红烧肉(调料全)", listOf(main(101, "五花肉"), sea(901, "姜"), sea(902, "蒜")))

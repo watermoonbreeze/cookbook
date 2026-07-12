@@ -51,6 +51,11 @@ class HealthRuleEngine {
 
         val limitHits = nonSeasoning.filter { it.ingredientId in constraints.limitIngredientIds }
         val recommendHits = nonSeasoning.filter { it.ingredientId in constraints.recommendIngredientIds }
+        // [AI生成] 调料若命中忌口/限量 → 不判菜品忌口，而是转成做法提示(少盐/少糖/少油)，让用户少放而非不做这道菜。
+        val cookingCautions = seasonings
+            .filter { it.ingredientId in constraints.avoidIngredientIds || it.ingredientId in constraints.limitIngredientIds }
+            .map { seasoningCaution(it.name) }
+            .distinct()
         val seasoningsOnHand = seasonings.filter { it.ingredientId in pantryIngredientIds }
         val isRecent = dish.id in recentDishIds
 
@@ -88,8 +93,19 @@ class HealthRuleEngine {
             missingNames = missingNames,
             onHandNames = onHandNames,
             avoidNames = avoidNames,
+            cookingCautions = cookingCautions,
         )
     }.sortedByDescending { it.score }
+
+    /** 调料忌口/限量 → 做法提示。[AI生成] 盐→少盐、白糖→少糖、生抽/老抽/豉油→少酱油、各种油→少油、各种酱→少酱。 */
+    private fun seasoningCaution(name: String): String = "少" + when {
+        name.contains("糖") -> "糖"
+        name.contains("盐") -> "盐"
+        name == "生抽" || name == "老抽" || name.contains("酱油") || name.contains("豉油") -> "酱油"
+        name.contains("油") -> "油"
+        name.contains("酱") -> "酱"
+        else -> name
+    }
 
     companion object {
         private const val BASE_SCORE = 1.0
