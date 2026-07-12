@@ -169,6 +169,31 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `库存有主料_用到它的所有菜都推荐且靠前_份数不足与缺辅料都不埋`() {
+        val pork = 101L
+        // 4 道五花肉菜(主料都=五花肉)，各缺不同辅料；整体五花肉份数不足(shortage)。
+        val porkDishes = listOf(
+            RuleDish(1, "红烧肉", listOf(main(pork, "五花肉"), sec(201, "冰糖"), sea(901, "盐"))),
+            RuleDish(2, "回锅肉", listOf(main(pork, "五花肉"), sec(202, "青椒"))),
+            RuleDish(3, "梅菜扣肉", listOf(main(pork, "五花肉"), sec(203, "梅菜"))),
+            RuleDish(4, "五花肉炖粉条", listOf(main(pork, "五花肉"), sec(204, "粉条"))),
+        )
+        // 干扰项：主料不在手、仅用到某在手小辅料的一堆杂菜(应排在五花肉菜之后)。
+        val noise = (10..25).map { i ->
+            RuleDish(i.toLong(), "杂菜$i", listOf(main((500 + i).toLong(), "缺主料$i"), sec(301, "在手小料")))
+        }
+        val result = engine.evaluate(
+            noise + porkDishes, // 故意把五花肉菜放最后
+            pantryIngredientIds = setOf(pork, 301L), // 在手：五花肉(主料) + 一个小辅料
+            HealthConstraints(),
+            shortageIngredientIds = setOf(pork), // 五花肉份数不足
+        )
+        // 4 道五花肉菜全部被推荐(不是随机一道)，且即使份数不足/缺辅料，仍排在最前(进第一批)。
+        assertEquals(setOf(1L, 2L, 3L, 4L), result.take(4).map { it.id }.toSet())
+        assertTrue(result.filter { it.id in 1L..4L }.all { it.shortageNames == listOf("五花肉") }) // 仍标"库存不足"
+    }
+
+    @Test
     fun `辅料齐备的菜排在缺辅料的菜前面`() {
         // 两菜主料都在手；一齐备一缺辅料 → 齐备的排前，缺的仍推荐并标还需采购。
         val full = RuleDish(1, "番茄炒蛋", listOf(main(101, "番茄"), sec(102, "鸡蛋")))

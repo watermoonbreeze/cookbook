@@ -53,17 +53,23 @@ class HealthRuleEngine {
         val seasoningsOnHand = seasonings.filter { it.ingredientId in pantryIngredientIds }
         val isRecent = dish.id in recentDishIds
 
-        // 打分：基础 + 调养推荐加分(利健康靠前) + 在手调料丰富度 - 限量(不利靠后) - 最近吃过。
+        // 打分：物尽其用为核心——用到在手主料强力提权 + 调养推荐 + 在手调料丰富度 - 限量 - 最近。
         val seasoningRichness = if (seasonings.isEmpty()) 0.0 else seasoningsOnHand.size.toDouble() / seasonings.size
-        // [AI生成] 库存不足：非调料食材可用份数≤0 → 仍推荐但大幅降权排到最后，并记录短料名。
+        // [AI生成] 库存不足：非调料食材可用份数≤0 → 仍推荐，只轻微靠后并标短料名(份数不影响是否推荐)。
         val shortageNames = nonSeasoning.filter { it.ingredientId in shortageIngredientIds }.map { it.name }
+        // [AI生成] 物尽其用核心信号：用到几味在手「主料」。用到在手主料的菜(如库存有五花肉→各种五花肉菜)强力提权，
+        // 保证它们排到前面、进第一批，不被"缺辅料/份数不足"埋到看不见。
+        val onHandMainCount = onHandNonSeasoning.count { it.role == IngredientRole.MAIN }
 
         var score = BASE_SCORE + SEASONING_WEIGHT * seasoningRichness
+        score += ON_HAND_MAIN_BONUS * onHandMainCount // 用到在手主料 → 强力靠前(物尽其用)
         score += RECOMMEND_BONUS * recommendHits.size
         score -= LIMIT_PENALTY * limitHits.size
         if (isRecent) score -= RECENT_PENALTY
-        if (shortageNames.isNotEmpty()) score -= SHORTAGE_PENALTY // 短料菜排到充足菜之后
-        if (missingNames.isNotEmpty()) score -= MISSING_PENALTY * missingNames.size // 缺辅料的菜排到齐备菜之后
+        // [AI修改] 份数不足/缺辅料只做「轻微靠后」的排序微调，不再是断崖式重罚——
+        // 用户要求「不管库存有几份、只要在库存中，用到它的菜都要推出来」，故份数/缺料不得把菜挤出推荐。
+        if (shortageNames.isNotEmpty()) score -= SHORTAGE_PENALTY
+        if (missingNames.isNotEmpty()) score -= MISSING_PENALTY * missingNames.size
 
         DishCandidate(
             id = dish.id,
@@ -83,11 +89,14 @@ class HealthRuleEngine {
 
     companion object {
         private const val BASE_SCORE = 1.0
+        private const val ON_HAND_MAIN_BONUS = 1.0 // [AI生成] 每味在手主料的加分：物尽其用核心，用到库存主料的菜强力靠前、进第一批。
         private const val SEASONING_WEIGHT = 0.5 // 在手调料越全，可做的做法越丰富，略加分。
         private const val RECOMMEND_BONUS = 0.6 // [AI生成] 每个调养推荐食材的加分(利健康的菜靠前)。
         private const val RECENT_PENALTY = 0.5 // 最近吃过降权，鼓励多样性。
         private const val LIMIT_PENALTY = 0.4 // [AI修改] 每个限量食材的降权(不利健康的菜靠后)。
-        private const val SHORTAGE_PENALTY = 100.0 // [AI生成] 库存不足菜大幅降权，排到所有充足菜之后(仍保留推荐)。
-        private const val MISSING_PENALTY = 50.0 // [AI生成] 缺辅料(需采购)每味降权，让食材齐备的菜排在前面(仍保留推荐)。
+        // [AI修改] 份数不足/缺辅料只做轻微靠后(0.3/0.2)，不再断崖重罚(原 100/50)——
+        // 保证「只要库存中有该食材、用到它的菜都能推出来」，份数与缺辅料只影响先后、不影响是否出现。
+        private const val SHORTAGE_PENALTY = 0.3 // 库存不足菜仍推荐，仅轻微排后并标"⚠库存不足"。
+        private const val MISSING_PENALTY = 0.2 // 缺辅料(需采购)每味仅轻微排后，让齐备的略靠前。
     }
 }
