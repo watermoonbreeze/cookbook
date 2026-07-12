@@ -44,6 +44,8 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 每个新文件用 Write 写（bash heredoc 遇引号/emoji 易挂）；git 提交多行信息用 `-F 文件`（Git Bash 无 PowerShell here-string）。
 - 食材 `name` 全新库有 **UNIQUE 约束**（`CREATE TABLE ingredient ... name TEXT NOT NULL UNIQUE`），老库经迁移升级可能没有、仍存同名多 id。`createUserIngredient` 必须**按去空格名先查复用已有 id**（全新库防 UNIQUE 崩、老库防同名多 id）；库存推荐按名扩展(`selectIngredientIdsByNames`)兼容老库同名多 id。
 - 库存推荐"某菜没推出来"排查：先看 `PantryRec` 日志——②预筛候选(用到在手食材)有、④规则评估后没了 = 被 `HealthRuleEngine` **忌口(avoid)过滤**（启用了健康档案，如高血脂忌五花肉）。忌口菜现为**保留+`AVOID_PENALTY`排最后+`avoidNames`标红**，不再隐藏（家庭 app 列出告知而非替用户隐藏）。
+- 健康档案忌口/限量只作用于**非调料**食材(`HealthRuleEngine` 用 `nonSeasoning`、`gatherForPlan` 排除 `seasoningIds`)：否则"盐对高血压忌口"让每道菜都忌口。调料的忌口/限量转"少盐/少糖"做法提示(`cookingCautions`)，不剔除菜。
+- shared 高频诊断日志(如库存推荐逐候选)用 `CookbookDiag.log("Tag"){ "msg" }`(lambda 延迟构造，`enabled` 默认关、androidApp 按 `FLAG_DEBUGGABLE` 仅 debug 开)，禁裸 `CookbookLog.d` 逐条打——release 不 minify，每次 gather 会跑上百次 Log + 构造字符串。
 - 改 data class 字段顺序/插字段后，全仓搜**位置参数构造**(尤其测试 helper)改命名参数，否则参数错位静默失效。
 - 倒计时禁用 `delay` 每秒递减（息屏被挂起会停走）：记 `elapsedRealtime` 结束时刻按墙钟算剩余；后台响铃用 `AlarmManager.setExactAndAllowWhileIdle` + 注册 Receiver。
 - 前台服务通知不立刻显示：加 `setForegroundServiceBehavior(FOREGROUND_SERVICE_IMMEDIATE)`（默认最多延迟10秒）；A14 FGS 须声明 `foregroundServiceType`。
