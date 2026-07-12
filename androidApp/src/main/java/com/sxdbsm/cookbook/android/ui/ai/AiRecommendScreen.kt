@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -113,6 +114,19 @@ fun AiRecommendScreen(
                     if (state.mode != RecommendMode.RANDOM) vm.recommend(RecommendMode.RANDOM)
                 }
                 TabChip("周期计划", selected = showPlan) { showPlan = true }
+            }
+            // [AI生成] 餐次选择(库存/随机推荐时显示)：全部+早/上午/中/下午/晚/宵夜，选不同餐次推不同内容。
+            if (!showPlan) {
+                Spacer(Modifier.height(6.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(com.sxdbsm.cookbook.ai.MealSlot.values()) { slot ->
+                        FilterChip(
+                            selected = state.selectedSlot == slot,
+                            onClick = { vm.setSlot(slot) },
+                            label = { Text(slot.label) },
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(4.dp))
 

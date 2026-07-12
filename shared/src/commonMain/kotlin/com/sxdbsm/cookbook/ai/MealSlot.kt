@@ -1,0 +1,48 @@
+package com.sxdbsm.cookbook.ai
+
+/**
+ * @File : MealSlot
+ * @Time : 2026/07/12
+ * @Author : SXD-AI
+ * @Desc : 推荐餐次(与 meal_type 对应)及按菜名的适配规则
+ * <p>
+ * 库存/随机推荐可按餐次筛选：全部=不分餐次；早餐=轻食主食类；中/晚餐=正餐(排除纯饮品)；
+ * 上午餐/下午餐/宵夜=偏轻的加餐。按菜名关键词启发式判定(菜品无餐次属性)，非精确、可后续细化。
+ * <p>
+ * [AI生成] 推荐加餐次选择。
+ **/
+enum class MealSlot(val code: String, val label: String) {
+    ALL("", "全部"),
+    BREAKFAST("BREAKFAST", "早餐"),
+    MORNING_SNACK("MORNING_SNACK", "上午餐"),
+    LUNCH("LUNCH", "中餐"),
+    AFTERNOON_SNACK("AFTERNOON_SNACK", "下午餐"),
+    DINNER("DINNER", "晚餐"),
+    NIGHT_SNACK("NIGHT_SNACK", "宵夜"),
+    ;
+
+    companion object {
+        fun fromCode(code: String?): MealSlot = values().firstOrNull { it.code == code } ?: ALL
+    }
+}
+
+object MealSlotMatcher {
+    // 早餐：粥/蛋/豆浆奶/燕麦/面点/薯玉米南瓜 等中式早餐。
+    private val BREAKFAST = listOf(
+        "粥", "蛋羹", "蒸蛋", "豆浆", "豆奶", "牛奶", "燕麦", "面", "馒头", "包子", "水煮蛋", "薯", "南瓜", "玉米", "饼",
+    )
+    // 加餐/宵夜：偏轻(粥/奶/蛋羹/薯玉米/汤面) 等好克化的。
+    private val LIGHT = listOf(
+        "粥", "豆浆", "豆奶", "牛奶", "燕麦", "蛋羹", "蒸蛋", "薯", "玉米", "南瓜", "汤", "面",
+    )
+    // 正餐(中/晚)排除的"纯饮品"整道菜。
+    private val DRINK_ONLY = listOf("豆浆", "豆奶", "牛奶", "燕麦牛奶")
+
+    /** 该菜是否适合此餐次。[AI生成] 全部=都适合。 */
+    fun matches(slot: MealSlot, dishName: String): Boolean = when (slot) {
+        MealSlot.ALL -> true
+        MealSlot.BREAKFAST -> BREAKFAST.any { dishName.contains(it) }
+        MealSlot.MORNING_SNACK, MealSlot.AFTERNOON_SNACK, MealSlot.NIGHT_SNACK -> LIGHT.any { dishName.contains(it) }
+        MealSlot.LUNCH, MealSlot.DINNER -> DRINK_ONLY.none { dishName == it } // 正餐排除纯饮品，其余(炒/炖/红烧等)都算
+    }
+}

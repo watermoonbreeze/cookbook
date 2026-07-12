@@ -70,13 +70,21 @@ class AiRecommendViewModel(
         else -> "离线规则"
     }
 
+    /** 选餐次(全部/早餐/…/宵夜)：从第一批开始重新推荐。[AI生成] */
+    fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {
+        if (slot == state.selectedSlot) return
+        rotation = 0 // 换餐次从第一批开始
+        state = state.copy(selectedSlot = slot)
+        recommend(state.mode)
+    }
+
     /** 触发推荐（首次 / 换一换 / 切模式）。[AI生成] */
     fun recommend(mode: RecommendMode = state.mode) {
         val rot = if (mode == RecommendMode.RANDOM) Random.nextInt(RANDOM_ROTATION_BOUND) else rotation++
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
             runCatching {
-                val input = dataSource.gather(mode)
+                val input = dataSource.gather(mode, mealSlot = state.selectedSlot)
                 orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { result ->
                 val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
@@ -138,6 +146,7 @@ data class AiRecommendUiState(
     val modelReady: Boolean = false, // [AI生成] 是否已配置 AI 模型(配置了则不自动推荐)。
     val pendingManual: Boolean = false, // [AI生成] 等待用户手动点击「开始推荐」(配置了 AI 模型时)。
     val engineLabel: String = "", // [AI生成] 当前推荐来源标注：云端AI模型/本地模型/离线规则。
+    val selectedSlot: com.sxdbsm.cookbook.ai.MealSlot = com.sxdbsm.cookbook.ai.MealSlot.ALL, // [AI生成] 当前餐次(全部/早餐/…)
 )
 
 /** 单道推荐菜的展示模型。[AI生成] */

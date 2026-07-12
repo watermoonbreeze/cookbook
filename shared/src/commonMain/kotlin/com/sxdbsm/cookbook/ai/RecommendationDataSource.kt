@@ -43,7 +43,11 @@ class RecommendationDataSource(
     private val q = db.cookbookQueries
 
     /** 聚合规则引擎输入。[AI生成] */
-    suspend fun gather(mode: RecommendMode = RecommendMode.PANTRY, recentLimit: Long = RECENT_LIMIT): RecommendationInput = withContext(ioDispatcher) {
+    suspend fun gather(
+        mode: RecommendMode = RecommendMode.PANTRY,
+        recentLimit: Long = RECENT_LIMIT,
+        mealSlot: MealSlot = MealSlot.ALL, // [AI生成] 按餐次筛选候选菜(全部=不筛)
+    ): RecommendationInput = withContext(ioDispatcher) {
         // [AI修改] 取材范围：库存=在手食材；随机=整个食材库(相当于都可做)。
         val pantryIds = when (mode) {
             RecommendMode.PANTRY -> {
@@ -64,7 +68,9 @@ class RecommendationDataSource(
         } else {
             dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT).map { it.dish.id }
         }
-        val dishes = candidateDishIds.mapNotNull { dishRepo.getDishById(it) }.map { it.toRuleDish(seasoningIds) }
+        val dishes = candidateDishIds.mapNotNull { dishRepo.getDishById(it) }
+            .map { it.toRuleDish(seasoningIds) }
+            .filter { MealSlotMatcher.matches(mealSlot, it.name) } // [AI生成] 按餐次适配筛选(全部不筛)
 
         // 忌口约束：启用的健康档案 → care 分类 → 调养规则。
         val enabledProfiles = healthRepo.listAll().filter { it.enabled }
