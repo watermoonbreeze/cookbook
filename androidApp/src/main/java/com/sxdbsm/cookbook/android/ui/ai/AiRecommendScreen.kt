@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +54,15 @@ fun AiRecommendScreen(
     LaunchedEffect(Unit) {
         // [AI修改] 进页面由 VM 判定：规则模式自动推荐；配置了 AI 模型则等用户点击「开始推荐」，不自动调云端。
         vm.start()
+    }
+    // [AI生成] 返回本页时重取(规则模式)，让刚新建的用了库存食材的菜立即被推荐。
+    val recLifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    DisposableEffect(recLifecycleOwner) {
+        val obs = androidx.lifecycle.LifecycleEventObserver { _, e ->
+            if (e == androidx.lifecycle.Lifecycle.Event.ON_RESUME) vm.refreshOnResume()
+        }
+        recLifecycleOwner.lifecycle.addObserver(obs)
+        onDispose { recLifecycleOwner.lifecycle.removeObserver(obs) }
     }
     LaunchedEffect(planState.saved) {
         if (planState.saved) snackbar.showSnackbar("已保存到未来 ${planState.plan?.days?.size ?: 0} 天计划")

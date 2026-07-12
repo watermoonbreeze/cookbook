@@ -70,6 +70,14 @@ class AiRecommendViewModel(
         else -> "离线规则"
     }
 
+    /** 返回本页时重取(如刚新建了用了库存食材的菜，立即纳入)。[AI生成]
+     * 仅规则模式自动重取；配了 AI 模型的仍等用户手动点(不擅自调云端)。 */
+    fun refreshOnResume() {
+        if (!started || state.loading || state.pendingManual) return
+        rotation = 0
+        recommend(state.mode)
+    }
+
     /** 选餐次(全部/早餐/…/宵夜)：从第一批开始重新推荐。[AI生成] */
     fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {
         if (slot == state.selectedSlot) return

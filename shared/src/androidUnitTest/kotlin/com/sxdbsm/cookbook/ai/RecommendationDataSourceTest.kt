@@ -24,6 +24,37 @@ import kotlinx.coroutines.runBlocking
 class RecommendationDataSourceTest {
 
     @Test
+    fun `自建菜_主料预设食材在库_应被库存推荐_与source和步骤无关`() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val pantry = PantryRepository(db)
+        val ds = RecommendationDataSource(db, pantry, dishRepo, HealthProfileRepository(db), ingredientRepo)
+
+        val porkId = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
+        // 用户自建"我的红烧肉"：主料=预设五花肉，无步骤、无图片、source=user
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "我的红烧肉", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(),
+            ingredients = listOf(
+                com.sxdbsm.cookbook.domain.model.DishIngredient(
+                    ingredient = com.sxdbsm.cookbook.domain.model.Ingredient(id = porkId, name = "五花肉"),
+                    isMain = true,
+                ),
+            ),
+            steps = emptyList(),
+        )
+        pantry.addToPantry(porkId) // 五花肉入库
+
+        val input = ds.gather(com.sxdbsm.cookbook.ai.model.RecommendMode.PANTRY)
+        assertTrue(input.dishes.any { it.id == dishId }, "自建菜(source=user、无步骤)主料在库应进候选——与 source/步骤无关")
+        val cands = HealthRuleEngine().evaluate(input.dishes, input.pantryIngredientIds, input.constraints)
+        assertTrue(cands.any { it.id == dishId }, "应被库存推荐(物尽其用: 用到在手非调料五花肉)")
+        Unit
+    }
+
+    @Test
     fun freePairingWorksOnRealSeedData() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded() // 灌入食材 + general 大类关联
