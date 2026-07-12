@@ -1,245 +1,3359 @@
 [
-  {"code":"rice","name":"大米","alias":"白米","unit":"克","emoji":"🍚","categories":["staple", "staple_grain", "staple_grain_rice", "gi_high"]},
-  {"code":"brown_rice","name":"糙米","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_rice", "whole_grain", "fiber_high"]},
-  {"code":"millet","name":"小米","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_coarse", "whole_grain", "nutrition_vitamin_b"]},
-  {"code":"oat","name":"燕麦","alias":"燕麦片","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_coarse", "whole_grain", "fiber_high", "gi_low", "nutrition_vitamin_b"]},
-  {"code":"buckwheat","name":"荞麦","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_coarse", "whole_grain", "fiber_high"]},
-  {"code":"corn","name":"玉米","unit":"根","emoji":"🌽","categories":["staple", "staple_grain", "staple_grain_coarse", "fiber_high"]},
-  {"code":"sweet_potato","name":"红薯","alias":"地瓜","unit":"个","emoji":"🍠","categories":["staple", "staple_tuber", "fiber_high"]},
-  {"code":"purple_potato","name":"紫薯","unit":"个","emoji":"🍠","categories":["staple", "staple_tuber", "fiber_high"]},
-  {"code":"potato","name":"土豆","alias":"马铃薯","unit":"个","emoji":"🥔","categories":["staple", "vegetable_root", "staple_tuber"]},
-  {"code":"yam","name":"山药","unit":"根","emoji":"🍠","categories":["staple", "vegetable_root", "staple_tuber", "season_autumn"]},
-  {"code":"noodle","name":"面条","alias":"挂面","unit":"把","emoji":"🍜","categories":["staple", "staple_grain", "staple_grain_product"]},
-  {"code":"whole_wheat_bread","name":"全麦面包","unit":"片","emoji":"🍞","categories":["staple", "staple_grain", "staple_grain_product", "whole_grain"]},
-  {"code":"cabbage","name":"白菜","alias":"大白菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "purine_low", "season_winter"]},
-  {"code":"spinach","name":"菠菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "potassium_high", "nutrition_iron_non_heme", "season_spring", "season_winter"]},
-  {"code":"bok_choy","name":"油菜","alias":"青菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "nutrition_calcium_plant"]},
-  {"code":"lettuce","name":"生菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "purine_low"]},
-  {"code":"celery","name":"芹菜","unit":"把","emoji":"🌿","categories":["vegetable", "vegetable_leaf", "sodium_low"]},
-  {"code":"broccoli","name":"西兰花","unit":"颗","emoji":"🥦","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "fiber_high", "nutrition_vitamin_c"]},
-  {"code":"cauliflower","name":"菜花","alias":"花菜","unit":"颗","emoji":"🥦","categories":["vegetable", "vegetable_leaf"]},
-  {"code":"carrot","name":"胡萝卜","alias":"红萝卜","unit":"根","emoji":"🥕","categories":["vegetable", "vegetable_root", "dark_vegetable", "nutrition_vitamin_a"]},
-  {"code":"white_radish","name":"白萝卜","unit":"根","emoji":"🥕","categories":["vegetable", "vegetable_root", "purine_low", "season_autumn", "season_winter"]},
-  {"code":"wax_gourd","name":"冬瓜","unit":"克","emoji":"🥒","categories":["vegetable", "vegetable_gourd", "purine_low", "season_summer"]},
-  {"code":"cucumber","name":"黄瓜","alias":"青瓜","unit":"根","emoji":"🥒","categories":["vegetable", "vegetable_gourd", "purine_low", "season_summer"]},
-  {"code":"bitter_melon","name":"苦瓜","unit":"根","emoji":"🥒","categories":["vegetable", "vegetable_gourd", "sugar_low", "season_summer"]},
-  {"code":"eggplant","name":"茄子","unit":"根","emoji":"🍆","categories":["vegetable", "vegetable_solanaceae", "season_summer"]},
-  {"code":"tomato","name":"西红柿","alias":"番茄","unit":"个","emoji":"🍅","categories":["vegetable", "vegetable_solanaceae", "sugar_low", "nutrition_vitamin_c", "season_summer"]},
-  {"code":"green_pepper","name":"青椒","alias":"柿子椒","unit":"个","emoji":"🫑","categories":["vegetable", "vegetable_solanaceae", "nutrition_vitamin_c", "season_summer"]},
-  {"code":"onion","name":"洋葱","unit":"个","emoji":"🧅","categories":["vegetable", "vegetable_allium"]},
-  {"code":"shiitake","name":"香菇","unit":"克","emoji":"🍄","categories":["fungi_algae", "fungi", "purine_medium"]},
-  {"code":"wood_ear","name":"木耳","alias":"黑木耳","unit":"克","emoji":"🍄","categories":["fungi_algae", "fungi", "fiber_high", "nutrition_iron_non_heme"]},
-  {"code":"kelp","name":"海带","unit":"克","emoji":"🌿","categories":["fungi_algae", "algae"]},
-  {"code":"apple","name":"苹果","unit":"个","emoji":"🍎","categories":["fruit", "fruit_pome", "gi_low"]},
-  {"code":"pear","name":"梨","unit":"个","emoji":"🍐","categories":["fruit", "fruit_pome"]},
-  {"code":"banana","name":"香蕉","unit":"根","emoji":"🍌","categories":["fruit", "fruit_tropical"]},
-  {"code":"orange","name":"橙子","unit":"个","emoji":"🍊","categories":["fruit", "fruit_citrus", "nutrition_vitamin_c"]},
-  {"code":"pomelo","name":"柚子","unit":"个","emoji":"🍊","categories":["fruit", "fruit_citrus", "nutrition_vitamin_c"]},
-  {"code":"kiwi","name":"猕猴桃","unit":"个","emoji":"🥝","categories":["fruit", "fruit_tropical", "nutrition_vitamin_c"]},
-  {"code":"strawberry","name":"草莓","unit":"克","emoji":"🍓","categories":["fruit", "fruit_berry", "gi_low", "nutrition_vitamin_c"]},
-  {"code":"blueberry","name":"蓝莓","unit":"克","emoji":"🫐","categories":["fruit", "fruit_berry"]},
-  {"code":"grape","name":"葡萄","unit":"克","emoji":"🍇","categories":["fruit", "fruit_berry"]},
-  {"code":"watermelon","name":"西瓜","unit":"克","emoji":"🍉","categories":["fruit", "fruit_melon"]},
-  {"code":"lean_pork","name":"猪瘦肉","alias":"里脊肉","unit":"克","emoji":"🥩","categories":["meat", "meat_livestock", "meat_pork", "protein_quality", "purine_medium"]},
-  {"code":"pork_belly","name":"五花肉","unit":"克","emoji":"🥩","categories":["meat", "meat_livestock", "meat_pork", "fat_high", "purine_medium"]},
-  {"code":"beef","name":"牛肉","unit":"克","emoji":"🥩","categories":["meat", "meat_livestock", "meat_beef", "protein_quality", "purine_medium"]},
-  {"code":"mutton","name":"羊肉","unit":"克","emoji":"🥩","categories":["meat", "meat_livestock", "meat_mutton", "purine_medium"]},
-  {"code":"pork_liver","name":"猪肝","alias":"动物肝脏","unit":"克","emoji":"🥩","categories":["meat", "meat_offal", "purine_high", "nutrition_iron_heme", "nutrition_vitamin_a"]},
-  {"code":"chicken_breast","name":"鸡胸肉","alias":"鸡肉","unit":"克","emoji":"🍗","categories":["meat", "meat_poultry", "protein_quality", "fat_low"]},
-  {"code":"chicken_leg","name":"鸡腿","unit":"个","emoji":"🍗","categories":["meat", "meat_poultry", "protein_quality"]},
-  {"code":"duck","name":"鸭肉","unit":"克","emoji":"🦆","categories":["meat", "meat_poultry"]},
-  {"code":"egg","name":"鸡蛋","unit":"个","emoji":"🥚","categories":["egg", "egg_fresh", "protein_quality", "purine_low"]},
-  {"code":"duck_egg","name":"鸭蛋","unit":"个","emoji":"🥚","categories":["egg", "egg_fresh"]},
-  {"code":"milk","name":"牛奶","unit":"毫升","emoji":"🥛","categories":["dairy", "dairy_liquid", "protein_quality", "calcium_high", "nutrition_calcium_absorbable", "purine_low"]},
-  {"code":"low_fat_milk","name":"低脂牛奶","unit":"毫升","emoji":"🥛","categories":["dairy", "dairy_liquid", "protein_quality", "calcium_high", "nutrition_calcium_absorbable", "fat_low"]},
-  {"code":"sugar_free_yogurt","name":"无糖酸奶","unit":"毫升","emoji":"🥛","categories":["dairy", "dairy_fermented", "protein_quality", "calcium_high", "nutrition_calcium_absorbable", "sugar_low"]},
-  {"code":"tofu","name":"豆腐","alias":"嫩豆腐","unit":"块","emoji":"🧈","categories":["soy_nut", "soy_product", "protein_quality", "purine_medium", "nutrition_calcium_plant"]},
-  {"code":"dried_tofu","name":"豆干","unit":"克","emoji":"🧈","categories":["soy_nut", "soy_product", "protein_quality", "nutrition_calcium_plant"]},
-  {"code":"soy_milk","name":"豆浆","unit":"毫升","emoji":"🥛","categories":["soy_nut", "soy_product"]},
-  {"code":"soybean","name":"黄豆","unit":"克","emoji":"🫘","categories":["soy_nut", "soy_bean", "fiber_high"]},
-  {"code":"mung_bean","name":"绿豆","unit":"克","emoji":"🫘","categories":["staple", "staple_legume", "fiber_high"]},
-  {"code":"bass","name":"鲈鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_freshwater", "protein_quality", "purine_medium"]},
-  {"code":"crucian","name":"鲫鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_freshwater", "protein_quality", "purine_medium"]},
-  {"code":"cod","name":"鳕鱼","unit":"克","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_marine", "protein_quality"]},
-  {"code":"hairtail","name":"带鱼","unit":"克","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_marine", "purine_high", "nutrition_omega3"]},
-  {"code":"shrimp","name":"虾","alias":"基围虾","unit":"克","emoji":"🦐","categories":["aquatic", "aquatic_crustacean", "protein_quality", "purine_medium", "nutrition_zinc"]},
-  {"code":"crab","name":"蟹","alias":"螃蟹","unit":"只","emoji":"🦀","categories":["aquatic", "aquatic_crustacean", "purine_medium", "nutrition_zinc"]},
-  {"code":"clam","name":"蛤蜊","alias":"花甲","unit":"克","emoji":"🦪","categories":["aquatic", "aquatic_bivalve", "purine_high", "nutrition_iron_heme", "nutrition_zinc"]},
-  {"code":"walnut","name":"核桃","unit":"克","emoji":"🌰","categories":["soy_nut", "nut_tree", "fat_high"]},
-  {"code":"almond","name":"杏仁","unit":"克","emoji":"🌰","categories":["soy_nut", "nut_tree"]},
-  {"code":"peanut","name":"花生","unit":"克","emoji":"🥜","categories":["soy_nut", "nut_seed", "fat_high"]},
-  {"code":"cashew","name":"腰果","unit":"克","emoji":"🌰","categories":["soy_nut", "nut_tree"]},
-  {"code":"sesame","name":"芝麻","unit":"克","emoji":"🌰","categories":["soy_nut", "nut_seed", "calcium_high"]},
-  {"code":"salt","name":"盐","alias":"食盐","unit":"克","emoji":"🧂","categories":["seasoning", "seasoning_savory", "sodium_high"]},
-  {"code":"light_soy_sauce","name":"生抽","alias":"酱油","unit":"勺","emoji":"🧂","categories":["seasoning", "seasoning_savory", "sodium_high"]},
-  {"code":"dark_soy_sauce","name":"老抽","alias":"酱油","unit":"勺","emoji":"🧂","categories":["seasoning", "seasoning_savory", "sodium_high"]},
-  {"code":"vinegar","name":"醋","unit":"勺","emoji":"🍶","categories":["seasoning", "seasoning_sweet_sour"]},
-  {"code":"cooking_wine","name":"料酒","unit":"勺","emoji":"🍶","categories":["seasoning", "seasoning_other"]},
-  {"code":"oyster_sauce","name":"蚝油","unit":"勺","emoji":"🧂","categories":["seasoning", "seasoning_savory", "sodium_high"]},
-  {"code":"doubanjiang","name":"豆瓣酱","unit":"勺","emoji":"🌶️","categories":["seasoning", "seasoning_sauce", "sodium_high"]},
-  {"code":"sugar","name":"白糖","alias":"糖","unit":"克","emoji":"🍬","categories":["seasoning", "seasoning_sweet_sour"]},
-  {"code":"ginger","name":"姜","alias":"生姜","unit":"片","emoji":"🫚","categories":["seasoning", "seasoning_spice"]},
-  {"code":"scallion","name":"葱","alias":"大葱","unit":"段","emoji":"🧅","categories":["seasoning", "seasoning_spice"]},
-  {"code":"garlic","name":"大蒜","alias":"蒜","unit":"瓣","emoji":"🧄","categories":["seasoning", "seasoning_spice"]},
-  {"code":"chili","name":"辣椒","unit":"个","emoji":"🌶️","categories":["seasoning", "seasoning_spice"]},
-  {"code":"peanut_oil","name":"花生油","unit":"勺","emoji":"🫒","categories":["oil", "oil_plant", "fat_high"]},
-  {"code":"rapeseed_oil","name":"菜籽油","alias":"食用油","unit":"勺","emoji":"🫒","categories":["oil", "oil_plant", "fat_high"]},
-  {"code":"olive_oil","name":"橄榄油","unit":"勺","emoji":"🫒","categories":["oil", "oil_plant", "fat_high"]},
-  {"code":"lard","name":"猪油","unit":"勺","emoji":"🧈","categories":["oil", "oil_animal", "fat_high"]},
-  {"code":"glutinous_rice","name":"糯米","alias":"江米","unit":"克","emoji":"🍚","categories":["staple", "staple_grain", "staple_grain_rice", "gi_high", "purine_low"],"ref":"日常食材维度整理"},
-  {"code":"black_rice","name":"黑米","unit":"克","emoji":"🍚","categories":["staple", "staple_grain", "staple_grain_rice", "whole_grain", "fiber_high", "gi_low"],"ref":"日常食材维度整理"},
-  {"code":"quinoa","name":"藜麦","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_coarse", "whole_grain", "fiber_high", "gi_low", "nutrition_iron_non_heme"],"ref":"日常食材维度整理"},
-  {"code":"steamed_bun","name":"馒头","unit":"个","emoji":"🍞","categories":["staple", "staple_grain", "staple_grain_product", "gi_high"],"ref":"日常食材维度整理"},
-  {"code":"bread","name":"面包","unit":"片","emoji":"🍞","categories":["staple", "staple_grain", "staple_grain_product", "gi_high"],"ref":"日常食材维度整理"},
-  {"code":"red_bean","name":"红豆","alias":"赤小豆","unit":"克","emoji":"🫘","categories":["staple", "staple_legume", "fiber_high", "gi_low", "potassium_high"],"ref":"日常食材维度整理"},
-  {"code":"chickpea","name":"鹰嘴豆","unit":"克","emoji":"🫘","categories":["staple", "staple_legume", "fiber_high", "gi_low"],"ref":"日常食材维度整理"},
-  {"code":"taro","name":"芋头","unit":"个","emoji":"🍠","categories":["staple", "staple_tuber", "purine_low", "season_autumn"],"ref":"日常食材维度整理"},
-  {"code":"baby_bok_choy","name":"小白菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "nutrition_calcium_plant", "purine_low", "season_winter"],"ref":"日常食材维度整理"},
-  {"code":"round_cabbage","name":"卷心菜","alias":"圆白菜/包菜","unit":"个","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "purine_low", "season_winter"],"ref":"日常食材维度整理"},
-  {"code":"chinese_kale","name":"芥蓝","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "nutrition_calcium_plant", "season_winter"],"ref":"日常食材维度整理"},
-  {"code":"youmai_lettuce","name":"油麦菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "purine_low", "season_winter"],"ref":"日常食材维度整理"},
-  {"code":"garland_chrysanthemum","name":"茼蒿","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "season_winter"],"ref":"日常食材维度整理"},
-  {"code":"amaranth","name":"苋菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "potassium_high", "nutrition_calcium_plant", "nutrition_iron_non_heme"],"ref":"日常食材维度整理"},
-  {"code":"cilantro","name":"香菜","alias":"芫荽","unit":"把","emoji":"🌿","categories":["vegetable", "vegetable_leaf"],"ref":"日常食材维度整理"},
-  {"code":"chinese_chive","name":"韭菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "fiber_high", "season_spring"],"ref":"日常食材维度整理"},
-  {"code":"celtuce","name":"莴笋","alias":"青笋","unit":"根","emoji":"🥬","categories":["vegetable", "vegetable_root", "potassium_high", "purine_low", "season_spring"],"ref":"日常食材维度整理"},
-  {"code":"lotus_root","name":"莲藕","unit":"根","emoji":"🪷","categories":["vegetable", "vegetable_root", "vegetable_aquatic", "season_autumn"],"ref":"日常食材维度整理"},
-  {"code":"pumpkin","name":"南瓜","unit":"个","emoji":"🎃","categories":["vegetable", "vegetable_gourd", "gi_medium", "nutrition_vitamin_a", "season_autumn"],"ref":"日常食材维度整理"},
-  {"code":"zucchini","name":"西葫芦","unit":"个","emoji":"🥒","categories":["vegetable", "vegetable_gourd", "purine_low", "season_summer"],"ref":"日常食材维度整理"},
-  {"code":"loofah","name":"丝瓜","unit":"根","emoji":"🥒","categories":["vegetable", "vegetable_gourd", "purine_low", "season_summer"],"ref":"日常食材维度整理"},
-  {"code":"edamame","name":"毛豆","unit":"克","emoji":"🫛","categories":["vegetable", "vegetable_fresh_bean", "purine_medium", "potassium_high", "fiber_high", "season_summer"],"ref":"日常食材维度整理"},
-  {"code":"green_bean","name":"四季豆","alias":"菜豆","unit":"把","emoji":"🫛","categories":["vegetable", "vegetable_fresh_bean", "purine_low", "season_summer"],"ref":"日常食材维度整理"},
-  {"code":"bean_sprout","name":"豆芽","alias":"绿豆芽","unit":"把","emoji":"🌱","categories":["vegetable", "vegetable_fresh_bean", "season_spring"],"ref":"日常食材维度整理"},
-  {"code":"asparagus","name":"芦笋","unit":"根","emoji":"🌿","categories":["vegetable", "purine_medium", "nutrition_vitamin_b", "season_spring"],"ref":"日常食材维度整理"},
-  {"code":"enoki","name":"金针菇","unit":"把","emoji":"🍄","categories":["fungi_algae", "fungi", "fiber_high", "purine_medium"],"ref":"日常食材维度整理"},
-  {"code":"king_oyster_mushroom","name":"杏鲍菇","unit":"个","emoji":"🍄","categories":["fungi_algae", "fungi", "purine_medium"],"ref":"日常食材维度整理"},
-  {"code":"laver","name":"紫菜","unit":"克","emoji":"🌿","categories":["fungi_algae", "algae", "potassium_high", "nutrition_iron_non_heme"],"ref":"日常食材维度整理"},
-  {"code":"peach","name":"桃子","alias":"桃","unit":"个","emoji":"🍑","categories":["fruit", "fruit_stone", "gi_low"],"ref":"日常食材维度整理"},
-  {"code":"cherry","name":"樱桃","unit":"克","emoji":"🍒","categories":["fruit", "fruit_stone", "gi_low", "nutrition_vitamin_c"],"ref":"日常食材维度整理"},
-  {"code":"red_date","name":"红枣","alias":"大枣","unit":"颗","emoji":"🥗","categories":["fruit", "fruit_stone", "nutrition_vitamin_c"],"ref":"日常食材维度整理"},
-  {"code":"mandarin","name":"橘子","alias":"桔子","unit":"个","emoji":"🍊","categories":["fruit", "fruit_citrus", "nutrition_vitamin_c"],"ref":"日常食材维度整理"},
-  {"code":"mango","name":"芒果","unit":"个","emoji":"🥭","categories":["fruit", "fruit_tropical", "gi_medium", "nutrition_vitamin_a"],"ref":"日常食材维度整理"},
-  {"code":"pineapple","name":"菠萝","alias":"凤梨","unit":"个","emoji":"🍍","categories":["fruit", "fruit_tropical", "gi_medium"],"ref":"日常食材维度整理"},
-  {"code":"lychee","name":"荔枝","unit":"颗","emoji":"🥗","categories":["fruit", "fruit_tropical"],"ref":"日常食材维度整理"},
-  {"code":"dragon_fruit","name":"火龙果","unit":"个","emoji":"🥗","categories":["fruit", "fruit_tropical", "fiber_high"],"ref":"日常食材维度整理"},
-  {"code":"hami_melon","name":"哈密瓜","unit":"个","emoji":"🍈","categories":["fruit", "fruit_melon", "potassium_high"],"ref":"日常食材维度整理"},
-  {"code":"ham","name":"火腿","unit":"片","emoji":"🥓","categories":["meat", "meat_processed", "sodium_high"],"ref":"日常食材维度整理"},
-  {"code":"sausage","name":"香肠","alias":"腊肠","unit":"根","emoji":"🌭","categories":["meat", "meat_processed", "sodium_high", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"cured_pork","name":"腊肉","unit":"克","emoji":"🥓","categories":["meat", "meat_processed", "sodium_high", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"pork_ribs","name":"排骨","unit":"克","emoji":"🍖","categories":["meat", "meat_livestock", "meat_pork", "purine_medium", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"pork_trotter","name":"猪蹄","unit":"个","emoji":"🍖","categories":["meat", "meat_livestock", "meat_pork", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"duck_blood","name":"鸭血","unit":"克","emoji":"🩸","categories":["meat", "meat_offal", "nutrition_iron_heme", "fat_low"],"ref":"日常食材维度整理"},
-  {"code":"grass_carp","name":"草鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_freshwater", "protein_quality", "purine_medium"],"ref":"日常食材维度整理"},
-  {"code":"carp","name":"鲤鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_freshwater", "purine_medium"],"ref":"日常食材维度整理"},
-  {"code":"ricefield_eel","name":"黄鳝","alias":"鳝鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_freshwater", "purine_medium"],"ref":"日常食材维度整理"},
-  {"code":"salmon","name":"三文鱼","unit":"克","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_marine", "protein_quality", "nutrition_omega3", "nutrition_vitamin_d", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"sardine","name":"沙丁鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_marine", "purine_high", "nutrition_omega3"],"ref":"日常食材维度整理"},
-  {"code":"squid","name":"鱿鱼","unit":"只","emoji":"🦑","categories":["aquatic", "aquatic_cephalopod", "purine_high"],"ref":"日常食材维度整理"},
-  {"code":"scallop","name":"扇贝","unit":"只","emoji":"🦪","categories":["aquatic", "aquatic_bivalve", "purine_high", "nutrition_zinc"],"ref":"日常食材维度整理"},
-  {"code":"oyster","name":"生蚝","alias":"牡蛎","unit":"只","emoji":"🦪","categories":["aquatic", "aquatic_bivalve", "purine_high", "nutrition_zinc"],"ref":"日常食材维度整理"},
-  {"code":"sea_cucumber","name":"海参","unit":"只","emoji":"🥗","categories":["aquatic", "aquatic_other", "protein_quality", "purine_low", "fat_low"],"ref":"日常食材维度整理"},
-  {"code":"dried_shrimp_skin","name":"虾皮","unit":"克","emoji":"🦐","categories":["aquatic", "aquatic_crustacean", "sodium_high", "calcium_high", "nutrition_calcium_absorbable"],"ref":"日常食材维度整理"},
-  {"code":"salted_duck_egg","name":"咸鸭蛋","unit":"个","emoji":"🥚","categories":["egg", "egg_product", "sodium_high"],"ref":"日常食材维度整理"},
-  {"code":"yogurt","name":"酸奶","unit":"毫升","emoji":"🥛","categories":["dairy", "dairy_fermented", "protein_quality", "calcium_high", "nutrition_calcium_absorbable"],"ref":"日常食材维度整理"},
-  {"code":"cheese","name":"奶酪","alias":"芝士","unit":"片","emoji":"🧀","categories":["dairy", "dairy_product", "protein_quality", "calcium_high", "nutrition_calcium_absorbable", "fat_high", "sodium_high"],"ref":"日常食材维度整理"},
-  {"code":"black_soybean","name":"黑豆","unit":"克","emoji":"🫘","categories":["soy_nut", "soy_bean", "fiber_high", "nutrition_iron_non_heme"],"ref":"日常食材维度整理"},
-  {"code":"yuba","name":"腐竹","unit":"克","emoji":"🧈","categories":["soy_nut", "soy_product", "protein_quality", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"tofu_skin","name":"豆腐皮","alias":"千张","unit":"片","emoji":"🧈","categories":["soy_nut", "soy_product", "protein_quality", "nutrition_calcium_plant"],"ref":"日常食材维度整理"},
-  {"code":"chestnut","name":"板栗","alias":"栗子","unit":"颗","emoji":"🌰","categories":["soy_nut", "nut_tree", "gi_medium"],"ref":"日常食材维度整理"},
-  {"code":"pumpkin_seed","name":"南瓜子","unit":"克","emoji":"🌰","categories":["soy_nut", "nut_seed", "fat_high", "nutrition_zinc"],"ref":"日常食材维度整理"},
-  {"code":"flaxseed","name":"亚麻籽","unit":"勺","emoji":"🌰","categories":["soy_nut", "nut_seed", "nutrition_omega3", "fiber_high", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"sesame_oil","name":"芝麻油","alias":"香油","unit":"勺","emoji":"🫒","categories":["oil", "oil_plant", "fat_high"],"ref":"日常食材维度整理"},
-  {"code":"flaxseed_oil","name":"亚麻籽油","unit":"勺","emoji":"🫒","categories":["oil", "oil_plant", "fat_high", "nutrition_omega3"],"ref":"日常食材维度整理"},
-  {"code":"honey","name":"蜂蜜","unit":"勺","emoji":"🍯","categories":["seasoning", "seasoning_sweet_sour", "gi_high"],"ref":"日常食材维度整理"},
-  {"code":"chicken_essence","name":"鸡精","unit":"勺","emoji":"🧂","categories":["seasoning", "seasoning_savory", "sodium_high"],"ref":"日常食材维度整理"},
-  {"code":"flour","name":"面粉","alias":"小麦粉","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_wheat", "gi_high"]},
-  {"code":"barley","name":"大麦","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_wheat", "whole_grain", "fiber_high", "gi_low"]},
-  {"code":"shepherds_purse","name":"荠菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_wild", "dark_vegetable", "nutrition_calcium_plant", "season_spring"]},
-  {"code":"toon","name":"香椿","unit":"把","emoji":"🌿","categories":["vegetable", "vegetable_wild", "dark_vegetable", "season_spring"]},
-  {"code":"kalimeris","name":"马兰头","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_wild", "dark_vegetable", "season_spring"]},
-  {"code":"raisin","name":"葡萄干","unit":"克","emoji":"🍇","categories":["fruit", "fruit_dried", "gi_high"]},
-  {"code":"dried_longan","name":"桂圆干","alias":"龙眼干","unit":"颗","emoji":"🟤","categories":["fruit", "fruit_dried", "gi_high"]},
-  {"code":"rabbit","name":"兔肉","unit":"克","emoji":"🥩","categories":["meat", "meat_livestock", "meat_livestock_other", "protein_quality", "fat_low"]},
-  {"code":"donkey_meat","name":"驴肉","unit":"克","emoji":"🥩","categories":["meat", "meat_livestock", "meat_livestock_other", "protein_quality", "fat_low"]},
-  {"code":"fish_ball","name":"鱼丸","unit":"个","emoji":"🍥","categories":["aquatic", "aquatic_processed", "sodium_high"]},
-  {"code":"frozen_dumpling","name":"速冻水饺","unit":"个","emoji":"🥟","categories":["convenience", "convenience_frozen", "sodium_high"]},
-  {"code":"tangyuan","name":"汤圆","unit":"个","emoji":"🍡","categories":["convenience", "convenience_frozen", "gi_high"]},
-  {"code":"instant_noodle","name":"方便面","unit":"包","emoji":"🍜","categories":["convenience", "convenience_instant", "sodium_high", "fat_high", "gi_high"]},
-  {"code":"self_heating_rice","name":"自热米饭","unit":"盒","emoji":"🍚","categories":["convenience", "convenience_instant", "sodium_high"]},
-  {"code":"luncheon_meat","name":"午餐肉","unit":"片","emoji":"🥫","categories":["convenience", "convenience_canned", "sodium_high", "fat_high"]},
-  {"code":"canned_fish","name":"鱼罐头","unit":"罐","emoji":"🥫","categories":["convenience", "convenience_canned", "sodium_high"]},
-  {"code":"canned_fruit","name":"水果罐头","unit":"罐","emoji":"🥫","categories":["convenience", "convenience_canned", "gi_high"]},
-  {"code":"prepared_meal","name":"料理包","alias":"半成品菜","unit":"包","emoji":"🍱","categories":["convenience", "convenience_prepared", "sodium_high", "fat_high"]},
-  {"code":"ketchup","name":"番茄酱","unit":"勺","emoji":"🍅","categories":["seasoning", "seasoning_sauce", "sodium_high"]},
-  {"code":"sweet_bean_sauce","name":"甜面酱","unit":"勺","emoji":"🥫","categories":["seasoning", "seasoning_sauce", "sodium_high"]},
-  {"code":"salad_dressing","name":"沙拉酱","unit":"勺","emoji":"🥫","categories":["seasoning", "seasoning_sauce", "fat_high"]},
-  {"code":"garlic_scape","name":"蒜薹","alias":"蒜苗","unit":"把","emoji":"🌿","categories":["vegetable", "vegetable_allium", "fiber_high", "season_spring"]},
-  {"code":"water_bamboo","name":"茭白","unit":"根","emoji":"🌿","categories":["vegetable", "vegetable_aquatic", "fiber_high", "purine_low", "season_autumn"]},
-  {"code":"water_chestnut","name":"荸荠","alias":"马蹄","unit":"个","emoji":"🌰","categories":["vegetable", "vegetable_aquatic", "season_autumn"]},
-  {"code":"beef_brisket","name":"牛腩","unit":"克","emoji":"🥩","categories":["meat", "meat_livestock", "meat_beef", "protein_quality", "fat_high"]},
-  {"code":"lamb_chop","name":"羊排","unit":"克","emoji":"🍖","categories":["meat", "meat_livestock", "meat_mutton", "fat_high"]},
-  {"code":"octopus","name":"章鱼","unit":"只","emoji":"🐙","categories":["aquatic", "aquatic_cephalopod", "purine_high", "protein_quality"]},
-  {"code":"jellyfish","name":"海蜇","unit":"克","emoji":"🪼","categories":["aquatic", "aquatic_other", "protein_quality", "fat_low"]},
-  {"code":"quail_egg","name":"鹌鹑蛋","unit":"个","emoji":"🥚","categories":["egg", "egg_fresh", "protein_quality"]},
-  {"code":"milk_powder","name":"奶粉","unit":"克","emoji":"🥛","categories":["dairy", "dairy_product", "calcium_high", "protein_quality"]},
-  {"code":"butter","name":"黄油","unit":"克","emoji":"🧈","categories":["oil", "oil_animal", "fat_high"]},
-  {"code":"sunflower_seed","name":"葵花籽","unit":"克","emoji":"🌻","categories":["soy_nut", "nut_seed", "fat_high"]},
-  {"code":"sichuan_pepper","name":"花椒","unit":"克","emoji":"🌶️","categories":["seasoning", "seasoning_spice"]},
-  {"code":"star_anise","name":"八角","alias":"大料","unit":"颗","emoji":"🌟","categories":["seasoning", "seasoning_spice"]},
-  {"code":"cinnamon_bark","name":"桂皮","unit":"块","emoji":"🪵","categories":["seasoning", "seasoning_spice"]},
-  {"code":"cumin","name":"孜然","unit":"克","emoji":"🌰","categories":["seasoning", "seasoning_spice"]},
-  {"code":"white_pepper","name":"胡椒","alias":"胡椒粉","unit":"克","emoji":"⚪","categories":["seasoning", "seasoning_spice"]},
-  {"code":"bay_leaf","name":"香叶","unit":"片","emoji":"🍃","categories":["seasoning", "seasoning_spice"]},
-  {"code":"five_spice_powder","name":"五香粉","unit":"克","emoji":"🥫","categories":["seasoning", "seasoning_spice"]},
-  {"code":"oyster_mushroom","name":"平菇","unit":"克","emoji":"🍄","categories":["fungi_algae", "fungi", "purine_medium"]},
-  {"code":"tea_tree_mushroom","name":"茶树菇","unit":"克","emoji":"🍄","categories":["fungi_algae", "fungi", "fiber_high", "purine_medium"]},
-  {"code":"straw_mushroom","name":"草菇","unit":"克","emoji":"🍄","categories":["fungi_algae", "fungi", "purine_medium"]},
-  {"code":"crab_mushroom","name":"蟹味菇","unit":"克","emoji":"🍄","categories":["fungi_algae", "fungi", "purine_medium"]},
-  {"code":"white_fungus","name":"银耳","alias":"白木耳","unit":"朵","emoji":"🤍","categories":["fungi_algae", "fungi", "fiber_high"]},
-  {"code":"lions_mane","name":"猴头菇","unit":"个","emoji":"🍄","categories":["fungi_algae", "fungi", "fiber_high"]},
-  {"code":"lactone_tofu","name":"内酯豆腐","unit":"盒","emoji":"🧈","categories":["soy_nut", "soy_product", "protein_quality"]},
-  {"code":"frozen_tofu","name":"冻豆腐","unit":"块","emoji":"🧊","categories":["soy_nut", "soy_product", "protein_quality"]},
-  {"code":"fried_tofu_puff","name":"油豆腐","alias":"豆泡","unit":"个","emoji":"🧈","categories":["soy_nut", "soy_product", "protein_quality", "fat_high"]},
-  {"code":"green_soybean","name":"青豆","unit":"克","emoji":"🫛","categories":["soy_nut", "soy_bean", "protein_quality", "fiber_high"]},
-  {"code":"yellow_croaker","name":"黄花鱼","alias":"黄鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_marine", "protein_quality", "purine_medium"]},
-  {"code":"pomfret","name":"鲳鱼","alias":"平鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_marine", "protein_quality", "purine_medium"]},
-  {"code":"tilapia","name":"罗非鱼","unit":"条","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_freshwater", "protein_quality", "purine_medium"]},
-  {"code":"sole_fish","name":"龙利鱼","unit":"克","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_marine", "protein_quality", "fat_low"]},
-  {"code":"river_shrimp","name":"河虾","unit":"克","emoji":"🦐","categories":["aquatic", "aquatic_crustacean", "protein_quality", "purine_high", "nutrition_calcium_absorbable"]},
-  {"code":"razor_clam","name":"蛏子","unit":"克","emoji":"🦪","categories":["aquatic", "aquatic_bivalve", "purine_high", "nutrition_zinc"]},
-  {"code":"river_snail","name":"田螺","unit":"克","emoji":"🐌","categories":["aquatic", "aquatic_other", "purine_high"]},
-  {"code":"loach","name":"泥鳅","unit":"克","emoji":"🐟","categories":["aquatic", "aquatic_fish", "aquatic_fish_freshwater", "protein_quality", "purine_medium"]},
-  {"code":"pomegranate","name":"石榴","unit":"个","emoji":"🔴","categories":["fruit", "fruit_berry"]},
-  {"code":"persimmon","name":"柿子","unit":"个","emoji":"🟠","categories":["fruit", "fruit_pome", "gi_medium"]},
-  {"code":"fig","name":"无花果","unit":"个","emoji":"🟣","categories":["fruit", "fruit_berry", "fiber_high"]},
-  {"code":"mulberry","name":"桑葚","unit":"克","emoji":"🟣","categories":["fruit", "fruit_berry", "nutrition_iron_non_heme"]},
-  {"code":"mangosteen","name":"山竹","unit":"个","emoji":"🟣","categories":["fruit", "fruit_tropical"]},
-  {"code":"durian","name":"榴莲","unit":"块","emoji":"🟡","categories":["fruit", "fruit_tropical", "gi_medium", "fat_high"]},
-  {"code":"coconut","name":"椰子","unit":"个","emoji":"🥥","categories":["fruit", "fruit_tropical", "fat_high"]},
-  {"code":"loquat","name":"枇杷","unit":"个","emoji":"🟠","categories":["fruit", "fruit_pome"]},
-  {"code":"century_egg","name":"皮蛋","alias":"松花蛋","unit":"个","emoji":"🥚","categories":["egg", "egg_product"]},
-  {"code":"condensed_milk","name":"炼乳","unit":"勺","emoji":"🥛","categories":["dairy", "dairy_product", "gi_high"]},
-  {"code":"cream","name":"淡奶油","alias":"稀奶油","unit":"克","emoji":"🥛","categories":["dairy", "dairy_product", "fat_high"]},
-  {"code":"job_tears","name":"薏米","alias":"薏仁","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_coarse", "whole_grain", "fiber_high", "gi_low"]},
-  {"code":"wheat","name":"小麦","unit":"克","emoji":"🌾","categories":["staple", "staple_grain", "staple_grain_wheat", "whole_grain", "fiber_high"]},
-  {"code":"corn_oil","name":"玉米油","unit":"勺","emoji":"🫒","categories":["oil", "oil_plant", "fat_high"]},
-  {"code":"soybean_oil","name":"大豆油","alias":"色拉油","unit":"勺","emoji":"🫒","categories":["oil", "oil_plant", "fat_high"]},
-  {"code":"baby_cabbage","name":"娃娃菜","unit":"棵","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "season_winter"]},
-  {"code":"water_spinach","name":"空心菜","alias":"蕹菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "season_summer"]},
-  {"code":"okra","name":"秋葵","unit":"根","emoji":"🥬","categories":["vegetable", "vegetable_gourd_solanaceae", "vegetable_gourd", "fiber_high", "season_summer"]},
-  {"code":"snow_pea","name":"荷兰豆","unit":"把","emoji":"🫛","categories":["vegetable", "vegetable_fresh_bean", "season_spring"]},
-  {"code":"mustard_green","name":"芥菜","unit":"把","emoji":"🥬","categories":["vegetable", "vegetable_leaf", "dark_vegetable", "season_winter"]},
-  {"code":"waxberry","name":"杨梅","unit":"克","emoji":"🔴","categories":["fruit", "fruit_berry"]},
-  {"code":"plum","name":"李子","unit":"个","emoji":"🟣","categories":["fruit", "fruit_stone"]},
-  {"code":"papaya","name":"木瓜","unit":"个","emoji":"🟠","categories":["fruit", "fruit_tropical"]},
-  {"code":"sugarcane","name":"甘蔗","unit":"段","emoji":"🎋","categories":["fruit", "fruit_tropical", "gi_high"]},
-  {"code":"button_mushroom","name":"口蘑","unit":"克","emoji":"🍄","categories":["fungi_algae", "fungi", "purine_medium"]},
-  {"code":"abalone","name":"鲍鱼","unit":"只","emoji":"🐚","categories":["aquatic", "aquatic_other", "protein_quality", "purine_high"]},
-  {"code":"chicken_wing","name":"鸡翅","unit":"个","emoji":"🍗","categories":["meat", "meat_poultry", "protein_quality"]},
-  {"code":"pork_tripe","name":"猪肚","unit":"个","emoji":"🥩","categories":["meat", "meat_offal"]},
-  {"code":"goose_egg","name":"鹅蛋","unit":"个","emoji":"🥚","categories":["egg", "egg_fresh", "protein_quality"]},
-  {"code":"steamed_fish_soy","name":"蒸鱼豉油","unit":"勺","emoji":"🧂","categories":["seasoning", "seasoning_savory", "sodium_high"]},
-  {"code":"curry","name":"咖喱","unit":"块","emoji":"🍛","categories":["seasoning", "seasoning_spice", "sodium_high"]},
-  {"code":"rice_cake","name":"年糕","unit":"块","emoji":"🍥","categories":["staple", "staple_grain", "staple_grain_product", "gi_high"]},
-  {"code":"rice_noodle","name":"米线","unit":"把","emoji":"🍜","categories":["staple", "staple_grain", "staple_grain_product"]}
+  {
+    "code": "rice",
+    "name": "大米",
+    "alias": "白米",
+    "unit": "克",
+    "emoji": "🍚",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_rice",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "brown_rice",
+    "name": "糙米",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_rice",
+      "whole_grain",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "millet",
+    "name": "小米",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_coarse",
+      "whole_grain",
+      "nutrition_vitamin_b"
+    ]
+  },
+  {
+    "code": "oat",
+    "name": "燕麦",
+    "alias": "燕麦片",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_coarse",
+      "whole_grain",
+      "fiber_high",
+      "gi_low",
+      "nutrition_vitamin_b"
+    ]
+  },
+  {
+    "code": "buckwheat",
+    "name": "荞麦",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_coarse",
+      "whole_grain",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "corn",
+    "name": "玉米",
+    "unit": "根",
+    "emoji": "🌽",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_coarse",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "sweet_potato",
+    "name": "红薯",
+    "alias": "地瓜",
+    "unit": "个",
+    "emoji": "🍠",
+    "categories": [
+      "staple",
+      "staple_tuber",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "purple_potato",
+    "name": "紫薯",
+    "unit": "个",
+    "emoji": "🍠",
+    "categories": [
+      "staple",
+      "staple_tuber",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "potato",
+    "name": "土豆",
+    "alias": "马铃薯",
+    "unit": "个",
+    "emoji": "🥔",
+    "categories": [
+      "staple",
+      "vegetable_root",
+      "staple_tuber"
+    ]
+  },
+  {
+    "code": "yam",
+    "name": "山药",
+    "unit": "根",
+    "emoji": "🍠",
+    "categories": [
+      "staple",
+      "vegetable_root",
+      "staple_tuber",
+      "season_autumn"
+    ]
+  },
+  {
+    "code": "noodle",
+    "name": "面条",
+    "alias": "挂面",
+    "unit": "把",
+    "emoji": "🍜",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "whole_wheat_bread",
+    "name": "全麦面包",
+    "unit": "片",
+    "emoji": "🍞",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "whole_grain"
+    ]
+  },
+  {
+    "code": "cabbage",
+    "name": "白菜",
+    "alias": "大白菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "purine_low",
+      "season_winter"
+    ]
+  },
+  {
+    "code": "spinach",
+    "name": "菠菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "potassium_high",
+      "nutrition_iron_non_heme",
+      "season_spring",
+      "season_winter"
+    ]
+  },
+  {
+    "code": "bok_choy",
+    "name": "油菜",
+    "alias": "青菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "nutrition_calcium_plant"
+    ]
+  },
+  {
+    "code": "lettuce",
+    "name": "生菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "purine_low"
+    ]
+  },
+  {
+    "code": "celery",
+    "name": "芹菜",
+    "unit": "把",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "sodium_low"
+    ]
+  },
+  {
+    "code": "broccoli",
+    "name": "西兰花",
+    "unit": "颗",
+    "emoji": "🥦",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "fiber_high",
+      "nutrition_vitamin_c"
+    ]
+  },
+  {
+    "code": "cauliflower",
+    "name": "菜花",
+    "alias": "花菜",
+    "unit": "颗",
+    "emoji": "🥦",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf"
+    ]
+  },
+  {
+    "code": "carrot",
+    "name": "胡萝卜",
+    "alias": "红萝卜",
+    "unit": "根",
+    "emoji": "🥕",
+    "categories": [
+      "vegetable",
+      "vegetable_root",
+      "dark_vegetable",
+      "nutrition_vitamin_a"
+    ]
+  },
+  {
+    "code": "white_radish",
+    "name": "白萝卜",
+    "unit": "根",
+    "emoji": "🥕",
+    "categories": [
+      "vegetable",
+      "vegetable_root",
+      "purine_low",
+      "season_autumn",
+      "season_winter"
+    ]
+  },
+  {
+    "code": "wax_gourd",
+    "name": "冬瓜",
+    "unit": "克",
+    "emoji": "🥒",
+    "categories": [
+      "vegetable",
+      "vegetable_gourd",
+      "purine_low",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "cucumber",
+    "name": "黄瓜",
+    "alias": "青瓜",
+    "unit": "根",
+    "emoji": "🥒",
+    "categories": [
+      "vegetable",
+      "vegetable_gourd",
+      "purine_low",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "bitter_melon",
+    "name": "苦瓜",
+    "unit": "根",
+    "emoji": "🥒",
+    "categories": [
+      "vegetable",
+      "vegetable_gourd",
+      "sugar_low",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "eggplant",
+    "name": "茄子",
+    "unit": "根",
+    "emoji": "🍆",
+    "categories": [
+      "vegetable",
+      "vegetable_solanaceae",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "tomato",
+    "name": "西红柿",
+    "alias": "番茄",
+    "unit": "个",
+    "emoji": "🍅",
+    "categories": [
+      "vegetable",
+      "vegetable_solanaceae",
+      "sugar_low",
+      "nutrition_vitamin_c",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "green_pepper",
+    "name": "青椒",
+    "alias": "柿子椒",
+    "unit": "个",
+    "emoji": "🫑",
+    "categories": [
+      "vegetable",
+      "vegetable_solanaceae",
+      "nutrition_vitamin_c",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "onion",
+    "name": "洋葱",
+    "unit": "个",
+    "emoji": "🧅",
+    "categories": [
+      "vegetable",
+      "vegetable_allium"
+    ]
+  },
+  {
+    "code": "shiitake",
+    "name": "香菇",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "wood_ear",
+    "name": "木耳",
+    "alias": "黑木耳",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "fiber_high",
+      "nutrition_iron_non_heme"
+    ]
+  },
+  {
+    "code": "kelp",
+    "name": "海带",
+    "unit": "克",
+    "emoji": "🌿",
+    "categories": [
+      "fungi_algae",
+      "algae"
+    ]
+  },
+  {
+    "code": "apple",
+    "name": "苹果",
+    "unit": "个",
+    "emoji": "🍎",
+    "categories": [
+      "fruit",
+      "fruit_pome",
+      "gi_low"
+    ]
+  },
+  {
+    "code": "pear",
+    "name": "梨",
+    "unit": "个",
+    "emoji": "🍐",
+    "categories": [
+      "fruit",
+      "fruit_pome"
+    ]
+  },
+  {
+    "code": "banana",
+    "name": "香蕉",
+    "unit": "根",
+    "emoji": "🍌",
+    "categories": [
+      "fruit",
+      "fruit_tropical"
+    ]
+  },
+  {
+    "code": "orange",
+    "name": "橙子",
+    "unit": "个",
+    "emoji": "🍊",
+    "categories": [
+      "fruit",
+      "fruit_citrus",
+      "nutrition_vitamin_c"
+    ]
+  },
+  {
+    "code": "pomelo",
+    "name": "柚子",
+    "unit": "个",
+    "emoji": "🍊",
+    "categories": [
+      "fruit",
+      "fruit_citrus",
+      "nutrition_vitamin_c"
+    ]
+  },
+  {
+    "code": "kiwi",
+    "name": "猕猴桃",
+    "unit": "个",
+    "emoji": "🥝",
+    "categories": [
+      "fruit",
+      "fruit_tropical",
+      "nutrition_vitamin_c"
+    ]
+  },
+  {
+    "code": "strawberry",
+    "name": "草莓",
+    "unit": "克",
+    "emoji": "🍓",
+    "categories": [
+      "fruit",
+      "fruit_berry",
+      "gi_low",
+      "nutrition_vitamin_c"
+    ]
+  },
+  {
+    "code": "blueberry",
+    "name": "蓝莓",
+    "unit": "克",
+    "emoji": "🫐",
+    "categories": [
+      "fruit",
+      "fruit_berry"
+    ]
+  },
+  {
+    "code": "grape",
+    "name": "葡萄",
+    "unit": "克",
+    "emoji": "🍇",
+    "categories": [
+      "fruit",
+      "fruit_berry"
+    ]
+  },
+  {
+    "code": "watermelon",
+    "name": "西瓜",
+    "unit": "克",
+    "emoji": "🍉",
+    "categories": [
+      "fruit",
+      "fruit_melon"
+    ]
+  },
+  {
+    "code": "lean_pork",
+    "name": "猪瘦肉",
+    "alias": "里脊肉",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_pork",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "pork_belly",
+    "name": "五花肉",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_pork",
+      "fat_high",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "beef",
+    "name": "牛肉",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_beef",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "mutton",
+    "name": "羊肉",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_mutton",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "pork_liver",
+    "name": "猪肝",
+    "alias": "动物肝脏",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_offal",
+      "purine_high",
+      "nutrition_iron_heme",
+      "nutrition_vitamin_a"
+    ]
+  },
+  {
+    "code": "chicken_breast",
+    "name": "鸡胸肉",
+    "alias": "鸡肉",
+    "unit": "克",
+    "emoji": "🍗",
+    "categories": [
+      "meat",
+      "meat_poultry",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "chicken_leg",
+    "name": "鸡腿",
+    "unit": "个",
+    "emoji": "🍗",
+    "categories": [
+      "meat",
+      "meat_poultry",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "duck",
+    "name": "鸭肉",
+    "unit": "克",
+    "emoji": "🦆",
+    "categories": [
+      "meat",
+      "meat_poultry"
+    ]
+  },
+  {
+    "code": "egg",
+    "name": "鸡蛋",
+    "unit": "个",
+    "emoji": "🥚",
+    "categories": [
+      "egg",
+      "egg_fresh",
+      "protein_quality",
+      "purine_low"
+    ]
+  },
+  {
+    "code": "duck_egg",
+    "name": "鸭蛋",
+    "unit": "个",
+    "emoji": "🥚",
+    "categories": [
+      "egg",
+      "egg_fresh"
+    ]
+  },
+  {
+    "code": "milk",
+    "name": "牛奶",
+    "unit": "毫升",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high",
+      "nutrition_calcium_absorbable",
+      "purine_low"
+    ]
+  },
+  {
+    "code": "low_fat_milk",
+    "name": "低脂牛奶",
+    "unit": "毫升",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high",
+      "nutrition_calcium_absorbable",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "sugar_free_yogurt",
+    "name": "无糖酸奶",
+    "unit": "毫升",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_fermented",
+      "protein_quality",
+      "calcium_high",
+      "nutrition_calcium_absorbable",
+      "sugar_low"
+    ]
+  },
+  {
+    "code": "tofu",
+    "name": "豆腐",
+    "alias": "嫩豆腐",
+    "unit": "块",
+    "emoji": "🧈",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality",
+      "purine_medium",
+      "nutrition_calcium_plant"
+    ]
+  },
+  {
+    "code": "dried_tofu",
+    "name": "豆干",
+    "unit": "克",
+    "emoji": "🧈",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality",
+      "nutrition_calcium_plant"
+    ]
+  },
+  {
+    "code": "soy_milk",
+    "name": "豆浆",
+    "unit": "毫升",
+    "emoji": "🥛",
+    "categories": [
+      "soy_nut",
+      "soy_product"
+    ]
+  },
+  {
+    "code": "soybean",
+    "name": "黄豆",
+    "unit": "克",
+    "emoji": "🫘",
+    "categories": [
+      "soy_nut",
+      "soy_bean",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "mung_bean",
+    "name": "绿豆",
+    "unit": "克",
+    "emoji": "🫘",
+    "categories": [
+      "staple",
+      "staple_legume",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "bass",
+    "name": "鲈鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "crucian",
+    "name": "鲫鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "cod",
+    "name": "鳕鱼",
+    "unit": "克",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_marine",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "hairtail",
+    "name": "带鱼",
+    "unit": "克",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_marine",
+      "purine_high",
+      "nutrition_omega3"
+    ]
+  },
+  {
+    "code": "shrimp",
+    "name": "虾",
+    "alias": "基围虾",
+    "unit": "克",
+    "emoji": "🦐",
+    "categories": [
+      "aquatic",
+      "aquatic_crustacean",
+      "protein_quality",
+      "purine_medium",
+      "nutrition_zinc"
+    ]
+  },
+  {
+    "code": "crab",
+    "name": "蟹",
+    "alias": "螃蟹",
+    "unit": "只",
+    "emoji": "🦀",
+    "categories": [
+      "aquatic",
+      "aquatic_crustacean",
+      "purine_medium",
+      "nutrition_zinc"
+    ]
+  },
+  {
+    "code": "clam",
+    "name": "蛤蜊",
+    "alias": "花甲",
+    "unit": "克",
+    "emoji": "🦪",
+    "categories": [
+      "aquatic",
+      "aquatic_bivalve",
+      "purine_high",
+      "nutrition_iron_heme",
+      "nutrition_zinc"
+    ]
+  },
+  {
+    "code": "walnut",
+    "name": "核桃",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_tree",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "almond",
+    "name": "杏仁",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_tree"
+    ]
+  },
+  {
+    "code": "peanut",
+    "name": "花生",
+    "unit": "克",
+    "emoji": "🥜",
+    "categories": [
+      "soy_nut",
+      "nut_seed",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "cashew",
+    "name": "腰果",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_tree"
+    ]
+  },
+  {
+    "code": "sesame",
+    "name": "芝麻",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_seed",
+      "calcium_high"
+    ]
+  },
+  {
+    "code": "salt",
+    "name": "盐",
+    "alias": "食盐",
+    "unit": "克",
+    "emoji": "🧂",
+    "categories": [
+      "seasoning",
+      "seasoning_savory",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "light_soy_sauce",
+    "name": "生抽",
+    "alias": "酱油",
+    "unit": "勺",
+    "emoji": "🧂",
+    "categories": [
+      "seasoning",
+      "seasoning_savory",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "dark_soy_sauce",
+    "name": "老抽",
+    "alias": "酱油",
+    "unit": "勺",
+    "emoji": "🧂",
+    "categories": [
+      "seasoning",
+      "seasoning_savory",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "vinegar",
+    "name": "醋",
+    "unit": "勺",
+    "emoji": "🍶",
+    "categories": [
+      "seasoning",
+      "seasoning_sweet_sour"
+    ]
+  },
+  {
+    "code": "cooking_wine",
+    "name": "料酒",
+    "unit": "勺",
+    "emoji": "🍶",
+    "categories": [
+      "seasoning",
+      "seasoning_other"
+    ]
+  },
+  {
+    "code": "oyster_sauce",
+    "name": "蚝油",
+    "unit": "勺",
+    "emoji": "🧂",
+    "categories": [
+      "seasoning",
+      "seasoning_savory",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "doubanjiang",
+    "name": "豆瓣酱",
+    "unit": "勺",
+    "emoji": "🌶️",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "sugar",
+    "name": "白糖",
+    "alias": "糖",
+    "unit": "克",
+    "emoji": "🍬",
+    "categories": [
+      "seasoning",
+      "seasoning_sweet_sour"
+    ]
+  },
+  {
+    "code": "ginger",
+    "name": "姜",
+    "alias": "生姜",
+    "unit": "片",
+    "emoji": "🫚",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "scallion",
+    "name": "葱",
+    "alias": "大葱",
+    "unit": "段",
+    "emoji": "🧅",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "garlic",
+    "name": "大蒜",
+    "alias": "蒜",
+    "unit": "瓣",
+    "emoji": "🧄",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "chili",
+    "name": "辣椒",
+    "unit": "个",
+    "emoji": "🌶️",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "peanut_oil",
+    "name": "花生油",
+    "unit": "勺",
+    "emoji": "🫒",
+    "categories": [
+      "oil",
+      "oil_plant",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "rapeseed_oil",
+    "name": "菜籽油",
+    "alias": "食用油",
+    "unit": "勺",
+    "emoji": "🫒",
+    "categories": [
+      "oil",
+      "oil_plant",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "olive_oil",
+    "name": "橄榄油",
+    "unit": "勺",
+    "emoji": "🫒",
+    "categories": [
+      "oil",
+      "oil_plant",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "lard",
+    "name": "猪油",
+    "unit": "勺",
+    "emoji": "🧈",
+    "categories": [
+      "oil",
+      "oil_animal",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "glutinous_rice",
+    "name": "糯米",
+    "alias": "江米",
+    "unit": "克",
+    "emoji": "🍚",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_rice",
+      "gi_high",
+      "purine_low"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "black_rice",
+    "name": "黑米",
+    "unit": "克",
+    "emoji": "🍚",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_rice",
+      "whole_grain",
+      "fiber_high",
+      "gi_low"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "quinoa",
+    "name": "藜麦",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_coarse",
+      "whole_grain",
+      "fiber_high",
+      "gi_low",
+      "nutrition_iron_non_heme"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "steamed_bun",
+    "name": "馒头",
+    "unit": "个",
+    "emoji": "🍞",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "bread",
+    "name": "面包",
+    "unit": "片",
+    "emoji": "🍞",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "red_bean",
+    "name": "红豆",
+    "alias": "赤小豆",
+    "unit": "克",
+    "emoji": "🫘",
+    "categories": [
+      "staple",
+      "staple_legume",
+      "fiber_high",
+      "gi_low",
+      "potassium_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "chickpea",
+    "name": "鹰嘴豆",
+    "unit": "克",
+    "emoji": "🫘",
+    "categories": [
+      "staple",
+      "staple_legume",
+      "fiber_high",
+      "gi_low"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "taro",
+    "name": "芋头",
+    "unit": "个",
+    "emoji": "🍠",
+    "categories": [
+      "staple",
+      "staple_tuber",
+      "purine_low",
+      "season_autumn"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "baby_bok_choy",
+    "name": "小白菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "nutrition_calcium_plant",
+      "purine_low",
+      "season_winter"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "round_cabbage",
+    "name": "卷心菜",
+    "alias": "圆白菜/包菜",
+    "unit": "个",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "purine_low",
+      "season_winter"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "chinese_kale",
+    "name": "芥蓝",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "nutrition_calcium_plant",
+      "season_winter"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "youmai_lettuce",
+    "name": "油麦菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "purine_low",
+      "season_winter"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "garland_chrysanthemum",
+    "name": "茼蒿",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "season_winter"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "amaranth",
+    "name": "苋菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "potassium_high",
+      "nutrition_calcium_plant",
+      "nutrition_iron_non_heme"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "cilantro",
+    "name": "香菜",
+    "alias": "芫荽",
+    "unit": "把",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "chinese_chive",
+    "name": "韭菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "fiber_high",
+      "season_spring"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "celtuce",
+    "name": "莴笋",
+    "alias": "青笋",
+    "unit": "根",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_root",
+      "potassium_high",
+      "purine_low",
+      "season_spring"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "lotus_root",
+    "name": "莲藕",
+    "unit": "根",
+    "emoji": "🪷",
+    "categories": [
+      "vegetable",
+      "vegetable_root",
+      "vegetable_aquatic",
+      "season_autumn"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "pumpkin",
+    "name": "南瓜",
+    "unit": "个",
+    "emoji": "🎃",
+    "categories": [
+      "vegetable",
+      "vegetable_gourd",
+      "gi_medium",
+      "nutrition_vitamin_a",
+      "season_autumn"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "zucchini",
+    "name": "西葫芦",
+    "unit": "个",
+    "emoji": "🥒",
+    "categories": [
+      "vegetable",
+      "vegetable_gourd",
+      "purine_low",
+      "season_summer"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "loofah",
+    "name": "丝瓜",
+    "unit": "根",
+    "emoji": "🥒",
+    "categories": [
+      "vegetable",
+      "vegetable_gourd",
+      "purine_low",
+      "season_summer"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "edamame",
+    "name": "毛豆",
+    "unit": "克",
+    "emoji": "🫛",
+    "categories": [
+      "vegetable",
+      "vegetable_fresh_bean",
+      "purine_medium",
+      "potassium_high",
+      "fiber_high",
+      "season_summer"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "green_bean",
+    "name": "四季豆",
+    "alias": "菜豆",
+    "unit": "把",
+    "emoji": "🫛",
+    "categories": [
+      "vegetable",
+      "vegetable_fresh_bean",
+      "purine_low",
+      "season_summer"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "bean_sprout",
+    "name": "豆芽",
+    "alias": "绿豆芽",
+    "unit": "把",
+    "emoji": "🌱",
+    "categories": [
+      "vegetable",
+      "vegetable_fresh_bean",
+      "season_spring"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "asparagus",
+    "name": "芦笋",
+    "unit": "根",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "purine_medium",
+      "nutrition_vitamin_b",
+      "season_spring"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "enoki",
+    "name": "金针菇",
+    "unit": "把",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "fiber_high",
+      "purine_medium"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "king_oyster_mushroom",
+    "name": "杏鲍菇",
+    "unit": "个",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "purine_medium"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "laver",
+    "name": "紫菜",
+    "unit": "克",
+    "emoji": "🌿",
+    "categories": [
+      "fungi_algae",
+      "algae",
+      "potassium_high",
+      "nutrition_iron_non_heme"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "peach",
+    "name": "桃子",
+    "alias": "桃",
+    "unit": "个",
+    "emoji": "🍑",
+    "categories": [
+      "fruit",
+      "fruit_stone",
+      "gi_low"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "cherry",
+    "name": "樱桃",
+    "unit": "克",
+    "emoji": "🍒",
+    "categories": [
+      "fruit",
+      "fruit_stone",
+      "gi_low",
+      "nutrition_vitamin_c"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "red_date",
+    "name": "红枣",
+    "alias": "大枣",
+    "unit": "颗",
+    "emoji": "🥗",
+    "categories": [
+      "fruit",
+      "fruit_stone",
+      "nutrition_vitamin_c"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "mandarin",
+    "name": "橘子",
+    "alias": "桔子",
+    "unit": "个",
+    "emoji": "🍊",
+    "categories": [
+      "fruit",
+      "fruit_citrus",
+      "nutrition_vitamin_c"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "mango",
+    "name": "芒果",
+    "unit": "个",
+    "emoji": "🥭",
+    "categories": [
+      "fruit",
+      "fruit_tropical",
+      "gi_medium",
+      "nutrition_vitamin_a"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "pineapple",
+    "name": "菠萝",
+    "alias": "凤梨",
+    "unit": "个",
+    "emoji": "🍍",
+    "categories": [
+      "fruit",
+      "fruit_tropical",
+      "gi_medium"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "lychee",
+    "name": "荔枝",
+    "unit": "颗",
+    "emoji": "🥗",
+    "categories": [
+      "fruit",
+      "fruit_tropical"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "dragon_fruit",
+    "name": "火龙果",
+    "unit": "个",
+    "emoji": "🥗",
+    "categories": [
+      "fruit",
+      "fruit_tropical",
+      "fiber_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "hami_melon",
+    "name": "哈密瓜",
+    "unit": "个",
+    "emoji": "🍈",
+    "categories": [
+      "fruit",
+      "fruit_melon",
+      "potassium_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "ham",
+    "name": "火腿",
+    "unit": "片",
+    "emoji": "🥓",
+    "categories": [
+      "meat",
+      "meat_processed",
+      "sodium_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "sausage",
+    "name": "香肠",
+    "alias": "腊肠",
+    "unit": "根",
+    "emoji": "🌭",
+    "categories": [
+      "meat",
+      "meat_processed",
+      "sodium_high",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "cured_pork",
+    "name": "腊肉",
+    "unit": "克",
+    "emoji": "🥓",
+    "categories": [
+      "meat",
+      "meat_processed",
+      "sodium_high",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "pork_ribs",
+    "name": "排骨",
+    "unit": "克",
+    "emoji": "🍖",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_pork",
+      "purine_medium",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "pork_trotter",
+    "name": "猪蹄",
+    "unit": "个",
+    "emoji": "🍖",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_pork",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "duck_blood",
+    "name": "鸭血",
+    "unit": "克",
+    "emoji": "🩸",
+    "categories": [
+      "meat",
+      "meat_offal",
+      "nutrition_iron_heme",
+      "fat_low"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "grass_carp",
+    "name": "草鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater",
+      "protein_quality",
+      "purine_medium"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "carp",
+    "name": "鲤鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater",
+      "purine_medium"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "ricefield_eel",
+    "name": "黄鳝",
+    "alias": "鳝鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater",
+      "purine_medium"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "salmon",
+    "name": "三文鱼",
+    "unit": "克",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_marine",
+      "protein_quality",
+      "nutrition_omega3",
+      "nutrition_vitamin_d",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "sardine",
+    "name": "沙丁鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_marine",
+      "purine_high",
+      "nutrition_omega3"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "squid",
+    "name": "鱿鱼",
+    "unit": "只",
+    "emoji": "🦑",
+    "categories": [
+      "aquatic",
+      "aquatic_cephalopod",
+      "purine_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "scallop",
+    "name": "扇贝",
+    "unit": "只",
+    "emoji": "🦪",
+    "categories": [
+      "aquatic",
+      "aquatic_bivalve",
+      "purine_high",
+      "nutrition_zinc"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "oyster",
+    "name": "生蚝",
+    "alias": "牡蛎",
+    "unit": "只",
+    "emoji": "🦪",
+    "categories": [
+      "aquatic",
+      "aquatic_bivalve",
+      "purine_high",
+      "nutrition_zinc"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "sea_cucumber",
+    "name": "海参",
+    "unit": "只",
+    "emoji": "🥗",
+    "categories": [
+      "aquatic",
+      "aquatic_other",
+      "protein_quality",
+      "purine_low",
+      "fat_low"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "dried_shrimp_skin",
+    "name": "虾皮",
+    "unit": "克",
+    "emoji": "🦐",
+    "categories": [
+      "aquatic",
+      "aquatic_crustacean",
+      "sodium_high",
+      "calcium_high",
+      "nutrition_calcium_absorbable"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "salted_duck_egg",
+    "name": "咸鸭蛋",
+    "unit": "个",
+    "emoji": "🥚",
+    "categories": [
+      "egg",
+      "egg_product",
+      "sodium_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "yogurt",
+    "name": "酸奶",
+    "unit": "毫升",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_fermented",
+      "protein_quality",
+      "calcium_high",
+      "nutrition_calcium_absorbable"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "cheese",
+    "name": "奶酪",
+    "alias": "芝士",
+    "unit": "片",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "protein_quality",
+      "calcium_high",
+      "nutrition_calcium_absorbable",
+      "fat_high",
+      "sodium_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "black_soybean",
+    "name": "黑豆",
+    "unit": "克",
+    "emoji": "🫘",
+    "categories": [
+      "soy_nut",
+      "soy_bean",
+      "fiber_high",
+      "nutrition_iron_non_heme"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "yuba",
+    "name": "腐竹",
+    "unit": "克",
+    "emoji": "🧈",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "tofu_skin",
+    "name": "豆腐皮",
+    "alias": "千张",
+    "unit": "片",
+    "emoji": "🧈",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality",
+      "nutrition_calcium_plant"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "chestnut",
+    "name": "板栗",
+    "alias": "栗子",
+    "unit": "颗",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_tree",
+      "gi_medium"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "pumpkin_seed",
+    "name": "南瓜子",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_seed",
+      "fat_high",
+      "nutrition_zinc"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "flaxseed",
+    "name": "亚麻籽",
+    "unit": "勺",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_seed",
+      "nutrition_omega3",
+      "fiber_high",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "sesame_oil",
+    "name": "芝麻油",
+    "alias": "香油",
+    "unit": "勺",
+    "emoji": "🫒",
+    "categories": [
+      "oil",
+      "oil_plant",
+      "fat_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "flaxseed_oil",
+    "name": "亚麻籽油",
+    "unit": "勺",
+    "emoji": "🫒",
+    "categories": [
+      "oil",
+      "oil_plant",
+      "fat_high",
+      "nutrition_omega3"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "honey",
+    "name": "蜂蜜",
+    "unit": "勺",
+    "emoji": "🍯",
+    "categories": [
+      "seasoning",
+      "seasoning_sweet_sour",
+      "gi_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "chicken_essence",
+    "name": "鸡精",
+    "unit": "勺",
+    "emoji": "🧂",
+    "categories": [
+      "seasoning",
+      "seasoning_savory",
+      "sodium_high"
+    ],
+    "ref": "日常食材维度整理"
+  },
+  {
+    "code": "flour",
+    "name": "面粉",
+    "alias": "小麦粉",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_wheat",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "barley",
+    "name": "大麦",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_wheat",
+      "whole_grain",
+      "fiber_high",
+      "gi_low"
+    ]
+  },
+  {
+    "code": "shepherds_purse",
+    "name": "荠菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_wild",
+      "dark_vegetable",
+      "nutrition_calcium_plant",
+      "season_spring"
+    ]
+  },
+  {
+    "code": "toon",
+    "name": "香椿",
+    "unit": "把",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "vegetable_wild",
+      "dark_vegetable",
+      "season_spring"
+    ]
+  },
+  {
+    "code": "kalimeris",
+    "name": "马兰头",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_wild",
+      "dark_vegetable",
+      "season_spring"
+    ]
+  },
+  {
+    "code": "raisin",
+    "name": "葡萄干",
+    "unit": "克",
+    "emoji": "🍇",
+    "categories": [
+      "fruit",
+      "fruit_dried",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "dried_longan",
+    "name": "桂圆干",
+    "alias": "龙眼干",
+    "unit": "颗",
+    "emoji": "🟤",
+    "categories": [
+      "fruit",
+      "fruit_dried",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "rabbit",
+    "name": "兔肉",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_livestock_other",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "donkey_meat",
+    "name": "驴肉",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_livestock_other",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "fish_ball",
+    "name": "鱼丸",
+    "unit": "个",
+    "emoji": "🍥",
+    "categories": [
+      "aquatic",
+      "aquatic_processed",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "frozen_dumpling",
+    "name": "速冻水饺",
+    "unit": "个",
+    "emoji": "🥟",
+    "categories": [
+      "convenience",
+      "convenience_frozen",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "tangyuan",
+    "name": "汤圆",
+    "unit": "个",
+    "emoji": "🍡",
+    "categories": [
+      "convenience",
+      "convenience_frozen",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "instant_noodle",
+    "name": "方便面",
+    "unit": "包",
+    "emoji": "🍜",
+    "categories": [
+      "convenience",
+      "convenience_instant",
+      "sodium_high",
+      "fat_high",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "self_heating_rice",
+    "name": "自热米饭",
+    "unit": "盒",
+    "emoji": "🍚",
+    "categories": [
+      "convenience",
+      "convenience_instant",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "luncheon_meat",
+    "name": "午餐肉",
+    "unit": "片",
+    "emoji": "🥫",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "canned_fish",
+    "name": "鱼罐头",
+    "unit": "罐",
+    "emoji": "🥫",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "canned_fruit",
+    "name": "水果罐头",
+    "unit": "罐",
+    "emoji": "🥫",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "prepared_meal",
+    "name": "料理包",
+    "alias": "半成品菜",
+    "unit": "包",
+    "emoji": "🍱",
+    "categories": [
+      "convenience",
+      "convenience_prepared",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "ketchup",
+    "name": "番茄酱",
+    "unit": "勺",
+    "emoji": "🍅",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "sweet_bean_sauce",
+    "name": "甜面酱",
+    "unit": "勺",
+    "emoji": "🥫",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "salad_dressing",
+    "name": "沙拉酱",
+    "unit": "勺",
+    "emoji": "🥫",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "garlic_scape",
+    "name": "蒜薹",
+    "alias": "蒜苗",
+    "unit": "把",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "vegetable_allium",
+      "fiber_high",
+      "season_spring"
+    ]
+  },
+  {
+    "code": "water_bamboo",
+    "name": "茭白",
+    "unit": "根",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "vegetable_aquatic",
+      "fiber_high",
+      "purine_low",
+      "season_autumn"
+    ]
+  },
+  {
+    "code": "water_chestnut",
+    "name": "荸荠",
+    "alias": "马蹄",
+    "unit": "个",
+    "emoji": "🌰",
+    "categories": [
+      "vegetable",
+      "vegetable_aquatic",
+      "season_autumn"
+    ]
+  },
+  {
+    "code": "beef_brisket",
+    "name": "牛腩",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_beef",
+      "protein_quality",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "lamb_chop",
+    "name": "羊排",
+    "unit": "克",
+    "emoji": "🍖",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_mutton",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "octopus",
+    "name": "章鱼",
+    "unit": "只",
+    "emoji": "🐙",
+    "categories": [
+      "aquatic",
+      "aquatic_cephalopod",
+      "purine_high",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "jellyfish",
+    "name": "海蜇",
+    "unit": "克",
+    "emoji": "🪼",
+    "categories": [
+      "aquatic",
+      "aquatic_other",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "quail_egg",
+    "name": "鹌鹑蛋",
+    "unit": "个",
+    "emoji": "🥚",
+    "categories": [
+      "egg",
+      "egg_fresh",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "milk_powder",
+    "name": "奶粉",
+    "unit": "克",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "calcium_high",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "butter",
+    "name": "黄油",
+    "unit": "克",
+    "emoji": "🧈",
+    "categories": [
+      "oil",
+      "oil_animal",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "sunflower_seed",
+    "name": "葵花籽",
+    "unit": "克",
+    "emoji": "🌻",
+    "categories": [
+      "soy_nut",
+      "nut_seed",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "sichuan_pepper",
+    "name": "花椒",
+    "unit": "克",
+    "emoji": "🌶️",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "star_anise",
+    "name": "八角",
+    "alias": "大料",
+    "unit": "颗",
+    "emoji": "🌟",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "cinnamon_bark",
+    "name": "桂皮",
+    "unit": "块",
+    "emoji": "🪵",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "cumin",
+    "name": "孜然",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "white_pepper",
+    "name": "胡椒",
+    "alias": "胡椒粉",
+    "unit": "克",
+    "emoji": "⚪",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "bay_leaf",
+    "name": "香叶",
+    "unit": "片",
+    "emoji": "🍃",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "five_spice_powder",
+    "name": "五香粉",
+    "unit": "克",
+    "emoji": "🥫",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "oyster_mushroom",
+    "name": "平菇",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "tea_tree_mushroom",
+    "name": "茶树菇",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "fiber_high",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "straw_mushroom",
+    "name": "草菇",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "crab_mushroom",
+    "name": "蟹味菇",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "white_fungus",
+    "name": "银耳",
+    "alias": "白木耳",
+    "unit": "朵",
+    "emoji": "🤍",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "lions_mane",
+    "name": "猴头菇",
+    "unit": "个",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "lactone_tofu",
+    "name": "内酯豆腐",
+    "unit": "盒",
+    "emoji": "🧈",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "frozen_tofu",
+    "name": "冻豆腐",
+    "unit": "块",
+    "emoji": "🧊",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "fried_tofu_puff",
+    "name": "油豆腐",
+    "alias": "豆泡",
+    "unit": "个",
+    "emoji": "🧈",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "green_soybean",
+    "name": "青豆",
+    "unit": "克",
+    "emoji": "🫛",
+    "categories": [
+      "soy_nut",
+      "soy_bean",
+      "protein_quality",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "yellow_croaker",
+    "name": "黄花鱼",
+    "alias": "黄鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_marine",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "pomfret",
+    "name": "鲳鱼",
+    "alias": "平鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_marine",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "tilapia",
+    "name": "罗非鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "sole_fish",
+    "name": "龙利鱼",
+    "unit": "克",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_marine",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "river_shrimp",
+    "name": "河虾",
+    "unit": "克",
+    "emoji": "🦐",
+    "categories": [
+      "aquatic",
+      "aquatic_crustacean",
+      "protein_quality",
+      "purine_high",
+      "nutrition_calcium_absorbable"
+    ]
+  },
+  {
+    "code": "razor_clam",
+    "name": "蛏子",
+    "unit": "克",
+    "emoji": "🦪",
+    "categories": [
+      "aquatic",
+      "aquatic_bivalve",
+      "purine_high",
+      "nutrition_zinc"
+    ]
+  },
+  {
+    "code": "river_snail",
+    "name": "田螺",
+    "unit": "克",
+    "emoji": "🐌",
+    "categories": [
+      "aquatic",
+      "aquatic_other",
+      "purine_high"
+    ]
+  },
+  {
+    "code": "loach",
+    "name": "泥鳅",
+    "unit": "克",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater",
+      "protein_quality",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "pomegranate",
+    "name": "石榴",
+    "unit": "个",
+    "emoji": "🔴",
+    "categories": [
+      "fruit",
+      "fruit_berry"
+    ]
+  },
+  {
+    "code": "persimmon",
+    "name": "柿子",
+    "unit": "个",
+    "emoji": "🟠",
+    "categories": [
+      "fruit",
+      "fruit_pome",
+      "gi_medium"
+    ]
+  },
+  {
+    "code": "fig",
+    "name": "无花果",
+    "unit": "个",
+    "emoji": "🟣",
+    "categories": [
+      "fruit",
+      "fruit_berry",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "mulberry",
+    "name": "桑葚",
+    "unit": "克",
+    "emoji": "🟣",
+    "categories": [
+      "fruit",
+      "fruit_berry",
+      "nutrition_iron_non_heme"
+    ]
+  },
+  {
+    "code": "mangosteen",
+    "name": "山竹",
+    "unit": "个",
+    "emoji": "🟣",
+    "categories": [
+      "fruit",
+      "fruit_tropical"
+    ]
+  },
+  {
+    "code": "durian",
+    "name": "榴莲",
+    "unit": "块",
+    "emoji": "🟡",
+    "categories": [
+      "fruit",
+      "fruit_tropical",
+      "gi_medium",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "coconut",
+    "name": "椰子",
+    "unit": "个",
+    "emoji": "🥥",
+    "categories": [
+      "fruit",
+      "fruit_tropical",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "loquat",
+    "name": "枇杷",
+    "unit": "个",
+    "emoji": "🟠",
+    "categories": [
+      "fruit",
+      "fruit_pome"
+    ]
+  },
+  {
+    "code": "century_egg",
+    "name": "皮蛋",
+    "alias": "松花蛋",
+    "unit": "个",
+    "emoji": "🥚",
+    "categories": [
+      "egg",
+      "egg_product"
+    ]
+  },
+  {
+    "code": "condensed_milk",
+    "name": "炼乳",
+    "unit": "勺",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "cream",
+    "name": "淡奶油",
+    "alias": "稀奶油",
+    "unit": "克",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "job_tears",
+    "name": "薏米",
+    "alias": "薏仁",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_coarse",
+      "whole_grain",
+      "fiber_high",
+      "gi_low"
+    ]
+  },
+  {
+    "code": "wheat",
+    "name": "小麦",
+    "unit": "克",
+    "emoji": "🌾",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_wheat",
+      "whole_grain",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "corn_oil",
+    "name": "玉米油",
+    "unit": "勺",
+    "emoji": "🫒",
+    "categories": [
+      "oil",
+      "oil_plant",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "soybean_oil",
+    "name": "大豆油",
+    "alias": "色拉油",
+    "unit": "勺",
+    "emoji": "🫒",
+    "categories": [
+      "oil",
+      "oil_plant",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "baby_cabbage",
+    "name": "娃娃菜",
+    "unit": "棵",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "season_winter"
+    ]
+  },
+  {
+    "code": "water_spinach",
+    "name": "空心菜",
+    "alias": "蕹菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "okra",
+    "name": "秋葵",
+    "unit": "根",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_gourd_solanaceae",
+      "vegetable_gourd",
+      "fiber_high",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "snow_pea",
+    "name": "荷兰豆",
+    "unit": "把",
+    "emoji": "🫛",
+    "categories": [
+      "vegetable",
+      "vegetable_fresh_bean",
+      "season_spring"
+    ]
+  },
+  {
+    "code": "mustard_green",
+    "name": "芥菜",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "season_winter"
+    ]
+  },
+  {
+    "code": "waxberry",
+    "name": "杨梅",
+    "unit": "克",
+    "emoji": "🔴",
+    "categories": [
+      "fruit",
+      "fruit_berry"
+    ]
+  },
+  {
+    "code": "plum",
+    "name": "李子",
+    "unit": "个",
+    "emoji": "🟣",
+    "categories": [
+      "fruit",
+      "fruit_stone"
+    ]
+  },
+  {
+    "code": "papaya",
+    "name": "木瓜",
+    "unit": "个",
+    "emoji": "🟠",
+    "categories": [
+      "fruit",
+      "fruit_tropical"
+    ]
+  },
+  {
+    "code": "sugarcane",
+    "name": "甘蔗",
+    "unit": "段",
+    "emoji": "🎋",
+    "categories": [
+      "fruit",
+      "fruit_tropical",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "button_mushroom",
+    "name": "口蘑",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi",
+      "purine_medium"
+    ]
+  },
+  {
+    "code": "abalone",
+    "name": "鲍鱼",
+    "unit": "只",
+    "emoji": "🐚",
+    "categories": [
+      "aquatic",
+      "aquatic_other",
+      "protein_quality",
+      "purine_high"
+    ]
+  },
+  {
+    "code": "chicken_wing",
+    "name": "鸡翅",
+    "unit": "个",
+    "emoji": "🍗",
+    "categories": [
+      "meat",
+      "meat_poultry",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "pork_tripe",
+    "name": "猪肚",
+    "unit": "个",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_offal"
+    ]
+  },
+  {
+    "code": "goose_egg",
+    "name": "鹅蛋",
+    "unit": "个",
+    "emoji": "🥚",
+    "categories": [
+      "egg",
+      "egg_fresh",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "steamed_fish_soy",
+    "name": "蒸鱼豉油",
+    "unit": "勺",
+    "emoji": "🧂",
+    "categories": [
+      "seasoning",
+      "seasoning_savory",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "curry",
+    "name": "咖喱",
+    "unit": "块",
+    "emoji": "🍛",
+    "categories": [
+      "seasoning",
+      "seasoning_spice",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "rice_cake",
+    "name": "年糕",
+    "unit": "块",
+    "emoji": "🍥",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "rice_noodle",
+    "name": "米线",
+    "unit": "把",
+    "emoji": "🍜",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "cowpea",
+    "name": "豇豆",
+    "alias": "长豆角",
+    "unit": "克",
+    "emoji": "🫛",
+    "categories": [
+      "vegetable",
+      "vegetable_fresh_bean",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "bamboo_shoot",
+    "name": "竹笋",
+    "alias": "春笋",
+    "unit": "根",
+    "emoji": "🎋",
+    "categories": [
+      "vegetable",
+      "season_spring"
+    ]
+  },
+  {
+    "code": "garlic_sprout",
+    "name": "蒜苗",
+    "alias": "青蒜",
+    "unit": "根",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "vegetable_allium"
+    ]
+  },
+  {
+    "code": "purple_cabbage",
+    "name": "紫甘蓝",
+    "unit": "颗",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "nutrition_vitamin_c"
+    ]
+  },
+  {
+    "code": "bell_pepper",
+    "name": "彩椒",
+    "alias": "甜椒",
+    "unit": "个",
+    "emoji": "🫑",
+    "categories": [
+      "vegetable",
+      "vegetable_solanaceae",
+      "nutrition_vitamin_c",
+      "season_summer"
+    ]
+  },
+  {
+    "code": "choy_sum",
+    "name": "菜心",
+    "alias": "菜薹",
+    "unit": "把",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable"
+    ]
+  },
+  {
+    "code": "chinese_chives_yellow",
+    "name": "韭黄",
+    "unit": "把",
+    "emoji": "🌿",
+    "categories": [
+      "vegetable",
+      "vegetable_allium"
+    ]
+  },
+  {
+    "code": "pea_shoot",
+    "name": "豌豆苗",
+    "alias": "豆苗",
+    "unit": "把",
+    "emoji": "🌱",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable"
+    ]
+  },
+  {
+    "code": "white_beech_mushroom",
+    "name": "白玉菇",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi"
+    ]
+  },
+  {
+    "code": "seafood_mushroom",
+    "name": "海鲜菇",
+    "unit": "克",
+    "emoji": "🍄",
+    "categories": [
+      "fungi_algae",
+      "fungi"
+    ]
+  },
+  {
+    "code": "pork_loin",
+    "name": "猪里脊",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_pork",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "pork_mince",
+    "name": "猪肉末",
+    "alias": "肉馅",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_pork"
+    ]
+  },
+  {
+    "code": "beef_shank",
+    "name": "牛腱",
+    "unit": "克",
+    "emoji": "🥩",
+    "categories": [
+      "meat",
+      "meat_livestock",
+      "meat_beef",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "chicken_feet",
+    "name": "鸡爪",
+    "alias": "凤爪",
+    "unit": "只",
+    "emoji": "🍗",
+    "categories": [
+      "meat",
+      "meat_poultry"
+    ]
+  },
+  {
+    "code": "duck_leg",
+    "name": "鸭腿",
+    "unit": "只",
+    "emoji": "🍗",
+    "categories": [
+      "meat",
+      "meat_poultry"
+    ]
+  },
+  {
+    "code": "bacon",
+    "name": "培根",
+    "unit": "片",
+    "emoji": "🥓",
+    "categories": [
+      "meat",
+      "meat_processed"
+    ]
+  },
+  {
+    "code": "cuttlefish",
+    "name": "墨鱼",
+    "alias": "乌贼",
+    "unit": "只",
+    "emoji": "🦑",
+    "categories": [
+      "aquatic",
+      "aquatic_cephalopod"
+    ]
+  },
+  {
+    "code": "clam_flower",
+    "name": "花甲",
+    "alias": "花蛤",
+    "unit": "克",
+    "emoji": "🐚",
+    "categories": [
+      "aquatic",
+      "aquatic_bivalve"
+    ]
+  },
+  {
+    "code": "snakehead_fish",
+    "name": "黑鱼",
+    "alias": "乌鱼",
+    "unit": "条",
+    "emoji": "🐟",
+    "categories": [
+      "aquatic",
+      "aquatic_fish",
+      "aquatic_fish_freshwater"
+    ]
+  },
+  {
+    "code": "mussel",
+    "name": "青口",
+    "alias": "贻贝",
+    "unit": "克",
+    "emoji": "🐚",
+    "categories": [
+      "aquatic",
+      "aquatic_bivalve"
+    ]
+  },
+  {
+    "code": "tofu_sheet",
+    "name": "千张",
+    "alias": "百叶",
+    "unit": "张",
+    "emoji": "🟨",
+    "categories": [
+      "soy_nut",
+      "soy_product"
+    ]
+  },
+  {
+    "code": "fermented_tofu",
+    "name": "腐乳",
+    "alias": "豆腐乳",
+    "unit": "块",
+    "emoji": "🟥",
+    "categories": [
+      "soy_nut",
+      "soy_product"
+    ]
+  },
+  {
+    "code": "sweet_potato_vermicelli",
+    "name": "粉条",
+    "alias": "红薯粉",
+    "unit": "克",
+    "emoji": "🍜",
+    "categories": [
+      "staple",
+      "staple_tuber"
+    ]
+  },
+  {
+    "code": "mung_bean_vermicelli",
+    "name": "粉丝",
+    "alias": "龙口粉丝",
+    "unit": "克",
+    "emoji": "🍜",
+    "categories": [
+      "staple",
+      "staple_legume"
+    ]
+  },
+  {
+    "code": "rice_noodle_flat",
+    "name": "河粉",
+    "unit": "克",
+    "emoji": "🍜",
+    "categories": [
+      "staple",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "dumpling_wrapper",
+    "name": "饺子皮",
+    "unit": "张",
+    "emoji": "🥟",
+    "categories": [
+      "staple",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "lotus_seed",
+    "name": "莲子",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_seed"
+    ]
+  },
+  {
+    "code": "pine_nut",
+    "name": "松子",
+    "alias": "松仁",
+    "unit": "克",
+    "emoji": "🌰",
+    "categories": [
+      "soy_nut",
+      "nut_tree"
+    ]
+  },
+  {
+    "code": "starch",
+    "name": "淀粉",
+    "alias": "生粉",
+    "unit": "勺",
+    "emoji": "🥄",
+    "categories": [
+      "seasoning",
+      "seasoning_other"
+    ]
+  },
+  {
+    "code": "rock_sugar",
+    "name": "冰糖",
+    "unit": "块",
+    "emoji": "🍬",
+    "categories": [
+      "seasoning",
+      "seasoning_sweet_sour"
+    ]
+  },
+  {
+    "code": "brown_sugar",
+    "name": "红糖",
+    "unit": "勺",
+    "emoji": "🟫",
+    "categories": [
+      "seasoning",
+      "seasoning_sweet_sour"
+    ]
+  },
+  {
+    "code": "dried_chili",
+    "name": "干辣椒",
+    "unit": "个",
+    "emoji": "🌶️",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "aged_vinegar",
+    "name": "香醋",
+    "alias": "陈醋",
+    "unit": "勺",
+    "emoji": "🫙",
+    "categories": [
+      "seasoning",
+      "seasoning_sweet_sour"
+    ]
+  },
+  {
+    "code": "douchi",
+    "name": "豆豉",
+    "unit": "勺",
+    "emoji": "🫘",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce"
+    ]
+  },
+  {
+    "code": "sesame_paste",
+    "name": "芝麻酱",
+    "alias": "麻酱",
+    "unit": "勺",
+    "emoji": "🥜",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce"
+    ]
+  },
+  {
+    "code": "cola",
+    "name": "可乐",
+    "unit": "毫升",
+    "emoji": "🥤",
+    "categories": [
+      "other"
+    ]
+  }
 ]
