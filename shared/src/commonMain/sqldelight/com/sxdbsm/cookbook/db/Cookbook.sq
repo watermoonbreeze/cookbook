@@ -1255,6 +1255,10 @@ SELECT common_methods, prep_tips, eating_notes, storage_tips, health_note FROM i
 selectActiveIngredientIdByName:
 SELECT id FROM ingredient WHERE name = ? AND status = 1 LIMIT 1;
 
+-- [AI生成] 按一组名字取所有在库食材 id(库存推荐按名扩展匹配, 兼容同名不同 id 的历史重复食材)。
+selectIngredientIdsByNames:
+SELECT id FROM ingredient WHERE status = 1 AND name IN ?;
+
 -- [AI生成] 自建菜品 id(导出用)。
 selectSyncUserDishIds:
 SELECT id FROM dish WHERE source = 'user' AND status = 1;

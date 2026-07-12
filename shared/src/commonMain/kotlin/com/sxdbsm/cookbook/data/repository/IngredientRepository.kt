@@ -92,8 +92,15 @@ class IngredientRepository(private val db: CookbookDatabase) {
         categoryIds: List<Long> = categoryId?.let { listOf(it) }.orEmpty(),
     ): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
+        // [AI修改] 同名即复用：新建前先按去空格的名字查已有食材，命中则直接返回其 id、不再新建重复行。
+        // 修复根因——用户新建菜品时若又建了个同名食材(如"五花肉")会得到不同 id，与库存里预置食材对不上，
+        // 导致按 ingredient_id 匹配的库存推荐漏掉该菜。复用后同名食材始终同一 id。
+        val trimmed = name.trim()
+        q.selectActiveIngredientIdByName(trimmed).executeAsOneOrNull()?.let { existingId ->
+            return@withContext existingId // 已有同名食材直接复用其 id(保留其原有分类)
+        }
         q.insertIngredient(
-            name = name,
+            name = trimmed,
             alias = alias,
             pinyin = Pinyin.toPinyin(name),
             image_path = imagePath, // [AI修改] 新建食材时可保存可选图片路径，MVP 暂不接入系统相册。

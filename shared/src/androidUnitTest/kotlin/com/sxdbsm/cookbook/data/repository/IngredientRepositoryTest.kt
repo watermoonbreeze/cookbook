@@ -24,6 +24,17 @@ import com.sxdbsm.cookbook.domain.model.IngredientDetail
 class IngredientRepositoryTest {
 
     @Test
+    fun createUserIngredientReusesExistingByName() = runBlocking {
+        // [AI生成] 同名即复用：修"自建同名食材得到不同 id 导致库存推荐按 id 匹配漏菜"根因。
+        val db = RepositoryTestDatabase.create()
+        val repo = IngredientRepository(db)
+        val id1 = repo.createUserIngredient(name = "五花肉")
+        val id2 = repo.createUserIngredient(name = " 五花肉 ") // 去空格后同名
+        assertEquals(id1, id2, "同名(去空格)食材应复用同一 id，不新建重复行")
+        assertEquals(1, repo.search("五花肉").count { it.name == "五花肉" }, "库里只应有一条五花肉")
+    }
+
+    @Test
     fun deletedUserIngredientIsHiddenFromSearch() = runBlocking {
         val db = RepositoryTestDatabase.create()
         val repo = IngredientRepository(db)

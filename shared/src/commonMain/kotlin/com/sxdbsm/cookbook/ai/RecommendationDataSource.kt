@@ -46,7 +46,14 @@ class RecommendationDataSource(
     suspend fun gather(mode: RecommendMode = RecommendMode.PANTRY, recentLimit: Long = RECENT_LIMIT): RecommendationInput = withContext(ioDispatcher) {
         // [AI修改] 取材范围：库存=在手食材；随机=整个食材库(相当于都可做)。
         val pantryIds = when (mode) {
-            RecommendMode.PANTRY -> pantryRepo.pantryIngredientIds()
+            RecommendMode.PANTRY -> {
+                // [AI修改] 按名扩展：把与在手食材同名的所有食材 id 都算作在手，
+                // 兼容"自建菜引用了同名但不同 id 的食材"(历史重复数据)，否则按 id 精确匹配会漏推该菜。
+                val pantryIngredients = pantryRepo.listPantryIngredients()
+                val base = pantryIngredients.map { it.id }.toSet()
+                val names = pantryIngredients.map { it.name }.distinct()
+                if (names.isEmpty()) base else base + q.selectIngredientIdsByNames(names).executeAsList().toSet()
+            }
             RecommendMode.RANDOM -> q.selectAllIngredientIds().executeAsList().toSet()
         }
         val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
