@@ -63,12 +63,18 @@ class HealthRuleEngineTest {
     }
 
     @Test
-    fun `含忌口avoid食材直接剔除`() {
-        val dish = RuleDish(1, "菠菜猪肝汤", listOf(main(101, "菠菜"), main(103, "猪肝")))
-        // 痛风忌高嘌呤：猪肝(103) 在 avoid 名单 → 即便可做也剔除
-        val constraints = HealthConstraints(avoidIngredientIds = setOf(103))
-        val result = engine.evaluate(listOf(dish), pantryIngredientIds = setOf(101, 103), constraints)
-        assertTrue(result.isEmpty())
+    fun `含忌口avoid食材_不再隐藏_仍列出并标记且排到最后`() {
+        // 忌口菜也要列出来告知用户(家庭 app：家人也能做)，不再直接剔除。
+        val plain = RuleDish(1, "清炒菠菜", listOf(main(101, "菠菜")))
+        val avoidDish = RuleDish(2, "菠菜猪肝汤", listOf(main(101, "菠菜"), main(103, "猪肝")))
+        val constraints = HealthConstraints(avoidIngredientIds = setOf(103)) // 猪肝忌口
+        val result = engine.evaluate(listOf(avoidDish, plain), pantryIngredientIds = setOf(101, 103), constraints)
+        assertEquals(2, result.size) // 忌口菜没被剔除，仍推荐
+        assertEquals(1L, result.first().id) // 正常菜排前
+        val avoidCand = result.first { it.id == 2L }
+        assertEquals(listOf("猪肝"), avoidCand.avoidNames) // 标出忌口食材
+        assertTrue(result.first().avoidNames.isEmpty())
+        assertEquals(2L, result.last().id) // 忌口菜排到最后
     }
 
     @Test

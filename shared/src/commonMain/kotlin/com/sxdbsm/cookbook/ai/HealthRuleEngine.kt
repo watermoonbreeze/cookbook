@@ -44,9 +44,9 @@ class HealthRuleEngine {
         val missingNames = nonSeasoning.filter { it.ingredientId !in pantryIngredientIds }.map { it.name }
         val onHandNames = onHandNonSeasoning.map { it.name } // 用到你库存的食材(非调料)
 
-        // 犯忌：含任一 avoid 食材 → 直接剔除（硬约束）。
-        val hasAvoid = dish.ingredients.any { it.ingredientId in constraints.avoidIngredientIds }
-        if (hasAvoid) return@mapNotNull null
+        // [AI修改] 忌口(avoid)：不再直接剔除——改为「照样列出、排到最后、标红警示」。
+        // 家庭 app：有慢病的成员应避免，但库存有的菜仍要让用户看到(家人也能做)，由用户自行判断，不替他隐藏。
+        val avoidNames = dish.ingredients.filter { it.ingredientId in constraints.avoidIngredientIds }.map { it.name }.distinct()
 
         val limitHits = dish.ingredients.filter { it.ingredientId in constraints.limitIngredientIds }
         val recommendHits = dish.ingredients.filter { it.ingredientId in constraints.recommendIngredientIds }
@@ -70,6 +70,8 @@ class HealthRuleEngine {
         // 用户要求「不管库存有几份、只要在库存中，用到它的菜都要推出来」，故份数/缺料不得把菜挤出推荐。
         if (shortageNames.isNotEmpty()) score -= SHORTAGE_PENALTY
         if (missingNames.isNotEmpty()) score -= MISSING_PENALTY * missingNames.size
+        // [AI修改] 忌口菜大幅降权排到所有正常菜之后(仍保留、带 avoidNames 让 UI 标红警示)，让用户看得到但明确知道该避免。
+        if (avoidNames.isNotEmpty()) score -= AVOID_PENALTY
 
         DishCandidate(
             id = dish.id,
@@ -84,6 +86,7 @@ class HealthRuleEngine {
             shortageNames = shortageNames,
             missingNames = missingNames,
             onHandNames = onHandNames,
+            avoidNames = avoidNames,
         )
     }.sortedByDescending { it.score }
 
@@ -98,5 +101,6 @@ class HealthRuleEngine {
         // 保证「只要库存中有该食材、用到它的菜都能推出来」，份数与缺辅料只影响先后、不影响是否出现。
         private const val SHORTAGE_PENALTY = 0.3 // 库存不足菜仍推荐，仅轻微排后并标"⚠库存不足"。
         private const val MISSING_PENALTY = 0.2 // 缺辅料(需采购)每味仅轻微排后，让齐备的略靠前。
+        private const val AVOID_PENALTY = 50.0 // [AI生成] 忌口菜大幅降权，排到所有正常菜之后(仍保留+标红)，让用户看得到但明确知道该避免。
     }
 }

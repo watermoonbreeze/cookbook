@@ -117,7 +117,13 @@ class AiRecommendViewModel(
             }
             return AiRecommendUiState(loading = false, emptyHint = hint, source = result.source, mode = mode, modelReady = modelReady)
         }
-        val items = result.candidates.take(MAX_ITEMS).map { c -> DishItemUi(id = c.id, name = c.name, note = buildNote(c, mode)) }
+        val items = result.candidates.take(MAX_ITEMS).map { c ->
+            DishItemUi(
+                id = c.id, name = c.name, note = buildNote(c, mode),
+                // [AI生成] 忌口食材单独标红：仍列出该菜，但明确警示健康档案建议避免。
+                avoidText = if (c.avoidNames.isNotEmpty()) "⛔忌口：${c.avoidNames.joinToString("、")}（健康档案建议避免）" else "",
+            )
+        }
         return AiRecommendUiState(loading = false, dishItems = items, source = result.source, mode = mode, modelReady = modelReady)
     }
 
@@ -162,4 +168,5 @@ data class DishItemUi(
     val id: Long,
     val name: String,
     val note: String,
+    val avoidText: String = "", // [AI生成] 忌口警示(非空则在行内标红)。
 )

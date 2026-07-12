@@ -74,6 +74,7 @@ data class DishCandidate(
     val shortageNames: List<String> = emptyList(), // [AI生成] 库存不足的食材名(份数用尽)：非空则本菜排后并标"库存不足"
     val missingNames: List<String> = emptyList(), // [AI生成] 缺的非调料食材名(主料/辅料不在库)：列出让用户知道少什么、可自行采购
     val onHandNames: List<String> = emptyList(), // [AI生成] 用到你库存的非调料食材名(物尽其用高亮)
+    val avoidNames: List<String> = emptyList(), // [AI生成] 命中健康档案"忌口(avoid)"的食材名：不再隐藏，改为排到最后并标红警示
 )
 
 /** 模型输出：3 个下一餐组合，每餐 2~3 菜。[AI生成] */

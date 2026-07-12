@@ -203,6 +203,11 @@ private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(item.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            // [AI生成] 忌口警示单独标红(error 色)：该菜仍列出，但明确提示健康档案建议避免。
+            if (item.avoidText.isNotBlank()) {
+                Spacer(Modifier.height(2.dp))
+                Text(item.avoidText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.SemiBold)
+            }
             if (item.note.isNotBlank()) {
                 Spacer(Modifier.height(2.dp))
                 Text(item.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
