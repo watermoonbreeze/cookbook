@@ -48,6 +48,21 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
             valueRange = 1f..30f,
             steps = 28,
         )
+        // [AI生成] 用餐人数(1~8) 步进：正餐(中/晚)菜数随人数(人多菜多)，旁显示菜数。
+        val mainRange = com.sxdbsm.cookbook.ai.MealPortion.mainRange(state.people)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("用餐人数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            OutlinedButton(onClick = { vm.setPeople(state.people - 1) }, enabled = state.people > 1) { Text("－") }
+            Text("${state.people} 人", style = MaterialTheme.typography.titleMedium)
+            OutlinedButton(onClick = { vm.setPeople(state.people + 1) }, enabled = state.people < com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE) { Text("＋") }
+            Spacer(Modifier.weight(1f))
+            Text(
+                "正餐约 ${mainRange.first}~${mainRange.last} 菜",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.height(6.dp))
         Button(onClick = { vm.generate() }, enabled = !state.loading, modifier = Modifier.fillMaxWidth()) {
             Text(if (state.loading) "生成中…" else "生成计划")
         }

@@ -49,6 +49,11 @@ class AiPlanViewModel(
         state = state.copy(days = days.coerceIn(1, PeriodPlanner.MAX_DAYS), saved = false)
     }
 
+    /** 设置用餐人数(1~8)：影响正餐菜数(人多菜多)。[AI生成] */
+    fun setPeople(people: Int) {
+        state = state.copy(people = people.coerceIn(1, com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE), saved = false)
+    }
+
     /** 生成计划。[AI生成] */
     fun generate() {
         viewModelScope.launch {
@@ -66,6 +71,7 @@ class AiPlanViewModel(
                     dishesMax = DISHES_MAX,
                     seed = Random.nextLong(),
                     useModel = aiConfig.isModelReady(),
+                    people = state.people, // [AI生成] 按人数定正餐菜数
                 )
                 // [AI生成] 标注库存采购/缺料(主料)：不在库→采购、在库份数不够→缺料。
                 val annotatedPlan = dataSource.annotatePlanWithPantry(result.plan)
@@ -112,6 +118,7 @@ class AiPlanViewModel(
 /** 周期规划 UI 状态。[AI生成] */
 data class AiPlanUiState(
     val days: Int = 7,
+    val people: Int = 2, // [AI生成] 用餐人数(1~8)，决定正餐菜数
     val loading: Boolean = false,
     val saving: Boolean = false,
     val saved: Boolean = false,

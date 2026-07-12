@@ -53,6 +53,7 @@ class PeriodPlanner {
         currentSeason: String = "",
         healthAware: Boolean = false,
         seed: Long = 0,
+        dishRangeFor: ((String) -> IntRange)? = null, // [AI生成] 按餐次给菜数区间(如按人数)；空则用 dishesMin/Max
     ): PeriodPlan {
         val lo = dishesMin.coerceAtLeast(1)
         val hi = dishesMax.coerceAtLeast(lo)
@@ -77,8 +78,11 @@ class PeriodPlanner {
             for (mealName in mealNames) {
                 // [AI修改] 餐次适配 + 早餐软硬搭配：早餐档只从早餐菜选，且偶数位取硬(主食/蛋)、奇数位取软(粥/饮)。
                 val isBreakfastMeal = mealName.contains("早")
-                // [AI修改] 每餐菜数在 [min,max] 内随机(种子驱动)，不再固定，让菜量有变化。
-                val dishesThisMeal = if (hi <= lo) lo else rnd.nextInt(lo, hi + 1)
+                // [AI修改] 每餐菜数：优先按餐次区间(如按人数)，否则用全局 [min,max]；区间内随机(种子驱动)。
+                val range = dishRangeFor?.invoke(mealName)
+                val mLo = (range?.first ?: lo).coerceAtLeast(1)
+                val mHi = (range?.last ?: hi).coerceAtLeast(mLo)
+                val dishesThisMeal = if (mHi <= mLo) mLo else rnd.nextInt(mLo, mHi + 1)
                 val chosen = ArrayList<PlanDish>(dishesThisMeal)
                 for (idx in 0 until dishesThisMeal) {
                     val pool = mealPool(shuffled, isBreakfastMeal, idx).ifEmpty { shuffled }
