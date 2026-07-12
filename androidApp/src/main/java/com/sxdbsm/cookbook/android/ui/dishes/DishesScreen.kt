@@ -61,6 +61,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.DishRow
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
+import com.sxdbsm.cookbook.android.ui.component.SourceBadge
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Divider
 import com.sxdbsm.cookbook.domain.model.DishMini
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -264,6 +267,17 @@ fun DishesScreen(
                     }
                 }
             }
+            // [AI生成] 搜索弹框：搜索框有内容时覆盖在列表上，展示搜索结果(名+烹饪方式+预设/自建+详情)。
+            if (ui.keyword.isNotBlank()) {
+                DishSearchOverlay(
+                    results = ui.searchResults,
+                    onOpen = { dish ->
+                        vm.openFromSearch(dish) // 跳到该菜的菜系分类 + 关闭弹框
+                        onOpenDish(dish.id) // 同时打开详情
+                    },
+                    onClose = { vm.setKeyword("") },
+                )
+            }
         }
     }
 
@@ -342,6 +356,63 @@ fun DishesScreen(
             },
         )
     }
+}
+
+/**
+ * 菜品搜索结果弹框覆盖层。[AI生成]
+ *
+ * 仿食材搜索：单独弹框展示匹配菜品——左侧菜名+下方烹饪方式+旁边预设/自建，右侧详情按钮；
+ * 点某项跳到该菜所在菜系分类下并同时打开详情。
+ */
+@Composable
+private fun DishSearchOverlay(
+    results: List<DishMini>,
+    onOpen: (DishMini) -> Unit,
+    onClose: () -> Unit,
+) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, tonalElevation = 2.dp) {
+        Column(Modifier.fillMaxSize()) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("搜索结果 ${results.size}", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                TextButton(onClick = onClose) { Text("关闭") }
+            }
+            Divider()
+            if (results.isEmpty()) {
+                EmptyState(text = "没有匹配的菜品", icon = "🔎")
+            } else {
+                LazyColumn(Modifier.fillMaxSize()) {
+                    items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
+                    item { Spacer(Modifier.height(80.dp)) }
+                }
+            }
+        }
+    }
+}
+
+/** 搜索结果行：左侧菜名+烹饪方式+预设/自建，右侧详情按钮。[AI生成] */
+@Composable
+private fun DishSearchRow(dish: DishMini, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(dish.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            Spacer(Modifier.height(4.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                val method = dish.cookingMethodNames.ifEmpty { dish.cookingMethodName?.let(::listOf).orEmpty() }.joinToString(" / ")
+                if (method.isNotBlank()) {
+                    Text(method, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                SourceBadge(dish.source)
+            }
+        }
+        TextButton(onClick = onClick) { Text("详情") }
+    }
+    Divider(color = MaterialTheme.colorScheme.outlineVariant)
 }
 
 @Composable

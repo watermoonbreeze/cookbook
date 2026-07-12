@@ -47,6 +47,7 @@ data class DishesUiState(
     val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
     val homeCount: Int = 0, // [AI生成] 家庭 Tab 菜品数(自建 source=user)
+    val searchResults: List<DishMini> = emptyList(), // [AI生成] 搜索关键字的原始结果(不受 Tab/菜系筛选)，供搜索弹框展示
 )
 
 /**
@@ -130,6 +131,8 @@ class DishesViewModel(
             availableMethods = methods, availableTags = tags,
             recentCount = recentList.size, favoriteCount = favorites.size, allCount = filtered.size,
             homeCount = userDishes.size,
+            // [AI生成] 搜索弹框用原始搜索结果(不叠加 Tab/菜系筛选)：搜索是全局的。
+            searchResults = if (kw.isBlank()) emptyList() else searched,
         )
     }
 
@@ -158,6 +161,17 @@ class DishesViewModel(
 
     /** 直接选择菜系(左侧菜系栏)：null=全部(不筛)。[AI生成] */
     fun selectCuisine(cuisine: String?) { _cuisineFilter.value = cuisine }
+
+    /**
+     * 从搜索弹框点某道菜：跳到它所在菜系分类下，并清空搜索关闭弹框。[AI生成]
+     *
+     * 切到「菜系」Tab + 选中该菜的菜系(空菜系归到"全部")，随后由页面打开该菜详情。
+     */
+    fun openFromSearch(dish: DishMini) {
+        _sortTab.value = DishesSortTab.ALL
+        _cuisineFilter.value = dish.cuisine.ifBlank { null }
+        setKeyword("")
+    }
 
     fun refresh() {
         searchNow(_keyword.value, force = true)
