@@ -121,7 +121,7 @@ class AiRecommendViewModel(
 
     companion object {
         private const val MEAL_COUNT = 3
-        private const val MAX_ITEMS = 12 // 扁平列表最多展示的候选菜数。
+        private val MAX_ITEMS = com.sxdbsm.cookbook.ai.RecommendationOrchestrator.DISPLAY_BATCH // [AI修改] 每批 10 个，与 orchestrator 分批一致。
         private const val RANDOM_ROTATION_BOUND = 1000 // 随机模式的随机轮转上界。
     }
 }

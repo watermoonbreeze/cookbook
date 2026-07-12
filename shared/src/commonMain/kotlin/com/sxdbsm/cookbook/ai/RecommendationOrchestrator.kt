@@ -65,11 +65,17 @@ class RecommendationOrchestrator(
             .take(mealCount)
     }
 
-    /** 轮转候选窗口：rotation=0 保持分数最优在前；>0 时按每餐菜数平移，供"换一换"换出不同组合。[AI生成] */
+    /**
+     * 按整批分页轮转候选：每批 DISPLAY_BATCH(10) 个，"换一换"取**下一批不重复**，全部推完后循环。[AI修改]
+     *
+     * rotation=0 取第 1 批(分数最优在前)；rotation=N 取第 (N mod 批数) 批，drop 到该批起始，
+     * 上层 take(DISPLAY_BATCH) 取整批(末批不足则少于 10)。修旧"平移 2 个致换一换严重重叠"。
+     */
     private fun rotate(candidates: List<DishCandidate>, rotation: Int): List<DishCandidate> {
-        if (candidates.isEmpty() || rotation <= 0) return candidates
-        val offset = (rotation * FALLBACK_DISHES_PER_MEAL) % candidates.size
-        return if (offset == 0) candidates else candidates.drop(offset) + candidates.take(offset)
+        if (candidates.isEmpty() || rotation <= 0 || candidates.size <= DISPLAY_BATCH) return candidates
+        val batches = (candidates.size + DISPLAY_BATCH - 1) / DISPLAY_BATCH
+        val start = (rotation % batches) * DISPLAY_BATCH
+        return candidates.drop(start)
     }
 
     /** 纯规则兜底：把规则 top 候选按每餐 2 菜切成 mealCount 餐。[AI生成] */
@@ -88,6 +94,7 @@ class RecommendationOrchestrator(
             }
 
     companion object {
+        const val DISPLAY_BATCH = 10 // [AI生成] 库存/随机推荐每批展示菜数；"换一换"取下一批不重复、全部推完循环。
         private const val DEFAULT_MEAL_COUNT = 3
         private const val MAX_DISHES_PER_MEAL = 3
         private const val FALLBACK_DISHES_PER_MEAL = 2

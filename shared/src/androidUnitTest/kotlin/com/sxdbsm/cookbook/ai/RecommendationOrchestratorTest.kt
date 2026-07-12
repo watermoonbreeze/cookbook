@@ -83,20 +83,38 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
-    fun `换一换轮转让兜底换出不同组合`() = runBlocking {
-        // 6 个都可做的候选，兜底每餐2菜；rotation 变化应换出不同菜。
-        val many = (1L..6L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
+    fun `换一换按整批10个轮转_不重复且全推完循环`() = runBlocking {
+        // 25 个候选、每批 10：换一换取下一批不重复；批数=3，rotation 循环回第 1 批。
+        val many = (1L..25L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
         val bigInput = RecommendationInput(
             dishes = many,
-            pantryIngredientIds = (101L..106L).toSet(),
+            pantryIngredientIds = (101L..125L).toSet(),
             constraints = HealthConstraints(),
             recentDishIds = emptySet(),
         )
         val orch = RecommendationOrchestrator(MockAiRuntime()) // 走兜底(确定性)
-        val r0 = orch.recommend(bigInput, mealCount = 1, rotation = 0).suggestions.first().dishIds
-        val r1 = orch.recommend(bigInput, mealCount = 1, rotation = 1).suggestions.first().dishIds
-        assertEquals(RecommendationSource.RULE_FALLBACK, orch.recommend(bigInput, mealCount = 1, rotation = 0).source)
-        // 轮转后首个组合的菜应不同(兜底不再原地打转)
-        assertTrue(r0 != r1, "换一换应换出不同组合: r0=$r0 r1=$r1")
+        // 第 N 批候选(orchestrator 分批后 candidates 头部即该批)
+        suspend fun batchIds(rotation: Int) = orch.recommend(bigInput, mealCount = 1, rotation = rotation)
+            .candidates.take(10).map { it.id }
+        val b0 = batchIds(0)
+        val b1 = batchIds(1)
+        val b2 = batchIds(2)
+        val b3 = batchIds(3)
+        assertEquals(10, b0.size)
+        assertEquals(10, b1.size)
+        assertTrue(b0.intersect(b1.toSet()).isEmpty(), "第2批不应与第1批重复: b0=$b0 b1=$b1")
+        assertTrue(b1.intersect(b2.toSet()).isEmpty(), "第3批不应与前批重复")
+        assertEquals(b0, b3, "批数=3(25/10向上取整), rotation=3 应循环回第1批")
+    }
+
+    @Test
+    fun `候选不足一批时换一换循环回同一批`() = runBlocking {
+        // ≤10 个候选只有一批，换一换循环回同批(符合"全推完再循环")。
+        val few = (1L..5L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
+        val input = RecommendationInput(few, (101L..105L).toSet(), HealthConstraints(), emptySet())
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val a = orch.recommend(input, mealCount = 1, rotation = 0).candidates.map { it.id }
+        val b = orch.recommend(input, mealCount = 1, rotation = 1).candidates.map { it.id }
+        assertEquals(a, b, "≤1批时换一换回同批")
     }
 }
