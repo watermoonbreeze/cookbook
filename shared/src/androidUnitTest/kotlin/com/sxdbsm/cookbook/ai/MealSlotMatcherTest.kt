@@ -36,6 +36,16 @@ class MealSlotMatcherTest {
     }
 
     @Test
+    fun `判荤用具体词不误伤同字素菜`() {
+        assertTrue(MealSlotMatcher.isMeatByMains(listOf("五花肉")))
+        assertTrue(MealSlotMatcher.isMeatByMains(listOf("鸡蛋")), "蛋算荤(优质蛋白)")
+        assertTrue(MealSlotMatcher.isMeatByMains(listOf("海参")))
+        assertFalse(MealSlotMatcher.isMeatByMains(listOf("蟹味菇")), "蟹味菇是食用菌不是荤")
+        assertFalse(MealSlotMatcher.isMeatByMains(listOf("茄子")), "鱼香茄子主料茄子非荤")
+        assertFalse(MealSlotMatcher.isMeatByMains(listOf("青椒", "土豆")))
+    }
+
+    @Test
     fun `加餐宵夜偏轻`() {
         assertTrue(MealSlotMatcher.matches(MealSlot.NIGHT_SNACK, "小米粥"))
         assertTrue(MealSlotMatcher.matches(MealSlot.AFTERNOON_SNACK, "牛奶"))

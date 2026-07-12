@@ -85,7 +85,15 @@ class RecommendationDataSource(
 
         // [AI生成] 库存不足食材：可用份数(入库日起窗口的剩余)≤0；含它的菜仍推荐但排后+标不足。仅库存模式。
         val shortageIds = if (mode == RecommendMode.PANTRY) {
-            pantryRepo.remaining().filterValues { it <= 0 }.keys
+            val depleted = pantryRepo.remaining().filterValues { it <= 0 }.keys
+            if (depleted.isEmpty()) {
+                emptySet()
+            } else {
+                // [AI修改] 按名扩展与 pantryIds 一致：耗尽食材的同名副本也算不足，仍标"库存不足"并排后，避免同名副本被当充足推前无警示。
+                val names = pantryRepo.listPantryIngredients().filter { it.id in depleted }.map { it.name }.distinct()
+                if (names.isEmpty()) depleted.toSet()
+                else depleted + q.selectIngredientIdsByNames(names).executeAsList().toSet()
+            }
         } else {
             emptySet()
         }

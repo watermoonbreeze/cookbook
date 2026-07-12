@@ -97,7 +97,9 @@ class IngredientRepository(private val db: CookbookDatabase) {
         // 导致按 ingredient_id 匹配的库存推荐漏掉该菜。复用后同名食材始终同一 id。
         val trimmed = name.trim()
         q.selectActiveIngredientIdByName(trimmed).executeAsOneOrNull()?.let { existingId ->
-            return@withContext existingId // 已有同名食材直接复用其 id(保留其原有分类)
+            // [AI修改] 复用已有同名食材，同时补绑本次传入的分类(linkIngredientCategory 为 INSERT OR REPLACE 幂等)。
+            categoryIds.distinct().forEach { q.linkIngredientCategory(existingId, it) }
+            return@withContext existingId
         }
         q.insertIngredient(
             name = trimmed,
