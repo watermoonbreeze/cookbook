@@ -87,7 +87,7 @@ class PeriodPlanner {
                         .ifEmpty { pool.filter { it !in chosen } }
                     // [AI修改] 分数 + 随机抖动：强信号(应季/健康)仍优先，同分菜每次"生成"换出不同组合。
                     val pick = avail.maxByOrNull {
-                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition) + (jitter[it.id] ?: 0.0)
+                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen) + (jitter[it.id] ?: 0.0)
                     } ?: break
                     chosen += pick
                     usedDishIds[pick.id] = (usedDishIds[pick.id] ?: 0) + 1
@@ -118,6 +118,7 @@ class PeriodPlanner {
         usedDishIds: Map<Long, Int>,
         usedMainCounts: Map<String, Int>,
         usedNutrition: Map<String, Int>,
+        mealChosen: List<PlanDish>, // [AI生成] 本餐已选菜，用于荤素搭配平衡
     ): Double {
         var s = BASE
         // 应季
@@ -126,6 +127,13 @@ class PeriodPlanner {
         s += dish.nutritionTags.sumOf { NUTRITION_BONUS / (1.0 + (usedNutrition[it] ?: 0)) }
         // 健康
         if (dish.isHealthy) s += HEALTH_BONUS
+        // [AI生成] 荤素搭配：本餐已选里荤/素偏少的一方补分，鼓励一餐荤素兼有(营养搭配待营养规则接入后再细化)。
+        if (mealChosen.isNotEmpty()) {
+            val meat = mealChosen.count { it.isMeat }
+            val veg = mealChosen.size - meat
+            if (dish.isMeat && meat <= veg) s += BALANCE_BONUS
+            if (!dish.isMeat && veg <= meat) s += BALANCE_BONUS
+        }
         // 去重：同菜、同主料降权
         s -= REPEAT_DISH_PENALTY * (usedDishIds[dish.id] ?: 0)
         s -= REPEAT_MAIN_PENALTY * dish.mainNames.sumOf { usedMainCounts[it] ?: 0 }
@@ -144,6 +152,7 @@ class PeriodPlanner {
         private const val SEASON_BONUS = 0.8
         private const val NUTRITION_BONUS = 0.6
         private const val HEALTH_BONUS = 0.6
+        private const val BALANCE_BONUS = 0.7 // [AI生成] 同餐荤素平衡补分(介于应季0.8与健康0.6之间, 影响但不压倒健康)
         private const val REPEAT_DISH_PENALTY = 2.0
         private const val REPEAT_MAIN_PENALTY = 0.5
         private const val LIMIT_PENALTY = 0.4

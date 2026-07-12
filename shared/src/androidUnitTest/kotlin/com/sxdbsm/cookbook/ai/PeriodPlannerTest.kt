@@ -26,7 +26,11 @@ class PeriodPlannerTest {
         healthy: Boolean = false,
         avoid: Boolean = false,
         breakfast: Boolean = false,
-    ) = PlanDish(id, "菜$id", main, nutrition, season, healthy, avoid, breakfast)
+        meat: Boolean = false,
+    ) = PlanDish(
+        id = id, name = "菜$id", mainNames = main, nutritionTags = nutrition, seasonTags = season,
+        isHealthy = healthy, hasAvoid = avoid, isMeat = meat, isBreakfast = breakfast,
+    )
 
     @Test
     fun `天数与餐次数量正确`() {
@@ -69,6 +73,23 @@ class PeriodPlannerTest {
         val unhealthy = (11L..15L).map { dish(it, main = listOf("m$it"), healthy = false) }
         val plan = planner.plan(healthy + unhealthy, days = 3, mealNames = meals, dishesMin = 2, dishesMax = 2, healthAware = true)
         assertTrue(plan.healthyRatio >= 0.8, "healthyRatio=${plan.healthyRatio}")
+    }
+
+    @Test
+    fun `同餐尽量荤素搭配`() {
+        // 2 荤 2 素、每餐 2 菜：应荤素各一，而非两荤或两素。
+        val dishes = listOf(
+            dish(1, main = listOf("五花肉"), meat = true),
+            dish(2, main = listOf("鸡腿"), meat = true),
+            dish(3, main = listOf("青椒"), meat = false),
+            dish(4, main = listOf("白菜"), meat = false),
+        )
+        val plan = planner.plan(dishes, days = 1, mealNames = listOf("中餐"), dishesMin = 2, dishesMax = 2, seed = 1)
+        val picked = plan.days[0].meals[0].dishes.map { it.id }.toSet()
+        val meatCount = picked.count { it == 1L || it == 2L }
+        val vegCount = picked.count { it == 3L || it == 4L }
+        assertEquals(1, meatCount, "一餐应有 1 荤: picked=$picked")
+        assertEquals(1, vegCount, "一餐应有 1 素: picked=$picked")
     }
 
     @Test

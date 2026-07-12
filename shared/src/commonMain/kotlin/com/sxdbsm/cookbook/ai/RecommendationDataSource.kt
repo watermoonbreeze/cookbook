@@ -181,10 +181,12 @@ class RecommendationDataSource(
             val avoidHits = ings.filter { it.ingredient.id in avoidIds }
             val limitHits = ings.filter { it.ingredient.id in limitIds }
             val recommendHits = ings.filter { it.ingredient.id in recommendIds }
+            val planMainNames = ings.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }
             PlanDish(
                 id = d.id,
                 name = d.name,
-                mainNames = ings.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name },
+                mainNames = planMainNames,
+                isMeat = MealSlotMatcher.isMeatByMains(planMainNames), // [AI生成] 荤/素(同餐荤素搭配用)
                 nutritionTags = ingIds.flatMap { nutritionByIng[it].orEmpty() }.toSet(),
                 seasonTags = ingIds.flatMap { seasonByIng[it].orEmpty() }.toSet(),
                 isHealthy = healthAware && recommendHits.isNotEmpty() && limitHits.isEmpty() && avoidHits.isEmpty(),

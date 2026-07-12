@@ -38,6 +38,16 @@ object MealSlotMatcher {
     // 正餐(中/晚)排除的"纯饮品"整道菜。
     private val DRINK_ONLY = listOf("豆浆", "豆奶", "牛奶", "燕麦牛奶")
 
+    // [AI生成] 荤菜主料关键词(判荤/素用于周期规划荤素搭配)。
+    private val MEAT = listOf(
+        "肉", "鱼", "虾", "蟹", "鸡", "鸭", "鹅", "牛", "羊", "猪", "排骨", "五花", "蛋",
+        "贝", "鱿", "鳝", "鳅", "蚝", "螺", "参", "鲈", "鲫", "鲳", "鳕", "带鱼", "黄鱼",
+        "腊", "肠", "火腿", "培根", "午餐肉", "肚", "肝", "血", "蹄",
+    )
+
+    /** 主料是否含荤(任一主料名命中荤关键词即视为荤菜)。[AI生成] */
+    fun isMeatByMains(mainNames: List<String>): Boolean = mainNames.any { m -> MEAT.any { m.contains(it) } }
+
     /** 该菜是否适合此餐次。[AI生成] 全部=都适合。 */
     fun matches(slot: MealSlot, dishName: String): Boolean = when (slot) {
         MealSlot.ALL -> true
