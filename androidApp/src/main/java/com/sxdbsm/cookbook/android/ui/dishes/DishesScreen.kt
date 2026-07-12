@@ -59,7 +59,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
-import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.DishRow
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -98,7 +97,6 @@ fun DishesScreen(
     val sections = remember(ui.all) {
         ui.all.groupBy { dishInitial(it.name) }.toSortedMap()
     }
-    val showPopular = ui.popular.isNotEmpty() && ui.keyword.isBlank()
     val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
     val isCuisineTab = ui.sortTab == DishesSortTab.ALL // [AI修改] 第三档=菜系(左二级栏+右菜品)
     // [AI修改] 菜系档的菜品 LazyColumn 只含字母 section(表头/Tab/筛选都在其外)，字母跳转索引从 0 起算。
@@ -198,6 +196,7 @@ fun DishesScreen(
                         Triple(DishesSortTab.RECENT, "最近", ui.recentCount),
                         Triple(DishesSortTab.FAVORITE, "喜爱", ui.favoriteCount),
                         Triple(DishesSortTab.ALL, "菜系", ui.allCount),
+                        Triple(DishesSortTab.HOME, "家庭", ui.homeCount), // [AI生成] 家庭=自建菜品
                     ).forEach { (tab, label, count) ->
                         Tab(
                             selected = ui.sortTab == tab,
@@ -250,21 +249,8 @@ fun DishesScreen(
                             }
                         }
                     } else {
-                        // 最近/喜爱：保持原样(喜爱区横滑 + 烹饪方式筛选 + 列表)。
+                        // 最近/喜爱/家庭：统一为(烹饪方式筛选 + 列表)，去掉喜爱横滑区，各分类展示一致。
                         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                            if (showPopular) {
-                                item {
-                                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                        Text("🔥 喜爱", style = MaterialTheme.typography.titleMedium)
-                                    }
-                                }
-                                item {
-                                    LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                        items(ui.popular, key = { it.id }) { dish -> DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) }) }
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                }
-                            }
                             if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
                             if (ui.all.isEmpty()) {
                                 item { EmptyState(text = emptyText, icon = "🥗") }

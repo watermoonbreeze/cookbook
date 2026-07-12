@@ -170,6 +170,19 @@ fun IngredientCard(
                     }
                 }
             }
+            // [AI生成] 来源徽章(预设/自建)：放左上角，与菜品列表展示统一；避开右上角人群建议角标。
+            Surface(
+                color = if (ingredient.source == "preset") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
+                shape = MaterialTheme.shapes.small,
+                modifier = Modifier.align(Alignment.TopStart).padding(2.dp),
+            ) {
+                Text(
+                    text = if (ingredient.source == "preset") "预设" else "自建",
+                    color = if (ingredient.source == "preset") MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                )
+            }
             // [AI修改] 食材选择器里的人群建议角标下沉到通用食材卡，搜索页可复用同一套展示。
             if (showAdviceBadge) {
                 ingredient.adviceLevel?.let { level ->

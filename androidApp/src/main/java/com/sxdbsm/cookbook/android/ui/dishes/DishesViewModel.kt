@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
  *
  * 当前 MVP 只保存选择状态，后续可让不同 Tab 对应不同查询或排序。
  */
-enum class DishesSortTab { RECENT, FAVORITE, ALL }
+enum class DishesSortTab { RECENT, FAVORITE, ALL, HOME }
 
 /** 列表排序 + 三种筛选合并载体(供 combine 一路传递)。[AI生成] */
 private data class ViewOpts(
@@ -46,6 +46,7 @@ data class DishesUiState(
     val recentCount: Int = 0, // [AI生成] 最近 Tab 菜品数(前30, 与该 Tab 实际展示一致)
     val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
+    val homeCount: Int = 0, // [AI生成] 家庭 Tab 菜品数(自建 source=user)
 )
 
 /**
@@ -113,19 +114,22 @@ class DishesViewModel(
                 // [AI修改] 菜系筛选只在"菜系"Tab(ALL)生效；最近/喜爱不受菜系影响。
                 (tab != DishesSortTab.ALL || cuisine == null || cuisine == d.cuisine)
         }
-        // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部展示所有。计数与各 Tab 展示一致。
+        // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部/家庭展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
         val recentList = filtered.take(LIST_LIMIT)
+        val userDishes = filtered.filter { it.source == "user" } // [AI生成] 家庭=用户自建菜品
         val listForTab = when (tab) {
             DishesSortTab.RECENT -> recentList
             DishesSortTab.FAVORITE -> favorites
             DishesSortTab.ALL -> filtered
+            DishesSortTab.HOME -> userDishes
         }
         DishesUiState(
             popular = popular, all = sortDishes(listForTab, tab), keyword = kw, sortTab = tab,
             selectedMethod = method, selectedTag = tag, selectedCuisine = cuisine,
             availableMethods = methods, availableTags = tags,
             recentCount = recentList.size, favoriteCount = favorites.size, allCount = filtered.size,
+            homeCount = userDishes.size,
         )
     }
 
@@ -214,7 +218,8 @@ class DishesViewModel(
         when (tab) {
             DishesSortTab.RECENT -> list
             DishesSortTab.FAVORITE -> list.sortedByDescending { it.preference }
-            DishesSortTab.ALL -> list.sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
+            // 全部/家庭都按拼音首字母分组排序(家庭也用字母检索)。
+            DishesSortTab.ALL, DishesSortTab.HOME -> list.sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
         }
 
 

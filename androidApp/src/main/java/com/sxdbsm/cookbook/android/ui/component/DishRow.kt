@@ -69,12 +69,12 @@ fun DishRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(4.dp))
-            if (dish.tags.isNotEmpty()) {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    dish.tags.take(3).forEach { tag -> TagChip(tag) }
-                }
-                Spacer(Modifier.height(4.dp))
+            // [AI修改] 每行都带「预设/自建」来源徽章，其后接标签；与食材列表展示统一。
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                SourceBadge(dish.source)
+                dish.tags.take(3).forEach { tag -> TagChip(tag) }
             }
+            Spacer(Modifier.height(4.dp))
             val subText = buildString {
                 dish.mainIngredientNames.take(3).forEachIndexed { i, n ->
                     if (i > 0) append(" · ")
@@ -124,6 +124,27 @@ fun DishRow(
         }
     }
     Divider(color = MaterialTheme.colorScheme.outlineVariant)
+}
+
+/**
+ * 来源徽章：预设 / 自建。[AI生成]
+ *
+ * 菜品与食材列表统一展示：`preset`=预设(中性灰)，其余(`user`)=自建(主题色)。
+ */
+@Composable
+fun SourceBadge(source: String) {
+    val isPreset = source == "preset"
+    val label = if (isPreset) "预设" else "自建"
+    val bg = if (isPreset) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer
+    val fg = if (isPreset) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer
+    Box(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .background(bg)
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+    ) {
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = fg)
+    }
 }
 
 /**
