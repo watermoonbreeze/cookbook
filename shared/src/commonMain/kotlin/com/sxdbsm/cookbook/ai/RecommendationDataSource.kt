@@ -200,9 +200,10 @@ class RecommendationDataSource(
         val dishes = allDishIds.mapNotNull { dishRepo.getDishById(it) }.map { d ->
             val ings = d.ingredients
             val ingIds = ings.map { it.ingredient.id }
-            val avoidHits = ings.filter { it.ingredient.id in avoidIds }
-            val limitHits = ings.filter { it.ingredient.id in limitIds }
-            val recommendHits = ings.filter { it.ingredient.id in recommendIds }
+            // [AI修改] 忌口/限量/推荐只算非调料食材：否则盐/生抽等调料几乎每道菜都有，会让所有菜都判忌口。
+            val avoidHits = ings.filter { it.ingredient.id in avoidIds && it.ingredient.id !in seasoningIds }
+            val limitHits = ings.filter { it.ingredient.id in limitIds && it.ingredient.id !in seasoningIds }
+            val recommendHits = ings.filter { it.ingredient.id in recommendIds && it.ingredient.id !in seasoningIds }
             val planMainNames = ings.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }
             PlanDish(
                 id = d.id,

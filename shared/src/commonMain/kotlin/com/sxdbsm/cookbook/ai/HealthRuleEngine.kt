@@ -46,10 +46,11 @@ class HealthRuleEngine {
 
         // [AI修改] 忌口(avoid)：不再直接剔除——改为「照样列出、排到最后、标红警示」。
         // 家庭 app：有慢病的成员应避免，但库存有的菜仍要让用户看到(家人也能做)，由用户自行判断，不替他隐藏。
-        val avoidNames = dish.ingredients.filter { it.ingredientId in constraints.avoidIngredientIds }.map { it.name }.distinct()
+        // [AI修改] 忌口/限量只算**非调料**食材：否则"盐对高血压忌口/生抽限量"会让几乎所有菜都命中(每道菜都放盐)，忌口失去意义。
+        val avoidNames = nonSeasoning.filter { it.ingredientId in constraints.avoidIngredientIds }.map { it.name }.distinct()
 
-        val limitHits = dish.ingredients.filter { it.ingredientId in constraints.limitIngredientIds }
-        val recommendHits = dish.ingredients.filter { it.ingredientId in constraints.recommendIngredientIds }
+        val limitHits = nonSeasoning.filter { it.ingredientId in constraints.limitIngredientIds }
+        val recommendHits = nonSeasoning.filter { it.ingredientId in constraints.recommendIngredientIds }
         val seasoningsOnHand = seasonings.filter { it.ingredientId in pantryIngredientIds }
         val isRecent = dish.id in recentDishIds
 
