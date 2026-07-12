@@ -110,7 +110,8 @@ class DishesViewModel(
         val filtered = raw.filter { d ->
             (method == null || method in d.cookingMethodNames) &&
                 (tag == null || tag in d.tags) &&
-                (cuisine == null || cuisine == d.cuisine)
+                // [AI修改] 菜系筛选只在"菜系"Tab(ALL)生效；最近/喜爱不受菜系影响。
+                (tab != DishesSortTab.ALL || cuisine == null || cuisine == d.cuisine)
         }
         // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)

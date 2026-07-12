@@ -99,12 +99,11 @@ fun DishesScreen(
         ui.all.groupBy { dishInitial(it.name) }.toSortedMap()
     }
     val showPopular = ui.popular.isNotEmpty() && ui.keyword.isBlank()
-    // [AI修改] 筛选 chip 行(availableMethods/tags 非空时渲染)也占一个 item，需计入字母跳转偏移，否则 A-Z 跳转偏 1。
-    val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty() // [AI修改] 菜系移到左栏，不再计入横向筛选行
-    val letterIndexMap = remember(sections, showPopular, hasFilterRow) {
-        var index = 1 + if (showPopular) 2 else 0 // [AI修改] 首项为下拉刷新提示，需要计入索引偏移。
-        index += 1 // TabRow sticky header
-        if (hasFilterRow) index += 1 // 筛选 chip 行
+    val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
+    val isCuisineTab = ui.sortTab == DishesSortTab.ALL // [AI修改] 第三档=菜系(左二级栏+右菜品)
+    // [AI修改] 菜系档的菜品 LazyColumn 只含字母 section(表头/Tab/筛选都在其外)，字母跳转索引从 0 起算。
+    val letterIndexMap = remember(sections) {
+        var index = 0
         buildMap {
             sections.forEach { (letter, dishes) ->
                 put(letter, index)
@@ -152,12 +151,17 @@ fun DishesScreen(
             )
         },
     ) { padding ->
-        Row(Modifier.padding(padding).fillMaxSize()) {
-        // [AI生成] 左侧菜系一级分类栏：全部 + 家常菜 + 八大菜系等；选一个右侧只看该菜系的菜。
-        CuisineRail(selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
+        // [AI修改] 空态文案按原因：筛选无果 / 喜爱页无评分 / 真无菜(引导添加)。
+        val filtersActive = ui.selectedMethod != null || ui.selectedTag != null ||
+            (isCuisineTab && ui.selectedCuisine != null) || ui.keyword.isNotBlank()
+        val emptyText = when {
+            filtersActive -> "没有符合筛选的菜品"
+            ui.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜品\n给菜品评分后会出现在这里"
+            else -> "还没有菜品\n点击右上角 + 添加"
+        }
         Box(
             modifier = Modifier
-                .weight(1f)
+                .padding(padding)
                 .fillMaxSize()
                 .pointerInput(ui.refreshing, listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
                     detectVerticalDragGestures(
@@ -172,11 +176,7 @@ fun DishesScreen(
                     }
                 },
         ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            item {
+            Column(Modifier.fillMaxSize()) {
                 val refreshText = when {
                     ui.refreshing -> "刷新中..."
                     pullDistance > 80f -> "松开刷新"
@@ -187,37 +187,9 @@ fun DishesScreen(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(28.dp)
-                        .padding(top = 6.dp),
+                    modifier = Modifier.fillMaxWidth().height(24.dp).padding(top = 4.dp),
                 )
-            }
-            if (showPopular) {
-                item {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("🔥 喜爱", style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-                item {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(ui.popular, key = { it.id }) { dish ->
-                            DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                }
-            }
-
-            stickyHeader {
+                // [AI修改] 顶部一级分类 Tab：最近 / 喜爱 / 菜系(替换原“全部”)。
                 TabRow(
                     selectedTabIndex = DishesSortTab.values().indexOf(ui.sortTab),
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -225,94 +197,88 @@ fun DishesScreen(
                     listOf(
                         Triple(DishesSortTab.RECENT, "最近", ui.recentCount),
                         Triple(DishesSortTab.FAVORITE, "喜爱", ui.favoriteCount),
-                        Triple(DishesSortTab.ALL, "全部", ui.allCount),
+                        Triple(DishesSortTab.ALL, "菜系", ui.allCount),
                     ).forEach { (tab, label, count) ->
                         Tab(
                             selected = ui.sortTab == tab,
                             onClick = { vm.setSortTab(tab) },
-                            text = { Text("$label $count") }, // [AI生成] Tab 旁标注对应菜品数
+                            text = { Text("$label $count") },
                         )
                     }
                 }
-            }
 
-            // [AI生成] 烹饪方式/标签筛选(横滑, 再点取消)；菜系已移到左侧一级分类栏。
-            if (ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()) {
-                item(key = "dish-filters") {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background),
-                    ) {
-                        items(ui.availableMethods, key = { "m-$it" }) { m ->
-                            FilterChip(selected = ui.selectedMethod == m, onClick = { vm.toggleMethodFilter(m) }, label = { Text(m) })
+                Box(Modifier.weight(1f).fillMaxSize()) {
+                    if (isCuisineTab) {
+                        // 菜系档：左侧二级分类(全部+家常菜+八大菜系) | 右侧该分类菜品(上方烹饪方式筛选 + 拼音检索)。
+                        Row(Modifier.fillMaxSize()) {
+                            CuisineRail(selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
+                            Column(Modifier.weight(1f).fillMaxSize()) {
+                                DishFilterChips(ui, vm)
+                                Box(Modifier.weight(1f).fillMaxSize()) {
+                                    if (ui.all.isEmpty()) {
+                                        EmptyState(text = emptyText, icon = "🥗")
+                                    } else {
+                                        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                                            sections.forEach { (letter, dishes) ->
+                                                item(key = "section-$letter") {
+                                                    Text(
+                                                        text = letter,
+                                                        style = MaterialTheme.typography.labelLarge,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.fillMaxWidth()
+                                                            .background(MaterialTheme.colorScheme.background)
+                                                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                                                    )
+                                                }
+                                                items(dishes, key = { it.id }) { dish ->
+                                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                                }
+                                            }
+                                            item { Spacer(Modifier.height(80.dp)) }
+                                        }
+                                        if (sections.isNotEmpty()) {
+                                            LetterIndexBar(
+                                                letters = sections.keys.toList(),
+                                                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
+                                                onLetterSelected = { letter ->
+                                                    letterIndexMap[letter]?.let { index -> scope.launch { listState.animateScrollToItem(index) } }
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        items(ui.availableTags, key = { "t-$it" }) { t ->
-                            FilterChip(selected = ui.selectedTag == t, onClick = { vm.toggleTagFilter(t) }, label = { Text("#$t") })
+                    } else {
+                        // 最近/喜爱：保持原样(喜爱区横滑 + 烹饪方式筛选 + 列表)。
+                        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                            if (showPopular) {
+                                item {
+                                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        Text("🔥 喜爱", style = MaterialTheme.typography.titleMedium)
+                                    }
+                                }
+                                item {
+                                    LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        items(ui.popular, key = { it.id }) { dish -> DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) }) }
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                }
+                            }
+                            if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
+                            if (ui.all.isEmpty()) {
+                                item { EmptyState(text = emptyText, icon = "🥗") }
+                            } else {
+                                itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
+                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                }
+                                item { Spacer(Modifier.height(80.dp)) }
+                            }
                         }
                     }
                 }
-            }
-
-            if (ui.all.isEmpty()) {
-                // [AI修改] 空态按原因区分：筛选无果 / 喜爱页无评分 / 真的一道菜都没有(引导添加)。
-                val filtersActive = ui.selectedMethod != null || ui.selectedTag != null || ui.selectedCuisine != null || ui.keyword.isNotBlank()
-                val emptyText = when {
-                    filtersActive -> "没有符合筛选的菜品"
-                    ui.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜品\n给菜品评分后会出现在这里"
-                    else -> "还没有菜品\n点击右上角 + 添加"
-                }
-                item { EmptyState(text = emptyText, icon = "🥗") }
-            } else if (ui.sortTab == DishesSortTab.ALL) {
-                sections.forEach { (letter, dishes) ->
-                    item(key = "section-$letter") {
-                        Text(
-                            text = letter,
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background)
-                                .padding(horizontal = 16.dp, vertical = 6.dp),
-                        )
-                    }
-                    items(dishes, key = { it.id }) { dish ->
-                        DishRow(
-                            dish = dish,
-                            preferenceRank = hotRankById[dish.id],
-                            onClick = { onOpenDish(dish.id) },
-                            onLongClick = { dropdownDish = dish },
-                        )
-                    }
-                }
-                item { Spacer(Modifier.height(80.dp)) }
-            } else {
-                itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
-                    DishRow(
-                        dish = dish,
-                        preferenceRank = hotRankById[dish.id],
-                        onClick = { onOpenDish(dish.id) },
-                        onLongClick = { dropdownDish = dish },
-                    )
-                }
-                item { Spacer(Modifier.height(80.dp)) }
             }
         }
-            if (ui.sortTab == DishesSortTab.ALL && sections.isNotEmpty()) {
-                LetterIndexBar(
-                    letters = sections.keys.toList(),
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 4.dp),
-                    onLetterSelected = { letter ->
-                        letterIndexMap[letter]?.let { index ->
-                            scope.launch { listState.animateScrollToItem(index) }
-                        }
-                    },
-                )
-            }
-        }
-        } // [AI生成] 关闭左侧菜系栏 + 右侧内容的 Row
     }
 
     dropdownDish?.let { d ->
@@ -430,6 +396,29 @@ private fun LetterIndexBar(
                         onLetterSelected(letter)
                     },
             )
+        }
+    }
+}
+
+/**
+ * 烹饪方式 / 标签筛选横滑条。[AI生成]
+ *
+ * 从当前列表派生可选项，再点同一项取消；菜系已移到左侧一级分类栏，此处只留烹饪方式与标签。
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DishFilterChips(ui: DishesUiState, vm: DishesViewModel) {
+    if (ui.availableMethods.isEmpty() && ui.availableTags.isEmpty()) return
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background),
+    ) {
+        items(ui.availableMethods, key = { "m-$it" }) { m ->
+            FilterChip(selected = ui.selectedMethod == m, onClick = { vm.toggleMethodFilter(m) }, label = { Text(m) })
+        }
+        items(ui.availableTags, key = { "t-$it" }) { t ->
+            FilterChip(selected = ui.selectedTag == t, onClick = { vm.toggleTagFilter(t) }, label = { Text("#$t") })
         }
     }
 }
