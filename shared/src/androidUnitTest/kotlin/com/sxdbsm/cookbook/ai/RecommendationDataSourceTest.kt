@@ -55,6 +55,45 @@ class RecommendationDataSourceTest {
     }
 
     @Test
+    fun `两份红烧肉_预设与自建共用同一个五花肉_库存有五花肉_两份都应推荐`() = runBlocking {
+        // ingredient.name 有 UNIQUE 约束(全新库)：五花肉只有一个 id，两份红烧肉必然共用它。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val q = db.cookbookQueries
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val pantry = PantryRepository(db)
+        val ds = RecommendationDataSource(db, pantry, dishRepo, HealthProfileRepository(db), ingredientRepo)
+
+        val pork = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
+        val presetHongshao = q.selectAllDishes().executeAsList().first { it.name == "红烧肉" }.id
+
+        // 用户自建另一份「红烧肉」也用同一个五花肉(createUserIngredient 去重后本就复用同 id)。
+        val userHongshao = dishRepo.saveDish(
+            id = 0, name = "红烧肉", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(),
+            ingredients = listOf(
+                com.sxdbsm.cookbook.domain.model.DishIngredient(
+                    ingredient = com.sxdbsm.cookbook.domain.model.Ingredient(id = pork, name = "五花肉"),
+                    isMain = true,
+                ),
+            ),
+            steps = emptyList(),
+        )
+        assertTrue(userHongshao != presetHongshao, "两份不同的红烧肉")
+
+        pantry.addToPantry(pork) // 库存加入五花肉
+
+        val input = ds.gather(com.sxdbsm.cookbook.ai.model.RecommendMode.PANTRY)
+        assertTrue(input.dishes.any { it.id == presetHongshao }, "预设红烧肉应进候选")
+        assertTrue(input.dishes.any { it.id == userHongshao }, "自建红烧肉应进候选")
+        val cands = HealthRuleEngine().evaluate(input.dishes, input.pantryIngredientIds, input.constraints)
+        assertTrue(cands.any { it.id == presetHongshao }, "预设红烧肉应被推荐")
+        assertTrue(cands.any { it.id == userHongshao }, "自建红烧肉应被推荐")
+        Unit
+    }
+
+    @Test
     fun freePairingWorksOnRealSeedData() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded() // 灌入食材 + general 大类关联

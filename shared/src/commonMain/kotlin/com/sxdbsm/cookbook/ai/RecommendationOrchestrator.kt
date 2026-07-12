@@ -33,10 +33,21 @@ class RecommendationOrchestrator(
         rotation: Int = 0, // [AI生成] "换一换"轮次：轮转候选窗口，让规则兜底也能换出不同组合。
     ): RecommendationResult {
         val evaluated = engine.evaluate(input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds, input.shortageIngredientIds)
+        // [AI生成] 诊断日志：规则评估后按分数降序的候选(名#id(分))，看某道菜是否进了候选、排第几。
+        com.sxdbsm.cookbook.platform.CookbookLog.d(
+            "PantryRec",
+            "==④ 规则评估候选 ${evaluated.size} 个(降序前20): " +
+                evaluated.take(20).joinToString("、") { c -> "${c.name}#${c.id}(${(c.score * 100).toInt() / 100.0})" },
+        )
         if (evaluated.isEmpty()) {
             return RecommendationResult(emptyList(), evaluated, RecommendationSource.EMPTY)
         }
         val candidates = rotate(evaluated, rotation)
+        com.sxdbsm.cookbook.platform.CookbookLog.d(
+            "PantryRec",
+            "==⑤ 本批展示(rotation=$rotation 取前${DISPLAY_BATCH}): " +
+                candidates.take(DISPLAY_BATCH).joinToString("、") { it.name },
+        )
 
         val prompt = RecommendationPrompt.build(candidates, input.constraints, mealCount)
         val raw = runCatching { runtime.complete(prompt) }.getOrNull()?.getOrNull()
