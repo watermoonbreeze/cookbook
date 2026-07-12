@@ -156,6 +156,9 @@ class DishesViewModel(
     /** 选/取消 菜系筛选。[AI生成] */
     fun toggleCuisineFilter(cuisine: String) { _cuisineFilter.value = if (_cuisineFilter.value == cuisine) null else cuisine }
 
+    /** 直接选择菜系(左侧菜系栏)：null=全部(不筛)。[AI生成] */
+    fun selectCuisine(cuisine: String?) { _cuisineFilter.value = cuisine }
+
     fun refresh() {
         searchNow(_keyword.value, force = true)
     } // [AI生成] 给返回页面和下拉刷新使用；空关键词时依赖 Flow 自动刷新，仅短暂显示刷新态。

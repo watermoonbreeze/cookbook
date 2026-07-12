@@ -5,6 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,7 +100,7 @@ fun DishesScreen(
     }
     val showPopular = ui.popular.isNotEmpty() && ui.keyword.isBlank()
     // [AI修改] 筛选 chip 行(availableMethods/tags 非空时渲染)也占一个 item，需计入字母跳转偏移，否则 A-Z 跳转偏 1。
-    val hasFilterRow = ui.availableCuisines.isNotEmpty() || ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
+    val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty() // [AI修改] 菜系移到左栏，不再计入横向筛选行
     val letterIndexMap = remember(sections, showPopular, hasFilterRow) {
         var index = 1 + if (showPopular) 2 else 0 // [AI修改] 首项为下拉刷新提示，需要计入索引偏移。
         index += 1 // TabRow sticky header
@@ -148,9 +152,12 @@ fun DishesScreen(
             )
         },
     ) { padding ->
+        Row(Modifier.padding(padding).fillMaxSize()) {
+        // [AI生成] 左侧菜系一级分类栏：全部 + 家常菜 + 八大菜系等；选一个右侧只看该菜系的菜。
+        CuisineRail(selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
         Box(
             modifier = Modifier
-                .padding(padding)
+                .weight(1f)
                 .fillMaxSize()
                 .pointerInput(ui.refreshing, listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
                     detectVerticalDragGestures(
@@ -229,17 +236,14 @@ fun DishesScreen(
                 }
             }
 
-            // [AI生成] 菜系/烹饪方式/标签筛选(横滑, 再点取消)。
-            if (ui.availableCuisines.isNotEmpty() || ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()) {
+            // [AI生成] 烹饪方式/标签筛选(横滑, 再点取消)；菜系已移到左侧一级分类栏。
+            if (ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()) {
                 item(key = "dish-filters") {
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background),
                     ) {
-                        items(ui.availableCuisines, key = { "c-$it" }) { c ->
-                            FilterChip(selected = ui.selectedCuisine == c, onClick = { vm.toggleCuisineFilter(c) }, label = { Text(c) })
-                        }
                         items(ui.availableMethods, key = { "m-$it" }) { m ->
                             FilterChip(selected = ui.selectedMethod == m, onClick = { vm.toggleMethodFilter(m) }, label = { Text(m) })
                         }
@@ -308,6 +312,7 @@ fun DishesScreen(
                 )
             }
         }
+        } // [AI生成] 关闭左侧菜系栏 + 右侧内容的 Row
     }
 
     dropdownDish?.let { d ->
@@ -425,6 +430,45 @@ private fun LetterIndexBar(
                         onLetterSelected(letter)
                     },
             )
+        }
+    }
+}
+
+/**
+ * 左侧菜系一级分类栏。[AI生成]
+ *
+ * 竖向固定列表：全部(不筛) + 家常菜 + 八大菜系等；选中项高亮，右侧菜品只显示该菜系。
+ */
+@Composable
+private fun CuisineRail(selected: String?, onSelect: (String?) -> Unit) {
+    // 全部(null) 在最前，其后为 Cuisines.ALL(家常菜/川菜/…)。
+    val items: List<Pair<String, String?>> =
+        listOf("全部" to null) + com.sxdbsm.cookbook.domain.model.Cuisines.ALL.map { it to it }
+    Column(
+        modifier = Modifier
+            .width(60.dp)
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        items.forEach { (label, value) ->
+            val isSel = selected == value
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onSelect(value) }
+                    .background(if (isSel) MaterialTheme.colorScheme.background else Color.Transparent)
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = if (isSel) FontWeight.SemiBold else FontWeight.Normal,
+                )
+            }
         }
     }
 }
