@@ -2096,5 +2096,897 @@
       "炒至翠绿断生加盐调味出锅。"
     ],
     "cuisine": "家常菜"
+  },
+  {
+    "code": "huiguorou",
+    "name": "回锅肉",
+    "method": "炒",
+    "cuisine": "川菜",
+    "description": "川菜家常：五花肉先煮后炒，豆瓣酱香、青椒爽口。",
+    "ingredients": [
+      {
+        "ingredient": "五花肉",
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
+      },
+      {
+        "ingredient": "青椒",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "豆瓣酱",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "大蒜",
+        "main": false,
+        "quantity": 3,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "五花肉整块加姜煮八分熟，切薄片。",
+      "热油下肉片煸出油、卷边盛出。",
+      "爆香蒜末下豆瓣酱炒出红油，倒回肉片。",
+      "下青椒块大火快炒，加生抽炒匀出锅。"
+    ]
+  },
+  {
+    "code": "yuxiang_qiezi",
+    "name": "鱼香茄子",
+    "method": "焖",
+    "cuisine": "川菜",
+    "description": "川菜家常：茄子软糯，鱼香汁酸甜微辣。",
+    "ingredients": [
+      {
+        "ingredient": "茄子",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "猪瘦肉",
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
+      },
+      {
+        "ingredient": "豆瓣酱",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "醋",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "白糖",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "大蒜",
+        "main": false,
+        "quantity": 3,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "茄子切条煎软盛出。",
+      "爆香蒜末下肉末炒散，加豆瓣酱炒出红油。",
+      "倒回茄子，加醋、白糖和少许水焖 3 分钟收汁出锅。"
+    ]
+  },
+  {
+    "code": "gongbao_jiding",
+    "name": "宫保鸡丁",
+    "method": "炒",
+    "cuisine": "川菜",
+    "description": "川菜家常：鸡丁滑嫩、花生香脆，糊辣酸甜。",
+    "ingredients": [
+      {
+        "ingredient": "鸡胸肉",
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
+      },
+      {
+        "ingredient": "黄瓜",
+        "main": true,
+        "quantity": 1,
+        "unit": "根"
+      },
+      {
+        "ingredient": "花生",
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
+      },
+      {
+        "ingredient": "辣椒",
+        "main": false,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "醋",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "鸡胸肉切丁加生抽腌 10 分钟，黄瓜切丁。",
+      "热油滑炒鸡丁至变色盛出。",
+      "爆香辣椒段，下鸡丁、黄瓜丁翻炒，加生抽醋炒匀，撒花生出锅。"
+    ]
+  },
+  {
+    "code": "shuizhu_roupian",
+    "name": "水煮肉片",
+    "method": "煮",
+    "cuisine": "川菜",
+    "description": "川菜家常：肉片嫩滑、白菜垫底，麻辣鲜香。",
+    "ingredients": [
+      {
+        "ingredient": "猪瘦肉",
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
+      },
+      {
+        "ingredient": "白菜",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "豆瓣酱",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "辣椒",
+        "main": false,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "猪瘦肉逆纹切片加生抽腌，白菜切段焯熟垫碗底。",
+      "热油下豆瓣酱炒出红油，加水烧开。",
+      "下肉片煮至变色，连汤浇在白菜上，撒辣椒段泼热油。"
+    ]
+  },
+  {
+    "code": "baiqie_ji",
+    "name": "白切鸡",
+    "method": "煮",
+    "cuisine": "粤菜",
+    "description": "粤菜家常：原味白切，皮爽肉滑蘸姜葱。",
+    "ingredients": [
+      {
+        "ingredient": "鸡腿",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "姜",
+        "main": false,
+        "quantity": 4,
+        "unit": "片"
+      },
+      {
+        "ingredient": "葱",
+        "main": false,
+        "quantity": 1,
+        "unit": "根"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "清水加姜葱盐烧开，下鸡腿浸煮 12 分钟。",
+      "关火焖 5 分钟，捞出过凉水。",
+      "斩块摆盘，配姜葱末蘸料即可。"
+    ]
+  },
+  {
+    "code": "haoyou_shengcai",
+    "name": "蚝油生菜",
+    "method": "炒",
+    "cuisine": "粤菜",
+    "description": "粤菜家常：生菜脆嫩，蚝油鲜香。",
+    "ingredients": [
+      {
+        "ingredient": "生菜",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "蚝油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "大蒜",
+        "main": false,
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "生菜掰大片洗净。",
+      "热油爆香蒜末，下生菜大火快炒。",
+      "淋蚝油炒匀断生出锅。"
+    ]
+  },
+  {
+    "code": "baizhuo_youcai",
+    "name": "白灼油菜",
+    "method": "煮",
+    "cuisine": "粤菜",
+    "description": "粤菜家常：白灼保鲜，淋蚝油生抽。",
+    "ingredients": [
+      {
+        "ingredient": "油菜",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "蚝油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "水开加少许油盐，下油菜焯 1 分钟捞出摆盘。",
+      "蚝油生抽调汁淋上，浇一勺热油即可。"
+    ]
+  },
+  {
+    "code": "tangcu_liyu",
+    "name": "糖醋鲤鱼",
+    "method": "焖",
+    "cuisine": "鲁菜",
+    "description": "鲁菜家常：外酥里嫩，糖醋酸甜。",
+    "ingredients": [
+      {
+        "ingredient": "鲤鱼",
+        "main": true,
+        "quantity": 1,
+        "unit": "条"
+      },
+      {
+        "ingredient": "白糖",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "醋",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "鲤鱼处理干净两面划刀，煎至两面金黄。",
+      "白糖醋生抽加水调成糖醋汁。",
+      "倒入糖醋汁焖至收汁裹匀出锅。"
+    ]
+  },
+  {
+    "code": "congbao_yangrou",
+    "name": "葱爆羊肉",
+    "method": "炒",
+    "cuisine": "鲁菜",
+    "description": "鲁菜家常：大葱爆羊肉，鲜香不膻。",
+    "ingredients": [
+      {
+        "ingredient": "羊肉",
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
+      },
+      {
+        "ingredient": "葱",
+        "main": true,
+        "quantity": 2,
+        "unit": "根"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "料酒",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "羊肉切薄片加料酒腌，葱切斜段。",
+      "大火热油下羊肉快速滑炒至变色。",
+      "下葱段，加生抽大火爆炒出锅。"
+    ]
+  },
+  {
+    "code": "culiu_tudousi",
+    "name": "醋溜土豆丝",
+    "method": "炒",
+    "cuisine": "鲁菜",
+    "description": "鲁菜家常：土豆丝爽脆，酸辣开胃。",
+    "ingredients": [
+      {
+        "ingredient": "土豆",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "辣椒",
+        "main": false,
+        "quantity": 1,
+        "unit": "个"
+      },
+      {
+        "ingredient": "醋",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "土豆切细丝泡水去淀粉，辣椒切丝。",
+      "热油下辣椒丝，倒土豆丝大火快炒。",
+      "淋醋保持脆爽，加盐炒匀出锅。"
+    ]
+  },
+  {
+    "code": "hongshao_rou",
+    "name": "红烧肉",
+    "method": "焖",
+    "cuisine": "苏菜",
+    "description": "本帮/苏式家常：肥而不腻，红亮咸甜。",
+    "ingredients": [
+      {
+        "ingredient": "五花肉",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "老抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "白糖",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "姜",
+        "main": false,
+        "quantity": 3,
+        "unit": "片"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "五花肉切块冷水焯去血沫。",
+      "热油炒糖色，下肉块翻炒上色。",
+      "加老抽生抽姜片和热水没过，小火焖 50 分钟收汁出锅。"
+    ]
+  },
+  {
+    "code": "qingdun_paigu",
+    "name": "清炖排骨",
+    "method": "炖",
+    "cuisine": "苏菜",
+    "description": "苏式家常：清汤炖排骨，原汁原味。",
+    "ingredients": [
+      {
+        "ingredient": "排骨",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "姜",
+        "main": false,
+        "quantity": 3,
+        "unit": "片"
+      },
+      {
+        "ingredient": "葱",
+        "main": false,
+        "quantity": 1,
+        "unit": "根"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "排骨焯水去血沫。",
+      "加姜片和清水烧开转小火炖 50 分钟。",
+      "加盐调味，撒葱花出锅。"
+    ]
+  },
+  {
+    "code": "tangcu_paigu",
+    "name": "糖醋排骨",
+    "method": "焖",
+    "cuisine": "苏菜",
+    "description": "苏式家常：酸甜裹汁，老少皆宜。",
+    "ingredients": [
+      {
+        "ingredient": "排骨",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "白糖",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "醋",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "老抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "排骨焯水后煎至微黄。",
+      "白糖醋老抽加水调汁倒入。",
+      "中小火焖至收汁发亮出锅。"
+    ]
+  },
+  {
+    "code": "xihu_cuyu",
+    "name": "西湖醋鱼",
+    "method": "煮",
+    "cuisine": "浙菜",
+    "description": "浙菜家常：鱼肉滑嫩，糖醋清鲜。",
+    "ingredients": [
+      {
+        "ingredient": "草鱼",
+        "main": true,
+        "quantity": 1,
+        "unit": "条"
+      },
+      {
+        "ingredient": "醋",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "白糖",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "姜",
+        "main": false,
+        "quantity": 3,
+        "unit": "片"
+      }
+    ],
+    "steps": [
+      "草鱼处理干净，加姜片水煮至断生捞出摆盘。",
+      "醋白糖生抽加少许煮鱼汤勾成糖醋汁。",
+      "糖醋汁浇在鱼身上即可。"
+    ]
+  },
+  {
+    "code": "youmen_jiaobai",
+    "name": "油焖茭白",
+    "method": "焖",
+    "cuisine": "浙菜",
+    "description": "浙菜家常：茭白鲜嫩，酱香微甜。",
+    "ingredients": [
+      {
+        "ingredient": "茭白",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "老抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "白糖",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "茭白去壳切滚刀块。",
+      "热油下茭白煸至微黄。",
+      "加老抽白糖和少许水焖 3 分钟收汁出锅。"
+    ]
+  },
+  {
+    "code": "nongjia_xiaochaorou",
+    "name": "农家小炒肉",
+    "method": "炒",
+    "cuisine": "湘菜",
+    "description": "湘菜家常：五花肉配青椒，咸鲜微辣下饭。",
+    "ingredients": [
+      {
+        "ingredient": "五花肉",
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
+      },
+      {
+        "ingredient": "青椒",
+        "main": true,
+        "quantity": 3,
+        "unit": "个"
+      },
+      {
+        "ingredient": "辣椒",
+        "main": false,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "豆瓣酱",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "大蒜",
+        "main": false,
+        "quantity": 3,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "五花肉切薄片，青椒辣椒切段。",
+      "热油下肉片煸出油，加豆瓣酱蒜末炒香。",
+      "下青椒辣椒大火快炒断生出锅。"
+    ]
+  },
+  {
+    "code": "lajiao_chaorou",
+    "name": "辣椒炒肉",
+    "method": "炒",
+    "cuisine": "湘菜",
+    "description": "湘菜家常：青椒瘦肉，鲜辣爽口。",
+    "ingredients": [
+      {
+        "ingredient": "青椒",
+        "main": true,
+        "quantity": 3,
+        "unit": "个"
+      },
+      {
+        "ingredient": "猪瘦肉",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "辣椒",
+        "main": false,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "大蒜",
+        "main": false,
+        "quantity": 2,
+        "unit": "瓣"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "猪瘦肉切丝加生抽腌，青椒辣椒切段。",
+      "热油滑炒肉丝至变色盛出。",
+      "爆香蒜末下青椒辣椒炒软，倒回肉丝加生抽炒匀出锅。"
+    ]
+  },
+  {
+    "code": "duojiao_zhengyu",
+    "name": "剁椒蒸鲈鱼",
+    "method": "蒸",
+    "cuisine": "湘菜",
+    "description": "湘菜家常：剁椒蒸鱼，鲜辣入味。",
+    "ingredients": [
+      {
+        "ingredient": "鲈鱼",
+        "main": true,
+        "quantity": 1,
+        "unit": "条"
+      },
+      {
+        "ingredient": "辣椒",
+        "main": false,
+        "quantity": 3,
+        "unit": "个"
+      },
+      {
+        "ingredient": "蒸鱼豉油",
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "姜",
+        "main": false,
+        "quantity": 3,
+        "unit": "片"
+      }
+    ],
+    "steps": [
+      "鲈鱼处理干净铺姜片，辣椒剁碎铺鱼身。",
+      "上锅大火蒸 8 分钟。",
+      "淋蒸鱼豉油和热油即可。"
+    ]
+  },
+  {
+    "code": "jiangcong_cheng",
+    "name": "姜葱炒蛏子",
+    "method": "炒",
+    "cuisine": "闽菜",
+    "description": "闽菜家常：姜葱爆蛏，鲜香十足。",
+    "ingredients": [
+      {
+        "ingredient": "蛏子",
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
+      },
+      {
+        "ingredient": "姜",
+        "main": false,
+        "quantity": 4,
+        "unit": "片"
+      },
+      {
+        "ingredient": "葱",
+        "main": true,
+        "quantity": 1,
+        "unit": "根"
+      },
+      {
+        "ingredient": "料酒",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "蛏子吐沙洗净，葱切段。",
+      "热油爆香姜片，下蛏子大火翻炒。",
+      "淋料酒，下葱段炒至开口出锅。"
+    ]
+  },
+  {
+    "code": "huotui_dun_donggua",
+    "name": "火腿炖冬瓜",
+    "method": "炖",
+    "cuisine": "徽菜",
+    "description": "徽式家常：火腿吊鲜，冬瓜清甜。",
+    "ingredients": [
+      {
+        "ingredient": "火腿",
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
+      },
+      {
+        "ingredient": "冬瓜",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      },
+      {
+        "ingredient": "姜",
+        "main": false,
+        "quantity": 2,
+        "unit": "片"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "火腿切片，冬瓜去皮切块。",
+      "加姜片和清水，下火腿烧开。",
+      "下冬瓜炖 10 分钟至透，加盐调味出锅。"
+    ]
   }
 ]
