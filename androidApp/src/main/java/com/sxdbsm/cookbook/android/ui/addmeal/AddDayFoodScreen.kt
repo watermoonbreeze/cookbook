@@ -63,7 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
+import com.sxdbsm.cookbook.android.ui.component.MealDishGrid
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
@@ -438,36 +438,20 @@ private fun MealBlockCard(
                     }
                 }
             } else {
-                // [AI修改] F2/F3：菜品改一行4个的网格平铺(不横滑)；含主食置顶+"主食"角标；点菜进详情，右上角×移除。
-                val ordered = block.dishes.sortedByDescending {
-                    com.sxdbsm.cookbook.domain.StapleFood.isStaple(it.name, it.mainIngredientNames)
-                }
+                // [AI修改] F2/F3：复用 MealDishGrid(4列+主食置顶+角标+点菜进详情)；右上角×移除由 overlay slot 注入。
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    ordered.chunked(4).forEach { rowDishes ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                            rowDishes.forEach { dish ->
-                                Box(modifier = Modifier.weight(1f)) {
-                                    DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
-                                    if (com.sxdbsm.cookbook.domain.StapleFood.isStaple(dish.name, dish.mainIngredientNames)) {
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.primary,
-                                            shape = MaterialTheme.shapes.small,
-                                            modifier = Modifier.align(Alignment.TopStart).padding(2.dp),
-                                        ) {
-                                            Text("主食", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp))
-                                        }
-                                    }
-                                    IconButton(
-                                        onClick = { onRemoveDish(dish.id) },
-                                        modifier = Modifier.align(Alignment.TopEnd).size(24.dp),
-                                    ) {
-                                        Icon(Icons.Outlined.Close, contentDescription = "移除菜品", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.error)
-                                    }
-                                }
+                    MealDishGrid(
+                        dishes = block.dishes,
+                        onDishClick = { dish -> onOpenDish(dish.id) },
+                        cellOverlay = { dish ->
+                            IconButton(
+                                onClick = { onRemoveDish(dish.id) },
+                                modifier = Modifier.align(Alignment.TopEnd).size(24.dp),
+                            ) {
+                                Icon(Icons.Outlined.Close, contentDescription = "移除菜品", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.error)
                             }
-                            repeat(4 - rowDishes.size) { Spacer(Modifier.weight(1f)) }
-                        }
-                    }
+                        },
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = onAddDish) {
                             Icon(Icons.Outlined.Add, contentDescription = null)

@@ -129,7 +129,7 @@ fun ShoppingListScreen(
                         }
                         if (purchase.isNotEmpty()) {
                             // [AI生成] 需采购分组带"全选"：勾选后本组全选/取消。
-                            val allChecked = purchase.all { it.ingredientName in state.checked }
+                            val allChecked = purchase.all { vm.keyOf(it) in state.checked }
                             item {
                                 SectionHeader(
                                     "需采购（未入库）", purchase.size,
@@ -137,20 +137,21 @@ fun ShoppingListScreen(
                                     onSelectAll = { vm.toggleSelectAll(ShoppingReason.PURCHASE) },
                                 )
                             }
-                            items(purchase, key = { "p_${it.ingredientName}" }) { item ->
+                            items(purchase, key = { "p_${vm.keyOf(it)}" }) { item ->
+                                val k = vm.keyOf(item)
                                 ShoppingRow(
                                     item = item,
-                                    checked = item.ingredientName in state.checked,
-                                    servings = state.servings[item.ingredientName] ?: 1,
-                                    stocked = item.ingredientName in state.stocked,
-                                    onToggle = { vm.toggleChecked(item.ingredientName) },
-                                    onServingDelta = { d -> vm.changeServing(item.ingredientName, d) },
+                                    checked = k in state.checked,
+                                    servings = state.servings[k] ?: 1,
+                                    stocked = k in state.stocked,
+                                    onToggle = { vm.toggleChecked(k) },
+                                    onServingDelta = { d -> vm.changeServing(k, d) },
                                 )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
                         }
                         if (shortage.isNotEmpty()) {
-                            val allChecked = shortage.all { it.ingredientName in state.checked }
+                            val allChecked = shortage.all { vm.keyOf(it) in state.checked }
                             item {
                                 SectionHeader(
                                     "库存不足（缺料）", shortage.size,
@@ -158,14 +159,15 @@ fun ShoppingListScreen(
                                     onSelectAll = { vm.toggleSelectAll(ShoppingReason.SHORTAGE) },
                                 )
                             }
-                            items(shortage, key = { "s_${it.ingredientName}" }) { item ->
+                            items(shortage, key = { "s_${vm.keyOf(it)}" }) { item ->
+                                val k = vm.keyOf(item)
                                 ShoppingRow(
                                     item = item,
-                                    checked = item.ingredientName in state.checked,
-                                    servings = state.servings[item.ingredientName] ?: 1,
-                                    stocked = item.ingredientName in state.stocked,
-                                    onToggle = { vm.toggleChecked(item.ingredientName) },
-                                    onServingDelta = { d -> vm.changeServing(item.ingredientName, d) },
+                                    checked = k in state.checked,
+                                    servings = state.servings[k] ?: 1,
+                                    stocked = k in state.stocked,
+                                    onToggle = { vm.toggleChecked(k) },
+                                    onServingDelta = { d -> vm.changeServing(k, d) },
                                 )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant)
                             }

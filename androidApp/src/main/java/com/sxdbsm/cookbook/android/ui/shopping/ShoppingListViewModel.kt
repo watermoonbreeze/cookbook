@@ -30,17 +30,17 @@ class ShoppingListViewModel(
     data class UiState(
         val loading: Boolean = true,
         val items: List<ShoppingItem> = emptyList(),
-        val checked: Set<String> = emptySet(), // 已勾选的食材名(前端临时态，不落库)
-        val servings: Map<String, Int> = emptyMap(), // [AI生成] 各项计划采购份数(名→份数)，缺省视为1
-        val stocked: Set<String> = emptySet(), // [AI生成] 本次已入库的项(划掉灰显)
+        val checked: Set<String> = emptySet(), // [AI修改] 已勾选项的 key(按 keyOf:有 id 用 id、否则名)，防同名多 id 串。
+        val servings: Map<String, Int> = emptyMap(), // [AI修改] 各项计划采购份数(key→份数)，缺省视为1
+        val stocked: Set<String> = emptySet(), // [AI修改] 本次已入库项的 key(划掉灰显)
         val toast: String? = null, // [AI生成] 一次性提示(入库结果/请先勾选)
     )
 
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
 
-    /** 取某项的采购份数(默认1)。[AI生成] */
-    fun servingOf(name: String): Int = _state.value.servings[name] ?: 1
+    /** 采购项的稳定标识：有食材 id 用 id、否则用名——避免"同名多 id"的项在勾选/份数/入库上互相串。[AI生成] */
+    fun keyOf(item: ShoppingItem): String = item.ingredientId?.let { "id:$it" } ?: "name:${item.ingredientName}"
 
     init {
         refresh()
@@ -52,32 +52,32 @@ class ShoppingListViewModel(
             val items = repo.aggregate(DateTime.today())
             // [AI修改] N1：份数默认按该食材在未来餐食中的实际所需(mealCount)预填，用户可再调，而非都默认1。
             // 刷新=重新拉取并重置所有临时态(勾选/已入库/提示)。
-            val servings = items.associate { it.ingredientName to it.mealCount.coerceAtLeast(1) }
+            val servings = items.associate { keyOf(it) to it.mealCount.coerceAtLeast(1) }
             _state.value = UiState(loading = false, items = items, servings = servings)
         }
     }
 
     /** 勾选/取消某项（买到了打勾）。[AI生成] */
-    fun toggleChecked(name: String) {
+    fun toggleChecked(key: String) {
         val cur = _state.value.checked
-        _state.value = _state.value.copy(checked = if (name in cur) cur - name else cur + name)
+        _state.value = _state.value.copy(checked = if (key in cur) cur - key else cur + key)
     }
 
     /** 全选/取消全选某组(按 reason)。[AI生成] */
     fun toggleSelectAll(reason: ShoppingReason) {
-        val groupNames = _state.value.items.filter { it.reason == reason }.map { it.ingredientName }.toSet()
+        val groupKeys = _state.value.items.filter { it.reason == reason }.map { keyOf(it) }.toSet()
         val cur = _state.value.checked
-        val allChecked = groupNames.isNotEmpty() && groupNames.all { it in cur }
+        val allChecked = groupKeys.isNotEmpty() && groupKeys.all { it in cur }
         _state.value = _state.value.copy(
-            checked = if (allChecked) cur - groupNames else cur + groupNames,
+            checked = if (allChecked) cur - groupKeys else cur + groupKeys,
         )
     }
 
     /** 调整某项份数(±，最小1)。[AI生成] */
-    fun changeServing(name: String, delta: Int) {
-        val cur = _state.value.servings[name] ?: 1
+    fun changeServing(key: String, delta: Int) {
+        val cur = _state.value.servings[key] ?: 1
         val next = (cur + delta).coerceAtLeast(1)
-        _state.value = _state.value.copy(servings = _state.value.servings + (name to next))
+        _state.value = _state.value.copy(servings = _state.value.servings + (key to next))
     }
 
     private var stocking = false // [AI生成] 防止入库进行中重复点击导致并发累加/计数错乱。
@@ -90,15 +90,15 @@ class ShoppingListViewModel(
             _state.value = _state.value.copy(toast = "请先勾选要入库的食材")
             return
         }
-        // [AI修改] 入库开始即固化目标(名/份数)，全程用快照，避免挂起期间 state 变化导致划掉项与实际入库项不一致。
-        val targets = _state.value.items.filter { it.ingredientName in checked && it.ingredientId != null }
+        // [AI修改] 入库开始即固化目标(key/份数)，全程用快照，避免挂起期间 state 变化导致划掉项与实际入库项不一致。
+        val targets = _state.value.items.filter { keyOf(it) in checked && it.ingredientId != null }
         val servingsSnapshot = _state.value.servings
-        val targetNames = targets.map { it.ingredientName }.toSet()
+        val targetKeys = targets.map { keyOf(it) }.toSet()
         stocking = true
         viewModelScope.launch {
             var ok = 0
             targets.forEach { item ->
-                runCatching { pantryRepo.addServings(item.ingredientId!!, servingsSnapshot[item.ingredientName] ?: 1) }
+                runCatching { pantryRepo.addServings(item.ingredientId!!, servingsSnapshot[keyOf(item)] ?: 1) }
                     .onSuccess { ok++ }
             }
             val skipped = checked.size - targets.size
@@ -107,8 +107,8 @@ class ShoppingListViewModel(
                 if (skipped > 0) append("，$skipped 项未入库(食材已失效或已刷新)")
             }
             _state.value = _state.value.copy(
-                stocked = _state.value.stocked + targetNames,
-                checked = _state.value.checked - targetNames,
+                stocked = _state.value.stocked + targetKeys,
+                checked = _state.value.checked - targetKeys,
                 toast = msg,
             )
             stocking = false

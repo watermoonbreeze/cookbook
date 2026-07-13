@@ -151,20 +151,27 @@ private fun MealSectionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
-            // [AI修改] F2/F3：菜品改一行4个的网格平铺(不横滑)；含主食的菜置顶并带"主食"角标。
-            val ordered = section.dishes.sortedByDescending {
-                com.sxdbsm.cookbook.domain.StapleFood.isStaple(it.name, it.mainIngredientNames)
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ordered.chunked(4).forEach { rowDishes ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                        rowDishes.forEach { dish ->
-                            Box(modifier = Modifier.weight(1f)) { MealDishCell(dish = dish, onDishClick = onDishClick) }
-                        }
-                        repeat(4 - rowDishes.size) { Spacer(Modifier.weight(1f)) }
+            // [AI修改] F2/F3：复用 MealDishGrid(4列网格+主食置顶+角标)；缺料/采购半透明+下方标注由 slot 注入。
+            MealDishGrid(
+                dishes = section.dishes,
+                onDishClick = { dish -> onDishClick?.invoke(dish) },
+                cardAlpha = { dish ->
+                    val lack = dish.shortageIngredients.isNotEmpty() || dish.purchaseIngredients.isNotEmpty()
+                    if (lack) 0.4f else 1f
+                },
+                cellBelow = { dish ->
+                    val purchase = dish.purchaseIngredients.distinct()
+                    val shortage = dish.shortageIngredients.distinct()
+                    if (purchase.isNotEmpty()) {
+                        Spacer(Modifier.height(2.dp))
+                        LackText("采：${purchase.joinToString("、")}")
                     }
-                }
-            }
+                    if (shortage.isNotEmpty()) {
+                        Spacer(Modifier.height(2.dp))
+                        LackText("缺：${shortage.joinToString("、")}")
+                    }
+                },
+            )
             // [AI修改] N8：菜品下方只显示本餐**实际包含**的营养素/分类，不做"建议再加"推荐(避免不准确)。
             val nutri = com.sxdbsm.cookbook.domain.FoodGroup.nutritionSummary(groups)
             if (nutri.isNotEmpty()) {
@@ -175,51 +182,6 @@ private fun MealSectionRow(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-        }
-    }
-}
-
-/**
- * 餐次菜品格子(网格单元)。[AI生成]
- *
- * 卡片 + 主食角标 + 缺料/采购标注；点击进入菜品详情。
- */
-@Composable
-private fun MealDishCell(dish: DishMini, onDishClick: ((DishMini) -> Unit)?) {
-    val shortage = dish.shortageIngredients.distinct()
-    val purchase = dish.purchaseIngredients.distinct()
-    val lack = shortage.isNotEmpty() || purchase.isNotEmpty()
-    val isStaple = com.sxdbsm.cookbook.domain.StapleFood.isStaple(dish.name, dish.mainIngredientNames)
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Box {
-            DishMiniCard(
-                dish = dish,
-                onClick = { onDishClick?.invoke(dish) },
-                modifier = if (lack) Modifier.alpha(0.4f) else Modifier,
-            )
-            if (isStaple) {
-                // [AI生成] 主食角标：含主食的菜(如煮玉米)左上角标"主食"。
-                Surface(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier.align(Alignment.TopStart).padding(2.dp),
-                ) {
-                    Text(
-                        "主食",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                    )
-                }
-            }
-        }
-        if (purchase.isNotEmpty()) {
-            Spacer(Modifier.height(2.dp))
-            LackText("采：${purchase.joinToString("、")}")
-        }
-        if (shortage.isNotEmpty()) {
-            Spacer(Modifier.height(2.dp))
-            LackText("缺：${shortage.joinToString("、")}")
         }
     }
 }
