@@ -26,8 +26,10 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.DishRow
+import com.sxdbsm.cookbook.android.ui.component.TagChip
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SectionHeader
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -104,7 +106,15 @@ fun DishPickerScreen(
                         navigationIconContentColor = MaterialTheme.colorScheme.secondary,
                         actionIconContentColor = MaterialTheme.colorScheme.secondary,
                     ), // [AI修改] 菜品选择弹窗顶栏按暖杏规范使用背景一体化样式。
-                    title = { Text(title, fontWeight = FontWeight.SemiBold) },
+                    // [AI修改] N6：搜索框融入标题栏(标题栏放下 添加到餐次·搜索框·完成)；原搜索框位置改放已选菜品。
+                    title = {
+                        AppSearchField(
+                            value = state.keyword,
+                            onValueChange = vm::setKeyword,
+                            placeholder = if (title.isBlank()) "搜索菜品" else "$title·搜索菜品",
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = onDismiss) {
                             Icon(Icons.Outlined.Close, contentDescription = "关闭")
@@ -125,17 +135,10 @@ fun DishPickerScreen(
                     },
                 )
 
-                OutlinedTextField(
-                    value = state.keyword,
-                    onValueChange = vm::setKeyword,
-                    placeholder = { Text("搜索菜名 / 标签 / 食材...") },
-                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                    singleLine = true,
-                    shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                )
+                // [AI修改] N6：原搜索框位置改为展示"已选菜品"(第一行菜名、第二行标签，横向滚动)。
+                if (multiSelect && state.selected.isNotEmpty()) {
+                    SelectedDishesBar(selected = state.selected, onRemove = { vm.toggle(it, true) })
+                }
 
                 if (showRecentChips && state.recent.isNotEmpty() && state.keyword.isBlank()) {
                     SectionHeader(title = "最近常吃", compact = true)
@@ -226,6 +229,44 @@ fun DishPickerScreen(
                             Icon(Icons.Outlined.Add, contentDescription = null)
                             Spacer(Modifier.width(4.dp))
                             Text("添加菜品", color = MaterialTheme.colorScheme.tertiary)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 已选菜品横滑条。[AI生成] N6
+ *
+ * 每个已选菜一列：第一行菜名、第二行标签；点右上角×取消选择；整体横向滚动。
+ */
+@Composable
+private fun SelectedDishesBar(selected: List<DishMini>, onRemove: (DishMini) -> Unit) {
+    Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            selected.forEach { dish ->
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = MaterialTheme.shapes.small,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 8.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)) {
+                        Column {
+                            Text(dish.name, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, maxLines = 1)
+                            if (dish.tags.isNotEmpty()) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    dish.tags.take(3).forEach { tag -> TagChip(tag) }
+                                }
+                            }
+                        }
+                        IconButton(onClick = { onRemove(dish) }, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Outlined.Close, contentDescription = "取消选择", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
                     }
                 }
