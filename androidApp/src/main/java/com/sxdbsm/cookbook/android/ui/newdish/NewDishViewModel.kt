@@ -68,6 +68,7 @@ class NewDishViewModel(
 
     private companion object {
         private const val TAG = "NewDishEdit" // [AI生成] 菜品编辑链路统一日志 Tag，方便 logcat 过滤排查。
+        private const val DEFAULT_GRAMS = 100 // [AI生成] #55 新加食材默认剂量(克)。
     }
 
     init {
@@ -283,15 +284,38 @@ class NewDishViewModel(
      */
     fun addIngredient(ingredient: Ingredient) {
         if (_state.value.ingredients.any { it.ingredient.id == ingredient.id }) return
+        // [AI修改] #55：新加食材默认剂量 100 克(克为单位)，用户可用 −N+ 调整(±5，最小0)。
+        val gram = gramUnit()
         _state.value = _state.value.copy(
             ingredients = _state.value.ingredients + DishIngredient(
                 ingredient = ingredient,
                 isMain = false, // [AI修改] 当前版本暂不暴露/保存“主料”语义，后续再扩展原料/调味料分类。
-                unitName = ingredient.defaultUnitName,
-                unitId = ingredient.defaultUnitId,
+                quantity = DEFAULT_GRAMS.toDouble(),
+                unitName = gram?.name ?: "克",
+                unitId = gram?.id ?: ingredient.defaultUnitId,
             ),
         )
     }
+
+    /** 调整某食材克数(±，最小0)。[AI生成] #55 剂量 −N+，步进 5g。 */
+    fun changeIngredientGrams(ingredientId: Long, delta: Int) {
+        val gram = gramUnit()
+        _state.value = _state.value.copy(
+            ingredients = _state.value.ingredients.map {
+                if (it.ingredient.id == ingredientId) {
+                    val cur = it.quantity?.toInt() ?: DEFAULT_GRAMS
+                    val next = (cur + delta).coerceAtLeast(0)
+                    it.copy(quantity = next.toDouble(), unitName = gram?.name ?: "克", unitId = gram?.id ?: it.unitId)
+                } else {
+                    it
+                }
+            },
+        )
+    }
+
+    /** 取"克"单位(用于剂量)。[AI生成] */
+    private fun gramUnit(): com.sxdbsm.cookbook.domain.model.MeasurementUnit? =
+        _state.value.availableUnits.firstOrNull { it.name == "克" }
 
     /**
      * 切换某个食材是否为主料。[AI修改]

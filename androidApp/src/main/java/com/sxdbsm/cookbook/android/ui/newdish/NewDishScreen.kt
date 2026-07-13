@@ -271,11 +271,13 @@ fun NewDishScreen(
                                     .padding(horizontal = 12.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(ing.ingredient.name, modifier = Modifier.weight(1f))
-                                val qty = ing.quantity?.let { "$it ${ing.unitName}" } ?: "适量"
-                                Text(qty, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Spacer(Modifier.width(8.dp))
-                                // [AI修改] 新增/编辑页食材列表不展示“主料”标识，保留内部数据用于排序或后续业务。
+                                // [AI修改] N4：展示"食材名-二级名称(别名)"。
+                                val nameText = if (ing.ingredient.alias.isBlank()) ing.ingredient.name else "${ing.ingredient.name}-${ing.ingredient.alias}"
+                                Text(nameText, modifier = Modifier.weight(1f))
+                                // [AI修改] #55：克数剂量 −N+(±5，最小0)。
+                                val grams = ing.quantity?.toInt() ?: 100
+                                GramStepper(grams = grams, onDelta = { d -> vm.changeIngredientGrams(ing.ingredient.id, d) })
+                                Spacer(Modifier.width(4.dp))
                                 IconButton(onClick = { vm.removeIngredient(ing.ingredient.id) }) {
                                     Icon(Icons.Outlined.Close, contentDescription = "移除", modifier = Modifier.size(16.dp))
                                 }
@@ -448,6 +450,39 @@ fun NewDishScreen(
             },
             onDismiss = { cookingMethodDialogOpen = false },
         )
+    }
+}
+
+/**
+ * 食材克数步进器 −N+。[AI生成]
+ *
+ * #55：每味食材剂量以克为单位，±5g，最小 0。
+ */
+@Composable
+private fun GramStepper(grams: Int, onDelta: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        GramBtn("−") { onDelta(-5) }
+        Text(
+            "$grams g",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 6.dp),
+        )
+        GramBtn("＋") { onDelta(5) }
+    }
+}
+
+@Composable
+private fun GramBtn(label: String, onClick: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.size(28.dp),
+        onClick = onClick,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+        }
     }
 }
 
