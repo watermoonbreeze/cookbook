@@ -142,28 +142,17 @@ private fun MealSectionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(section.dishes, key = { it.id }) { dish ->
-                    val shortage = dish.shortageIngredients.distinct()
-                    val purchase = dish.purchaseIngredients.distinct()
-                    val lack = shortage.isNotEmpty() || purchase.isNotEmpty()
-                    // [AI生成] 缺料(份数不够)/采购(不在库)的菜半透明灰显 + 下方标注，加份数/入库后自动恢复。
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
-                        DishMiniCard(
-                            dish = dish,
-                            onClick = { onDishClick?.invoke(dish) },
-                            modifier = if (lack) Modifier.alpha(0.4f) else Modifier,
-                        )
-                        if (purchase.isNotEmpty()) {
-                            Spacer(Modifier.height(2.dp))
-                            LackText("采：${purchase.joinToString("、")}")
+            // [AI修改] F2/F3：菜品改一行4个的网格平铺(不横滑)；含主食的菜置顶并带"主食"角标。
+            val ordered = section.dishes.sortedByDescending {
+                com.sxdbsm.cookbook.domain.StapleFood.isStaple(it.name, it.mainIngredientNames)
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                ordered.chunked(4).forEach { rowDishes ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        rowDishes.forEach { dish ->
+                            Box(modifier = Modifier.weight(1f)) { MealDishCell(dish = dish, onDishClick = onDishClick) }
                         }
-                        if (shortage.isNotEmpty()) {
-                            Spacer(Modifier.height(2.dp))
-                            LackText("缺：${shortage.joinToString("、")}")
-                        }
+                        repeat(4 - rowDishes.size) { Spacer(Modifier.weight(1f)) }
                     }
                 }
             }
@@ -171,7 +160,52 @@ private fun MealSectionRow(
     }
 }
 
-/** 缺料/采购小标签(80dp 卡片下方，居中省略)。[AI生成] */
+/**
+ * 餐次菜品格子(网格单元)。[AI生成]
+ *
+ * 卡片 + 主食角标 + 缺料/采购标注；点击进入菜品详情。
+ */
+@Composable
+private fun MealDishCell(dish: DishMini, onDishClick: ((DishMini) -> Unit)?) {
+    val shortage = dish.shortageIngredients.distinct()
+    val purchase = dish.purchaseIngredients.distinct()
+    val lack = shortage.isNotEmpty() || purchase.isNotEmpty()
+    val isStaple = com.sxdbsm.cookbook.domain.StapleFood.isStaple(dish.name, dish.mainIngredientNames)
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Box {
+            DishMiniCard(
+                dish = dish,
+                onClick = { onDishClick?.invoke(dish) },
+                modifier = if (lack) Modifier.alpha(0.4f) else Modifier,
+            )
+            if (isStaple) {
+                // [AI生成] 主食角标：含主食的菜(如煮玉米)左上角标"主食"。
+                Surface(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.align(Alignment.TopStart).padding(2.dp),
+                ) {
+                    Text(
+                        "主食",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                    )
+                }
+            }
+        }
+        if (purchase.isNotEmpty()) {
+            Spacer(Modifier.height(2.dp))
+            LackText("采：${purchase.joinToString("、")}")
+        }
+        if (shortage.isNotEmpty()) {
+            Spacer(Modifier.height(2.dp))
+            LackText("缺：${shortage.joinToString("、")}")
+        }
+    }
+}
+
+/** 缺料/采购小标签(卡片下方，居中省略)。[AI生成] */
 @Composable
 private fun LackText(text: String) {
     Text(

@@ -85,6 +85,7 @@ import org.koin.androidx.compose.koinViewModel
 fun AddDayFoodScreen(
     onBack: () -> Unit,
     onAddNewDish: () -> Unit,
+    onOpenDish: (Long) -> Unit = {}, // [AI生成] F1：点餐次里的菜进详情
     editDate: LocalDate? = null,
     createdDishId: Long? = null,
     presetDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐"选它"带入的菜品(从首页进入时新建整餐)。
@@ -219,6 +220,7 @@ fun AddDayFoodScreen(
                         pickerOpen = true
                     },
                     onRemoveDish = { dishId -> vm.removeDish(block.id, dishId) },
+                    onOpenDish = onOpenDish, // [AI生成] F1：点菜进详情
                     onNoteChange = { vm.setNote(block.id, it) },
                     onRemoveBlock = { vm.removeMealBlock(block.id) },
                     onAiRecommend = { // [AI生成] 从该餐次块进入 AI 推荐，回传后加入本块。
@@ -342,6 +344,7 @@ private fun MealBlockCard(
     onPickTime: () -> Unit,
     onAddDish: () -> Unit,
     onRemoveDish: (Long) -> Unit,
+    onOpenDish: (Long) -> Unit, // [AI生成] F1：点菜品进详情
     onNoteChange: (String) -> Unit,
     onRemoveBlock: () -> Unit,
     onOpenCombos: () -> Unit,
@@ -413,33 +416,45 @@ private fun MealBlockCard(
                     }
                 }
             } else {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                ) {
-                    block.dishes.forEach { dish ->
-                        Box {
-                            DishMiniCard(dish = dish)
-                            IconButton(
-                                onClick = { onRemoveDish(dish.id) },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .size(24.dp),
-                            ) {
-                                Icon(
-                                    Icons.Outlined.Close,
-                                    contentDescription = "移除菜品",
-                                    modifier = Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.error,
-                                )
+                // [AI修改] F2/F3：菜品改一行4个的网格平铺(不横滑)；含主食置顶+"主食"角标；点菜进详情，右上角×移除。
+                val ordered = block.dishes.sortedByDescending {
+                    com.sxdbsm.cookbook.domain.StapleFood.isStaple(it.name, it.mainIngredientNames)
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ordered.chunked(4).forEach { rowDishes ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            rowDishes.forEach { dish ->
+                                Box(modifier = Modifier.weight(1f)) {
+                                    DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
+                                    if (com.sxdbsm.cookbook.domain.StapleFood.isStaple(dish.name, dish.mainIngredientNames)) {
+                                        Surface(
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = MaterialTheme.shapes.small,
+                                            modifier = Modifier.align(Alignment.TopStart).padding(2.dp),
+                                        ) {
+                                            Text("主食", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp))
+                                        }
+                                    }
+                                    IconButton(
+                                        onClick = { onRemoveDish(dish.id) },
+                                        modifier = Modifier.align(Alignment.TopEnd).size(24.dp),
+                                    ) {
+                                        Icon(Icons.Outlined.Close, contentDescription = "移除菜品", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.error)
+                                    }
+                                }
                             }
+                            repeat(4 - rowDishes.size) { Spacer(Modifier.weight(1f)) }
                         }
                     }
-                    TextButton(onClick = onAddDish) {
-                        Icon(Icons.Outlined.Add, contentDescription = null)
-                    }
-                    TextButton(onClick = onAiRecommend) { // [AI生成] 餐次块内 AI 推荐入口。
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = "AI 推荐")
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = onAddDish) {
+                            Icon(Icons.Outlined.Add, contentDescription = null)
+                            Text("添加菜品")
+                        }
+                        TextButton(onClick = onAiRecommend) { // [AI生成] 餐次块内 AI 推荐入口。
+                            Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
+                            Text("AI 推荐")
+                        }
                     }
                 }
                 Row(

@@ -216,6 +216,7 @@ fun MainScaffold(
                         AppLogger.d("MealFlow", "nav from addmeal to newdish") // [AI生成] 记录从添加餐食进入新建菜品。
                         nav.navigate(Routes.newDish())
                     },
+                    onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) }, // [AI生成] F1：餐次里点菜进详情
                     editDate = date,
                     presetDishIds = presetDishIds,
                     onOpenAiForBlock = { nav.navigate(Routes.aiRecommendForMeal()) }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。
