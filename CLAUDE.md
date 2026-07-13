@@ -60,6 +60,10 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - Compose：`LaunchedEffect` 依赖内容变化时 key 用**整个 data 对象**（非仅 `id`，否则同 id 内容变不重跑→数据陈旧）；冷流（`observeFlag` 等）别在 Composable body 裸调 `collectAsState`，用 `remember` 包或进 VM `stateIn`（否则每次重组新建订阅）。
 - LazyColumn 手工算 `animateScrollToItem` 偏移（字母索引等）：新增/条件插入任一 item 必须同步偏移量**并**纳入 `remember` key，否则跳转偏位。
 - 派生逻辑别依赖内部 `DateTime.today()`（否则固定日期单测测不了）：把 today 提为参数，生产传 `DateTime.today()`。
+- `DishMini` 有一堆默认空字段（`mainIngredientNames` 等）：用某字段前先 grep 确认真被赋值——`mainIngredientNames` 曾在 `buildDishMinis`/`buildDishesByMealRecord` 都没填、恒空，导致依赖它的分类图标/主食判定/主料副文本静默失效。
+- Material3 版本为 **1.1.2，无 `SelectableDates` API**（1.2.0+ 才有）：DatePicker 要禁选某些日期，改在**确认回调**里校验+提示，别用 `rememberDatePickerState(selectableDates=)`（编译不过）。
+- 可复用组件的"能力显隐"由**回调是否传入**决定（如 `IngredientDetailSheet` 编辑区），别在组件内用 `!selectionMode` 等 mode 布尔硬编码，否则换场景要复用时被挡。
+- 多入口共享一个 ViewModel（新增/编辑/复制）：每个入口用**独立一次性守卫**（如 `copyConfigured`），别共用一个 `configured`，否则被 `init` 默认 configure 抢跑 `if(configured)return` 吞掉；"改日期=移动删旧"只在真编辑既有日期(loadedFromDate!=null)时触发。
 
 ## 技术栈
 
