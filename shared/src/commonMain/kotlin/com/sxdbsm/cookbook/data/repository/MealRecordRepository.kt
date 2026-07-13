@@ -403,10 +403,17 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         } else {
             q.selectMainIngredientNamesByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.ingredient_name })
         }
+        // [AI修改] 多烹饪方式关联(批量)：餐食卡与列表口径一致，之前只回退单个 cooking_method_id 会丢多方式。
+        val methodsByDish = if (dishIds.isEmpty()) {
+            emptyMap()
+        } else {
+            q.selectCookingMethodsByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.name })
+        }
         val flags = pantryCardFlags() // [AI生成] 派生：每道菜在此餐次的缺料(份数不够)+采购(主料不在库)
         return rows.groupBy { it.meal_record_id }.mapValues { entry ->
             entry.value.map { row ->
                 val key = MealDishKey(row.meal_record_id, row.id)
+                val methods = methodsByDish[row.id].orEmpty().ifEmpty { listOfNotNull(row.cooking_method_id?.let { cookingMethodNames[it] }) }
                 DishMini(
                     id = row.id,
                     name = row.name,
@@ -415,7 +422,10 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     tags = tagsByDish[row.id].orEmpty(),
                     preference = row.preference.toInt(),
                     mainIngredientNames = mainNamesByDish[row.id].orEmpty(),
-                    cookingMethodName = row.cooking_method_id?.let { cookingMethodNames[it] },
+                    cookingMethodName = methods.firstOrNull(),
+                    cookingMethodNames = methods,
+                    source = row.source,
+                    cuisine = row.cuisine, // [AI修改] 补齐 cuisine/source，餐食卡 DishMini 字段与列表一致
                     shortageIngredients = flags.shortage[key].orEmpty(),
                     purchaseIngredients = flags.purchase[key].orEmpty(),
                 )

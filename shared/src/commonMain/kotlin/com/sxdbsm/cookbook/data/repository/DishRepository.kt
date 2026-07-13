@@ -49,7 +49,8 @@ class DishRepository(private val db: CookbookDatabase) {
         val trimmed = name.trim()
         if (trimmed.isBlank()) return@withContext null
         q.insertCookingMethod(trimmed, "user", DateTime.nowEpochSeconds())
-        q.selectAllCookingMethods().executeAsList().firstOrNull { it.name == trimmed }?.id
+        // [AI修改] 按名精确查 id，替代全表拉取+内存 firstOrNull。
+        q.selectCookingMethodIdByName(trimmed).executeAsOneOrNull()
     }
 
     /** 批量确保烹饪方式字典存在并返回 id。[AI生成] */
@@ -58,7 +59,7 @@ class DishRepository(private val db: CookbookDatabase) {
             val trimmed = raw.trim()
             if (trimmed.isBlank()) return@mapNotNull null
             q.insertCookingMethod(trimmed, "user", now)
-            q.selectAllCookingMethods().executeAsList().firstOrNull { it.name == trimmed }?.id
+            q.selectCookingMethodIdByName(trimmed).executeAsOneOrNull() // [AI修改] 按名精确查，不再全表反查
         }.distinct()
 
     /**
@@ -174,20 +175,19 @@ class DishRepository(private val db: CookbookDatabase) {
     suspend fun findDishesByIngredients(ingredientIds: List<Long>, limit: Long = 50): List<DishIngredientMatch> = withContext(ioDispatcher) {
         val ids = ingredientIds.distinct()
         if (ids.isEmpty()) return@withContext emptyList()
-        q.selectDishesByIngredientMatch(ids, limit).executeAsList().map { row ->
-            DishIngredientMatch(
-                dish = buildDishMini(
-                    id = row.id,
-                    name = row.name,
-                    imagePath = row.image_path,
-                    thumbnailPath = row.thumbnail_path,
-                    preference = row.preference.toInt(),
-                    cookingMethodId = row.cooking_method_id,
-                    source = row.source,
-                ),
-                matchCount = row.match_count.toInt(),
-                totalIngredientCount = row.total_count.toInt(),
-            )
+        val rows = q.selectDishesByIngredientMatch(ids, limit).executeAsList()
+        // [AI修改] 消除 N+1：原来对每行调 buildDishMini(内部各跑4条查询)；改为一次性 buildDishMinis 批量取，
+        // 再按顺序 zip 回 match/total 计数(buildDishMinis 保持输入顺序)。同时补齐 cuisine。
+        val minis = buildDishMinis(
+            rows.map { row ->
+                DishMiniSource(
+                    id = row.id, name = row.name, imagePath = row.image_path, thumbnailPath = row.thumbnail_path,
+                    preference = row.preference.toInt(), cookingMethodId = row.cooking_method_id, source = row.source, cuisine = row.cuisine,
+                )
+            },
+        )
+        rows.zip(minis) { row, mini ->
+            DishIngredientMatch(dish = mini, matchCount = row.match_count.toInt(), totalIngredientCount = row.total_count.toInt())
         }
     }
 
@@ -206,6 +206,7 @@ class DishRepository(private val db: CookbookDatabase) {
                 preference = row.preference.toInt(), // [AI修改] SQLDelight 表实体整数为 Long，领域列表模型使用 Int。
                 cookingMethodId = row.cooking_method_id,
                 source = row.source,
+                cuisine = row.cuisine, // [AI修改] 补齐 cuisine(之前默认空，导致从选择器/AI回填的菜品丢菜系)
             )
         }
     }
