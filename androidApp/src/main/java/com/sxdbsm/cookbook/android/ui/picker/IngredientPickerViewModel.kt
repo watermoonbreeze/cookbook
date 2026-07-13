@@ -482,12 +482,16 @@ class IngredientPickerViewModel(
                     source = "user",
                 )
             }.onSuccess { ingredient ->
+                // [AI修改] E2：新建后跳到该食材所在分类("家庭"Tab + 选中的分类/全部)，并保持它为已选(打钩)。
                 _state.value = _state.value.copy(
                     creatingIngredient = false,
                     selectedIds = _state.value.selectedIds + ingredient.id,
                     selectedIngredients = (_state.value.selectedIngredients + ingredient).distinctBy { it.id },
                     lastCreatedIngredientId = ingredient.id,
                     lastSavedIngredientId = ingredient.id,
+                    mainTab = IngredientMainTab.CUSTOM, // 家庭(用户自建)
+                    selectedCategoryId = categoryId ?: -1L, // 选了分类则跳该分类，否则家庭-全部
+                    keyword = "", // 清空搜索，回到分类视图
                 )
                 reloadCurrentList()
             }.onFailure {

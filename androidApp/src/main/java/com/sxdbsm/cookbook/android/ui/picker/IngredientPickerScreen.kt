@@ -127,16 +127,15 @@ fun IngredientPickerScreen(
                         }
                     },
                     actions = {
-                        if (!selectionMode) {
-                            IconButton(
-                                onClick = {
-                                    vm.clearCreateError()
-                                    vm.loadIngredientEditor(null)
-                                    createDialogOpen = true
-                                },
-                            ) {
-                                Icon(Icons.Outlined.Add, contentDescription = "添加食材")
-                            }
+                        // [AI修改] E1：选择模式下也在顶部搜索框后显示"＋新增食材"，随时可加，不再只靠底部。
+                        IconButton(
+                            onClick = {
+                                vm.clearCreateError()
+                                vm.loadIngredientEditor(null)
+                                createDialogOpen = true
+                            },
+                        ) {
+                            Icon(Icons.Outlined.Add, contentDescription = "添加食材")
                         }
                     },
                 )
@@ -347,11 +346,6 @@ fun IngredientPickerScreen(
                         menuOpen = selectedMenuOpen,
                         onMenuOpenChange = { selectedMenuOpen = it },
                         onPickSelected = { selectedIngredient = it },
-                        onAddIngredient = {
-                            vm.clearCreateError()
-                            vm.loadIngredientEditor(null)
-                            createDialogOpen = true
-                        },
                         onFindDishes = {
                             vm.findDishesBySelectedIngredients()
                             dishMatchOpen = true
@@ -606,7 +600,6 @@ private fun SelectionBottomBar(
     menuOpen: Boolean,
     onMenuOpenChange: (Boolean) -> Unit,
     onPickSelected: (Ingredient) -> Unit,
-    onAddIngredient: () -> Unit,
     onFindDishes: () -> Unit,
     onConfirm: () -> Unit,
 ) {
@@ -639,11 +632,7 @@ private fun SelectionBottomBar(
                     }
                 }
             }
-            OutlinedButton(
-                onClick = onAddIngredient,
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
-            ) { Text("+ 添加食材") }
-            Spacer(Modifier.width(8.dp))
+            // [AI修改] E1：底部"添加食材"取消，改由顶部搜索框后的"＋"随时新增；底栏只留找菜/完成。
             OutlinedButton(onClick = onFindDishes, enabled = selectedCount > 0) { Text("找菜") }
             Spacer(Modifier.width(8.dp))
             Button(onClick = onConfirm, enabled = selectedCount > 0) { Text("完成") }
