@@ -128,12 +128,21 @@ private fun MealSectionRow(
     section: MealSection,
     onDishClick: ((DishMini) -> Unit)? = null,
 ) {
+    // [AI生成] N8：一餐涵盖的食物大类(按主料名归纳)→餐次名后的分类图标 + 菜品下方营养搭配。
+    val groups = com.sxdbsm.cookbook.domain.FoodGroup.groupsOf(section.dishes.flatMap { it.mainIngredientNames })
     Column {
-        Text(
-            text = section.mealName,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = section.mealName,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            if (groups.isNotEmpty()) {
+                Spacer(Modifier.width(8.dp))
+                // 分类图标：主食🍚/蔬菜🥬/水产🐟/红肉🥩/禽肉🍗/蛋🥚 等，标明本餐涵盖的类别。
+                Text(groups.joinToString(" ") { it.emoji }, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
         Spacer(Modifier.height(8.dp))
         if (section.dishes.isEmpty()) {
             Text(
@@ -154,6 +163,26 @@ private fun MealSectionRow(
                         }
                         repeat(4 - rowDishes.size) { Spacer(Modifier.weight(1f)) }
                     }
+                }
+            }
+            // [AI生成] N8：菜品下方营养搭配说明(优质蛋白/主食·碳水/蔬菜·膳食纤维…) + 缺哪类的建议。
+            val nutri = com.sxdbsm.cookbook.domain.FoodGroup.nutritionSummary(groups)
+            val note = com.sxdbsm.cookbook.domain.FoodGroup.balanceNote(groups)
+            if (nutri.isNotEmpty() || note != null) {
+                Spacer(Modifier.height(6.dp))
+                if (nutri.isNotEmpty()) {
+                    Text(
+                        "营养搭配：${nutri.joinToString(" · ")}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                if (note != null) {
+                    Text(
+                        note,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
                 }
             }
         }
