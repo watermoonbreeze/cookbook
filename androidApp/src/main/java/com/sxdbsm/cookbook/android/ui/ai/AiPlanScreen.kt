@@ -88,7 +88,14 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
             state.error != null -> Text(state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 16.dp))
             state.plan == null -> Text("选好天数，点「生成计划」。", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 16.dp))
             else -> LazyColumn(modifier = Modifier.weight(1f)) {
-                items(state.plan.days, key = { it.dayIndex }) { day -> DayCard(day) }
+                items(state.plan.days, key = { it.dayIndex }) { day ->
+                    // [AI生成] 每天标注明确日期(计划起始日 + dayIndex)，让"第N天"对应真实日期。
+                    val dateLabel = state.planStartDate?.let { s ->
+                        val d = com.sxdbsm.cookbook.util.DateTime.plusDays(s, day.dayIndex)
+                        "${d.monthNumber}月${d.dayOfMonth}日"
+                    }
+                    DayCard(day, dateLabel)
+                }
                 item {
                     Spacer(Modifier.height(8.dp))
                     Text("仅为饮食建议参考，忌口与用量请以你的医嘱为准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -106,14 +113,17 @@ private fun DayPreset(label: String, value: Int, current: Int, onSelect: (Int) -
 }
 
 @Composable
-private fun DayCard(day: DayPlan) {
+private fun DayCard(day: DayPlan, dateLabel: String? = null) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
-            Text("第 ${day.dayIndex + 1} 天", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(
+                "第 ${day.dayIndex + 1} 天" + (dateLabel?.let { " · $it" } ?: ""),
+                style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary,
+            )
             day.meals.forEach { meal ->
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {

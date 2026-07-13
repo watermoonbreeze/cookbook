@@ -16,6 +16,7 @@ import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.MealType
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import kotlin.random.Random
 
 /**
@@ -58,6 +59,10 @@ class AiPlanViewModel(
     fun generate() {
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, saved = false)
+            // [AI修改] 计划起始日 = 食历最晚餐食日期的次日(在现有餐食基础上往后接)；若食历无未来餐食则用今天。
+            val today = DateTime.today()
+            val maxMealDate = runCatching { mealRepo.dateRange().second }.getOrNull()
+            val startDate = if (maxMealDate != null && maxMealDate >= today) DateTime.plusDays(maxMealDate, 1) else today
             runCatching {
                 if (mealTypes.isEmpty()) mealTypes = mealRepo.listMealTypes().filter { it.code in PLAN_MEAL_CODES }
                 val ctx = dataSource.gatherForPlan()
@@ -78,7 +83,7 @@ class AiPlanViewModel(
                 Triple(annotatedPlan, ctx.season to ctx.healthAware, result.byAi)
             }.onSuccess { (annotatedPlan, seasonHealth, byAi) ->
                 val (season, healthAware) = seasonHealth
-                state = state.copy(loading = false, plan = annotatedPlan, season = season, healthAware = healthAware, byAi = byAi)
+                state = state.copy(loading = false, plan = annotatedPlan, season = season, healthAware = healthAware, byAi = byAi, planStartDate = startDate)
             }.onFailure {
                 state = state.copy(loading = false, error = "生成失败，请稍后再试")
             }
@@ -91,9 +96,10 @@ class AiPlanViewModel(
         viewModelScope.launch {
             state = state.copy(saving = true)
             runCatching {
-                val today = DateTime.today()
+                // [AI修改] 用生成时确定的起始日(食历最晚日期次日)，而非今天，保证接在现有餐食之后。
+                val start = state.planStartDate ?: DateTime.today()
                 plan.days.forEach { day ->
-                    val date = DateTime.plusDays(today, day.dayIndex)
+                    val date = DateTime.plusDays(start, day.dayIndex)
                     val drafts = day.meals.mapNotNull { meal ->
                         val mt = mealTypes.firstOrNull { it.name == meal.mealName } ?: return@mapNotNull null
                         DayMealDraft(mealTypeId = mt.id, mealTime = mt.defaultTime, note = "", dishIds = meal.dishes.map { it.id })
@@ -126,5 +132,6 @@ data class AiPlanUiState(
     val season: String = "",
     val healthAware: Boolean = false,
     val byAi: Boolean = false, // [AI生成] 本次计划是否由 AI 生成(否则规则)。
+    val planStartDate: LocalDate? = null, // [AI生成] 计划第1天对应的日期(食历最晚日期次日)，用于展示每天的明确日期
     val error: String? = null,
 )
