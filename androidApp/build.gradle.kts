@@ -24,9 +24,22 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    // [AI生成] 统一签名：debug 和 release 都用项目根目录的 cookbook.jks(便于覆盖安装、双端一致)。
+    signingConfigs {
+        create("cookbook") {
+            storeFile = rootProject.file("cookbook.jks")
+            storePassword = "123456"
+            keyAlias = "cookbook"
+            keyPassword = "123456"
+        }
+    }
     buildTypes {
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("cookbook")
+        }
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("cookbook")
         }
     }
     compileOptions {
