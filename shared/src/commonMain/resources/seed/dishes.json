@@ -6080,5 +6080,449 @@
       "加沙拉酱拌匀即可。"
     ],
     "cuisine": "西餐"
+  },
+  {
+    "code": "mifan",
+    "name": "米饭",
+    "method": "煮",
+    "description": "家常白米饭，粒粒分明。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "大米淘洗干净。",
+      "加适量水。",
+      "煮/焖熟即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "zaliang_fan",
+    "name": "杂粮饭",
+    "method": "煮",
+    "description": "大米配糙米小米黑米，粗细搭配更健康。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
+      },
+      {
+        "ingredient": "糙米",
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
+      },
+      {
+        "ingredient": "小米",
+        "main": true,
+        "quantity": 30,
+        "unit": "克"
+      },
+      {
+        "ingredient": "黑米",
+        "main": false,
+        "quantity": 20,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "杂粮提前浸泡。",
+      "与大米混合淘洗。",
+      "加水煮/焖熟即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "caomi_fan",
+    "name": "糙米饭",
+    "method": "蒸",
+    "description": "全谷糙米，膳食纤维丰富。",
+    "ingredients": [
+      {
+        "ingredient": "糙米",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "大米",
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "糙米浸泡1小时。",
+      "与大米混合。",
+      "上锅蒸熟即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "ermi_fan",
+    "name": "二米饭",
+    "method": "蒸",
+    "description": "大米小米同蒸，软糯清香。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "小米",
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "两米淘洗混合。",
+      "加水。",
+      "蒸熟即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "limai_fan",
+    "name": "藜麦饭",
+    "method": "煮",
+    "description": "藜麦配大米，优质植物蛋白主食。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "藜麦",
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "藜麦冲洗，大米淘净。",
+      "混合加水。",
+      "煮/焖熟即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hongdou_fan",
+    "name": "红豆饭",
+    "method": "煮",
+    "description": "红豆软糯，微甜养胃。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "红豆",
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "红豆提前浸泡煮软。",
+      "与大米混合加水。",
+      "焖熟即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "dan_chaofan",
+    "name": "蛋炒饭",
+    "method": "炒",
+    "description": "米饭鸡蛋同炒，粒粒裹蛋香。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
+      },
+      {
+        "ingredient": "鸡蛋",
+        "main": true,
+        "quantity": 2,
+        "unit": "个"
+      },
+      {
+        "ingredient": "火腿",
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
+      },
+      {
+        "ingredient": "葱",
+        "main": false,
+        "quantity": 1,
+        "unit": "段"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      },
+      {
+        "ingredient": "花生油",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      }
+    ],
+    "steps": [
+      "用隔夜米饭，鸡蛋打散。",
+      "热油炒蛋盛出。",
+      "下米饭炒散，倒回蛋和火腿丁。",
+      "加盐撒葱花炒匀。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "yanmai_zhou",
+    "name": "燕麦粥",
+    "method": "煮",
+    "description": "燕麦软糯，低GI好消化。",
+    "ingredients": [
+      {
+        "ingredient": "燕麦",
+        "main": true,
+        "quantity": 60,
+        "unit": "克"
+      },
+      {
+        "ingredient": "牛奶",
+        "main": false,
+        "quantity": 200,
+        "unit": "毫升"
+      }
+    ],
+    "steps": [
+      "燕麦加水/奶。",
+      "小火煮至粘稠即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "bai_zhou",
+    "name": "白粥",
+    "method": "煮",
+    "description": "一碗清粥，养胃暖身。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "大米淘净加足量水。",
+      "大火烧开转小火。",
+      "熬至米开花粘稠。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "nangua_zhou",
+    "name": "南瓜粥",
+    "method": "煮",
+    "description": "南瓜清甜，绵软润口。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
+      },
+      {
+        "ingredient": "南瓜",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "南瓜去皮切块。",
+      "与大米加水同煮。",
+      "熬至软烂即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hongshu_zhou",
+    "name": "红薯粥",
+    "method": "煮",
+    "description": "红薯香甜，粗粮养生。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
+      },
+      {
+        "ingredient": "红薯",
+        "main": true,
+        "quantity": 1,
+        "unit": "个"
+      }
+    ],
+    "steps": [
+      "红薯去皮切块。",
+      "与大米加水同煮。",
+      "熬至粘稠即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "babao_zhou",
+    "name": "八宝粥",
+    "method": "煮",
+    "description": "多种杂粮豆果同熬，暖甜滋补。",
+    "ingredients": [
+      {
+        "ingredient": "大米",
+        "main": true,
+        "quantity": 60,
+        "unit": "克"
+      },
+      {
+        "ingredient": "红豆",
+        "main": true,
+        "quantity": 30,
+        "unit": "克"
+      },
+      {
+        "ingredient": "黑米",
+        "main": false,
+        "quantity": 20,
+        "unit": "克"
+      },
+      {
+        "ingredient": "花生",
+        "main": false,
+        "quantity": 20,
+        "unit": "克"
+      },
+      {
+        "ingredient": "红枣",
+        "main": false,
+        "quantity": 5,
+        "unit": "个"
+      },
+      {
+        "ingredient": "莲子",
+        "main": false,
+        "quantity": 20,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "豆类杂粮提前浸泡。",
+      "全部加足量水。",
+      "大火烧开转小火熬至软烂。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "zheng_shanyao",
+    "name": "蒸山药",
+    "method": "蒸",
+    "description": "原味蒸山药，健脾好主食。",
+    "ingredients": [
+      {
+        "ingredient": "山药",
+        "main": true,
+        "quantity": 1,
+        "unit": "根"
+      }
+    ],
+    "steps": [
+      "山药洗净。",
+      "上锅蒸15分钟。",
+      "去皮即可食用。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "zheng_yutou",
+    "name": "蒸芋头",
+    "method": "蒸",
+    "description": "软糯芋头，天然主食。",
+    "ingredients": [
+      {
+        "ingredient": "芋头",
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
+      }
+    ],
+    "steps": [
+      "芋头洗净。",
+      "上锅蒸20分钟。",
+      "去皮蘸糖或原味。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "qiaomai_mian",
+    "name": "荞麦面",
+    "method": "煮",
+    "description": "荞麦清汤面，低GI好消化。",
+    "ingredients": [
+      {
+        "ingredient": "面条",
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
+      },
+      {
+        "ingredient": "荞麦",
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
+      },
+      {
+        "ingredient": "生抽",
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
+      },
+      {
+        "ingredient": "葱",
+        "main": false,
+        "quantity": 1,
+        "unit": "段"
+      },
+      {
+        "ingredient": "盐",
+        "main": false,
+        "quantity": 1,
+        "unit": "少许"
+      }
+    ],
+    "steps": [
+      "水烧开下面条。",
+      "煮熟捞入碗中。",
+      "加生抽盐冲入面汤，撒葱花。"
+    ],
+    "cuisine": "家常菜"
   }
 ]
