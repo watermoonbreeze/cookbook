@@ -128,28 +128,6 @@ class TimelineViewModel(
         _state.value = _state.value.copy(scrollTargetIndex = -1)
     }
 
-    /**
-     * 将指定日期的整日餐食复用到目标日期。[AI生成]
-     */
-    fun copyDayMeals(sourceDate: LocalDate, targetDate: LocalDate) {
-        viewModelScope.launch {
-            runCatching {
-                repo.copyDayMeals(sourceDate, targetDate)
-            }.onSuccess { ids ->
-                pendingScrollTargetDate = targetDate
-                _state.value = _state.value.copy(
-                    copyMessage = if (ids.isEmpty()) "这一天没有可复用的餐食" else "已复用到 ${DateTime.formatDate(targetDate)}",
-                    copyError = null,
-                )
-            }.onFailure { e ->
-                _state.value = _state.value.copy(
-                    copyMessage = null,
-                    copyError = e.message ?: "复用失败，请稍后重试",
-                )
-            }
-        }
-    }
-
     /** 删除指定日期的全部餐食（食历 Flow 会自动刷新）。[AI生成] */
     fun deleteDay(date: LocalDate) {
         viewModelScope.launch {

@@ -183,35 +183,6 @@ fun FoodTimelineScreen(
 }
 
 /**
- * 食历复用目标日期选择弹框。[AI生成]
- */
-@Composable
-private fun CopyMealDialog(
-    sourceDate: LocalDate,
-    onDismiss: () -> Unit,
-    onCopyTo: (LocalDate) -> Unit,
-) {
-    val today = DateTime.today()
-    val tomorrow = DateTime.plusDays(today, 1)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("复用餐食") },
-        text = {
-            Text("将 ${DateTime.formatDate(sourceDate)} 的餐食复用到目标日期。若目标日期已有餐食，将被这份餐食替换。")
-        },
-        confirmButton = {
-            Row {
-                TextButton(onClick = { onCopyTo(today) }) { Text("复用到今天") }
-                TextButton(onClick = { onCopyTo(tomorrow) }) { Text("复用到明天") }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
-        },
-    )
-}
-
-/**
  * 食历顶部日期范围文案。[AI生成]
  */
 private fun formatRange(start: LocalDate?, end: LocalDate?): String =

@@ -19,7 +19,6 @@ import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.util.DateTime
-import com.sxdbsm.cookbook.platform.CookbookDiag
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.withContext
 
@@ -57,35 +56,21 @@ class RecommendationDataSource(
                 val pantryIngredients = pantryRepo.listPantryIngredients()
                 val base = pantryIngredients.map { it.id }.toSet()
                 val names = pantryIngredients.map { it.name }.distinct()
-                val expanded = if (names.isEmpty()) base else base + q.selectIngredientIdsByNames(names).executeAsList().toSet()
-                // [AI生成] 诊断日志(仅 debug 开关开启时构造)：库存食材(名#id)与按名扩展后的在手 id 集，排查"某食材在库却没推出用它的菜"。
-                CookbookDiag.log(TAG) { "==① 库存食材(${pantryIngredients.size})== " + pantryIngredients.joinToString("、") { "${it.name}#${it.id}" } }
-                CookbookDiag.log(TAG) { "在手id(base=${base.size} 按名扩展后=${expanded.size}): $expanded" }
-                expanded
+                if (names.isEmpty()) base else base + q.selectIngredientIdsByNames(names).executeAsList().toSet()
             }
             RecommendMode.RANDOM -> q.selectAllIngredientIds().executeAsList().toSet()
         }
         val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
 
-        // 候选菜：与可用食材有交集的菜(预筛)，再取全食材做角色标注。
+        // 候选菜：与可用食材有交集的菜(预筛)，再取全食材做角色标注；按餐次适配筛选(全部不筛)。
         val candidateDishIds = if (pantryIds.isEmpty()) {
             emptyList()
         } else {
             dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT).map { it.dish.id }
         }
-        val allCandidateDishes = candidateDishIds.mapNotNull { dishRepo.getDishById(it) }
+        val dishes = candidateDishIds.mapNotNull { dishRepo.getDishById(it) }
             .map { it.toRuleDish(seasoningIds) }
-        val dishes = allCandidateDishes
-            .filter { MealSlotMatcher.matches(mealSlot, it.name) } // [AI生成] 按餐次适配筛选(全部不筛)
-        // [AI生成] 诊断日志(仅 debug 开关开启时执行，避免生产对上百候选菜逐条打日志)：预筛候选及命中的在手非调料食材。
-        if (CookbookDiag.enabled) {
-            CookbookDiag.log(TAG) { "==② 预筛候选菜 ${candidateDishIds.size} 个, 餐次过滤后 ${dishes.size} 个==" }
-            allCandidateDishes.forEach { d ->
-                val onHand = d.ingredients.filter { it.ingredientId in pantryIds && it.role != IngredientRole.SEASONING }.map { it.name }
-                val passSlot = MealSlotMatcher.matches(mealSlot, d.name)
-                CookbookDiag.log(TAG) { "  菜 ${d.name}#${d.id} 用到在手=[${onHand.joinToString("、")}] 餐次通过=$passSlot" }
-            }
-        }
+            .filter { MealSlotMatcher.matches(mealSlot, it.name) }
 
         // 忌口约束：启用的健康档案 → care 分类 → 调养规则。
         val enabledProfiles = healthRepo.listAll().filter { it.enabled }
@@ -112,7 +97,6 @@ class RecommendationDataSource(
         } else {
             emptySet()
         }
-        CookbookDiag.log(TAG) { "==③ 库存不足(可用份数≤0)食材id=$shortageIds; 最近吃过 dishIds=$recentDishIds" }
 
         RecommendationInput(
             dishes = dishes,
@@ -261,6 +245,5 @@ class RecommendationDataSource(
         private val BREAKFAST_SOFT_KEYWORDS = listOf("粥", "豆浆", "豆奶", "牛奶", "燕麦", "蛋羹", "面")
         private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数。
         private const val DISH_PREFILTER_LIMIT = 100L // 与在手食材有交集的候选菜上限。
-        private const val TAG = "PantryRec" // [AI生成] 库存推荐诊断日志 Tag(实机 logcat 过滤用)。
     }
 }
