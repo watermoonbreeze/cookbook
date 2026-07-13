@@ -381,7 +381,8 @@ fun IngredientPickerScreen(
                 vm.toggleSelection(ingredient) // [AI修改] 详情页右侧按钮按当前状态执行选择/取消选择。
                 selectedIngredient = null // [AI修改] 选择或取消选择后立即关闭详情弹层。
             },
-            onEdit = if (!selectionMode) {
+            // [AI修改] N5：选择模式下也允许编辑「自建(user)」食材(预设仍不可直接编辑)；页面模式保持可编辑。
+            onEdit = if (!selectionMode || ingredient.source == "user") {
                 {
                     vm.loadIngredientEditor(ingredient)
                     editingIngredient = ingredient
@@ -389,7 +390,7 @@ fun IngredientPickerScreen(
             } else {
                 null
             },
-            onDelete = if (!selectionMode && ingredient.source == "user") {
+            onDelete = if (ingredient.source == "user") {
                 {
                     deletingIngredient = ingredient
                 }
