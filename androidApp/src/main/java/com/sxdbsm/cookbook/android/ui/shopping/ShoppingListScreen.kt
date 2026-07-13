@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.MoveToInbox
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,12 +25,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -56,9 +62,15 @@ fun ShoppingListScreen(
     vm: ShoppingListViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    // [AI生成] 入库结果/未勾选提示。
+    LaunchedEffect(state.toast) {
+        state.toast?.let { snackbar.showSnackbar(it); vm.consumeToast() }
+    }
 
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
                 title = { Text("采购清单", fontWeight = FontWeight.SemiBold) },
@@ -66,6 +78,8 @@ fun ShoppingListScreen(
                     IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }
                 },
                 actions = {
+                    // [AI生成] 入库：把已勾选项按份数入库(没勾选则提示)。
+                    IconButton(onClick = vm::stockInChecked) { Icon(Icons.Outlined.MoveToInbox, contentDescription = "入库") }
                     IconButton(onClick = vm::refresh) { Icon(Icons.Outlined.Refresh, contentDescription = "刷新") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -114,16 +128,45 @@ fun ShoppingListScreen(
                             )
                         }
                         if (purchase.isNotEmpty()) {
-                            item { SectionHeader("需采购（未入库）", purchase.size) }
+                            // [AI生成] 需采购分组带"全选"：勾选后本组全选/取消。
+                            val allChecked = purchase.all { it.ingredientName in state.checked }
+                            item {
+                                SectionHeader(
+                                    "需采购（未入库）", purchase.size,
+                                    selectAllChecked = allChecked,
+                                    onSelectAll = { vm.toggleSelectAll(ShoppingReason.PURCHASE) },
+                                )
+                            }
                             items(purchase, key = { "p_${it.ingredientName}" }) { item ->
-                                ShoppingRow(item, item.ingredientName in state.checked) { vm.toggleChecked(item.ingredientName) }
+                                ShoppingRow(
+                                    item = item,
+                                    checked = item.ingredientName in state.checked,
+                                    servings = state.servings[item.ingredientName] ?: 1,
+                                    stocked = item.ingredientName in state.stocked,
+                                    onToggle = { vm.toggleChecked(item.ingredientName) },
+                                    onServingDelta = { d -> vm.changeServing(item.ingredientName, d) },
+                                )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
                         }
                         if (shortage.isNotEmpty()) {
-                            item { SectionHeader("库存不足（缺料）", shortage.size) }
+                            val allChecked = shortage.all { it.ingredientName in state.checked }
+                            item {
+                                SectionHeader(
+                                    "库存不足（缺料）", shortage.size,
+                                    selectAllChecked = allChecked,
+                                    onSelectAll = { vm.toggleSelectAll(ShoppingReason.SHORTAGE) },
+                                )
+                            }
                             items(shortage, key = { "s_${it.ingredientName}" }) { item ->
-                                ShoppingRow(item, item.ingredientName in state.checked) { vm.toggleChecked(item.ingredientName) }
+                                ShoppingRow(
+                                    item = item,
+                                    checked = item.ingredientName in state.checked,
+                                    servings = state.servings[item.ingredientName] ?: 1,
+                                    stocked = item.ingredientName in state.stocked,
+                                    onToggle = { vm.toggleChecked(item.ingredientName) },
+                                    onServingDelta = { d -> vm.changeServing(item.ingredientName, d) },
+                                )
                                 Divider(color = MaterialTheme.colorScheme.outlineVariant)
                             }
                         }
@@ -135,38 +178,99 @@ fun ShoppingListScreen(
 }
 
 @Composable
-private fun SectionHeader(text: String, count: Int) {
+private fun SectionHeader(
+    text: String,
+    count: Int,
+    selectAllChecked: Boolean = false,
+    onSelectAll: (() -> Unit)? = null,
+) {
     Surface(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.fillMaxWidth()) {
-        Text(
-            "$text · $count",
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "$text · $count",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            // [AI生成] 全选：勾选本组所有项，方便一键入库。
+            if (onSelectAll != null) {
+                Text("全选", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Checkbox(checked = selectAllChecked, onCheckedChange = { onSelectAll() })
+            }
+        }
     }
 }
 
 @Composable
-private fun ShoppingRow(item: ShoppingItem, checked: Boolean, onToggle: () -> Unit) {
+private fun ShoppingRow(
+    item: ShoppingItem,
+    checked: Boolean,
+    servings: Int,
+    stocked: Boolean,
+    onToggle: () -> Unit,
+    onServingDelta: (Int) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Checkbox(checked = checked, onCheckedChange = { onToggle() })
+        Checkbox(checked = checked, enabled = !stocked, onCheckedChange = { onToggle() })
         Spacer(Modifier.width(4.dp))
         Column(Modifier.weight(1f)) {
-            Text(
-                item.ingredientName,
-                style = MaterialTheme.typography.titleMedium,
-                textDecoration = if (checked) TextDecoration.LineThrough else null,
-                color = if (checked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    item.ingredientName,
+                    style = MaterialTheme.typography.titleMedium,
+                    textDecoration = if (checked || stocked) TextDecoration.LineThrough else null,
+                    color = if (checked || stocked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                )
+                if (stocked) {
+                    Spacer(Modifier.width(6.dp))
+                    Text("已入库", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                }
+            }
             val sub = buildString {
                 append("${item.dates.size} 天要用")
                 if (item.dates.isNotEmpty()) append(" · 最近 ${item.dates.first()}")
             }
             Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        // [AI生成] 份数 −N+：默认1，入库按此份数。已入库则隐藏。
+        if (!stocked) {
+            ServingStepper(servings = servings, onDelta = onServingDelta)
+        }
+    }
+}
+
+/** 份数步进器 −N+。[AI生成] */
+@Composable
+private fun ServingStepper(servings: Int, onDelta: (Int) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        StepBtn("−") { onDelta(-1) }
+        Text(
+            "$servings 份",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 6.dp),
+        )
+        StepBtn("＋") { onDelta(1) }
+    }
+}
+
+@Composable
+private fun StepBtn(label: String, onClick: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.size(30.dp),
+        onClick = onClick,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
         }
     }
 }
