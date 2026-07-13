@@ -109,6 +109,13 @@ class AiRecommendViewModel(
         state = state.copy(selectedIds = if (id in cur) cur - id else cur + id)
     }
 
+    /** 选/取消整套搭配方案(模型分餐组合)：已全选则整套取消，否则补齐整套。[AI生成] */
+    fun toggleGroup(ids: List<Long>) {
+        val cur = state.selectedIds
+        val idSet = ids.toSet()
+        state = state.copy(selectedIds = if (idSet.all { it in cur }) cur - idSet else cur + idSet)
+    }
+
     private fun mapResult(result: RecommendationResult, mode: RecommendMode, modelReady: Boolean): AiRecommendUiState {
         if (result.source == RecommendationSource.EMPTY || result.candidates.isEmpty()) {
             val hint = when {
@@ -117,15 +124,29 @@ class AiRecommendViewModel(
             }
             return AiRecommendUiState(loading = false, emptyHint = hint, source = result.source, mode = mode, modelReady = modelReady)
         }
-        val items = result.candidates.take(MAX_ITEMS).map { c ->
-            DishItemUi(
-                id = c.id, name = c.name, note = buildNote(c, mode),
-                // [AI生成] 忌口食材单独标红：仍列出该菜，但明确警示健康档案建议避免。
-                avoidText = if (c.avoidNames.isNotEmpty()) "⛔忌口：${c.avoidNames.joinToString("、")}（健康档案建议避免）" else "",
-            )
-        }
-        return AiRecommendUiState(loading = false, dishItems = items, source = result.source, mode = mode, modelReady = modelReady)
+        // [AI修改] H1：模型返回了分餐组合(suggestions)时按"搭配方案"分组展示，让云端调用真正被消费；
+        // 规则兜底/离线则回退到扁平勾选列表。两条路都汇入 selectedIds、走同一个 onPickMeal 契约。
+        val byId = result.candidates.associateBy { it.id }
+        val groups = if (result.source == RecommendationSource.MODEL && result.suggestions.isNotEmpty()) {
+            result.suggestions.mapNotNull { s ->
+                val dishes = s.dishIds.mapNotNull { byId[it] }.map { toItem(it, mode) }
+                if (dishes.isEmpty()) null
+                else SuggestionGroupUi(reason = s.reason, cookingHint = s.cookingHint, dishes = dishes)
+            }
+        } else emptyList()
+        val items = result.candidates.take(MAX_ITEMS).map { toItem(it, mode) }
+        return AiRecommendUiState(
+            loading = false, dishItems = items, suggestionGroups = groups,
+            source = result.source, mode = mode, modelReady = modelReady,
+        )
     }
+
+    /** 把候选映射为展示项(名称/说明/忌口标红)。[AI生成] */
+    private fun toItem(c: DishCandidate, mode: RecommendMode) = DishItemUi(
+        id = c.id, name = c.name, note = buildNote(c, mode),
+        // [AI生成] 忌口食材单独标红：仍列出该菜，但明确警示健康档案建议避免。
+        avoidText = if (c.avoidNames.isNotEmpty()) "⛔忌口：${c.avoidNames.joinToString("、")}（健康档案建议避免）" else "",
+    )
 
     /** 组装一道菜的说明：用到库存/还差什么/利于调养/做法/注意限量。[AI修改] */
     private fun buildNote(c: DishCandidate, mode: RecommendMode): String {
@@ -153,6 +174,7 @@ class AiRecommendViewModel(
 data class AiRecommendUiState(
     val loading: Boolean = false,
     val dishItems: List<DishItemUi> = emptyList(),
+    val suggestionGroups: List<SuggestionGroupUi> = emptyList(), // [AI生成] H1：模型分餐组合(非空则分组展示，消费 suggestions)
     val selectedIds: Set<Long> = emptySet(),
     val source: RecommendationSource? = null,
     val emptyHint: String? = null,
@@ -170,4 +192,11 @@ data class DishItemUi(
     val name: String,
     val note: String,
     val avoidText: String = "", // [AI生成] 忌口警示(非空则在行内标红)。
+)
+
+/** 模型给出的一套搭配方案(一餐组合)。[AI生成] H1：消费 orchestrator 的 MealSuggestion。 */
+data class SuggestionGroupUi(
+    val reason: String, // 这套搭配的一句人话理由
+    val cookingHint: String?, // 按在手辅料给的做法建议
+    val dishes: List<DishItemUi>, // 组合内的菜(勾选整套或单菜均汇入 selectedIds)
 )

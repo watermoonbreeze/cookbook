@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
@@ -155,6 +156,33 @@ fun AiRecommendScreen(
                         buttonLabel = "开始推荐",
                         onRetry = { vm.recommend() },
                     )
+                    // [AI修改] H1：模型返回了分餐组合 → 按"搭配方案"分组展示(消费 suggestions)，勾整套或单菜。
+                    state.suggestionGroups.isNotEmpty() -> {
+                        Text(
+                            "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        LazyColumn(modifier = Modifier.weight(1f)) {
+                            itemsIndexed(state.suggestionGroups) { idx, group ->
+                                SuggestionGroupCard(
+                                    index = idx,
+                                    group = group,
+                                    selectedIds = state.selectedIds,
+                                    onToggle = { vm.toggleSelect(it) },
+                                    onToggleGroup = { vm.toggleGroup(group.dishes.map { d -> d.id }) },
+                                )
+                                Spacer(Modifier.height(10.dp))
+                            }
+                            item {
+                                OutlinedButton(onClick = { vm.recommend() }, modifier = Modifier.fillMaxWidth()) { Text("换一换") }
+                                Spacer(Modifier.height(8.dp))
+                                Text("仅为饮食建议参考，忌口与用量请以你的医嘱为准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(Modifier.height(16.dp))
+                            }
+                        }
+                    }
                     else -> {
                         Text(
                             "勾选想做的菜，点下方「确定」加入这一餐。",
@@ -195,6 +223,37 @@ fun AiRecommendScreen(
 @Composable
 private fun TabChip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(selected = selected, onClick = onClick, label = { Text(label) })
+}
+
+/** 一套模型搭配方案卡片：理由 + 做法建议 + 组合内菜(可勾单菜/整套)。[AI生成] H1 消费 suggestions。 */
+@Composable
+private fun SuggestionGroupCard(
+    index: Int,
+    group: SuggestionGroupUi,
+    selectedIds: Set<Long>,
+    onToggle: (Long) -> Unit,
+    onToggleGroup: () -> Unit,
+) {
+    val allSelected = group.dishes.isNotEmpty() && group.dishes.all { it.id in selectedIds }
+    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("方案 ${index + 1}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                TextButton(onClick = onToggleGroup) { Text(if (allSelected) "取消整套" else "选整套") }
+            }
+            if (group.reason.isNotBlank()) {
+                Text(group.reason, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (!group.cookingHint.isNullOrBlank()) {
+                Spacer(Modifier.height(2.dp))
+                Text("🍳 做法：${group.cookingHint}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(4.dp))
+            group.dishes.forEach { dish ->
+                DishRow(item = dish, selected = dish.id in selectedIds, onToggle = { onToggle(dish.id) })
+            }
+        }
+    }
 }
 
 @Composable
