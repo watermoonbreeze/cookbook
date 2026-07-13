@@ -682,10 +682,10 @@ private fun SearchResultsPanel(
                 ) {
                     Text(ing.emoji.ifBlank { "🥗" }, style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.width(12.dp))
-                    // [AI修改] 左：食材名 +（预设/自定义）。
+                    // [AI修改] 左：食材名 +（预设/家庭）。
                     Text(ing.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
                     Text(
-                        "（${if (ing.source == "user") "自定义" else "预设"}）",
+                        "（${if (ing.source == "user") "家庭" else "预设"}）",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f),

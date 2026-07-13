@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -89,9 +90,10 @@ fun AiRecommendScreen(
         },
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {
+            // [AI修改] 底栏加 navigationBarsPadding，避免"保存/确定"按钮被系统导航栏遮挡。
             if (showPlan) {
                 if (planState.plan != null && planState.plan.days.isNotEmpty()) {
-                    Surface(tonalElevation = 3.dp) {
+                    Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
                         Button(
                             onClick = { planVm.save() },
                             enabled = !planState.saving,
@@ -100,7 +102,7 @@ fun AiRecommendScreen(
                     }
                 }
             } else if (state.selectedIds.isNotEmpty()) {
-                Surface(tonalElevation = 3.dp) {
+                Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
                     Button(
                         onClick = { onPickMeal(state.selectedIds.toList()) },
                         modifier = Modifier.fillMaxWidth().padding(16.dp),

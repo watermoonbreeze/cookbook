@@ -39,7 +39,7 @@ enum class IngredientMainTab(val label: String) {
     GENERAL("常规"),
     NUTRITION("营养"),
     CARE("调养"),
-    CUSTOM("自定义"),
+    CUSTOM("家庭"), // [AI修改] 用户自建食材分类，命名与菜品"家庭"一致
 }
 
 /**

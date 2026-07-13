@@ -99,13 +99,7 @@ fun FreePairingScreen(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    item {
-                        Text(
-                            "基于你在手食材的规则搭配（离线，非完整菜谱）：",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    item { PairingRuleCard() }
                     items(state.suggestions) { s ->
                         OutlinedCard(
                             modifier = Modifier.fillMaxWidth(),
@@ -146,6 +140,44 @@ fun FreePairingScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * 自由搭配规则说明卡片。[AI生成]
+ *
+ * 把 FreePairingEngine 的搭配优先级与做法推断规则讲清楚，让用户明白推荐从何而来。
+ */
+@Composable
+private fun PairingRuleCard() {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+    ) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("搭配规则", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                "① 只用你「在手库存」的食材，离线按规则搭，不是完整菜谱。",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "② 搭配优先级：荤×素 → 蛋×素 → 豆×素 → 纯素/主食搭配（先荤素搭、再蛋豆、最后素素）。",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "③ 食材角色按大类判定：肉/禽/水产=荤，蔬/菌/藻=素，蛋、豆制品各成一类。",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "④ 做法按你在手调料推断：有豆瓣酱→爆炒，有老抽/蚝油→红烧，有生抽→炒，否则→清炒。",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "仅为食材组合参考，忌口与用量请以你的医嘱为准。",
+                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline,
+            )
         }
     }
 }
