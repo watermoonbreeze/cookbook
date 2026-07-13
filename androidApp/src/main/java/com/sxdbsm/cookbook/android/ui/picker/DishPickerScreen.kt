@@ -48,7 +48,7 @@ fun DishPickerScreen(
     showRecentChips: Boolean,
     showAddNewButton: Boolean,
     onDismiss: () -> Unit,
-    onAddNewDish: () -> Unit = {},
+    onAddNewDish: (List<DishMini>) -> Unit = {}, // [AI修改] 带出当前已勾选，供上层先保留再去新建
     onConfirm: (List<DishMini>) -> Unit,
     vm: DishPickerViewModel = koinViewModel(),
 ) {
@@ -217,7 +217,7 @@ fun DishPickerScreen(
                         TextButton(
                             onClick = {
                                 AppLogger.d("DishPickerFlow", "add new dish click: title=$title selected=${state.selected.map { it.id }}") // [AI生成] 记录从菜品选择器跳转新建菜品。
-                                onAddNewDish()
+                                onAddNewDish(vm.confirmSelected()) // [AI修改] 带出当前已勾选，去新建前先保留
                             },
                             modifier = Modifier
                                 .fillMaxWidth()

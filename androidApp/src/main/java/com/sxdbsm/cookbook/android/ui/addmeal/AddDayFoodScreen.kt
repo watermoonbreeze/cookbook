@@ -294,9 +294,12 @@ fun AddDayFoodScreen(
             showRecentChips = true,
             showAddNewButton = true,
             onDismiss = { pickerOpen = false },
-            onAddNewDish = {
-                AppLogger.d("MealFlow", "navigate add new dish from picker: blockId=$blockId selected=${block?.dishes?.map { it.id }}") // [AI生成] 记录从添加餐食的菜品库跳转新建菜品前的上下文。
-                pickerOpen = false // [AI修改] 跳转新建菜品前先关闭当前弹框；保存返回后重新打开并刷新菜品库。
+            onAddNewDish = { currentSelected ->
+                // [AI修改] #51：去新建自定义菜品前，先把当前已勾选的菜提交到该餐次(合并)，
+                // 这样返回重开选择器时(initialSelected=block.dishes)原选择保留，新建的也一并加入并选中。
+                AppLogger.d("MealFlow", "navigate add new dish from picker: blockId=$blockId keepSelected=${currentSelected.map { it.id }}")
+                if (blockId != null) vm.addDishes(blockId, currentSelected)
+                pickerOpen = false // 跳转新建菜品前先关闭当前弹框；保存返回后重新打开并刷新菜品库。
                 onAddNewDish()
             },
             onConfirm = { selected ->
