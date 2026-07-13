@@ -68,14 +68,15 @@ class RecommendationOrchestrator(
     /**
      * 按整批分页轮转候选：每批 DISPLAY_BATCH(10) 个，"换一换"取**下一批不重复**，全部推完后循环。[AI修改]
      *
-     * rotation=0 取第 1 批(分数最优在前)；rotation=N 取第 (N mod 批数) 批，drop 到该批起始，
-     * 上层 take(DISPLAY_BATCH) 取整批(末批不足则少于 10)。修旧"平移 2 个致换一换严重重叠"。
+     * rotation=0 取第 1 批(分数最优在前)；rotation=N 取第 (N mod 批数) 批。**本函数直接返回该批(≤10)**，
+     * 使喂给模型 prompt/validate 的候选与 UI 展示的一批完全一致：既防 prompt 随候选总数膨胀，
+     * 也防模型选到列表外(第 11+ 位)的菜。末批不足则少于 10。修旧"drop 未 take 致长尾整体入 prompt"。
      */
     private fun rotate(candidates: List<DishCandidate>, rotation: Int): List<DishCandidate> {
-        if (candidates.isEmpty() || rotation <= 0 || candidates.size <= DISPLAY_BATCH) return candidates
+        if (candidates.size <= DISPLAY_BATCH) return candidates
         val batches = (candidates.size + DISPLAY_BATCH - 1) / DISPLAY_BATCH
-        val start = (rotation % batches) * DISPLAY_BATCH
-        return candidates.drop(start)
+        val start = (rotation.coerceAtLeast(0) % batches) * DISPLAY_BATCH
+        return candidates.drop(start).take(DISPLAY_BATCH)
     }
 
     /** 纯规则兜底：把规则 top 候选按每餐 2 菜切成 mealCount 餐。[AI生成] */

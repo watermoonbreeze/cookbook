@@ -108,6 +108,30 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `候选不外溢_orchestrator只保留当前一批`() = runBlocking {
+        // H2 守护：25 候选时 result.candidates 应≤一批(10)，不再把长尾整体外露、也不整体喂 prompt/validate。
+        val many = (1L..25L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
+        val bigInput = RecommendationInput(many, (101L..125L).toSet(), HealthConstraints(), emptySet())
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        (0..3).forEach { rot ->
+            val c = orch.recommend(bigInput, mealCount = 1, rotation = rot).candidates
+            assertTrue(c.size <= 10, "rotation=$rot 候选应≤一批(10)，实际=${c.size}")
+        }
+    }
+
+    @Test
+    fun `模型选到当前批外的菜被过滤_与展示批一致`() = runBlocking {
+        // H2 守护：rotation=0 批=id1..10；模型偏选 15(第2批)应被 validate 剔除(候选=展示批)。
+        val many = (1L..25L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
+        val bigInput = RecommendationInput(many, (101L..125L).toSet(), HealthConstraints(), emptySet())
+        val json = """{"suggestions":[{"dishIds":[1,15],"reason":"x"}]}"""
+        val orch = RecommendationOrchestrator(MockAiRuntime(json))
+        val result = orch.recommend(bigInput, mealCount = 3, rotation = 0)
+        assertEquals(RecommendationSource.MODEL, result.source)
+        assertEquals(listOf(1L), result.suggestions.first().dishIds, "批外 id 15 应被过滤")
+    }
+
+    @Test
     fun `候选不足一批时换一换循环回同一批`() = runBlocking {
         // ≤10 个候选只有一批，换一换循环回同批(符合"全推完再循环")。
         val few = (1L..5L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
