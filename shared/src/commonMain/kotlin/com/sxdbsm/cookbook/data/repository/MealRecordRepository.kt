@@ -229,15 +229,19 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     suspend fun saveDayMeals(
         date: LocalDate,
         meals: List<DayMealDraft>,
+        // [AI修改] 抬喜爱度的基线日期(默认=本日)：编辑同日填本日；"移动"(改到新日期)填**来源日期**，
+        // 避免移动到空目标日时把来源日已计过的菜再次 +1(重复抬喜爱度 bug)。
+        incrementBaselineDate: LocalDate? = null,
     ): List<Long> = withContext(ioDispatcher) {
         val dateStr = DateTime.formatDate(date)
+        val baselineStr = DateTime.formatDate(incrementBaselineDate ?: date)
         val now = DateTime.nowEpochSeconds()
         val recordIds = mutableListOf<Long>()
         db.transaction {
             // [AI修改] 编辑某天餐食采用整日替换：删除旧记录和写入新记录必须保持原子性。
-            val oldDishIds = q.selectDishIdsByMealDate(dateStr).executeAsList().toSet()
+            val oldDishIds = q.selectDishIdsByMealDate(baselineStr).executeAsList().toSet()
             val newDishIds = meals.flatMap { it.dishIds }.toSet()
-            val dishIdsToIncrement = newDishIds - oldDishIds // [AI生成] 编辑同一天时不重复抬高已存在菜品的喜爱值。
+            val dishIdsToIncrement = newDishIds - oldDishIds // [AI生成] 只对相对基线"新出现"的菜抬喜爱值，编辑/移动都不重复抬。
             q.deleteMealRecordDishesByDate(dateStr)
             q.deleteMealRecordsByDate(dateStr)
             meals.forEach { meal ->
@@ -275,11 +279,6 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             )
         }
     }
-
-    /**
-     * 删除餐食记录。[AI修改]
-     */
-    suspend fun deleteMealRecord(id: Long) = q.deleteMealRecord(id)
 
     /** 删除指定日期的全部餐食（记录 + 记录-菜品关联）。[AI生成] */
     suspend fun deleteDayMeals(date: LocalDate) = withContext(ioDispatcher) {

@@ -55,7 +55,6 @@ data class AddMealUiState(
     val errorMessage: String? = null,
     val dateWarning: String? = null, // [AI生成] F7：选到已有餐食的日期时的一次性提示(不切换过去)
     val isEditingExisting: Boolean = false, // [AI生成] N3：编辑既有某天餐食时日期锁定不可改(防改日期导致数据错乱)；仅新增可改
-    val occupiedDates: Set<LocalDate> = emptySet(), // [AI生成] 已有餐食的日期：日期弹框屏蔽不可选
     val minSelectableDate: LocalDate? = null, // [AI生成] 复制场景可选日期下限(=最新餐食日期+1)
 ) {
     /**
@@ -97,9 +96,7 @@ class AddMealViewModel(
     init {
         viewModelScope.launch {
             val types = mealRepo.listMealTypes()
-            // [AI生成] 已有餐食日期集合：日期弹框屏蔽这些日期不可选。
-            val occupied = runCatching { mealRepo.listDistinctDates(9999L, 0L).toSet() }.getOrDefault(emptySet())
-            _state.value = _state.value.copy(mealTypes = types, favoriteCombos = comboRepo.listCombos(), occupiedDates = occupied)
+            _state.value = _state.value.copy(mealTypes = types, favoriteCombos = comboRepo.listCombos())
             if (!configured) {
                 configure(editDate = null)
             } else {
@@ -310,9 +307,10 @@ class AddMealViewModel(
         val drafts = s.mealBlocks
             .filter { it.canSave }
             .map { block ->
+                // canSave 已保证 mealTypeId/mealTime 非空，用 !! 明确不变量(原 `?: return` 在 filter 后不可达且误导)。
                 DayMealDraft(
-                    mealTypeId = block.mealTypeId ?: return,
-                    mealTime = block.mealTime ?: return,
+                    mealTypeId = block.mealTypeId!!,
+                    mealTime = block.mealTime!!,
                     note = block.note,
                     dishIds = block.dishes.map { it.id },
                 )
@@ -323,7 +321,9 @@ class AddMealViewModel(
             // [AI修改] viewModelScope 会随 ViewModel 销毁自动取消，避免页面关闭后继续持有 UI。
             _state.value = s.copy(saving = true)
             runCatching {
-                mealRepo.saveDayMeals(date = s.date, meals = drafts)
+                // [AI修改] 抬喜爱度基线=loadedFromDate：编辑同日=本日、移动=来源日、新增=null(视目标日)。
+                // 修"移动到空日期时把来源日已计过的菜再+1"的 bug。
+                mealRepo.saveDayMeals(date = s.date, meals = drafts, incrementBaselineDate = loadedFromDate)
                 // [AI生成] F7：若本次是编辑已有某天并把日期改到了新日期(移动)，保存到新日期后删除旧日期，避免重复。
                 val from = loadedFromDate
                 if (from != null && from != s.date) {
