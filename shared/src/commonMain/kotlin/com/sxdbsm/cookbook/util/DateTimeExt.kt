@@ -18,6 +18,10 @@ object DateTime {
     fun today(): LocalDate =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
+    /** 当前本地小时(0~23)。[AI生成] 供"按时段推算默认餐食日期"(晚上→明天)。 */
+    fun currentHour(): Int =
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
+
     fun nowEpochSeconds(): Long = Clock.System.now().epochSeconds
 
     /** epoch 秒 → 本地日期字符串(yyyy-MM-dd)。[AI生成] 供库存"入库日窗口"比较餐食日期。 */

@@ -73,6 +73,7 @@ class AddMealViewModel(
 ) : ViewModel() {
     companion object {
         private const val TAG = "MealFlow" // [AI生成] 添加/编辑餐食链路统一日志 Tag。
+        private const val EVENING_CUTOFF_HOUR = 20 // [AI生成] ≥20点视为"晚上"，新建餐食默认明天。
     }
 
     private val _state = MutableStateFlow(AddMealUiState()) // [AI修改] 内部可变状态，只允许 ViewModel 修改。
@@ -141,7 +142,11 @@ class AddMealViewModel(
      * 新增一个餐食模块。[AI生成]
      */
     fun addMealBlock() {
-        val defaultType = _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" }
+        // [AI修改] F6：默认取"下一个尚未添加"的餐次(按 mealTypes 顺序:早餐→上午餐→中餐→下午餐→晚餐→夜宵)，
+        // 而非每次都早餐。已有早餐→默认上午餐/中餐…全用完则回退第一个。
+        val usedTypeIds = _state.value.mealBlocks.map { it.mealTypeId }.toSet()
+        val defaultType = _state.value.mealTypes.firstOrNull { it.id !in usedTypeIds }
+            ?: _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" }
             ?: _state.value.mealTypes.firstOrNull()
         val block = newBlock(defaultType)
         _state.value = _state.value.copy(
@@ -335,16 +340,13 @@ class AddMealViewModel(
     }
 
     /**
-     * 新建餐食默认日期：没有记录或最后记录早于今天则用今天，否则顺延到最后记录的后一天。[AI生成]
+     * 新建餐食默认日期：按当前时段推算。[AI修改]
+     *
+     * F5：晚上(≥20点，今天大多吃完了)默认明天，白天/上午默认今天——比"总从今天"更贴合实际。
      */
-    private suspend fun resolveNewMealDate(): LocalDate {
+    private fun resolveNewMealDate(): LocalDate {
         val today = DateTime.today()
-        val maxDate = mealRepo.dateRange().second
-        return if (maxDate == null || maxDate < today) {
-            today
-        } else {
-            DateTime.plusDays(maxDate, 1)
-        }
+        return if (DateTime.currentHour() >= EVENING_CUTOFF_HOUR) DateTime.plusDays(today, 1) else today
     }
 
     /**
