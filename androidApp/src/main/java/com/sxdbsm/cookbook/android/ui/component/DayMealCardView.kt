@@ -165,25 +165,15 @@ private fun MealSectionRow(
                     }
                 }
             }
-            // [AI生成] N8：菜品下方营养搭配说明(优质蛋白/主食·碳水/蔬菜·膳食纤维…) + 缺哪类的建议。
+            // [AI修改] N8：菜品下方只显示本餐**实际包含**的营养素/分类，不做"建议再加"推荐(避免不准确)。
             val nutri = com.sxdbsm.cookbook.domain.FoodGroup.nutritionSummary(groups)
-            val note = com.sxdbsm.cookbook.domain.FoodGroup.balanceNote(groups)
-            if (nutri.isNotEmpty() || note != null) {
+            if (nutri.isNotEmpty()) {
                 Spacer(Modifier.height(6.dp))
-                if (nutri.isNotEmpty()) {
-                    Text(
-                        "营养搭配：${nutri.joinToString(" · ")}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                if (note != null) {
-                    Text(
-                        note,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.tertiary,
-                    )
-                }
+                Text(
+                    "营养：${nutri.joinToString(" · ")}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
         }
     }

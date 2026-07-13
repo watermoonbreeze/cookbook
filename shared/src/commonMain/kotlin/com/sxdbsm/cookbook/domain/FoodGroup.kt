@@ -63,27 +63,18 @@ object FoodGroup {
         return Group.entries.filter { it in set }
     }
 
-    /** 营养搭配摘要(由涵盖的大类归纳)。[AI生成] */
+    /**
+     * 营养构成摘要(只反映当前菜品实际包含的营养素/分类，不做推荐)。[AI修改]
+     *
+     * 仅由本餐已涵盖的食物大类如实归纳：有蛋白源→优质蛋白，有主食→主食·碳水，有蔬菜/菌菇→膳食纤维等。
+     * 不含推测性/推荐性内容(如"建议再加""含Omega-3")，避免不准确。
+     */
     fun nutritionSummary(groups: List<Group>): List<String> {
         val out = mutableListOf<String>()
         if (groups.any { it in setOf(Group.FISH, Group.RED_MEAT, Group.WHITE_MEAT, Group.EGG, Group.DAIRY, Group.BEAN) }) out += "优质蛋白"
         if (Group.STAPLE in groups) out += "主食·碳水"
         if (groups.any { it == Group.VEGETABLE || it == Group.FUNGI }) out += "蔬菜·膳食纤维"
         if (Group.FRUIT in groups) out += "水果·维生素"
-        if (Group.FISH in groups) out += "含Omega-3(部分)"
         return out
-    }
-
-    /** 搭配注意(缺哪类给一句建议)。[AI生成] */
-    fun balanceNote(groups: List<Group>): String? {
-        val hasProtein = groups.any { it in setOf(Group.FISH, Group.RED_MEAT, Group.WHITE_MEAT, Group.EGG, Group.DAIRY, Group.BEAN) }
-        val hasVeg = groups.any { it == Group.VEGETABLE || it == Group.FUNGI }
-        val hasStaple = Group.STAPLE in groups
-        val missing = buildList {
-            if (!hasStaple) add("主食")
-            if (!hasProtein) add("优质蛋白")
-            if (!hasVeg) add("蔬菜")
-        }
-        return if (missing.isEmpty()) null else "建议再加：${missing.joinToString("、")}"
     }
 }
