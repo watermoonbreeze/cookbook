@@ -5,6 +5,7 @@ import com.sxdbsm.cookbook.ai.model.PeriodPlan
 import com.sxdbsm.cookbook.ai.model.PlanDish
 import com.sxdbsm.cookbook.ai.model.PlannedDish
 import com.sxdbsm.cookbook.ai.model.PlannedMeal
+import com.sxdbsm.cookbook.domain.StapleFood
 import kotlin.random.Random
 
 /**
@@ -138,6 +139,8 @@ class PeriodPlanner {
             if (dish.isMeat && meat <= veg) s += BALANCE_BONUS
             if (!dish.isMeat && veg <= meat) s += BALANCE_BONUS
         }
+        // [AI生成] #54：主食搭配——本餐还没有主食时，主食菜(米面薯玉米等)强力加分，让每餐尽量含一道主食。
+        if (mealChosen.none { isStaple(it) } && isStaple(dish)) s += STAPLE_BONUS
         // 去重：同菜、同主料降权
         s -= REPEAT_DISH_PENALTY * (usedDishIds[dish.id] ?: 0)
         s -= REPEAT_MAIN_PENALTY * dish.mainNames.sumOf { usedMainCounts[it] ?: 0 }
@@ -148,6 +151,9 @@ class PeriodPlanner {
 
     private fun buildReason(dish: PlanDish, season: String): String = planDishReason(dish, season)
 
+    /** 该计划菜是否含主食。[AI生成] #54 */
+    private fun isStaple(dish: PlanDish): Boolean = StapleFood.isStaple(dish.name, dish.mainNames)
+
     companion object {
         const val MAX_DAYS = 30
         private const val JITTER = 0.5 // [AI生成] 随机抖动幅度(< 应季0.8/健康0.6)，兼顾质量与"每次不同"。
@@ -157,6 +163,7 @@ class PeriodPlanner {
         private const val NUTRITION_BONUS = 0.6
         private const val HEALTH_BONUS = 0.6
         private const val BALANCE_BONUS = 0.7 // [AI生成] 同餐荤素平衡补分(介于应季0.8与健康0.6之间, 影响但不压倒健康)
+        private const val STAPLE_BONUS = 0.9 // [AI生成] #54 本餐未含主食时给主食菜的补分(略高于应季，让每餐尽量有主食)
         private const val REPEAT_DISH_PENALTY = 2.0
         private const val REPEAT_MAIN_PENALTY = 0.5
         private const val LIMIT_PENALTY = 0.4
