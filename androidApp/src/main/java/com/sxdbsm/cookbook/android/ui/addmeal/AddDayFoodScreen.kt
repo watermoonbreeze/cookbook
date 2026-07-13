@@ -86,6 +86,7 @@ fun AddDayFoodScreen(
     onBack: () -> Unit,
     onAddNewDish: () -> Unit,
     onOpenDish: (Long) -> Unit = {}, // [AI生成] F1：点餐次里的菜进详情
+    copyFromDate: LocalDate? = null, // [AI生成] F8：食历复制来源日期→预填新建草稿
     editDate: LocalDate? = null,
     createdDishId: Long? = null,
     presetDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐"选它"带入的菜品(从首页进入时新建整餐)。
@@ -124,9 +125,13 @@ fun AddDayFoodScreen(
             onBack()
         }
     }
-    LaunchedEffect(editDate, presetDishIds) {
-        AppLogger.d("MealFlow", "configure by editDate effect: editDate=$editDate preset=$presetDishIds currentDate=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 记录入口日期配置，排查返回后是否误重载旧餐食。
-        vm.configure(editDate, presetDishIds) // [AI修改] 入口日期做初始化配置；带 AI 推荐预填时并入菜品。
+    LaunchedEffect(editDate, presetDishIds, copyFromDate) {
+        AppLogger.d("MealFlow", "configure by editDate effect: editDate=$editDate preset=$presetDishIds copyFrom=$copyFromDate currentDate=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 记录入口日期配置，排查返回后是否误重载旧餐食。
+        if (copyFromDate != null) {
+            vm.configureCopy(copyFromDate) // [AI生成] F8：食历复制→按来源日预填成新建草稿
+        } else {
+            vm.configure(editDate, presetDishIds) // [AI修改] 入口日期做初始化配置；带 AI 推荐预填时并入菜品。
+        }
     }
     LaunchedEffect(createdDishId) {
         val dishId = createdDishId?.takeIf { it > 0 } ?: return@LaunchedEffect
@@ -176,9 +181,20 @@ fun AddDayFoodScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
             } // [AI生成] 保存失败时在表单顶部提示，用户可调整后重试。
+            // [AI生成] F7：选到已有餐食的日期时提示(不切换过去)，选到空日期自动清除。
+            state.dateWarning?.let { warning ->
+                Text(
+                    text = "⚠ $warning",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
             FormFieldLabel("日期", startPadding = 16.dp)
+            // [AI修改] N3：编辑既有某天的餐食时日期锁定不可改(防改日期导致数据错乱)；仅新增/复制可改。
             OutlinedButton(
                 onClick = { dateDialogOpen = true },
+                enabled = !state.isEditingExisting,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -187,6 +203,9 @@ fun AddDayFoodScreen(
                 Icon(Icons.Outlined.Event, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(state.date.toString(), modifier = Modifier.weight(1f))
+                if (state.isEditingExisting) {
+                    Text("编辑中不可改", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
 
             if (state.isPlan) {

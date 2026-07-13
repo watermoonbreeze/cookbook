@@ -16,7 +16,7 @@ object Routes {
     const val HOME = "home"
     const val TIMELINE = "timeline"
     const val TIMELINE_FULL = "timeline_full"
-    const val ADD_MEAL = "addmeal?date={date}&dishIds={dishIds}"
+    const val ADD_MEAL = "addmeal?date={date}&dishIds={dishIds}&copyFrom={copyFrom}"
     const val DISHES = "dishes"
     const val INGREDIENTS = "ingredients"
     const val SEARCH = "search"
@@ -30,11 +30,14 @@ object Routes {
     const val SHOPPING_LIST = "shopping_list" // [AI生成] 采购清单(今天及未来餐食采购/缺料汇总)
     const val FREE_PAIRING = "free_pairing" // [AI生成] 食材自由搭配(离线规则轻搭配)
 
-    fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}&dishIds="
+    fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}&dishIds=&copyFrom="
 
     // [AI生成] AI 推荐"选它"：带入菜品 id 到加餐页预填（用户确认后再保存）。
     fun addMealWithDishes(dishIds: List<Long>, date: String? = null) =
-        "addmeal?date=${date.orEmpty()}&dishIds=${dishIds.joinToString(",")}"
+        "addmeal?date=${date.orEmpty()}&dishIds=${dishIds.joinToString(",")}&copyFrom="
+
+    // [AI生成] F8：食历"复制"→按来源日期预填成新建草稿(日期默认源+1，可改)。
+    fun copyMealFrom(sourceDate: String) = "addmeal?date=&dishIds=&copyFrom=$sourceDate"
 
     const val NEW_DISH = "newdish/{dishId}/{importDishId}"
     fun newDish(dishId: Long? = null) = "newdish/${dishId ?: -1L}/-1"

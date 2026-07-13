@@ -124,12 +124,14 @@ fun MainScaffold(
                 FoodTimelineScreen(
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
+                    onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] F8
                 )
             }
             composable(Routes.TIMELINE_FULL) {
                 FoodTimelineScreen(
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
+                    onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] F8
                     onBack = { nav.popBackStack() },
                 )
             }
@@ -200,6 +202,7 @@ fun MainScaffold(
             }
             composable(Routes.ADD_MEAL) {
                 val date = it.arguments?.getString("date")?.takeIf { value -> value.isNotBlank() }?.let(DateTime::parseDate)
+                val copyFrom = it.arguments?.getString("copyFrom")?.takeIf { value -> value.isNotBlank() }?.let(DateTime::parseDate) // [AI生成] F8：复制来源日期
                 val presetDishIds = it.arguments?.getString("dishIds")
                     ?.split(",")?.mapNotNull { id -> id.toLongOrNull() }?.filter { id -> id > 0 }
                     ?: emptyList() // [AI生成] AI 推荐"选它"带入的菜品 id。
@@ -217,6 +220,7 @@ fun MainScaffold(
                         nav.navigate(Routes.newDish())
                     },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) }, // [AI生成] F1：餐次里点菜进详情
+                    copyFromDate = copyFrom, // [AI生成] F8：复制来源→预填新建草稿
                     editDate = date,
                     presetDishIds = presetDishIds,
                     onOpenAiForBlock = { nav.navigate(Routes.aiRecommendForMeal()) }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。

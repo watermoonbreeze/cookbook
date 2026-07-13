@@ -41,6 +41,7 @@ import org.koin.androidx.compose.koinViewModel
 fun FoodTimelineScreen(
     onEditMealDate: (LocalDate) -> Unit,
     onOpenDish: (Long) -> Unit,
+    onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] F8：复制→按来源日期预填成新建草稿(日期可改)
     onBack: (() -> Unit)? = null,
     vm: TimelineViewModel = koinViewModel(),
 ) {
@@ -50,7 +51,6 @@ fun FoodTimelineScreen(
     val context = LocalContext.current
     var initialScrollDone by remember { mutableStateOf(false) }
     var calendarOpen by remember { mutableStateOf(false) }
-    var copySourceDate by remember { mutableStateOf<LocalDate?>(null) }
     var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除餐食的日期(确认弹窗)。
 
     LaunchedEffect(state.scrollRequestVersion, state.scrollTargetIndex, state.pages.size) {
@@ -141,7 +141,7 @@ fun FoodTimelineScreen(
                     DayMealCardView(
                         data = card,
                         onEditClick = { onEditMealDate(card.date) },
-                        onCopyClick = { copySourceDate = card.date },
+                        onCopyClick = { onCopyMeal(card.date) }, // [AI修改] F8：复制改为进入新建草稿(预填该日餐次+日期源+1可改)，不再直接"复用到今天/明天"
                         onDeleteClick = { deleteDate = card.date }, // [AI生成] 删除该日餐食(带确认)。
                         onDishClick = { dish -> onOpenDish(dish.id) }, // [AI修改] 食历餐食卡片内的菜品 block 点击进入菜品详情。
                     )
@@ -162,17 +162,6 @@ fun FoodTimelineScreen(
             onDateClick = { date ->
                 vm.jumpToDate(date)
                 calendarOpen = false
-            },
-        )
-    }
-
-    copySourceDate?.let { sourceDate ->
-        CopyMealDialog(
-            sourceDate = sourceDate,
-            onDismiss = { copySourceDate = null },
-            onCopyTo = { targetDate ->
-                vm.copyDayMeals(sourceDate, targetDate)
-                copySourceDate = null
             },
         )
     }

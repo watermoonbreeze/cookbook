@@ -53,6 +53,8 @@ data class AddMealUiState(
     val saving: Boolean = false,
     val done: Boolean = false,
     val errorMessage: String? = null,
+    val dateWarning: String? = null, // [AI生成] F7：选到已有餐食的日期时的一次性提示(不切换过去)
+    val isEditingExisting: Boolean = false, // [AI生成] N3：编辑既有某天餐食时日期锁定不可改(防改日期导致数据错乱)；仅新增可改
 ) {
     /**
      * 页面是否允许保存。[AI生成]
@@ -85,6 +87,9 @@ class AddMealViewModel(
     private var pendingPresetDishIds: List<Long> = emptyList() // [AI生成] AI 推荐"选它"带入的菜品，加载完块后并入第一块。
     private var presetApplied = false // [AI生成] 预填只应用一次，避免返回时路由参数不变导致重复重载。
     private var loadJob: Job? = null
+    private var userPickedDate = false // [AI生成] F7：用户手动改过日期后，configure 不再重载(保留当前编辑)。
+    private var loadedFromDate: LocalDate? = null // [AI生成] F7：本次编辑加载自哪个已有日期(用于"改日期=移动"时删旧)。
+    private var copyFromDate: LocalDate? = null // [AI生成] F8：食历"复制"来源日期→按其餐次预填成新建草稿(日期=源+1，可改)。
 
     init {
         viewModelScope.launch {
@@ -114,6 +119,10 @@ class AddMealViewModel(
             if (_state.value.mealTypes.isNotEmpty()) loadConfiguredDate()
             return
         }
+        if (userPickedDate && _state.value.mealBlocks.isNotEmpty()) {
+            AppLogger.d(TAG, "configure skip reload: user picked date manually, keep current edit")
+            return // [AI修改] F7：用户手动改过日期后，返回重组不再重载，避免丢失"改到新日期+当前内容"。
+        }
         if (configured && pendingEditDate == editDate && _state.value.mealBlocks.isNotEmpty()) {
             AppLogger.d(TAG, "configure skip reload: editDate=$editDate currentDate=${_state.value.date} blocks=${_state.value.mealBlocks.size}") // [AI生成] 排查返回新建菜品后是否误触发重载。
             return // [AI修改] 页面从新建菜品返回时可能重新组合，入口日期相同则保留当前未保存表单，避免旧餐食覆盖用户编辑。
@@ -127,15 +136,31 @@ class AddMealViewModel(
     }
 
     /**
-     * 修改整天餐食的日期。[AI修改]
+     * 修改当前餐食的日期。[AI修改]
+     *
+     * F7：只把当前正在编辑的餐次/菜品「改到」这个日期，**不带出该日期已有的餐次**。
+     * 若目标日期已有餐食 → 提示且不切换(去食历编辑那天或另选空日期)；空日期则直接切换、保留当前内容。
      */
     fun setDate(date: LocalDate) {
-        AppLogger.d(TAG, "setDate manual: date=$date previous=${_state.value.date}") // [AI生成] 用户主动切换日期时记录前后日期。
+        if (date == _state.value.date) return
         configured = true
-        pendingEditDate = date
-        if (_state.value.mealTypes.isNotEmpty()) {
-            loadConfiguredDate()
-        } // [AI修改] 用户主动选择日期时仍要重新加载目标日期餐食，不受入口防重载保护。
+        userPickedDate = true
+        viewModelScope.launch {
+            val occupied = mealRepo.loadDayMealsForEdit(date).isNotEmpty()
+            if (occupied) {
+                AppLogger.d(TAG, "setDate conflict: date=$date already has meals")
+                _state.value = _state.value.copy(dateWarning = "$date 已经有餐食了，请到食历里编辑那天，或选一个空日期")
+            } else {
+                AppLogger.d(TAG, "setDate move: date=$date previous=${_state.value.date} (保留当前餐次)")
+                pendingEditDate = date
+                _state.value = _state.value.copy(date = date, isPlan = date > DateTime.today(), dateWarning = null)
+            }
+        }
+    }
+
+    /** 消费一次性日期冲突提示。[AI生成] */
+    fun consumeDateWarning() {
+        if (_state.value.dateWarning != null) _state.value = _state.value.copy(dateWarning = null)
     }
 
     /**
@@ -287,6 +312,12 @@ class AddMealViewModel(
             _state.value = s.copy(saving = true)
             runCatching {
                 mealRepo.saveDayMeals(date = s.date, meals = drafts)
+                // [AI生成] F7：若本次是编辑已有某天并把日期改到了新日期(移动)，保存到新日期后删除旧日期，避免重复。
+                val from = loadedFromDate
+                if (from != null && from != s.date) {
+                    AppLogger.d(TAG, "move meals: delete old date=$from after saving to ${s.date}")
+                    mealRepo.deleteDayMeals(from)
+                }
             }.onSuccess {
                 AppLogger.d(TAG, "save meals success: date=${s.date} drafts=${drafts.size}") // [AI生成] 记录保存成功。
                 AppLogger.event(
@@ -334,9 +365,47 @@ class AddMealViewModel(
     private fun loadConfiguredDate() {
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
+            val cf = copyFromDate
+            if (cf != null) {
+                loadCopyFrom(cf)
+                return@launch
+            }
             val targetDate = pendingEditDate ?: resolveNewMealDate()
             loadMealsForDateInternal(targetDate)
         }
+    }
+
+    /**
+     * 食历"复制"：把来源某天的餐次/菜品预填为**新建草稿**(日期默认源+1，可改)。[AI生成]
+     *
+     * F8：复制不再直接写库、也不是"复用到今天/明天"，而是走加餐流程——预填餐次/菜品，日期用户可再改。
+     */
+    fun configureCopy(sourceDate: LocalDate) {
+        if (configured) return
+        configured = true
+        copyFromDate = sourceDate
+        pendingEditDate = DateTime.plusDays(sourceDate, 1)
+        if (_state.value.mealTypes.isNotEmpty()) loadConfiguredDate()
+    }
+
+    private suspend fun loadCopyFrom(sourceDate: LocalDate) {
+        val target = DateTime.plusDays(sourceDate, 1)
+        val src = mealRepo.loadDayMealsForEdit(sourceDate)
+        val blocks = src.map { meal ->
+            MealBlockUiState(id = nextBlockId++, mealTypeId = meal.mealTypeId, mealTime = meal.mealTime, dishes = meal.dishes, note = meal.note)
+        }
+        loadedFromDate = null // 复制=新建，保存不删源
+        copyFromDate = null // 一次性
+        val fallback = _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" } ?: _state.value.mealTypes.firstOrNull()
+        val finalBlocks = blocks.ifEmpty { listOf(newBlock(fallback)) }
+        _state.value = _state.value.copy(
+            date = target,
+            isPlan = target > DateTime.today(),
+            mealBlocks = finalBlocks,
+            activeBlockId = finalBlocks.firstOrNull()?.id,
+            isEditingExisting = false, // 复制是新建，日期可改
+        )
+        AppLogger.d(TAG, "load copy-from: source=$sourceDate target=$target blocks=${finalBlocks.size}")
     }
 
     /**
@@ -355,6 +424,8 @@ class AddMealViewModel(
     private suspend fun loadMealsForDateInternal(date: LocalDate) {
         AppLogger.d(TAG, "load meals begin: date=$date") // [AI生成] 记录数据库加载日期，排查未保存编辑被覆盖。
         val existingMeals = mealRepo.loadDayMealsForEdit(date)
+        // [AI生成] F7：记录本次是否加载自"已有餐食的日期"，供保存时"改日期=移动"删旧。
+        loadedFromDate = if (existingMeals.isNotEmpty()) date else null
         AppLogger.d(TAG, "load meals db result: date=$date existing=${existingMeals.map { it.mealTypeId to it.dishes.map { dish -> dish.id } }}") // [AI生成] 记录数据库返回的餐食摘要。
         val blocks = if (existingMeals.isEmpty()) {
             val defaultType = _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" }
@@ -390,6 +461,8 @@ class AddMealViewModel(
             isPlan = date > DateTime.today(),
             mealBlocks = finalBlocks,
             activeBlockId = finalBlocks.firstOrNull()?.id,
+            // [AI生成] N3：加载到既有餐食=编辑模式→日期锁定；空日期(新增)→可改。
+            isEditingExisting = existingMeals.isNotEmpty(),
         )
         AppLogger.d(TAG, "load meals applied: date=$date blocks=${finalBlocks.map { it.id to it.dishes.map { dish -> dish.id } }}") // [AI生成] 记录加载应用到 UI 状态后的摘要。
     }
