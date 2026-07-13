@@ -111,6 +111,12 @@ internal fun DishMatchDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                // [AI生成] 说明"找菜"逻辑：按勾选食材反查用到它们的菜品，并标注齐全/差几项。
+                Text(
+                    "根据你勾选的食材，找出用到这些食材的菜品：命中越多的排在越前，并标注「食材齐全」或「还差几项」，帮你决定用现有食材做什么。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 if (matches.isEmpty()) {
                     Text("暂时没有匹配菜品", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {

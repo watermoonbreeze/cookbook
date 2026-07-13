@@ -639,6 +639,10 @@ class IngredientPickerViewModel(
                     },
                     lastCreatedIngredientId = if (ingredient == null) ingredientId else _state.value.lastCreatedIngredientId,
                     lastSavedIngredientId = ingredientId,
+                    // [AI修改] E2：新建食材后跳到"家庭"Tab + 所选分类(或家庭-全部)，并清空搜索，让用户看到刚建的已选中食材。
+                    mainTab = if (ingredient == null) IngredientMainTab.CUSTOM else _state.value.mainTab,
+                    selectedCategoryId = if (ingredient == null) (categoryIds.firstOrNull() ?: -1L) else _state.value.selectedCategoryId,
+                    keyword = if (ingredient == null) "" else _state.value.keyword,
                 )
                 reloadCurrentList()
             }.onFailure { error ->

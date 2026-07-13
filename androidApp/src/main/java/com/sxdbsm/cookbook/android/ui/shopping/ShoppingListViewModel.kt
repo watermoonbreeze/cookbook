@@ -50,7 +50,8 @@ class ShoppingListViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(loading = true)
             val items = repo.aggregate(DateTime.today())
-            _state.value = _state.value.copy(loading = false, items = items)
+            // [AI修改] 刷新=重新拉取并**重置所有临时态**(勾选/份数/已入库/提示)，避免入库后再刷新仍显示已入库状态。
+            _state.value = UiState(loading = false, items = items)
         }
     }
 
