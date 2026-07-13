@@ -90,6 +90,7 @@ class AddMealViewModel(
     private var userPickedDate = false // [AI生成] F7：用户手动改过日期后，configure 不再重载(保留当前编辑)。
     private var loadedFromDate: LocalDate? = null // [AI生成] F7：本次编辑加载自哪个已有日期(用于"改日期=移动"时删旧)。
     private var copyFromDate: LocalDate? = null // [AI生成] F8：食历"复制"来源日期→按其餐次预填成新建草稿(日期=源+1，可改)。
+    private var copyConfigured = false // [AI生成] F8：复制入口一次性守卫(独立于 configured，避免被 init 默认 configure 抢跑吞掉)。
 
     init {
         viewModelScope.launch {
@@ -144,14 +145,15 @@ class AddMealViewModel(
     fun setDate(date: LocalDate) {
         if (date == _state.value.date) return
         configured = true
-        userPickedDate = true
         viewModelScope.launch {
             val occupied = mealRepo.loadDayMealsForEdit(date).isNotEmpty()
             if (occupied) {
+                // [AI修改] 冲突时日期不变，也不置 userPickedDate(避免污染后续 configure 重载判断)。
                 AppLogger.d(TAG, "setDate conflict: date=$date already has meals")
                 _state.value = _state.value.copy(dateWarning = "$date 已经有餐食了，请到食历里编辑那天，或选一个空日期")
             } else {
                 AppLogger.d(TAG, "setDate move: date=$date previous=${_state.value.date} (保留当前餐次)")
+                userPickedDate = true // 仅成功改到空日期时才标记"用户改过日期"
                 pendingEditDate = date
                 _state.value = _state.value.copy(date = date, isPlan = date > DateTime.today(), dateWarning = null)
             }
@@ -381,8 +383,12 @@ class AddMealViewModel(
      * F8：复制不再直接写库、也不是"复用到今天/明天"，而是走加餐流程——预填餐次/菜品，日期用户可再改。
      */
     fun configureCopy(sourceDate: LocalDate) {
-        if (configured) return
+        // [AI修改] 用独立 copyConfigured 守卫(而非 configured)：即便 init 的默认 configure 先跑并置 configured=true，
+        // 复制仍能应用；且复制入口只应用一次，返回重组时不重复加载。
+        if (copyConfigured) return
+        copyConfigured = true
         configured = true
+        userPickedDate = true // 复制草稿视为"用户已定日期"，防止返回重组时 configure 按目标日重载覆盖草稿
         copyFromDate = sourceDate
         pendingEditDate = DateTime.plusDays(sourceDate, 1)
         if (_state.value.mealTypes.isNotEmpty()) loadConfiguredDate()

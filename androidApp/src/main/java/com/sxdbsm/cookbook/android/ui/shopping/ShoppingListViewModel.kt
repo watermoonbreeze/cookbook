@@ -80,30 +80,38 @@ class ShoppingListViewModel(
         _state.value = _state.value.copy(servings = _state.value.servings + (name to next))
     }
 
+    private var stocking = false // [AI生成] 防止入库进行中重复点击导致并发累加/计数错乱。
+
     /** 把已勾选项按份数入库。[AI生成] 没勾选则提示；无法解析 id 的项跳过并计数。 */
     fun stockInChecked() {
+        if (stocking) return
         val checked = _state.value.checked
         if (checked.isEmpty()) {
             _state.value = _state.value.copy(toast = "请先勾选要入库的食材")
             return
         }
+        // [AI修改] 入库开始即固化目标(名/份数)，全程用快照，避免挂起期间 state 变化导致划掉项与实际入库项不一致。
+        val targets = _state.value.items.filter { it.ingredientName in checked && it.ingredientId != null }
+        val servingsSnapshot = _state.value.servings
+        val targetNames = targets.map { it.ingredientName }.toSet()
+        stocking = true
         viewModelScope.launch {
-            val targets = _state.value.items.filter { it.ingredientName in checked && it.ingredientId != null }
             var ok = 0
             targets.forEach { item ->
-                runCatching { pantryRepo.addServings(item.ingredientId!!, _state.value.servings[item.ingredientName] ?: 1) }
+                runCatching { pantryRepo.addServings(item.ingredientId!!, servingsSnapshot[item.ingredientName] ?: 1) }
                     .onSuccess { ok++ }
             }
             val skipped = checked.size - targets.size
             val msg = buildString {
                 append("已入库 $ok 项")
-                if (skipped > 0) append("，$skipped 项无法识别已跳过")
+                if (skipped > 0) append("，$skipped 项未入库(食材已失效或已刷新)")
             }
             _state.value = _state.value.copy(
-                stocked = _state.value.stocked + targets.map { it.ingredientName },
-                checked = _state.value.checked - targets.map { it.ingredientName }.toSet(),
+                stocked = _state.value.stocked + targetNames,
+                checked = _state.value.checked - targetNames,
                 toast = msg,
             )
+            stocking = false
         }
     }
 

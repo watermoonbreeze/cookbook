@@ -42,6 +42,8 @@ object FoodGroup {
 
     /** 单个主料名 → 食物大类(命中优先级：蛋→水产→禽→红肉→主食→豆→奶→菌→蔬菜→水果)。[AI生成] */
     fun classify(name: String): Group? = when {
+        // [AI修改] 血制品(鸭血/猪血/鸡血)归红肉类(富铁)，先于禽/水产判断，避免"鸭血"被"鸭"误判为禽肉。
+        name.contains("血") -> Group.RED_MEAT
         EGG_KW.any { name.contains(it) } -> Group.EGG
         FISH_KW.any { name.contains(it) } -> Group.FISH
         WHITE_MEAT_KW.any { name.contains(it) } -> Group.WHITE_MEAT
