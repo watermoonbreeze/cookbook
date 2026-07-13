@@ -71,7 +71,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     /** 主页用：只展示今天及未来真实存在的两条餐食记录。[AI修改] */
     fun observeTodayPlusFuture(today: LocalDate): Flow<List<DayMealCardData>> {
         val todayStr = DateTime.formatDate(today)
-        return q.selectUpcomingMealRecords(todayStr, 2)
+        // [AI修改] N2：原来 LIMIT=2 是限"行数"，今天有早/中/晚会被截成 2 条(餐食不完整)。
+        // 改为取足够多行，再按日期取"当天+下一日期"共 2 天的**完整**餐食(每天全部餐次)。
+        return q.selectUpcomingMealRecords(todayStr, UPCOMING_ROW_LIMIT)
             .asFlow()
             .mapToList(ioDispatcher)
             .map { records ->
@@ -79,6 +81,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     .groupBy { it.date }
                     .entries
                     .sortedBy { it.key }
+                    .take(2) // 当天 + 下一个有餐食的日期
                     .map { (dateStr, rows) ->
                         val date = DateTime.parseDate(dateStr)
                         buildDayMealCard(date, rows, plan = date > today)
@@ -464,6 +467,11 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             }
         }
         return PantryCardFlags(shortage, purchase.mapValues { it.value.distinct() })
+    }
+
+    private companion object {
+        // [AI生成] N2：首页"当天+下一日期"取足够多的餐食行(覆盖 2 天全部餐次)，再按日期 take(2)。
+        private const val UPCOMING_ROW_LIMIT = 60L
     }
 }
 
