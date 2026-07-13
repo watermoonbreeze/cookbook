@@ -59,7 +59,6 @@ fun IngredientPickerScreen(
     var categoryParentIdDraft by remember { mutableStateOf<Long?>(null) }
     var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) } // [AI修改] 食材详情统一通过底部弹层展示，首页和菜品选择共用。
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
-    var dishMatchOpen by remember { mutableStateOf(false) } // [AI生成] 按已选食材找菜结果弹框。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
     var pantryServingDialogFor by remember { mutableStateOf<Ingredient?>(null) } // [AI生成] 搜索结果入库时的份数选择弹窗目标。
 
@@ -346,10 +345,6 @@ fun IngredientPickerScreen(
                         menuOpen = selectedMenuOpen,
                         onMenuOpenChange = { selectedMenuOpen = it },
                         onPickSelected = { selectedIngredient = it },
-                        onFindDishes = {
-                            vm.findDishesBySelectedIngredients()
-                            dishMatchOpen = true
-                        },
                         onConfirm = {
                             onConfirm(vm.confirmSelected())
                             onDismiss()
@@ -407,14 +402,6 @@ fun IngredientPickerScreen(
             pantryServing = ui.pantryServings[ingredient.id] ?: 0,
             onAddServings = if (!selectionMode) ({ count -> vm.addServings(ingredient.id, count) }) else null,
             onSetServings = if (!selectionMode) ({ count -> vm.setServings(ingredient.id, count) }) else null,
-        )
-    }
-
-    if (dishMatchOpen) {
-        DishMatchDialog(
-            title = "可做菜品",
-            matches = ui.filterDishMatches,
-            onDismiss = { dishMatchOpen = false },
         )
     }
 
@@ -600,7 +587,6 @@ private fun SelectionBottomBar(
     menuOpen: Boolean,
     onMenuOpenChange: (Boolean) -> Unit,
     onPickSelected: (Ingredient) -> Unit,
-    onFindDishes: () -> Unit,
     onConfirm: () -> Unit,
 ) {
     Surface(
@@ -632,9 +618,7 @@ private fun SelectionBottomBar(
                     }
                 }
             }
-            // [AI修改] E1：底部"添加食材"取消，改由顶部搜索框后的"＋"随时新增；底栏只留找菜/完成。
-            OutlinedButton(onClick = onFindDishes, enabled = selectedCount > 0) { Text("找菜") }
-            Spacer(Modifier.width(8.dp))
+            // [AI修改] B-1：菜品编辑选食材时"找菜"无意义(已在建这道菜)，去掉；"添加食材"改由顶部＋。底栏只留完成。
             Button(onClick = onConfirm, enabled = selectedCount > 0) { Text("完成") }
         }
     }
