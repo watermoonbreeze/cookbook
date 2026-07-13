@@ -960,6 +960,15 @@ LEFT JOIN measurement_unit u ON di.unit_id = u.id
 WHERE di.dish_id = ? AND di.status = 1
 ORDER BY di.is_main DESC, di.id ASC;
 
+-- [AI生成] 按一组 dishId 取各菜的主料名(is_main=1)，用于列表/餐食卡 mainIngredientNames：
+-- 支撑食物分类图标(FoodGroup)、营养搭配、主食置顶判定。
+selectMainIngredientNamesByDishIds:
+SELECT di.dish_id AS dish_id, COALESCE(i.name, '') AS ingredient_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id AND i.status = 1
+WHERE di.dish_id IN ? AND di.status = 1 AND di.is_main = 1
+ORDER BY di.id ASC;
+
 deleteIngredientsOfDish:
 UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 

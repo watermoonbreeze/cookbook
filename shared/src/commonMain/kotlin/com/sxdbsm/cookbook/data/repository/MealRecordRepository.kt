@@ -416,6 +416,12 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         } else {
             q.selectTagsByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.name })
         }
+        // [AI生成] 主料名(is_main=1)：餐食卡的分类图标/营养搭配/主食置顶都依赖它，之前未填导致恒空。
+        val mainNamesByDish = if (dishIds.isEmpty()) {
+            emptyMap()
+        } else {
+            q.selectMainIngredientNamesByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.ingredient_name })
+        }
         val flags = pantryCardFlags() // [AI生成] 派生：每道菜在此餐次的缺料(份数不够)+采购(主料不在库)
         return rows.groupBy { it.meal_record_id }.mapValues { entry ->
             entry.value.map { row ->
@@ -427,6 +433,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     thumbnailPath = row.thumbnail_path,
                     tags = tagsByDish[row.id].orEmpty(),
                     preference = row.preference.toInt(),
+                    mainIngredientNames = mainNamesByDish[row.id].orEmpty(),
                     cookingMethodName = row.cooking_method_id?.let { cookingMethodNames[it] },
                     shortageIngredients = flags.shortage[key].orEmpty(),
                     purchaseIngredients = flags.purchase[key].orEmpty(),

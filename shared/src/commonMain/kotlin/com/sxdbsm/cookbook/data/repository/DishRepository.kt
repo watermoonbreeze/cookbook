@@ -228,6 +228,10 @@ class DishRepository(private val db: CookbookDatabase) {
         val tagsByDish = q.selectTagsByDishIds(dishIds)
             .executeAsList()
             .groupBy({ it.dish_id }, { it.name })
+        // [AI生成] 主料名(is_main=1)：供食物分类图标/营养/主食判定；之前一直未填导致 mainIngredientNames 恒空。
+        val mainNamesByDish = q.selectMainIngredientNamesByDishIds(dishIds)
+            .executeAsList()
+            .groupBy({ it.dish_id }, { it.ingredient_name })
         return sources.map { source ->
             val relMethods = relMethodsByDish[source.id].orEmpty()
             val fallbackName = source.cookingMethodId?.let { cookingMethodNames[it] }
@@ -239,6 +243,7 @@ class DishRepository(private val db: CookbookDatabase) {
                 thumbnailPath = source.thumbnailPath,
                 tags = tagsByDish[source.id].orEmpty(),
                 preference = source.preference,
+                mainIngredientNames = mainNamesByDish[source.id].orEmpty(),
                 cookingMethodName = methodNames.firstOrNull(),
                 cookingMethodNames = methodNames,
                 source = source.source,

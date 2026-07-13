@@ -629,6 +629,7 @@ private fun DatePickerDialogContent(
     onConfirm: (LocalDate) -> Unit,
 ) {
     val zone = TimeZone.UTC
+    // [AI修改] #2：Material3 1.1.2 无 SelectableDates，改在 setDate 里校验(已有餐食/早于下限则提示不切换)。
     val state = rememberDatePickerState(
         initialSelectedDateMillis = initialDate.toUtcDateMillis(),
     )

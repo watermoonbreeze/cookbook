@@ -218,7 +218,9 @@ internal fun IngredientDetailSheet(
                             onRemove = onTogglePantry,
                         )
                     }
-                    if (!selectionMode && (onEdit != null || onDelete != null)) {
+                    // [AI修改] 编辑/删除区按是否传入 onEdit/onDelete 显示(调用方已决定权限)：
+                    // 选择模式下自建食材也传 onEdit/onDelete，故能编辑/删除自建食材。
+                    if (onEdit != null || onDelete != null) {
                         Divider()
                         Row(
                             modifier = Modifier

@@ -55,6 +55,8 @@ data class AddMealUiState(
     val errorMessage: String? = null,
     val dateWarning: String? = null, // [AI生成] F7：选到已有餐食的日期时的一次性提示(不切换过去)
     val isEditingExisting: Boolean = false, // [AI生成] N3：编辑既有某天餐食时日期锁定不可改(防改日期导致数据错乱)；仅新增可改
+    val occupiedDates: Set<LocalDate> = emptySet(), // [AI生成] 已有餐食的日期：日期弹框屏蔽不可选
+    val minSelectableDate: LocalDate? = null, // [AI生成] 复制场景可选日期下限(=最新餐食日期+1)
 ) {
     /**
      * 页面是否允许保存。[AI生成]
@@ -95,7 +97,9 @@ class AddMealViewModel(
     init {
         viewModelScope.launch {
             val types = mealRepo.listMealTypes()
-            _state.value = _state.value.copy(mealTypes = types, favoriteCombos = comboRepo.listCombos())
+            // [AI生成] 已有餐食日期集合：日期弹框屏蔽这些日期不可选。
+            val occupied = runCatching { mealRepo.listDistinctDates(9999L, 0L).toSet() }.getOrDefault(emptySet())
+            _state.value = _state.value.copy(mealTypes = types, favoriteCombos = comboRepo.listCombos(), occupiedDates = occupied)
             if (!configured) {
                 configure(editDate = null)
             } else {
@@ -145,6 +149,12 @@ class AddMealViewModel(
     fun setDate(date: LocalDate) {
         if (date == _state.value.date) return
         configured = true
+        // [AI修改] #2：复制场景有下限(最新餐食+1)，早于下限直接提示不切换。
+        val minDate = _state.value.minSelectableDate
+        if (minDate != null && date < minDate) {
+            _state.value = _state.value.copy(dateWarning = "只能选择 $minDate 及之后的日期(接在现有餐食之后)")
+            return
+        }
         viewModelScope.launch {
             val occupied = mealRepo.loadDayMealsForEdit(date).isNotEmpty()
             if (occupied) {
@@ -395,7 +405,11 @@ class AddMealViewModel(
     }
 
     private suspend fun loadCopyFrom(sourceDate: LocalDate) {
-        val target = DateTime.plusDays(sourceDate, 1)
+        // [AI修改] #2：复制的目标日期 = 当前**最新餐食日期 + 1**(接在整个食历之后)，而非源日期+1；
+        // 无餐食时退回源+1。同时设可选下限 minSelectableDate=target，弹框里 target 之前的日期都不能选。
+        val today = DateTime.today()
+        val latest = mealRepo.dateRange().second
+        val target = if (latest != null) maxOf(DateTime.plusDays(latest, 1), today) else DateTime.plusDays(sourceDate, 1)
         val src = mealRepo.loadDayMealsForEdit(sourceDate)
         val blocks = src.map { meal ->
             MealBlockUiState(id = nextBlockId++, mealTypeId = meal.mealTypeId, mealTime = meal.mealTime, dishes = meal.dishes, note = meal.note)
@@ -406,12 +420,13 @@ class AddMealViewModel(
         val finalBlocks = blocks.ifEmpty { listOf(newBlock(fallback)) }
         _state.value = _state.value.copy(
             date = target,
-            isPlan = target > DateTime.today(),
+            isPlan = target > today,
             mealBlocks = finalBlocks,
             activeBlockId = finalBlocks.firstOrNull()?.id,
             isEditingExisting = false, // 复制是新建，日期可改
+            minSelectableDate = target, // target 之前(含所有已有餐食日期)不可选
         )
-        AppLogger.d(TAG, "load copy-from: source=$sourceDate target=$target blocks=${finalBlocks.size}")
+        AppLogger.d(TAG, "load copy-from: source=$sourceDate latest=$latest target=$target blocks=${finalBlocks.size}")
     }
 
     /**
