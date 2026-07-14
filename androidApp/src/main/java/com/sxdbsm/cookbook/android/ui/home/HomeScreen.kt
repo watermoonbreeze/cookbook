@@ -134,7 +134,13 @@ fun HomeScreen(
         // [AI生成] 营养色系墙(功能设置开启营养色系时展示)：近5周每天营养级别热力图。
         if (nutritionColorEnabled) {
             item { SectionHeader(title = "🎨 营养色系墙") }
-            item { NutritionWall(days = nutritionWall, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
+            item {
+                NutritionWall(
+                    days = nutritionWall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    onDayClick = onEditMealDate, // [AI生成] 点色块跳到那天(编辑/查看)
+                )
+            }
             item { Spacer(Modifier.height(28.dp)) }
         }
 
