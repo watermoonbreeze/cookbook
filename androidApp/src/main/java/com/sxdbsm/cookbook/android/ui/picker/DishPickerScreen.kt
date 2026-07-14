@@ -103,8 +103,8 @@ fun DishPickerScreen(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        navigationIconContentColor = MaterialTheme.colorScheme.secondary,
-                        actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.primary,
                     ), // [AI修改] 菜品选择弹窗顶栏按暖杏规范使用背景一体化样式。
                     // [AI修改] N6：搜索框融入标题栏(标题栏放下 添加到餐次·搜索框·完成)；原搜索框位置改放已选菜品。
                     title = {

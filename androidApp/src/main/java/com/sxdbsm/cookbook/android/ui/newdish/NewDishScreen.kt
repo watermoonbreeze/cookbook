@@ -107,8 +107,8 @@ fun NewDishScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.secondary,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -116,19 +116,18 @@ fun NewDishScreen(
                     }
                 },
                 actions = {
-                    OutlinedButton(
-                        onClick = { importPickerOpen = true },
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.tertiary),
-                    ) {
-                        Icon(Icons.Outlined.FileDownload, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
+                    // [AI修改] 苹果风格：导入降为纯文字次操作，避免与主 CTA 争视觉；保存为胶囊主按钮。
+                    TextButton(onClick = { importPickerOpen = true }) {
+                        Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(2.dp))
                         Text("导入")
                     }
-                    Spacer(Modifier.width(8.dp))
-                    Button(
+                    Spacer(Modifier.width(4.dp))
+                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                        text = "保存",
                         onClick = { vm.save() },
                         enabled = state.name.isNotBlank() && !state.saving && !state.loading && state.errorMessage == null,
-                    ) { Text("保存") }
+                    )
                     Spacer(Modifier.width(8.dp))
                 },
             )
@@ -922,14 +921,15 @@ private fun IngredientGroupEditorScreen(
                     navigationIcon = { IconButton(onClick = onDismiss) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") } },
                     actions = {
                         val valid = name.isNotBlank() && items.isNotEmpty()
-                        Button(
+                        com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                            text = "保存",
                             enabled = valid,
                             onClick = {
                                 onSave(name.trim(), items.map {
                                     com.sxdbsm.cookbook.domain.model.IngredientGroupItem(it.ingredient.name, it.isMain, it.quantity)
                                 })
                             },
-                        ) { Text("保存") }
+                        )
                         Spacer(Modifier.width(8.dp))
                     },
                 )

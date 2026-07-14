@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,29 +51,34 @@ fun HomeScreen(
     val mode by vm.themeMode.collectAsStateWithLifecycle()
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除计划餐食的日期(确认弹窗)。
+    // [AI修改] 苹果风格：首页用大标题(Large Title)，下滑折叠为小标题。
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 页面 Scaffold 不再额外添加系统栏避让，配合透明状态栏形成沉浸式。
         topBar = {
-            TopAppBar(
-                title = { Text("今天吃什么", fontWeight = FontWeight.SemiBold) },
-                colors = TopAppBarDefaults.topAppBarColors(
+            LargeTopAppBar(
+                title = { Text("今天吃什么", fontWeight = FontWeight.Bold) },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.largeTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 actions = {
                     IconButton(onClick = onOpenSearch) {
                         Icon(
                             Icons.Outlined.Search,
                             contentDescription = "搜索",
-                            tint = MaterialTheme.colorScheme.secondary, // [AI修改] 顶栏图标按暖杏规范使用辅助色。
+                            tint = MaterialTheme.colorScheme.primary, // [AI修改] 苹果风格：顶栏图标统一用 accent。
                         )
                     }
                     IconButton(onClick = { themeDialogOpen = true }) {
                         Icon(
                             Icons.Outlined.WbSunny,
                             contentDescription = "主题",
-                            tint = MaterialTheme.colorScheme.secondary, // [AI修改] 顶栏图标按暖杏规范使用辅助色。
+                            tint = MaterialTheme.colorScheme.primary, // [AI修改] 苹果风格：顶栏图标统一用 accent。
                         )
                     }
                 },

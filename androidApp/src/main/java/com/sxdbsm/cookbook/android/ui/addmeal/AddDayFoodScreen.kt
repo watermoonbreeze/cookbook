@@ -161,8 +161,8 @@ fun AddDayFoodScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.secondary,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -170,10 +170,11 @@ fun AddDayFoodScreen(
                     }
                 },
                 actions = {
-                    Button(
+                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                        text = if (state.isPlan) "保存计划" else "保存",
                         onClick = { vm.save() },
                         enabled = state.canSave,
-                    ) { Text(if (state.isPlan) "保存计划" else "保存") }
+                    )
                     Spacer(Modifier.width(8.dp))
                 },
             )

@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.ThemeMode
@@ -106,19 +107,29 @@ fun MineScreen(
         selectedLogFileName?.let { vm.readLogFile(it) }
     }
 
+    // [AI修改] 苹果风格：我的页用大标题(Large Title)，下滑折叠。
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        topBar = {
+            LargeTopAppBar(
+                title = { Text("我的", fontWeight = FontWeight.Bold) },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                ),
+            )
+        },
+    ) { innerPadding ->
     Column(
         Modifier
+            .padding(innerPadding)
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        TopAppBar(
-            title = { Text("我的", fontWeight = FontWeight.SemiBold) },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                titleContentColor = MaterialTheme.colorScheme.onBackground,
-            ),
-        )
-
         // [AI修改] 顶部用户卡：展示健康档案摘要。
         OutlinedCard(
             modifier = Modifier
@@ -274,6 +285,7 @@ fun MineScreen(
 
         Spacer(Modifier.height(80.dp))
     }
+    } // [AI修改] Scaffold 内容 lambda 结束
 
     if (themeDialogOpen) {
         ThemeModeDialog(

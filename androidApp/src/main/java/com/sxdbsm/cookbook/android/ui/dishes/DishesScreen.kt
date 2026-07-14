@@ -130,7 +130,7 @@ fun DishesScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {

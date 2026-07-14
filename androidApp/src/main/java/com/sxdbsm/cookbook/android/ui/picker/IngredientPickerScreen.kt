@@ -102,8 +102,8 @@ fun IngredientPickerScreen(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        navigationIconContentColor = MaterialTheme.colorScheme.secondary,
-                        actionIconContentColor = MaterialTheme.colorScheme.secondary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.primary,
                     ), // [AI修改] 食材选择弹窗顶栏按暖杏规范使用背景一体化样式。
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
