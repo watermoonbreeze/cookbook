@@ -6,7 +6,8 @@
 ## 元信息
 
 - 上次总结会话点：2026-07-14下午/晚 营养素体系(ingredient_nutrition表+measurement_unit.grams克当量19.sqm+NutritionCalculator/Repository/Balance+专用seed文件ingredient_nutrition.json 65食材+菜品详情营养卡+餐食当天热量) + 增长型本地推荐(RecommendationWeights/Style综合/偏熟悉/偏新鲜/偏营养+HealthRuleEngine因子化+DataSource派生画像(偏好/主料重复/营养互补)+PeriodPlanner style+AI推荐页/周期计划风格选择器) + 色系墙固定本公历年/定位今天居中(snapshotFlow等布局)/往年平均色行 + 沉浸式insets(全屏页navigationBarsPadding/底栏去clip) + 标签烹饪库选择器(LibraryPickerDialog软删仅user) + 加餐默认日期(最后餐食+1/时段) + UX设计师5轮审查修2必修; 关键坑=沉浸式全屏页遮挡+底部双重padding、scrollToItem同帧layoutInfo旧、mapResult重建丢粘性字段、软删已选未同步复活
-- 总结次数：26
+- 上次总结会话点：2026-07-14晚2 每日卡路里目标+推荐收尾+营养数据(BodyMetrics/CalorieTarget BMR×活动系数 存偏好JSON免迁移+功能设置录入+餐食达标+色系墙评级结合热量combine+mapLatest; 推荐prompt加风格画像+逐菜理由常做/补营养; 今日营养卡热量进度+宏量占比条; ingredient_nutrition 65→100; 5轮审核修录入写回竞态/数字过滤/图例) 关键坑=偏好JSON免迁移、表单多字段写回竞态用本地态单一真相源、数字过滤单小数点、combine+mapLatest批量异步
+- 总结次数：27
 
 ## 文件索引
 

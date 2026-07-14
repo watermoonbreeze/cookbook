@@ -82,6 +82,10 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - VM 里用"**重建整个 UiState**"(如 `mapResult(...)` 返回 new state)替换 `state` 会**丢掉未列出的字段**（粘性选择：推荐风格/餐次/去重周期）→ 结果用 `.copy(那些字段=旧值)` 保留；`onFailure` 走 `state.copy` 天然保留。
 - 字典/库**软删只删 `source='user'`**（预设不可删）；从库删某项时若它**已被当前表单选中**，要**同步移除已选**，否则保存 `INSERT OR IGNORE` 会把删掉的自建项"复活"。
 - SQLDelight 加**纯新查询/软删**（`selectAll*`/`softDelete* WHERE source='user'`）不改表结构 → **无需 `.sqm` 迁移**；只有改 CREATE TABLE 列才要迁移。营养/字典类**批量基础数据**用**独立 seed 文件**（如 `ingredient_nutrition.json`，同 `ingredient_details.json` 按名 upsert），别内联进 `ingredients.json`——单表单文件后续只填数据。
+- 小型结构化配置（身体数据等单行低频、非查询维度）**存偏好 JSON 免迁移**：`@Serializable` data class 序列化成一个 `user_preferences` key（`PreferenceRepository.observe/setXxx` + `Json{ignoreUnknownKeys}`），加改字段零迁移；别为它新建表/加列。
+- 表单**多字段"改一个 copy 写回全部"有竞态**：字段 onChange 用异步 flow 回灌的值 `flow.copy(该字段=新值)` 写回时，快速连改两字段会用**旧值**覆盖丢数据。所有字段写回**以本地 UI 态为单一真相源**（`build()` 带全部本地值 + 仅覆盖显式变更项），不读迟滞 flow。
+- 数字输入框**别只 `filter{isDigit()||'.'}`**：会放行 `1.7.5`/`30.` → `toDouble/IntOrNull` 恒 null → 依赖值(目标等)静默消失。小数字段限最多一个小数点、整数字段(年龄)禁小数点。
+- StateFlow 结合**多源 + 逐项异步计算**用 `combine(...)+mapLatest{}`（mapLatest 可 suspend、新值取消旧算）；里面批量 `dishNutrition(allIds)` 一次查再按 id map，别 `.map{}`(不能 suspend)也别逐项查。
 
 ## 技术栈
 
