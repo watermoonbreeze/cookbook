@@ -65,23 +65,27 @@ class PantryRepository(private val db: CookbookDatabase) {
      *
      * 份数=可做几次菜。0 份食材不消失、可继续加；已有则累加并置在手。
      */
-    suspend fun addServings(ingredientId: Long, delta: Int = 1) {
-        if (delta <= 0) return
+    suspend fun addServings(ingredientId: Long, delta: Int = 1) = withContext(ioDispatcher) {
+        if (delta <= 0) return@withContext
         // [AI修改] 结算式 + 今日占用补偿，保证"加 N 份 → 剩余可见 +N"：
         //  - 份数 = 当前剩余 + delta + 今日已占用，并从现在起重新计窗口。
         //  - 结算基线(当前剩余)避免份数为0后重加把入库日之前的历史欠账重复计入。
         //  - 重置窗口后今日的餐会被再次扣减 → 补回「今日占用」，否则当天有餐时加份数无可见变化(旧 bug)。
-        val currentRemaining = remaining()[ingredientId] ?: 0
-        withContext(ioDispatcher) {
-            val todayStr = DateTime.formatDate(DateTime.today())
-            val todayConsumed = q.selectPantryUsageChrono().executeAsList()
-                .count { it.ingredient_id == ingredientId && it.meal_date == todayStr }
-            val now = DateTime.nowEpochSeconds()
+        // [AI修改] H3：把"读当前剩余/今日占用"与写入放进**同一事务**，避免快速双击/并发各读到同一基线、
+        //  后写覆盖前写而丢份数(activatePantry 是绝对赋值)。
+        val todayStr = DateTime.formatDate(DateTime.today())
+        val now = DateTime.nowEpochSeconds()
+        db.transaction { // SQLite3.18 无 UPSERT，读+两步写(建缺项→结算)放事务内保证原子
+            val stock = q.selectPantryStock().executeAsList()
+            val servings = stock.associate { it.ingredient_id to it.serving_count.toInt() }
+            val addedDate = stock.associate { it.ingredient_id to DateTime.epochSecondsToDate(it.added_at) }
+            val usages = q.selectPantryUsageChrono().executeAsList()
+                .map { PantryUsage(it.ingredient_id, it.ingredient_name, it.meal_record_id, it.dish_id, it.meal_date) }
+            val currentRemaining = PantryAllocation.remaining(servings, addedDate, usages, todayStr)[ingredientId] ?: 0
+            val todayConsumed = usages.count { it.ingredientId == ingredientId && it.date == todayStr }
             val newServing = currentRemaining + delta + todayConsumed
-            db.transaction { // SQLite3.18 无 UPSERT，两步(建缺项→结算)放事务内保证原子
-                q.insertPantryIfAbsent(ingredient_id = ingredientId, added_at = now)
-                q.activatePantry(serving_count = newServing.toLong(), added_at = now, ingredient_id = ingredientId)
-            }
+            q.insertPantryIfAbsent(ingredient_id = ingredientId, added_at = now)
+            q.activatePantry(serving_count = newServing.toLong(), added_at = now, ingredient_id = ingredientId)
         }
     }
 

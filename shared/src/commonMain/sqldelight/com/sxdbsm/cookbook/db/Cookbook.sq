@@ -1292,12 +1292,18 @@ setPantryServings:
 UPDATE pantry SET serving_count = :serving_count WHERE ingredient_id = :ingredient_id;
 
 -- [AI生成] 在手食材的份数映射(ingredient_id -> serving_count)，供派生占用与库存展示。
+-- [AI修改] JOIN ingredient 过滤 i.status=1：食材软删后其 pantry 行仍 status=1，不排除会当"幽灵在手"。
 selectPantryServings:
-SELECT ingredient_id, serving_count FROM pantry WHERE status = 1;
+SELECT p.ingredient_id, p.serving_count FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1;
 
 -- [AI生成] 在手食材份数 + 入库时间(added_at)，供"入库日起窗口"计算(入库日之前的餐不占用)。
+-- [AI修改] 同上：过滤失效食材，避免幽灵库存参与剩余份数计算。
 selectPantryStock:
-SELECT ingredient_id, serving_count, added_at FROM pantry WHERE status = 1;
+SELECT p.ingredient_id, p.serving_count, p.added_at FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1;
 
 -- ========== 选择性同步(P1) ==========
 -- [AI生成] 自建食材(导出用)。
@@ -1315,6 +1321,12 @@ SELECT common_methods, prep_tips, eating_notes, storage_tips, health_note FROM i
 -- [AI生成] 按名取在库食材 id(导入时解析食材引用)。
 selectActiveIngredientIdByName:
 SELECT id FROM ingredient WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] H1：在库食材 (id,name) 全集，供新建时按**归一名**在 Kotlin 侧比对防重复。
+-- (sqlite_3_18 方言的 WHERE 不支持 REPLACE/TRIM 等字符串函数，无法在 SQL 内归一，故在 Kotlin 归一比对；
+--  食材总量有界、新建是低频操作，一次全表扫可接受。)
+selectActiveIngredientIdNames:
+SELECT id, name FROM ingredient WHERE status = 1;
 
 -- [AI生成] 按一组名字取所有在库食材 id(库存推荐按名扩展匹配, 兼容同名不同 id 的历史重复食材)。
 selectIngredientIdsByNames:
@@ -1413,8 +1425,11 @@ WHERE p.status = 1 AND i.status = 1
 ORDER BY p.added_at DESC, i.pinyin;
 
 -- [AI生成] 在手食材 id 集合：用于详情/做法区标记「家里有」。
+-- [AI修改] JOIN ingredient 过滤 i.status=1：食材软删后 pantry 行残留会被误当"家里有"(详情标记/推荐 pantryIds)。
 selectPantryIngredientIds:
-SELECT ingredient_id FROM pantry WHERE status = 1;
+SELECT p.ingredient_id FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1;
 
 removeFromPantry:
 UPDATE pantry SET status = 0, serving_count = 0 WHERE ingredient_id = :ingredient_id;

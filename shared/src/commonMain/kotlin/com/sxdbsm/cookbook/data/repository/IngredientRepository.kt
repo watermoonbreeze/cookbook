@@ -96,7 +96,15 @@ class IngredientRepository(private val db: CookbookDatabase) {
         // 修复根因——用户新建菜品时若又建了个同名食材(如"五花肉")会得到不同 id，与库存里预置食材对不上，
         // 导致按 ingredient_id 匹配的库存推荐漏掉该菜。复用后同名食材始终同一 id。
         val trimmed = name.trim()
-        q.selectActiveIngredientIdByName(trimmed).executeAsOneOrNull()?.let { existingId ->
+        // [AI修改] H1：先精确匹配(快)，未命中再按**归一名**比对(去内部/全角空格 + 小写)，让
+        // "五花肉"/"五 花 肉"/"Egg"/"egg" 复用同一行，避免同名多 id 与下游按名匹配漏配。
+        val existingId = q.selectActiveIngredientIdByName(trimmed).executeAsOneOrNull()
+            ?: run {
+                val key = normalizeNameKey(trimmed)
+                q.selectActiveIngredientIdNames().executeAsList()
+                    .firstOrNull { normalizeNameKey(it.name) == key }?.id
+            }
+        if (existingId != null) {
             // [AI修改] 复用已有同名食材，同时补绑本次传入的分类(linkIngredientCategory 为 INSERT OR REPLACE 幂等)。
             categoryIds.distinct().forEach { q.linkIngredientCategory(existingId, it) }
             return@withContext existingId
@@ -104,7 +112,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
         q.insertIngredient(
             name = trimmed,
             alias = alias,
-            pinyin = Pinyin.toPinyin(name),
+            pinyin = Pinyin.toPinyin(trimmed), // [AI修改] L2：用 trimmed 生成拼音，避免首尾空格污染拼音索引/搜索。
             image_path = imagePath, // [AI修改] 新建食材时可保存可选图片路径，MVP 暂不接入系统相册。
             thumbnail_path = thumbnailPath, // [AI生成] 新建食材时保存缩略图路径，列表优先展示。
             emoji = "🥗", // [AI生成] 用户自建食材没有 JSON 预置图标时先使用通用食物图标。
@@ -116,6 +124,14 @@ class IngredientRepository(private val db: CookbookDatabase) {
         categoryIds.distinct().forEach { q.linkIngredientCategory(id, it) } // [AI修改] 新建食材时按多分类选择绑定分类。
         id
     }
+
+    /**
+     * 食材名归一 key（防重复匹配用）。[AI生成] H1
+     *
+     * 去首尾/内部空白(含全角空格 　、制表符) + 小写，让不同书写(空格/大小写)的同一食材归到同一 key。
+     */
+    private fun normalizeNameKey(raw: String): String =
+        raw.trim().replace(Regex("[\\s\\u3000]"), "").lowercase()
 
     /**
      * 读取食材已绑定的分类 id。[AI生成]
