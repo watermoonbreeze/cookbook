@@ -24,6 +24,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.android.ui.component.nutritionWallColor
 import com.sxdbsm.cookbook.util.DateTime
@@ -40,7 +42,7 @@ import kotlinx.datetime.LocalDate
  * <p>
  * [AI生成] 营养色系墙。
  **/
-private val CELL = 18.dp
+private val CELL = 22.dp // [AI修改] 放大以容纳格内日期数字
 private val GAP = 5.dp
 private val HEADER = 15.dp
 
@@ -86,17 +88,27 @@ fun NutritionWall(
                         }
                         week.forEach { d ->
                             val isToday = d.date == today
+                            val cellColor = nutritionWallColor(d.level)
+                            // 格内日期数字：按底色明暗选深/浅文字，保证可读。
+                            val dayTextColor = if (cellColor.luminance() > 0.5f) Color(0xFF3A352E) else Color.White.copy(alpha = 0.92f)
                             Box(
                                 modifier = Modifier
                                     .size(CELL)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(nutritionWallColor(d.level))
+                                    .background(cellColor)
                                     .then(
                                         if (isToday) Modifier.border(1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
                                         else Modifier,
                                     )
                                     .clickable { onDayClick(d.date) },
-                            )
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    d.date.dayOfMonth.toString(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = dayTextColor,
+                                )
+                            }
                         }
                     }
                 }
@@ -112,7 +124,7 @@ fun NutritionWall(
                 Spacer(Modifier.width(3.dp))
             }
             Spacer(Modifier.width(3.dp))
-            Text("均衡 · 点色块看那天 · 可左滑看更早", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("均衡 · 点色块看当天食历 · 可左滑看更早", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

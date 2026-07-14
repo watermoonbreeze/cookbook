@@ -43,6 +43,7 @@ fun FoodTimelineScreen(
     onOpenDish: (Long) -> Unit,
     onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] F8：复制→按来源日期预填成新建草稿(日期可改)
     onBack: (() -> Unit)? = null,
+    initialJumpDate: LocalDate? = null, // [AI生成] 营养色系墙点色块进入时的目标日期(空=默认今天)
     vm: TimelineViewModel = koinViewModel(),
 ) {
     // [AI修改] 页面只订阅 TimelineUiState，不直接访问 Repository。
@@ -50,6 +51,15 @@ fun FoodTimelineScreen(
     val listState = rememberLazyListState()
     val context = LocalContext.current
     var initialScrollDone by remember { mutableStateOf(false) }
+    var jumpConsumed by remember { mutableStateOf(false) } // [AI生成] 保证外部日期只定位一次
+
+    // [AI生成] 从营养色系墙进入时，待食历日期列表就绪后定位到目标日(该日有餐才有卡片)。
+    LaunchedEffect(initialJumpDate, state.mealDates) {
+        if (initialJumpDate != null && !jumpConsumed && initialJumpDate in state.mealDates) {
+            vm.jumpToDate(initialJumpDate)
+            jumpConsumed = true
+        }
+    }
     var calendarOpen by remember { mutableStateOf(false) }
     var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除餐食的日期(确认弹窗)。
 

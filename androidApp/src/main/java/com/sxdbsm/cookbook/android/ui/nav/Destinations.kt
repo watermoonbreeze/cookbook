@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 object Routes {
     const val HOME = "home"
     const val TIMELINE = "timeline"
-    const val TIMELINE_FULL = "timeline_full"
+    const val TIMELINE_FULL = "timeline_full?date={date}" // [AI修改] 支持可选日期参数：从营养色系墙点色块跳到该日食历
+    // [AI生成] 打开食历并可选定位到某日期(空=默认今天)。
+    fun timelineAt(date: String? = null) = "timeline_full?date=${date.orEmpty()}"
     const val ADD_MEAL = "addmeal?date={date}&dishIds={dishIds}&copyFrom={copyFrom}"
     const val DISHES = "dishes"
     const val INGREDIENTS = "ingredients"

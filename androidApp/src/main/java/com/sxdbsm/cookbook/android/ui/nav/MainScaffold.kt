@@ -112,11 +112,12 @@ fun MainScaffold(
         ) {
             composable(Routes.HOME) {
                 HomeScreen(
-                    onOpenTimeline = { nav.navigate(Routes.TIMELINE_FULL) },
+                    onOpenTimeline = { nav.navigate(Routes.timelineAt()) },
                     onOpenDishes = { nav.navigateRootTab(Routes.DISHES) },
                     onOpenSearch = { nav.navigate(Routes.SEARCH) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                    onOpenTimelineAt = { date -> nav.navigate(Routes.timelineAt(DateTime.formatDate(date))) }, // [AI生成] 营养色系墙点色块→食历定位该日
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
                     onOpenWeekPlan = { nav.navigate(Routes.WEEK_PLAN) }, // [AI生成] B3
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
@@ -129,12 +130,17 @@ fun MainScaffold(
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] F8
                 )
             }
-            composable(Routes.TIMELINE_FULL) {
+            composable(
+                route = Routes.TIMELINE_FULL,
+                arguments = listOf(navArgument("date") { type = NavType.StringType; defaultValue = "" }),
+            ) { entry ->
+                val jumpDate = entry.arguments?.getString("date")?.takeIf { it.isNotBlank() }?.let(DateTime::parseDate) // [AI生成] 营养色系墙传入的目标日期
                 FoodTimelineScreen(
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] F8
                     onBack = { nav.popBackStack() },
+                    initialJumpDate = jumpDate, // [AI生成] 打开后定位到该日
                 )
             }
             composable(Routes.DISHES) {

@@ -41,6 +41,7 @@ fun HomeScreen(
     onOpenSearch: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
+    onOpenTimelineAt: (LocalDate) -> Unit = {}, // [AI生成] 营养色系墙点色块→食历定位该日
     onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] A1：首页计划卡"复制"入口(与食历页一致，家庭高频"照着某天再吃一次")
     onOpenWeekPlan: () -> Unit = {}, // [AI生成] B3：一周计划入口
     onOpenAiRecommend: () -> Unit = {},
@@ -138,7 +139,7 @@ fun HomeScreen(
                 NutritionWall(
                     days = nutritionWall,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    onDayClick = onEditMealDate, // [AI生成] 点色块跳到那天(编辑/查看)
+                    onDayClick = onOpenTimelineAt, // [AI修改] 点色块→食历定位该日餐食(不再进编辑页)
                 )
             }
             item { Spacer(Modifier.height(28.dp)) }
