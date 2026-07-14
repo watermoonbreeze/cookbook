@@ -45,6 +45,26 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun `营养seed引用完整_且能被读取和折算`() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val seeder = PresetDataSeeder(db)
+        // 引用完整性：营养数据的食材名都能对上食材(否则静默跳过)。
+        assertTrue(seeder.validateNutritionSeedForTest().isEmpty(), "营养 seed 存在对不上的食材名: ${seeder.validateNutritionSeedForTest()}")
+        assertTrue(seeder.nutritionCountForTest() >= 60, "营养数据应已覆盖常见食材(≥60)")
+
+        seeder.seedIfNeeded()
+        val nutritionRepo = com.sxdbsm.cookbook.data.repository.NutritionRepository(db)
+        val eggId = IngredientRepository(db).search("鸡蛋").first { it.name == "鸡蛋" }.id
+        val n = nutritionRepo.ingredientNutrition(eggId)
+        assertTrue(n != null && n.energyKcal == 144.0 && n.pieceGram == 50.0, "鸡蛋营养应入库(每100g 144kcal, 单件50g)")
+
+        // 单位克当量已回填：克=1、两=50。
+        val units = db.cookbookQueries.selectAllMeasurementUnits().executeAsList().associateBy { it.name }
+        assertEquals(1.0, units["克"]?.grams)
+        assertEquals(50.0, units["两"]?.grams)
+    }
+
+    @Test
     fun seedCreatesCrowdIngredientRules() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded()

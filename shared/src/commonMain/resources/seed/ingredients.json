@@ -10,8 +10,7 @@
       "staple_grain",
       "staple_grain_rice",
       "gi_high"
-    ],
-    "nutrition": {"kcal": 346, "protein": 7.4, "fat": 0.8, "carb": 77.9, "fiber": 0.7, "sodium": 3.8, "potassium": 103, "calcium": 13, "gi": 83, "purine": 18, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+    ]
   },
   {
     "code": "brown_rice",
@@ -113,8 +112,7 @@
       "staple",
       "vegetable_root",
       "staple_tuber"
-    ],
-    "nutrition": {"kcal": 81, "protein": 2.6, "fat": 0.2, "carb": 17.8, "fiber": 1.1, "sodium": 2.7, "potassium": 347, "calcium": 8, "gi": 62, "purine": 13, "pieceGram": 150, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+    ]
   },
   {
     "code": "yam",
@@ -178,8 +176,7 @@
       "nutrition_iron_non_heme",
       "season_spring",
       "season_winter"
-    ],
-    "nutrition": {"kcal": 28, "protein": 2.6, "fat": 0.3, "carb": 4.5, "fiber": 1.7, "sodium": 85, "potassium": 311, "calcium": 66, "gi": 15, "purine": 23, "pieceGram": 250, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+    ]
   },
   {
     "code": "bok_choy",
@@ -326,8 +323,7 @@
       "sugar_low",
       "nutrition_vitamin_c",
       "season_summer"
-    ],
-    "nutrition": {"kcal": 20, "protein": 0.9, "fat": 0.2, "carb": 4.0, "fiber": 0.5, "sodium": 5, "potassium": 163, "calcium": 10, "gi": 30, "purine": 11, "pieceGram": 150, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+    ]
   },
   {
     "code": "green_pepper",
@@ -569,8 +565,7 @@
       "meat_poultry",
       "protein_quality",
       "fat_low"
-    ],
-    "nutrition": {"kcal": 133, "protein": 19.4, "fat": 5.0, "carb": 2.5, "fiber": 0, "sodium": 34, "potassium": 338, "calcium": 3, "purine": 137, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+    ]
   },
   {
     "code": "chicken_leg",
@@ -603,8 +598,7 @@
       "egg_fresh",
       "protein_quality",
       "purine_low"
-    ],
-    "nutrition": {"kcal": 144, "protein": 13.3, "fat": 8.8, "carb": 2.8, "fiber": 0, "sodium": 131, "potassium": 154, "calcium": 56, "gi": 30, "purine": 3, "pieceGram": 50, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+    ]
   },
   {
     "code": "duck_egg",
@@ -670,8 +664,7 @@
       "protein_quality",
       "purine_medium",
       "nutrition_calcium_plant"
-    ],
-    "nutrition": {"kcal": 84, "protein": 8.1, "fat": 3.7, "carb": 3.8, "fiber": 0.4, "sodium": 7, "potassium": 125, "calcium": 164, "gi": 32, "purine": 68, "pieceGram": 400, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+    ]
   },
   {
     "code": "dried_tofu",

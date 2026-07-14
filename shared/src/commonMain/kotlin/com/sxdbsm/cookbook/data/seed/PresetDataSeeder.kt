@@ -88,7 +88,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val detailsJson = SeedResourceLoader.readText("seed/ingredient_details.json").orEmpty()
         val careRulesJson = SeedResourceLoader.readText("seed/ingredient_care_rules.json").orEmpty()
         val dishesJson = SeedResourceLoader.readText("seed/dishes.json").orEmpty()
-        val fingerprint = fingerprintOf(categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson)
+        val nutritionJson = SeedResourceLoader.readText("seed/ingredient_nutrition.json").orEmpty() // [AI生成] L2 营养数据文件
+        val fingerprint = fingerprintOf(categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson, nutritionJson)
 
         val stored = q.selectPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT).executeAsOneOrNull()?.value_
         if (!force && stored == fingerprint) {
@@ -104,6 +105,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             seedCrowdRules() // [AI生成] 慢病食材建议规则补齐式 seed。
             seedIngredientDetails(now) // [AI生成] 食材详情补齐式 seed。
             seedIngredientCareRules(categoryIdsByCode) // [AI生成] 通用调养规则补齐式 seed。
+            seedIngredientNutrition(now) // [AI生成] L2 食材营养素补齐式 seed（专用文件 ingredient_nutrition.json）。
             seedDishes(now) // [AI生成] 预设经典做法菜品补齐式 seed（关联主料/烹饪方式/配料/步骤）。
         }
         q.upsertPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT, fingerprint, now)
@@ -304,29 +306,44 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                     q.linkIngredientCategory(ingredientId, categoryId) // [AI修改] 已存在食材也补齐新 JSON 分类。
                 }
             }
-
-            // [AI生成] 营养素补齐：JSON 带 nutrition 才写(补齐式覆盖预设值，不动无数据食材)。
-            seed.nutrition?.let { nu ->
-                q.upsertIngredientNutrition(
-                    ingredient_id = ingredientId,
-                    energy_kcal = nu.kcal,
-                    protein_g = nu.protein,
-                    fat_g = nu.fat,
-                    carb_g = nu.carb,
-                    fiber_g = nu.fiber,
-                    sodium_mg = nu.sodium,
-                    potassium_mg = nu.potassium,
-                    calcium_mg = nu.calcium,
-                    gi = nu.gi,
-                    purine_mg = nu.purine,
-                    piece_gram = nu.pieceGram,
-                    ref = nu.ref,
-                    review = if (nu.review == "pending") 1L else 0L,
-                    updated_at = now,
-                )
-            }
         }
     }
+
+    /**
+     * 灌入食材营养素(L2 数值层)。[AI生成]
+     *
+     * 从专用文件 `ingredient_nutrition.json`(单表单文件，同 ingredient_details.json 模式)按食材名解析、补齐式 upsert。
+     * 后续补营养数据只维护这一个文件。健康数据为参考整理值，带 ref/review。
+     */
+    private fun seedIngredientNutrition(now: Long) {
+        val q = db.cookbookQueries
+        loadIngredientNutrition().forEach { nu ->
+            val ingredientId = q.selectIngredientIdByNameIncludingInactive(nu.ingredient).executeAsOneOrNull()?.id
+                ?: return@forEach
+            q.upsertIngredientNutrition(
+                ingredient_id = ingredientId,
+                energy_kcal = nu.kcal,
+                protein_g = nu.protein,
+                fat_g = nu.fat,
+                carb_g = nu.carb,
+                fiber_g = nu.fiber,
+                sodium_mg = nu.sodium,
+                potassium_mg = nu.potassium,
+                calcium_mg = nu.calcium,
+                gi = nu.gi,
+                purine_mg = nu.purine,
+                piece_gram = nu.pieceGram,
+                ref = nu.ref,
+                review = if (nu.review == "pending") 1L else 0L,
+                updated_at = now,
+            )
+        }
+    }
+
+    private fun loadIngredientNutrition(): List<SeedIngredientNutrition> =
+        SeedResourceLoader.readText("seed/ingredient_nutrition.json")
+            ?.let { json.decodeFromString(it) }
+            ?: emptyList()
 
     private fun loadFoodCategories(): List<SeedFoodCategory> =
         SeedResourceLoader.readText("seed/food_categories.json")
@@ -334,6 +351,19 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             ?: emptyList()
 
     internal fun loadIngredientsForTest(): List<SeedIngredient> = loadIngredients() // [AI生成] 单元测试校验 JSON 维护质量。
+
+    /**
+     * 校验营养 seed 引用完整性：每条 ingredient 名都能对上一个食材。[AI生成]
+     *
+     * seeder 对解析不到的食材名静默跳过(名不匹配→营养白写)，故用单测守住。返回问题列表，空=全部可解析。
+     */
+    internal fun validateNutritionSeedForTest(): List<String> {
+        val names = loadIngredients().map { it.name }.toSet()
+        return loadIngredientNutrition().filter { it.ingredient !in names }.map { "营养数据未知食材:${it.ingredient}" }
+    }
+
+    /** 有营养数据的食材数(覆盖率参考)。[AI生成] */
+    internal fun nutritionCountForTest(): Int = loadIngredientNutrition().size
 
     /**
      * 校验预设菜 JSON 引用完整性：食材名/烹饪方式/单位是否都能解析。[AI生成]
@@ -555,18 +585,18 @@ internal data class SeedIngredient(
     val categories: List<String> = emptyList(),
     val status: Int = 1, // [AI生成] 1 有效 / 0 失效（后台下架）；默认有效，兼容旧 JSON 无此字段。
     val reason: String = "", // [AI生成] 失效原因，仅 status=0 时有意义。
-    val nutrition: SeedNutrition? = null, // [AI生成] L2 营养素(每100g)，缺省=暂无数据。
 )
 
 /**
- * 食材营养素(每 100g 可食部)。[AI生成]
+ * 食材营养素(每 100g 可食部)——对应专用文件 ingredient_nutrition.json。[AI生成]
  *
- * 全部可空=未知；后续补数据只往 ingredients.json 的 nutrition 块填数字 + ref。
+ * 单表单文件(同 ingredient_details.json)：后续补数据只维护该文件、按食材名匹配。全部可空=未知。
  * kcal/protein/fat/carb/fiber(g)、sodium/potassium/calcium/purine(mg)、gi(0~100)、pieceGram(计件默认克重)。
  * 健康数据为 AI 参考整理、非权威核对：来源填 ref、待审填 review。
  */
 @Serializable
-internal data class SeedNutrition(
+internal data class SeedIngredientNutrition(
+    val ingredient: String,
     val kcal: Double? = null,
     val protein: Double? = null,
     val fat: Double? = null,
