@@ -389,6 +389,41 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         return problems
     }
 
+    /**
+     * 校验食材详情/分类 code/重复项 引用完整性。[AI生成]
+     *
+     * 补齐 validateDish/Nutrition 未覆盖的静默丢关联风险：详情按食材名匹配、食材挂类与调养规则按分类 code
+     * 匹配，写错名/code 会静默丢关联而非报错，故用单测守住。返回问题列表，空=全部干净。
+     */
+    internal fun validateDetailAndCategorySeedForTest(): List<String> {
+        val ingredients = loadIngredients()
+        val names = ingredients.map { it.name }.toSet()
+        val categoryCodes = loadFoodCategories().map { it.code }.toSet()
+        val problems = mutableListOf<String>()
+
+        // ① 详情引用的食材名必须存在
+        loadIngredientDetails().filter { it.ingredient !in names }
+            .forEach { problems += "详情未知食材:${it.ingredient}" }
+        // ② 食材挂载的分类 code 必须存在
+        ingredients.forEach { ing ->
+            ing.categories.filter { it !in categoryCodes }
+                .forEach { problems += "[${ing.name}] 未知分类code:$it" }
+        }
+        // ③ 调养规则引用的食材名 + 分类 code 必须存在
+        loadIngredientCareRules().forEach { r ->
+            if (r.ingredient !in names) problems += "调养规则未知食材:${r.ingredient}"
+            if (r.category.isNotBlank() && r.category !in categoryCodes) problems += "[${r.ingredient}] 调养规则未知分类code:${r.category}"
+        }
+        // ④ 各 JSON 内部不得重复 name / code
+        ingredients.groupingBy { it.name }.eachCount().filter { it.value > 1 }.keys
+            .forEach { problems += "食材name重复:$it" }
+        ingredients.groupingBy { it.code }.eachCount().filter { it.value > 1 }.keys
+            .forEach { problems += "食材code重复:$it" }
+        loadFoodCategories().groupingBy { it.code }.eachCount().filter { it.value > 1 }.keys
+            .forEach { problems += "分类code重复:$it" }
+        return problems
+    }
+
     private fun loadIngredients(): List<SeedIngredient> =
         SeedResourceLoader.readText("seed/ingredients.json")
             ?.let { json.decodeFromString(it) }

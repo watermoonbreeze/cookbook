@@ -163,6 +163,15 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun detailAndCategorySeedHasNoDanglingOrDuplicateReferences() {
+        // [AI生成] 补数据回归守卫：食材详情引用、食材/调养规则挂载的分类 code、以及各 JSON 内部 name/code 重复都要干净，
+        // 否则 seeder 静默丢关联（详情/分类不生效）而非报红。
+        val db = RepositoryTestDatabase.create()
+        val problems = PresetDataSeeder(db).validateDetailAndCategorySeedForTest()
+        assertTrue(problems.isEmpty(), "食材详情/分类 code/重复项存在问题：$problems")
+    }
+
+    @Test
     fun forceReseedIsIdempotentAndKeepsUserData() = runBlocking {
         // [AI生成] “更新基础数据”强制重跑：内容不变时数据条数不变，且不删除/覆盖用户自建食材。
         val db = RepositoryTestDatabase.create()

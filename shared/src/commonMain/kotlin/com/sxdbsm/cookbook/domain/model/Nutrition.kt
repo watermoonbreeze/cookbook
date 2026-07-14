@@ -30,9 +30,13 @@ data class IngredientNutrition(
     val ref: String = "",
     val review: Boolean = false,
 ) {
-    /** 是否含有任何量化营养数据（用于判断“有无数据”）。 */
+    /** 是否含有任何量化营养素（用于菜品营养覆盖率判断）。 */
     val hasAny: Boolean
         get() = listOf(energyKcal, proteinG, fatG, carbG, fiberG, sodiumMg, potassiumMg, calciumMg, purineMg).any { it != null }
+
+    /** 用户是否填了任何一项（含 GI / 单件克重）——供"填了才保存"判断，避免只填单件克重被丢弃。[AI生成] */
+    val hasAnyInput: Boolean
+        get() = hasAny || gi != null || pieceGram != null
 }
 
 /**

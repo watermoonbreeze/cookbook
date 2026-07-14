@@ -79,6 +79,8 @@ internal fun IngredientEditorDialog(
     var nCarb by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.carbG)) }
     var nFiber by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.fiberG)) }
     var nSodium by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.sodiumMg)) }
+    var nPotassium by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.potassiumMg)) }
+    var nCalcium by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.calciumMg)) }
     var nGi by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.gi)) }
     var nPurine by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.purineMg)) }
     var nPiece by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.pieceGram)) }
@@ -90,6 +92,7 @@ internal fun IngredientEditorDialog(
         ingredientId = ingredient?.id ?: 0L,
         energyKcal = nKcal.toDoubleOrNull(), proteinG = nProtein.toDoubleOrNull(), fatG = nFat.toDoubleOrNull(),
         carbG = nCarb.toDoubleOrNull(), fiberG = nFiber.toDoubleOrNull(), sodiumMg = nSodium.toDoubleOrNull(),
+        potassiumMg = nPotassium.toDoubleOrNull(), calciumMg = nCalcium.toDoubleOrNull(),
         gi = nGi.toDoubleOrNull(), purineMg = nPurine.toDoubleOrNull(), pieceGram = nPiece.toDoubleOrNull(),
     )
     val isPreset = ingredient?.source == "preset"
@@ -255,9 +258,14 @@ internal fun IngredientEditorDialog(
                                 NutrientField("钠mg", nSodium, Modifier.weight(1f)) { nSodium = it }
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                NutrientField("钾mg", nPotassium, Modifier.weight(1f)) { nPotassium = it }
+                                NutrientField("钙mg", nCalcium, Modifier.weight(1f)) { nCalcium = it }
                                 NutrientField("GI", nGi, Modifier.weight(1f)) { nGi = it }
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 NutrientField("嘌呤mg", nPurine, Modifier.weight(1f)) { nPurine = it }
                                 NutrientField("单件克重", nPiece, Modifier.weight(1f)) { nPiece = it }
+                                Spacer(Modifier.weight(1f))
                             }
                             Text(
                                 "单件克重：按「个/根/片」等计件单位买时，一件约多少克(如1个鸡蛋≈50)，用于把用量折算成克。",

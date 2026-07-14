@@ -627,8 +627,8 @@ class IngredientPickerViewModel(
                         careRules.map { it.copy(ingredientId = ingredientId, source = if (ingredient == null) "user" else it.source) },
                     )
                 }
-                // [AI生成] Item4：填了营养才写(空则不动，避免清空已有)——自定义食材由此纳入营养/热量统计。
-                if (nutrition != null && nutrition.hasAny) {
+                // [AI生成] Item4：填了任一项(含GI/单件克重)才写(空则不动，避免清空已有)——自定义食材由此纳入营养/热量统计。
+                if (nutrition != null && nutrition.hasAnyInput) {
                     nutritionRepo.upsertNutrition(nutrition.copy(ingredientId = ingredientId))
                 }
                 ingredientId
