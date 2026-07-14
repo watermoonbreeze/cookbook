@@ -66,8 +66,8 @@ fun IngredientPickerScreen(
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
      */
-    LaunchedEffect(excludeIngredientIds) {
-        vm.configure(excludeIngredientIds)
+    LaunchedEffect(excludeIngredientIds, selectionMode) {
+        vm.configure(excludeIngredientIds, selectionMode)
     }
     LaunchedEffect(Unit) {
         vm.selectMainTab(ui.mainTab, force = true)

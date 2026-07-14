@@ -58,6 +58,7 @@ data class IngredientPickerUiState(
     val selectedIds: Set<Long> = emptySet(),
     val selectedIngredients: List<Ingredient> = emptyList(),
     val excludeIngredientIds: Set<Long> = emptySet(),
+    val selectionMode: Boolean = true, // [AI生成] bug1：仅"选择食材"场景新建后自动选中；食材管理页(false)新建不打钩。
     val creatingIngredient: Boolean = false,
     val createError: String? = null,
     val operationError: String? = null,
@@ -123,9 +124,11 @@ class IngredientPickerViewModel(
     /**
      * 配置需要排除的食材。[AI修改]
      */
-    fun configure(excludeIngredientIds: Set<Long>) {
+    fun configure(excludeIngredientIds: Set<Long>, selectionMode: Boolean = true) {
         _state.value = _state.value.copy(
             excludeIngredientIds = excludeIngredientIds,
+            selectionMode = selectionMode, // [AI生成] bug1
+
             selectedIds = emptySet(),
             selectedIngredients = emptyList(),
             ingredients = _state.value.ingredients.filterNot { it.id in excludeIngredientIds },
@@ -482,11 +485,13 @@ class IngredientPickerViewModel(
                     source = "user",
                 )
             }.onSuccess { ingredient ->
-                // [AI修改] E2：新建后跳到该食材所在分类("家庭"Tab + 选中的分类/全部)，并保持它为已选(打钩)。
+                // [AI修改] E2：新建后跳到该食材所在分类("家庭"Tab + 选中的分类/全部)。
+                // [AI修改] bug1：仅"选择食材"场景(selectionMode)保持它为已选(打钩)；食材管理页新建不打钩。
+                val autoSelect = _state.value.selectionMode
                 _state.value = _state.value.copy(
                     creatingIngredient = false,
-                    selectedIds = _state.value.selectedIds + ingredient.id,
-                    selectedIngredients = (_state.value.selectedIngredients + ingredient).distinctBy { it.id },
+                    selectedIds = if (autoSelect) _state.value.selectedIds + ingredient.id else _state.value.selectedIds,
+                    selectedIngredients = if (autoSelect) (_state.value.selectedIngredients + ingredient).distinctBy { it.id } else _state.value.selectedIngredients,
                     lastCreatedIngredientId = ingredient.id,
                     lastSavedIngredientId = ingredient.id,
                     mainTab = IngredientMainTab.CUSTOM, // 家庭(用户自建)
@@ -631,8 +636,9 @@ class IngredientPickerViewModel(
                         thumbnailPath = thumbnailPath.trim(),
                         defaultUnitId = savedIngredient.defaultUnitId,
                     ) else it }, // [AI生成] 保存后立即替换当前列表对象，支撑详情弹层实时刷新。
-                    selectedIds = if (ingredient == null) _state.value.selectedIds + ingredientId else _state.value.selectedIds,
-                    selectedIngredients = if (ingredient == null) {
+                    // [AI修改] bug1：仅"选择食材"场景(selectionMode)新建后自动选中；食材管理页不打钩。
+                    selectedIds = if (ingredient == null && _state.value.selectionMode) _state.value.selectedIds + ingredientId else _state.value.selectedIds,
+                    selectedIngredients = if (ingredient == null && _state.value.selectionMode) {
                         (_state.value.selectedIngredients + savedIngredient).distinctBy { it.id }
                     } else {
                         _state.value.selectedIngredients.map { if (it.id == ingredientId) savedIngredient else it }
