@@ -6,6 +6,7 @@ import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
+import com.sxdbsm.cookbook.data.repository.StepTemplateRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.DishStep
@@ -36,6 +37,7 @@ class SyncRepository(
     private val healthRepo: HealthProfileRepository,
     private val favoriteRepo: FavoriteComboRepository,
     private val mealRepo: MealRecordRepository,
+    private val stepTemplateRepo: StepTemplateRepository, // [AI生成] #2 自建步骤模板同步
 ) {
     private val q = db.cookbookQueries
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = false }
@@ -96,6 +98,11 @@ class SyncRepository(
                 )
             }
         } else emptyList()
+        // [AI生成] #2 自建步骤模板随菜品域一起同步(它们是菜品做法的复用件)；预设模板两端 seed 一致、无需带。
+        val stepTemplates = if (exportDishes) {
+            stepTemplateRepo.listTemplates().filter { it.source != "preset" }
+                .map { SyncStepTemplate(name = it.name, steps = it.steps) }
+        } else emptyList()
         SyncBundle(
             schemaVersion = CookbookDatabase.Schema.version.toInt(),
             ingredients = syncIngredients,
@@ -104,6 +111,7 @@ class SyncRepository(
             healthCrowds = health,
             favorites = favorites,
             meals = meals,
+            stepTemplates = stepTemplates,
         )
     }
 
@@ -119,6 +127,7 @@ class SyncRepository(
         var healthMerged = 0
         var favAdded = 0
         var mealsMerged = 0
+        var stepTplAdded = 0
         val nameToId = HashMap<String, Long>() // 食材名→id
         val dishNameToId = HashMap<String, Long>() // 菜品名→id
 
@@ -231,9 +240,22 @@ class SyncRepository(
             mealsMerged++
         }
 
+        // 步骤模板：同名(预设或自建)跳过，缺则新建为自建。
+        if (bundle.stepTemplates.isNotEmpty()) {
+            val existingNames = stepTemplateRepo.listTemplates().map { it.name.trim() }.toSet()
+            for (st in bundle.stepTemplates) {
+                val tname = st.name.trim()
+                val steps = st.steps.map { it.trim() }.filter { it.isNotBlank() }
+                if (tname.isEmpty() || steps.isEmpty() || tname in existingNames) continue
+                stepTemplateRepo.createTemplate(tname, steps)
+                stepTplAdded++
+            }
+        }
+
         SyncImportResult(
             ingredientsAdded = ingAdded, dishesAdded = dishAdded, dishesUpdated = dishUpdated,
             pantryMerged = pantryMerged, healthMerged = healthMerged, favoritesAdded = favAdded, mealsMerged = mealsMerged,
+            stepTemplatesAdded = stepTplAdded,
         )
     }
 }

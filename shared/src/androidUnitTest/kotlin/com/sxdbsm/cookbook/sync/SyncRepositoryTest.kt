@@ -31,6 +31,7 @@ class SyncRepositoryTest {
         db, DishRepository(db), IngredientRepository(db), PantryRepository(db),
         HealthProfileRepository(db), FavoriteComboRepository(db, DishRepository(db)),
         com.sxdbsm.cookbook.data.repository.MealRecordRepository(db),
+        com.sxdbsm.cookbook.data.repository.StepTemplateRepository(db),
     )
 
     private fun seedSource(db: com.sxdbsm.cookbook.db.CookbookDatabase) = runBlocking {
@@ -88,6 +89,27 @@ class SyncRepositoryTest {
         assertEquals(0, second.dishesAdded) // 同名不新增
         assertEquals(1, second.dishesUpdated) // 而是更新
         assertEquals(0, second.ingredientsAdded) // 食材同名复用
+    }
+
+    @Test
+    fun `步骤模板随菜品域同步-同名不重复`() = runBlocking {
+        val src = RepositoryTestDatabase.create()
+        seedSource(src)
+        com.sxdbsm.cookbook.data.repository.StepTemplateRepository(src)
+            .createTemplate("我的红烧", listOf("焯水", "炒糖色", "焖煮", "收汁"))
+        // 选菜品域 → 自建步骤模板一并带出
+        val bundle = sync(src).export(SyncSelection(dishes = true))
+        assertTrue(bundle.stepTemplates.any { it.name == "我的红烧" && it.steps.size == 4 })
+
+        val dst = RepositoryTestDatabase.create()
+        val dstSync = sync(dst)
+        val r1 = dstSync.import(bundle)
+        assertEquals(1, r1.stepTemplatesAdded)
+        val tpls = com.sxdbsm.cookbook.data.repository.StepTemplateRepository(dst).listTemplates()
+        assertEquals(listOf("焯水", "炒糖色", "焖煮", "收汁"), tpls.first { it.name == "我的红烧" }.steps)
+        // 再导一次 → 同名跳过
+        val r2 = dstSync.import(bundle)
+        assertEquals(0, r2.stepTemplatesAdded)
     }
 
     @Test

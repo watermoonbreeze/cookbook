@@ -245,6 +245,26 @@ CREATE TABLE favorite_combo_dish (
     PRIMARY KEY (combo_id, dish_id)
 );
 
+-- [AI生成] 操作步骤模板：把常用做法步骤(文字)存成可复用模板，编辑菜品时"选择步骤"一键套用。
+-- source: preset(内置)/user(自建)；仅文字，图片仍按每道菜单独添加。全新装走 Schema.create 建表，旧库走 15.sqm。
+CREATE TABLE step_template (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE step_template_item (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    template_id INTEGER NOT NULL REFERENCES step_template(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    text TEXT NOT NULL DEFAULT '',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_step_template_item_order ON step_template_item(template_id, sort_order, id);
+
 -- ========== 用户偏好与档案 ==========
 
 CREATE TABLE user_preferences (
@@ -1175,6 +1195,33 @@ SELECT d.* FROM dish d
 JOIN favorite_combo_dish fcd ON d.id = fcd.dish_id
 WHERE fcd.combo_id = ? AND fcd.status = 1 AND d.status = 1
 ORDER BY d.name;
+
+-- ===== step_template（操作步骤模板）=====
+
+insertStepTemplate:
+INSERT INTO step_template(name, source, created_at, status) VALUES (?, ?, ?, 1);
+
+-- [AI生成] 预设模板幂等去重：种子按名判在。
+selectStepTemplateByName:
+SELECT * FROM step_template WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 预设在前(source='preset')、其次按创建时间。
+selectStepTemplates:
+SELECT * FROM step_template WHERE status = 1
+ORDER BY CASE source WHEN 'preset' THEN 0 ELSE 1 END, created_at ASC, id ASC;
+
+deleteStepTemplate:
+UPDATE step_template SET status = 0 WHERE id = ?;
+
+insertStepTemplateItem:
+INSERT INTO step_template_item(template_id, sort_order, text, status) VALUES (?, ?, ?, 1);
+
+selectStepTemplateItems:
+SELECT text FROM step_template_item WHERE template_id = ? AND status = 1
+ORDER BY sort_order ASC, id ASC;
+
+deleteStepTemplateItems:
+UPDATE step_template_item SET status = 0 WHERE template_id = ?;
 
 -- ===== user_preferences =====
 

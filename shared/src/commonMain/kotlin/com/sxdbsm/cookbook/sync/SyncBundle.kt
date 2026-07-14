@@ -23,6 +23,14 @@ data class SyncBundle(
     val healthCrowds: List<String> = emptyList(), // P2 健康档案(启用的人群/病种名)
     val favorites: List<SyncFavorite> = emptyList(), // P2 收藏组合
     val meals: List<SyncMeal> = emptyList(), // P3 餐食历史
+    val stepTemplates: List<SyncStepTemplate> = emptyList(), // [AI生成] #2 自建操作步骤模板(随菜品域一起同步)
+)
+
+/** 自建操作步骤模板(合并键=name；仅文字步骤)。[AI生成] #2 */
+@Serializable
+data class SyncStepTemplate(
+    val name: String,
+    val steps: List<String> = emptyList(),
 )
 
 /** 要同步的数据域选择。[AI生成] 选某域自动带依赖(库存/收藏/餐食→其食材/菜品)。 */
@@ -113,4 +121,5 @@ data class SyncImportResult(
     val healthMerged: Int = 0,
     val favoritesAdded: Int = 0,
     val mealsMerged: Int = 0,
+    val stepTemplatesAdded: Int = 0, // [AI生成] #2 新增的自建步骤模板数
 )

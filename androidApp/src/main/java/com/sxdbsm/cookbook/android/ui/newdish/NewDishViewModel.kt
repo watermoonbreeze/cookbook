@@ -48,6 +48,7 @@ data class NewDishUiState(
     val savedDishId: Long? = null,
 
     val availableUnits: List<MeasurementUnit> = emptyList(), // [AI修改] 食材用量单位下拉列表。
+    val stepTemplates: List<com.sxdbsm.cookbook.domain.model.StepTemplate> = emptyList(), // [AI生成] #2 "选择步骤"可套用的步骤模板(预设+自建)。
 )
 
 /**
@@ -60,6 +61,7 @@ class NewDishViewModel(
     private val ingredientRepo: IngredientRepository,
     @Suppress("unused") private val categoryRepo: FoodCategoryRepository,
     @Suppress("unused") private val pref: com.sxdbsm.cookbook.data.repository.PreferenceRepository,
+    private val stepTemplateRepo: com.sxdbsm.cookbook.data.repository.StepTemplateRepository, // [AI生成] #2 步骤模板
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
@@ -390,6 +392,62 @@ class NewDishViewModel(
                 .filterIndexed { i, _ -> i != index }
                 .mapIndexed { i, step -> step.copy(sortOrder = i) },
         )
+    }
+
+    // ========== #2 操作步骤模板 ==========
+
+    /** 加载可用步骤模板(预设+自建)，供"选择步骤"弹层展示。[AI生成] */
+    fun loadStepTemplates() {
+        viewModelScope.launch {
+            runCatching { stepTemplateRepo.listTemplates() }
+                .onSuccess { _state.value = _state.value.copy(stepTemplates = it) }
+                .onFailure { AppLogger.d(TAG, "load step templates failed: ${it.message}") }
+        }
+    }
+
+    /**
+     * 套用某个步骤模板：把模板内容**插入到当前定位的那一步**里，不新增多条步骤。[AI修改]
+     *
+     * - 无任何步骤时：新建一条步骤承载模板文字。
+     * - 有步骤时：写入 targetIndex 指向的步骤（无定位则末步）；该步已有文字则换行追加，否则直接填入。
+     * 模板多步以换行合并进同一步——按需求"选择的步骤模板不会主动创建多个步骤"。
+     */
+    fun applyStepTemplate(template: com.sxdbsm.cookbook.domain.model.StepTemplate, targetIndex: Int?) {
+        val text = template.steps.map { it.trim() }.filter { it.isNotBlank() }.joinToString("\n")
+        if (text.isBlank()) return
+        val steps = _state.value.steps
+        if (steps.isEmpty()) {
+            _state.value = _state.value.copy(steps = listOf(DishStep(sortOrder = 0, text = text)))
+            return
+        }
+        val idx = targetIndex?.takeIf { it in steps.indices } ?: steps.lastIndex
+        _state.value = _state.value.copy(
+            steps = steps.mapIndexed { i, s ->
+                if (i == idx) s.copy(text = if (s.text.isBlank()) text else s.text.trimEnd() + "\n" + text) else s
+            },
+        )
+    }
+
+    /**
+     * 把当前步骤(非空文字)存为一个自建模板，成功后刷新模板列表。[AI生成]
+     */
+    fun saveCurrentStepsAsTemplate(name: String) {
+        val texts = _state.value.steps.map { it.text.trim() }.filter { it.isNotBlank() }
+        if (name.isBlank() || texts.isEmpty()) return
+        viewModelScope.launch {
+            runCatching { stepTemplateRepo.createTemplate(name, texts) }
+                .onSuccess { loadStepTemplates() }
+                .onFailure { AppLogger.d(TAG, "save step template failed: ${it.message}") }
+        }
+    }
+
+    /** 删除自建步骤模板。[AI生成] */
+    fun deleteStepTemplate(id: Long) {
+        viewModelScope.launch {
+            runCatching { stepTemplateRepo.deleteTemplate(id) }
+                .onSuccess { loadStepTemplates() }
+                .onFailure { AppLogger.d(TAG, "delete step template failed: ${it.message}") }
+        }
     }
 
     /**

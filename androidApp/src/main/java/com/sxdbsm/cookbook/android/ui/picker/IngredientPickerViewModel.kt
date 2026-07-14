@@ -641,6 +641,10 @@ class IngredientPickerViewModel(
                     lastSavedIngredientId = ingredientId,
                     // [AI修改] E2：新建食材后跳到"家庭"Tab + 所选分类(或家庭-全部)，并清空搜索，让用户看到刚建的已选中食材。
                     mainTab = if (ingredient == null) IngredientMainTab.CUSTOM else _state.value.mainTab,
+                    // [AI修改] Bug 修复：跳到 CUSTOM 时同步重建左侧分类树，否则树停留在上个 Tab、看不到刚建的自定义分类节点。
+                    tree = if (ingredient == null)
+                        buildTreeForTab(IngredientMainTab.CUSTOM, _state.value.allCategories.filter { it.parentId == null }, _state.value.allCategories)
+                    else _state.value.tree,
                     selectedCategoryId = if (ingredient == null) (categoryIds.firstOrNull() ?: -1L) else _state.value.selectedCategoryId,
                     keyword = if (ingredient == null) "" else _state.value.keyword,
                 )
@@ -799,8 +803,10 @@ class IngredientPickerViewModel(
         val ingredients = when (val categoryId = current.selectedCategoryId) {
             null, ALL_CATEGORY_ID -> loadAllForTab(current.mainTab, "")
             else -> {
-                val node = current.tree.firstOrNull { it.category.id == categoryId }
-                if (node == null) emptyList() else loadByCategoryWithChildren(node.category)
+                // [AI修改] Bug 修复：原按陈旧的左侧展开树 tree 找节点，新建分类还没进树时找不到→返回空，
+                // 导致"挂到自建分类的食材保存后该分类下为空"。改为从 allCategories 找分类(不依赖树是否已含该节点)。
+                val category = current.allCategories.firstOrNull { it.id == categoryId }
+                if (category == null) emptyList() else loadByCategoryWithChildren(category)
             }
         }
         // [AI修改] 搜索已解耦为全局下拉，网格不再按 keyword 过滤，只按 Tab 来源过滤。

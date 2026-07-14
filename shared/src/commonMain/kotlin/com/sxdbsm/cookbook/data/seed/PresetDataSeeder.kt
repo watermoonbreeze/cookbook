@@ -48,6 +48,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes()
         ensureFlexibleSnackMealType() // [AI修改] 兼容旧库：补充“加餐”餐次，供添加餐食页按需手动选择时间。
         if (q.countDishTags().executeAsOne() == 0L) seedDishTags(now)
+        seedStepTemplates(now) // [AI生成] #2 预设步骤模板：按名幂等补齐(缺则补，不覆盖用户改动)。
         // [AI修改] 按具体 key 判断而非表是否为空：user_preferences 现在还会存 seed 元数据 key（指纹/清洗标记），
         // 不能再用 countUserPreferences==0 守卫，否则用户默认偏好会被漏写。
         if (q.selectPreference(PreferenceKeys.THEME_MODE).executeAsOneOrNull() == null) seedUserPreferences(now)
@@ -167,6 +168,23 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val q = db.cookbookQueries
         listOf("#复制" to "preset", "家常" to "preset", "快手" to "preset", "少盐" to "preset").forEach { (name, src) ->
             q.insertDishTag(name, src, now)
+        }
+    }
+
+    /**
+     * 预设操作步骤模板。[AI生成] #2
+     *
+     * 按名幂等：已存在(用户可能改过同名)则跳过，不覆盖。仅内置几套常见做法，用户可在编辑菜品时自建更多。
+     */
+    private fun seedStepTemplates(now: Long) {
+        val q = db.cookbookQueries
+        PRESET_STEP_TEMPLATES.forEach { (name, steps) ->
+            if (q.selectStepTemplateByName(name).executeAsOneOrNull() != null) return@forEach
+            q.insertStepTemplate(name, "preset", now)
+            val templateId = q.lastInsertId().executeAsOne()
+            steps.forEachIndexed { index, text ->
+                q.insertStepTemplateItem(templateId, index.toLong(), text)
+            }
         }
     }
 
@@ -371,6 +389,15 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val PRESET_COOKING_METHODS = listOf("炒", "蒸", "煮", "炖", "烤", "凉拌", "煎", "炸", "焖", "卤")
         val PRESET_MEASUREMENT_UNITS =
             listOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "碗", "块", "根", "条", "段", "瓣", "只", "适量", "少许")
+
+        // [AI生成] #2 预设操作步骤模板：常见做法的通用步骤(文字)，编辑菜品"选择步骤"一键套用。
+        val PRESET_STEP_TEMPLATES: List<Pair<String, List<String>>> = listOf(
+            "家常炒菜" to listOf("备菜：食材洗净切配", "热锅冷油，下葱姜蒜爆香", "下主料大火快炒", "加辅料，调味翻炒", "炒匀出锅装盘"),
+            "清蒸" to listOf("食材处理干净、摆盘", "简单调味腌制片刻", "水开后上锅蒸熟", "取出淋味汁、浇热油激香"),
+            "红烧" to listOf("主料焯水或煎至上色", "起锅炒香配料（可炒糖色）", "下主料翻炒，加水与调料", "小火焖煮至软烂", "大火收汁出锅"),
+            "煲汤" to listOf("食材焯水去腥", "冷水下锅，放姜片", "大火烧开转小火慢炖", "出锅前加盐调味"),
+            "凉拌" to listOf("食材焯水或洗净切好", "调味汁：蒜末、生抽、醋、香油等", "食材与料汁拌匀", "腌几分钟入味即可"),
+        )
     }
 
     /**

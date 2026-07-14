@@ -14,6 +14,7 @@ import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.data.repository.ShoppingListRepository
+import com.sxdbsm.cookbook.data.repository.StepTemplateRepository
 import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.platform.DatabaseDriverFactory
@@ -39,11 +40,12 @@ val sharedModule: Module = module {
     single { ShoppingListRepository(get()) } // [AI生成] 采购清单聚合(今天及未来餐食的采购/缺料汇总)。
     single { PreferenceRepository(get()) }
     single { HealthProfileRepository(get()) }
+    single { StepTemplateRepository(get()) } // [AI生成] #2 操作步骤模板(预设+自建，编辑菜品"选择步骤"套用)。
     // [AI生成] AI 推荐取数层(S0)：聚合库存/菜品/忌口/最近餐 → 规则引擎输入。
     single { RecommendationDataSource(get(), get(), get(), get(), get()) }
     // [AI生成] AI 运行时配置(云/端/Key)；AiRuntime 具体实现由 androidModule 绑定 SwitchableAiRuntime。
     single { AiRuntimeConfig(get()) }
     single { RecommendationOrchestrator(get()) }
     // [AI生成] 选择性同步：导出/合并导入 菜品/食材/库存/健康/收藏/餐食。
-    single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get(), get()) }
+    single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get(), get(), get()) }
 }

@@ -13,12 +13,13 @@ import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -61,6 +62,8 @@ fun NewDishScreen(
     var ingredientPickerOpen by remember { mutableStateOf(false) }
     var cookingMethodDialogOpen by remember { mutableStateOf(false) }
     var cookingMethodDraft by remember { mutableStateOf("") }
+    var stepTemplateSheetOpen by remember { mutableStateOf(false) } // [AI生成] #2 "选择步骤"模板弹层开关
+    var focusedStepIndex by remember { mutableStateOf<Int?>(null) } // [AI生成] #2 当前定位(聚焦)的步骤下标：模板插入到这一步
     var duplicateIngredientNames by remember { mutableStateOf<List<String>>(emptyList()) } // [AI生成] 选择食材后用于提示已存在的食材名称。
     var pendingNewIngredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) } // [AI生成] 用户确认重复提示后实际追加的新增食材。
     val context = LocalContext.current
@@ -238,17 +241,8 @@ fun NewDishScreen(
                 )
             }
 
-            // [AI生成] 菜系选择：单选，再点已选项可清空(留空=未分类)。
-            FormFieldLabel("菜系")
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                items(com.sxdbsm.cookbook.domain.model.Cuisines.ALL, key = { it }) { c ->
-                    FilterChip(
-                        selected = state.cuisine == c,
-                        onClick = { vm.setCuisine(if (state.cuisine == c) "" else c) },
-                        label = { Text(c) },
-                    )
-                }
-            }
+            // [AI修改] #3：自建/编辑菜品不再提供菜系选择——菜系是预设菜的分类维度，用户自建菜不纳入。
+            // DB 的 cuisine 列与预设菜的菜系保留不变；编辑预设菜时其原菜系原样带回保存(state.cuisine 不动)。
 
             FormFieldLabel("食材清单")
             OutlinedCard(
@@ -305,6 +299,8 @@ fun NewDishScreen(
                 onRemoveStep = vm::removeStep,
                 onMoveStep = vm::moveStep,
                 showStepNumber = stepModeEnabled,
+                onPickTemplate = { vm.loadStepTemplates(); stepTemplateSheetOpen = true },
+                onStepFocused = { focusedStepIndex = it },
             )
 
             FormFieldLabel("特殊说明")
@@ -434,6 +430,22 @@ fun NewDishScreen(
         )
     }
 
+    if (stepTemplateSheetOpen) {
+        StepTemplatePickerDialog(
+            templates = state.stepTemplates,
+            canSaveCurrent = state.steps.any { it.text.isNotBlank() },
+            onApply = { template ->
+                vm.applyStepTemplate(template, focusedStepIndex)
+                stepTemplateSheetOpen = false
+                val where = if (state.steps.isEmpty()) "新步骤" else "第 ${(focusedStepIndex?.plus(1)) ?: state.steps.size} 步"
+                Toast.makeText(context, "已把「${template.name}」插入$where", Toast.LENGTH_SHORT).show()
+            },
+            onSaveCurrent = { name -> vm.saveCurrentStepsAsTemplate(name) },
+            onDelete = { id -> vm.deleteStepTemplate(id) },
+            onDismiss = { stepTemplateSheetOpen = false },
+        )
+    }
+
     if (cookingMethodDialogOpen) {
         CookingMethodDialog(
             value = cookingMethodDraft,
@@ -500,8 +512,19 @@ private fun OperationStepsEditor(
     onRemoveStep: (Int) -> Unit,
     onMoveStep: (Int, Boolean) -> Unit, // [AI生成] (index, toStart) 上移/下移
     showStepNumber: Boolean, // [AI生成] 分步执行开启时才显示"步骤N"序号
+    onPickTemplate: () -> Unit, // [AI生成] #2 打开"选择步骤"模板弹层
+    onStepFocused: (Int) -> Unit, // [AI生成] #2 某步输入框获焦→记录为当前定位步(模板插入目标)
 ) {
-    FormFieldLabel("操作步骤")
+    // [AI修改] #2：标题右侧加"选择步骤"入口——套用预设/自建步骤模板。
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        FormFieldLabel("操作步骤")
+        Spacer(Modifier.weight(1f))
+        TextButton(onClick = onPickTemplate) {
+            Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(4.dp))
+            Text("选择步骤")
+        }
+    }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (steps.isEmpty()) {
             OutlinedCard(
@@ -546,7 +569,9 @@ private fun OperationStepsEditor(
                     OutlinedTextField(
                         value = step.text,
                         onValueChange = { onUpdateStepText(index, it) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { if (it.isFocused) onStepFocused(index) }, // [AI生成] #2 记录当前定位步
                         placeholder = { Text("如：热锅冷油，放入蒜末爆香") },
                         minLines = 2,
                         shape = MaterialTheme.shapes.medium,
@@ -573,6 +598,106 @@ private fun OperationStepsEditor(
             Spacer(Modifier.width(4.dp))
             Text("添加步骤", color = MaterialTheme.colorScheme.tertiary)
         }
+    }
+}
+
+/**
+ * 选择步骤模板弹框。[AI生成] #2
+ *
+ * 列出预设+自建步骤模板，点"应用"把该模板步骤追加到当前步骤；自建模板可删除；
+ * 也可把当前已填的步骤"存为模板"供其他菜品复用。
+ */
+@Composable
+private fun StepTemplatePickerDialog(
+    templates: List<com.sxdbsm.cookbook.domain.model.StepTemplate>,
+    canSaveCurrent: Boolean,
+    onApply: (com.sxdbsm.cookbook.domain.model.StepTemplate) -> Unit,
+    onSaveCurrent: (String) -> Unit,
+    onDelete: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var saveNameOpen by remember { mutableStateOf(false) }
+    var newName by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("选择步骤模板") },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 420.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                if (templates.isEmpty()) {
+                    item {
+                        Text("还没有可用模板", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+                items(templates, key = { it.id }) { t ->
+                    OutlinedCard(shape = MaterialTheme.shapes.medium) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                Text(t.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                                if (t.isPreset) {
+                                    AssistChip(onClick = {}, label = { Text("预设") }, modifier = Modifier.height(28.dp))
+                                } else {
+                                    IconButton(onClick = { onDelete(t.id) }, modifier = Modifier.size(28.dp)) {
+                                        Icon(Icons.Outlined.Close, contentDescription = "删除模板", modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            // 步骤预览：编号列出，避免弹层过高只显示前若干步。
+                            t.steps.take(6).forEachIndexed { i, s ->
+                                Text("${i + 1}. $s", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            if (t.steps.size > 6) {
+                                Text("…共 ${t.steps.size} 步", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                                TextButton(onClick = { onApply(t) }) {
+                                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("应用")
+                                }
+                            }
+                        }
+                    }
+                }
+                if (canSaveCurrent) {
+                    item {
+                        OutlinedButton(onClick = { newName = ""; saveNameOpen = true }, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("把当前步骤存为模板")
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+    )
+
+    if (saveNameOpen) {
+        AlertDialog(
+            onDismissRequest = { saveNameOpen = false },
+            title = { Text("存为步骤模板") },
+            text = {
+                OutlinedTextField(
+                    value = newName,
+                    onValueChange = { newName = it },
+                    singleLine = true,
+                    label = { Text("模板名（如 我的红烧做法）") },
+                    shape = MaterialTheme.shapes.medium,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = newName.isNotBlank(),
+                    onClick = { onSaveCurrent(newName.trim()); saveNameOpen = false },
+                ) { Text("保存") }
+            },
+            dismissButton = { TextButton(onClick = { saveNameOpen = false }) { Text("取消") } },
+        )
     }
 }
 
