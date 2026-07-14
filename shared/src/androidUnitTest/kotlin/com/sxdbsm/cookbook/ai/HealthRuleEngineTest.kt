@@ -156,6 +156,38 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `B2_最近吃过排到最后但在忌口之前_并带天数标注`() {
+        // 正常菜 N、最近吃过菜 R(2天前)、忌口菜 A —— 期望顺序：N → R → A(忌口最末)。
+        val n = RuleDish(1, "正常菜", listOf(main(101, "食材N")))
+        val r = RuleDish(2, "最近菜", listOf(main(102, "食材R")))
+        val a = RuleDish(3, "忌口菜", listOf(main(103, "食材A")))
+        val result = engine.evaluate(
+            listOf(n, r, a),
+            pantryIngredientIds = setOf(101, 102, 103),
+            constraints = HealthConstraints(avoidIngredientIds = setOf(103)),
+            recentDishDaysAgo = mapOf(2L to 2),
+        )
+        assertEquals(listOf(1L, 2L, 3L), result.map { it.id }, "正常→最近→忌口")
+        assertEquals(2, result.first { it.id == 2L }.recentDaysAgo, "带距今天数")
+        assertTrue(result.first { it.id == 2L }.isRecent)
+        assertEquals(null, result.first { it.id == 1L }.recentDaysAgo)
+    }
+
+    @Test
+    fun `B2_最近吃过即使分数更高也排到普通菜之后`() {
+        // 最近菜用了更多在手主料(分数更高)，但仍应排在普通菜之后(分层优先于分数)。
+        val strongRecent = RuleDish(1, "高分最近菜", listOf(main(101, "主1"), main(102, "主2"), main(103, "主3")))
+        val plain = RuleDish(2, "普通菜", listOf(main(104, "主4")))
+        val result = engine.evaluate(
+            listOf(strongRecent, plain),
+            pantryIngredientIds = setOf(101, 102, 103, 104),
+            constraints = HealthConstraints(),
+            recentDishDaysAgo = mapOf(1L to 0),
+        )
+        assertEquals(2L, result.first().id, "普通菜排前，最近吃过的即便分高也靠后")
+    }
+
+    @Test
     fun `利于调养的菜(含推荐食材)排前面`() {
         val healthy = RuleDish(1, "清蒸鲈鱼", listOf(main(101, "鲈鱼")))
         val plain = RuleDish(2, "清炒白菜", listOf(main(102, "白菜")))

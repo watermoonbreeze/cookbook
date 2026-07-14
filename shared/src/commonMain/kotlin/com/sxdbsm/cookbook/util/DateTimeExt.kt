@@ -6,6 +6,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 
@@ -38,6 +39,9 @@ object DateTime {
 
     /** 日期加减天数，KMP 下不要使用 JVM 专属的 java.time。[AI生成] */
     fun plusDays(date: LocalDate, days: Int): LocalDate = date.plus(DatePeriod(days = days))
+
+    /** from→to 相差天数(to 晚为正)。[AI生成] B2：算"近N天吃过"的 N。 */
+    fun daysBetween(from: LocalDate, to: LocalDate): Int = from.daysUntil(to)
 
     /** 把 LocalDate 序列化为 yyyy-MM-dd */
     fun formatDate(date: LocalDate): String = date.toString()

@@ -32,6 +32,7 @@ data class RecommendationInput(
     val constraints: HealthConstraints,
     val recentDishIds: Set<Long>,
     val shortageIngredientIds: Set<Long> = emptySet(), // [AI生成] 在库但可用份数≤0的食材：含它的菜仍推荐但排后+标"库存不足"
+    val recentDishDaysAgo: Map<Long, Int> = emptyMap(), // [AI生成] B2：去重窗口内吃过的菜→距今天数，用于排最后+标注"N天前吃过"
 )
 
 /** 规则引擎输入的菜品（已把食材按角色标好）。[AI生成] */
@@ -76,6 +77,7 @@ data class DishCandidate(
     val onHandNames: List<String> = emptyList(), // [AI生成] 用到你库存的非调料食材名(物尽其用高亮)
     val avoidNames: List<String> = emptyList(), // [AI生成] 命中健康档案"忌口(avoid)"的食材名(仅非调料)：不再隐藏，改为排到最后并标红警示
     val cookingCautions: List<String> = emptyList(), // [AI生成] 调料命中忌口/限量→转做法提示(少盐/少糖/少油)，不判菜品忌口
+    val recentDaysAgo: Int? = null, // [AI生成] B2：去重窗口内吃过则=距今天数(0今天/1昨天…)，非空→排最后并标注；null=窗口内没吃过
 )
 
 /** 模型输出：3 个下一餐组合，每餐 2~3 菜。[AI生成] */

@@ -43,6 +43,9 @@ import org.koin.androidx.compose.koinViewModel
  * <p>
  * [AI修改] 周期计划并入本页作第三档：库存/随机=勾选列表确定回传；周期计划=天数1~30规划、保存为未来计划。
  **/
+// [AI生成] B2：去重周期选项(标签→天数)。
+private val RECENT_WINDOW_OPTIONS = listOf("一周" to 7, "二周" to 14, "三周" to 21, "四周" to 28)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiRecommendScreen(
@@ -141,6 +144,21 @@ fun AiRecommendScreen(
                             onClick = { vm.setSlot(slot) },
                             label = { Text(slot.label) },
                         )
+                    }
+                }
+                // [AI生成] B2：去重周期(一周/二周/三周/四周)——近这几天吃过的菜排到最后并标注，避免天天推一样。
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("去重周期", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(8.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        items(RECENT_WINDOW_OPTIONS) { (label, days) ->
+                            FilterChip(
+                                selected = state.recentWindowDays == days,
+                                onClick = { vm.setRecentWindow(days) },
+                                label = { Text(label) },
+                            )
+                        }
                     }
                 }
             }
@@ -280,7 +298,14 @@ private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(item.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                // [AI生成] B2：最近吃过标注(浅色)，紧跟菜名——该菜已排到最后，仅告知不隐藏。
+                if (item.recentText.isNotBlank()) {
+                    Spacer(Modifier.width(6.dp))
+                    Text(item.recentText, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             // [AI生成] 忌口警示单独标红(error 色)：该菜仍列出，但明确提示健康档案建议避免。
             if (item.avoidText.isNotBlank()) {
                 Spacer(Modifier.height(2.dp))

@@ -19,6 +19,7 @@ import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.util.DateTime
+import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.withContext
 
@@ -47,6 +48,8 @@ class RecommendationDataSource(
         mode: RecommendMode = RecommendMode.PANTRY,
         recentLimit: Long = RECENT_LIMIT,
         mealSlot: MealSlot = MealSlot.ALL, // [AI生成] 按餐次筛选候选菜(全部=不筛)
+        recentWindowDays: Int = RECENT_WINDOW_DAYS_DEFAULT, // [AI生成] B2：去重窗口(天)，一周/二周/三周/四周
+        today: LocalDate = DateTime.today(), // [AI生成] 提为参数便于固定日期单测(红线：派生别依赖内部 today)
     ): RecommendationInput = withContext(ioDispatcher) {
         // [AI修改] 取材范围：库存=在手食材；随机=整个食材库(相当于都可做)。
         val pantryIds = when (mode) {
@@ -81,7 +84,12 @@ class RecommendationDataSource(
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
         val labels = enabledProfiles.map { "关注:${it.crowdName}" } // 粗标签给模型(不含敏感明细)
 
-        val recentDishIds = q.selectRecentEatenDishIds(recentLimit).executeAsList().toSet()
+        // [AI修改] B2：改为**日期窗口**去重(默认一周)——取窗口内吃过的菜及其距今天数，用于排最后+标注"N天前吃过"。
+        val sinceDate = DateTime.formatDate(DateTime.plusDays(today, -recentWindowDays.coerceAtLeast(1)))
+        val recentDishDaysAgo = q.selectEatenDishDatesSince(sinceDate).executeAsList()
+            .mapNotNull { row -> row.last_date?.let { d -> row.dish_id to DateTime.daysBetween(DateTime.parseDate(d), today).coerceAtLeast(0) } }
+            .toMap()
+        val recentDishIds = recentDishDaysAgo.keys
 
         // [AI生成] 库存不足食材：可用份数(入库日起窗口的剩余)≤0；含它的菜仍推荐但排后+标不足。仅库存模式。
         val shortageIds = if (mode == RecommendMode.PANTRY) {
@@ -109,6 +117,7 @@ class RecommendationDataSource(
             ),
             recentDishIds = recentDishIds,
             shortageIngredientIds = shortageIds,
+            recentDishDaysAgo = recentDishDaysAgo,
         )
     }
 
@@ -243,7 +252,8 @@ class RecommendationDataSource(
         private val BREAKFAST_KEYWORDS = listOf("粥", "蛋羹", "豆浆", "豆奶", "牛奶", "燕麦", "面", "馒头", "包子", "水煮蛋", "薯", "南瓜", "玉米")
         // [AI生成] 早餐软/饮类关键词(其余早餐菜视为硬/主食，用于软硬搭配)。
         private val BREAKFAST_SOFT_KEYWORDS = listOf("粥", "豆浆", "豆奶", "牛奶", "燕麦", "蛋羹", "面")
-        private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数。
+        private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数(旧按条数，保留兼容)。
+        const val RECENT_WINDOW_DAYS_DEFAULT = 7 // [AI生成] B2：去重窗口默认一周；UI 可切一周/二周/三周/四周。
         private const val DISH_PREFILTER_LIMIT = 100L // 与在手食材有交集的候选菜上限。
     }
 }

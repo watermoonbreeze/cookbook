@@ -78,6 +78,14 @@ class AiRecommendViewModel(
         recommend(state.mode)
     }
 
+    /** 选去重周期(一周/二周/三周/四周)：从第一批重新推荐。[AI生成] B2 */
+    fun setRecentWindow(days: Int) {
+        if (days == state.recentWindowDays) return
+        rotation = 0
+        state = state.copy(recentWindowDays = days)
+        if (!state.pendingManual) recommend(state.mode) // 配了模型待手动的场景不擅自触发
+    }
+
     /** 选餐次(全部/早餐/…/宵夜)：从第一批开始重新推荐。[AI生成] */
     fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {
         if (slot == state.selectedSlot) return
@@ -92,7 +100,7 @@ class AiRecommendViewModel(
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
             runCatching {
-                val input = dataSource.gather(mode, mealSlot = state.selectedSlot)
+                val input = dataSource.gather(mode, mealSlot = state.selectedSlot, recentWindowDays = state.recentWindowDays)
                 orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { result ->
                 val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
@@ -141,12 +149,21 @@ class AiRecommendViewModel(
         )
     }
 
-    /** 把候选映射为展示项(名称/说明/忌口标红)。[AI生成] */
+    /** 把候选映射为展示项(名称/说明/忌口标红/最近吃过标注)。[AI生成] */
     private fun toItem(c: DishCandidate, mode: RecommendMode) = DishItemUi(
         id = c.id, name = c.name, note = buildNote(c, mode),
         // [AI生成] 忌口食材单独标红：仍列出该菜，但明确警示健康档案建议避免。
         avoidText = if (c.avoidNames.isNotEmpty()) "⛔忌口：${c.avoidNames.joinToString("、")}（健康档案建议避免）" else "",
+        recentText = recentLabel(c.recentDaysAgo), // [AI生成] B2：窗口内吃过→标注"N天前吃过"(排在最后)
     )
+
+    /** "最近吃过"标注文案。[AI生成] B2 */
+    private fun recentLabel(daysAgo: Int?): String = when {
+        daysAgo == null -> ""
+        daysAgo <= 0 -> "🕒 今天吃过"
+        daysAgo == 1 -> "🕒 昨天吃过"
+        else -> "🕒 ${daysAgo}天前吃过"
+    }
 
     /** 组装一道菜的说明：用到库存/还差什么/利于调养/做法/注意限量。[AI修改] */
     private fun buildNote(c: DishCandidate, mode: RecommendMode): String {
@@ -184,6 +201,7 @@ data class AiRecommendUiState(
     val pendingManual: Boolean = false, // [AI生成] 等待用户手动点击「开始推荐」(配置了 AI 模型时)。
     val engineLabel: String = "", // [AI生成] 当前推荐来源标注：云端AI模型/本地模型/离线规则。
     val selectedSlot: com.sxdbsm.cookbook.ai.MealSlot = com.sxdbsm.cookbook.ai.MealSlot.ALL, // [AI生成] 当前餐次(全部/早餐/…)
+    val recentWindowDays: Int = com.sxdbsm.cookbook.ai.RecommendationDataSource.RECENT_WINDOW_DAYS_DEFAULT, // [AI生成] B2：去重周期(天)，默认一周
 )
 
 /** 单道推荐菜的展示模型。[AI生成] */
@@ -192,6 +210,7 @@ data class DishItemUi(
     val name: String,
     val note: String,
     val avoidText: String = "", // [AI生成] 忌口警示(非空则在行内标红)。
+    val recentText: String = "", // [AI生成] B2：最近吃过标注(非空则行内浅色显示"N天前吃过")。
 )
 
 /** 模型给出的一套搭配方案(一餐组合)。[AI生成] H1：消费 orchestrator 的 MealSuggestion。 */

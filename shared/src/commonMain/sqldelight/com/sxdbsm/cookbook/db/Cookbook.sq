@@ -746,6 +746,14 @@ GROUP BY mrd.dish_id
 ORDER BY MAX(mr.date) DESC
 LIMIT ?;
 
+-- [AI生成] B2：某日期(含)以来吃过的菜 → (dish_id, 最近食用日期)；AI 推荐按"周期窗口"去重排后+标注天数。
+selectEatenDishDatesSince:
+SELECT mrd.dish_id AS dish_id, MAX(mr.date) AS last_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY mrd.dish_id;
+
 -- [AI生成] 调养 tab 按病种分类通过调养规则聚合食材；剂量语义由 advice_level 表达，红绿灯分组在应用层完成。
 selectIngredientsByCareCategories:
 SELECT DISTINCT i.id,

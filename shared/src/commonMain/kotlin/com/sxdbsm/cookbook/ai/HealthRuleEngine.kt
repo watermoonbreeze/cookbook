@@ -32,6 +32,7 @@ class HealthRuleEngine {
         constraints: HealthConstraints,
         recentDishIds: Set<Long> = emptySet(),
         shortageIngredientIds: Set<Long> = emptySet(), // [AI生成] 可用份数≤0 的在库食材
+        recentDishDaysAgo: Map<Long, Int> = emptyMap(), // [AI生成] B2：去重窗口内吃过的菜→距今天数(用于标注"N天前吃过")
     ): List<DishCandidate> = dishes.mapNotNull { dish ->
         val nonSeasoning = dish.ingredients.filter { it.role != IngredientRole.SEASONING }
         val seasonings = dish.ingredients.filter { it.role == IngredientRole.SEASONING }
@@ -57,7 +58,9 @@ class HealthRuleEngine {
             .map { seasoningCaution(it.name) }
             .distinct()
         val seasoningsOnHand = seasonings.filter { it.ingredientId in pantryIngredientIds }
-        val isRecent = dish.id in recentDishIds
+        // [AI修改] B2：优先用日期窗口的 recentDishDaysAgo 判定"最近吃过"；兼容旧调用(只传 recentDishIds)。
+        val recentDaysAgo = recentDishDaysAgo[dish.id]
+        val isRecent = recentDaysAgo != null || dish.id in recentDishIds
 
         // 打分：物尽其用为核心——用到在手主料强力提权 + 调养推荐 + 在手调料丰富度 - 限量 - 最近。
         val seasoningRichness = if (seasonings.isEmpty()) 0.0 else seasoningsOnHand.size.toDouble() / seasonings.size
@@ -94,8 +97,13 @@ class HealthRuleEngine {
             onHandNames = onHandNames,
             avoidNames = avoidNames,
             cookingCautions = cookingCautions,
+            recentDaysAgo = recentDaysAgo,
         )
-    }.sortedByDescending { it.score }
+    }
+        // [AI修改] B2：分层排序保证"最近吃过的排到最后(但在忌口之前)、忌口最末"，不依赖罚分量级、稳健：
+        //   非忌口非最近(正常) → 非忌口最近 → 忌口。层内按 score 降序。
+        //   即：先看是否忌口(false 在前)，再看是否最近(false 在前)，最后 score 高者靠前。
+        .sortedWith(compareBy({ it.avoidNames.isNotEmpty() }, { it.isRecent }, { -it.score }))
 
     /** 调料忌口/限量 → 做法提示。[AI生成] 盐→少盐、白糖→少糖、生抽/老抽/豉油→少酱油、各种油→少油、各种酱→少酱。 */
     private fun seasoningCaution(name: String): String = "少" + when {

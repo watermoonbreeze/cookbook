@@ -6,9 +6,18 @@ import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.RepositoryTestDatabase
 import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
+import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.DayMealDraft
+import com.sxdbsm.cookbook.ai.model.RecommendMode
+import com.sxdbsm.cookbook.domain.model.DishIngredient
+import com.sxdbsm.cookbook.domain.model.Ingredient
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 
 /**
  * @File : RecommendationDataSourceTest
@@ -52,6 +61,40 @@ class RecommendationDataSourceTest {
         val cands = HealthRuleEngine().evaluate(input.dishes, input.pantryIngredientIds, input.constraints)
         assertTrue(cands.any { it.id == dishId }, "应被库存推荐(物尽其用: 用到在手非调料五花肉)")
         Unit
+    }
+
+    @Test
+    fun `B2_日期窗口内吃过标记recent并带天数_窗口外不标`() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val pantry = PantryRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val ds = RecommendationDataSource(db, pantry, dishRepo, HealthProfileRepository(db), ingredientRepo)
+
+        val pork = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "窗口测试菜", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(),
+            ingredients = listOf(DishIngredient(ingredient = Ingredient(id = pork, name = "五花肉"), isMain = true)),
+            steps = emptyList(),
+        )
+        pantry.addToPantry(pork)
+        val bf = db.cookbookQueries.selectMealTypeIdByCode("BREAKFAST").executeAsOne()
+        // 2026-07-01 吃过这道菜
+        mealRepo.saveDayMeals(LocalDate(2026, 7, 1), listOf(DayMealDraft(bf, LocalTime(8, 0), "", listOf(dishId))))
+
+        // today=7-04(3天前)、窗口一周 → 命中 recent，daysAgo=3
+        val within = ds.gather(RecommendMode.PANTRY, today = LocalDate(2026, 7, 4), recentWindowDays = 7)
+        assertEquals(3, within.recentDishDaysAgo[dishId], "3天前吃过应标 daysAgo=3")
+        assertTrue(dishId in within.recentDishIds)
+        // today=7-15(14天前)、窗口一周 → 不在窗口，不标
+        val outside = ds.gather(RecommendMode.PANTRY, today = LocalDate(2026, 7, 15), recentWindowDays = 7)
+        assertFalse(outside.recentDishDaysAgo.containsKey(dishId), "超出一周窗口不再标记")
+        // 窗口放大到四周 → 又命中
+        val wide = ds.gather(RecommendMode.PANTRY, today = LocalDate(2026, 7, 15), recentWindowDays = 28)
+        assertEquals(14, wide.recentDishDaysAgo[dishId], "四周窗口内 14 天前应标 daysAgo=14")
     }
 
     @Test
