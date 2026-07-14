@@ -117,6 +117,7 @@ fun MainScaffold(
                     onOpenSearch = { nav.navigate(Routes.SEARCH) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                    onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
                 )
             }

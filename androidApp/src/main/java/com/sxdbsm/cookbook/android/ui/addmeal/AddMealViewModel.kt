@@ -207,14 +207,15 @@ class AddMealViewModel(
     /**
      * 修改指定模块的餐次。[AI修改]
      *
-     * 固定餐次会自动带出默认时间；“加餐”等非固定餐次要求用户手动选择时间。
+     * 固定餐次带出其默认时间；非固定餐次(如"加餐")默认取**当前时间**，用户想改再改——
+     * [AI修改] A2：不再强制手动选时间才能保存(家庭多为"刚吃过/正在吃"，默认当前更顺手)。
      */
     fun setMealType(blockId: Long, mealTypeId: Long) {
         val type = _state.value.mealTypes.firstOrNull { it.id == mealTypeId }
         updateBlock(blockId) { block ->
             block.copy(
                 mealTypeId = mealTypeId,
-                mealTime = if (type?.isFixed == true) type.defaultTime else null,
+                mealTime = if (type?.isFixed == true) type.defaultTime else DateTime.nowTime(),
             )
         }
     }

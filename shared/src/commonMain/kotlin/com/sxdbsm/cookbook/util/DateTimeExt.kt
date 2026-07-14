@@ -22,6 +22,10 @@ object DateTime {
     fun currentHour(): Int =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
 
+    /** 当前本地时间(时:分)。[AI生成] A2：非固定餐次默认当前时间，免强制手动选。 */
+    fun nowTime(): LocalTime =
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time.let { LocalTime(it.hour, it.minute) }
+
     fun nowEpochSeconds(): Long = Clock.System.now().epochSeconds
 
     /** epoch 秒 → 本地日期字符串(yyyy-MM-dd)。[AI生成] 供库存"入库日窗口"比较餐食日期。 */

@@ -77,6 +77,7 @@ fun NewDishScreen(
     }
     LaunchedEffect(state.done) {
         if (state.done) {
+            Toast.makeText(context, "已保存", Toast.LENGTH_SHORT).show() // [AI生成] A4：保存成功轻提示，家庭用户对"存没存上"敏感。
             state.savedDishId?.let { onSavedDish?.invoke(it) } // [AI生成] 从添加餐食页新建菜品后，把新菜品 id 回传给上一层路由。
             onBack()
         }

@@ -42,8 +42,15 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
+import android.widget.Toast
+import kotlinx.coroutines.launch
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
@@ -106,6 +113,9 @@ fun AddDayFoodScreen(
     var saveComboBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
     var comboNameDraft by rememberSaveable { mutableStateOf("") }
     var aiTargetBlockId by rememberSaveable { mutableStateOf<Long?>(null) } // [AI生成] 记录哪个餐次块发起了 AI 推荐。
+    val snackbar = remember { SnackbarHostState() } // [AI生成] A6：移除菜品撤销提示
+    val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     // [AI生成] AI 推荐从餐次块进入并"选它"回传：把菜品加入发起的那个餐次块。
     LaunchedEffect(aiPickedDishIds) {
@@ -122,6 +132,7 @@ fun AddDayFoodScreen(
     LaunchedEffect(state.done) {
         if (state.done) {
             AppLogger.d("MealFlow", "AddDayFoodScreen done: date=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 保存完成后记录返回前状态摘要。
+            Toast.makeText(context, "已保存", Toast.LENGTH_SHORT).show() // [AI生成] A4：餐食保存成功轻提示。
             onBack()
         }
     }
@@ -143,6 +154,7 @@ fun AddDayFoodScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
+        snackbarHost = { SnackbarHost(snackbar) }, // [AI生成] A6：移除撤销
         topBar = {
             TopAppBar(
                 title = { Text("添加餐食", fontWeight = FontWeight.SemiBold) },
@@ -238,7 +250,17 @@ fun AddDayFoodScreen(
                         AppLogger.d("MealFlow", "open dish picker: blockId=${block.id} date=${state.date} mealTypeId=${block.mealTypeId} existingDishes=${block.dishes.map { it.id }}") // [AI生成] 记录打开菜品选择器时的餐次和已有菜品。
                         pickerOpen = true
                     },
-                    onRemoveDish = { dishId -> vm.removeDish(block.id, dishId) },
+                    onRemoveDish = { dishId ->
+                        // [AI生成] A6：移除后弹 Snackbar 可撤销(误删家常事)，撤销即把该菜重新加回本块。
+                        val removed = block.dishes.firstOrNull { it.id == dishId }
+                        vm.removeDish(block.id, dishId)
+                        if (removed != null) {
+                            scope.launch {
+                                val res = snackbar.showSnackbar(message = "已移除「${removed.name}」", actionLabel = "撤销", duration = SnackbarDuration.Short)
+                                if (res == SnackbarResult.ActionPerformed) vm.addDishes(block.id, listOf(removed))
+                            }
+                        }
+                    },
                     onOpenDish = onOpenDish, // [AI生成] F1：点菜进详情
                     onNoteChange = { vm.setNote(block.id, it) },
                     onRemoveBlock = { vm.removeMealBlock(block.id) },

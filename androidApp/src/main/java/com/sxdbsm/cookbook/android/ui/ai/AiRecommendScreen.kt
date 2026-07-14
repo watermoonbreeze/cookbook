@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -158,10 +161,10 @@ fun AiRecommendScreen(
                     )
                     // [AI修改] H1：模型返回了分餐组合 → 按"搭配方案"分组展示(消费 suggestions)，勾整套或单菜。
                     state.suggestionGroups.isNotEmpty() -> {
-                        Text(
-                            "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        // [AI修改] A5：换一换提到顶部标题行右侧，随手可点，不用滚到列表底。
+                        ResultHeader(
+                            hint = "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。",
+                            onRefresh = { vm.recommend() },
                         )
                         Spacer(Modifier.height(4.dp))
                         LazyColumn(modifier = Modifier.weight(1f)) {
@@ -176,18 +179,16 @@ fun AiRecommendScreen(
                                 Spacer(Modifier.height(10.dp))
                             }
                             item {
-                                OutlinedButton(onClick = { vm.recommend() }, modifier = Modifier.fillMaxWidth()) { Text("换一换") }
-                                Spacer(Modifier.height(8.dp))
                                 Text("仅为饮食建议参考，忌口与用量请以你的医嘱为准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
                     }
                     else -> {
-                        Text(
-                            "勾选想做的菜，点下方「确定」加入这一餐。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        // [AI修改] A5：换一换提到顶部标题行右侧。
+                        ResultHeader(
+                            hint = "勾选想做的菜，点下方「确定」加入这一餐。",
+                            onRefresh = { vm.recommend() },
                         )
                         // [AI生成] 配置了模型但本次由规则兜底(模型未返回有效结果)，如实标注。
                         if (state.modelReady && state.source == RecommendationSource.RULE_FALLBACK) {
@@ -206,8 +207,6 @@ fun AiRecommendScreen(
                             }
                             item {
                                 Spacer(Modifier.height(8.dp))
-                                OutlinedButton(onClick = { vm.recommend() }, modifier = Modifier.fillMaxWidth()) { Text("换一换") }
-                                Spacer(Modifier.height(8.dp))
                                 Text("仅为饮食建议参考，忌口与用量请以你的医嘱为准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(16.dp))
                             }
@@ -223,6 +222,24 @@ fun AiRecommendScreen(
 @Composable
 private fun TabChip(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(selected = selected, onClick = onClick, label = { Text(label) })
+}
+
+/** 结果区顶部行：左说明 + 右"换一换"。[AI生成] A5：换一换常驻顶部，随手可点。 */
+@Composable
+private fun ResultHeader(hint: String, onRefresh: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text(
+            hint,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onRefresh) {
+            Icon(Icons.Outlined.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(4.dp))
+            Text("换一换")
+        }
+    }
 }
 
 /** 一套模型搭配方案卡片：理由 + 做法建议 + 组合内菜(可勾单菜/整套)。[AI生成] H1 消费 suggestions。 */

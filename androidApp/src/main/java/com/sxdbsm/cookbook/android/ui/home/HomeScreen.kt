@@ -40,6 +40,7 @@ fun HomeScreen(
     onOpenSearch: () -> Unit,
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
+    onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] A1：首页计划卡"复制"入口(与食历页一致，家庭高频"照着某天再吃一次")
     onOpenAiRecommend: () -> Unit = {},
     vm: HomeViewModel = koinViewModel(),
 ) {
@@ -163,6 +164,7 @@ fun HomeScreen(
                         data = card,
                         onDishClick = { dish -> onOpenDish(dish.id) },
                         onEditClick = { onEditMealDate(card.date) },
+                        onCopyClick = { onCopyMeal(card.date) }, // [AI生成] A1：复制该日为新建草稿(日期源+1可改)。
                         onDeleteClick = { deleteDate = card.date }, // [AI生成] 删除该日计划餐食(带确认)。
                     )
                 }
