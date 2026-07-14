@@ -46,4 +46,36 @@
 - **组件级一致性重构(AppTopBar/PlainCard/InsetDivider/ActionSheet)**：机械但量大、需真机核对各屏视觉，建议**用户在场/可视化验证下分批**，避免盲改回归。
 - 每批改完 build + 抽查，保持质量。
 
+---
+
+## 里程碑2 全面审查补充（2026-07-15，四路架构/Compose·VM/UX·UE/红线 agent）
+
+> 本轮**已修**非视觉可验证项(见 commit 298418f)：DishDetail/CookMode 冷流 remember 缓存、PresetDataSeeder 具名参数、DishesVM→AppLogger、debounce 抽 SearchDefaults。以下为**延后**项（需真机验证或工程较大），按性价比排。
+
+### UX 组件落地（延后，真机分批）
+- ⬜ **AppTopBar 收敛剩余 ~12 屏**：DishDetail/NewDish/AddDayFood/Dishes/Search/ShoppingList/FoodTimeline/DishPicker/IngredientPicker/IngredientEditor/CookMode/CookingTimer 仍内联 `topAppBarColors`。带自定义 title/actions 的屏需给 AppTopBar 加 title/actions slot 重载。
+- ⬜ **删除链路弹窗形态统一 ActionSheet**：DishesScreen 三连 AlertDialog(:287/308/325)、Home 删整日 AlertDialog、Timeline/WeekPlan 删日文案各异 → 破坏性确认走 ActionSheet(红字置底)，纯信息警告(引用/失败)才用 Dialog。
+- ⬜ **重内容管理面板 AlertDialog → ModalBottomSheet/独立页**：NewDish 6 个选择/编辑弹层(配料组/步骤模板/库选择等，内套 LazyColumn 420dp)、Mine 备份/健康档案/日志面板(460dp 滚动)。
+- ⬜ **NewDish 重复食材 AlertDialog → 静默跳过/Snackbar**(低风险提示不该弹窗两步)。
+- ⬜ **收藏星标 Text emoji("⭐/☆") → Icon(Star/StarBorder)+tint+缩放**(DishDetail:75、Dishes:271)。
+- ⬜ **chevron 字符 "›/▸" 混用 → 统一 Icon(KeyboardArrowRight)**(Home/Mine 等)。
+- ⬜ **CookingTimer 完成态 errorContainer/error 语义偏错 → primaryContainer/tertiary**(:495/531)；IconButton 尺寸统一 44dp + 进度条 contentDescription。
+- ⬜ **普通餐次块 mealTime 无默认→"请选择用餐时间"红字常驻**：给"接上一餐+X小时"默认，红字仅保存后提示。
+- ⬜ DishPicker 顶栏"完成"原生 Button → CapsuleButton(与其余顶栏主操作统一)。
+
+### 代码质量（延后，工程较大或性能类）
+- ⬜ **巨型 Composable 拆分**：NewDishScreen(~480行/文件1082行,最急)、MineScreen(722)、AddDayFood/CookingTimer/Dishes 抽子 Composable。
+- ⬜ **SyncRepository.import() 无总事务**(:128-282)：多域合并中途失败残留半完成数据 → 包一层事务回滚（注意嵌套事务语义，需谨慎+回归）。**数据完整性，优先级较高**。
+- ⬜ **observeTimelineCards N+1**(MealRecordRepository:98-106)：逐日 selectMealRecordsByDate → 批量 selectMealRecordsByDates 一次取回 groupBy。
+- ⬜ **pantryCardFlags 全量派生每次重算**(MealRecordRepository:411)：库存非空时滚动食历反复全表算占用 → 按窗口只算一次传入。
+- ⬜ NewDishViewModel 多处 `_state.value = _state.value.copy` → 统一 `update{}`。
+- ⬜ 散落魔法数/alpha(StarRating/StoredImage/NutritionWall luminance 0.5f×3/surfaceVariant alpha 五种值) → 具名常量/主题语义色(dividerColor/subtleSurface)。
+
+### 数据完整性（延后，需人工补录）
+- ⬜ **369 道批量导入菜品 quantity 为 null、364 道无 steps**：营养卡对这批菜近乎无数据(coveredCount>0 但折算不出) → 排期补高频菜用量/步骤。
+- ⬜ **营养覆盖仅 103/440 食材(~23%)且全 review=pending**：逐步扩充 + 抽样人工核对。
+
+### 已确认健康/无需改
+架构三层边界清晰(commonMain 零 Android 泄漏)、Koin 装配全匹配、SQLDelight 迁移链自洽(1-19.sqm 无缺号、CREATE 与最新迁移列对齐)、无 UPSERT/SQL 字符串函数违规、seed 引用完整性 0 问题、日志/存储/可测性/AI 注释全合规、0 TODO/0 空 catch。
+
 

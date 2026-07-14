@@ -27,7 +27,7 @@ fun StarRating(
     val stars = (value / 200.0).coerceIn(0.0, 5.0) // [AI修改] 业务喜爱度 0-1000 转成 UI 星级 0-5。
     val full = stars.toInt()
     val hasHalf = (stars - full) >= 0.5
-    val tertiary = MaterialTheme.colorScheme.primary
+    val starColor = MaterialTheme.colorScheme.primary // [AI修改] 星色取主色(原变量名 tertiary 误导，已更名)。
 
     Row(modifier = modifier) {
         repeat(5) { i ->
@@ -35,7 +35,7 @@ fun StarRating(
             Icon(
                 imageVector = if (filled) Icons.Filled.Star else Icons.Outlined.StarBorder,
                 contentDescription = null,
-                tint = tertiary,
+                tint = starColor,
                 modifier = Modifier
                     .size(iconSize)
                     .alpha(if (filled) 1f else 0.45f),
