@@ -40,6 +40,7 @@ class RecommendationDataSource(
     private val dishRepo: DishRepository,
     private val healthRepo: HealthProfileRepository,
     private val ingredientRepo: IngredientRepository,
+    private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] P2：营养互补度画像
 ) {
     private val q = db.cookbookQueries
 
@@ -71,9 +72,10 @@ class RecommendationDataSource(
         } else {
             dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT).map { it.dish.id }
         }
-        val dishes = candidateDishIds.mapNotNull { dishRepo.getDishById(it) }
-            .map { it.toRuleDish(seasoningIds) }
+        // [AI修改] 保留完整 Dish(用于偏好/主料重复/营养画像)，再转 RuleDish。
+        val fullDishes = candidateDishIds.mapNotNull { dishRepo.getDishById(it) }
             .filter { MealSlotMatcher.matches(mealSlot, it.name) }
+        val dishes = fullDishes.map { it.toRuleDish(seasoningIds) }
 
         // 忌口约束：启用的健康档案 → care 分类 → 调养规则。
         val enabledProfiles = healthRepo.listAll().filter { it.enabled }
@@ -106,6 +108,36 @@ class RecommendationDataSource(
             emptySet()
         }
 
+        // [AI生成] 增长型 P2：从用户历史/收藏/营养派生画像信号（数据越多越准，会成长）。
+        val candidateIds = fullDishes.map { it.id }
+        // 偏好画像[0,1]：常做(preference，8 次饱和) + 收藏加成。
+        val favIds = q.selectFavoriteDishIds().executeAsList().toSet()
+        val preferenceScores = fullDishes.associate { d ->
+            val familiar = (d.preference.toDouble() / PREF_SATURATION).coerceIn(0.0, 1.0)
+            val fav = if (d.id in favIds) FAVORITE_BONUS else 0.0
+            d.id to (familiar + fav).coerceAtMost(1.0)
+        }.filterValues { it > 0.0 }
+        // 主料近期重复：近窗口吃过菜的主料频次 → 候选取其主料最大频次。
+        val recentIds = recentDishDaysAgo.keys.toList()
+        val recentMainFreq = if (recentIds.isEmpty()) emptyMap() else
+            q.selectMainIngredientNamesByDishIds(recentIds).executeAsList()
+                .map { it.ingredient_name }.groupingBy { it }.eachCount()
+        val mainRepeatCounts = fullDishes.associate { d ->
+            val mains = d.ingredients.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }
+            d.id to (mains.maxOfOrNull { recentMainFreq[it] ?: 0 } ?: 0)
+        }.filterValues { it > 0 }
+        // 营养互补度[-1,1]：候选相对近期已吃的宏量补足程度(有营养数据才非 0，随数据成长)。
+        val recentTotals = if (recentIds.isEmpty()) com.sxdbsm.cookbook.domain.model.NutritionTotals.EMPTY
+            else nutritionRepo.totalOf(recentIds)
+        val nutritionBalanceScores = if (candidateIds.isEmpty()) emptyMap() else
+            nutritionRepo.dishNutrition(candidateIds)
+                .mapValues { (_, dn) -> com.sxdbsm.cookbook.domain.model.NutritionBalance.score(recentTotals, dn.totals) }
+                .filterValues { it != 0.0 }
+        // 推荐风格(用户轻干预)：从偏好读取，默认综合。
+        val style = RecommendationStyle.fromKey(
+            q.selectPreference(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE).executeAsOneOrNull()?.value_,
+        )
+
         RecommendationInput(
             dishes = dishes,
             pantryIngredientIds = pantryIds,
@@ -118,6 +150,10 @@ class RecommendationDataSource(
             recentDishIds = recentDishIds,
             shortageIngredientIds = shortageIds,
             recentDishDaysAgo = recentDishDaysAgo,
+            preferenceScores = preferenceScores,
+            nutritionBalanceScores = nutritionBalanceScores,
+            mainRepeatCounts = mainRepeatCounts,
+            style = style,
         )
     }
 
@@ -228,8 +264,15 @@ class RecommendationDataSource(
 
     /** 纯规则推荐（S0 端到端产物，不依赖模型）。[AI生成] */
     suspend fun ruleCandidates(engine: HealthRuleEngine = HealthRuleEngine()) = gather().let { input ->
-        // [AI修改] 与主链路 orchestrator.recommend 一致，透传 shortageIngredientIds，避免此路径丢失"库存不足"标记。
-        engine.evaluate(input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds, input.shortageIngredientIds)
+        // [AI修改] 与主链路 orchestrator.recommend 一致，透传全部信号(库存不足/画像/风格权重)。
+        engine.evaluate(
+            input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds,
+            input.shortageIngredientIds, input.recentDishDaysAgo,
+            weights = input.style.weights(),
+            preferenceScores = input.preferenceScores,
+            nutritionBalanceScores = input.nutritionBalanceScores,
+            mainRepeatCounts = input.mainRepeatCounts,
+        )
     }
 
     /** Dish → 规则引擎输入：调料=SEASONING，其余按 is_main 分主料/辅料。[AI生成] */
@@ -255,5 +298,7 @@ class RecommendationDataSource(
         private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数(旧按条数，保留兼容)。
         const val RECENT_WINDOW_DAYS_DEFAULT = 7 // [AI生成] B2：去重窗口默认一周；UI 可切一周/二周/三周/四周。
         private const val DISH_PREFILTER_LIMIT = 100L // 与在手食材有交集的候选菜上限。
+        private const val PREF_SATURATION = 8.0 // [AI生成] P2：菜被记录 8 次即视为"很熟悉"(偏好画像饱和点)。
+        private const val FAVORITE_BONUS = 0.3 // [AI生成] P2：收藏菜的偏好加成。
     }
 }

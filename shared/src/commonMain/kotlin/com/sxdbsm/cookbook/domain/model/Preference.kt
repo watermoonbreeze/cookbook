@@ -31,6 +31,9 @@ object PreferenceKeys {
     // [AI生成] 营养色系开关：开启后餐食卡片按营养均衡级别配背景色，并驱动首页"每天营养色系墙"；默认关。
     const val NUTRITION_COLOR_ENABLED = "nutrition_color_enabled"
 
+    // [AI生成] 推荐风格(增长型推荐轻干预)：BALANCED/FAMILIAR/FRESH/NUTRITION，默认综合(BALANCED)。
+    const val RECOMMEND_STYLE = "recommend_style"
+
     // [AI生成] 基础数据 seed 内容指纹：记录上次写入的 seed JSON 指纹，内容未变时跳过整段补齐式写入。
     const val SEED_CONTENT_FINGERPRINT = "seed_content_fingerprint"
 

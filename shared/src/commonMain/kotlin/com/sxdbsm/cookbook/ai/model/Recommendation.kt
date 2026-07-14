@@ -33,6 +33,11 @@ data class RecommendationInput(
     val recentDishIds: Set<Long>,
     val shortageIngredientIds: Set<Long> = emptySet(), // [AI生成] 在库但可用份数≤0的食材：含它的菜仍推荐但排后+标"库存不足"
     val recentDishDaysAgo: Map<Long, Int> = emptyMap(), // [AI生成] B2：去重窗口内吃过的菜→距今天数，用于排最后+标注"N天前吃过"
+    // [AI生成] 增长型推荐 P2：从用户历史/收藏/营养派生的画像信号 + 推荐风格(权重预设)。
+    val preferenceScores: Map<Long, Double> = emptyMap(), // 每菜偏好画像[0,1]：常做(preference)+收藏
+    val nutritionBalanceScores: Map<Long, Double> = emptyMap(), // 每菜与近期已吃的营养互补度[-1,1]
+    val mainRepeatCounts: Map<Long, Int> = emptyMap(), // 每菜主料近期重复次数(去重成长)
+    val style: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // 推荐风格→权重
 )
 
 /** 规则引擎输入的菜品（已把食材按角色标好）。[AI生成] */

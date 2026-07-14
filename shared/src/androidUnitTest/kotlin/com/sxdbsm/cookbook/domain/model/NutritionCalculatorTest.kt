@@ -66,6 +66,24 @@ class NutritionCalculatorTest {
     }
 
     @Test
+    fun `营养互补度_近期碳水多则高蛋白菜加分_高碳水菜降分`() {
+        val recentCarbHeavy = NutritionTotals(proteinG = 5.0, fatG = 2.0, carbG = 100.0) // 碳水为主
+        val proteinDish = NutritionTotals(proteinG = 30.0, fatG = 5.0, carbG = 5.0) // 高蛋白
+        val carbDish = NutritionTotals(proteinG = 2.0, fatG = 1.0, carbG = 60.0) // 又是高碳水
+        val protScore = NutritionBalance.score(recentCarbHeavy, proteinDish)
+        val carbScore = NutritionBalance.score(recentCarbHeavy, carbDish)
+        assertTrue(protScore > 0, "近期缺蛋白→高蛋白菜加分")
+        assertTrue(carbScore < 0, "近期已多碳水→再高碳水降分")
+        assertTrue(protScore > carbScore)
+    }
+
+    @Test
+    fun `营养互补度_任一侧无数据返回0`() {
+        assertEquals(0.0, NutritionBalance.score(NutritionTotals.EMPTY, NutritionTotals(proteinG = 10.0)))
+        assertEquals(0.0, NutritionBalance.score(NutritionTotals(carbG = 10.0), NutritionTotals.EMPTY))
+    }
+
+    @Test
     fun `计件单位且无piece_gram走兜底并标估算`() {
         val noPiece = IngredientNutrition(ingredientId = 3, energyKcal = 100.0) // 无 pieceGram
         val input = NutritionInput(quantity = 2.0, unitGrams = null, nutrition = noPiece)

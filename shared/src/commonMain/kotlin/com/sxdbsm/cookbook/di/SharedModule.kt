@@ -44,7 +44,7 @@ val sharedModule: Module = module {
     single { StepTemplateRepository(get()) } // [AI生成] #2 操作步骤模板(预设+自建，编辑菜品"选择步骤"套用)。
     single { com.sxdbsm.cookbook.data.repository.IngredientGroupRepository(get()) } // [AI生成] B5 常用配料组(编辑菜品"配料组"一键加入)。
     // [AI生成] AI 推荐取数层(S0)：聚合库存/菜品/忌口/最近餐 → 规则引擎输入。
-    single { RecommendationDataSource(get(), get(), get(), get(), get()) }
+    single { RecommendationDataSource(get(), get(), get(), get(), get(), get()) }
     // [AI生成] AI 运行时配置(云/端/Key)；AiRuntime 具体实现由 androidModule 绑定 SwitchableAiRuntime。
     single { AiRuntimeConfig(get()) }
     single { RecommendationOrchestrator(get()) }

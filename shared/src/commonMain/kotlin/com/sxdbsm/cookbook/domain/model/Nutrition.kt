@@ -151,3 +151,41 @@ object NutritionCalculator {
     fun sumTotals(list: List<NutritionTotals>): NutritionTotals =
         list.fold(NutritionTotals.EMPTY) { acc, t -> acc + t }
 }
+
+/**
+ * 营养互补度：候选菜相对"近期已吃"的均衡补足程度。[AI生成]
+ *
+ * 按三大宏量供能占比与膳食指南目标比对：近期"缺"的宏量(如蛋白偏低)由强调该宏量的候选菜来补→加分；
+ * 近期已过量的宏量、候选还在强调→降分。返回 [-1,1]；任一侧无营养数据(总能量≤0)返回 0(不影响)。
+ * 数据越全越准(会成长)。
+ */
+object NutritionBalance {
+    // 三大宏量供能占比目标(参考中国居民膳食指南整理)：蛋白~20% 脂肪~28% 碳水~52%。
+    private const val P_TARGET = 0.20
+    private const val F_TARGET = 0.28
+    private const val C_TARGET = 0.52
+    private const val SCALE = 4.0 // 把"缺口×偏向"的小量放大到可用区间，再 clamp。
+
+    /** 三大宏量供能占比(蛋白,脂肪,碳水)；总能量≤0 返回 null。 */
+    private fun energyRatios(t: NutritionTotals): Triple<Double, Double, Double>? {
+        val p = t.proteinG * 4
+        val f = t.fatG * 9
+        val c = t.carbG * 4
+        val sum = p + f + c
+        if (sum <= 0.0) return null
+        return Triple(p / sum, f / sum, c / sum)
+    }
+
+    fun score(recent: NutritionTotals, candidate: NutritionTotals): Double {
+        val r = energyRatios(recent) ?: return 0.0
+        val c = energyRatios(candidate) ?: return 0.0
+        val gapP = P_TARGET - r.first // 正=近期该宏量偏低(缺)
+        val gapF = F_TARGET - r.second
+        val gapC = C_TARGET - r.third
+        val devP = c.first - P_TARGET // 正=候选偏重该宏量
+        val devF = c.second - F_TARGET
+        val devC = c.third - C_TARGET
+        val raw = gapP * devP + gapF * devF + gapC * devC // 候选强调了近期缺的宏量→正
+        return (raw * SCALE).coerceIn(-1.0, 1.0)
+    }
+}
