@@ -27,6 +27,7 @@ class AiRecommendViewModel(
     private val dataSource: RecommendationDataSource,
     private val orchestrator: RecommendationOrchestrator,
     private val aiConfig: AiRuntimeConfig,
+    private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] P3：读写推荐风格偏好
 ) : ViewModel() {
 
     var state by mutableStateOf(AiRecommendUiState())
@@ -45,6 +46,8 @@ class AiRecommendViewModel(
         if (started) return
         started = true
         viewModelScope.launch {
+            // [AI生成] P3：载入已存的推荐风格(轻干预)，驱动打分权重。
+            state = state.copy(recommendStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.fromKey(prefs.get(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE)))
             if (aiConfig.isModelReady()) {
                 state = state.copy(
                     modelReady = true,
@@ -84,6 +87,17 @@ class AiRecommendViewModel(
         rotation = 0
         state = state.copy(recentWindowDays = days)
         if (!state.pendingManual) recommend(state.mode) // 配了模型待手动的场景不擅自触发
+    }
+
+    /** 选推荐风格(综合/偏熟悉/偏新鲜/偏营养)：持久化后从第一批重新推荐。[AI生成] P3 轻干预 */
+    fun setStyle(style: com.sxdbsm.cookbook.ai.RecommendationStyle) {
+        if (style == state.recommendStyle) return
+        rotation = 0
+        state = state.copy(recommendStyle = style)
+        viewModelScope.launch {
+            prefs.set(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE, style.name)
+            if (!state.pendingManual) recommend(state.mode) // 配了模型待手动的场景不擅自触发
+        }
     }
 
     /** 选餐次(全部/早餐/…/宵夜)：从第一批开始重新推荐。[AI生成] */
@@ -202,6 +216,7 @@ data class AiRecommendUiState(
     val engineLabel: String = "", // [AI生成] 当前推荐来源标注：云端AI模型/本地模型/离线规则。
     val selectedSlot: com.sxdbsm.cookbook.ai.MealSlot = com.sxdbsm.cookbook.ai.MealSlot.ALL, // [AI生成] 当前餐次(全部/早餐/…)
     val recentWindowDays: Int = com.sxdbsm.cookbook.ai.RecommendationDataSource.RECENT_WINDOW_DAYS_DEFAULT, // [AI生成] B2：去重周期(天)，默认一周
+    val recommendStyle: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // [AI生成] P3：推荐风格(轻干预权重)
 )
 
 /** 单道推荐菜的展示模型。[AI生成] */

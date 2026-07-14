@@ -46,6 +46,14 @@ import org.koin.androidx.compose.koinViewModel
 // [AI生成] B2：去重周期选项(标签→天数)。
 private val RECENT_WINDOW_OPTIONS = listOf("一周" to 7, "二周" to 14, "三周" to 21, "四周" to 28)
 
+// [AI生成] P3：推荐风格选项(标签→风格→当前说明)。轻干预，调整各因子权重。
+private val RECOMMEND_STYLE_OPTIONS: List<Triple<String, com.sxdbsm.cookbook.ai.RecommendationStyle, String>> = listOf(
+    Triple("综合", com.sxdbsm.cookbook.ai.RecommendationStyle.BALANCED, "综合：各方面均衡推荐"),
+    Triple("偏熟悉", com.sxdbsm.cookbook.ai.RecommendationStyle.FAMILIAR, "偏熟悉：多推你常做/收藏的家常菜"),
+    Triple("偏新鲜", com.sxdbsm.cookbook.ai.RecommendationStyle.FRESH, "偏新鲜：多推久没吃的，换换口味"),
+    Triple("偏营养", com.sxdbsm.cookbook.ai.RecommendationStyle.NUTRITION, "偏营养：更冲着营养均衡与利健康来搭"),
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiRecommendScreen(
@@ -135,58 +143,43 @@ fun AiRecommendScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
             )
-            // [AI生成] 餐次选择(库存/随机推荐时显示)：全部+早/上午/中/下午/晚/宵夜，选不同餐次推不同内容。
-            if (!showPlan) {
-                Spacer(Modifier.height(6.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    items(com.sxdbsm.cookbook.ai.MealSlot.values()) { slot ->
-                        FilterChip(
-                            selected = state.selectedSlot == slot,
-                            onClick = { vm.setSlot(slot) },
-                            label = { Text(slot.label) },
-                        )
-                    }
-                }
-                // [AI生成] B2：去重周期(一周/二周/三周/四周)——近这几天吃过的菜排到最后并标注，避免天天推一样。
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "去重周期：近这段时间吃过的菜排到最后，避免连着几天推同一道",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(4.dp))
-                // [AI修改] 苹果风格：去重周期用 segmented control。
-                com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-                    options = RECENT_WINDOW_OPTIONS.map { it.first },
-                    selectedIndex = RECENT_WINDOW_OPTIONS.indexOfFirst { it.second == state.recentWindowDays }.coerceAtLeast(0),
-                    onSelect = { idx -> vm.setRecentWindow(RECENT_WINDOW_OPTIONS[idx].second) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
             Spacer(Modifier.height(4.dp))
 
             if (showPlan) {
                 AiPlanBody(planVm, modifier = Modifier.weight(1f))
             } else {
+                // [AI修改] 与周期计划一致：有推荐结果时，控件(餐次/去重/风格)放进结果 LazyColumn 首 item，
+                // 随结果一起上滑、给内容最大展示空间；无结果态(加载/空/错误/待手动)控件固定在上方。
+                val hasResults = !state.loading && state.error == null && state.emptyHint == null &&
+                    !state.pendingManual && (state.suggestionGroups.isNotEmpty() || state.dishItems.isNotEmpty())
                 when {
-                    state.loading -> LoadingBlock()
-                    state.error != null -> CenterHint(state.error) { vm.recommend() }
-                    state.emptyHint != null -> CenterHint(state.emptyHint) { vm.recommend() }
-                    // [AI生成] 配置了 AI 模型：不自动推荐，展示开始按钮，由用户主动触发云端调用。
-                    state.pendingManual -> CenterHint(
-                        text = "已配置 AI 模型，点击后由模型为你搭配这一餐",
-                        buttonLabel = "开始推荐",
-                        onRetry = { vm.recommend() },
-                    )
+                    !hasResults -> {
+                        RecommendControls(state, vm)
+                        Spacer(Modifier.height(4.dp))
+                        when {
+                            state.loading -> LoadingBlock()
+                            state.error != null -> CenterHint(state.error) { vm.recommend() }
+                            state.emptyHint != null -> CenterHint(state.emptyHint) { vm.recommend() }
+                            // [AI生成] 配置了 AI 模型：不自动推荐，展示开始按钮，由用户主动触发云端调用。
+                            state.pendingManual -> CenterHint(
+                                text = "已配置 AI 模型，点击后由模型为你搭配这一餐",
+                                buttonLabel = "开始推荐",
+                                onRetry = { vm.recommend() },
+                            )
+                        }
+                    }
                     // [AI修改] H1：模型返回了分餐组合 → 按"搭配方案"分组展示(消费 suggestions)，勾整套或单菜。
                     state.suggestionGroups.isNotEmpty() -> {
-                        // [AI修改] A5：换一换提到顶部标题行右侧，随手可点，不用滚到列表底。
-                        ResultHeader(
-                            hint = "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。",
-                            onRefresh = { vm.recommend() },
-                        )
-                        Spacer(Modifier.height(4.dp))
                         LazyColumn(modifier = Modifier.weight(1f)) {
+                            item {
+                                RecommendControls(state, vm)
+                                Spacer(Modifier.height(4.dp))
+                                ResultHeader(
+                                    hint = "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。",
+                                    onRefresh = { vm.recommend() },
+                                )
+                                Spacer(Modifier.height(4.dp))
+                            }
                             itemsIndexed(state.suggestionGroups) { idx, group ->
                                 SuggestionGroupCard(
                                     index = idx,
@@ -204,22 +197,25 @@ fun AiRecommendScreen(
                         }
                     }
                     else -> {
-                        // [AI修改] A5：换一换提到顶部标题行右侧。
-                        ResultHeader(
-                            hint = "勾选想做的菜，点下方「确定」加入这一餐。",
-                            onRefresh = { vm.recommend() },
-                        )
-                        // [AI生成] 配置了模型但本次由规则兜底(模型未返回有效结果)，如实标注。
-                        if (state.modelReady && state.source == RecommendationSource.RULE_FALLBACK) {
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                "本次由规则兜底生成（模型未返回有效结果）",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant, // [AI修改] 功能说明用中性灰，不用警示色。
-                            )
-                        }
-                        Spacer(Modifier.height(4.dp))
                         LazyColumn(modifier = Modifier.weight(1f)) {
+                            item {
+                                RecommendControls(state, vm)
+                                Spacer(Modifier.height(4.dp))
+                                ResultHeader(
+                                    hint = "勾选想做的菜，点下方「确定」加入这一餐。",
+                                    onRefresh = { vm.recommend() },
+                                )
+                                // [AI生成] 配置了模型但本次由规则兜底(模型未返回有效结果)，如实标注。
+                                if (state.modelReady && state.source == RecommendationSource.RULE_FALLBACK) {
+                                    Spacer(Modifier.height(2.dp))
+                                    Text(
+                                        "本次由规则兜底生成（模型未返回有效结果）",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Spacer(Modifier.height(4.dp))
+                            }
                             items(state.dishItems, key = { it.id }) { item ->
                                 DishRow(item = item, selected = item.id in state.selectedIds, onToggle = { vm.toggleSelect(item.id) })
                                 Divider()
@@ -237,6 +233,55 @@ fun AiRecommendScreen(
     }
 }
 
+
+/**
+ * 库存/随机推荐的控件区：餐次 + 去重周期 + 推荐风格。[AI生成]
+ *
+ * 有推荐结果时作为结果 LazyColumn 的首 item(随结果上滑)；无结果态固定在上方。
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewModel) {
+    // 餐次选择：全部+早/上午/中/下午/晚/宵夜。
+    Spacer(Modifier.height(6.dp))
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        items(com.sxdbsm.cookbook.ai.MealSlot.values()) { slot ->
+            FilterChip(
+                selected = state.selectedSlot == slot,
+                onClick = { vm.setSlot(slot) },
+                label = { Text(slot.label) },
+            )
+        }
+    }
+    // B2：去重周期。
+    Spacer(Modifier.height(6.dp))
+    Text(
+        "去重周期：近这段时间吃过的菜排到最后，避免连着几天推同一道",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(4.dp))
+    com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+        options = RECENT_WINDOW_OPTIONS.map { it.first },
+        selectedIndex = RECENT_WINDOW_OPTIONS.indexOfFirst { it.second == state.recentWindowDays }.coerceAtLeast(0),
+        onSelect = { idx -> vm.setRecentWindow(RECENT_WINDOW_OPTIONS[idx].second) },
+        modifier = Modifier.fillMaxWidth(),
+    )
+    // P3：推荐风格(轻干预)——切换综合/偏熟悉/偏新鲜/偏营养，调整各因子权重。
+    Spacer(Modifier.height(6.dp))
+    Text(
+        RECOMMEND_STYLE_OPTIONS[RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0)].third,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(4.dp))
+    com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+        options = RECOMMEND_STYLE_OPTIONS.map { it.first },
+        selectedIndex = RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0),
+        onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
 
 /** 结果区顶部行：左说明 + 右"换一换"。[AI生成] A5：换一换常驻顶部，随手可点。 */
 @Composable

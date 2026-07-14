@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
@@ -327,7 +328,14 @@ private fun DishInsightsSection(insights: DishInsights) {
             if (insights.nutritionTags.isNotEmpty()) {
                 InsightLine("🥗 营养", insights.nutritionTags.joinToString("、"), MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (insights.hasHealthProfile || insights.nutritionTags.isNotEmpty()) {
+            // [AI生成] 营养估算：整道菜热量 + 三大宏量(按配料用量折算)；部分缺数据时标注估算与覆盖。
+            insights.nutritionEstimate?.takeIf { it.hasData }?.let { n ->
+                val t = n.totals
+                val macro = "蛋白 ${t.proteinG.roundToInt()}g·脂肪 ${t.fatG.roundToInt()}g·碳水 ${t.carbG.roundToInt()}g"
+                val suffix = if (!n.complete) "（估算，${n.coveredCount}/${n.ingredientCount} 料有数据）" else ""
+                InsightLine("🔥 热量", "约 ${t.energyKcal.roundToInt()} 千卡 · $macro$suffix", MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (insights.hasHealthProfile || insights.nutritionTags.isNotEmpty() || insights.nutritionEstimate?.hasData == true) {
                 Text(
                     "健康/营养为参考整理、非权威，忌口与用量请以医嘱为准。",
                     style = MaterialTheme.typography.labelSmall,

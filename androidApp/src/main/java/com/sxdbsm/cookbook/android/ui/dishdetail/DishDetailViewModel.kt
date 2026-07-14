@@ -25,6 +25,7 @@ class DishDetailViewModel(
     private val pantryRepo: PantryRepository,
     private val healthRepo: HealthProfileRepository,
     private val ingredientRepo: IngredientRepository,
+    private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 营养估算
 ) : ViewModel() {
 
     var insights by mutableStateOf<DishInsights?>(null)
@@ -88,6 +89,7 @@ class DishDetailViewModel(
 
         val stats = dishRepo.cookStats(dish.id)
         val nutrition = ingredientRepo.nutritionTagsOf(ingIds)
+        val nutritionEstimate = nutritionRepo.dishNutrition(listOf(dish.id))[dish.id] // [AI生成] 营养估算(热量+宏量)
 
         // 相关菜品：与本菜共享主料的其它菜(按共享数排序)。
         val mainIds = dish.ingredients.filter { it.isMain }.map { it.ingredient.id }
@@ -105,6 +107,7 @@ class DishDetailViewModel(
             cookedCount = stats.first,
             lastCookedDate = stats.second,
             nutritionTags = nutrition,
+            nutritionEstimate = nutritionEstimate, // [AI生成] 营养估算(每道菜热量/宏量)
             related = related, // [AI修改] 修复：此前漏传导致"相关菜品"永不显示。
         )
     }
@@ -122,6 +125,7 @@ data class DishInsights(
     val cookedCount: Int,
     val lastCookedDate: String?,
     val nutritionTags: List<String>,
+    val nutritionEstimate: com.sxdbsm.cookbook.domain.model.DishNutrition? = null, // [AI生成] 营养估算(热量+宏量+覆盖率)
     val related: List<com.sxdbsm.cookbook.domain.model.DishMini> = emptyList(),
 ) {
     /** 当前库存能否直接做（在用库存且无采购无缺料）。 */

@@ -11,8 +11,12 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +48,15 @@ fun DayMealCardView(
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
     }.collectAsStateWithLifecycle(false)
     val nutritionLevel = if (data.meals.isNotEmpty()) nutritionLevelOfDishes(data.meals.flatMap { it.dishes }) else 0
+    // [AI生成] 当天总热量估算(随营养色系开关显示)：按当天所有菜的营养折算求和；无数据则不显示。
+    val nutritionRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.NutritionRepository>()
+    var dayKcal by remember(data) { mutableStateOf(0) }
+    if (nutritionColorEnabled) {
+        LaunchedEffect(data) {
+            val ids = data.meals.flatMap { it.dishes }.map { it.id }.distinct()
+            dayKcal = if (ids.isEmpty()) 0 else nutritionRepo.totalOf(ids).energyKcal.roundToInt()
+        }
+    }
     val containerColor = when {
         nutritionColorEnabled && data.meals.isNotEmpty() -> nutritionTint(nutritionLevel)
         data.isPlanState -> MaterialTheme.colorScheme.secondaryContainer
@@ -75,6 +88,11 @@ fun DayMealCardView(
                     Badge("今天", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                 } else if (data.isPlanState) {
                     Badge("计划", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+                }
+                // [AI生成] 当天总热量角标(营养色系开启且有数据时)。
+                if (nutritionColorEnabled && dayKcal > 0) {
+                    Spacer(Modifier.width(6.dp))
+                    Badge("🔥≈${dayKcal}千卡", MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.surfaceVariant)
                 }
                 Spacer(Modifier.weight(1f))
                 // 右侧操作图标(同一行)

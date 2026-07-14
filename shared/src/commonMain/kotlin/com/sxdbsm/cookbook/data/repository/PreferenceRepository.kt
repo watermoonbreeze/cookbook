@@ -50,6 +50,14 @@ class PreferenceRepository(private val db: CookbookDatabase) {
     suspend fun setFlag(key: String, value: Boolean) = set(key, if (value) "1" else "0")
 
     /**
+     * 监听字符串偏好（无记录返回 default）。[AI生成]
+     *
+     * 供推荐风格等枚举型偏好响应式驱动 UI。
+     */
+    fun observeString(key: String, default: String): Flow<String> =
+        q.selectPreference(key).asFlow().mapToOneOrNull(ioDispatcher).map { row -> row?.value_ ?: default }
+
+    /**
      * 读取任意偏好 key。[AI修改]
      */
     suspend fun get(key: String): String? = withContext(ioDispatcher) {
