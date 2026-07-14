@@ -277,34 +277,22 @@ fun DishesScreen(
     }
 
     dropdownDish?.let { d ->
-        AlertDialog(
-            onDismissRequest = { dropdownDish = null },
-            title = { Text(d.name) },
-            text = { Text("选择操作") },
-            confirmButton = {
-                Column(horizontalAlignment = Alignment.End) {
-                    // [AI生成] B1：收藏/取消收藏(列表置顶看家菜)。
-                    TextButton(onClick = {
-                        vm.toggleFavorite(d.id)
-                        dropdownDish = null
-                    }) { Text(if (d.id in ui.favoriteIds) "取消收藏" else "⭐ 收藏置顶") }
-                    // [AI修改] 预设菜隐藏"编辑"，改用"基于此另存"(等同导入复制)后编辑。
-                    if (d.source != "preset") {
-                        TextButton(onClick = {
-                            dropdownDish = null
-                            onEditDish(d.id)
-                        }) { Text("编辑") }
-                    }
-                    TextButton(onClick = {
-                        dropdownDish = null
-                        onCopyDish(d.id)
-                    }) { Text("基于此另存") }
-                    TextButton(onClick = {
-                        dropdownDish = null
-                        vm.requestDeleteDish(d)
-                    }) { Text("删除") }
-                } // [AI修改] 弹框外部可关闭，不再额外展示“取消”；长按菜单补充编辑和删除。
-            },
+        // [AI修改] 苹果风格：长按操作改底部 Action Sheet(破坏项红字、取消置底)，替代 AlertDialog 竖排反模式。
+        val actions = buildList {
+            add(com.sxdbsm.cookbook.android.ui.component.SheetAction(
+                label = if (d.id in ui.favoriteIds) "取消收藏" else "⭐ 收藏置顶",
+                onClick = { vm.toggleFavorite(d.id) },
+            ))
+            if (d.source != "preset") {
+                add(com.sxdbsm.cookbook.android.ui.component.SheetAction("编辑", onClick = { onEditDish(d.id) }))
+            }
+            add(com.sxdbsm.cookbook.android.ui.component.SheetAction("基于此另存", onClick = { onCopyDish(d.id) }))
+            add(com.sxdbsm.cookbook.android.ui.component.SheetAction("删除", destructive = true, onClick = { vm.requestDeleteDish(d) }))
+        }
+        com.sxdbsm.cookbook.android.ui.component.ActionSheet(
+            title = d.name,
+            actions = actions,
+            onDismiss = { dropdownDish = null },
         )
     }
 
@@ -337,7 +325,8 @@ fun DishesScreen(
             text = { Text("确认删除“${dish.name}”？删除后菜品列表中将不再展示。") },
             confirmButton = {
                 TextButton(onClick = vm::confirmDeleteDish) {
-                    Text(if (deleteState.checking) "删除中..." else "删除")
+                    // [AI修改] 苹果风格：删除为破坏性操作，恒用 error 红字。
+                    Text(if (deleteState.checking) "删除中..." else "删除", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {

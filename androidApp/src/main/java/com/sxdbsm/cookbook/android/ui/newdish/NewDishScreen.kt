@@ -1,6 +1,9 @@
 package com.sxdbsm.cookbook.android.ui.newdish
 
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -536,31 +539,35 @@ fun NewDishScreen(
  *
  * #55：每味食材剂量以克为单位，±5g，最小 0。
  */
+// [AI修改] 苹果风格：克数步进器改 iOS 分段样式——一个圆角灰底轨道内 [− | 值 | ＋]，中缝细分隔，−/＋ 用 accent。
 @Composable
 private fun GramStepper(grams: Int, onDelta: (Int) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        GramBtn("−") { onDelta(-5) }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        GramSeg("−") { onDelta(-5) }
+        Divider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.height(20.dp).width(0.6.dp))
         Text(
             "$grams g",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 6.dp),
+            modifier = Modifier.padding(horizontal = 10.dp),
         )
-        GramBtn("＋") { onDelta(5) }
+        Divider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.height(20.dp).width(0.6.dp))
+        GramSeg("＋") { onDelta(5) }
     }
 }
 
 @Composable
-private fun GramBtn(label: String, onClick: () -> Unit) {
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.size(28.dp),
-        onClick = onClick,
+private fun GramSeg(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier.size(width = 32.dp, height = 30.dp).clickable { onClick() },
+        contentAlignment = Alignment.Center,
     ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
-        }
+        Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
 
