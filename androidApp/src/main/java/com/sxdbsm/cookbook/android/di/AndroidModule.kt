@@ -50,7 +50,7 @@ val androidModule = module {
         )
     }
 
-    viewModel { HomeViewModel(get(), get(), get()) } // [AI修改] 首页主题弹框需要读取/写入主题偏好。
+    viewModel { HomeViewModel(get(), get(), get(), get()) } // [AI修改] 首页主题弹框需要读取/写入主题偏好；营养仓库供色系墙热量评级。
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
     viewModel { DishDetailViewModel(get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)

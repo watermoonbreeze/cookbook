@@ -11,10 +11,12 @@ import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.domain.FoodGroup
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -42,6 +44,7 @@ class HomeViewModel(
     private val dishRepo: DishRepository,
     private val mealRepo: MealRecordRepository,
     private val prefs: PreferenceRepository,
+    private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 2c：色系墙评级结合当天热量达标度
 ) : ViewModel() {
 
     /**
@@ -87,13 +90,29 @@ class HomeViewModel(
      *
      * 固定 1~12 月；UI 默认定位今天所在周、可左右滑。仅功能设置开启营养色系时渲染。
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     val nutritionWall: StateFlow<List<DayNutrition>> =
-        mealRepo.observeTimelineWindow(wallStart, wallEnd).map { cards ->
-            cards.map { card ->
-                val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
-                DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains)))
-            }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        combine(mealRepo.observeTimelineWindow(wallStart, wallEnd), prefs.observeBodyMetrics()) { cards, body -> cards to body }
+            .mapLatest { (cards, body) ->
+                // [AI生成] 2c：填了身体数据时，当天热量偏离目标(偏低/超标)则营养级别降一档——不只看搭配多样性。
+                val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
+                val dayDishIds = cards.associate { it.date to it.meals.flatMap { m -> m.dishes }.map { it.id }.distinct() }
+                val perDish = if (target == null) emptyMap() else {
+                    val allIds = dayDishIds.values.flatten().distinct()
+                    if (allIds.isEmpty()) emptyMap() else nutritionRepo.dishNutrition(allIds)
+                }
+                cards.map { card ->
+                    val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
+                    var level = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains))
+                    if (target != null && level > 0) {
+                        val kcal = dayDishIds[card.date].orEmpty().sumOf { perDish[it]?.totals?.energyKcal ?: 0.0 }
+                        if (kcal > 0 && com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, target) != com.sxdbsm.cookbook.domain.model.CalorieStatus.ON) {
+                            level = maxOf(1, level - 1) // 偏离目标降一档
+                        }
+                    }
+                    DayNutrition(card.date, level)
+                }
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
      * 往年营养平均色：早于本年、且有餐食记录的年份，取该年"有餐日"的平均营养级别。[AI生成]
