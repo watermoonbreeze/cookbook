@@ -453,10 +453,10 @@ private fun MealBlockCard(
                         Spacer(Modifier.width(4.dp))
                         Text("AI 推荐", color = MaterialTheme.colorScheme.primary)
                     }
-                    if (hasCombos) {
-                        TextButton(onClick = onOpenCombos, modifier = Modifier.fillMaxWidth()) {
-                            Text("选择收藏组合", color = MaterialTheme.colorScheme.tertiary)
-                        }
+                    // [AI修改] A10：空块固定露出"从收藏组合选"入口(不再仅在有组合时才出现)——
+                    // 无组合时点了给引导，让"整餐照搬"能力对新用户也可见。
+                    TextButton(onClick = onOpenCombos, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (hasCombos) "从收藏组合选" else "从收藏组合选（先保存一餐为组合）", color = MaterialTheme.colorScheme.tertiary)
                     }
                 }
             } else {
@@ -526,7 +526,8 @@ private fun FavoriteComboPickerDialog(
         text = {
             Column {
                 if (combos.isEmpty()) {
-                    Text("暂无收藏组合")
+                    // [AI修改] A10：空态给可操作引导——告诉用户怎么创建组合。
+                    Text("还没有收藏组合。\n先在某餐次添加好几道菜，点「保存组合」存成组合，之后就能一键整餐照搬。", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     combos.forEach { combo ->
                         TextButton(
