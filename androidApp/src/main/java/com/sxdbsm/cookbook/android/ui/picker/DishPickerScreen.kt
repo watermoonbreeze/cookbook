@@ -228,7 +228,7 @@ fun DishPickerScreen(
                         ) {
                             Icon(Icons.Outlined.Add, contentDescription = null)
                             Spacer(Modifier.width(4.dp))
-                            Text("添加菜品", color = MaterialTheme.colorScheme.tertiary)
+                            Text("添加菜品", color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }

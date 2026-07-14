@@ -168,7 +168,7 @@ fun DishDetailScreen(
             FormFieldLabel("食材", topPadding = 18.dp, bottomPadding = 8.dp)
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
+                shape = MaterialTheme.shapes.medium,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 详情内容卡片按新规范使用白底。
             ) {
                 Column {
@@ -227,7 +227,7 @@ fun DishDetailScreen(
                     d.steps.forEach { step ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.large,
+                            shape = MaterialTheme.shapes.medium,
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         ) {
                             Column(
@@ -299,7 +299,7 @@ private fun DishInsightsSection(insights: DishInsights) {
     FormFieldLabel("状态", topPadding = 18.dp, bottomPadding = 8.dp)
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -314,7 +314,7 @@ private fun DishInsightsSection(insights: DishInsights) {
             if (insights.hasHealthProfile) {
                 when {
                     insights.avoidNames.isNotEmpty() -> InsightLine("🚫 不适合", "含忌口：${insights.avoidNames.joinToString("、")}", MaterialTheme.colorScheme.error)
-                    insights.limitNames.isNotEmpty() -> InsightLine("⚠ 慎吃", "限量：${insights.limitNames.joinToString("、")}", MaterialTheme.colorScheme.tertiary)
+                    insights.limitNames.isNotEmpty() -> InsightLine("⚠ 慎吃", "限量：${insights.limitNames.joinToString("、")}", MaterialTheme.colorScheme.primary)
                     insights.recommendNames.isNotEmpty() -> InsightLine("✅ 有益", "含推荐：${insights.recommendNames.joinToString("、")}", MaterialTheme.colorScheme.primary)
                     else -> InsightLine("💚 健康", "无忌口/限量，适合", MaterialTheme.colorScheme.onSurfaceVariant)
                 }

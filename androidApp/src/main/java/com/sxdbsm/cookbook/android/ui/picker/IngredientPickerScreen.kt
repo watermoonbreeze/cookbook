@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -162,26 +163,19 @@ fun IngredientPickerScreen(
                         },
                     )
                 }
-                ScrollableTabRow(
-                    selectedTabIndex = IngredientMainTab.values().indexOf(ui.mainTab),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    edgePadding = 0.dp,
+                // [AI修改] 苹果风格：主分类改可滚动 FilterChip 行(去 Material TabRow 的下划线 indicator)。
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    IngredientMainTab.values().forEach { tab ->
-                        Tab(
+                    items(IngredientMainTab.values()) { tab ->
+                        FilterChip(
                             selected = ui.mainTab == tab,
                             onClick = {
                                 selectedIngredient = null
                                 vm.selectMainTab(tab)
                             },
-                            text = {
-                                Text(
-                                    tab.label,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                )
-                            },
-                            modifier = Modifier.widthIn(min = 72.dp),
+                            label = { Text(tab.label, maxLines = 1, softWrap = false) },
                         )
                     }
                 }

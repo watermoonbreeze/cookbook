@@ -302,7 +302,7 @@ fun NewDishScreen(
             ) {
                 Icon(Icons.Outlined.Add, contentDescription = null)
                 Spacer(Modifier.width(4.dp))
-                Text("添加食材", color = MaterialTheme.colorScheme.tertiary)
+                Text("添加食材", color = MaterialTheme.colorScheme.primary)
             }
 
             OperationStepsEditor(
@@ -333,7 +333,7 @@ fun NewDishScreen(
                     contentDescription = null,
                 )
                 Spacer(Modifier.width(4.dp))
-                Text("更多信息（可选）", color = MaterialTheme.colorScheme.tertiary)
+                Text("更多信息（可选）", color = MaterialTheme.colorScheme.primary)
             }
             if (moreExpanded) {
                 FormFieldLabel("特殊说明")
@@ -669,7 +669,7 @@ private fun OperationStepsEditor(
         TextButton(onClick = onAddStep) {
             Icon(Icons.Outlined.Add, contentDescription = null)
             Spacer(Modifier.width(4.dp))
-            Text("添加步骤", color = MaterialTheme.colorScheme.tertiary)
+            Text("添加步骤", color = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -983,7 +983,7 @@ private fun IngredientGroupEditorScreen(
                 TextButton(onClick = { pickerOpen = true }) {
                     Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(Modifier.width(4.dp))
-                    Text("添加食材", color = MaterialTheme.colorScheme.tertiary)
+                    Text("添加食材", color = MaterialTheme.colorScheme.primary)
                 }
                 Spacer(Modifier.height(40.dp))
             }

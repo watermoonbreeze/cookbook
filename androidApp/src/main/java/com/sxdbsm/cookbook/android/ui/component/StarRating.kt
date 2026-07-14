@@ -27,7 +27,7 @@ fun StarRating(
     val stars = (value / 200.0).coerceIn(0.0, 5.0) // [AI修改] 业务喜爱度 0-1000 转成 UI 星级 0-5。
     val full = stars.toInt()
     val hasHalf = (stars - full) >= 0.5
-    val tertiary = MaterialTheme.colorScheme.tertiary
+    val tertiary = MaterialTheme.colorScheme.primary
 
     Row(modifier = modifier) {
         repeat(5) { i ->

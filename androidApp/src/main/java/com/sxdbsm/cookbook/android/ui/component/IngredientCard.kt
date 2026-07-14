@@ -75,12 +75,13 @@ fun IngredientCard(
     }
     val ext = ExtendedColorsHolder.current
 
-    ElevatedCard(
+    // [AI修改] 苹果风格：无阴影填充卡，圆角 medium(12)与全局一致。
+    Surface(
         modifier = modifier
             .then(
                 when {
-                    selected -> Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.large)
-                    highlighted -> Modifier.border(2.dp, MaterialTheme.colorScheme.tertiary, MaterialTheme.shapes.large)
+                    selected -> Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
+                    highlighted -> Modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
                     else -> Modifier
                 },
             )
@@ -88,9 +89,9 @@ fun IngredientCard(
                 onClick = { onClick?.invoke() },
                 onLongClick = { if (canEdit) menuOpen = true },
             ),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.elevatedCardColors(containerColor = bg),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
+        shape = MaterialTheme.shapes.medium,
+        color = bg,
+        tonalElevation = 0.dp,
     ) {
         Box(modifier = Modifier.padding(0.dp)) {
             Column(

@@ -67,7 +67,7 @@ fun DayMealCardView(
                     data.isPlanState -> Text(
                         "· 计划 📌",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
                 Spacer(Modifier.weight(1f))
@@ -76,7 +76,7 @@ fun DayMealCardView(
                         Icon(
                             Icons.Outlined.ContentCopy,
                             contentDescription = "复用餐食",
-                            tint = MaterialTheme.colorScheme.tertiary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp),
                         )
                     }

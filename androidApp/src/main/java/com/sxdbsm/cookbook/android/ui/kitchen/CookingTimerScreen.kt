@@ -556,7 +556,7 @@ private fun CookingTimerDisplayRow(
                     Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = if (timer.status == TimerStatus.RUNNING) onPause else onStart,
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     ) {
                         Icon(
                             if (timer.status == TimerStatus.RUNNING) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,

@@ -211,7 +211,7 @@ private fun OnDeviceSelfTestSection() {
             Spacer(Modifier.height(8.dp))
             val gradeColor = when (r.grade) {
                 DeviceAiGrade.SMOOTH -> MaterialTheme.colorScheme.primary
-                DeviceAiGrade.USABLE -> MaterialTheme.colorScheme.tertiary
+                DeviceAiGrade.USABLE -> MaterialTheme.colorScheme.primary
                 DeviceAiGrade.SLOW -> MaterialTheme.colorScheme.error
                 DeviceAiGrade.UNSUPPORTED -> MaterialTheme.colorScheme.error
             }
