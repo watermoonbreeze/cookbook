@@ -89,8 +89,8 @@ fun NutritionWall(
                         week.forEach { d ->
                             val isToday = d.date == today
                             val cellColor = nutritionWallColor(d.level)
-                            // 格内日期数字：按底色明暗选深/浅文字，保证可读。
-                            val dayTextColor = if (cellColor.luminance() > 0.5f) Color(0xFF3A352E) else Color.White.copy(alpha = 0.92f)
+                            // 格内日期数字：按底色明暗选深/浅文字并调淡，避免整墙数字密集刺眼。
+                            val dayTextColor = if (cellColor.luminance() > 0.5f) Color(0xFF3A352E).copy(alpha = 0.5f) else Color.White.copy(alpha = 0.7f)
                             Box(
                                 modifier = Modifier
                                     .size(CELL)
