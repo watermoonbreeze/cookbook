@@ -109,7 +109,7 @@ class SyncRepository(
         // [AI生成] B5 自建配料组随菜品域一起同步(预设两端 seed 一致、不带)。
         val ingredientGroups = if (exportDishes) {
             ingredientGroupRepo.listGroups().filter { it.source != "preset" }
-                .map { g -> SyncIngredientGroup(name = g.name, items = g.items.map { SyncIngredientGroupItem(it.name, it.isMain) }) }
+                .map { g -> SyncIngredientGroup(name = g.name, items = g.items.map { SyncIngredientGroupItem(it.name, it.isMain, it.quantity) }) }
         } else emptyList()
         SyncBundle(
             schemaVersion = CookbookDatabase.Schema.version.toInt(),
@@ -267,7 +267,7 @@ class SyncRepository(
             val existingNames = ingredientGroupRepo.listGroups().map { it.name.trim() }.toSet()
             for (g in bundle.ingredientGroups) {
                 val gname = g.name.trim()
-                val items = g.items.map { IngredientGroupItem(it.name.trim(), it.isMain) }.filter { it.name.isNotBlank() }
+                val items = g.items.map { IngredientGroupItem(it.name.trim(), it.isMain, it.quantity) }.filter { it.name.isNotBlank() }
                 if (gname.isEmpty() || items.isEmpty() || gname in existingNames) continue
                 ingredientGroupRepo.createGroup(gname, items)
                 groupAdded++

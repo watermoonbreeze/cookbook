@@ -30,7 +30,7 @@ class IngredientGroupRepository(
                 name = g.name,
                 source = g.source,
                 items = q.selectIngredientGroupItems(g.id).executeAsList()
-                    .map { IngredientGroupItem(name = it.ingredient_name, isMain = it.is_main == 1L) },
+                    .map { IngredientGroupItem(name = it.ingredient_name, isMain = it.is_main == 1L, quantity = it.quantity) },
             )
         }
     }
@@ -54,7 +54,7 @@ class IngredientGroupRepository(
                 groupId = q.lastInsertId().executeAsOne()
             }
             clean.forEachIndexed { index, item ->
-                q.insertIngredientGroupItem(groupId, item.name, if (item.isMain) 1L else 0L, index.toLong())
+                q.insertIngredientGroupItem(groupId, item.name, if (item.isMain) 1L else 0L, index.toLong(), item.quantity)
             }
         }
         groupId

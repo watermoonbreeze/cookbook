@@ -286,15 +286,16 @@ class NewDishViewModel(
     /**
      * 添加食材到当前菜品。[AI修改]
      */
-    fun addIngredient(ingredient: Ingredient) {
+    fun addIngredient(ingredient: Ingredient, quantity: Double? = null) {
         if (_state.value.ingredients.any { it.ingredient.id == ingredient.id }) return
         // [AI修改] #55：新加食材默认剂量 100 克(克为单位)，用户可用 −N+ 调整(±5，最小0)。
+        // [AI修改] B5/需求2：配料组套用时带过来的克数优先(quantity)，否则默认 100g。
         val gram = gramUnit()
         _state.value = _state.value.copy(
             ingredients = _state.value.ingredients + DishIngredient(
                 ingredient = ingredient,
                 isMain = false, // [AI修改] 当前版本暂不暴露/保存“主料”语义，后续再扩展原料/调味料分类。
-                quantity = DEFAULT_GRAMS.toDouble(),
+                quantity = quantity ?: DEFAULT_GRAMS.toDouble(),
                 unitName = gram?.name ?: "克",
                 unitId = gram?.id ?: ingredient.defaultUnitId,
             ),
@@ -317,17 +318,17 @@ class NewDishViewModel(
         viewModelScope.launch {
             group.items.forEach { item ->
                 val id = runCatching { ingredientRepo.createUserIngredient(item.name) }.getOrNull() ?: return@forEach
-                addIngredient(Ingredient(id = id, name = item.name))
+                addIngredient(Ingredient(id = id, name = item.name), quantity = item.quantity) // [AI修改] 需求2：带过来克数
             }
         }
     }
 
-    /** 按编辑器给定的食材名列表创建配料组(bug2：弹层"+添加"编辑后保存)。[AI生成] */
-    fun createIngredientGroup(name: String, names: List<String>) {
-        val items = names.map { com.sxdbsm.cookbook.domain.model.IngredientGroupItem(it.trim()) }.filter { it.name.isNotBlank() }
-        if (name.isBlank() || items.isEmpty()) return
+    /** 按编辑器给定的食材项(名+克数)创建配料组(需求2：从食材库真实选+克数)。[AI生成] */
+    fun createIngredientGroup(name: String, items: List<com.sxdbsm.cookbook.domain.model.IngredientGroupItem>) {
+        val clean = items.map { it.copy(name = it.name.trim()) }.filter { it.name.isNotBlank() }
+        if (name.isBlank() || clean.isEmpty()) return
         viewModelScope.launch {
-            runCatching { ingredientGroupRepo.createGroup(name, items) }
+            runCatching { ingredientGroupRepo.createGroup(name, clean) }
                 .onSuccess { loadIngredientGroups() }
                 .onFailure { AppLogger.d(TAG, "create ingredient group failed: ${it.message}") }
         }

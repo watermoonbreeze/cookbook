@@ -287,7 +287,8 @@ CREATE TABLE ingredient_group_item (
     ingredient_name TEXT NOT NULL,
     is_main INTEGER NOT NULL DEFAULT 0,
     sort_order INTEGER NOT NULL DEFAULT 0,
-    status INTEGER NOT NULL DEFAULT 1
+    status INTEGER NOT NULL DEFAULT 1,
+    quantity REAL -- [AI生成] 克数(可空)；应用到菜品时带过来，与编辑菜品配料一致
 );
 
 CREATE INDEX idx_ingredient_group_item_order ON ingredient_group_item(group_id, sort_order, id);
@@ -1258,10 +1259,10 @@ deleteIngredientGroup:
 UPDATE ingredient_group SET status = 0 WHERE id = ?;
 
 insertIngredientGroupItem:
-INSERT INTO ingredient_group_item(group_id, ingredient_name, is_main, sort_order, status) VALUES (?, ?, ?, ?, 1);
+INSERT INTO ingredient_group_item(group_id, ingredient_name, is_main, sort_order, quantity, status) VALUES (?, ?, ?, ?, ?, 1);
 
 selectIngredientGroupItems:
-SELECT ingredient_name, is_main FROM ingredient_group_item WHERE group_id = ? AND status = 1
+SELECT ingredient_name, is_main, quantity FROM ingredient_group_item WHERE group_id = ? AND status = 1
 ORDER BY sort_order ASC, id ASC;
 
 deleteIngredientGroupItems:

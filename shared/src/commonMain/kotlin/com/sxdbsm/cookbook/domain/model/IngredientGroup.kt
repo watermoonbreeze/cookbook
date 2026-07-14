@@ -23,4 +23,5 @@ data class IngredientGroup(
 data class IngredientGroupItem(
     val name: String,
     val isMain: Boolean = false,
+    val quantity: Double? = null, // [AI生成] 克数，应用到菜品时带过来
 )

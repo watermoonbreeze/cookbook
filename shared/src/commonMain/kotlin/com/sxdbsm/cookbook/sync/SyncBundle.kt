@@ -45,6 +45,7 @@ data class SyncIngredientGroup(
 data class SyncIngredientGroupItem(
     val name: String,
     val isMain: Boolean = false,
+    val quantity: Double? = null,
 )
 
 /** 要同步的数据域选择。[AI生成] 选某域自动带依赖(库存/收藏/餐食→其食材/菜品)。 */

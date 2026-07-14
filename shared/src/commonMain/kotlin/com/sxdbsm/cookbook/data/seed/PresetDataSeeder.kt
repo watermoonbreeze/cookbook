@@ -201,7 +201,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             q.insertIngredientGroup(name, "preset", now)
             val groupId = q.lastInsertId().executeAsOne()
             items.forEachIndexed { index, (ingName, isMain) ->
-                q.insertIngredientGroupItem(groupId, ingName, if (isMain) 1L else 0L, index.toLong())
+                q.insertIngredientGroupItem(groupId, ingName, if (isMain) 1L else 0L, index.toLong(), null)
             }
         }
     }
