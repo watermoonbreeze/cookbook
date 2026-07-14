@@ -148,17 +148,19 @@ fun AiRecommendScreen(
                 }
                 // [AI生成] B2：去重周期(一周/二周/三周/四周)——近这几天吃过的菜排到最后并标注，避免天天推一样。
                 Spacer(Modifier.height(6.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("去重周期", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.width(8.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(RECENT_WINDOW_OPTIONS) { (label, days) ->
-                            FilterChip(
-                                selected = state.recentWindowDays == days,
-                                onClick = { vm.setRecentWindow(days) },
-                                label = { Text(label) },
-                            )
-                        }
+                Text(
+                    "去重周期：近这段时间吃过的菜排到最后，避免连着几天推同一道",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(2.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(RECENT_WINDOW_OPTIONS) { (label, days) ->
+                        FilterChip(
+                            selected = state.recentWindowDays == days,
+                            onClick = { vm.setRecentWindow(days) },
+                            label = { Text(label) },
+                        )
                     }
                 }
             }

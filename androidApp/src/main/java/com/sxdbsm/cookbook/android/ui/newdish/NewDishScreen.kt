@@ -308,8 +308,10 @@ fun NewDishScreen(
                 onUpdateStepImages = { index, images, thumbnails ->
                     vm.updateStepImages(index, encodeImagePaths(images), encodeImagePaths(thumbnails))
                 },
-                onRemoveStep = vm::removeStep,
-                onMoveStep = vm::moveStep,
+                // [AI修改] A-1 修复：删除/移动步骤后步骤索引会错位，复位 focusedStepIndex，
+                // 让模板套用回退到"末步"语义，避免并入错误步骤 + Toast 报错步号。
+                onRemoveStep = { vm.removeStep(it); focusedStepIndex = null },
+                onMoveStep = { i, toStart -> vm.moveStep(i, toStart); focusedStepIndex = null },
                 showStepNumber = stepModeEnabled,
                 onPickTemplate = { vm.loadStepTemplates(); stepTemplateSheetOpen = true },
                 onStepFocused = { focusedStepIndex = it },
@@ -465,9 +467,12 @@ fun NewDishScreen(
             onApply = { group ->
                 vm.applyIngredientGroup(group)
                 ingredientGroupSheetOpen = false
-                Toast.makeText(context, "已加入「${group.name}」的 ${group.items.size} 味配料", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "已加入「${group.name}」的 ${group.items.size} 味配料，用量默认可调", Toast.LENGTH_SHORT).show()
             },
-            onSaveCurrent = { name -> vm.saveCurrentIngredientsAsGroup(name) },
+            onSaveCurrent = { name ->
+                vm.saveCurrentIngredientsAsGroup(name)
+                Toast.makeText(context, "已存为配料组「$name」", Toast.LENGTH_SHORT).show()
+            },
             onDelete = { id -> vm.deleteIngredientGroup(id) },
             onDismiss = { ingredientGroupSheetOpen = false },
         )
@@ -488,7 +493,10 @@ fun NewDishScreen(
                 }
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             },
-            onSaveCurrent = { name -> vm.saveCurrentStepsAsTemplate(name) },
+            onSaveCurrent = { name ->
+                vm.saveCurrentStepsAsTemplate(name)
+                Toast.makeText(context, "已存为步骤模板「$name」", Toast.LENGTH_SHORT).show()
+            },
             onDelete = { id -> vm.deleteStepTemplate(id) },
             onDismiss = { stepTemplateSheetOpen = false },
         )
