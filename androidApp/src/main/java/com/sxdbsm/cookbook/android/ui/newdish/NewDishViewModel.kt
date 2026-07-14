@@ -32,6 +32,7 @@ data class NewDishUiState(
     val cookingMethodInput: String = "",
     val cookingMethodNames: List<String> = emptyList(),
     val availableCookingMethods: List<CookingMethod> = emptyList(),
+    val availableTags: List<com.sxdbsm.cookbook.domain.model.DishTag> = emptyList(), // [AI生成] T3：标签库(选择+管理)
     val ingredients: List<DishIngredient> = emptyList(),
     val steps: List<DishStep> = emptyList(), // [AI生成] 菜品操作步骤草稿，保存时随菜品事务一起落库。
     val specialNote: String = "",
@@ -81,11 +82,13 @@ class NewDishViewModel(
             // [AI修改] 先把挂起查询结果放到局部变量，再基于最新 state 合并，避免旧空表单快照覆盖编辑加载结果。
             val units = ingredientRepo.listMeasurementUnits()
             val cookingMethods = dishRepo.listCookingMethods()
+            val tags = dishRepo.listDishTags() // [AI生成] T3：标签库
             _state.update { current ->
                 AppLogger.d(TAG, "init dictionaries merged: currentEditId=${current.editingId} currentName=${current.name} units=${units.size} methods=${cookingMethods.size}")
                 current.copy(
                     availableUnits = units,
                     availableCookingMethods = cookingMethods,
+                    availableTags = tags,
                 )
             }
         }
@@ -112,6 +115,7 @@ class NewDishViewModel(
             editingId = editId,
             availableUnits = current.availableUnits,
             availableCookingMethods = current.availableCookingMethods,
+            availableTags = current.availableTags,
             loading = editId != null || sourceId != null,
         ) // [AI生成] 保留字典数据，只清空表单草稿和保存完成标记。
 
@@ -281,6 +285,44 @@ class NewDishViewModel(
     }
     fun removeTag(name: String) {
         _state.value = _state.value.copy(tags = _state.value.tags.filterNot { it == name })
+    }
+
+    /** T3：输入的新标签——加入本菜 + 存进标签库(下次可选)。[AI生成] */
+    fun saveAndAddTag(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        addTag(trimmed)
+        viewModelScope.launch {
+            dishRepo.createDishTag(trimmed)
+            _state.update { it.copy(availableTags = dishRepo.listDishTags()) }
+        }
+    }
+
+    /** T3：从标签库删除(仅自建)。[AI生成] */
+    fun deleteTagFromLibrary(id: Long) {
+        viewModelScope.launch {
+            dishRepo.deleteDishTag(id)
+            _state.update { it.copy(availableTags = dishRepo.listDishTags()) }
+        }
+    }
+
+    /** T4：输入的新烹饪方式——加入本菜 + 存进烹饪库(下次可选)。[AI生成] */
+    fun saveAndAddCookingMethod(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        addCookingMethod(trimmed)
+        viewModelScope.launch {
+            dishRepo.ensureCookingMethod(trimmed)
+            _state.update { it.copy(availableCookingMethods = dishRepo.listCookingMethods()) }
+        }
+    }
+
+    /** T4：从烹饪库删除(仅自建)。[AI生成] */
+    fun deleteCookingMethodFromLibrary(id: Long) {
+        viewModelScope.launch {
+            dishRepo.deleteCookingMethod(id)
+            _state.update { it.copy(availableCookingMethods = dishRepo.listCookingMethods()) }
+        }
     }
 
     /**

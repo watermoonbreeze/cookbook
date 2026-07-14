@@ -86,4 +86,12 @@ data class MeasurementUnit(
 data class CookingMethod(
     val id: Long,
     val name: String,
+    val preset: Boolean = false, // [AI生成] 预设(内置)方式不可删；用户自建可在库里删除
+)
+
+/** 菜品标签(标签库)。[AI生成] preset 预设不可删，用户自建可删。 */
+data class DishTag(
+    val id: Long,
+    val name: String,
+    val preset: Boolean = false,
 )

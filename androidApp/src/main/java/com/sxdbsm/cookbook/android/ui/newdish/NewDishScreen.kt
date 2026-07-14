@@ -62,11 +62,9 @@ fun NewDishScreen(
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
     }.collectAsStateWithLifecycle(false)
     var tagInputOpen by remember { mutableStateOf(false) }
-    var newTagText by remember { mutableStateOf("") }
     var importPickerOpen by remember { mutableStateOf(false) }
     var ingredientPickerOpen by remember { mutableStateOf(false) }
     var cookingMethodDialogOpen by remember { mutableStateOf(false) }
-    var cookingMethodDraft by remember { mutableStateOf("") }
     var stepTemplateSheetOpen by remember { mutableStateOf(false) } // [AI生成] #2 "选择步骤"模板弹层开关
     var ingredientGroupSheetOpen by remember { mutableStateOf(false) } // [AI生成] B5 "配料组"弹层开关
     var groupEditorOpen by remember { mutableStateOf(false) } // [AI生成] 需求2 全屏配料组编辑器开关
@@ -234,10 +232,7 @@ fun NewDishScreen(
                     )
                 }
                 AssistChip(
-                    onClick = {
-                        cookingMethodDraft = ""
-                        cookingMethodDialogOpen = true
-                    },
+                    onClick = { cookingMethodDialogOpen = true },
                     label = {
                         Text(
                             "+ 添加",
@@ -439,28 +434,16 @@ fun NewDishScreen(
     }
 
     if (tagInputOpen) {
-        AlertDialog(
-            onDismissRequest = { tagInputOpen = false; newTagText = "" },
-            title = { Text("添加标签") },
-            text = {
-                OutlinedTextField(
-                    value = newTagText,
-                    onValueChange = { newTagText = it },
-                    singleLine = true,
-                    label = { Text("标签名（如 家常 / 快手 / 少盐）") },
-                    shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    vm.addTag(newTagText.trim())
-                    newTagText = ""
-                    tagInputOpen = false
-                }) { Text("添加") }
-            },
-            dismissButton = {
-                TextButton(onClick = { tagInputOpen = false; newTagText = "" }) { Text("取消") }
-            },
+        // [AI修改] T3：标签弹窗改为库选择器——展示标签库可直接选，输入并添加会存进库，可编辑删除自建标签。
+        LibraryPickerDialog(
+            title = "标签",
+            chips = state.availableTags.map { LibChip(it.id, it.name, it.preset) },
+            selectedNames = state.tags.toSet(),
+            inputLabel = "新标签（如 家常 / 快手 / 少盐）",
+            onToggle = { if (it in state.tags) vm.removeTag(it) else vm.addTag(it) },
+            onAddNew = { vm.saveAndAddTag(it) },
+            onDelete = { vm.deleteTagFromLibrary(it) },
+            onDismiss = { tagInputOpen = false },
         )
     }
 
@@ -516,19 +499,15 @@ fun NewDishScreen(
     }
 
     if (cookingMethodDialogOpen) {
-        CookingMethodDialog(
-            value = cookingMethodDraft,
-            options = state.availableCookingMethods,
-            onValueChange = { cookingMethodDraft = it },
-            onSelect = { method ->
-                vm.selectCookingMethod(method)
-                cookingMethodDraft = method.name
-                cookingMethodDialogOpen = false
-            },
-            onConfirm = {
-                vm.setCookingMethodInput(cookingMethodDraft.trim())
-                cookingMethodDialogOpen = false
-            },
+        // [AI修改] T4：烹饪方式弹窗——库选择器，输入并添加会存进烹饪库，可编辑删除自建方式。
+        LibraryPickerDialog(
+            title = "烹饪方式",
+            chips = state.availableCookingMethods.map { LibChip(it.id, it.name, it.preset) },
+            selectedNames = state.cookingMethodNames.toSet(),
+            inputLabel = "新烹饪方式（如 白灼 / 焗 / 生腌）",
+            onToggle = { if (it in state.cookingMethodNames) vm.removeCookingMethod(it) else vm.addCookingMethod(it) },
+            onAddNew = { vm.saveAndAddCookingMethod(it) },
+            onDelete = { vm.deleteCookingMethodFromLibrary(it) },
             onDismiss = { cookingMethodDialogOpen = false },
         )
     }
@@ -980,65 +959,90 @@ private fun IngredientGroupEditorScreen(
     }
 }
 
+/** 库选择弹窗的一项(标签/烹饪方式通用)。[AI生成] T3/T4 */
+private data class LibChip(val id: Long, val name: String, val preset: Boolean)
+
 /**
- * 烹饪方式弹框。[AI生成]
+ * 可复用「库选择」弹窗：标签库 / 烹饪方式库通用。[AI生成] T3/T4
  *
- * 支持一次添加一个烹饪方式，外层表单可重复点击“+ 添加”形成多个方式。[AI修改]
+ * - 直接展示库内容为可选 chip，点击选中/取消(加到本菜)；
+ * - 底部输入 + 「添加」：新内容加到本菜并存进库(下次可选)；
+ * - 标题右侧无边框「编辑」文字按钮：进入编辑态后自建项显示删除，点击从库中删除(预设不可删)。
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CookingMethodDialog(
-    value: String,
-    options: List<com.sxdbsm.cookbook.domain.model.CookingMethod>,
-    onValueChange: (String) -> Unit,
-    onSelect: (com.sxdbsm.cookbook.domain.model.CookingMethod) -> Unit,
-    onConfirm: () -> Unit,
+private fun LibraryPickerDialog(
+    title: String,
+    chips: List<LibChip>,
+    selectedNames: Set<String>,
+    inputLabel: String,
+    onToggle: (String) -> Unit,
+    onAddNew: (String) -> Unit,
+    onDelete: (Long) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf(false) }
+    var input by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("烹饪方式") },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(title, modifier = Modifier.weight(1f))
+                if (chips.any { !it.preset }) {
+                    // 无边框「编辑/完成」文字按钮，管理自建项。
+                    Text(
+                        if (editing) "完成" else "编辑",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clickable { editing = !editing }
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                    )
+                }
+            }
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(
-                    onClick = { expanded = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(if (value.isBlank()) "下拉选择烹饪方式" else value, modifier = Modifier.weight(1f))
-                    Icon(Icons.Outlined.ExpandMore, contentDescription = null)
-                }
-                Box {
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
+                if (chips.isEmpty()) {
+                    Text("暂无，可在下方输入添加", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        options.forEach { method ->
-                            DropdownMenuItem(
-                                text = { Text(method.name) },
-                                onClick = {
-                                    onSelect(method)
-                                    expanded = false
-                                },
-                            )
+                        chips.forEach { c ->
+                            if (editing && !c.preset) {
+                                AssistChip(
+                                    onClick = { onDelete(c.id) },
+                                    label = { Text(c.name) },
+                                    trailingIcon = { Icon(Icons.Outlined.Close, contentDescription = "删除", modifier = Modifier.size(16.dp)) },
+                                )
+                            } else {
+                                FilterChip(
+                                    selected = c.name in selectedNames,
+                                    onClick = { if (!editing) onToggle(c.name) },
+                                    label = { Text(c.name) },
+                                )
+                            }
                         }
                     }
                 }
                 OutlinedTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    label = { Text("或手动输入") },
+                    value = input,
+                    onValueChange = { input = it },
+                    label = { Text(inputLabel) },
                     singleLine = true,
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        TextButton(onClick = { if (input.isNotBlank()) { onAddNew(input.trim()); input = "" } }, enabled = input.isNotBlank()) {
+                            Text("添加")
+                        }
+                    },
                 )
             }
         },
-        confirmButton = {
-            TextButton(onClick = onConfirm, enabled = value.isNotBlank()) { Text("确定") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
-        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } },
     )
 }
 

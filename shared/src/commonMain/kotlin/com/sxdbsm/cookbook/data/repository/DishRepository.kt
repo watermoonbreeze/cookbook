@@ -36,8 +36,33 @@ class DishRepository(private val db: CookbookDatabase) {
      */
     suspend fun listCookingMethods(): List<CookingMethod> = withContext(ioDispatcher) {
         q.selectAllCookingMethods().executeAsList().map { row ->
-            CookingMethod(id = row.id, name = row.name)
+            CookingMethod(id = row.id, name = row.name, preset = row.source == "preset")
         }
+    }
+
+    /** 删除烹饪方式(仅用户自建，预设不可删)。[AI生成] T4 */
+    suspend fun deleteCookingMethod(id: Long) = withContext(ioDispatcher) {
+        q.softDeleteUserCookingMethod(id)
+    }
+
+    /** 标签库(预设+用户自建)。[AI生成] T3 */
+    suspend fun listDishTags(): List<com.sxdbsm.cookbook.domain.model.DishTag> = withContext(ioDispatcher) {
+        q.selectAllDishTags().executeAsList().map { row ->
+            com.sxdbsm.cookbook.domain.model.DishTag(id = row.id, name = row.name, preset = row.source == "preset")
+        }
+    }
+
+    /** 新建标签入库(按名幂等，返回是否新建)。[AI生成] T3 */
+    suspend fun createDishTag(name: String) = withContext(ioDispatcher) {
+        val trimmed = name.trim()
+        if (trimmed.isNotBlank() && q.selectDishTagByName(trimmed).executeAsOneOrNull() == null) {
+            q.insertDishTag(trimmed, "user", DateTime.nowEpochSeconds())
+        }
+    }
+
+    /** 删除标签(仅用户自建，预设不可删)。[AI生成] T3 */
+    suspend fun deleteDishTag(id: Long) = withContext(ioDispatcher) {
+        q.softDeleteUserDishTag(id)
     }
 
     /**

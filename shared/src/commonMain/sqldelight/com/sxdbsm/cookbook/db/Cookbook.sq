@@ -445,6 +445,10 @@ INSERT OR IGNORE INTO cooking_method(name, source, created_at, status) VALUES (?
 selectAllCookingMethods:
 SELECT * FROM cooking_method WHERE status = 1 ORDER BY id;
 
+-- [AI生成] 删除烹饪方式(仅用户自建，预设不可删)。软删=下次不再列出。
+softDeleteUserCookingMethod:
+UPDATE cooking_method SET status = 0 WHERE id = ? AND source = 'user';
+
 -- [AI生成] 按名精确取烹饪方式 id(name UNIQUE)，替代 ensureCookingMethod 的全表拉取反查。
 selectCookingMethodIdByName:
 SELECT id FROM cooking_method WHERE name = ? AND status = 1 LIMIT 1;
@@ -1021,6 +1025,10 @@ SELECT * FROM dish_tag WHERE status = 1 ORDER BY name COLLATE NOCASE ASC;
 
 selectDishTagByName:
 SELECT * FROM dish_tag WHERE name = ? AND status = 1;
+
+-- [AI生成] 删除标签(仅用户自建，预设不可删)。
+softDeleteUserDishTag:
+UPDATE dish_tag SET status = 0 WHERE id = ? AND source = 'user';
 
 selectTagsByDish:
 SELECT dt.* FROM dish_tag dt
