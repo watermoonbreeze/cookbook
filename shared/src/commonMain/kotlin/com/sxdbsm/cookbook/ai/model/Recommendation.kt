@@ -83,6 +83,8 @@ data class DishCandidate(
     val avoidNames: List<String> = emptyList(), // [AI生成] 命中健康档案"忌口(avoid)"的食材名(仅非调料)：不再隐藏，改为排到最后并标红警示
     val cookingCautions: List<String> = emptyList(), // [AI生成] 调料命中忌口/限量→转做法提示(少盐/少糖/少油)，不判菜品忌口
     val recentDaysAgo: Int? = null, // [AI生成] B2：去重窗口内吃过则=距今天数(0今天/1昨天…)，非空→排最后并标注；null=窗口内没吃过
+    val frequent: Boolean = false, // [AI生成] 3b：偏好画像高(常做/收藏)，供逐菜"推荐理由"展示
+    val complementary: Boolean = false, // [AI生成] 3b：能补近期缺的宏量(营养互补)，供"推荐理由"展示
 )
 
 /** 模型输出：3 个下一餐组合，每餐 2~3 菜。[AI生成] */

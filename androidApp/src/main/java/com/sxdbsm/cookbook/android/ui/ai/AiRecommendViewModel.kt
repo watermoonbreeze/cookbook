@@ -192,6 +192,9 @@ class AiRecommendViewModel(
     /** 组装一道菜的说明：用到库存/还差什么/利于调养/做法/注意限量。[AI修改] */
     private fun buildNote(c: DishCandidate, mode: RecommendMode): String {
         val parts = mutableListOf<String>()
+        // [AI生成] 3b：逐菜推荐理由(画像)——常做/补营养，放最前更醒目。
+        if (c.frequent) parts += "⭐你常做"
+        if (c.complementary) parts += "🥗补营养搭配"
         if (c.shortageNames.isNotEmpty()) parts += "⚠库存不足：${c.shortageNames.joinToString("、")}" // 份数用尽仍推荐但标识
         // [AI修改] 物尽其用：库存模式突出"用到你库存的食材"与"还差什么(可自行采购)"，让用户按缺料自己选。
         if (mode == RecommendMode.PANTRY && c.onHandNames.isNotEmpty()) parts += "用到库存：${c.onHandNames.joinToString("、")}"

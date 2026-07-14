@@ -109,6 +109,8 @@ class HealthRuleEngine {
             avoidNames = avoidNames,
             cookingCautions = cookingCautions,
             recentDaysAgo = recentDaysAgo,
+            frequent = (preferenceScores[dish.id] ?: 0.0) >= 0.5, // [AI生成] 3b：常做/收藏
+            complementary = (nutritionBalanceScores[dish.id] ?: 0.0) > 0.0, // [AI生成] 3b：补营养搭配
         )
     }
         // [AI修改] B2：分层排序保证"最近吃过的排到最后(但在忌口之前)、忌口最末"，不依赖罚分量级、稳健：
