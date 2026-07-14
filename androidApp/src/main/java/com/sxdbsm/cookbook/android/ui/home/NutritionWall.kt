@@ -102,12 +102,25 @@ fun NutritionTodayCard(data: TodayNutrition, modifier: Modifier = Modifier) {
                 }
                 Spacer(Modifier.height(4.dp))
             }
-            Text(
-                "蛋白 ${data.proteinG}g · 脂肪 ${data.fatG}g · 碳水 ${data.carbG}g",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // 图例：色点 + 宏量克数，与占比条同色对应。
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                MacroLegend(Color(0xFF5C9A6A), "蛋白 ${data.proteinG}g")
+                Spacer(Modifier.width(10.dp))
+                MacroLegend(Color(0xFFE0A23C), "脂肪 ${data.fatG}g")
+                Spacer(Modifier.width(10.dp))
+                MacroLegend(Color(0xFF6E9BD1), "碳水 ${data.carbG}g")
+            }
         }
+    }
+}
+
+/** 宏量图例项：小色点 + 文字(与占比条同色对应)。[AI生成] 3c */
+@Composable
+private fun MacroLegend(color: Color, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(color))
+        Spacer(Modifier.width(3.dp))
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

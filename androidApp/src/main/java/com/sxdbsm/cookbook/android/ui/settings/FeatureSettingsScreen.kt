@@ -156,9 +156,9 @@ private fun BodyMetricsSection(
             seeded = true
         }
     }
-    fun push() = onChange(
-        body.copy(heightCm = height.toDoubleOrNull(), weightKg = weight.toDoubleOrNull(), age = age.toIntOrNull()),
-    )
+    // [AI修改] G1：所有字段写回都以「本地 UI 态 + 显式变更项」为单一真相源，避免读迟滞的 body 互相覆盖。
+    fun build(gender: String = body.gender, activity: String = body.activity) =
+        body.copy(gender = gender, activity = activity, heightCm = height.toDoubleOrNull(), weightKg = weight.toDoubleOrNull(), age = age.toIntOrNull())
 
     Column(Modifier.fillMaxWidth().padding(16.dp)) {
         // 性别
@@ -167,15 +167,15 @@ private fun BodyMetricsSection(
             com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
                 options = genders.map { it.label },
                 selectedIndex = genders.indexOfFirst { it.name == body.gender }.coerceAtLeast(0),
-                onSelect = { onChange(body.copy(gender = genders[it].name)) },
+                onSelect = { onChange(build(gender = genders[it].name)) },
                 modifier = Modifier.weight(1f),
             )
         }
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            NumberField("身高cm", height, { height = it; push() }, Modifier.weight(1f))
-            NumberField("体重kg", weight, { weight = it; push() }, Modifier.weight(1f))
-            NumberField("年龄", age, { age = it; push() }, Modifier.weight(1f))
+            NumberField("身高cm", height, decimal = true, { height = it; onChange(build()) }, Modifier.weight(1f))
+            NumberField("体重kg", weight, decimal = true, { weight = it; onChange(build()) }, Modifier.weight(1f))
+            NumberField("年龄", age, decimal = false, { age = it; onChange(build()) }, Modifier.weight(1f))
         }
         Spacer(Modifier.height(10.dp))
         // 活动水平
@@ -184,7 +184,7 @@ private fun BodyMetricsSection(
         com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
             options = activities.map { it.label },
             selectedIndex = activities.indexOfFirst { it.name == body.activity }.coerceAtLeast(0),
-            onSelect = { onChange(body.copy(activity = activities[it].name)) },
+            onSelect = { onChange(build(activity = activities[it].name)) },
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(12.dp))
@@ -201,10 +201,19 @@ private fun BodyMetricsSection(
 }
 
 @Composable
-private fun NumberField(label: String, value: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
+private fun NumberField(label: String, value: String, decimal: Boolean, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
     androidx.compose.material3.OutlinedTextField(
         value = value,
-        onValueChange = { s -> onValueChange(s.filter { it.isDigit() || it == '.' }) },
+        // [AI修改] G2：仅数字；允许小数的字段最多一个小数点，年龄等整数字段禁小数点。
+        onValueChange = { s ->
+            val filtered = if (decimal) {
+                val digitsDots = s.filter { it.isDigit() || it == '.' }
+                if (digitsDots.count { it == '.' } <= 1) digitsDots else value // 出现第二个小数点则保持不变
+            } else {
+                s.filter { it.isDigit() }
+            }
+            onValueChange(filtered)
+        },
         label = { Text(label, style = MaterialTheme.typography.labelSmall) },
         singleLine = true,
         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
