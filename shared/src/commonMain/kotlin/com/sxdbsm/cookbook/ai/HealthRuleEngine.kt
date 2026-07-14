@@ -33,6 +33,11 @@ class HealthRuleEngine {
         recentDishIds: Set<Long> = emptySet(),
         shortageIngredientIds: Set<Long> = emptySet(), // [AI生成] 可用份数≤0 的在库食材
         recentDishDaysAgo: Map<Long, Int> = emptyMap(), // [AI生成] B2：去重窗口内吃过的菜→距今天数(用于标注"N天前吃过")
+        // [AI生成] 增长型推荐 P1：权重(风格切换)与画像信号；默认均为空/中性→行为同现有。
+        weights: RecommendationWeights = RecommendationWeights.DEFAULT,
+        preferenceScores: Map<Long, Double> = emptyMap(), // 每菜偏好画像分[0,1]：爱吃/常做/收藏
+        nutritionBalanceScores: Map<Long, Double> = emptyMap(), // 每菜与当日/本餐已选的营养互补度[-1,1]
+        mainRepeatCounts: Map<Long, Int> = emptyMap(), // 每菜主料近期重复次数
     ): List<DishCandidate> = dishes.mapNotNull { dish ->
         val nonSeasoning = dish.ingredients.filter { it.role != IngredientRole.SEASONING }
         val seasonings = dish.ingredients.filter { it.role == IngredientRole.SEASONING }
@@ -70,17 +75,23 @@ class HealthRuleEngine {
         // 保证它们排到前面、进第一批，不被"缺辅料/份数不足"埋到看不见。
         val onHandMainCount = onHandNonSeasoning.count { it.role == IngredientRole.MAIN }
 
-        var score = BASE_SCORE + SEASONING_WEIGHT * seasoningRichness
-        score += ON_HAND_MAIN_BONUS * onHandMainCount // 用到在手主料 → 强力靠前(物尽其用)
-        score += RECOMMEND_BONUS * recommendHits.size
-        score -= LIMIT_PENALTY * limitHits.size
-        if (isRecent) score -= RECENT_PENALTY
+        // [AI修改] 因子化打分：权重来自 RecommendationWeights(默认=原常量、可由推荐风格切换)。
+        var score = weights.base + weights.seasoning * seasoningRichness
+        score += weights.onHandMain * onHandMainCount // 用到在手主料 → 强力靠前(物尽其用)
+        score += weights.recommend * recommendHits.size
+        score -= weights.limit * limitHits.size
+        if (isRecent) score -= weights.recent
         // [AI修改] 份数不足/缺辅料只做「轻微靠后」的排序微调，不再是断崖式重罚——
         // 用户要求「不管库存有几份、只要在库存中，用到它的菜都要推出来」，故份数/缺料不得把菜挤出推荐。
-        if (shortageNames.isNotEmpty()) score -= SHORTAGE_PENALTY
-        if (missingNames.isNotEmpty()) score -= MISSING_PENALTY * missingNames.size
+        if (shortageNames.isNotEmpty()) score -= weights.shortage
+        if (missingNames.isNotEmpty()) score -= weights.missing * missingNames.size
+        // [AI生成] 增长型 P1 新因子(无画像数据时为 0，行为同现有)：
+        //   营养搭配互补度[-1,1]、偏好画像[0,1]加分；近期同主料重复罚分。
+        score += weights.nutritionBalance * (nutritionBalanceScores[dish.id] ?: 0.0)
+        score += weights.preference * (preferenceScores[dish.id] ?: 0.0)
+        score -= weights.mainRepeat * (mainRepeatCounts[dish.id] ?: 0)
         // [AI修改] 忌口菜大幅降权排到所有正常菜之后(仍保留、带 avoidNames 让 UI 标红警示)，让用户看得到但明确知道该避免。
-        if (avoidNames.isNotEmpty()) score -= AVOID_PENALTY
+        if (avoidNames.isNotEmpty()) score -= weights.avoid
 
         DishCandidate(
             id = dish.id,
@@ -115,17 +126,6 @@ class HealthRuleEngine {
         else -> name
     }
 
-    companion object {
-        private const val BASE_SCORE = 1.0
-        private const val ON_HAND_MAIN_BONUS = 1.0 // [AI生成] 每味在手主料的加分：物尽其用核心，用到库存主料的菜强力靠前、进第一批。
-        private const val SEASONING_WEIGHT = 0.5 // 在手调料越全，可做的做法越丰富，略加分。
-        private const val RECOMMEND_BONUS = 0.6 // [AI生成] 每个调养推荐食材的加分(利健康的菜靠前)。
-        private const val RECENT_PENALTY = 0.5 // 最近吃过降权，鼓励多样性。
-        private const val LIMIT_PENALTY = 0.4 // [AI修改] 每个限量食材的降权(不利健康的菜靠后)。
-        // [AI修改] 份数不足/缺辅料只做轻微靠后(0.3/0.2)，不再断崖重罚(原 100/50)——
-        // 保证「只要库存中有该食材、用到它的菜都能推出来」，份数与缺辅料只影响先后、不影响是否出现。
-        private const val SHORTAGE_PENALTY = 0.3 // 库存不足菜仍推荐，仅轻微排后并标"⚠库存不足"。
-        private const val MISSING_PENALTY = 0.2 // 缺辅料(需采购)每味仅轻微排后，让齐备的略靠前。
-        private const val AVOID_PENALTY = 50.0 // [AI生成] 忌口菜大幅降权，排到所有正常菜之后(仍保留+标红)，让用户看得到但明确知道该避免。
-    }
+    // [AI修改] 打分权重(含默认值)已迁到 RecommendationWeights（支持推荐风格切换）；
+    // 默认权重与原常量一致，行为不变。见 RecommendationStyle.kt / 增长型本地推荐算法.md。
 }

@@ -258,4 +258,83 @@ class HealthRuleEngineTest {
         assertEquals(1L, result.first().id) // 齐备的排前
         assertEquals(listOf("肉"), result.first { it.id == 2L }.missingNames)
     }
+
+    // ===== 增长型推荐 P1：新因子 + 推荐风格 =====
+
+    private fun twoEqualDishes(): List<RuleDish> = listOf(
+        RuleDish(1, "菜甲", listOf(main(101, "甲"))),
+        RuleDish(2, "菜乙", listOf(main(102, "乙"))),
+    )
+
+    @Test
+    fun `偏好画像分让常吃的菜靠前`() {
+        // 两菜条件相同；乙偏好分更高 → 乙排前。
+        val result = engine.evaluate(
+            twoEqualDishes(),
+            pantryIngredientIds = setOf(101, 102),
+            HealthConstraints(),
+            preferenceScores = mapOf(2L to 1.0),
+        )
+        assertEquals(2L, result.first().id)
+    }
+
+    @Test
+    fun `营养搭配互补度加分_降分都生效`() {
+        // 甲互补度高(缺的营养它能补)→ 加分排前；乙互补度负(与已吃重复)→ 降分。
+        val result = engine.evaluate(
+            twoEqualDishes(),
+            pantryIngredientIds = setOf(101, 102),
+            HealthConstraints(),
+            nutritionBalanceScores = mapOf(1L to 1.0, 2L to -1.0),
+        )
+        assertEquals(1L, result.first().id)
+    }
+
+    @Test
+    fun `主料近期重复罚分排后`() {
+        val result = engine.evaluate(
+            twoEqualDishes(),
+            pantryIngredientIds = setOf(101, 102),
+            HealthConstraints(),
+            mainRepeatCounts = mapOf(1L to 3), // 甲主料近期重复3次
+        )
+        assertEquals(2L, result.first().id) // 甲被罚，乙排前
+    }
+
+    @Test
+    fun `推荐风格_偏熟悉与偏新鲜给出相反排序`() {
+        // 甲=常吃(偏好高)、乙=久没吃(偏好0)。偏熟悉→甲前；偏新鲜→弱化偏好、甲不再占优。
+        val dishes = twoEqualDishes()
+        val pref = mapOf(1L to 1.0)
+        val familiar = engine.evaluate(
+            dishes, setOf(101, 102), HealthConstraints(),
+            weights = RecommendationStyle.FAMILIAR.weights(),
+            preferenceScores = pref,
+        )
+        assertEquals(1L, familiar.first().id, "偏熟悉：常吃的甲排前")
+
+        // 偏新鲜：甲最近吃过(强去重)、乙没吃 → 乙排前。
+        val fresh = engine.evaluate(
+            dishes, setOf(101, 102), HealthConstraints(),
+            weights = RecommendationStyle.FRESH.weights(),
+            preferenceScores = pref,
+            recentDishDaysAgo = mapOf(1L to 0),
+        )
+        assertEquals(2L, fresh.first().id, "偏新鲜：久没吃的乙排前")
+    }
+
+    @Test
+    fun `默认权重下新因子无数据时行为不变`() {
+        // 不传任何画像信号 → 与旧引擎行为一致(此处两菜同分、都推荐)。
+        val result = engine.evaluate(twoEqualDishes(), setOf(101, 102), HealthConstraints())
+        assertEquals(2, result.size)
+        assertEquals(setOf(1L, 2L), result.map { it.id }.toSet())
+    }
+
+    @Test
+    fun `风格解析容错回默认综合`() {
+        assertEquals(RecommendationStyle.BALANCED, RecommendationStyle.fromKey(null))
+        assertEquals(RecommendationStyle.BALANCED, RecommendationStyle.fromKey("不存在"))
+        assertEquals(RecommendationStyle.FRESH, RecommendationStyle.fromKey("FRESH"))
+    }
 }
