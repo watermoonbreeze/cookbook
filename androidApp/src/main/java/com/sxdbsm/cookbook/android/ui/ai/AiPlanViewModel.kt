@@ -32,6 +32,7 @@ class AiPlanViewModel(
     private val mealRepo: MealRecordRepository,
     aiRuntime: AiRuntime,
     private val aiConfig: AiRuntimeConfig,
+    private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] 读写推荐风格(与AI推荐共用)
 ) : ViewModel() {
 
     var state by mutableStateOf(AiPlanUiState())
@@ -43,7 +44,17 @@ class AiPlanViewModel(
     init {
         viewModelScope.launch {
             mealTypes = mealRepo.listMealTypes().filter { it.code in PLAN_MEAL_CODES }
+            // [AI生成] 载入已存的推荐风格(与AI推荐页共用 RECOMMEND_STYLE)。
+            state = state.copy(recommendStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.fromKey(prefs.get(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE)))
         }
+    }
+
+    /** 选推荐风格：持久化；已有计划则按新风格重生成。[AI生成] */
+    fun setStyle(style: com.sxdbsm.cookbook.ai.RecommendationStyle) {
+        if (style == state.recommendStyle) return
+        state = state.copy(recommendStyle = style)
+        viewModelScope.launch { prefs.set(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE, style.name) }
+        if (state.plan != null) generate()
     }
 
     fun setDays(days: Int) {
@@ -77,6 +88,7 @@ class AiPlanViewModel(
                     seed = Random.nextLong(),
                     useModel = aiConfig.isModelReady(),
                     people = state.people, // [AI生成] 按人数定正餐菜数
+                    style = state.recommendStyle, // [AI生成] 推荐风格影响规则规划权重
                 )
                 // [AI生成] 标注库存采购/缺料(主料)：不在库→采购、在库份数不够→缺料。
                 val annotatedPlan = dataSource.annotatePlanWithPantry(result.plan)
@@ -133,5 +145,6 @@ data class AiPlanUiState(
     val healthAware: Boolean = false,
     val byAi: Boolean = false, // [AI生成] 本次计划是否由 AI 生成(否则规则)。
     val planStartDate: LocalDate? = null, // [AI生成] 计划第1天对应的日期(食历最晚日期次日)，用于展示每天的明确日期
+    val recommendStyle: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // [AI生成] 推荐风格
     val error: String? = null,
 )

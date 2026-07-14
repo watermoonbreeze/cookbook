@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,11 +58,19 @@ fun NutritionWall(
     val today = DateTime.today()
     val weeks = days.chunked(7)
     val listState = rememberLazyListState()
-    // [AI修改] 固定本公历年，定位到今天所在周(不再滚到年末)。
+    // [AI修改] 固定本公历年，定位到今天所在周并**居中**(不再靠左/滚到年末)。
     LaunchedEffect(weeks.size) {
         if (weeks.isNotEmpty()) {
             val idx = weeks.indexOfFirst { wk -> wk.any { it.date == today } }.let { if (it >= 0) it else weeks.lastIndex }
             listState.scrollToItem(idx)
+            // 居中：把今天所在列滚到视口中央(内容不足时自动 clamp)。
+            val info = listState.layoutInfo
+            val item = info.visibleItemsInfo.firstOrNull { it.index == idx }
+            if (item != null) {
+                val viewportCenter = (info.viewportStartOffset + info.viewportEndOffset) / 2f
+                val itemCenter = item.offset + item.size / 2f
+                listState.scrollBy(itemCenter - viewportCenter)
+            }
         }
     }
     Column(modifier = modifier) {

@@ -89,11 +89,6 @@ fun DayMealCardView(
                 } else if (data.isPlanState) {
                     Badge("计划", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                 }
-                // [AI生成] 当天总热量角标(营养色系开启且有数据时)。
-                if (nutritionColorEnabled && dayKcal > 0) {
-                    Spacer(Modifier.width(6.dp))
-                    Badge("🔥≈${dayKcal}千卡", MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.surfaceVariant)
-                }
                 Spacer(Modifier.weight(1f))
                 // 右侧操作图标(同一行)
                 if (onCopyClick != null && data.meals.isNotEmpty()) {
@@ -105,6 +100,15 @@ fun DayMealCardView(
                 if (onDeleteClick != null && data.meals.isNotEmpty()) {
                     CardIcon(Icons.Outlined.Delete, "删除", MaterialTheme.colorScheme.error, onDeleteClick)
                 }
+            }
+            // [AI修改] 第二行：后续添加的指标(当天总热量/卡路里等)，与日期行上下排列，不挤占操作按钮。
+            if (nutritionColorEnabled && dayKcal > 0) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "🔥 当天约 $dayKcal 千卡",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             if (data.meals.isEmpty()) {
                 Spacer(Modifier.height(8.dp))

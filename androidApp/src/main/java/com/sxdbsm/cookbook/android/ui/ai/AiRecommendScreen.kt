@@ -46,8 +46,8 @@ import org.koin.androidx.compose.koinViewModel
 // [AI生成] B2：去重周期选项(标签→天数)。
 private val RECENT_WINDOW_OPTIONS = listOf("一周" to 7, "二周" to 14, "三周" to 21, "四周" to 28)
 
-// [AI生成] P3：推荐风格选项(标签→风格→当前说明)。轻干预，调整各因子权重。
-private val RECOMMEND_STYLE_OPTIONS: List<Triple<String, com.sxdbsm.cookbook.ai.RecommendationStyle, String>> = listOf(
+// [AI生成] P3：推荐风格选项(标签→风格→当前说明)。轻干预，调整各因子权重。AI推荐与周期计划共用(internal)。
+internal val RECOMMEND_STYLE_OPTIONS: List<Triple<String, com.sxdbsm.cookbook.ai.RecommendationStyle, String>> = listOf(
     Triple("综合", com.sxdbsm.cookbook.ai.RecommendationStyle.BALANCED, "综合：各方面均衡推荐"),
     Triple("偏熟悉", com.sxdbsm.cookbook.ai.RecommendationStyle.FAMILIAR, "偏熟悉：多推你常做/收藏的家常菜"),
     Triple("偏新鲜", com.sxdbsm.cookbook.ai.RecommendationStyle.FRESH, "偏新鲜：多推久没吃的，换换口味"),

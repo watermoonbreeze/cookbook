@@ -55,7 +55,9 @@ class PeriodPlanner {
         healthAware: Boolean = false,
         seed: Long = 0,
         dishRangeFor: ((String) -> IntRange)? = null, // [AI生成] 按餐次给菜数区间(如按人数)；空则用 dishesMin/Max
+        style: RecommendationStyle = RecommendationStyle.DEFAULT, // [AI生成] 推荐风格(轻干预)：调整新颖/健康/搭配/去重权重
     ): PeriodPlan {
+        val f = planFactors(style) // 风格系数
         val lo = dishesMin.coerceAtLeast(1)
         val hi = dishesMax.coerceAtLeast(lo)
         val pool = candidates.filterNot { it.hasAvoid } // 忌口硬剔除
@@ -92,7 +94,7 @@ class PeriodPlanner {
                         .ifEmpty { pool.filter { it !in chosen } }
                     // [AI修改] 分数 + 随机抖动：强信号(应季/健康)仍优先，同分菜每次"生成"换出不同组合。
                     val pick = avail.maxByOrNull {
-                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen) + (jitter[it.id] ?: 0.0)
+                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen, f) + (jitter[it.id] ?: 0.0)
                     } ?: break
                     chosen += pick
                     usedDishIds[pick.id] = (usedDishIds[pick.id] ?: 0) + 1
@@ -124,29 +126,40 @@ class PeriodPlanner {
         usedMainCounts: Map<String, Int>,
         usedNutrition: Map<String, Int>,
         mealChosen: List<PlanDish>, // [AI生成] 本餐已选菜，用于荤素搭配平衡
+        f: PlanFactors, // [AI生成] 推荐风格系数
     ): Double {
         var s = BASE
         // 应季
         if (season.isNotBlank() && (season in dish.seasonTags || "应季" in dish.seasonTags)) s += SEASON_BONUS
-        // 营养维度新颖度：覆盖未用过/少用的营养维度加分
-        s += dish.nutritionTags.sumOf { NUTRITION_BONUS / (1.0 + (usedNutrition[it] ?: 0)) }
-        // 健康
-        if (dish.isHealthy) s += HEALTH_BONUS
-        // [AI生成] 荤素搭配：本餐已选里荤/素偏少的一方补分，鼓励一餐荤素兼有(营养搭配待营养规则接入后再细化)。
+        // 营养维度新颖度：覆盖未用过/少用的营养维度加分(风格调节)
+        s += dish.nutritionTags.sumOf { f.nutrition * NUTRITION_BONUS / (1.0 + (usedNutrition[it] ?: 0)) }
+        // 健康(风格调节)
+        if (dish.isHealthy) s += f.health * HEALTH_BONUS
+        // [AI生成] 荤素搭配：本餐已选里荤/素偏少的一方补分(风格调节)。
         if (mealChosen.isNotEmpty()) {
             val meat = mealChosen.count { it.isMeat }
             val veg = mealChosen.size - meat
-            if (dish.isMeat && meat <= veg) s += BALANCE_BONUS
-            if (!dish.isMeat && veg <= meat) s += BALANCE_BONUS
+            if (dish.isMeat && meat <= veg) s += f.balance * BALANCE_BONUS
+            if (!dish.isMeat && veg <= meat) s += f.balance * BALANCE_BONUS
         }
-        // [AI生成] #54：主食搭配——本餐还没有主食时，主食菜(米面薯玉米等)强力加分，让每餐尽量含一道主食。
+        // [AI生成] #54：主食搭配——本餐还没有主食时，主食菜强力加分，让每餐尽量含一道主食。
         if (mealChosen.none { isStaple(it) } && isStaple(dish)) s += STAPLE_BONUS
-        // 去重：同菜、同主料降权
-        s -= REPEAT_DISH_PENALTY * (usedDishIds[dish.id] ?: 0)
-        s -= REPEAT_MAIN_PENALTY * dish.mainNames.sumOf { usedMainCounts[it] ?: 0 }
+        // 去重：同菜、同主料降权(风格调节：偏新鲜↑去重、偏熟悉↓去重)
+        s -= f.repeat * REPEAT_DISH_PENALTY * (usedDishIds[dish.id] ?: 0)
+        s -= f.repeat * REPEAT_MAIN_PENALTY * dish.mainNames.sumOf { usedMainCounts[it] ?: 0 }
         // 限量降权
         s -= LIMIT_PENALTY * dish.limitHits.size
         return s
+    }
+
+    /** 推荐风格系数(周期计划)。[AI生成] */
+    private data class PlanFactors(val nutrition: Double, val health: Double, val balance: Double, val repeat: Double)
+
+    private fun planFactors(style: RecommendationStyle): PlanFactors = when (style) {
+        RecommendationStyle.BALANCED -> PlanFactors(1.0, 1.0, 1.0, 1.0)
+        RecommendationStyle.FAMILIAR -> PlanFactors(nutrition = 0.6, health = 1.0, balance = 1.0, repeat = 0.4) // 弱化去重/新颖→多重复家常
+        RecommendationStyle.FRESH -> PlanFactors(nutrition = 1.5, health = 1.0, balance = 1.0, repeat = 2.0) // 强去重+新颖→天天不同
+        RecommendationStyle.NUTRITION -> PlanFactors(nutrition = 1.6, health = 1.8, balance = 1.6, repeat = 1.0) // 更重营养/健康/荤素
     }
 
     private fun buildReason(dish: PlanDish, season: String): String = planDishReason(dish, season)

@@ -68,5 +68,5 @@ val androidModule = module {
     viewModel { com.sxdbsm.cookbook.android.ui.pairing.FreePairingViewModel(get()) } // [AI生成] 食材自由搭配(离线规则)。
     single { com.sxdbsm.cookbook.android.sync.SelectiveSyncBundler(get()) } // [AI生成] 选择性同步打包/合并。
     viewModel { com.sxdbsm.cookbook.android.ui.sync.DeviceSyncViewModel(get(), get()) } // [AI修改] 双设备同传(整库替换/选择性合并)。
-    viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置)。
+    viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置/偏好)。
 }

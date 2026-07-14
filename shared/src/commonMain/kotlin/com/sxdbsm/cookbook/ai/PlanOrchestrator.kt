@@ -40,10 +40,11 @@ class PlanOrchestrator(
         seed: Long,
         useModel: Boolean,
         people: Int = 0, // [AI生成] 人数>0 时按人数定各餐菜数(正餐随人数多)，否则用 dishesMin/Max
+        style: RecommendationStyle = RecommendationStyle.DEFAULT, // [AI生成] 推荐风格(轻干预)：影响规则规划权重
     ): PlanResult {
         // [AI生成] 按人数给每餐菜数区间(正餐随人数、早餐轻量)；people<=0 时不覆盖(planner 用全局 min/max)。
         val rangeFor: ((String) -> IntRange)? = if (people > 0) { name -> MealPortion.rangeFor(name, people) } else null
-        fun rule() = planner.plan(ctx.dishes, days, mealNames, dishesMin, dishesMax, ctx.season, ctx.healthAware, seed, rangeFor)
+        fun rule() = planner.plan(ctx.dishes, days, mealNames, dishesMin, dishesMax, ctx.season, ctx.healthAware, seed, rangeFor, style)
         if (!useModel || ctx.dishes.isEmpty()) return PlanResult(rule(), byAi = false)
 
         val prompt = buildPrompt(ctx, days, mealNames, dishesMin, dishesMax, people)

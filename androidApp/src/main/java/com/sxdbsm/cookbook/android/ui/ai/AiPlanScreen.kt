@@ -88,6 +88,20 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 2.dp),
             )
+            // [AI生成] 推荐风格(与AI推荐共用)：影响规划的新颖/健康/搭配/去重权重；已有计划则改风格即重生成。
+            Spacer(Modifier.height(6.dp))
+            Text(
+                RECOMMEND_STYLE_OPTIONS[RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0)].third,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(4.dp))
+            com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                options = RECOMMEND_STYLE_OPTIONS.map { it.first },
+                selectedIndex = RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0),
+                onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
+                modifier = Modifier.fillMaxWidth(),
+            )
             if (state.season.isNotBlank() && state.plan != null) {
                 Spacer(Modifier.height(6.dp))
                 val partialRule = state.byAi && state.plan.days.any { d -> d.meals.any { it.fromRule } }

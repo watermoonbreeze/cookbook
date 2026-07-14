@@ -111,14 +111,24 @@ class AiRecommendViewModel(
     /** 触发推荐（首次 / 换一换 / 切模式）。[AI生成] */
     fun recommend(mode: RecommendMode = state.mode) {
         val rot = if (mode == RecommendMode.RANDOM) Random.nextInt(RANDOM_ROTATION_BOUND) else rotation++
+        // [AI修改] 保留用户在页面上的粘性选择(餐次/去重周期/推荐风格)——mapResult 会重建 state，
+        // 不带这些会在每次推荐后被重置(此前"点偏新鲜等又跳回综合"的 bug)。
+        val slot = state.selectedSlot
+        val window = state.recentWindowDays
+        val style = state.recommendStyle
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
             runCatching {
-                val input = dataSource.gather(mode, mealSlot = state.selectedSlot, recentWindowDays = state.recentWindowDays)
+                val input = dataSource.gather(mode, mealSlot = slot, recentWindowDays = window)
                 orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { result ->
                 val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
-                state = mapResult(result, mode, modelReady = state.modelReady).copy(engineLabel = label)
+                state = mapResult(result, mode, modelReady = state.modelReady).copy(
+                    engineLabel = label,
+                    selectedSlot = slot,
+                    recentWindowDays = window,
+                    recommendStyle = style,
+                )
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
             }
