@@ -118,6 +118,7 @@ fun MainScaffold(
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
+                    onOpenWeekPlan = { nav.navigate(Routes.WEEK_PLAN) }, // [AI生成] B3
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
                 )
             }
@@ -165,6 +166,15 @@ fun MainScaffold(
             }
             composable(Routes.SHOPPING_LIST) {
                 com.sxdbsm.cookbook.android.ui.shopping.ShoppingListScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.WEEK_PLAN) {
+                // [AI生成] B3 一周计划：逐日编辑/复制/安排复用既有添加餐食/复制路由。
+                com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanScreen(
+                    onBack = { nav.popBackStack() },
+                    onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
+                    onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) },
+                    onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
+                )
             }
             composable(Routes.FREE_PAIRING) {
                 com.sxdbsm.cookbook.android.ui.pairing.FreePairingScreen(onBack = { nav.popBackStack() })

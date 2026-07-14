@@ -41,6 +41,7 @@ fun HomeScreen(
     onOpenDish: (Long) -> Unit,
     onEditMealDate: (LocalDate) -> Unit,
     onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] A1：首页计划卡"复制"入口(与食历页一致，家庭高频"照着某天再吃一次")
+    onOpenWeekPlan: () -> Unit = {}, // [AI生成] B3：一周计划入口
     onOpenAiRecommend: () -> Unit = {},
     vm: HomeViewModel = koinViewModel(),
 ) {
@@ -155,6 +156,13 @@ fun HomeScreen(
 
         // [AI修改] 计划标题始终展示；没有计划时内容区显示“暂无计划”。
         item { SectionHeader(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
+        // [AI生成] B3：一周计划入口——"周末排下周饭"整周概览 + 逐日安排。
+        item {
+            OutlinedButton(
+                onClick = onOpenWeekPlan,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+            ) { Text("🗓 一周计划（排下周饭）") }
+        }
         if (ui.plans.isEmpty()) {
             item { EmptyState(text = "暂无计划", icon = "📅") }
         } else {
