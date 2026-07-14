@@ -1,0 +1,24 @@
+-- [AI生成] v19：营养素 L2 数值层。
+-- measurement_unit 加克当量列(供“1个/1勺→克”换算)；新增 ingredient_nutrition 表(每100g可食部营养)。
+-- 注意：新增列/新表，老库升级安全；ALTER ADD COLUMN 只对全新列，不会重复。
+
+ALTER TABLE measurement_unit ADD COLUMN grams REAL;
+
+CREATE TABLE ingredient_nutrition (
+    ingredient_id INTEGER NOT NULL PRIMARY KEY REFERENCES ingredient(id) ON DELETE CASCADE,
+    energy_kcal REAL,
+    protein_g REAL,
+    fat_g REAL,
+    carb_g REAL,
+    fiber_g REAL,
+    sodium_mg REAL,
+    potassium_mg REAL,
+    calcium_mg REAL,
+    gi REAL,
+    purine_mg REAL,
+    piece_gram REAL,
+    ref TEXT NOT NULL DEFAULT '',
+    review INTEGER NOT NULL DEFAULT 0,
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1
+);

@@ -26,7 +26,8 @@ CREATE TABLE measurement_unit (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     source TEXT NOT NULL DEFAULT 'preset',
-    status INTEGER NOT NULL DEFAULT 1
+    status INTEGER NOT NULL DEFAULT 1,
+    grams REAL -- [AI生成] 该单位的克当量(重量/体积单位，如 两=50、斤=500、毫升≈1)；计件单位(个/勺/片等)留空，改走食材 ingredient_nutrition.piece_gram。营养估算换算用。
 );
 
 -- ========== 食材体系 ==========
@@ -79,6 +80,28 @@ CREATE TABLE ingredient_detail (
     eating_notes TEXT NOT NULL DEFAULT '',
     storage_tips TEXT NOT NULL DEFAULT '',
     health_note TEXT NOT NULL DEFAULT '',
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+-- [AI生成] 食材营养素(L2 数值层)：每 100g 可食部，国标口径整理。全部可空=未知(UI 显"—")。
+-- 换算依据：菜品营养 = Σ 食材(每100g值 × 折算克数/100)，折算克数由 measurement_unit.grams 或本表 piece_gram 得到。
+-- 健康数据为 AI 参考整理、非权威核对，来源记 ref、待审记 review。
+CREATE TABLE ingredient_nutrition (
+    ingredient_id INTEGER NOT NULL PRIMARY KEY REFERENCES ingredient(id) ON DELETE CASCADE,
+    energy_kcal REAL,   -- 能量(千卡)
+    protein_g REAL,     -- 蛋白质(g)
+    fat_g REAL,         -- 脂肪(g)
+    carb_g REAL,        -- 碳水化合物(g)
+    fiber_g REAL,       -- 膳食纤维(g)
+    sodium_mg REAL,     -- 钠(mg)
+    potassium_mg REAL,  -- 钾(mg)
+    calcium_mg REAL,    -- 钙(mg)
+    gi REAL,            -- 升糖指数(0~100，非每100g量)
+    purine_mg REAL,     -- 嘌呤(mg/100g)
+    piece_gram REAL,    -- 计件单位默认克重(如 1 个鸡蛋≈50)，供无克当量单位换算
+    ref TEXT NOT NULL DEFAULT '',       -- 数据来源标注
+    review INTEGER NOT NULL DEFAULT 0,  -- 1=待人工审核
     updated_at INTEGER NOT NULL DEFAULT 0,
     status INTEGER NOT NULL DEFAULT 1
 );
@@ -432,10 +455,55 @@ SELECT * FROM cooking_method WHERE id = ? AND status = 1;
 -- ===== measurement_unit =====
 
 insertMeasurementUnit:
-INSERT OR IGNORE INTO measurement_unit(name, source, status) VALUES (?, ?, 1);
+INSERT OR IGNORE INTO measurement_unit(name, source, grams, status) VALUES (?, ?, ?, 1);
 
 selectAllMeasurementUnits:
 SELECT * FROM measurement_unit WHERE status = 1 ORDER BY id;
+
+-- [AI生成] 补齐旧库单位克当量(新增列，老库为 NULL)：按名幂等更新，供营养估算换算。
+updateMeasurementUnitGrams:
+UPDATE measurement_unit SET grams = :grams WHERE name = :name;
+
+-- ===== ingredient_nutrition（营养素 L2 数值层）=====
+
+-- [AI生成] 营养素补齐式写入：sqlite_3_18 无 UPSERT，用 INSERT OR REPLACE（PK=ingredient_id，无子表引用，安全）。
+upsertIngredientNutrition:
+INSERT OR REPLACE INTO ingredient_nutrition(
+    ingredient_id, energy_kcal, protein_g, fat_g, carb_g, fiber_g,
+    sodium_mg, potassium_mg, calcium_mg, gi, purine_mg, piece_gram,
+    ref, review, updated_at, status
+) VALUES (
+    :ingredient_id, :energy_kcal, :protein_g, :fat_g, :carb_g, :fiber_g,
+    :sodium_mg, :potassium_mg, :calcium_mg, :gi, :purine_mg, :piece_gram,
+    :ref, :review, :updated_at, 1
+);
+
+selectIngredientNutrition:
+SELECT * FROM ingredient_nutrition WHERE ingredient_id = ? AND status = 1;
+
+-- [AI生成] 计算菜品营养的输入：逐条配料的用量/单位克当量/该食材每100g营养与计件克重。
+-- 折算克数在 Kotlin 侧算(quantity × unit_grams，否则 × piece_gram，否则类别兜底)。
+selectNutritionInputsByDishIds:
+SELECT di.dish_id AS dish_id,
+       di.ingredient_id AS ingredient_id,
+       di.quantity AS quantity,
+       di.is_main AS is_main,
+       mu.grams AS unit_grams,
+       n.energy_kcal AS energy_kcal,
+       n.protein_g AS protein_g,
+       n.fat_g AS fat_g,
+       n.carb_g AS carb_g,
+       n.fiber_g AS fiber_g,
+       n.sodium_mg AS sodium_mg,
+       n.potassium_mg AS potassium_mg,
+       n.calcium_mg AS calcium_mg,
+       n.gi AS gi,
+       n.purine_mg AS purine_mg,
+       n.piece_gram AS piece_gram
+FROM dish_ingredient di
+LEFT JOIN measurement_unit mu ON mu.id = di.unit_id
+LEFT JOIN ingredient_nutrition n ON n.ingredient_id = di.ingredient_id AND n.status = 1
+WHERE di.dish_id IN :dishIds AND di.status = 1;
 
 -- ===== crowd_type =====
 

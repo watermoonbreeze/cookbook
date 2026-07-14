@@ -44,6 +44,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // 字典类小表：表为空才写入。
         if (q.countCookingMethods().executeAsOne() == 0L) seedCookingMethods(now)
         if (q.countMeasurementUnits().executeAsOne() == 0L) seedMeasurementUnits()
+        seedMeasurementUnitGrams() // [AI生成] 每次启动幂等补齐单位克当量(v19 新列，老库回填)。
         if (q.countCrowdTypes().executeAsOne() == 0L) seedCrowdTypes(now)
         if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes()
         ensureFlexibleSnackMealType() // [AI修改] 兼容旧库：补充“加餐”餐次，供添加餐食页按需手动选择时间。
@@ -127,8 +128,21 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
     private fun seedMeasurementUnits() {
         val q = db.cookbookQueries
-        PRESET_MEASUREMENT_UNITS.forEach { name ->
-            q.insertMeasurementUnit(name, "preset")
+        PRESET_MEASUREMENT_UNITS.forEach { (name, grams) ->
+            q.insertMeasurementUnit(name, "preset", grams)
+        }
+    }
+
+    /**
+     * 补齐单位克当量（营养估算换算依据）。[AI生成]
+     *
+     * grams 列为 v19 新增，老库单位为 NULL；每次 seed 按名幂等回填，供“1两/1斤/1毫升→克”折算。
+     * 计件单位(个/勺/片等)克当量为 null，留给食材 piece_gram。
+     */
+    private fun seedMeasurementUnitGrams() {
+        val q = db.cookbookQueries
+        PRESET_MEASUREMENT_UNITS.forEach { (name, grams) ->
+            if (grams != null) q.updateMeasurementUnitGrams(grams, name)
         }
     }
 
@@ -290,6 +304,27 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                     q.linkIngredientCategory(ingredientId, categoryId) // [AI修改] 已存在食材也补齐新 JSON 分类。
                 }
             }
+
+            // [AI生成] 营养素补齐：JSON 带 nutrition 才写(补齐式覆盖预设值，不动无数据食材)。
+            seed.nutrition?.let { nu ->
+                q.upsertIngredientNutrition(
+                    ingredient_id = ingredientId,
+                    energy_kcal = nu.kcal,
+                    protein_g = nu.protein,
+                    fat_g = nu.fat,
+                    carb_g = nu.carb,
+                    fiber_g = nu.fiber,
+                    sodium_mg = nu.sodium,
+                    potassium_mg = nu.potassium,
+                    calcium_mg = nu.calcium,
+                    gi = nu.gi,
+                    purine_mg = nu.purine,
+                    piece_gram = nu.pieceGram,
+                    ref = nu.ref,
+                    review = if (nu.review == "pending") 1L else 0L,
+                    updated_at = now,
+                )
+            }
         }
     }
 
@@ -309,7 +344,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     internal fun validateDishSeedForTest(): List<String> {
         val ingredientNames = loadIngredients().map { it.name }.toSet()
         val methods = PRESET_COOKING_METHODS.toSet() // [AI修改] 与 seedCookingMethods 同源，避免硬编码副本漂移。
-        val units = PRESET_MEASUREMENT_UNITS.toSet() // [AI修改] 与 seedMeasurementUnits 同源。
+        val units = unitNames() // [AI修改] 与 seedMeasurementUnits 同源(单位名全集)。
         val cuisines = com.sxdbsm.cookbook.domain.model.Cuisines.ALL.toSet()
         val problems = mutableListOf<String>()
         loadDishes().forEach { d ->
@@ -405,8 +440,19 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
         // [AI生成] 预设烹饪方式/计量单位全集：seed 写入与 dishes.json 引用完整性校验共用同一份，避免硬编码副本漂移。
         val PRESET_COOKING_METHODS = listOf("炒", "蒸", "煮", "炖", "烤", "凉拌", "煎", "炸", "焖", "卤")
-        val PRESET_MEASUREMENT_UNITS =
-            listOf("克", "两", "斤", "毫升", "升", "个", "片", "勺", "颗", "把", "碗", "块", "根", "条", "段", "瓣", "只", "适量", "少许")
+
+        // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
+        // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
+        // 勺按“汤勺≈15g”粗估(多用于油盐酱)。dishes.json 引用完整性校验用 name 集合(见 unitNames())。
+        val PRESET_MEASUREMENT_UNITS: List<Pair<String, Double?>> = listOf(
+            "克" to 1.0, "两" to 50.0, "斤" to 500.0, "毫升" to 1.0, "升" to 1000.0,
+            "个" to null, "片" to null, "勺" to 15.0, "颗" to null, "把" to null,
+            "碗" to null, "块" to null, "根" to null, "条" to null, "段" to null,
+            "瓣" to null, "只" to null, "适量" to null, "少许" to null,
+        )
+
+        /** 单位名全集(供 dishes.json 引用完整性校验)。[AI生成] */
+        fun unitNames(): Set<String> = PRESET_MEASUREMENT_UNITS.map { it.first }.toSet()
 
         // [AI生成] #2 预设操作步骤模板：常见做法的通用步骤(文字)，编辑菜品"选择步骤"一键套用。
         val PRESET_STEP_TEMPLATES: List<Pair<String, List<String>>> = listOf(
@@ -509,6 +555,31 @@ internal data class SeedIngredient(
     val categories: List<String> = emptyList(),
     val status: Int = 1, // [AI生成] 1 有效 / 0 失效（后台下架）；默认有效，兼容旧 JSON 无此字段。
     val reason: String = "", // [AI生成] 失效原因，仅 status=0 时有意义。
+    val nutrition: SeedNutrition? = null, // [AI生成] L2 营养素(每100g)，缺省=暂无数据。
+)
+
+/**
+ * 食材营养素(每 100g 可食部)。[AI生成]
+ *
+ * 全部可空=未知；后续补数据只往 ingredients.json 的 nutrition 块填数字 + ref。
+ * kcal/protein/fat/carb/fiber(g)、sodium/potassium/calcium/purine(mg)、gi(0~100)、pieceGram(计件默认克重)。
+ * 健康数据为 AI 参考整理、非权威核对：来源填 ref、待审填 review。
+ */
+@Serializable
+internal data class SeedNutrition(
+    val kcal: Double? = null,
+    val protein: Double? = null,
+    val fat: Double? = null,
+    val carb: Double? = null,
+    val fiber: Double? = null,
+    val sodium: Double? = null,
+    val potassium: Double? = null,
+    val calcium: Double? = null,
+    val gi: Double? = null,
+    val purine: Double? = null,
+    val pieceGram: Double? = null,
+    val ref: String = "",
+    val review: String = "", // "pending"=待审
 )
 
 @Serializable
