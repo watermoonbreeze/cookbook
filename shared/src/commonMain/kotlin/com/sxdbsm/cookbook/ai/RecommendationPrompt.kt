@@ -16,13 +16,30 @@ import com.sxdbsm.cookbook.ai.model.HealthConstraints
  **/
 object RecommendationPrompt {
 
-    fun build(candidates: List<DishCandidate>, constraints: HealthConstraints, mealCount: Int): LlmRequest {
+    fun build(
+        candidates: List<DishCandidate>,
+        constraints: HealthConstraints,
+        mealCount: Int,
+        // [AI生成] 3a：把用户"推荐风格"与画像信号(常做/补营养)带给模型，让云端也对齐个性化。
+        style: RecommendationStyle = RecommendationStyle.DEFAULT,
+        preferenceScores: Map<Long, Double> = emptyMap(),
+        nutritionBalanceScores: Map<Long, Double> = emptyMap(),
+    ): LlmRequest {
         val system = buildString {
             append("你是家庭饮食助手，帮慢性病用户用现有食材决定下一餐吃什么。")
             append("只能从给定候选菜里挑选，不能编造候选之外的菜。")
             append("每一餐搭配 2~3 个菜，共给 $mealCount 个不同的餐。")
             append("根据每个菜在手的调料，给一句简短做法建议（有葱姜蒜酱→红烧/爆炒，只有盐油→清蒸/白灼）。")
             append("优先选择标注「利调养」的菜、尽量少选标注「注意限量」的菜（候选已按利于健康排序，靠前更优）。")
+            // [AI生成] 3a：推荐风格(用户轻干预)。
+            append(
+                when (style) {
+                    RecommendationStyle.FAMILIAR -> "用户偏好『熟悉』：多选标「常做」的家常菜。"
+                    RecommendationStyle.FRESH -> "用户偏好『新鲜』：多换口味、少重复，优先近期没吃的。"
+                    RecommendationStyle.NUTRITION -> "用户偏好『营养』：优先标「补营养」的菜，让这餐更均衡、利健康。"
+                    RecommendationStyle.BALANCED -> "综合权衡口味、营养与多样性。"
+                },
+            )
             if (constraints.labels.isNotEmpty()) {
                 append("用户有健康档案，请优先遵循《中国居民膳食指南》等权威膳食建议（如三高少盐少油、痛风低嘌呤、糖尿病低GI），")
                 append("并严格遵守候选上标注的「利调养/注意限量」——这些是硬约束，不得违背。")
@@ -40,6 +57,8 @@ object RecommendationPrompt {
                 if (c.onHandNames.isNotEmpty()) append("｜在手:").append(c.onHandNames.joinToString("、")) // [AI生成] 用到你库存的食材(物尽其用)
                 if (c.seasoningsOnHand.isNotEmpty()) append("｜在手调料:").append(c.seasoningsOnHand.joinToString("、"))
                 if (c.recommendHits.isNotEmpty()) append("｜利调养:").append(c.recommendHits.joinToString("、"))
+                if ((preferenceScores[c.id] ?: 0.0) >= 0.5) append("｜常做") // [AI生成] 3a：偏好画像高=常做/爱吃
+                if ((nutritionBalanceScores[c.id] ?: 0.0) > 0.0) append("｜补营养") // [AI生成] 3a：能补近期缺的宏量
                 if (c.missingNames.isNotEmpty()) append("｜还差:").append(c.missingNames.joinToString("、")) // [AI生成] 缺的主料/辅料，供模型措辞提示
                 if (c.limitHits.isNotEmpty()) append("｜注意限量:").append(c.limitHits.joinToString("、"))
                 append("\n")

@@ -46,7 +46,12 @@ class RecommendationOrchestrator(
         }
         val candidates = rotate(evaluated, rotation)
 
-        val prompt = RecommendationPrompt.build(candidates, input.constraints, mealCount)
+        val prompt = RecommendationPrompt.build(
+            candidates, input.constraints, mealCount,
+            style = input.style,
+            preferenceScores = input.preferenceScores,
+            nutritionBalanceScores = input.nutritionBalanceScores,
+        )
         val raw = runCatching { runtime.complete(prompt) }.getOrNull()?.getOrNull()
         val modelSuggestions = raw
             ?.let { RecommendationParser.parse(it) }
