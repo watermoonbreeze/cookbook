@@ -493,6 +493,16 @@ class DishRepository(private val db: CookbookDatabase) {
         }
     }
 
+    /** 收藏的菜品 id 集合(置顶用)。[AI生成] B1 */
+    suspend fun favoriteDishIds(): Set<Long> = withContext(ioDispatcher) {
+        q.selectFavoriteDishIds().executeAsList().toSet()
+    }
+
+    /** 设置/取消菜品收藏。[AI生成] B1 */
+    suspend fun setDishFavorite(dishId: Long, favorite: Boolean) = withContext(ioDispatcher) {
+        if (favorite) q.insertDishFavorite(dishId, DateTime.nowEpochSeconds()) else q.deleteDishFavorite(dishId)
+    }
+
     /** 菜品做过(记入餐食)的次数与最近日期。[AI生成] 详情页"做过N次"。 */
     suspend fun cookStats(dishId: Long): Pair<Int, String?> = withContext(ioDispatcher) {
         val r = q.selectDishCookStats(dishId).executeAsOne()

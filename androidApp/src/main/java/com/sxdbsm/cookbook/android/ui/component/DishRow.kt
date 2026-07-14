@@ -33,6 +33,7 @@ fun DishRow(
     preferenceRank: Int? = null,
     showCheckbox: Boolean = false,
     checked: Boolean = false,
+    favorite: Boolean = false, // [AI生成] B1：收藏则菜名前显示 ⭐
     onCheckedChange: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
@@ -61,7 +62,7 @@ fun DishRow(
         Column(Modifier.weight(1f)) {
             // [AI修改] 中间区域固定为“菜名在上、标签在下”，右侧评分/勾选控件单独靠右。
             Text(
-                text = dish.name,
+                text = if (favorite) "⭐ ${dish.name}" else dish.name, // [AI生成] B1：收藏菜名前置星标
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,

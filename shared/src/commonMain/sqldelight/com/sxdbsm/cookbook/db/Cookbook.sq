@@ -265,6 +265,12 @@ CREATE TABLE step_template_item (
 
 CREATE INDEX idx_step_template_item_order ON step_template_item(template_id, sort_order, id);
 
+-- [AI生成] B1：菜品收藏(置顶)。用户主动收藏的"看家菜"在菜品列表置顶；独立表不动 dish 表结构。
+CREATE TABLE dish_favorite (
+    dish_id INTEGER NOT NULL PRIMARY KEY REFERENCES dish(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+);
+
 -- ========== 用户偏好与档案 ==========
 
 CREATE TABLE user_preferences (
@@ -1203,6 +1209,17 @@ SELECT d.* FROM dish d
 JOIN favorite_combo_dish fcd ON d.id = fcd.dish_id
 WHERE fcd.combo_id = ? AND fcd.status = 1 AND d.status = 1
 ORDER BY d.name;
+
+-- ===== dish_favorite（菜品收藏置顶）B1 =====
+
+insertDishFavorite:
+INSERT OR REPLACE INTO dish_favorite(dish_id, created_at) VALUES (?, ?);
+
+deleteDishFavorite:
+DELETE FROM dish_favorite WHERE dish_id = ?;
+
+selectFavoriteDishIds:
+SELECT dish_id FROM dish_favorite;
 
 -- ===== step_template（操作步骤模板）=====
 

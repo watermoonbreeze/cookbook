@@ -1,0 +1,6 @@
+-- [AI生成] v16 -> v17：新增菜品收藏(置顶)表 B1。
+-- 新表不存在于旧库，CREATE TABLE 安全；全新安装由 Schema.create 自带该表、不走本迁移。
+CREATE TABLE dish_favorite (
+    dish_id INTEGER NOT NULL PRIMARY KEY REFERENCES dish(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+);

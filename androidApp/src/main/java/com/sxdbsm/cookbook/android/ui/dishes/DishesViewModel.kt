@@ -48,6 +48,7 @@ data class DishesUiState(
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
     val homeCount: Int = 0, // [AI生成] 家庭 Tab 菜品数(自建 source=user)
     val searchResults: List<DishMini> = emptyList(), // [AI生成] 搜索关键字的原始结果(不受 Tab/菜系筛选)，供搜索弹框展示
+    val favoriteIds: Set<Long> = emptySet(), // [AI生成] B1：收藏菜品 id(列表置顶+★标记)
 )
 
 /**
@@ -80,6 +81,7 @@ class DishesViewModel(
     private val _methodFilter = MutableStateFlow<String?>(null) // [AI生成] 烹饪方式筛选
     private val _tagFilter = MutableStateFlow<String?>(null) // [AI生成] 标签筛选
     private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] 菜系筛选
+    private val _favoriteIds = MutableStateFlow<Set<Long>>(emptySet()) // [AI生成] B1：收藏菜品 id
     private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
 
     private companion object {
@@ -137,13 +139,32 @@ class DishesViewModel(
     }
 
     val uiState: StateFlow<DishesUiState> = kotlinx.coroutines.flow.combine(
-        baseState, _refreshing, _deleteState,
-    ) { state, refreshing, deleteState ->
-        state.copy(refreshing = refreshing, deleteState = deleteState)
+        baseState, _refreshing, _deleteState, _favoriteIds,
+    ) { state, refreshing, deleteState, favIds ->
+        state.copy(
+            refreshing = refreshing,
+            deleteState = deleteState,
+            favoriteIds = favIds,
+            // [AI生成] B1：收藏置顶——稳定排序把收藏的菜提到最前，保留各 Tab 原有次序。
+            all = state.all.sortedByDescending { it.id in favIds },
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishesUiState())
 
     init {
         refresh()
+        loadFavorites()
+    }
+
+    private fun loadFavorites() {
+        viewModelScope.launch { runCatching { dishRepo.favoriteDishIds() }.onSuccess { _favoriteIds.value = it } }
+    }
+
+    /** 收藏/取消收藏(置顶)。[AI生成] B1 */
+    fun toggleFavorite(dishId: Long) {
+        viewModelScope.launch {
+            val fav = dishId !in _favoriteIds.value
+            runCatching { dishRepo.setDishFavorite(dishId, fav) }.onSuccess { loadFavorites() }
+        }
     }
 
     fun setKeyword(kw: String) {

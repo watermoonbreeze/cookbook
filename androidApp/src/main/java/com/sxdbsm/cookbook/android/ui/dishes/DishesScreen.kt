@@ -233,7 +233,7 @@ fun DishesScreen(
                                                     )
                                                 }
                                                 items(dishes, key = { it.id }) { dish ->
-                                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
                                                 }
                                             }
                                             item { Spacer(Modifier.height(80.dp)) }
@@ -259,7 +259,7 @@ fun DishesScreen(
                                 item { EmptyState(text = emptyText, icon = "🥗") }
                             } else {
                                 itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
-                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
                                 }
                                 item { Spacer(Modifier.height(80.dp)) }
                             }
@@ -288,6 +288,11 @@ fun DishesScreen(
             text = { Text("选择操作") },
             confirmButton = {
                 Column(horizontalAlignment = Alignment.End) {
+                    // [AI生成] B1：收藏/取消收藏(列表置顶看家菜)。
+                    TextButton(onClick = {
+                        vm.toggleFavorite(d.id)
+                        dropdownDish = null
+                    }) { Text(if (d.id in ui.favoriteIds) "取消收藏" else "⭐ 收藏置顶") }
                     // [AI修改] 预设菜隐藏"编辑"，改用"基于此另存"(等同导入复制)后编辑。
                     if (d.source != "preset") {
                         TextButton(onClick = {

@@ -30,7 +30,23 @@ class DishDetailViewModel(
     var insights by mutableStateOf<DishInsights?>(null)
         private set
 
+    var isFavorite by mutableStateOf(false) // [AI生成] B1：当前菜是否收藏(置顶)
+        private set
+
     fun observeDish(dishId: Long): Flow<Dish?> = dishRepo.observeDishById(dishId)
+
+    /** 加载收藏态。[AI生成] B1 */
+    fun loadFavorite(dishId: Long) {
+        viewModelScope.launch { isFavorite = dishId in dishRepo.favoriteDishIds() }
+    }
+
+    /** 切换收藏(置顶)。[AI生成] B1 */
+    fun toggleFavorite(dishId: Long) {
+        viewModelScope.launch {
+            val next = !isFavorite
+            runCatching { dishRepo.setDishFavorite(dishId, next) }.onSuccess { isFavorite = next }
+        }
+    }
 
     /** 加载详情洞察（进入详情/菜品变化时调）。[AI生成] */
     fun loadInsights(dish: Dish) {

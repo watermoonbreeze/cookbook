@@ -68,8 +68,12 @@ fun DishDetailScreen(
                     }
                 },
                 actions = {
-                    // [AI修改] 预设菜隐藏编辑（如需修改可在"创建菜品"里导入该菜后编辑，等同复制）；自建菜正常编辑。
                     dish?.let { d ->
+                        // [AI生成] B1：收藏(置顶)——⭐/☆ 一键切换，家庭"看家菜"钉到菜品列表最前。
+                        IconButton(onClick = { vm.toggleFavorite(d.id) }) {
+                            Text(if (vm.isFavorite) "⭐" else "☆", style = MaterialTheme.typography.titleLarge)
+                        }
+                        // [AI修改] 预设菜隐藏编辑（如需修改可在"创建菜品"里导入该菜后编辑，等同复制）；自建菜正常编辑。
                         if (d.source != "preset") {
                             IconButton(onClick = { onEdit(d.id) }) {
                                 Icon(Icons.Outlined.Edit, contentDescription = "编辑")
@@ -128,6 +132,7 @@ fun DishDetailScreen(
 
             // [AI生成] 详情洞察：库存可做/缺料/采购、健康适宜、做过次数、营养概要。
             LaunchedEffect(d) { vm.loadInsights(d) } // [AI修改] key 用整个 d：同菜编辑后(id不变)洞察/相关菜品也重算。
+            LaunchedEffect(d.id) { vm.loadFavorite(d.id) } // [AI生成] B1：加载收藏态
             vm.insights?.let { DishInsightsSection(it) }
 
             if (d.tags.isNotEmpty()) {
