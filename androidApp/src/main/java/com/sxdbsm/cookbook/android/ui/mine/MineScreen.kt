@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.sxdbsm.cookbook.android.ui.component.InsetGroup
+import com.sxdbsm.cookbook.android.ui.component.InsetDivider
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.ThemeMode
@@ -130,15 +132,14 @@ fun MineScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        // [AI修改] 顶部用户卡：展示健康档案摘要。
-        OutlinedCard(
+        // [AI修改] 苹果风格：顶部用户卡改无边框填充白卡(浮于灰底)。
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.outlinedCardColors(
-                containerColor = MaterialTheme.colorScheme.surface, // [AI修改] 个人中心头部信息卡片使用白底。
-            ),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -187,100 +188,75 @@ fun MineScreen(
             }
         }
 
-        GroupTitle("健康")
-        SettingRow(
-            icon = Icons.Outlined.Favorite,
-            title = "个人健康档案",
-            subtitle = if (profiles.isEmpty()) "未设置" else profiles.joinToString { it.crowdName },
-            trailing = "▸",
-        ) { healthDialogOpen = true }
-
-        GroupTitle("通用")
-        SettingRow(
-            icon = Icons.Outlined.Tune,
-            title = "功能设置",
-            subtitle = "分步执行、库存等功能开关",
-            trailing = "▸",
-        ) { onOpenFeatureSettings() }
-
-        GroupTitle("外观")
-        SettingRow(
-            icon = Icons.Outlined.LightMode,
-            title = "主题切换",
-            subtitle = when (mode) {
-                ThemeMode.SYSTEM -> "跟随系统"
-                ThemeMode.LIGHT -> "浅色"
-                ThemeMode.DARK -> "深色"
-            },
-            trailing = "▸",
-        ) { themeDialogOpen = true }
-
-        GroupTitle("数据")
-        SettingRow(icon = Icons.Outlined.Save, title = "备份与恢复", subtitle = "创建、导出、导入完整备份（含菜品照片）", trailing = "▸") {
-            backupDialogOpen = true
+        // [AI修改] 苹果风格：设置项改为分组内嵌白卡(InsetGroup) + inset 分隔(末行不画)。
+        InsetGroup(title = "健康") {
+            SettingRow(
+                icon = Icons.Outlined.Favorite,
+                title = "个人健康档案",
+                subtitle = if (profiles.isEmpty()) "未设置" else profiles.joinToString { it.crowdName },
+                trailing = "▸",
+            ) { healthDialogOpen = true }
         }
-        SettingRow(icon = Icons.Outlined.Share, title = "双设备数据同传", subtitle = "同一 WiFi 下把数据直传到另一台设备", trailing = "▸") {
-            deviceSyncDialogOpen = true
+
+        InsetGroup(title = "通用") {
+            SettingRow(icon = Icons.Outlined.Tune, title = "功能设置", subtitle = "分步执行、库存等功能开关", trailing = "▸") { onOpenFeatureSettings() }
         }
-        SettingRow(icon = Icons.Outlined.Article, title = "日志查看", subtitle = "查看应用运行与崩溃日志", trailing = "▸") {
-            logDialogOpen = true
+
+        InsetGroup(title = "外观") {
+            SettingRow(
+                icon = Icons.Outlined.LightMode,
+                title = "主题切换",
+                subtitle = when (mode) {
+                    ThemeMode.SYSTEM -> "跟随系统"
+                    ThemeMode.LIGHT -> "浅色"
+                    ThemeMode.DARK -> "深色"
+                },
+                trailing = "▸",
+            ) { themeDialogOpen = true }
         }
-        // [AI生成] 更新基础数据：手动刷新预设食材/分类/详情/调养规则；后续可扩展为从后台拉取最新数据包。
-        SettingRow(
-            icon = Icons.Outlined.CloudSync,
-            title = "更新基础数据",
-            subtitle = if (updatingBaseData) "正在更新…" else "刷新预设食材与分类等基础数据",
-            trailing = if (updatingBaseData) "" else "▸",
-        ) {
-            if (!updatingBaseData) {
-                vm.updateBaseData { success, changed ->
-                    val msg = when {
-                        !success -> "更新失败，请稍后重试"
-                        changed -> "基础数据已更新"
-                        else -> "基础数据已是最新"
+
+        InsetGroup(title = "数据") {
+            SettingRow(icon = Icons.Outlined.Save, title = "备份与恢复", subtitle = "创建、导出、导入完整备份（含菜品照片）", trailing = "▸") { backupDialogOpen = true }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.Share, title = "双设备数据同传", subtitle = "同一 WiFi 下把数据直传到另一台设备", trailing = "▸") { deviceSyncDialogOpen = true }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.Article, title = "日志查看", subtitle = "查看应用运行与崩溃日志", trailing = "▸") { logDialogOpen = true }
+            InsetDivider(52)
+            SettingRow(
+                icon = Icons.Outlined.CloudSync,
+                title = "更新基础数据",
+                subtitle = if (updatingBaseData) "正在更新…" else "刷新预设食材与分类等基础数据",
+                trailing = if (updatingBaseData) "" else "▸",
+            ) {
+                if (!updatingBaseData) {
+                    vm.updateBaseData { success, changed ->
+                        val msg = when {
+                            !success -> "更新失败，请稍后重试"
+                            changed -> "基础数据已更新"
+                            else -> "基础数据已是最新"
+                        }
+                        android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
                     }
-                    android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
-        GroupTitle("实用工具")
-        SettingRow(
-            icon = Icons.Outlined.ShoppingCart,
-            title = "采购清单",
-            subtitle = "汇总今天及未来餐食需采购/缺料的食材",
-            trailing = "▸",
-        ) { onOpenShoppingList() }
-        SettingRow(
-            icon = Icons.Outlined.Restaurant,
-            title = "食材自由搭配",
-            subtitle = "用在手食材按规则搭出组合建议(离线)",
-            trailing = "▸",
-        ) { onOpenFreePairing() }
-        SettingRow(
-            icon = Icons.Outlined.SoupKitchen,
-            title = "厨房小助手",
-            subtitle = "烹饪计时等实用工具",
-            trailing = "▸",
-        ) { kitchenDialogOpen = true }
-        // [AI生成] AI 助手独立分组：推荐入口 + 配置管理。
-        GroupTitle("AI 助手")
-        SettingRow(
-            icon = Icons.Outlined.AutoAwesome,
-            title = "AI 推荐",
-            subtitle = "用现有食材帮你搭配今天吃什么",
-            trailing = "▸",
-        ) { onOpenAiRecommend() }
-        SettingRow(
-            icon = Icons.Outlined.Settings,
-            title = "AI 设置",
-            subtitle = "模型来源与 API Key",
-            trailing = "▸",
-        ) { onOpenAiSettings() }
+        InsetGroup(title = "实用工具") {
+            SettingRow(icon = Icons.Outlined.ShoppingCart, title = "采购清单", subtitle = "汇总今天及未来餐食需采购/缺料的食材", trailing = "▸") { onOpenShoppingList() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.Restaurant, title = "食材自由搭配", subtitle = "用在手食材按规则搭出组合建议(离线)", trailing = "▸") { onOpenFreePairing() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.SoupKitchen, title = "厨房小助手", subtitle = "烹饪计时等实用工具", trailing = "▸") { kitchenDialogOpen = true }
+        }
 
-        GroupTitle("关于")
-        SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") {
-            aboutDialogOpen = true
+        InsetGroup(title = "AI 助手") {
+            SettingRow(icon = Icons.Outlined.AutoAwesome, title = "AI 推荐", subtitle = "用现有食材帮你搭配今天吃什么", trailing = "▸") { onOpenAiRecommend() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.Settings, title = "AI 设置", subtitle = "模型来源与 API Key", trailing = "▸") { onOpenAiSettings() }
+        }
+
+        InsetGroup(title = "关于") {
+            SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") { aboutDialogOpen = true }
         }
 
         Spacer(Modifier.height(80.dp))
@@ -476,19 +452,6 @@ private fun AboutCookbookDialog(onDismiss: () -> Unit) {
 }
 
 /**
- * 设置分组标题。[AI修改]
- */
-@Composable
-private fun GroupTitle(text: String) {
-    Text(
-        text = text,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
-
-/**
  * 设置项行组件。[AI修改]
  */
 @Composable
@@ -523,7 +486,7 @@ private fun SettingRow(
             Text(trailing, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
-    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+    // [AI修改] 苹果风格：分隔线由外层分组卡(InsetGroup + InsetDivider)控制，行本身不画。
 }
 
 /**

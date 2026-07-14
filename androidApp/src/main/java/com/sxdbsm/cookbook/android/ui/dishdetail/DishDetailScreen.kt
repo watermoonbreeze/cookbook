@@ -166,10 +166,10 @@ fun DishDetailScreen(
             }
 
             FormFieldLabel("食材", topPadding = 18.dp, bottomPadding = 8.dp)
-            OutlinedCard(
+            Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 详情内容卡片按新规范使用白底。
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 详情内容卡片按新规范使用白底。
             ) {
                 Column {
                     if (d.ingredients.isEmpty()) {
@@ -225,10 +225,10 @@ fun DishDetailScreen(
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     d.steps.forEach { step ->
-                        OutlinedCard(
+                        Card(
                             modifier = Modifier.fillMaxWidth(),
                             shape = MaterialTheme.shapes.large,
-                            colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         ) {
                             Column(
                                 modifier = Modifier.padding(12.dp),
@@ -297,10 +297,10 @@ fun DishDetailScreen(
 @Composable
 private fun DishInsightsSection(insights: DishInsights) {
     FormFieldLabel("状态", topPadding = 18.dp, bottomPadding = 8.dp)
-    OutlinedCard(
+    Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (insights.usingPantry) {

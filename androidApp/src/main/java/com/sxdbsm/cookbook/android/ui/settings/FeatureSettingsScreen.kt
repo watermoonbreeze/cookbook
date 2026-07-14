@@ -71,40 +71,30 @@ fun FeatureSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Spacer(Modifier.height(6.dp))
-            GroupTitle("菜品")
-            SwitchRow(
-                title = "分步执行",
-                subtitle = "关联两处：①操作步骤显示「步骤 1/2/3」序号、详情页可进入分步烹饪；" +
-                    "②编辑菜品「选择步骤」套用模板时，开=模板每步单独成一条步骤，关=合并写入当前所在步骤。" +
-                    "关闭则只按你书写的顺序展示、不强制编号（默认关闭）。",
-                checked = stepMode,
-                onCheckedChange = vm::setStepMode,
-            )
+            // [AI修改] 苹果风格：功能开关改为分组内嵌白卡(InsetGroup)，去每行描边卡。
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "菜品") {
+                SwitchRow(
+                    title = "分步执行",
+                    subtitle = "关联两处：①操作步骤显示「步骤 1/2/3」序号、详情页可进入分步烹饪；" +
+                        "②编辑菜品「选择步骤」套用模板时，开=模板每步单独成一条步骤，关=合并写入当前所在步骤。" +
+                        "关闭则只按你书写的顺序展示、不强制编号（默认关闭）。",
+                    checked = stepMode,
+                    onCheckedChange = vm::setStepMode,
+                )
+            }
 
-            GroupTitle("库存")
-            PlaceholderRow(
-                title = "库存 / 份数配置",
-                subtitle = "库存启用、采购/缺料标注等配置即将在这里统一管理。",
-            )
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "库存") {
+                PlaceholderRow(
+                    title = "库存 / 份数配置",
+                    subtitle = "库存启用、采购/缺料标注等配置即将在这里统一管理。",
+                )
+            }
 
             Spacer(Modifier.height(24.dp))
         }
     }
-}
-
-@Composable
-private fun GroupTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(top = 18.dp, bottom = 8.dp),
-    )
 }
 
 @Composable
@@ -114,50 +104,25 @@ private fun SwitchRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(4.dp))
+            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        Spacer(Modifier.width(12.dp))
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
 @Composable
 private fun PlaceholderRow(title: String, subtitle: String) {
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Column(Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    Column(Modifier.fillMaxWidth().padding(16.dp)) {
+        Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(4.dp))
+        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

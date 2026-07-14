@@ -105,10 +105,8 @@ fun DishRow(
                 onCheckedChange = onCheckedChange,
             )
         } else {
-            Column(
-                modifier = Modifier.widthIn(min = 72.dp),
-                horizontalAlignment = Alignment.End,
-            ) {
+            // [AI修改] 苹果风格：喜爱度 + 右侧 chevron(可下钻暗示)。
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 if (dish.preference > 0) {
                     val preferenceText = if (preferenceRank != null && preferenceRank in 1..3) {
                         "🔥 ${dish.preference}"
@@ -120,11 +118,14 @@ fun DishRow(
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    Spacer(Modifier.width(6.dp))
                 }
+                Text("›", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
             }
         }
     }
-    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+    // [AI修改] 苹果风格：分隔线从缩略图右缘内缩(不通栏)。
+    Divider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(start = 92.dp))
 }
 
 /**
