@@ -112,6 +112,7 @@ class ShoppingListViewModel(
                 toast = msg,
             )
             stocking = false
+            refresh() // [AI修改] bug3：入库后自动刷新，缺料/在手状态即时更新，无需手动刷新按钮。
         }
     }
 

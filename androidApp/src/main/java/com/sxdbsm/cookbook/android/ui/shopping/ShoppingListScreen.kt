@@ -29,6 +29,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -78,9 +79,12 @@ fun ShoppingListScreen(
                     IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }
                 },
                 actions = {
-                    // [AI生成] 入库：把已勾选项按份数入库(没勾选则提示)。
-                    IconButton(onClick = vm::stockInChecked) { Icon(Icons.Outlined.MoveToInbox, contentDescription = "入库") }
-                    IconButton(onClick = vm::refresh) { Icon(Icons.Outlined.Refresh, contentDescription = "刷新") }
+                    // [AI修改] bug3：入库改为文字按钮更明确；移除手动刷新(入库后自动刷新)。
+                    TextButton(onClick = vm::stockInChecked) {
+                        Icon(Icons.Outlined.MoveToInbox, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("入库")
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
