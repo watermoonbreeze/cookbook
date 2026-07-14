@@ -92,32 +92,35 @@ fun HomeScreen(
     ) {
         // [AI生成] AI 推荐下一餐入口卡。
         item {
+            // [AI修改] 苹果风格：AI 入口去大色块，改白卡 + 小面积 accent(图标/标题)。
             Surface(
                 onClick = onOpenAiRecommend,
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = MaterialTheme.colorScheme.surface,
                 shape = MaterialTheme.shapes.medium,
+                tonalElevation = 0.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text("🤖", style = MaterialTheme.typography.headlineMedium)
-                    Column(modifier = Modifier.padding(start = 12.dp)) {
+                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
                         Text(
                             "AI 推荐",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Text(
                             "用你现有的食材，帮你搭配今天吃什么",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    Text("›", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
                 }
             }
         }
@@ -139,7 +142,7 @@ fun HomeScreen(
             }
         }
 
-        item { Spacer(Modifier.height(16.dp)) }
+        item { Spacer(Modifier.height(28.dp)) }
 
         // [AI修改] 最近菜品横向列表。
         item { SectionHeader(title = "⏱ 最近", action = "更多 ▸", onActionClick = onOpenDishes) }
@@ -158,16 +161,29 @@ fun HomeScreen(
             }
         }
 
-        item { Spacer(Modifier.height(16.dp)) }
+        item { Spacer(Modifier.height(28.dp)) }
 
         // [AI修改] 计划标题始终展示；没有计划时内容区显示“暂无计划”。
         item { SectionHeader(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
         // [AI生成] B3：一周计划入口——"周末排下周饭"整周概览 + 逐日安排。
+        // [AI修改] 苹果风格：去描边按钮，改无边框白卡点击行 + chevron。
         item {
-            OutlinedButton(
+            Surface(
                 onClick = onOpenWeekPlan,
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 0.dp,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-            ) { Text("🗓 一周计划（排下周饭）") }
+            ) {
+                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("🗓", style = MaterialTheme.typography.titleMedium)
+                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                        Text("一周计划", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("排下周饭：整周概览 + 逐日安排", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text("›", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
+                }
+            }
         }
         if (ui.plans.isEmpty()) {
             item { EmptyState(text = "暂无计划", icon = "📅") }

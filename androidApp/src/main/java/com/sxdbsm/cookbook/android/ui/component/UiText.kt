@@ -56,9 +56,10 @@ fun SectionHeader(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // [AI修改] 苹果风格：区块标题收敛到 titleSmall(17)，不再用 20sp 压过内容。
         Text(
             text = title,
-            style = if (compact) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
             color = if (compact) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
         )

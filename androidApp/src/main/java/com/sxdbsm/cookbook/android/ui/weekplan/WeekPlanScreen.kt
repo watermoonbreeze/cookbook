@@ -89,8 +89,17 @@ fun WeekPlanScreen(
                                 color = if (day.isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                             )
                             if (day.isToday) {
-                                Spacer(Modifier.width(6.dp))
-                                AssistChip(onClick = {}, label = { Text("今天") }, modifier = Modifier.height(24.dp))
+                                Spacer(Modifier.width(8.dp))
+                                // [AI修改] 苹果风格：今天用 accent 浅底小胶囊标签，去 Material 描边 chip。
+                                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = androidx.compose.foundation.shape.RoundedCornerShape(50)) {
+                                    Text(
+                                        "今天",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    )
+                                }
                             }
                         }
                         if (day.meals.isEmpty()) {

@@ -213,9 +213,9 @@ fun AiRecommendScreen(
                         if (state.modelReady && state.source == RecommendationSource.RULE_FALLBACK) {
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                "⚠ 本次由规则兜底生成（模型未返回有效结果）",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary,
+                                "本次由规则兜底生成（模型未返回有效结果）",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, // [AI修改] 功能说明用中性灰，不用警示色。
                             )
                         }
                         Spacer(Modifier.height(4.dp))
@@ -266,7 +266,8 @@ private fun SuggestionGroupCard(
     onToggleGroup: () -> Unit,
 ) {
     val allSelected = group.dishes.isNotEmpty() && group.dishes.all { it.id in selectedIds }
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    // [AI修改] 苹果风格：无阴影填充白卡。
+    Surface(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Text("方案 ${index + 1}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))

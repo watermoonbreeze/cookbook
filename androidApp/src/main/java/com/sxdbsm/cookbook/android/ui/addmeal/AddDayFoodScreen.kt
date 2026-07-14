@@ -397,13 +397,14 @@ private fun MealBlockCard(
     onAiRecommend: () -> Unit,
     hasCombos: Boolean,
 ) {
-    ElevatedCard(
+    // [AI修改] 苹果风格：无阴影填充白卡，圆角 medium(12)。
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 餐食编辑模块使用色块承载，减少边框感。
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp), // [AI修改] 与首页/食历餐食卡片保持投影层级一致。
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -447,17 +448,17 @@ private fun MealBlockCard(
                     ) {
                         Icon(Icons.Outlined.Add, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("添加菜品", color = MaterialTheme.colorScheme.tertiary)
+                        Text("添加菜品", color = MaterialTheme.colorScheme.primary) // [AI修改] 主动作 accent
                     }
                     TextButton(onClick = onAiRecommend, modifier = Modifier.fillMaxWidth()) { // [AI生成] 餐次块内 AI 推荐入口。
                         Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("AI 推荐", color = MaterialTheme.colorScheme.primary)
+                        Text("AI 推荐", color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 次动作中性
                     }
                     // [AI修改] A10：空块固定露出"从收藏组合选"入口(不再仅在有组合时才出现)——
                     // 无组合时点了给引导，让"整餐照搬"能力对新用户也可见。
                     TextButton(onClick = onOpenCombos, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (hasCombos) "从收藏组合选" else "从收藏组合选（先保存一餐为组合）", color = MaterialTheme.colorScheme.tertiary)
+                        Text(if (hasCombos) "从收藏组合选" else "从收藏组合选（先保存一餐为组合）", color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 次动作中性
                     }
                 }
             } else {
