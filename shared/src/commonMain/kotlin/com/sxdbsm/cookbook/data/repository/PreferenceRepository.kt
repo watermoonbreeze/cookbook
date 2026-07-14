@@ -10,6 +10,8 @@ import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 
 /**
  * 用户偏好仓库。[AI修改]
@@ -18,6 +20,7 @@ import kotlinx.coroutines.withContext
  */
 class PreferenceRepository(private val db: CookbookDatabase) {
     private val q = db.cookbookQueries
+    private val bodyJson = kotlinx.serialization.json.Json { ignoreUnknownKeys = true } // [AI生成] 身体数据序列化
 
     /**
      * 监听主题模式。[AI修改]
@@ -62,6 +65,18 @@ class PreferenceRepository(private val db: CookbookDatabase) {
      */
     suspend fun get(key: String): String? = withContext(ioDispatcher) {
         q.selectPreference(key).executeAsOneOrNull()?.value_
+    }
+
+    /** 监听身体数据(每日卡路里目标用)。无记录/解析失败返回默认空 BodyMetrics。[AI生成] */
+    fun observeBodyMetrics(): Flow<com.sxdbsm.cookbook.domain.model.BodyMetrics> =
+        q.selectPreference(PreferenceKeys.BODY_METRICS).asFlow().mapToOneOrNull(ioDispatcher).map { row ->
+            row?.value_?.let { runCatching { bodyJson.decodeFromString<com.sxdbsm.cookbook.domain.model.BodyMetrics>(it) }.getOrNull() }
+                ?: com.sxdbsm.cookbook.domain.model.BodyMetrics()
+        }
+
+    /** 保存身体数据。[AI生成] */
+    suspend fun setBodyMetrics(m: com.sxdbsm.cookbook.domain.model.BodyMetrics) = withContext(ioDispatcher) {
+        q.upsertPreference(PreferenceKeys.BODY_METRICS, bodyJson.encodeToString(m), DateTime.nowEpochSeconds())
     }
 
     /**

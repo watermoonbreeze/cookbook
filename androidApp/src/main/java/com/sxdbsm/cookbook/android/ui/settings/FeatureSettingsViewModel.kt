@@ -40,4 +40,13 @@ class FeatureSettingsViewModel(
     fun setNutritionColor(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.NUTRITION_COLOR_ENABLED, enabled) }
     }
+
+    /** 身体数据(每日卡路里目标用)。[AI生成] 2a */
+    val bodyMetrics: StateFlow<com.sxdbsm.cookbook.domain.model.BodyMetrics> =
+        prefs.observeBodyMetrics()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.sxdbsm.cookbook.domain.model.BodyMetrics())
+
+    fun setBodyMetrics(m: com.sxdbsm.cookbook.domain.model.BodyMetrics) {
+        viewModelScope.launch { prefs.setBodyMetrics(m) }
+    }
 }

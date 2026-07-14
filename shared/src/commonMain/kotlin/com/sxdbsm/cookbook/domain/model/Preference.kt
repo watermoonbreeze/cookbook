@@ -34,6 +34,9 @@ object PreferenceKeys {
     // [AI生成] 推荐风格(增长型推荐轻干预)：BALANCED/FAMILIAR/FRESH/NUTRITION，默认综合(BALANCED)。
     const val RECOMMEND_STYLE = "recommend_style"
 
+    // [AI生成] 身体数据(JSON: BodyMetrics)：身高/体重/年龄/性别/活动量，用于算每日卡路里目标。免迁移存偏好。
+    const val BODY_METRICS = "body_metrics"
+
     // [AI生成] 基础数据 seed 内容指纹：记录上次写入的 seed JSON 指纹，内容未变时跳过整段补齐式写入。
     const val SEED_CONTENT_FINGERPRINT = "seed_content_fingerprint"
 
