@@ -100,14 +100,18 @@ fun NutritionWall(
                                         if (isToday) Modifier.border(1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
                                         else Modifier,
                                     )
-                                    .clickable { onDayClick(d.date) },
+                                    // [AI修改] 只有有记录(有色块)的日子才可点跳转食历，空日不可点。
+                                    .then(if (d.level > 0) Modifier.clickable { onDayClick(d.date) } else Modifier),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(
-                                    d.date.dayOfMonth.toString(),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = dayTextColor,
-                                )
+                                // [AI修改] 只有有记录(有色块)的日子才填日期数字，空日留白，减少整墙密集感。
+                                if (d.level > 0) {
+                                    Text(
+                                        d.date.dayOfMonth.toString(),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = dayTextColor,
+                                    )
+                                }
                             }
                         }
                     }
