@@ -22,6 +22,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,18 +62,17 @@ fun NutritionWall(
     val listState = rememberLazyListState()
     // [AI修改] 固定本公历年，定位到今天所在周并**居中**(不再靠左/滚到年末)。
     LaunchedEffect(weeks.size) {
-        if (weeks.isNotEmpty()) {
-            val idx = weeks.indexOfFirst { wk -> wk.any { it.date == today } }.let { if (it >= 0) it else weeks.lastIndex }
-            listState.scrollToItem(idx)
-            // 居中：把今天所在列滚到视口中央(内容不足时自动 clamp)。
-            val info = listState.layoutInfo
-            val item = info.visibleItemsInfo.firstOrNull { it.index == idx }
-            if (item != null) {
-                val viewportCenter = (info.viewportStartOffset + info.viewportEndOffset) / 2f
-                val itemCenter = item.offset + item.size / 2f
-                listState.scrollBy(itemCenter - viewportCenter)
-            }
-        }
+        if (weeks.isEmpty()) return@LaunchedEffect
+        val idx = weeks.indexOfFirst { wk -> wk.any { it.date == today } }
+            .let { if (it >= 0) it else weeks.indexOfFirst { wk -> wk.any { d -> d.date >= today } }.coerceAtLeast(0) }
+        listState.scrollToItem(idx)
+        // 居中：scrollToItem 同帧 layoutInfo 还没重排，等目标列真正被布局出来再按视口中央 scrollBy(内容不足自动 clamp)。
+        val info = snapshotFlow { listState.layoutInfo }
+            .firstOrNull { it.visibleItemsInfo.any { item -> item.index == idx } } ?: return@LaunchedEffect
+        val item = info.visibleItemsInfo.first { it.index == idx }
+        val viewportCenter = (info.viewportStartOffset + info.viewportEndOffset) / 2f
+        val itemCenter = item.offset + item.size / 2f
+        listState.scrollBy(itemCenter - viewportCenter)
     }
     Column(modifier = modifier) {
         // [AI生成] 往年平均色系(标题下方)：仅有记录的往年才显示；无则整行不显示。块内为年份后两位。

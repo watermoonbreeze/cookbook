@@ -298,8 +298,10 @@ class NewDishViewModel(
         }
     }
 
-    /** T3：从标签库删除(仅自建)。[AI生成] */
+    /** T3：从标签库删除(仅自建)；若本菜已选该标签也同步移除，避免保存时被重新入库"复活"。[AI生成] */
     fun deleteTagFromLibrary(id: Long) {
+        val name = _state.value.availableTags.firstOrNull { it.id == id }?.name
+        if (name != null && name in _state.value.tags) removeTag(name)
         viewModelScope.launch {
             dishRepo.deleteDishTag(id)
             _state.update { it.copy(availableTags = dishRepo.listDishTags()) }
@@ -317,8 +319,10 @@ class NewDishViewModel(
         }
     }
 
-    /** T4：从烹饪库删除(仅自建)。[AI生成] */
+    /** T4：从烹饪库删除(仅自建)；若本菜已选该方式也同步移除，避免保存时被重新入库"复活"。[AI生成] */
     fun deleteCookingMethodFromLibrary(id: Long) {
+        val name = _state.value.availableCookingMethods.firstOrNull { it.id == id }?.name
+        if (name != null && name in _state.value.cookingMethodNames) removeCookingMethod(name)
         viewModelScope.launch {
             dishRepo.deleteCookingMethod(id)
             _state.update { it.copy(availableCookingMethods = dishRepo.listCookingMethods()) }

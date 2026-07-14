@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -104,11 +104,13 @@ fun AiRecommendScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
+        // [AI修改] 底部系统栏避让由外层 MainScaffold(NavHost navigationBarsPadding)统一处理，
+        // 本页 Scaffold 不重复吃 inset(否则底部按钮双重下边距)——与 NewDishScreen 一致置零。
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            // [AI修改] 底栏加 navigationBarsPadding，避免"保存/确定"按钮被系统导航栏遮挡。
             if (showPlan) {
                 if (planState.plan != null && planState.plan.days.isNotEmpty()) {
-                    Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
+                    Surface(tonalElevation = 3.dp) {
                         Button(
                             onClick = { planVm.save() },
                             enabled = !planState.saving,
@@ -117,7 +119,7 @@ fun AiRecommendScreen(
                     }
                 }
             } else if (state.selectedIds.isNotEmpty()) {
-                Surface(tonalElevation = 3.dp, modifier = Modifier.navigationBarsPadding()) {
+                Surface(tonalElevation = 3.dp) {
                     Button(
                         onClick = { onPickMeal(state.selectedIds.toList()) },
                         modifier = Modifier.fillMaxWidth().padding(16.dp),

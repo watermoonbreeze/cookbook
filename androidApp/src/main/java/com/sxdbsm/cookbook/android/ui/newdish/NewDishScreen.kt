@@ -442,7 +442,11 @@ fun NewDishScreen(
             inputLabel = "新标签（如 家常 / 快手 / 少盐）",
             onToggle = { if (it in state.tags) vm.removeTag(it) else vm.addTag(it) },
             onAddNew = { vm.saveAndAddTag(it) },
-            onDelete = { vm.deleteTagFromLibrary(it) },
+            onDelete = { id ->
+                val name = state.availableTags.firstOrNull { it.id == id }?.name
+                vm.deleteTagFromLibrary(id)
+                if (name != null) Toast.makeText(context, "已从标签库删除「$name」", Toast.LENGTH_SHORT).show()
+            },
             onDismiss = { tagInputOpen = false },
         )
     }
@@ -507,7 +511,11 @@ fun NewDishScreen(
             inputLabel = "新烹饪方式（如 白灼 / 焗 / 生腌）",
             onToggle = { if (it in state.cookingMethodNames) vm.removeCookingMethod(it) else vm.addCookingMethod(it) },
             onAddNew = { vm.saveAndAddCookingMethod(it) },
-            onDelete = { vm.deleteCookingMethodFromLibrary(it) },
+            onDelete = { id ->
+                val name = state.availableCookingMethods.firstOrNull { it.id == id }?.name
+                vm.deleteCookingMethodFromLibrary(id)
+                if (name != null) Toast.makeText(context, "已从烹饪库删除「$name」", Toast.LENGTH_SHORT).show()
+            },
             onDismiss = { cookingMethodDialogOpen = false },
         )
     }
