@@ -55,6 +55,7 @@ internal fun IngredientEditorDialog(
         List<Long>,
         IngredientDetail,
         List<IngredientCareRule>,
+        com.sxdbsm.cookbook.domain.model.IngredientNutrition?,
     ) -> Unit,
 ) {
     var name by remember(ingredient?.id) { mutableStateOf(ingredient?.name.orEmpty()) }
@@ -70,6 +71,27 @@ internal fun IngredientEditorDialog(
     var healthNote by remember(ingredient?.id) { mutableStateOf("") }
     var careRules by remember(ingredient?.id) { mutableStateOf<List<IngredientCareRule>>(emptyList()) }
     var categoryPickerOpen by remember { mutableStateOf(false) } // [AI生成] 自定义食材分类选择器开关。
+    // [AI生成] Item4：自定义食材营养素(每100g)录入，预填已有；营养色系开时给"影响哪些统计"提示。
+    fun fmtNum(v: Double?): String = v?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
+    var nKcal by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.energyKcal)) }
+    var nProtein by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.proteinG)) }
+    var nFat by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.fatG)) }
+    var nCarb by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.carbG)) }
+    var nFiber by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.fiberG)) }
+    var nSodium by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.sodiumMg)) }
+    var nGi by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.gi)) }
+    var nPurine by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.purineMg)) }
+    var nPiece by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.pieceGram)) }
+    val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
+    val nutritionColorOn by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
+    }.collectAsState(false)
+    fun buildNutrition() = com.sxdbsm.cookbook.domain.model.IngredientNutrition(
+        ingredientId = ingredient?.id ?: 0L,
+        energyKcal = nKcal.toDoubleOrNull(), proteinG = nProtein.toDoubleOrNull(), fatG = nFat.toDoubleOrNull(),
+        carbG = nCarb.toDoubleOrNull(), fiberG = nFiber.toDoubleOrNull(), sodiumMg = nSodium.toDoubleOrNull(),
+        gi = nGi.toDoubleOrNull(), purineMg = nPurine.toDoubleOrNull(), pieceGram = nPiece.toDoubleOrNull(),
+    )
     val isPreset = ingredient?.source == "preset"
     val editableCustomCategories = ui.allCategories.filter { it.isEditableUserGeneralCategory() }
     val selectedCategoryNames = editableCustomCategories
@@ -127,6 +149,7 @@ internal fun IngredientEditorDialog(
                                         healthNote = healthNote,
                                     ),
                                     careRules,
+                                    buildNutrition(), // [AI生成] Item4：自定义营养(空则VM侧不写)
                                 )
                             },
                             enabled = name.isNotBlank() && !ui.creatingIngredient && !ui.editorLoading,
@@ -208,6 +231,39 @@ internal fun IngredientEditorDialog(
                             DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
                             DetailTextField("保存建议", storageTips) { storageTips = it }
                             DetailTextField("健康说明", healthNote) { healthNote = it }
+                        }
+
+                        // [AI生成] Item4：营养素录入(每100g，选填)——填了这些，自定义食材就能像预设一样进营养/热量统计。
+                        EditorSection("营养素（每100g，选填）") {
+                            if (nutritionColorOn) {
+                                Text(
+                                    "填了这些值，这个食材就会计入统计：热量→每日千卡与达标；蛋白/脂肪/碳水→宏量均衡；" +
+                                        "选好上方分类→搭配多样性；钠/GI/嘌呤→高血压/糖尿病/痛风指标。不填也能用，随时可补。",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                NutrientField("热量kcal", nKcal, Modifier.weight(1f)) { nKcal = it }
+                                NutrientField("蛋白g", nProtein, Modifier.weight(1f)) { nProtein = it }
+                                NutrientField("脂肪g", nFat, Modifier.weight(1f)) { nFat = it }
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                NutrientField("碳水g", nCarb, Modifier.weight(1f)) { nCarb = it }
+                                NutrientField("纤维g", nFiber, Modifier.weight(1f)) { nFiber = it }
+                                NutrientField("钠mg", nSodium, Modifier.weight(1f)) { nSodium = it }
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                NutrientField("GI", nGi, Modifier.weight(1f)) { nGi = it }
+                                NutrientField("嘌呤mg", nPurine, Modifier.weight(1f)) { nPurine = it }
+                                NutrientField("单件克重", nPiece, Modifier.weight(1f)) { nPiece = it }
+                            }
+                            Text(
+                                "单件克重：按「个/根/片」等计件单位买时，一件约多少克(如1个鸡蛋≈50)，用于把用量折算成克。",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
 
                         // [AI修改] 恢复"食材界面改造2"重构时丢失的调养建议编辑区：自定义食材可编辑所有内容（含调养规则）。
@@ -515,6 +571,23 @@ internal fun DetailTextField(label: String, value: String, onValueChange: (Strin
         label = { Text(label) },
         minLines = 2,
         modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+    )
+}
+
+/** 营养数值输入(仅数字，最多一个小数点)。[AI生成] Item4 */
+@Composable
+private fun NutrientField(label: String, value: String, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { s ->
+            val f = s.filter { it.isDigit() || it == '.' }
+            onValueChange(if (f.count { it == '.' } <= 1) f else value)
+        },
+        label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+        singleLine = true,
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+        modifier = modifier,
         shape = MaterialTheme.shapes.medium,
     )
 }

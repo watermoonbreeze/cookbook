@@ -45,6 +45,30 @@ class NutritionRepository(private val db: CookbookDatabase) {
         }
     }
 
+    /** 写入/更新食材营养(自定义食材填的每100g值)。[AI生成] Item4 */
+    suspend fun upsertNutrition(n: IngredientNutrition) = withContext(ioDispatcher) {
+        q.upsertIngredientNutrition(
+            ingredient_id = n.ingredientId,
+            energy_kcal = n.energyKcal,
+            protein_g = n.proteinG,
+            fat_g = n.fatG,
+            carb_g = n.carbG,
+            fiber_g = n.fiberG,
+            sodium_mg = n.sodiumMg,
+            potassium_mg = n.potassiumMg,
+            calcium_mg = n.calciumMg,
+            gi = n.gi,
+            purine_mg = n.purineMg,
+            piece_gram = n.pieceGram,
+            ref = if (n.ref.isBlank()) "用户填写" else n.ref,
+            review = 0L,
+            updated_at = com.sxdbsm.cookbook.util.DateTime.nowEpochSeconds(),
+        )
+    }
+
+    /** 是否有任何量化营养数据(用于"数据不全"提示)。[AI生成] */
+    suspend fun hasNutrition(ingredientId: Long): Boolean = ingredientNutrition(ingredientId)?.hasAny == true
+
     /**
      * 批量估算多道菜的营养。[AI生成]
      *

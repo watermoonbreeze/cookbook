@@ -68,6 +68,7 @@ data class IngredientPickerUiState(
     val editorIngredientId: Long? = null,
     val editorCategoryIds: Set<Long> = emptySet(),
     val editorDetail: IngredientDetail? = null,
+    val editorNutrition: com.sxdbsm.cookbook.domain.model.IngredientNutrition? = null, // [AI生成] Item4：编辑器预填的已有营养
     val editorCareRules: List<IngredientCareRule> = emptyList(),
     val detailLoading: Boolean = false,
     val detailIngredientId: Long? = null,
@@ -99,6 +100,7 @@ class IngredientPickerViewModel(
     private val dishRepo: DishRepository,
     private val pantryRepo: PantryRepository,
     private val healthRepo: HealthProfileRepository,
+    private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] Item4：自定义食材营养录入
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(IngredientPickerUiState()) // [AI修改] 内部可变选择器状态。
@@ -519,6 +521,7 @@ class IngredientPickerViewModel(
                 editorIngredientId = null,
                 editorCategoryIds = emptySet(),
                 editorDetail = null,
+                editorNutrition = null,
                 editorCareRules = emptyList(),
                 createError = null,
                 lastSavedIngredientId = null,
@@ -531,13 +534,20 @@ class IngredientPickerViewModel(
                 val categoryIds = ingredientRepo.listCategoryIds(ingredientId).toSet()
                 val detail = ingredientRepo.getIngredientDetail(ingredientId)
                 val careRules = ingredientRepo.listCareRules(ingredientId)
-                Triple(categoryIds, detail, careRules)
-            }.onSuccess { (categoryIds, detail, careRules) ->
+                val nutrition = nutritionRepo.ingredientNutrition(ingredientId) // [AI生成] Item4：预填已有营养
+                listOf(categoryIds, detail, careRules, nutrition)
+            }.onSuccess { loaded ->
+                @Suppress("UNCHECKED_CAST")
+                val categoryIds = loaded[0] as Set<Long>
+                val detail = loaded[1] as IngredientDetail?
+                val careRules = loaded[2] as List<IngredientCareRule>
+                val nutrition = loaded[3] as com.sxdbsm.cookbook.domain.model.IngredientNutrition?
                 _state.value = _state.value.copy(
                     editorLoading = false,
                     editorIngredientId = ingredientId,
                     editorCategoryIds = categoryIds,
                     editorDetail = detail,
+                    editorNutrition = nutrition,
                     editorCareRules = careRules,
                 )
             }.onFailure { error ->
@@ -562,6 +572,7 @@ class IngredientPickerViewModel(
         categoryIds: List<Long>,
         detail: IngredientDetail,
         careRules: List<IngredientCareRule>,
+        nutrition: com.sxdbsm.cookbook.domain.model.IngredientNutrition? = null, // [AI生成] Item4：自定义营养(每100g)，非空且有值才写
     ) {
         val trimmedName = name.trim()
         if (trimmedName.isBlank()) {
@@ -615,6 +626,10 @@ class IngredientPickerViewModel(
                         ingredientId,
                         careRules.map { it.copy(ingredientId = ingredientId, source = if (ingredient == null) "user" else it.source) },
                     )
+                }
+                // [AI生成] Item4：填了营养才写(空则不动，避免清空已有)——自定义食材由此纳入营养/热量统计。
+                if (nutrition != null && nutrition.hasAny) {
+                    nutritionRepo.upsertNutrition(nutrition.copy(ingredientId = ingredientId))
                 }
                 ingredientId
             }.onSuccess { ingredientId ->
