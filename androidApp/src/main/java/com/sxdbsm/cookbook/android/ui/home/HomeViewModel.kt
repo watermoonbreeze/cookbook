@@ -10,9 +10,11 @@ import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
+import com.sxdbsm.cookbook.domain.FoodGroup
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -67,4 +69,28 @@ class HomeViewModel(
     fun deleteDay(date: LocalDate) {
         viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }
     }
+
+    /**
+     * 营养色系墙：近 WALL_DAYS 天(含今天)每天的营养均衡级别。[AI生成]
+     *
+     * 供首页"每天营养色系墙"(色块热力图)展示；仅当功能设置开启营养色系时页面才渲染。
+     */
+    val nutritionWall: StateFlow<List<DayNutrition>> = run {
+        val today = DateTime.today()
+        mealRepo.observeTimelineWindow(DateTime.plusDays(today, -(WALL_DAYS - 1)), today)
+            .map { cards ->
+                cards.map { card ->
+                    val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
+                    DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains)))
+                }
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
+
+    private companion object {
+        const val WALL_DAYS = 35 // 5 周 × 7 天
+    }
 }
+
+/** 某天的营养级别(色系墙用)。[AI生成] */
+data class DayNutrition(val date: LocalDate, val level: Int)

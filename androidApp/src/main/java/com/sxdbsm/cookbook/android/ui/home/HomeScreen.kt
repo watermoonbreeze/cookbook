@@ -49,6 +49,12 @@ fun HomeScreen(
     // [AI修改] collectAsStateWithLifecycle 会按 Android 生命周期订阅 StateFlow，避免后台页面继续无意义刷新。
     val ui by vm.uiState.collectAsStateWithLifecycle()
     val mode by vm.themeMode.collectAsStateWithLifecycle()
+    // [AI生成] 营养色系墙：功能设置开启时展示近 5 周每天营养级别热力图。
+    val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
+    val nutritionColorEnabled by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
+    }.collectAsStateWithLifecycle(false)
+    val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除计划餐食的日期(确认弹窗)。
     // [AI修改] 苹果风格：首页用大标题(Large Title)，下滑折叠为小标题。
@@ -123,6 +129,13 @@ fun HomeScreen(
                     Text("›", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
                 }
             }
+        }
+
+        // [AI生成] 营养色系墙(功能设置开启营养色系时展示)：近5周每天营养级别热力图。
+        if (nutritionColorEnabled) {
+            item { SectionHeader(title = "🎨 营养色系墙") }
+            item { NutritionWall(days = nutritionWall, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
+            item { Spacer(Modifier.height(28.dp)) }
         }
 
         // [AI修改] 热门菜品横向列表。
