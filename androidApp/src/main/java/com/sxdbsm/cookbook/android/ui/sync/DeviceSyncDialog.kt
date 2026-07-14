@@ -231,7 +231,7 @@ private fun ReceivePane(state: DeviceSyncUiState, vm: DeviceSyncViewModel) {
         AlertDialog(
             onDismissRequest = { scanConfirm = null },
             title = { Text("确认接收") },
-            text = { Text("将从 $pIp 接收数据并**覆盖本机现有数据**，此操作不可撤销。确定继续？") },
+            text = { Text("将从 $pIp 接收数据并覆盖本机现有数据，此操作不可撤销。确定继续？", color = MaterialTheme.colorScheme.error) },
             confirmButton = {
                 TextButton(onClick = {
                     scanConfirm = null

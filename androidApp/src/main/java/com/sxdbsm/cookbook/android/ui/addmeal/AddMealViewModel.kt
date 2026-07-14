@@ -368,7 +368,8 @@ class AddMealViewModel(
         return MealBlockUiState(
             id = id,
             mealTypeId = defaultType?.id,
-            mealTime = defaultType?.takeIf { it.isFixed }?.defaultTime,
+            // [AI修改] H1：固定餐次带默认时间；非固定(加餐)默认取**当前时间**，不再强制手动选，可改。
+            mealTime = if (defaultType?.isFixed == true) defaultType.defaultTime else DateTime.nowTime(),
         )
     }
 
