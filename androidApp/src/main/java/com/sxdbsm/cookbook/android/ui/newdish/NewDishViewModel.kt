@@ -406,24 +406,36 @@ class NewDishViewModel(
     }
 
     /**
-     * 套用某个步骤模板：把模板内容**插入到当前定位的那一步**里，不新增多条步骤。[AI修改]
+     * 套用某个步骤模板。[AI修改]
      *
-     * - 无任何步骤时：新建一条步骤承载模板文字。
-     * - 有步骤时：写入 targetIndex 指向的步骤（无定位则末步）；该步已有文字则换行追加，否则直接填入。
-     * 模板多步以换行合并进同一步——按需求"选择的步骤模板不会主动创建多个步骤"。
+     * @param multiStep 多步插入开关：
+     *  - true：模板每一步**分别追加成独立步骤**（接在现有步骤末尾）；无步骤则新增相应多条。
+     *  - false（默认行为）：模板内容合并**插入当前定位的那一步**（targetIndex，无定位则末步；已有文字换行追加）；
+     *    无步骤则新增一条承载全部模板文字，不展开多条。
      */
-    fun applyStepTemplate(template: com.sxdbsm.cookbook.domain.model.StepTemplate, targetIndex: Int?) {
-        val text = template.steps.map { it.trim() }.filter { it.isNotBlank() }.joinToString("\n")
-        if (text.isBlank()) return
+    fun applyStepTemplate(
+        template: com.sxdbsm.cookbook.domain.model.StepTemplate,
+        targetIndex: Int?,
+        multiStep: Boolean,
+    ) {
+        val texts = template.steps.map { it.trim() }.filter { it.isNotBlank() }
+        if (texts.isEmpty()) return
         val steps = _state.value.steps
+        if (multiStep) {
+            // 每步独立成条，追加到末尾（无步骤则等同新增相应多条）。
+            val appended = texts.mapIndexed { i, t -> DishStep(sortOrder = steps.size + i, text = t) }
+            _state.value = _state.value.copy(steps = steps + appended)
+            return
+        }
+        val merged = texts.joinToString("\n")
         if (steps.isEmpty()) {
-            _state.value = _state.value.copy(steps = listOf(DishStep(sortOrder = 0, text = text)))
+            _state.value = _state.value.copy(steps = listOf(DishStep(sortOrder = 0, text = merged)))
             return
         }
         val idx = targetIndex?.takeIf { it in steps.indices } ?: steps.lastIndex
         _state.value = _state.value.copy(
             steps = steps.mapIndexed { i, s ->
-                if (i == idx) s.copy(text = if (s.text.isBlank()) text else s.text.trimEnd() + "\n" + text) else s
+                if (i == idx) s.copy(text = if (s.text.isBlank()) merged else s.text.trimEnd() + "\n" + merged) else s
             },
         )
     }

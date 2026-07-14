@@ -434,11 +434,16 @@ fun NewDishScreen(
         StepTemplatePickerDialog(
             templates = state.stepTemplates,
             canSaveCurrent = state.steps.any { it.text.isNotBlank() },
+            multiStep = stepModeEnabled, // [AI生成] #2 由"我的-功能设置-分步执行"控制插入方式
             onApply = { template ->
-                vm.applyStepTemplate(template, focusedStepIndex)
+                vm.applyStepTemplate(template, focusedStepIndex, stepModeEnabled)
                 stepTemplateSheetOpen = false
-                val where = if (state.steps.isEmpty()) "新步骤" else "第 ${(focusedStepIndex?.plus(1)) ?: state.steps.size} 步"
-                Toast.makeText(context, "已把「${template.name}」插入$where", Toast.LENGTH_SHORT).show()
+                val msg = when {
+                    stepModeEnabled -> "已把「${template.name}」的 ${template.steps.size} 步分别加入"
+                    state.steps.isEmpty() -> "已把「${template.name}」加入新步骤"
+                    else -> "已把「${template.name}」并入第 ${(focusedStepIndex?.plus(1)) ?: state.steps.size} 步"
+                }
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             },
             onSaveCurrent = { name -> vm.saveCurrentStepsAsTemplate(name) },
             onDelete = { id -> vm.deleteStepTemplate(id) },
@@ -611,6 +616,7 @@ private fun OperationStepsEditor(
 private fun StepTemplatePickerDialog(
     templates: List<com.sxdbsm.cookbook.domain.model.StepTemplate>,
     canSaveCurrent: Boolean,
+    multiStep: Boolean, // [AI生成] #2 来自"我的-功能设置-分步执行"：开=分步插入，关=合并一条
     onApply: (com.sxdbsm.cookbook.domain.model.StepTemplate) -> Unit,
     onSaveCurrent: (String) -> Unit,
     onDelete: (Long) -> Unit,
@@ -626,6 +632,14 @@ private fun StepTemplatePickerDialog(
                 modifier = Modifier.heightIn(max = 420.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                // [AI生成] #2 提示当前插入方式(由"分步执行"设置决定)：开=每步单独成条；关=合并进当前定位步。
+                item {
+                    Text(
+                        if (multiStep) "分步执行已开：模板每一步将单独成为一条步骤" else "模板将合并写入当前所在步骤（无步骤则新建一条）；如需分步，可在「我的-功能设置-分步执行」开启",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 if (templates.isEmpty()) {
                     item {
                         Text("还没有可用模板", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
