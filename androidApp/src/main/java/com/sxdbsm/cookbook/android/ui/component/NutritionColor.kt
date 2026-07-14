@@ -27,17 +27,22 @@ fun nutritionLevelOfDishes(dishes: List<DishMini>): Int {
     return FoodGroup.nutritionLevel(groups)
 }
 
-/** 级别 → 卡片背景色(浅、明暗自适配)。[AI生成] */
+/**
+ * 级别 → 卡片背景色。[AI生成]
+ *
+ * [AI修改] 避免纯色导致文字看不清：只用**柔和浅色(pastel)**——从 surface(白)向语义容器色少量插值，
+ * 保证深色正文/accent 日期在其上都有足够对比；越均衡越偏浅绿、越单一越偏浅琥珀。明暗自适配。
+ */
 @Composable
 @ReadOnlyComposable
 fun nutritionTint(level: Int): Color {
     val ext = ExtendedColorsHolder.current
     val surface = MaterialTheme.colorScheme.surface
     return when (level) {
-        4 -> lerp(surface, ext.successContainer, 0.9f) // 营养优：明显健康绿
-        3 -> lerp(surface, ext.successContainer, 0.55f) // 均衡：浅绿
-        2 -> lerp(surface, ext.warningContainer, 0.45f) // 尚可：浅琥珀
-        1 -> lerp(surface, ext.warningContainer, 0.22f) // 较单一：极浅暖
+        4 -> lerp(surface, ext.successContainer, 0.55f) // 营养优：清晰但柔和的浅绿
+        3 -> lerp(surface, ext.successContainer, 0.38f) // 均衡：浅绿
+        2 -> lerp(surface, ext.warningContainer, 0.34f) // 尚可：浅琥珀
+        1 -> lerp(surface, ext.warningContainer, 0.18f) // 较单一：极浅暖
         else -> surface // 空/未知：白
     }
 }
