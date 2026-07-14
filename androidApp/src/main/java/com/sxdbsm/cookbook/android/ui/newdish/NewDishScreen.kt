@@ -539,36 +539,15 @@ fun NewDishScreen(
  *
  * #55：每味食材剂量以克为单位，±5g，最小 0。
  */
-// [AI修改] 苹果风格：克数步进器改 iOS 分段样式——一个圆角灰底轨道内 [− | 值 | ＋]，中缝细分隔，−/＋ 用 accent。
+// [AI修改] 苹果风格：克数步进器改用统一的 MiniStepper(−/＋ 缩小成可点标签)。
 @Composable
 private fun GramStepper(grams: Int, onDelta: (Int) -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-    ) {
-        GramSeg("−") { onDelta(-5) }
-        Divider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.height(20.dp).width(0.6.dp))
-        Text(
-            "$grams g",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 10.dp),
-        )
-        Divider(color = MaterialTheme.colorScheme.outline, modifier = Modifier.height(20.dp).width(0.6.dp))
-        GramSeg("＋") { onDelta(5) }
-    }
-}
-
-@Composable
-private fun GramSeg(label: String, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier.size(width = 32.dp, height = 30.dp).clickable { onClick() },
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
-    }
+    com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+        valueText = "$grams g",
+        onMinus = { onDelta(-5) },
+        onPlus = { onDelta(5) },
+        minusEnabled = grams > 0,
+    )
 }
 
 /**

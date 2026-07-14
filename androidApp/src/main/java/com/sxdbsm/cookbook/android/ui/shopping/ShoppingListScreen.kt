@@ -253,30 +253,13 @@ private fun ShoppingRow(
 }
 
 /** 份数步进器 −N+。[AI生成] */
+// [AI修改] 苹果风格：份数步进改用统一 MiniStepper(−/＋ 缩小可点标签)。
 @Composable
 private fun ServingStepper(servings: Int, onDelta: (Int) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        StepBtn("−") { onDelta(-1) }
-        Text(
-            "$servings 份",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 6.dp),
-        )
-        StepBtn("＋") { onDelta(1) }
-    }
-}
-
-@Composable
-private fun StepBtn(label: String, onClick: () -> Unit) {
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.size(30.dp),
-        onClick = onClick,
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(label, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
-        }
-    }
+    com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+        valueText = "$servings 份",
+        onMinus = { onDelta(-1) },
+        onPlus = { onDelta(1) },
+        minusEnabled = servings > 0,
+    )
 }

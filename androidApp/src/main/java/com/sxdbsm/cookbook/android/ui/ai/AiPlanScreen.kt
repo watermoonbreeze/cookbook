@@ -33,14 +33,15 @@ import com.sxdbsm.cookbook.ai.model.DayPlan
 fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
     val state = vm.state
     Column(modifier = modifier) {
-        Text("规划天数：${state.days} 天", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DayPreset("当天", 1, state.days, vm::setDays)
-            DayPreset("3天", 3, state.days, vm::setDays)
-            DayPreset("一周", 7, state.days, vm::setDays)
-            DayPreset("半月", 15, state.days, vm::setDays)
-            DayPreset("一月", 30, state.days, vm::setDays)
+        // [AI修改] 规划天数：标签 + 周期快捷 整合成一行(可横滑)。
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("规划天数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.width(8.dp))
+            androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                items(listOf("当天" to 1, "3天" to 3, "一周" to 7, "半月" to 15, "一月" to 30)) { (label, value) ->
+                    DayPreset(label, value, state.days, vm::setDays)
+                }
+            }
         }
         Slider(
             value = state.days.toFloat(),
@@ -48,24 +49,31 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
             valueRange = 1f..30f,
             steps = 28,
         )
-        // [AI生成] 用餐人数(1~8) 步进：正餐(中/晚)菜数随人数(人多菜多)，旁显示菜数。
+        // [AI修改] 用餐人数(MiniStepper 缩小 −/＋) 与「生成」同一行，生成按钮在右侧。
         val mainRange = com.sxdbsm.cookbook.ai.MealPortion.mainRange(state.people)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("用餐人数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            OutlinedButton(onClick = { vm.setPeople(state.people - 1) }, enabled = state.people > 1) { Text("－") }
-            Text("${state.people} 人", style = MaterialTheme.typography.titleMedium)
-            OutlinedButton(onClick = { vm.setPeople(state.people + 1) }, enabled = state.people < com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE) { Text("＋") }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("用餐人数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.width(8.dp))
+            com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+                valueText = "${state.people} 人",
+                onMinus = { vm.setPeople(state.people - 1) },
+                onPlus = { vm.setPeople(state.people + 1) },
+                minusEnabled = state.people > 1,
+                plusEnabled = state.people < com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE,
+            )
             Spacer(Modifier.weight(1f))
-            Text(
-                "正餐约 ${mainRange.first}~${mainRange.last} 菜",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                text = if (state.loading) "生成中…" else "生成",
+                onClick = { vm.generate() },
+                enabled = !state.loading,
             )
         }
-        Spacer(Modifier.height(6.dp))
-        Button(onClick = { vm.generate() }, enabled = !state.loading, modifier = Modifier.fillMaxWidth()) {
-            Text(if (state.loading) "生成中…" else "生成计划")
-        }
+        Text(
+            "正餐约 ${mainRange.first}~${mainRange.last} 菜",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp),
+        )
         if (state.season.isNotBlank() && state.plan != null) {
             Spacer(Modifier.height(6.dp))
             // [AI生成] AI 生成但有餐次由规则补充时，如实标注，避免误认为全部由 AI 生成。

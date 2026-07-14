@@ -294,8 +294,12 @@ private fun PantryServingSection(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { onSetServings?.invoke((serving - 1).coerceAtLeast(0)) }, enabled = onSetServings != null && serving > 0) { Text("－") }
-                OutlinedButton(onClick = { onAddServings(1) }) { Text("＋ 加1份") }
+                com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+                    valueText = "$serving 份",
+                    onMinus = { onSetServings?.invoke((serving - 1).coerceAtLeast(0)) },
+                    onPlus = { onAddServings(1) },
+                    minusEnabled = onSetServings != null && serving > 0,
+                )
                 Spacer(Modifier.weight(1f))
                 onRemove?.let { TextButton(onClick = it) { Text("出库", color = MaterialTheme.colorScheme.error) } }
             }
@@ -303,9 +307,13 @@ private fun PantryServingSection(
             var addCount by remember(ingredientId) { mutableStateOf(1) }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("入库份数", style = MaterialTheme.typography.bodyMedium)
-                OutlinedButton(onClick = { if (addCount > 1) addCount-- }, enabled = addCount > 1) { Text("－") }
-                Text("$addCount", style = MaterialTheme.typography.titleMedium)
-                OutlinedButton(onClick = { if (addCount < 99) addCount++ }) { Text("＋") }
+                com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+                    valueText = "$addCount",
+                    onMinus = { if (addCount > 1) addCount-- },
+                    onPlus = { if (addCount < 99) addCount++ },
+                    minusEnabled = addCount > 1,
+                    plusEnabled = addCount < 99,
+                )
                 Spacer(Modifier.weight(1f))
                 Button(onClick = { onAddServings(addCount) }) {
                     Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
