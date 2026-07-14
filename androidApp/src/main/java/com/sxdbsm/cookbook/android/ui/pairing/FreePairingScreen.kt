@@ -56,20 +56,10 @@ fun FreePairingScreen(
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(
-                title = { Text("食材自由搭配", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }
-                },
-                actions = {
-                    IconButton(onClick = vm::refresh) { Icon(Icons.Outlined.Refresh, contentDescription = "换一批") }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.primary,
-                ),
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = "食材自由搭配",
+                onBack = onBack,
+                actions = { IconButton(onClick = vm::refresh) { Icon(Icons.Outlined.Refresh, contentDescription = "换一批") } },
             )
         },
     ) { padding ->

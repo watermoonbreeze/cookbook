@@ -55,19 +55,7 @@ fun FeatureSettingsScreen(
 
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
-        topBar = {
-            TopAppBar(
-                title = { Text("功能设置", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
-                ),
-            )
-        },
+        topBar = { com.sxdbsm.cookbook.android.ui.component.AppTopBar(title = "功能设置", onBack = onBack) },
     ) { padding ->
         Column(
             modifier = Modifier
