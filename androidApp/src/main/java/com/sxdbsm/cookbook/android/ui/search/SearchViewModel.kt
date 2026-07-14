@@ -42,7 +42,8 @@ class SearchViewModel(
 ) : ViewModel() {
 
     private companion object {
-        private const val DEBOUNCE_MS = 280L
+        // [AI修改] 与其余搜索页共用去抖常量，单一真相源避免漂移。
+        private const val DEBOUNCE_MS = com.sxdbsm.cookbook.android.util.SearchDefaults.DEBOUNCE_MS
         private const val MEAL_PAGE_SIZE = 10L
     }
 

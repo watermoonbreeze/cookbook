@@ -574,10 +574,25 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             if (methodId != null) q.linkDishCookingMethod(dishId, methodId)
             seed.ingredients.forEach ing@{ di ->
                 val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id ?: return@ing
-                q.insertDishIngredient(dishId, ingredientId, di.quantity, unitIds[di.unit], if (di.main) 1L else 0L)
+                // [AI修改] 改具名参数：防生成查询日后插字段致位置错位(红线)。
+                q.insertDishIngredient(
+                    dish_id = dishId,
+                    ingredient_id = ingredientId,
+                    quantity = di.quantity,
+                    unit_id = unitIds[di.unit],
+                    is_main = if (di.main) 1L else 0L,
+                )
             }
             seed.steps.forEachIndexed { idx, text ->
-                q.insertDishStep(dishId, (idx + 1).toLong(), text, "", "", now, now)
+                q.insertDishStep(
+                    dish_id = dishId,
+                    sort_order = (idx + 1).toLong(),
+                    text = text,
+                    image_path = "",
+                    thumbnail_path = "",
+                    created_at = now,
+                    updated_at = now,
+                )
             }
         }
     }

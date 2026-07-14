@@ -1,8 +1,8 @@
 package com.sxdbsm.cookbook.android.ui.dishes
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.android.util.AppLogger
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
 import kotlinx.coroutines.Job
@@ -206,11 +206,11 @@ class DishesViewModel(
      */
     fun requestDeleteDish(dish: DishMini) {
         viewModelScope.launch {
-            Log.d(TAG, "request delete dish: id=${dish.id} name=${dish.name}")
+            AppLogger.d(TAG, "request delete dish: id=${dish.id} name=${dish.name}")
             _deleteState.value = DishDeleteState(checking = true)
             runCatching { dishRepo.listMealReferencesByDish(dish.id) }
                 .onSuccess { references ->
-                    Log.d(TAG, "delete reference check: id=${dish.id} refs=${references.size}")
+                    AppLogger.d(TAG, "delete reference check: id=${dish.id} refs=${references.size}")
                     _deleteState.value = if (references.isNotEmpty()) {
                         DishDeleteState(warningDish = dish, warningReferences = references)
                     } else {
@@ -218,7 +218,7 @@ class DishesViewModel(
                     }
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "delete reference check failed: id=${dish.id}", error)
+                    AppLogger.e(TAG, "delete reference check failed: id=${dish.id}", error)
                     _deleteState.value = DishDeleteState(errorMessage = "检查菜品引用失败，请稍后重试")
                 }
         }
@@ -230,23 +230,23 @@ class DishesViewModel(
     fun confirmDeleteDish() {
         val dish = _deleteState.value.pendingDish ?: return
         viewModelScope.launch {
-            Log.d(TAG, "confirm delete dish: id=${dish.id} name=${dish.name}")
+            AppLogger.d(TAG, "confirm delete dish: id=${dish.id} name=${dish.name}")
             _deleteState.value = _deleteState.value.copy(checking = true)
             runCatching { dishRepo.deleteDish(dish.id) }
                 .onSuccess {
-                    Log.d(TAG, "delete dish success: id=${dish.id}")
+                    AppLogger.d(TAG, "delete dish success: id=${dish.id}")
                     _deleteState.value = DishDeleteState()
                     refresh()
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "delete dish failed: id=${dish.id}", error)
+                    AppLogger.e(TAG, "delete dish failed: id=${dish.id}", error)
                     _deleteState.value = DishDeleteState(errorMessage = "删除菜品失败，请稍后重试")
                 }
         }
     }
 
     fun dismissDeleteDialog() {
-        Log.d(TAG, "dismiss delete dialog")
+        AppLogger.d(TAG, "dismiss delete dialog")
         _deleteState.value = DishDeleteState()
     }
 
@@ -267,7 +267,7 @@ class DishesViewModel(
     private fun searchNow(keyword: String, debounce: Boolean = false, force: Boolean = false) {
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            if (debounce) delay(280)
+            if (debounce) delay(com.sxdbsm.cookbook.android.util.SearchDefaults.DEBOUNCE_MS)
             _refreshing.value = true
             if (keyword.isBlank()) {
                 if (force) delay(120) // [AI生成] 空关键词列表来自 Flow，保留一个短刷新反馈。

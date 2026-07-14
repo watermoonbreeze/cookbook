@@ -44,7 +44,8 @@ fun DishDetailScreen(
     vm: DishDetailViewModel = koinViewModel(),
 ) {
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
-    val dish by vm.observeDish(dishId).collectAsStateWithLifecycle(initialValue = null)
+    // [AI修改] 用 remember(dishId) 缓存冷流，避免每次重组新建 Flow 反复订阅查库(Compose 红线)。
+    val dish by remember(dishId) { vm.observeDish(dishId) }.collectAsStateWithLifecycle(initialValue = null)
     // [AI生成] 分步执行开关(功能设置)：关闭时详情页不展示"开始分步烹饪"。
     // [AI修改] observeFlag 用 remember 缓存，避免每次重组新建 Flow 反复订阅查库。
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()

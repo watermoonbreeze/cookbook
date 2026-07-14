@@ -114,7 +114,7 @@ class DishPickerViewModel(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             // [AI修改] 用户连续输入时只执行最后一次查询；force=true 的返回刷新保持立即执行。
-            if (debounce && !force) delay(280)
+            if (debounce && !force) delay(com.sxdbsm.cookbook.android.util.SearchDefaults.DEBOUNCE_MS)
             _dishes.value = dishRepo.searchDishes(keyword)
         }
     }

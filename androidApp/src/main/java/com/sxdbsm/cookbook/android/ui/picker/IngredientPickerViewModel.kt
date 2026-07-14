@@ -204,7 +204,7 @@ class IngredientPickerViewModel(
             return
         }
         searchJob = viewModelScope.launch {
-            delay(280) // [AI修改] 连续输入时只保留最后一次搜索，降低卡顿。
+            delay(com.sxdbsm.cookbook.android.util.SearchDefaults.DEBOUNCE_MS) // [AI修改] 连续输入时只保留最后一次搜索，降低卡顿。
             val results = ingredientRepo.search(kw).filterNot { it.id in _state.value.excludeIngredientIds }
             _state.value = _state.value.copy(searchResults = results)
         }

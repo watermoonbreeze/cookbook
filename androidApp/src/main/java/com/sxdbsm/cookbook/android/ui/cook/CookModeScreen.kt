@@ -78,7 +78,8 @@ fun CookModeScreen(
     onBack: () -> Unit,
     repo: DishRepository = koinInject(),
 ) {
-    val dish by repo.observeDishById(dishId).collectAsStateWithLifecycle(null)
+    // [AI修改] 用 remember(dishId) 缓存冷流，避免每次重组新建 Flow 反复订阅查库(Compose 红线)。
+    val dish by remember(dishId) { repo.observeDishById(dishId) }.collectAsStateWithLifecycle(null)
     val steps = dish?.steps.orEmpty().sortedBy { it.sortOrder }
 
     // [AI生成] 烹饪中保持亮屏，退出恢复。
