@@ -122,18 +122,19 @@ fun AiRecommendScreen(
             modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
         ) {
             Spacer(Modifier.height(8.dp))
-            // 三档：库存推荐 / 随机推荐 / 周期计划
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TabChip("库存推荐", selected = !showPlan && state.mode == RecommendMode.PANTRY) {
-                    showPlan = false
-                    if (state.mode != RecommendMode.PANTRY) vm.recommend(RecommendMode.PANTRY)
-                }
-                TabChip("随机推荐", selected = !showPlan && state.mode == RecommendMode.RANDOM) {
-                    showPlan = false
-                    if (state.mode != RecommendMode.RANDOM) vm.recommend(RecommendMode.RANDOM)
-                }
-                TabChip("周期计划", selected = showPlan) { showPlan = true }
-            }
+            // [AI修改] 苹果风格：三档用 segmented control(库存推荐/随机推荐/周期计划)。
+            com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                options = listOf("库存推荐", "随机推荐", "周期计划"),
+                selectedIndex = if (showPlan) 2 else if (state.mode == RecommendMode.PANTRY) 0 else 1,
+                onSelect = { idx ->
+                    when (idx) {
+                        0 -> { showPlan = false; if (state.mode != RecommendMode.PANTRY) vm.recommend(RecommendMode.PANTRY) }
+                        1 -> { showPlan = false; if (state.mode != RecommendMode.RANDOM) vm.recommend(RecommendMode.RANDOM) }
+                        else -> showPlan = true
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
             // [AI生成] 餐次选择(库存/随机推荐时显示)：全部+早/上午/中/下午/晚/宵夜，选不同餐次推不同内容。
             if (!showPlan) {
                 Spacer(Modifier.height(6.dp))
@@ -153,16 +154,14 @@ fun AiRecommendScreen(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.height(2.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    items(RECENT_WINDOW_OPTIONS) { (label, days) ->
-                        FilterChip(
-                            selected = state.recentWindowDays == days,
-                            onClick = { vm.setRecentWindow(days) },
-                            label = { Text(label) },
-                        )
-                    }
-                }
+                Spacer(Modifier.height(4.dp))
+                // [AI修改] 苹果风格：去重周期用 segmented control。
+                com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                    options = RECENT_WINDOW_OPTIONS.map { it.first },
+                    selectedIndex = RECENT_WINDOW_OPTIONS.indexOfFirst { it.second == state.recentWindowDays }.coerceAtLeast(0),
+                    onSelect = { idx -> vm.setRecentWindow(RECENT_WINDOW_OPTIONS[idx].second) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
             Spacer(Modifier.height(4.dp))
 
@@ -238,11 +237,6 @@ fun AiRecommendScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TabChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    FilterChip(selected = selected, onClick = onClick, label = { Text(label) })
-}
 
 /** 结果区顶部行：左说明 + 右"换一换"。[AI生成] A5：换一换常驻顶部，随手可点。 */
 @Composable

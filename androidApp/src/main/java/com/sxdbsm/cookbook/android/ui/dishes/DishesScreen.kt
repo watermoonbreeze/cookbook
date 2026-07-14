@@ -190,24 +190,19 @@ fun DishesScreen(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().height(24.dp).padding(top = 4.dp),
                 )
-                // [AI修改] 顶部一级分类 Tab：最近 / 喜爱 / 菜系(替换原“全部”)。
-                TabRow(
-                    selectedTabIndex = DishesSortTab.values().indexOf(ui.sortTab),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ) {
-                    listOf(
-                        Triple(DishesSortTab.RECENT, "最近", ui.recentCount),
-                        Triple(DishesSortTab.FAVORITE, "喜爱", ui.favoriteCount),
-                        Triple(DishesSortTab.ALL, "菜系", ui.allCount),
-                        Triple(DishesSortTab.HOME, "家庭", ui.homeCount), // [AI生成] 家庭=自建菜品
-                    ).forEach { (tab, label, count) ->
-                        Tab(
-                            selected = ui.sortTab == tab,
-                            onClick = { vm.setSortTab(tab) },
-                            text = { Text("$label $count") },
-                        )
-                    }
-                }
+                // [AI修改] 苹果风格：一级分类改用 segmented control(最近/喜爱/菜系/家庭)。
+                val sortTabs = listOf(
+                    DishesSortTab.RECENT to "最近",
+                    DishesSortTab.FAVORITE to "喜爱",
+                    DishesSortTab.ALL to "菜系",
+                    DishesSortTab.HOME to "家庭",
+                )
+                com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                    options = sortTabs.map { it.second },
+                    selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
+                    onSelect = { idx -> vm.setSortTab(sortTabs[idx].first) },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                )
 
                 Box(Modifier.weight(1f).fillMaxSize()) {
                     if (isCuisineTab) {
