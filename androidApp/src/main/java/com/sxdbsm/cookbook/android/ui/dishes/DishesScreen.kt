@@ -113,6 +113,7 @@ fun DishesScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 vm.refresh()
+                vm.loadFavorites() // [AI修改] 详情页收藏/取消后返回列表即时刷新置顶。
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

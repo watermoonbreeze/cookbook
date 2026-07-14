@@ -5,11 +5,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,6 +61,7 @@ fun HomeScreen(
     val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
     val yearAverages by vm.yearAverages.collectAsStateWithLifecycle()
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
+    var wallExpanded by rememberSaveable { mutableStateOf(true) } // [AI生成] 营养色系墙折叠态：默认展开(整墙显示)，收起后标题右侧显示昨/今/明三色块。
     var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除计划餐食的日期(确认弹窗)。
     // [AI修改] 苹果风格：首页用大标题(Large Title)，下滑折叠为小标题。
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -133,16 +137,43 @@ fun HomeScreen(
             }
         }
 
-        // [AI生成] 营养色系墙(功能设置开启营养色系时展示)：近5周每天营养级别热力图。
+        // [AI生成] 营养色系墙(功能设置开启营养色系时展示)：整年每天营养级别热力图，可折叠。
         if (nutritionColorEnabled) {
-            item { SectionHeader(title = "🎨 营养色系墙") }
             item {
-                NutritionWall(
-                    days = nutritionWall,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    onDayClick = onOpenTimelineAt, // [AI修改] 点色块→食历定位该日餐食(不再进编辑页)
-                    yearAverages = yearAverages, // [AI生成] 往年平均色系(有往年数据才显示)
-                )
+                // [AI修改] 自定义标题行：展开态只显示标题+收起按钮；折叠态显示"昨天今天明天"三色块+展开按钮。
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "🎨 营养色系墙",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (!wallExpanded) {
+                        NutritionThreeDay(days = nutritionWall)
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    IconButton(onClick = { wallExpanded = !wallExpanded }, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            if (wallExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            contentDescription = if (wallExpanded) "收起色系墙" else "展开色系墙",
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+            if (wallExpanded) {
+                item {
+                    NutritionWall(
+                        days = nutritionWall,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        onDayClick = onOpenTimelineAt, // [AI修改] 点色块→食历定位该日餐食(不再进编辑页)
+                        yearAverages = yearAverages, // [AI生成] 往年平均色系(有往年数据才显示)
+                    )
+                }
             }
             item { Spacer(Modifier.height(28.dp)) }
         }

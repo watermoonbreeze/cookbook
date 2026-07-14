@@ -48,6 +48,40 @@ import kotlinx.datetime.LocalDate
 private val CELL = 22.dp // [AI修改] 放大以容纳格内日期数字
 private val GAP = 5.dp
 private val HEADER = 15.dp
+private val MINI = 16.dp // 折叠态三色块(昨/明)
+private val MINI_TODAY = 22.dp // 折叠态今天块(居中、带日期)
+
+/**
+ * 折叠态的「昨天·今天·明天」三色块。[AI生成]
+ *
+ * 今天居中、块内写日期数字并描边；昨天/明天略小、不写日期。用于色系墙折叠时的标题右侧预览。
+ */
+@Composable
+fun NutritionThreeDay(days: List<DayNutrition>, modifier: Modifier = Modifier) {
+    val today = DateTime.today()
+    val byDate = days.associateBy { it.date }
+    val order = listOf(DateTime.plusDays(today, -1), today, DateTime.plusDays(today, 1))
+    Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+        order.forEach { d ->
+            val level = byDate[d]?.level ?: 0
+            val c = nutritionWallColor(level)
+            val isToday = d == today
+            Box(
+                modifier = Modifier
+                    .size(if (isToday) MINI_TODAY else MINI)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(c)
+                    .then(if (isToday) Modifier.border(1.5.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp)) else Modifier),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (isToday) {
+                    val tc = if (c.luminance() > 0.5f) Color(0xFF3A352E) else Color.White
+                    Text(d.dayOfMonth.toString(), style = MaterialTheme.typography.labelSmall, color = tc)
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun NutritionWall(

@@ -155,7 +155,8 @@ class DishesViewModel(
         loadFavorites()
     }
 
-    private fun loadFavorites() {
+    /** 重载收藏 id 集合。[AI修改] 公开：详情页收藏后返回列表需即时刷新置顶(ON_RESUME 调用)。 */
+    fun loadFavorites() {
         viewModelScope.launch { runCatching { dishRepo.favoriteDishIds() }.onSuccess { _favoriteIds.value = it } }
     }
 
