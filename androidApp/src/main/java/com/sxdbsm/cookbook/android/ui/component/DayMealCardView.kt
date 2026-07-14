@@ -57,6 +57,9 @@ fun DayMealCardView(
             dayKcal = if (ids.isEmpty()) 0 else nutritionRepo.totalOf(ids).energyKcal.roundToInt()
         }
     }
+    // [AI生成] 2b：每日目标(身体数据算出)→ 当天热量达标/偏低/超标。
+    val body by remember(prefs) { prefs.observeBodyMetrics() }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.BodyMetrics())
+    val dailyTarget = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
     val containerColor = when {
         nutritionColorEnabled && data.meals.isNotEmpty() -> nutritionTint(nutritionLevel)
         data.isPlanState -> MaterialTheme.colorScheme.secondaryContainer
@@ -101,13 +104,23 @@ fun DayMealCardView(
                     CardIcon(Icons.Outlined.Delete, "删除", MaterialTheme.colorScheme.error, onDeleteClick)
                 }
             }
-            // [AI修改] 第二行：后续添加的指标(当天总热量/卡路里等)，与日期行上下排列，不挤占操作按钮。
+            // [AI修改] 第二行：当天总热量 + 达标状态(填了身体数据才显示达标)，与日期行上下排列。
             if (nutritionColorEnabled && dayKcal > 0) {
                 Spacer(Modifier.height(2.dp))
+                val status = dailyTarget?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(dayKcal.toDouble(), it) }
+                val statusColor = when (status) {
+                    com.sxdbsm.cookbook.domain.model.CalorieStatus.ON -> MaterialTheme.colorScheme.primary
+                    com.sxdbsm.cookbook.domain.model.CalorieStatus.BELOW -> MaterialTheme.colorScheme.onSurfaceVariant
+                    com.sxdbsm.cookbook.domain.model.CalorieStatus.ABOVE -> MaterialTheme.colorScheme.error
+                    null -> MaterialTheme.colorScheme.onSurfaceVariant
+                }
                 Text(
-                    "🔥 当天约 $dayKcal 千卡",
+                    buildString {
+                        append("🔥 当天约 $dayKcal 千卡")
+                        if (dailyTarget != null && status != null) append(" / 目标 $dailyTarget · ${status.label}")
+                    },
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = statusColor,
                 )
             }
             if (data.meals.isEmpty()) {
