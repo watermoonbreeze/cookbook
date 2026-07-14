@@ -5,8 +5,8 @@
 
 ## 元信息
 
-- 上次总结会话点：2026-07-13 无人值守③(餐食/食材/采购/推荐大批量交互改造~25项:采购份数入库/食材家庭分类可编辑自建/餐次网格4列+主食置顶+分类emoji+营养只反映/选菜保留/复制走新建草稿日期=最新+1/编辑锁日期/配料克数/首页完整餐食/周期规划每餐主食; 关键坑=DishMini.mainIngredientNames恒空; seed扩至147菜品含15主食; 5轮审核+逐项审计)
-- 总结次数：24
+- 上次总结会话点：2026-07-14 苹果风格UI大改造+营养色系(Phase0设计token赤陶橘/暖中性/iOS字阶 + UX设计师agent 5轮落地 + 组件库SegmentedControl/CapsuleButton/InsetGroup/ActionSheet/PlainCard/MiniStepper; 营养级别0~4 nutritionLevel + NutritionColor每级基色卡片低透明度/色墙满色 + 首页营养色系墙热力图星期纵轴月份横轴点击跳转; 餐食卡片单行头本年省年份; 步骤模板/配料组/收藏表15~18.sqm; 3用户bug+体验A组; 关键坑=sqlite_3_18 WHERE无REPLACE/TRIM、删死导入翻车、M3 1.1.2无SegmentedButton; 161单测过)
+- 总结次数：25
 
 ## 文件索引
 

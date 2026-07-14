@@ -45,6 +45,7 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - SQLDelight 新迁移文件名 = 目录里**最大 `N.sqm` + 1**（现有到 `13.sqm` 就建 `14.sqm`，别按版本号命名）；命名错会漏迁移/版本乱。
 - 给表**加列**要一次改全：CREATE TABLE 也加该列（全新装走 Schema.create 不跑迁移）+ 新 `N.sqm` `ALTER ADD COLUMN`（列序与 CREATE 一致，都追加末尾）+ insertX/updateX 及**所有调用点**传参 + 显式列 SELECT 手动加 + 所有构造该模型处读新列 + 领域模型加字段（漏 loadFullDish 构造会 "Cannot find parameter"）；seed 补齐式对**已存在行**要单独幂等 UPDATE（放"已存在则跳过"判断之前）。
 - SQLDelight 方言是 `sqlite_3_18`，**无 UPSERT**（`ON CONFLICT DO UPDATE` 编译失败）：累加/幂等改 `INSERT OR IGNORE` + `UPDATE ... x=x+:d` 两步放同一 `db.transaction{}`。
+- SQLDelight `sqlite_3_18` 的 **WHERE 不支持 `REPLACE`/`TRIM` 等字符串函数**（`<expr> expected`）：名称去空格归一比对别写进 `.sq`，查 id+原名后在 Kotlin 侧归一比对（或加 `name_key` 冗余列）。
 - DB 恢复/覆盖库必须**原子+回滚**：覆盖 `currentDb` 前先存回滚区，失败即还原（否则中途失败毁库）；关的是单例 driver，恢复后需重启应用。
 - SQLDelight **单列 SELECT** 的 `executeAsList()` 返回 `List<列类型>`（如 `List<String>`），不是行对象——别 `.map{it.name}`（编译失败）。
 - JUnit4 `@Test` 须返回 void：`fun x()=runBlocking{…}` 末尾禁用返回非 Unit 的断言（如 `assertNotNull`），否则 `InvalidTestClassError`，末尾补 `Unit`。
@@ -71,7 +72,8 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - LazyColumn 手工算 `animateScrollToItem` 偏移（字母索引等）：新增/条件插入任一 item 必须同步偏移量**并**纳入 `remember` key，否则跳转偏位。
 - 派生逻辑别依赖内部 `DateTime.today()`（否则固定日期单测测不了）：把 today 提为参数，生产传 `DateTime.today()`。
 - `DishMini` 有一堆默认空字段（`mainIngredientNames` 等）：用某字段前先 grep 确认真被赋值——`mainIngredientNames` 曾在 `buildDishMinis`/`buildDishesByMealRecord` 都没填、恒空，导致依赖它的分类图标/主食判定/主料副文本静默失效。
-- Material3 版本为 **1.1.2，无 `SelectableDates` API**（1.2.0+ 才有）：DatePicker 要禁选某些日期，改在**确认回调**里校验+提示，别用 `rememberDatePickerState(selectableDates=)`（编译不过）。
+- Material3 版本为 **1.1.2**：**无 `SelectableDates`、无 `SegmentedButton`**（均 1.2.0+）——DatePicker 禁选日期改在**确认回调**校验+提示；分段控件自绘胶囊（有 `ModalBottomSheet`/`SwipeToDismiss`/`LargeTopAppBar`/`FilterChip` 实验但可用）。
+- 删"死导入"易翻车：`perl` 用 `$` 锚行尾在 **CRLF** 文件匹配不到；肉眼判"没用"可能删掉**仍被引用**的 import → 编译红。删 import 用 `Edit` 逐个删、删前 `Grep` 确认无引用；死导入只是 warning，拿不准就留。
 - 可复用组件的"能力显隐"由**回调是否传入**决定（如 `IngredientDetailSheet` 编辑区），别在组件内用 `!selectionMode` 等 mode 布尔硬编码，否则换场景要复用时被挡。
 - 多入口共享一个 ViewModel（新增/编辑/复制）：每个入口用**独立一次性守卫**（如 `copyConfigured`），别共用一个 `configured`，否则被 `init` 默认 configure 抢跑 `if(configured)return` 吞掉；"改日期=移动删旧"只在真编辑既有日期(loadedFromDate!=null)时触发。
 - VM 里"跳转视图/改选中项"后，凡该视图的**查询依赖某派生态**（如按分类查食材是从左侧展开树 `tree` 找节点），必须**同步重建那个派生态**，否则查不到静默空列表——`IngredientPicker` 曾因保存后跳到新分类却没重建 `tree`，`reloadCurrentList` 在陈旧树里找不到新分类节点返回空（自建分类挂食材"看不到"）。稳妥做法：让查询直接依赖**源数据**（`allCategories`）而非展开态，减少这类隐性耦合。
