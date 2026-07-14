@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,70 +33,83 @@ import com.sxdbsm.cookbook.ai.model.DayPlan
 @Composable
 fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
     val state = vm.state
-    Column(modifier = modifier) {
-        // [AI修改] 规划天数：标签 + 周期快捷 整合成一行(可横滑)。
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("规划天数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.width(8.dp))
-            androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                items(listOf("当天" to 1, "3天" to 3, "一周" to 7, "半月" to 15, "一月" to 30)) { (label, value) ->
-                    DayPreset(label, value, state.days, vm::setDays)
+    val mainRange = com.sxdbsm.cookbook.ai.MealPortion.mainRange(state.people)
+    // [AI修改] 整个页面(控件+计划)放同一 LazyColumn：生成计划后上滑，控件整体滚走、给计划更大空间。
+    LazyColumn(modifier = modifier.fillMaxSize()) {
+        item {
+            // 规划天数：标签 + 周期快捷 整合成一行(可横滑)。
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("规划天数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.width(8.dp))
+                androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(listOf("当天" to 1, "3天" to 3, "一周" to 7, "半月" to 15, "一月" to 30)) { (label, value) ->
+                        DayPreset(label, value, state.days, vm::setDays)
+                    }
                 }
             }
-        }
-        Slider(
-            value = state.days.toFloat(),
-            onValueChange = { vm.setDays(it.toInt()) },
-            valueRange = 1f..30f,
-            steps = 28,
-        )
-        // [AI修改] 用餐人数(MiniStepper 缩小 −/＋) 与「生成」同一行，生成按钮在右侧。
-        val mainRange = com.sxdbsm.cookbook.ai.MealPortion.mainRange(state.people)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("用餐人数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.width(8.dp))
-            com.sxdbsm.cookbook.android.ui.component.MiniStepper(
-                valueText = "${state.people} 人",
-                onMinus = { vm.setPeople(state.people - 1) },
-                onPlus = { vm.setPeople(state.people + 1) },
-                minusEnabled = state.people > 1,
-                plusEnabled = state.people < com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE,
-            )
-            Spacer(Modifier.weight(1f))
-            com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
-                text = if (state.loading) "生成中…" else "生成",
-                onClick = { vm.generate() },
-                enabled = !state.loading,
-            )
-        }
-        Text(
-            "正餐约 ${mainRange.first}~${mainRange.last} 菜",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 2.dp),
-        )
-        if (state.season.isNotBlank() && state.plan != null) {
-            Spacer(Modifier.height(6.dp))
-            // [AI生成] AI 生成但有餐次由规则补充时，如实标注，避免误认为全部由 AI 生成。
-            val partialRule = state.byAi && state.plan.days.any { d -> d.meals.any { it.fromRule } }
+            // [AI修改] 天数显示补回：进度条右侧显示当前"N 天"。
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Slider(
+                    value = state.days.toFloat(),
+                    onValueChange = { vm.setDays(it.toInt()) },
+                    valueRange = 1f..30f,
+                    steps = 28,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    "${state.days} 天",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            // 用餐人数(MiniStepper) 与「生成」同一行，生成按钮在右侧。
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("用餐人数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.width(8.dp))
+                com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+                    valueText = "${state.people} 人",
+                    onMinus = { vm.setPeople(state.people - 1) },
+                    onPlus = { vm.setPeople(state.people + 1) },
+                    minusEnabled = state.people > 1,
+                    plusEnabled = state.people < com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE,
+                )
+                Spacer(Modifier.weight(1f))
+                com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                    text = if (state.loading) "生成中…" else "生成",
+                    onClick = { vm.generate() },
+                    enabled = !state.loading,
+                )
+            }
             Text(
-                buildString {
-                    append(if (state.byAi) "🤖 AI 规划" else "📋 规则规划")
-                    if (partialRule) append("（部分餐次由规则补充，已在下方标注）")
-                    append(" · 当前季节：${state.season}（应季优先）")
-                    if (state.healthAware) append(" · 已结合健康档案（利健康≥80%，参考膳食指南整理）")
-                },
-                style = MaterialTheme.typography.bodySmall,
+                "正餐约 ${mainRange.first}~${mainRange.last} 菜",
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp),
             )
+            if (state.season.isNotBlank() && state.plan != null) {
+                Spacer(Modifier.height(6.dp))
+                val partialRule = state.byAi && state.plan.days.any { d -> d.meals.any { it.fromRule } }
+                Text(
+                    buildString {
+                        append(if (state.byAi) "🤖 AI 规划" else "📋 规则规划")
+                        if (partialRule) append("（部分餐次由规则补充，已在下方标注）")
+                        append(" · 当前季节：${state.season}（应季优先）")
+                        if (state.healthAware) append(" · 已结合健康档案（利健康≥80%，参考膳食指南整理）")
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
         }
-        Spacer(Modifier.height(8.dp))
 
         when {
-            state.loading -> Box(Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            state.error != null -> Text(state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 16.dp))
-            state.plan == null -> Text("选好天数，点「生成计划」。", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 16.dp))
-            else -> LazyColumn(modifier = Modifier.weight(1f)) {
+            state.loading -> item { Box(Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
+            state.error != null -> item { Text(state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 16.dp)) }
+            state.plan == null -> item { Text("选好天数，点「生成计划」。", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 16.dp)) }
+            else -> {
                 items(state.plan.days, key = { it.dayIndex }) { day ->
                     // [AI生成] 每天标注明确日期(计划起始日 + dayIndex)，让"第N天"对应真实日期。
                     val dateLabel = state.planStartDate?.let { s ->

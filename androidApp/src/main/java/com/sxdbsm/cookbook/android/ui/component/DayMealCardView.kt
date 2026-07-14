@@ -219,7 +219,9 @@ private fun LackText(text: String) {
 }
 
 /**
- * 紧凑日期标题：M月D日 周X(去年份/去补零)，让日期+角标+操作图标一行放下。[AI修改]
+ * 紧凑日期标题：本年只显示"M月D日 周X"，非本年加"YYYY年"。[AI修改]
+ *
+ * 去补零、本年省年份，让日期+角标+操作图标一行放下；跨年日期(如去年/明年)补年份避免歧义。
  */
 private fun formatDateCompact(data: DayMealCardData): String {
     val d = data.date
@@ -227,7 +229,9 @@ private fun formatDateCompact(data: DayMealCardData): String {
         1 -> "周一"; 2 -> "周二"; 3 -> "周三"; 4 -> "周四"; 5 -> "周五"; 6 -> "周六"; 7 -> "周日"
         else -> ""
     }
-    return "${d.monthNumber}月${d.dayOfMonth}日 $weekday"
+    val currentYear = com.sxdbsm.cookbook.util.DateTime.today().year
+    val yearPrefix = if (d.year != currentYear) "${d.year}年" else ""
+    return "$yearPrefix${d.monthNumber}月${d.dayOfMonth}日 $weekday"
 }
 
 private val kotlinx.datetime.DayOfWeek.isoDayNumber: Int
