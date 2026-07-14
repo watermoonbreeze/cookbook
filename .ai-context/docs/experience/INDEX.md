@@ -5,8 +5,8 @@
 
 ## 元信息
 
-- 上次总结会话点：2026-07-14 苹果风格UI大改造+营养色系(Phase0设计token赤陶橘/暖中性/iOS字阶 + UX设计师agent 5轮落地 + 组件库SegmentedControl/CapsuleButton/InsetGroup/ActionSheet/PlainCard/MiniStepper; 营养级别0~4 nutritionLevel + NutritionColor每级基色卡片低透明度/色墙满色 + 首页营养色系墙热力图星期纵轴月份横轴点击跳转; 餐食卡片单行头本年省年份; 步骤模板/配料组/收藏表15~18.sqm; 3用户bug+体验A组; 关键坑=sqlite_3_18 WHERE无REPLACE/TRIM、删死导入翻车、M3 1.1.2无SegmentedButton; 161单测过)
-- 总结次数：25
+- 上次总结会话点：2026-07-14下午/晚 营养素体系(ingredient_nutrition表+measurement_unit.grams克当量19.sqm+NutritionCalculator/Repository/Balance+专用seed文件ingredient_nutrition.json 65食材+菜品详情营养卡+餐食当天热量) + 增长型本地推荐(RecommendationWeights/Style综合/偏熟悉/偏新鲜/偏营养+HealthRuleEngine因子化+DataSource派生画像(偏好/主料重复/营养互补)+PeriodPlanner style+AI推荐页/周期计划风格选择器) + 色系墙固定本公历年/定位今天居中(snapshotFlow等布局)/往年平均色行 + 沉浸式insets(全屏页navigationBarsPadding/底栏去clip) + 标签烹饪库选择器(LibraryPickerDialog软删仅user) + 加餐默认日期(最后餐食+1/时段) + UX设计师5轮审查修2必修; 关键坑=沉浸式全屏页遮挡+底部双重padding、scrollToItem同帧layoutInfo旧、mapResult重建丢粘性字段、软删已选未同步复活
+- 总结次数：26
 
 ## 文件索引
 

@@ -77,6 +77,11 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 可复用组件的"能力显隐"由**回调是否传入**决定（如 `IngredientDetailSheet` 编辑区），别在组件内用 `!selectionMode` 等 mode 布尔硬编码，否则换场景要复用时被挡。
 - 多入口共享一个 ViewModel（新增/编辑/复制）：每个入口用**独立一次性守卫**（如 `copyConfigured`），别共用一个 `configured`，否则被 `init` 默认 configure 抢跑 `if(configured)return` 吞掉；"改日期=移动删旧"只在真编辑既有日期(loadedFromDate!=null)时触发。
 - VM 里"跳转视图/改选中项"后，凡该视图的**查询依赖某派生态**（如按分类查食材是从左侧展开树 `tree` 找节点），必须**同步重建那个派生态**，否则查不到静默空列表——`IngredientPicker` 曾因保存后跳到新分类却没重建 `tree`，`reloadCurrentList` 在陈旧树里找不到新分类节点返回空（自建分类挂食材"看不到"）。稳妥做法：让查询直接依赖**源数据**（`allCategories`）而非展开态，减少这类隐性耦合。
+- **沉浸式 edge-to-edge**（`setDecorFitsSystemWindows(false)`+导航栏透明）：全屏页(无底部栏)内容会伸到系统导航栏下被遮挡——统一在 `MainScaffold` 的 `NavHost` 对无底栏路由加 `navigationBarsPadding()`；**嵌套 Scaffold 的 bottomBar 别再自加 `navigationBarsPadding()`**且要 `contentWindowInsets = WindowInsets(0,0,0,0)`，否则底部按钮**双重下边距**。
+- Compose `LazyList` **`scrollToItem(idx)` 后同帧读 `layoutInfo` 做居中/偏移会拿到旧布局**（visibleItemsInfo 尚未重排）→ 居中静默失效只剩靠左。用 `snapshotFlow{listState.layoutInfo}.firstOrNull{ 目标 index 已在 visibleItemsInfo }` 等布局出来再 `scrollBy`。
+- VM 里用"**重建整个 UiState**"(如 `mapResult(...)` 返回 new state)替换 `state` 会**丢掉未列出的字段**（粘性选择：推荐风格/餐次/去重周期）→ 结果用 `.copy(那些字段=旧值)` 保留；`onFailure` 走 `state.copy` 天然保留。
+- 字典/库**软删只删 `source='user'`**（预设不可删）；从库删某项时若它**已被当前表单选中**，要**同步移除已选**，否则保存 `INSERT OR IGNORE` 会把删掉的自建项"复活"。
+- SQLDelight 加**纯新查询/软删**（`selectAll*`/`softDelete* WHERE source='user'`）不改表结构 → **无需 `.sqm` 迁移**；只有改 CREATE TABLE 列才要迁移。营养/字典类**批量基础数据**用**独立 seed 文件**（如 `ingredient_nutrition.json`，同 `ingredient_details.json` 按名 upsert），别内联进 `ingredients.json`——单表单文件后续只填数据。
 
 ## 技术栈
 
