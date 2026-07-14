@@ -28,34 +28,35 @@ data class ExtendedColors(
     val onDangerContainer: Color,
 )
 
+// [AI修改] 苹果风格 Phase 0：语义色对齐方案——健康绿 / 限量琥珀 / 忌口红，克制用于状态。
 val LightExtendedColors = ExtendedColors(
-    success = Color(0xFF6A8B73),
+    success = Color(0xFF5C9A6A),
     onSuccess = Color(0xFFFFFFFF),
-    successContainer = Color(0xFFE4EEE8),
-    onSuccessContainer = Color(0xFF2B221A),
-    warning = Color(0xFFD19065),
-    onWarning = Color(0xFFFFFFFF),
-    warningContainer = Color(0xFFF3E1D2),
-    onWarningContainer = Color(0xFF2B221A),
-    danger = Color(0xFFA85A4A),
+    successContainer = Color(0xFFE3EFE6),
+    onSuccessContainer = Color(0xFF1E3A28),
+    warning = Color(0xFFE0A23C),
+    onWarning = Color(0xFF3A2A0E),
+    warningContainer = Color(0xFFF7EBD4),
+    onWarningContainer = Color(0xFF4A3612),
+    danger = Color(0xFFD14E3B),
     onDanger = Color(0xFFFFFFFF),
-    dangerContainer = Color(0xFFF3D8D2),
-    onDangerContainer = Color(0xFF2B221A),
+    dangerContainer = Color(0xFFF7DDD6),
+    onDangerContainer = Color(0xFF5A1F16),
 )
 
 val DarkExtendedColors = ExtendedColors(
-    success = Color(0xFF8FAF99),
-    onSuccess = Color(0xFF1E2A22),
-    successContainer = Color(0xFF31463A),
-    onSuccessContainer = Color(0xFFE4EEE8),
-    warning = Color(0xFFD19065),
-    onWarning = Color(0xFF2A1B12),
-    warningContainer = Color(0xFF553821),
-    onWarningContainer = Color(0xFFF3E1D2),
-    danger = Color(0xFFD99A8E),
+    success = Color(0xFF84BE91),
+    onSuccess = Color(0xFF16281C),
+    successContainer = Color(0xFF2E4636),
+    onSuccessContainer = Color(0xFFE3EFE6),
+    warning = Color(0xFFEDB65C),
+    onWarning = Color(0xFF33240A),
+    warningContainer = Color(0xFF4E3A16),
+    onWarningContainer = Color(0xFFF7EBD4),
+    danger = Color(0xFFF0836F),
     onDanger = Color(0xFF3A1510),
-    dangerContainer = Color(0xFF5A2E28),
-    onDangerContainer = Color(0xFFFFDCD6),
+    dangerContainer = Color(0xFF5A2A22),
+    onDangerContainer = Color(0xFFFBDDD5),
 )
 
 val LocalExtendedColors = compositionLocalOf { LightExtendedColors }

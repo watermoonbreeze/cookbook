@@ -34,22 +34,26 @@ fun CookbookTheme(
     val extendedColors = if (useDark) DarkExtendedColors else LightExtendedColors
 
     val typography = Typography(
-        // [AI修改] 字号对齐暖杏 V2.1 规范：页面标题20半粗、模块标题18半粗、卡片/按钮16中等、正文14。
-        titleLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.SemiBold, fontSize = 20.sp),
-        titleMedium = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.SemiBold, fontSize = 18.sp),
-        titleSmall = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Medium, fontSize = 16.sp),
-        bodyLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Medium, fontSize = 16.sp),
-        bodyMedium = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 14.sp),
-        labelLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Medium, fontSize = 15.sp),
-        labelMedium = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 12.sp),
-        labelSmall = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 12.sp),
+        // [AI修改] 苹果风格 Phase 0：对齐 iOS Dynamic Type 语义层级——正文 17、列表标题 17 半粗、
+        // 大标题拉大、字重克制(Regular/SemiBold 两档)、行高放松便于中文与中老年阅读。
+        displaySmall = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = 40.sp), // Large Title
+        headlineMedium = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Bold, fontSize = 28.sp, lineHeight = 34.sp), // Title 1
+        titleLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 28.sp), // Title 2
+        titleMedium = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 25.sp), // Title 3
+        titleSmall = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, lineHeight = 22.sp), // Headline(列表标题)
+        bodyLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 17.sp, lineHeight = 24.sp), // Body(正文主号)
+        bodyMedium = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 15.sp, lineHeight = 21.sp), // Subhead
+        labelLarge = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 20.sp), // Button
+        labelMedium = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 13.sp, lineHeight = 18.sp), // Footnote
+        labelSmall = TextStyle(fontFamily = FontFamily.Default, fontWeight = FontWeight.Normal, fontSize = 12.sp, lineHeight = 16.sp), // Caption
     )
     val shapes = Shapes(
-        extraSmall = RoundedCornerShape(4.dp),
+        // [AI修改] 苹果风格：适中连续圆角。卡片/输入 12、弹层/大卡 16–20。
+        extraSmall = RoundedCornerShape(6.dp),
         small = RoundedCornerShape(8.dp),
         medium = RoundedCornerShape(12.dp),
         large = RoundedCornerShape(16.dp),
-        extraLarge = RoundedCornerShape(16.dp),
+        extraLarge = RoundedCornerShape(20.dp),
     )
 
     // [AI修改] CompositionLocalProvider 类似把扩展色放入 Compose 上下文，子组件可直接读取。
