@@ -11,12 +11,16 @@ import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.domain.FoodGroup
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.isoDayNumber
 
 /**
  * 首页 UI 状态。[AI修改]
@@ -70,25 +74,42 @@ class HomeViewModel(
         viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }
     }
 
+    private fun mondayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, -(d.dayOfWeek.isoDayNumber - 1))
+    private fun sundayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, 7 - d.dayOfWeek.isoDayNumber)
+
+    // 墙起始周一：默认近 DEFAULT_WEEKS 周；有更早记录则回退到最早记录所在周一(可往前看全部历史)。
+    private val today = DateTime.today()
+    private val _wallStart = MutableStateFlow(mondayOf(DateTime.plusDays(today, -(DEFAULT_WEEKS - 1) * 7)))
+
+    init {
+        viewModelScope.launch {
+            val (min, _) = runCatching { mealRepo.dateRange() }.getOrDefault(null to null)
+            if (min != null) {
+                val candidate = mondayOf(min)
+                if (candidate < _wallStart.value) _wallStart.value = candidate
+            }
+        }
+    }
+
     /**
-     * 营养色系墙：近 WALL_DAYS 天(含今天)每天的营养均衡级别。[AI生成]
+     * 营养色系墙：从最早记录周(或近 DEFAULT_WEEKS 周)到本周日，每天的营养均衡级别(整周对齐、含空日)。[AI生成]
      *
-     * 供首页"每天营养色系墙"(色块热力图)展示；仅当功能设置开启营养色系时页面才渲染。
+     * 供首页"每天营养色系墙"横向热力图；默认展示到今天、可往前滚动看全部历史。仅功能设置开启营养色系时渲染。
      */
-    val nutritionWall: StateFlow<List<DayNutrition>> = run {
-        val today = DateTime.today()
-        mealRepo.observeTimelineWindow(DateTime.plusDays(today, -(WALL_DAYS - 1)), today)
-            .map { cards ->
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val nutritionWall: StateFlow<List<DayNutrition>> = _wallStart
+        .flatMapLatest { start ->
+            mealRepo.observeTimelineWindow(start, sundayOf(today)).map { cards ->
                 cards.map { card ->
                     val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
                     DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains)))
                 }
             }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private companion object {
-        const val WALL_DAYS = 35 // 5 周 × 7 天
+        const val DEFAULT_WEEKS = 18 // 无更早记录时默认展示约 4 个月
     }
 }
 

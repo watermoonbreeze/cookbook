@@ -39,7 +39,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
         item {
             // 规划天数：标签 + 周期快捷 整合成一行(可横滑)。
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("规划天数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text("天数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.width(8.dp))
                 androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     items(listOf("当天" to 1, "3天" to 3, "一周" to 7, "半月" to 15, "一月" to 30)) { (label, value) ->
