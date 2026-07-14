@@ -59,98 +59,82 @@ fun DayMealCardView(
         color = containerColor,
         tonalElevation = 0.dp,
     ) {
-        // [AI修改] 苹果风格：左内容 + 右侧竖排操作(复制/编辑/删除，图标在上文字在下)。
-        Row(modifier = Modifier.padding(16.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                // 日期标题行：根据 today/plan 状态展示不同提示。
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = formatDate(data),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    when {
-                        data.isToday -> Text(
-                            "· 今天",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        data.isPlanState -> Text(
-                            "· 计划 📌",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                    // [AI生成] 营养色系开启时，标注当天营养级别文字(与背景色同级别)。
-                    if (nutritionColorEnabled && nutritionLevel > 0) {
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "· ${com.sxdbsm.cookbook.domain.FoodGroup.nutritionLevelLabel(nutritionLevel)}",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = nutritionAccent(nutritionLevel),
-                        )
-                    }
+        // [AI修改] 苹果风格(按用户方案)：日期与操作同一行——紧凑日期 + 今天/计划/营养角标 + 右侧复制/编辑/删除图标。
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = formatDateCompact(data),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                )
+                Spacer(Modifier.width(6.dp))
+                // 今天/计划 角标
+                if (data.isToday) {
+                    Badge("今天", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+                } else if (data.isPlanState) {
+                    Badge("计划", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                 }
-                if (data.meals.isEmpty()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "(空) 还没记录",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                } else {
-                    data.meals.forEach { section ->
-                        Spacer(Modifier.height(8.dp))
-                        Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                        Spacer(Modifier.height(8.dp))
-                        MealSectionRow(section = section, onDishClick = onDishClick)
-                    }
+                Spacer(Modifier.weight(1f))
+                // 右侧操作图标(同一行)
+                if (onCopyClick != null && data.meals.isNotEmpty()) {
+                    CardIcon(Icons.Outlined.ContentCopy, "复制", MaterialTheme.colorScheme.primary, onCopyClick)
+                }
+                if (onEditClick != null) {
+                    CardIcon(Icons.Outlined.Edit, "编辑", MaterialTheme.colorScheme.primary, onEditClick)
+                }
+                if (onDeleteClick != null && data.meals.isNotEmpty()) {
+                    CardIcon(Icons.Outlined.Delete, "删除", MaterialTheme.colorScheme.error, onDeleteClick)
                 }
             }
-            // [AI修改] 右侧竖排操作列：图标+文字，从上到下 复制/编辑/删除。
-            val hasAction = (onCopyClick != null && data.meals.isNotEmpty()) || onEditClick != null || (onDeleteClick != null && data.meals.isNotEmpty())
-            if (hasAction) {
-                Column(
-                    modifier = Modifier.padding(start = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    if (onCopyClick != null && data.meals.isNotEmpty()) {
-                        CardActionButton(Icons.Outlined.ContentCopy, "复制", MaterialTheme.colorScheme.primary, onCopyClick)
-                    }
-                    if (onEditClick != null) {
-                        CardActionButton(Icons.Outlined.Edit, "编辑", MaterialTheme.colorScheme.primary, onEditClick)
-                    }
-                    if (onDeleteClick != null && data.meals.isNotEmpty()) {
-                        CardActionButton(Icons.Outlined.Delete, "删除", MaterialTheme.colorScheme.error, onDeleteClick)
-                    }
+            if (data.meals.isEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "(空) 还没记录",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                data.meals.forEach { section ->
+                    Spacer(Modifier.height(8.dp))
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(Modifier.height(8.dp))
+                    MealSectionRow(section = section, onDishClick = onDishClick)
                 }
             }
         }
     }
 }
 
-/** 卡片右侧竖排操作按钮：图标在上、文字在下。[AI生成] */
+/** 顶部角标小胶囊。[AI生成] */
 @Composable
-private fun CardActionButton(
+private fun Badge(
+    text: String,
+    contentColor: androidx.compose.ui.graphics.Color,
+    bg: androidx.compose.ui.graphics.Color,
+) {
+    Surface(color = bg, shape = androidx.compose.foundation.shape.RoundedCornerShape(50)) {
+        Text(
+            text,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = contentColor,
+            modifier = Modifier.padding(horizontal = 7.dp, vertical = 1.dp),
+        )
+    }
+}
+
+/** 卡片操作图标(紧凑)。[AI生成] */
+@Composable
+private fun CardIcon(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     tint: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .clickable { onClick() }
-            .padding(horizontal = 6.dp, vertical = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(20.dp))
-        Text(label, style = MaterialTheme.typography.labelSmall, color = tint)
+    IconButton(onClick = onClick, modifier = Modifier.size(34.dp)) {
+        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(19.dp))
     }
 }
 
@@ -235,18 +219,15 @@ private fun LackText(text: String) {
 }
 
 /**
- * 格式化卡片日期标题。[AI修改]
+ * 紧凑日期标题：M月D日 周X(去年份/去补零)，让日期+角标+操作图标一行放下。[AI修改]
  */
-private fun formatDate(data: DayMealCardData): String {
+private fun formatDateCompact(data: DayMealCardData): String {
     val d = data.date
     val weekday = when (d.dayOfWeek.isoDayNumber) {
         1 -> "周一"; 2 -> "周二"; 3 -> "周三"; 4 -> "周四"; 5 -> "周五"; 6 -> "周六"; 7 -> "周日"
         else -> ""
     }
-    val yy = (d.year % 100).toString().padStart(2, '0')
-    val mm = d.monthNumber.toString().padStart(2, '0')
-    val dd = d.dayOfMonth.toString().padStart(2, '0')
-    return "${yy}年${mm}月${dd}日 $weekday"
+    return "${d.monthNumber}月${d.dayOfMonth}日 $weekday"
 }
 
 private val kotlinx.datetime.DayOfWeek.isoDayNumber: Int
