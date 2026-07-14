@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -304,36 +305,52 @@ fun NewDishScreen(
                 onStepFocused = { focusedStepIndex = it },
             )
 
-            FormFieldLabel("特殊说明")
-            OutlinedTextField(
-                value = state.specialNote,
-                onValueChange = vm::setSpecialNote,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("如：少盐") },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
-            )
+            // [AI修改] A7：把可选的"特殊说明/描述/图片"收进"更多信息(可选)"，默认折叠，降低录入压迫感；
+            // 有内容时自动展开(编辑既有菜品/已填过不至于藏起来)。快速记一道菜只需菜名+食材即可。
+            val hasMore = state.specialNote.isNotBlank() || state.description.isNotBlank() ||
+                state.imagePath.isNotBlank() || state.thumbnailPath.isNotBlank()
+            var moreExpanded by rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(hasMore) { if (hasMore) moreExpanded = true }
+            TextButton(onClick = { moreExpanded = !moreExpanded }) {
+                Icon(
+                    if (moreExpanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                    contentDescription = null,
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("更多信息（可选）", color = MaterialTheme.colorScheme.tertiary)
+            }
+            if (moreExpanded) {
+                FormFieldLabel("特殊说明")
+                OutlinedTextField(
+                    value = state.specialNote,
+                    onValueChange = vm::setSpecialNote,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("如：少盐") },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                )
 
-            FormFieldLabel("描述")
-            OutlinedTextField(
-                value = state.description,
-                onValueChange = vm::setDescription,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("（可选，做法/心得）") },
-                minLines = 2,
-                shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
-            )
+                FormFieldLabel("描述")
+                OutlinedTextField(
+                    value = state.description,
+                    onValueChange = vm::setDescription,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("（可选，做法/心得）") },
+                    minLines = 2,
+                    shape = MaterialTheme.shapes.medium,
+                )
 
-            FormFieldLabel("图片")
-            ImagePickerButton(
-                imagePaths = decodeImagePaths(state.imagePath),
-                thumbnailPaths = decodeImagePaths(state.thumbnailPath),
-                onImagesChanged = { images, thumbnails ->
-                    vm.setImages(encodeImagePaths(images), encodeImagePaths(thumbnails))
-                },
-                maxCount = 3,
-                modifier = Modifier.fillMaxWidth(),
-            )
+                FormFieldLabel("图片")
+                ImagePickerButton(
+                    imagePaths = decodeImagePaths(state.imagePath),
+                    thumbnailPaths = decodeImagePaths(state.thumbnailPath),
+                    onImagesChanged = { images, thumbnails ->
+                        vm.setImages(encodeImagePaths(images), encodeImagePaths(thumbnails))
+                    },
+                    maxCount = 3,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
             Spacer(Modifier.height(80.dp))
         }
     }
