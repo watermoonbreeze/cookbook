@@ -11,6 +11,9 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -35,10 +38,17 @@ fun DayMealCardView(
     onCopyClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
 ) {
-    val containerColor = if (data.isPlanState)
-        MaterialTheme.colorScheme.secondaryContainer
-    else
-        MaterialTheme.colorScheme.surface // [AI修改] 新暖杏规范中内容卡片使用白底，计划态才使用浅底色。
+    // [AI生成] 营养色系(功能设置开关)：开启后按当天营养均衡级别配卡片背景色。
+    val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
+    val nutritionColorEnabled by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
+    }.collectAsStateWithLifecycle(false)
+    val nutritionLevel = if (data.meals.isNotEmpty()) nutritionLevelOfDishes(data.meals.flatMap { it.dishes }) else 0
+    val containerColor = when {
+        nutritionColorEnabled && data.meals.isNotEmpty() -> nutritionTint(nutritionLevel)
+        data.isPlanState -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.surface // [AI修改] 内容卡片白底，计划态浅底色。
+    }
 
     // [AI修改] 苹果风格：无阴影填充白卡(计划态浅底)，圆角 medium(12)与全局一致。
     Surface(
@@ -71,6 +81,16 @@ fun DayMealCardView(
                             "· 计划 📌",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    // [AI生成] 营养色系开启时，标注当天营养级别文字(与背景色同级别)。
+                    if (nutritionColorEnabled && nutritionLevel > 0) {
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "· ${com.sxdbsm.cookbook.domain.FoodGroup.nutritionLevelLabel(nutritionLevel)}",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = nutritionAccent(nutritionLevel),
                         )
                     }
                 }

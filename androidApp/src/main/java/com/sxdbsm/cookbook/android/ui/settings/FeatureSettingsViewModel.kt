@@ -31,4 +31,13 @@ class FeatureSettingsViewModel(
     fun setStepMode(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.STEP_MODE_ENABLED, enabled) }
     }
+
+    /** 营养色系开关：默认关。[AI生成] */
+    val nutritionColorEnabled: StateFlow<Boolean> =
+        prefs.observeFlag(PreferenceKeys.NUTRITION_COLOR_ENABLED, default = false)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun setNutritionColor(enabled: Boolean) {
+        viewModelScope.launch { prefs.setFlag(PreferenceKeys.NUTRITION_COLOR_ENABLED, enabled) }
+    }
 }

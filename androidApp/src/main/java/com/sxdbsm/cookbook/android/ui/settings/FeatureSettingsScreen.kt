@@ -49,6 +49,7 @@ fun FeatureSettingsScreen(
     vm: FeatureSettingsViewModel = koinViewModel(),
 ) {
     val stepMode by vm.stepModeEnabled.collectAsStateWithLifecycle()
+    val nutritionColor by vm.nutritionColorEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
@@ -81,6 +82,16 @@ fun FeatureSettingsScreen(
                         "关闭则只按你书写的顺序展示、不强制编号（默认关闭）。",
                     checked = stepMode,
                     onCheckedChange = vm::setStepMode,
+                )
+            }
+
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "餐食") {
+                SwitchRow(
+                    title = "营养色系",
+                    subtitle = "开启后：餐食卡片按当天营养均衡级别配背景色(越均衡越偏健康绿、越单一越偏暖)，" +
+                        "并用于首页「每天营养色系墙」。默认关闭。",
+                    checked = nutritionColor,
+                    onCheckedChange = vm::setNutritionColor,
                 )
             }
 

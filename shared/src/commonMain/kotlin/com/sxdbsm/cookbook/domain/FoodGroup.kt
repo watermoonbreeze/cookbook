@@ -77,4 +77,37 @@ object FoodGroup {
         if (Group.FRUIT in groups) out += "水果·维生素"
         return out
     }
+
+    /** 优质蛋白来源大类。[AI生成] */
+    val PROTEIN_GROUPS = setOf(Group.FISH, Group.RED_MEAT, Group.WHITE_MEAT, Group.EGG, Group.DAIRY, Group.BEAN)
+
+    /**
+     * 营养均衡级别 0~4。[AI生成]
+     *
+     * 按三大支柱覆盖度评级：优质蛋白 / 主食·碳水 / 蔬果·膳食纤维。
+     * 0=无(空)，1=单一(仅1类)，2=尚可(2类)，3=均衡(三大类齐)，4=优(三类齐且食材多样≥5大类)。
+     * 供餐食卡片背景配色与首页"每天营养色系墙"用同一级别口径。
+     */
+    fun nutritionLevel(groups: List<Group>): Int {
+        if (groups.isEmpty()) return 0
+        val hasProtein = groups.any { it in PROTEIN_GROUPS }
+        val hasStaple = Group.STAPLE in groups
+        val hasVeg = groups.any { it == Group.VEGETABLE || it == Group.FUNGI || it == Group.FRUIT }
+        val pillars = listOf(hasProtein, hasStaple, hasVeg).count { it }
+        return when {
+            pillars >= 3 && groups.size >= 5 -> 4
+            pillars >= 3 -> 3
+            pillars == 2 -> 2
+            else -> 1
+        }
+    }
+
+    /** 级别文字。[AI生成] */
+    fun nutritionLevelLabel(level: Int): String = when (level) {
+        4 -> "营养优"
+        3 -> "均衡"
+        2 -> "尚可"
+        1 -> "较单一"
+        else -> ""
+    }
 }
