@@ -56,6 +56,7 @@ fun HomeScreen(
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
     }.collectAsStateWithLifecycle(false)
     val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
+    val yearAverages by vm.yearAverages.collectAsStateWithLifecycle()
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除计划餐食的日期(确认弹窗)。
     // [AI修改] 苹果风格：首页用大标题(Large Title)，下滑折叠为小标题。
@@ -140,6 +141,7 @@ fun HomeScreen(
                     days = nutritionWall,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     onDayClick = onOpenTimelineAt, // [AI修改] 点色块→食历定位该日餐食(不再进编辑页)
+                    yearAverages = yearAverages, // [AI生成] 往年平均色系(有往年数据才显示)
                 )
             }
             item { Spacer(Modifier.height(28.dp)) }

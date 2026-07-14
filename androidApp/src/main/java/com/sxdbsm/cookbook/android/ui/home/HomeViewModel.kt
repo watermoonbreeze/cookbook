@@ -11,16 +11,16 @@ import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.domain.FoodGroup
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.isoDayNumber
+import kotlin.math.roundToInt
 
 /**
  * 首页 UI 状态。[AI修改]
@@ -77,41 +77,56 @@ class HomeViewModel(
     private fun mondayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, -(d.dayOfWeek.isoDayNumber - 1))
     private fun sundayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, 7 - d.dayOfWeek.isoDayNumber)
 
-    // 墙起始周一：默认近 DEFAULT_WEEKS 周；有更早记录则回退到最早记录所在周一(可往前看全部历史)。
     private val today = DateTime.today()
-    private val _wallStart = MutableStateFlow(mondayOf(DateTime.plusDays(today, -(DEFAULT_WEEKS - 1) * 7)))
-
-    init {
-        viewModelScope.launch {
-            val (min, _) = runCatching { mealRepo.dateRange() }.getOrDefault(null to null)
-            if (min != null) {
-                val candidate = mondayOf(min)
-                if (candidate < _wallStart.value) _wallStart.value = candidate
-            }
-        }
-    }
+    // [AI修改] 色系墙固定为本公历年(1月1日~12月31日)，整周对齐；UI 定位到今天、可左右滑看本年历史/未来。
+    private val wallStart = mondayOf(LocalDate(today.year, 1, 1))
+    private val wallEnd = sundayOf(LocalDate(today.year, 12, 31))
 
     /**
-     * 营养色系墙：从最早记录周(或近 DEFAULT_WEEKS 周)到本周日，每天的营养均衡级别(整周对齐、含空日)。[AI生成]
+     * 营养色系墙：本公历年每天的营养均衡级别(整周对齐、含空日)。[AI修改]
      *
-     * 供首页"每天营养色系墙"横向热力图；默认展示到今天、可往前滚动看全部历史。仅功能设置开启营养色系时渲染。
+     * 固定 1~12 月；UI 默认定位今天所在周、可左右滑。仅功能设置开启营养色系时渲染。
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val nutritionWall: StateFlow<List<DayNutrition>> = _wallStart
-        .flatMapLatest { start ->
-            mealRepo.observeTimelineWindow(start, sundayOf(today)).map { cards ->
-                cards.map { card ->
-                    val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
-                    DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains)))
-                }
+    val nutritionWall: StateFlow<List<DayNutrition>> =
+        mealRepo.observeTimelineWindow(wallStart, wallEnd).map { cards ->
+            cards.map { card ->
+                val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
+                DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains)))
             }
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private companion object {
-        const val DEFAULT_WEEKS = 18 // 无更早记录时默认展示约 4 个月
-    }
+    /**
+     * 往年营养平均色：早于本年、且有餐食记录的年份，取该年"有餐日"的平均营养级别。[AI生成]
+     *
+     * 显示在色系墙标题下方(块内为年份后两位)；无往年数据则空。随营养色系开关一起显示。
+     */
+    val yearAverages: StateFlow<List<YearNutrition>> = flow {
+        val (min, _) = runCatching { mealRepo.dateRange() }.getOrDefault(null to null)
+        if (min == null || min.year >= today.year) {
+            emit(emptyList())
+            return@flow
+        }
+        emitAll(
+            mealRepo.observeTimelineWindow(LocalDate(min.year, 1, 1), LocalDate(today.year - 1, 12, 31)).map { cards ->
+                cards.filter { it.meals.isNotEmpty() }
+                    .mapNotNull { card ->
+                        val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
+                        val lv = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains))
+                        if (lv > 0) card.date.year to lv else null
+                    }
+                    .groupBy({ it.first }, { it.second })
+                    .map { (yr, levels) -> YearNutrition(yr, levels.average().roundToInt()) }
+                    .sortedByDescending { it.year }
+            },
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }
 
 /** 某天的营养级别(色系墙用)。[AI生成] */
 data class DayNutrition(val date: LocalDate, val level: Int)
+
+/** 某一年的平均营养级别(色系墙往年概览用)。[AI生成] */
+data class YearNutrition(val year: Int, val level: Int) {
+    /** 年份后两位(如 2025→"25")。 */
+    val yy: String get() = (year % 100).toString().padStart(2, '0')
+}

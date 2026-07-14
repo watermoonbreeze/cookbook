@@ -51,15 +51,38 @@ fun NutritionWall(
     days: List<DayNutrition>,
     modifier: Modifier = Modifier,
     onDayClick: (LocalDate) -> Unit = {},
+    yearAverages: List<YearNutrition> = emptyList(), // [AI生成] 往年平均色(块内年份后两位)，空则整行不显示
 ) {
     if (days.isEmpty()) return
     val today = DateTime.today()
     val weeks = days.chunked(7)
     val listState = rememberLazyListState()
+    // [AI修改] 固定本公历年，定位到今天所在周(不再滚到年末)。
     LaunchedEffect(weeks.size) {
-        if (weeks.isNotEmpty()) listState.scrollToItem(weeks.lastIndex)
+        if (weeks.isNotEmpty()) {
+            val idx = weeks.indexOfFirst { wk -> wk.any { it.date == today } }.let { if (it >= 0) it else weeks.lastIndex }
+            listState.scrollToItem(idx)
+        }
     }
     Column(modifier = modifier) {
+        // [AI生成] 往年平均色系(标题下方)：仅有记录的往年才显示；无则整行不显示。块内为年份后两位。
+        if (yearAverages.isNotEmpty()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("年份", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(end = 6.dp))
+                yearAverages.forEach { yr ->
+                    val yc = nutritionWallColor(yr.level)
+                    val ytc = if (yc.luminance() > 0.5f) Color(0xFF3A352E) else Color.White
+                    Box(
+                        modifier = Modifier.size(CELL).clip(RoundedCornerShape(4.dp)).background(yc),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(yr.yy, style = MaterialTheme.typography.labelSmall, color = ytc)
+                    }
+                    Spacer(Modifier.width(GAP))
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
         Row {
             // 左侧固定：星期行标(与格子行对齐)。
             Column(verticalArrangement = Arrangement.spacedBy(GAP), modifier = Modifier.padding(end = 6.dp)) {
@@ -128,7 +151,7 @@ fun NutritionWall(
                 Spacer(Modifier.width(3.dp))
             }
             Spacer(Modifier.width(3.dp))
-            Text("均衡 · 点色块看当天食历 · 可左滑看更早", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("均衡 · 点色块看当天食历 · 左右滑看全年", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
