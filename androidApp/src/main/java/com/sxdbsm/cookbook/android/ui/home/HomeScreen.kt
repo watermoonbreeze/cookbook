@@ -60,6 +60,7 @@ fun HomeScreen(
     }.collectAsStateWithLifecycle(false)
     val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
     val yearAverages by vm.yearAverages.collectAsStateWithLifecycle()
+    val todayNutrition by vm.todayNutrition.collectAsStateWithLifecycle()
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     var wallExpanded by rememberSaveable { mutableStateOf(true) } // [AI生成] 营养色系墙折叠态：默认展开(整墙显示)，收起后标题右侧显示昨/今/明三色块。
     var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除计划餐食的日期(确认弹窗)。
@@ -173,6 +174,12 @@ fun HomeScreen(
                         onDayClick = onOpenTimelineAt, // [AI修改] 点色块→食历定位该日餐食(不再进编辑页)
                         yearAverages = yearAverages, // [AI生成] 往年平均色系(有往年数据才显示)
                     )
+                }
+            }
+            // [AI生成] 3c：今日营养分配卡(有当天营养数据才显示)。
+            todayNutrition?.let { tn ->
+                item {
+                    NutritionTodayCard(tn, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
                 }
             }
             item { Spacer(Modifier.height(28.dp)) }

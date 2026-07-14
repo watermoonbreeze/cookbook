@@ -115,6 +115,30 @@ class HomeViewModel(
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
+     * 今日营养概览：当天热量+三大宏量+目标达标。[AI生成] 3c
+     *
+     * 供首页"今日营养分配"卡；当天无餐食/无营养数据则 null(不显示)。仅营养色系开启时消费。
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val todayNutrition: StateFlow<TodayNutrition?> =
+        combine(mealRepo.observeTimelineWindow(today, today), prefs.observeBodyMetrics()) { cards, body -> cards to body }
+            .mapLatest { (cards, body) ->
+                val ids = cards.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
+                if (ids.isEmpty()) return@mapLatest null
+                val totals = nutritionRepo.totalOf(ids)
+                if (totals.energyKcal <= 0) return@mapLatest null
+                val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
+                TodayNutrition(
+                    kcal = totals.energyKcal.roundToInt(),
+                    proteinG = totals.proteinG.roundToInt(),
+                    fatG = totals.fatG.roundToInt(),
+                    carbG = totals.carbG.roundToInt(),
+                    target = target,
+                    status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(totals.energyKcal, it) },
+                )
+            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    /**
      * 往年营养平均色：早于本年、且有餐食记录的年份，取该年"有餐日"的平均营养级别。[AI生成]
      *
      * 显示在色系墙标题下方(块内为年份后两位)；无往年数据则空。随营养色系开关一起显示。
@@ -143,6 +167,16 @@ class HomeViewModel(
 
 /** 某天的营养级别(色系墙用)。[AI生成] */
 data class DayNutrition(val date: LocalDate, val level: Int)
+
+/** 今日营养概览(首页卡)。[AI生成] 3c */
+data class TodayNutrition(
+    val kcal: Int,
+    val proteinG: Int,
+    val fatG: Int,
+    val carbG: Int,
+    val target: Int?, // 每日目标(填了身体数据才有)
+    val status: com.sxdbsm.cookbook.domain.model.CalorieStatus?,
+)
 
 /** 某一年的平均营养级别(色系墙往年概览用)。[AI生成] */
 data class YearNutrition(val year: Int, val level: Int) {

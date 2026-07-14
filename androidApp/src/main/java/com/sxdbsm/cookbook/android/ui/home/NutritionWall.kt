@@ -52,6 +52,66 @@ private val MINI = 16.dp // 折叠态三色块(昨/明)
 private val MINI_TODAY = 22.dp // 折叠态今天块(居中、带日期)
 
 /**
+ * 今日营养分配卡：热量(/目标·达标) + 三大宏量占比条。[AI生成] 3c
+ */
+@Composable
+fun NutritionTodayCard(data: TodayNutrition, modifier: Modifier = Modifier) {
+    val statusColor = when (data.status) {
+        com.sxdbsm.cookbook.domain.model.CalorieStatus.ON -> MaterialTheme.colorScheme.primary
+        com.sxdbsm.cookbook.domain.model.CalorieStatus.ABOVE -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    androidx.compose.material3.Surface(
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("今日营养", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                Spacer(Modifier.weight(1f))
+                Text(
+                    buildString {
+                        append("🔥 ${data.kcal} 千卡")
+                        if (data.target != null && data.status != null) append(" / 目标 ${data.target} · ${data.status.label}")
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = statusColor,
+                )
+            }
+            if (data.target != null) {
+                Spacer(Modifier.height(6.dp))
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = (data.kcal.toFloat() / data.target).coerceIn(0f, 1f),
+                    color = statusColor,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            // 三大宏量供能占比条(蛋白/脂肪/碳水)。
+            val p = data.proteinG * 4
+            val f = data.fatG * 9
+            val c = data.carbG * 4
+            if (p + f + c > 0) {
+                Row(modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp))) {
+                    if (p > 0) Box(Modifier.weight(p.toFloat()).fillMaxWidth().height(8.dp).background(Color(0xFF5C9A6A)))
+                    if (f > 0) Box(Modifier.weight(f.toFloat()).fillMaxWidth().height(8.dp).background(Color(0xFFE0A23C)))
+                    if (c > 0) Box(Modifier.weight(c.toFloat()).fillMaxWidth().height(8.dp).background(Color(0xFF6E9BD1)))
+                }
+                Spacer(Modifier.height(4.dp))
+            }
+            Text(
+                "蛋白 ${data.proteinG}g · 脂肪 ${data.fatG}g · 碳水 ${data.carbG}g",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
  * 折叠态的「昨天·今天·明天」三色块。[AI生成]
  *
  * 今天居中、块内写日期数字并描边；昨天/明天略小、不写日期。用于色系墙折叠时的标题右侧预览。
