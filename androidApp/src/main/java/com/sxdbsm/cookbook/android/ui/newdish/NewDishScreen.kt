@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -463,15 +464,15 @@ fun NewDishScreen(
     if (ingredientGroupSheetOpen) {
         IngredientGroupPickerDialog(
             groups = state.ingredientGroups,
-            canSaveCurrent = state.ingredients.isNotEmpty(),
+            currentItems = state.ingredients.map { it.ingredient.name },
             onApply = { group ->
                 vm.applyIngredientGroup(group)
                 ingredientGroupSheetOpen = false
                 Toast.makeText(context, "已加入「${group.name}」的 ${group.items.size} 味配料，用量默认可调", Toast.LENGTH_SHORT).show()
             },
-            onSaveCurrent = { name ->
-                vm.saveCurrentIngredientsAsGroup(name)
-                Toast.makeText(context, "已存为配料组「$name」", Toast.LENGTH_SHORT).show()
+            onCreate = { name, names ->
+                vm.createIngredientGroup(name, names)
+                Toast.makeText(context, "已保存配料组「$name」", Toast.LENGTH_SHORT).show()
             },
             onDelete = { id -> vm.deleteIngredientGroup(id) },
             onDismiss = { ingredientGroupSheetOpen = false },
@@ -481,7 +482,7 @@ fun NewDishScreen(
     if (stepTemplateSheetOpen) {
         StepTemplatePickerDialog(
             templates = state.stepTemplates,
-            canSaveCurrent = state.steps.any { it.text.isNotBlank() },
+            currentItems = state.steps.map { it.text.trim() }.filter { it.isNotBlank() },
             multiStep = stepModeEnabled, // [AI生成] #2 由"我的-功能设置-分步执行"控制插入方式
             onApply = { template ->
                 vm.applyStepTemplate(template, focusedStepIndex, stepModeEnabled)
@@ -493,9 +494,9 @@ fun NewDishScreen(
                 }
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             },
-            onSaveCurrent = { name ->
-                vm.saveCurrentStepsAsTemplate(name)
-                Toast.makeText(context, "已存为步骤模板「$name」", Toast.LENGTH_SHORT).show()
+            onCreate = { name, texts ->
+                vm.createStepTemplate(name, texts)
+                Toast.makeText(context, "已保存步骤模板「$name」", Toast.LENGTH_SHORT).show()
             },
             onDelete = { id -> vm.deleteStepTemplate(id) },
             onDismiss = { stepTemplateSheetOpen = false },
@@ -665,17 +666,26 @@ private fun OperationStepsEditor(
 @Composable
 private fun IngredientGroupPickerDialog(
     groups: List<com.sxdbsm.cookbook.domain.model.IngredientGroup>,
-    canSaveCurrent: Boolean,
+    currentItems: List<String>, // [AI修改] bug2：当前菜的食材名，"+添加"编辑器预填
     onApply: (com.sxdbsm.cookbook.domain.model.IngredientGroup) -> Unit,
-    onSaveCurrent: (String) -> Unit,
+    onCreate: (String, List<String>) -> Unit, // [AI修改] bug2：编辑器保存(名称, 食材名列表)
     onDelete: (Long) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var saveNameOpen by remember { mutableStateOf(false) }
-    var newName by remember { mutableStateOf("") }
+    var editorOpen by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("常用配料组") },
+        // [AI修改] bug2：标题右侧常驻"+添加"——点开编辑器(有当前食材则带过来、没有则新增)。
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("常用配料组", modifier = Modifier.weight(1f))
+                TextButton(onClick = { editorOpen = true }) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(2.dp))
+                    Text("添加")
+                }
+            }
+        },
         text = {
             LazyColumn(
                 modifier = Modifier.heightIn(max = 420.dp),
@@ -710,37 +720,19 @@ private fun IngredientGroupPickerDialog(
                         }
                     }
                 }
-                if (canSaveCurrent) {
-                    item {
-                        OutlinedButton(onClick = { newName = ""; saveNameOpen = true }, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("把当前食材存为配料组")
-                        }
-                    }
-                }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
     )
 
-    if (saveNameOpen) {
-        AlertDialog(
-            onDismissRequest = { saveNameOpen = false },
-            title = { Text("存为配料组") },
-            text = {
-                OutlinedTextField(
-                    value = newName,
-                    onValueChange = { newName = it },
-                    singleLine = true,
-                    label = { Text("配料组名（如 我的火锅调料）") },
-                    shape = MaterialTheme.shapes.medium,
-                )
-            },
-            confirmButton = {
-                TextButton(enabled = newName.isNotBlank(), onClick = { onSaveCurrent(newName.trim()); saveNameOpen = false }) { Text("保存") }
-            },
-            dismissButton = { TextButton(onClick = { saveNameOpen = false }) { Text("取消") } },
+    if (editorOpen) {
+        TemplateItemsEditorDialog(
+            title = "新建配料组",
+            nameLabel = "配料组名（如 我的火锅调料）",
+            itemLabel = "食材",
+            initialItems = currentItems,
+            onSave = { name, items -> onCreate(name, items) },
+            onDismiss = { editorOpen = false },
         )
     }
 }
@@ -754,18 +746,27 @@ private fun IngredientGroupPickerDialog(
 @Composable
 private fun StepTemplatePickerDialog(
     templates: List<com.sxdbsm.cookbook.domain.model.StepTemplate>,
-    canSaveCurrent: Boolean,
+    currentItems: List<String>, // [AI修改] bug2：当前菜的步骤文字，"+添加"编辑器预填
     multiStep: Boolean, // [AI生成] #2 来自"我的-功能设置-分步执行"：开=分步插入，关=合并一条
     onApply: (com.sxdbsm.cookbook.domain.model.StepTemplate) -> Unit,
-    onSaveCurrent: (String) -> Unit,
+    onCreate: (String, List<String>) -> Unit, // [AI修改] bug2：编辑器保存(名称, 步骤文字列表)
     onDelete: (Long) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var saveNameOpen by remember { mutableStateOf(false) }
-    var newName by remember { mutableStateOf("") }
+    var editorOpen by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("选择步骤模板") },
+        // [AI修改] bug2：标题右侧常驻"+添加"——点开编辑器(有当前步骤则带过来、没有则新增)。
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text("选择步骤模板", modifier = Modifier.weight(1f))
+                TextButton(onClick = { editorOpen = true }) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(2.dp))
+                    Text("添加")
+                }
+            }
+        },
         text = {
             LazyColumn(
                 modifier = Modifier.heightIn(max = 420.dp),
@@ -816,42 +817,88 @@ private fun StepTemplatePickerDialog(
                         }
                     }
                 }
-                if (canSaveCurrent) {
-                    item {
-                        OutlinedButton(onClick = { newName = ""; saveNameOpen = true }, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("把当前步骤存为模板")
-                        }
-                    }
-                }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
     )
 
-    if (saveNameOpen) {
-        AlertDialog(
-            onDismissRequest = { saveNameOpen = false },
-            title = { Text("存为步骤模板") },
-            text = {
-                OutlinedTextField(
-                    value = newName,
-                    onValueChange = { newName = it },
-                    singleLine = true,
-                    label = { Text("模板名（如 我的红烧做法）") },
-                    shape = MaterialTheme.shapes.medium,
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    enabled = newName.isNotBlank(),
-                    onClick = { onSaveCurrent(newName.trim()); saveNameOpen = false },
-                ) { Text("保存") }
-            },
-            dismissButton = { TextButton(onClick = { saveNameOpen = false }) { Text("取消") } },
+    if (editorOpen) {
+        TemplateItemsEditorDialog(
+            title = "新建步骤模板",
+            nameLabel = "模板名（如 我的红烧做法）",
+            itemLabel = "步骤",
+            initialItems = currentItems, // 有当前步骤则带过来，没有则空(新增)
+            onSave = { name, items -> onCreate(name, items) },
+            onDismiss = { editorOpen = false },
         )
     }
+}
+
+/**
+ * 模板/配料组编辑器弹框。[AI生成] bug2
+ *
+ * 名称 + 可增删的文字项列表(步骤文字 / 食材名)。有当前内容则预填(带过来)、否则空白新增。
+ */
+@Composable
+private fun TemplateItemsEditorDialog(
+    title: String,
+    nameLabel: String,
+    itemLabel: String,
+    initialItems: List<String>,
+    onSave: (String, List<String>) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var name by remember { mutableStateOf("") }
+    // 预填当前内容；为空时给一行空输入。
+    val items = remember { mutableStateListOf<String>().apply { addAll(initialItems.ifEmpty { listOf("") }) } }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            LazyColumn(modifier = Modifier.heightIn(max = 420.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        singleLine = true,
+                        label = { Text(nameLabel) },
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                itemsIndexed(items) { index, value ->
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = value,
+                            onValueChange = { items[index] = it },
+                            singleLine = true,
+                            label = { Text("$itemLabel ${index + 1}") },
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(onClick = { if (items.size > 1) items.removeAt(index) else items[index] = "" }) {
+                            Icon(Icons.Outlined.Close, contentDescription = "删除", modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+                item {
+                    OutlinedButton(onClick = { items.add("") }, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("添加一$itemLabel")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            val valid = name.isNotBlank() && items.any { it.isNotBlank() }
+            TextButton(enabled = valid, onClick = {
+                onSave(name.trim(), items.map { it.trim() }.filter { it.isNotBlank() })
+                onDismiss()
+            }) { Text("保存") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
+    )
 }
 
 /**

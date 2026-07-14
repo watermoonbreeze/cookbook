@@ -322,16 +322,14 @@ class NewDishViewModel(
         }
     }
 
-    /** 把当前食材清单存为一个自建配料组。[AI生成] B5 */
-    fun saveCurrentIngredientsAsGroup(name: String) {
-        val items = _state.value.ingredients.map {
-            com.sxdbsm.cookbook.domain.model.IngredientGroupItem(it.ingredient.name, it.isMain)
-        }
+    /** 按编辑器给定的食材名列表创建配料组(bug2：弹层"+添加"编辑后保存)。[AI生成] */
+    fun createIngredientGroup(name: String, names: List<String>) {
+        val items = names.map { com.sxdbsm.cookbook.domain.model.IngredientGroupItem(it.trim()) }.filter { it.name.isNotBlank() }
         if (name.isBlank() || items.isEmpty()) return
         viewModelScope.launch {
             runCatching { ingredientGroupRepo.createGroup(name, items) }
                 .onSuccess { loadIngredientGroups() }
-                .onFailure { AppLogger.d(TAG, "save ingredient group failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "create ingredient group failed: ${it.message}") }
         }
     }
 
@@ -485,18 +483,17 @@ class NewDishViewModel(
         )
     }
 
-    /**
-     * 把当前步骤(非空文字)存为一个自建模板，成功后刷新模板列表。[AI生成]
-     */
-    fun saveCurrentStepsAsTemplate(name: String) {
-        val texts = _state.value.steps.map { it.text.trim() }.filter { it.isNotBlank() }
-        if (name.isBlank() || texts.isEmpty()) return
+    /** 按编辑器给定的步骤文字列表创建模板(bug2：弹层"+添加"编辑后保存)。[AI生成] */
+    fun createStepTemplate(name: String, texts: List<String>) {
+        val clean = texts.map { it.trim() }.filter { it.isNotBlank() }
+        if (name.isBlank() || clean.isEmpty()) return
         viewModelScope.launch {
-            runCatching { stepTemplateRepo.createTemplate(name, texts) }
+            runCatching { stepTemplateRepo.createTemplate(name, clean) }
                 .onSuccess { loadStepTemplates() }
-                .onFailure { AppLogger.d(TAG, "save step template failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "create step template failed: ${it.message}") }
         }
     }
+
 
     /** 删除自建步骤模板。[AI生成] */
     fun deleteStepTemplate(id: Long) {
