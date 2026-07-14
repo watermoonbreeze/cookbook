@@ -108,7 +108,11 @@ fun MainScaffold(
         NavHost(
             navController = nav,
             startDestination = Routes.HOME,
-            modifier = Modifier.padding(padding),
+            // [AI修改] 沉浸式布局下，全屏页面(无底部导航栏)内容会伸到系统导航栏下被遮挡——
+            // 统一给无底部栏路由补系统导航栏 inset 底padding；Tab 页由 NavigationBar 自身避让。
+            modifier = Modifier
+                .padding(padding)
+                .then(if (showBottomBar) Modifier else Modifier.navigationBarsPadding()),
         ) {
             composable(Routes.HOME) {
                 HomeScreen(
