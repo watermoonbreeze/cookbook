@@ -498,6 +498,13 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             "基础调料包" to listOf("盐" to false, "生抽" to false, "食用油" to false),
             "葱姜蒜" to listOf("葱" to false, "姜" to false, "蒜" to false),
             "红烧料" to listOf("生抽" to false, "老抽" to false, "冰糖" to false, "料酒" to false, "八角" to false),
+            // [AI生成] Phase3：从用户私人菜单沉淀的高频味型组合。
+            "葱姜蒜辣" to listOf("葱" to false, "姜" to false, "蒜" to false, "小米辣" to false),
+            "樟树椒洋葱香菜" to listOf("樟树椒" to true, "洋葱" to true, "香菜" to false),
+            "凉拌汁" to listOf("大蒜" to false, "生抽" to false, "香醋" to false, "芝麻油" to false),
+            "酸菜鱼料" to listOf("酸菜" to true, "泡椒" to false, "泡姜" to false, "花椒" to false, "小米辣" to false),
+            "水煮料" to listOf("花椒" to false, "干辣椒" to false, "豆瓣酱" to false),
+            "煎肉香料" to listOf("洋葱" to true, "迷迭香" to false, "黑胡椒粉" to false),
         )
     }
 
