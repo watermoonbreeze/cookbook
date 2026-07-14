@@ -307,7 +307,7 @@ private fun BottomBar(nav: NavController, currentRoute: String?, onAddMeal: () -
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 2.dp,
-        modifier = Modifier.clip(MaterialTheme.shapes.extraSmall), // [AI修改] 顶部/底部导航按规范保持 4dp 小圆角。
+        // [AI修改] 沉浸式：去掉圆角裁剪，让底栏背景铺满到屏幕底边(延伸到系统导航栏下)，内容由默认 navigationBars inset 顶上去。
     ) {
         bottomTabs.take(2).forEach { tab ->
             NavigationBarItem(
