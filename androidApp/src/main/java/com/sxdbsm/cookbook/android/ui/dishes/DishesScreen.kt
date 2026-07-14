@@ -2,8 +2,8 @@ package com.sxdbsm.cookbook.android.ui.dishes
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.rememberScrollState
@@ -35,8 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -50,7 +48,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -87,7 +84,6 @@ fun DishesScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
-    var pullDistance by remember { mutableStateOf(0f) }
     val hotRankById = remember(ui.popular) {
         // [AI修改] 热度前3取自全局 popular(preference DESC)，而非受"最近30/筛选"缩窄的 ui.all，保持全局语义。
         ui.popular
@@ -163,34 +159,11 @@ fun DishesScreen(
         Box(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
-                .pointerInput(ui.refreshing, listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) {
-                    detectVerticalDragGestures(
-                        onDragEnd = {
-                            if (pullDistance > 80f && !ui.refreshing) vm.refresh()
-                            pullDistance = 0f
-                        },
-                        onDragCancel = { pullDistance = 0f },
-                    ) { _, dragAmount ->
-                        val atTop = listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
-                        if (atTop && dragAmount > 0f) pullDistance += dragAmount
-                    }
-                },
+                .fillMaxSize(),
         ) {
             Column(Modifier.fillMaxSize()) {
-                val refreshText = when {
-                    ui.refreshing -> "刷新中..."
-                    pullDistance > 80f -> "松开刷新"
-                    else -> "下拉刷新"
-                }
-                Text(
-                    text = refreshText,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().height(24.dp).padding(top = 4.dp),
-                )
-                // [AI修改] 苹果风格：一级分类改用 segmented control(最近/喜爱/菜系/家庭)。
+                Spacer(Modifier.height(4.dp))
+                // [AI修改] 苹果风格：一级分类改用 segmented control(最近/喜爱/菜系/家庭)；移除坏掉的下拉刷新(靠返回页自动刷新)。
                 val sortTabs = listOf(
                     DishesSortTab.RECENT to "最近",
                     DishesSortTab.FAVORITE to "喜爱",
@@ -202,6 +175,19 @@ fun DishesScreen(
                     selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
                     onSelect = { idx -> vm.setSortTab(sortTabs[idx].first) },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                )
+                // [AI修改] 菜品档个数移到 segmented 下方一行(原在 Tab 文字里，改 segmented 后放这里)。
+                val tabCount = when (ui.sortTab) {
+                    DishesSortTab.RECENT -> ui.recentCount
+                    DishesSortTab.FAVORITE -> ui.favoriteCount
+                    DishesSortTab.ALL -> ui.allCount
+                    DishesSortTab.HOME -> ui.homeCount
+                }
+                Text(
+                    "共 $tabCount 道",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp, bottom = 4.dp),
                 )
 
                 Box(Modifier.weight(1f).fillMaxSize()) {

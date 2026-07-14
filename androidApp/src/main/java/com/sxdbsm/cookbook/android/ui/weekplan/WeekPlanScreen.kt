@@ -18,6 +18,9 @@ import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +53,7 @@ fun WeekPlanScreen(
     vm: WeekPlanViewModel = koinViewModel(),
 ) {
     val ui by vm.uiState.collectAsStateWithLifecycle()
+    var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除日期(确认)
 
     Scaffold(
         topBar = {
@@ -113,6 +117,7 @@ fun WeekPlanScreen(
                                 onDishClick = { dish -> onOpenDish(dish.id) },
                                 onEditClick = { onEditMealDate(day.date) },
                                 onCopyClick = { onCopyMeal(day.date) },
+                                onDeleteClick = { deleteDate = day.date }, // [AI修改] 补删除入口
                             )
                         }
                     }
@@ -120,6 +125,20 @@ fun WeekPlanScreen(
                 item { Spacer(Modifier.height(60.dp)) }
             }
         }
+    }
+
+    deleteDate?.let { date ->
+        AlertDialog(
+            onDismissRequest = { deleteDate = null },
+            title = { Text("删除餐食") },
+            text = { Text("确认删除 ${weekdayLabel(date)} 的全部餐食？") },
+            confirmButton = {
+                TextButton(onClick = { vm.deleteDay(date); deleteDate = null }) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = { deleteDate = null }) { Text("取消") } },
+        )
     }
 }
 

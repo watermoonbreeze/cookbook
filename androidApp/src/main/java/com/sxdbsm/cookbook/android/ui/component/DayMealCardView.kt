@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -48,76 +49,88 @@ fun DayMealCardView(
         color = containerColor,
         tonalElevation = 0.dp,
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // [AI修改] 日期标题行：根据 today/plan 状态展示不同提示。
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = formatDate(data),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(Modifier.width(8.dp))
-                when {
-                    data.isToday -> Text(
-                        "· 今天",
-                        style = MaterialTheme.typography.labelMedium,
+        // [AI修改] 苹果风格：左内容 + 右侧竖排操作(复制/编辑/删除，图标在上文字在下)。
+        Row(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
+                // 日期标题行：根据 today/plan 状态展示不同提示。
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = formatDate(data),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    when {
+                        data.isToday -> Text(
+                            "· 今天",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        data.isPlanState -> Text(
+                            "· 计划 📌",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+                if (data.meals.isEmpty()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "(空) 还没记录",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    data.isPlanState -> Text(
-                        "· 计划 📌",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                if (onCopyClick != null && data.meals.isNotEmpty()) {
-                    IconButton(onClick = onCopyClick, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            Icons.Outlined.ContentCopy,
-                            contentDescription = "复用餐食",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
-                if (onEditClick != null) {
-                    IconButton(onClick = onEditClick, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            Icons.Outlined.Edit,
-                            contentDescription = "编辑餐食",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
-                if (onDeleteClick != null && data.meals.isNotEmpty()) {
-                    IconButton(onClick = onDeleteClick, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            Icons.Outlined.Delete,
-                            contentDescription = "删除该日餐食",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(18.dp),
-                        )
+                } else {
+                    data.meals.forEach { section ->
+                        Spacer(Modifier.height(8.dp))
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                        Spacer(Modifier.height(8.dp))
+                        MealSectionRow(section = section, onDishClick = onDishClick)
                     }
                 }
             }
-            if (data.meals.isEmpty()) {
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "(空) 还没记录",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else {
-                data.meals.forEach { section ->
-                    Spacer(Modifier.height(8.dp))
-                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(Modifier.height(8.dp))
-                    MealSectionRow(section = section, onDishClick = onDishClick)
+            // [AI修改] 右侧竖排操作列：图标+文字，从上到下 复制/编辑/删除。
+            val hasAction = (onCopyClick != null && data.meals.isNotEmpty()) || onEditClick != null || (onDeleteClick != null && data.meals.isNotEmpty())
+            if (hasAction) {
+                Column(
+                    modifier = Modifier.padding(start = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    if (onCopyClick != null && data.meals.isNotEmpty()) {
+                        CardActionButton(Icons.Outlined.ContentCopy, "复制", MaterialTheme.colorScheme.primary, onCopyClick)
+                    }
+                    if (onEditClick != null) {
+                        CardActionButton(Icons.Outlined.Edit, "编辑", MaterialTheme.colorScheme.primary, onEditClick)
+                    }
+                    if (onDeleteClick != null && data.meals.isNotEmpty()) {
+                        CardActionButton(Icons.Outlined.Delete, "删除", MaterialTheme.colorScheme.error, onDeleteClick)
+                    }
                 }
             }
         }
+    }
+}
+
+/** 卡片右侧竖排操作按钮：图标在上、文字在下。[AI生成] */
+@Composable
+private fun CardActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    tint: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .clickable { onClick() }
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Icon(icon, contentDescription = label, tint = tint, modifier = Modifier.size(20.dp))
+        Text(label, style = MaterialTheme.typography.labelSmall, color = tint)
     }
 }
 

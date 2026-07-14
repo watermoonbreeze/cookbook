@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.android.ui.weekplan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.util.DateTime
@@ -59,4 +60,9 @@ class WeekPlanViewModel(
     fun prevWeek() { _weekStart.value = DateTime.plusDays(_weekStart.value, -7) }
     fun nextWeek() { _weekStart.value = DateTime.plusDays(_weekStart.value, 7) }
     fun thisWeek() { _weekStart.value = mondayOf(today) }
+
+    /** 删除某天全部餐食。[AI生成] */
+    fun deleteDay(date: LocalDate) {
+        viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }
+    }
 }
