@@ -49,6 +49,7 @@ data class NewDishUiState(
 
     val availableUnits: List<MeasurementUnit> = emptyList(), // [AI修改] 食材用量单位下拉列表。
     val stepTemplates: List<com.sxdbsm.cookbook.domain.model.StepTemplate> = emptyList(), // [AI生成] #2 "选择步骤"可套用的步骤模板(预设+自建)。
+    val ingredientGroups: List<com.sxdbsm.cookbook.domain.model.IngredientGroup> = emptyList(), // [AI生成] B5 "配料组"可一键加入的常用食材组。
 )
 
 /**
@@ -62,6 +63,7 @@ class NewDishViewModel(
     @Suppress("unused") private val categoryRepo: FoodCategoryRepository,
     @Suppress("unused") private val pref: com.sxdbsm.cookbook.data.repository.PreferenceRepository,
     private val stepTemplateRepo: com.sxdbsm.cookbook.data.repository.StepTemplateRepository, // [AI生成] #2 步骤模板
+    private val ingredientGroupRepo: com.sxdbsm.cookbook.data.repository.IngredientGroupRepository, // [AI生成] B5 配料组
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
@@ -297,6 +299,49 @@ class NewDishViewModel(
                 unitId = gram?.id ?: ingredient.defaultUnitId,
             ),
         )
+    }
+
+    // ========== B5 常用配料组 ==========
+
+    /** 加载可用配料组(预设+自建)。[AI生成] B5 */
+    fun loadIngredientGroups() {
+        viewModelScope.launch {
+            runCatching { ingredientGroupRepo.listGroups() }
+                .onSuccess { _state.value = _state.value.copy(ingredientGroups = it) }
+                .onFailure { AppLogger.d(TAG, "load ingredient groups failed: ${it.message}") }
+        }
+    }
+
+    /** 套用配料组：把组内食材(按名解析/兜底建)加入食材清单(已存在的跳过)。[AI生成] B5 */
+    fun applyIngredientGroup(group: com.sxdbsm.cookbook.domain.model.IngredientGroup) {
+        viewModelScope.launch {
+            group.items.forEach { item ->
+                val id = runCatching { ingredientRepo.createUserIngredient(item.name) }.getOrNull() ?: return@forEach
+                addIngredient(Ingredient(id = id, name = item.name))
+            }
+        }
+    }
+
+    /** 把当前食材清单存为一个自建配料组。[AI生成] B5 */
+    fun saveCurrentIngredientsAsGroup(name: String) {
+        val items = _state.value.ingredients.map {
+            com.sxdbsm.cookbook.domain.model.IngredientGroupItem(it.ingredient.name, it.isMain)
+        }
+        if (name.isBlank() || items.isEmpty()) return
+        viewModelScope.launch {
+            runCatching { ingredientGroupRepo.createGroup(name, items) }
+                .onSuccess { loadIngredientGroups() }
+                .onFailure { AppLogger.d(TAG, "save ingredient group failed: ${it.message}") }
+        }
+    }
+
+    /** 删除自建配料组。[AI生成] B5 */
+    fun deleteIngredientGroup(id: Long) {
+        viewModelScope.launch {
+            runCatching { ingredientGroupRepo.deleteGroup(id) }
+                .onSuccess { loadIngredientGroups() }
+                .onFailure { AppLogger.d(TAG, "delete ingredient group failed: ${it.message}") }
+        }
     }
 
     /** 调整某食材克数(±，最小0)。[AI生成] #55 剂量 −N+，步进 5g。 */

@@ -49,6 +49,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         ensureFlexibleSnackMealType() // [AI修改] 兼容旧库：补充“加餐”餐次，供添加餐食页按需手动选择时间。
         if (q.countDishTags().executeAsOne() == 0L) seedDishTags(now)
         seedStepTemplates(now) // [AI生成] #2 预设步骤模板：按名幂等补齐(缺则补，不覆盖用户改动)。
+        seedIngredientGroups(now) // [AI生成] B5 预设配料组：按名幂等补齐。
         // [AI修改] 按具体 key 判断而非表是否为空：user_preferences 现在还会存 seed 元数据 key（指纹/清洗标记），
         // 不能再用 countUserPreferences==0 守卫，否则用户默认偏好会被漏写。
         if (q.selectPreference(PreferenceKeys.THEME_MODE).executeAsOneOrNull() == null) seedUserPreferences(now)
@@ -184,6 +185,23 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             val templateId = q.lastInsertId().executeAsOne()
             steps.forEachIndexed { index, text ->
                 q.insertStepTemplateItem(templateId, index.toLong(), text)
+            }
+        }
+    }
+
+    /**
+     * 预设常用配料组。[AI生成] B5
+     *
+     * 按名幂等：已存在则跳过，不覆盖用户改动。食材名须是预设/已存在食材(应用时按名解析，缺则兜底建)。
+     */
+    private fun seedIngredientGroups(now: Long) {
+        val q = db.cookbookQueries
+        PRESET_INGREDIENT_GROUPS.forEach { (name, items) ->
+            if (q.selectIngredientGroupByName(name).executeAsOneOrNull() != null) return@forEach
+            q.insertIngredientGroup(name, "preset", now)
+            val groupId = q.lastInsertId().executeAsOne()
+            items.forEachIndexed { index, (ingName, isMain) ->
+                q.insertIngredientGroupItem(groupId, ingName, if (isMain) 1L else 0L, index.toLong())
             }
         }
     }
@@ -397,6 +415,13 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             "红烧" to listOf("主料焯水或煎至上色", "起锅炒香配料（可炒糖色）", "下主料翻炒，加水与调料", "小火焖煮至软烂", "大火收汁出锅"),
             "煲汤" to listOf("食材焯水去腥", "冷水下锅，放姜片", "大火烧开转小火慢炖", "出锅前加盐调味"),
             "凉拌" to listOf("食材焯水或洗净切好", "调味汁：蒜末、生抽、醋、香油等", "食材与料汁拌匀", "腌几分钟入味即可"),
+        )
+
+        // [AI生成] B5 预设配料组：(食材名, 是否主料)。名字用常见调料/香辛料(应用时按名解析，缺则兜底建为自建食材)。
+        val PRESET_INGREDIENT_GROUPS: List<Pair<String, List<Pair<String, Boolean>>>> = listOf(
+            "基础调料包" to listOf("盐" to false, "生抽" to false, "食用油" to false),
+            "葱姜蒜" to listOf("葱" to false, "姜" to false, "蒜" to false),
+            "红烧料" to listOf("生抽" to false, "老抽" to false, "冰糖" to false, "料酒" to false, "八角" to false),
         )
     }
 

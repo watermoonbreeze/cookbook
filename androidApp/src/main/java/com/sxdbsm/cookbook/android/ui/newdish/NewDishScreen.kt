@@ -64,6 +64,7 @@ fun NewDishScreen(
     var cookingMethodDialogOpen by remember { mutableStateOf(false) }
     var cookingMethodDraft by remember { mutableStateOf("") }
     var stepTemplateSheetOpen by remember { mutableStateOf(false) } // [AI生成] #2 "选择步骤"模板弹层开关
+    var ingredientGroupSheetOpen by remember { mutableStateOf(false) } // [AI生成] B5 "配料组"弹层开关
     var focusedStepIndex by remember { mutableStateOf<Int?>(null) } // [AI生成] #2 当前定位(聚焦)的步骤下标：模板插入到这一步
     var duplicateIngredientNames by remember { mutableStateOf<List<String>>(emptyList()) } // [AI生成] 选择食材后用于提示已存在的食材名称。
     var pendingNewIngredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) } // [AI生成] 用户确认重复提示后实际追加的新增食材。
@@ -246,7 +247,16 @@ fun NewDishScreen(
             // [AI修改] #3：自建/编辑菜品不再提供菜系选择——菜系是预设菜的分类维度，用户自建菜不纳入。
             // DB 的 cuisine 列与预设菜的菜系保留不变；编辑预设菜时其原菜系原样带回保存(state.cuisine 不动)。
 
-            FormFieldLabel("食材清单")
+            // [AI修改] B5：食材清单标题右侧加"配料组"入口——套用常用配料组(如基础调料包)一键加入。
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                FormFieldLabel("食材清单")
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { vm.loadIngredientGroups(); ingredientGroupSheetOpen = true }) {
+                    Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("配料组")
+                }
+            }
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
@@ -448,6 +458,21 @@ fun NewDishScreen(
         )
     }
 
+    if (ingredientGroupSheetOpen) {
+        IngredientGroupPickerDialog(
+            groups = state.ingredientGroups,
+            canSaveCurrent = state.ingredients.isNotEmpty(),
+            onApply = { group ->
+                vm.applyIngredientGroup(group)
+                ingredientGroupSheetOpen = false
+                Toast.makeText(context, "已加入「${group.name}」的 ${group.items.size} 味配料", Toast.LENGTH_SHORT).show()
+            },
+            onSaveCurrent = { name -> vm.saveCurrentIngredientsAsGroup(name) },
+            onDelete = { id -> vm.deleteIngredientGroup(id) },
+            onDismiss = { ingredientGroupSheetOpen = false },
+        )
+    }
+
     if (stepTemplateSheetOpen) {
         StepTemplatePickerDialog(
             templates = state.stepTemplates,
@@ -621,6 +646,94 @@ private fun OperationStepsEditor(
             Spacer(Modifier.width(4.dp))
             Text("添加步骤", color = MaterialTheme.colorScheme.tertiary)
         }
+    }
+}
+
+/**
+ * 常用配料组弹框。[AI生成] B5
+ *
+ * 列出预设+自建配料组，"应用"把组内食材加入食材清单(按名解析)；自建可删；也可把当前食材存为配料组。
+ */
+@Composable
+private fun IngredientGroupPickerDialog(
+    groups: List<com.sxdbsm.cookbook.domain.model.IngredientGroup>,
+    canSaveCurrent: Boolean,
+    onApply: (com.sxdbsm.cookbook.domain.model.IngredientGroup) -> Unit,
+    onSaveCurrent: (String) -> Unit,
+    onDelete: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var saveNameOpen by remember { mutableStateOf(false) }
+    var newName by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("常用配料组") },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 420.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                if (groups.isEmpty()) {
+                    item { Text("还没有配料组", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium) }
+                }
+                items(groups, key = { it.id }) { g ->
+                    OutlinedCard(shape = MaterialTheme.shapes.medium) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                Text(g.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                                if (g.isPreset) {
+                                    AssistChip(onClick = {}, label = { Text("预设") }, modifier = Modifier.height(28.dp))
+                                } else {
+                                    IconButton(onClick = { onDelete(g.id) }, modifier = Modifier.size(28.dp)) {
+                                        Icon(Icons.Outlined.Close, contentDescription = "删除配料组", modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            Text(g.items.joinToString("、") { it.name }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(Modifier.height(6.dp))
+                            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                                TextButton(onClick = { onApply(g) }) {
+                                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("加入")
+                                }
+                            }
+                        }
+                    }
+                }
+                if (canSaveCurrent) {
+                    item {
+                        OutlinedButton(onClick = { newName = ""; saveNameOpen = true }, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("把当前食材存为配料组")
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+    )
+
+    if (saveNameOpen) {
+        AlertDialog(
+            onDismissRequest = { saveNameOpen = false },
+            title = { Text("存为配料组") },
+            text = {
+                OutlinedTextField(
+                    value = newName,
+                    onValueChange = { newName = it },
+                    singleLine = true,
+                    label = { Text("配料组名（如 我的火锅调料）") },
+                    shape = MaterialTheme.shapes.medium,
+                )
+            },
+            confirmButton = {
+                TextButton(enabled = newName.isNotBlank(), onClick = { onSaveCurrent(newName.trim()); saveNameOpen = false }) { Text("保存") }
+            },
+            dismissButton = { TextButton(onClick = { saveNameOpen = false }) { Text("取消") } },
+        )
     }
 }
 

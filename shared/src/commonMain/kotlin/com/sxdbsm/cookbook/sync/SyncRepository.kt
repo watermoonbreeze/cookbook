@@ -7,6 +7,8 @@ import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.StepTemplateRepository
+import com.sxdbsm.cookbook.data.repository.IngredientGroupRepository
+import com.sxdbsm.cookbook.domain.model.IngredientGroupItem
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.DishStep
@@ -38,6 +40,7 @@ class SyncRepository(
     private val favoriteRepo: FavoriteComboRepository,
     private val mealRepo: MealRecordRepository,
     private val stepTemplateRepo: StepTemplateRepository, // [AI生成] #2 自建步骤模板同步
+    private val ingredientGroupRepo: IngredientGroupRepository, // [AI生成] B5 自建配料组同步
 ) {
     private val q = db.cookbookQueries
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = false }
@@ -103,6 +106,11 @@ class SyncRepository(
             stepTemplateRepo.listTemplates().filter { it.source != "preset" }
                 .map { SyncStepTemplate(name = it.name, steps = it.steps) }
         } else emptyList()
+        // [AI生成] B5 自建配料组随菜品域一起同步(预设两端 seed 一致、不带)。
+        val ingredientGroups = if (exportDishes) {
+            ingredientGroupRepo.listGroups().filter { it.source != "preset" }
+                .map { g -> SyncIngredientGroup(name = g.name, items = g.items.map { SyncIngredientGroupItem(it.name, it.isMain) }) }
+        } else emptyList()
         SyncBundle(
             schemaVersion = CookbookDatabase.Schema.version.toInt(),
             ingredients = syncIngredients,
@@ -112,6 +120,7 @@ class SyncRepository(
             favorites = favorites,
             meals = meals,
             stepTemplates = stepTemplates,
+            ingredientGroups = ingredientGroups,
         )
     }
 
@@ -252,10 +261,23 @@ class SyncRepository(
             }
         }
 
+        // 配料组：同名跳过，缺则新建为自建。
+        var groupAdded = 0
+        if (bundle.ingredientGroups.isNotEmpty()) {
+            val existingNames = ingredientGroupRepo.listGroups().map { it.name.trim() }.toSet()
+            for (g in bundle.ingredientGroups) {
+                val gname = g.name.trim()
+                val items = g.items.map { IngredientGroupItem(it.name.trim(), it.isMain) }.filter { it.name.isNotBlank() }
+                if (gname.isEmpty() || items.isEmpty() || gname in existingNames) continue
+                ingredientGroupRepo.createGroup(gname, items)
+                groupAdded++
+            }
+        }
+
         SyncImportResult(
             ingredientsAdded = ingAdded, dishesAdded = dishAdded, dishesUpdated = dishUpdated,
             pantryMerged = pantryMerged, healthMerged = healthMerged, favoritesAdded = favAdded, mealsMerged = mealsMerged,
-            stepTemplatesAdded = stepTplAdded,
+            stepTemplatesAdded = stepTplAdded, ingredientGroupsAdded = groupAdded,
         )
     }
 }

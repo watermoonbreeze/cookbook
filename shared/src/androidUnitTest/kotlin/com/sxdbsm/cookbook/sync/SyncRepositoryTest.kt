@@ -32,6 +32,7 @@ class SyncRepositoryTest {
         HealthProfileRepository(db), FavoriteComboRepository(db, DishRepository(db)),
         com.sxdbsm.cookbook.data.repository.MealRecordRepository(db),
         com.sxdbsm.cookbook.data.repository.StepTemplateRepository(db),
+        com.sxdbsm.cookbook.data.repository.IngredientGroupRepository(db),
     )
 
     private fun seedSource(db: com.sxdbsm.cookbook.db.CookbookDatabase) = runBlocking {

@@ -24,6 +24,7 @@ data class SyncBundle(
     val favorites: List<SyncFavorite> = emptyList(), // P2 收藏组合
     val meals: List<SyncMeal> = emptyList(), // P3 餐食历史
     val stepTemplates: List<SyncStepTemplate> = emptyList(), // [AI生成] #2 自建操作步骤模板(随菜品域一起同步)
+    val ingredientGroups: List<SyncIngredientGroup> = emptyList(), // [AI生成] B5 自建配料组(随菜品域一起同步)
 )
 
 /** 自建操作步骤模板(合并键=name；仅文字步骤)。[AI生成] #2 */
@@ -31,6 +32,19 @@ data class SyncBundle(
 data class SyncStepTemplate(
     val name: String,
     val steps: List<String> = emptyList(),
+)
+
+/** 自建配料组(合并键=name；食材按名)。[AI生成] B5 */
+@Serializable
+data class SyncIngredientGroup(
+    val name: String,
+    val items: List<SyncIngredientGroupItem> = emptyList(),
+)
+
+@Serializable
+data class SyncIngredientGroupItem(
+    val name: String,
+    val isMain: Boolean = false,
 )
 
 /** 要同步的数据域选择。[AI生成] 选某域自动带依赖(库存/收藏/餐食→其食材/菜品)。 */
@@ -122,4 +136,5 @@ data class SyncImportResult(
     val favoritesAdded: Int = 0,
     val mealsMerged: Int = 0,
     val stepTemplatesAdded: Int = 0, // [AI生成] #2 新增的自建步骤模板数
+    val ingredientGroupsAdded: Int = 0, // [AI生成] B5 新增的自建配料组数
 )

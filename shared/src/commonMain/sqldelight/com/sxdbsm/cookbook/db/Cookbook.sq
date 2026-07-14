@@ -271,6 +271,27 @@ CREATE TABLE dish_favorite (
     created_at INTEGER NOT NULL
 );
 
+-- [AI生成] B5：常用配料组(如"基础调料包"=葱姜蒜盐生抽油)，编辑菜品"配料组"一键加入食材清单，降录入成本。
+-- 存食材名(按名解析/兜底建，同步友好)；source=preset/user。
+CREATE TABLE ingredient_group (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE ingredient_group_item (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER NOT NULL REFERENCES ingredient_group(id) ON DELETE CASCADE,
+    ingredient_name TEXT NOT NULL,
+    is_main INTEGER NOT NULL DEFAULT 0,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_ingredient_group_item_order ON ingredient_group_item(group_id, sort_order, id);
+
 -- ========== 用户偏好与档案 ==========
 
 CREATE TABLE user_preferences (
@@ -1220,6 +1241,31 @@ DELETE FROM dish_favorite WHERE dish_id = ?;
 
 selectFavoriteDishIds:
 SELECT dish_id FROM dish_favorite;
+
+-- ===== ingredient_group（常用配料组）B5 =====
+
+insertIngredientGroup:
+INSERT INTO ingredient_group(name, source, created_at, status) VALUES (?, ?, ?, 1);
+
+selectIngredientGroupByName:
+SELECT * FROM ingredient_group WHERE name = ? AND status = 1 LIMIT 1;
+
+selectIngredientGroups:
+SELECT * FROM ingredient_group WHERE status = 1
+ORDER BY CASE source WHEN 'preset' THEN 0 ELSE 1 END, created_at ASC, id ASC;
+
+deleteIngredientGroup:
+UPDATE ingredient_group SET status = 0 WHERE id = ?;
+
+insertIngredientGroupItem:
+INSERT INTO ingredient_group_item(group_id, ingredient_name, is_main, sort_order, status) VALUES (?, ?, ?, ?, 1);
+
+selectIngredientGroupItems:
+SELECT ingredient_name, is_main FROM ingredient_group_item WHERE group_id = ? AND status = 1
+ORDER BY sort_order ASC, id ASC;
+
+deleteIngredientGroupItems:
+UPDATE ingredient_group_item SET status = 0 WHERE group_id = ?;
 
 -- ===== step_template（操作步骤模板）=====
 
