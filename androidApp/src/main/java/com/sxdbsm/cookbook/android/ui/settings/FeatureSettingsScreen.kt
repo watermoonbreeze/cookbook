@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +13,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -40,6 +44,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FeatureSettingsScreen(
     onBack: () -> Unit,
+    onOpenFamily: () -> Unit = {},
     vm: FeatureSettingsViewModel = koinViewModel(),
 ) {
     val stepMode by vm.stepModeEnabled.collectAsStateWithLifecycle()
@@ -69,7 +74,8 @@ fun FeatureSettingsScreen(
                 )
             }
 
-            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "餐食") {
+            // [AI修改] 健康膳食：营养/热量相关项统一成组，每项配说明(计算规则/原理)。见《健康膳食功能设置与说明.md》。
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "健康膳食") {
                 SwitchRow(
                     title = "营养色系",
                     subtitle = "按当天营养均衡度给餐食卡片上色——越均衡越偏健康绿、越单一越偏暖，" +
@@ -80,15 +86,22 @@ fun FeatureSettingsScreen(
                 // [AI生成] 与营养色系拆分：热量数字单独开关(用户要求)。
                 SwitchRow(
                     title = "热量数值显示",
-                    subtitle = "在餐食卡片显示当天估算热量与达标(数字)。数值按食材每100g营养×用量折算，" +
+                    subtitle = "在餐食卡片/首页显示当天估算热量与达标(数字)。数值按食材每100g营养×用量折算，" +
                         "用量或营养缺失时为估算值，仅供参考。与营养色系独立，关闭则只看颜色不看数字。默认关闭。",
                     checked = calorieNumber,
                     onCheckedChange = vm::setCalorieNumber,
                 )
+                // [AI生成] 家庭成员档案入口(多人记菜)：各自身体数据/病种/饭量系数。
+                EntryRow(
+                    title = "家庭成员档案",
+                    subtitle = "多人吃饭，为每位家人建档(身体数据/病种/饭量系数)。忌口按全家合并提示；" +
+                        "每日目标与摄入按「主要关注成员」看。",
+                    onClick = onOpenFamily,
+                )
             }
 
-            // [AI生成] 2a：每日热量目标——填身体数据算 BMR/TDEE，用于餐食达标评定与色系墙评级。
-            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "每日热量目标") {
+            // [AI生成] 2a：每日热量目标——填身体数据算 BMR/TDEE(此处编辑「我」的快捷入口，多人请进家庭成员档案)。
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "我的每日热量目标") {
                 BodyMetricsSection(body = body, onChange = vm::setBodyMetrics)
             }
 
@@ -218,6 +231,26 @@ private fun NumberField(label: String, value: String, decimal: Boolean, onValueC
         shape = MaterialTheme.shapes.medium,
         modifier = modifier,
     )
+}
+
+@Composable
+private fun EntryRow(title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(4.dp))
+            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.width(12.dp))
+        Icon(
+            androidx.compose.material.icons.Icons.Outlined.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Composable

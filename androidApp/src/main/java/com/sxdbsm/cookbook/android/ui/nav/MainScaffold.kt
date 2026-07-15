@@ -172,7 +172,13 @@ fun MainScaffold(
                 CookingTimerScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.FEATURE_SETTINGS) {
-                com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsScreen(onBack = { nav.popBackStack() })
+                com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenFamily = { nav.navigate(Routes.FAMILY) },
+                )
+            }
+            composable(Routes.FAMILY) {
+                com.sxdbsm.cookbook.android.ui.family.FamilyScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.SHOPPING_LIST) {
                 com.sxdbsm.cookbook.android.ui.shopping.ShoppingListScreen(onBack = { nav.popBackStack() })
