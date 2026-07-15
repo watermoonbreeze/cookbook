@@ -1713,3 +1713,15 @@ SELECT id, name, food_group FROM ingredient WHERE source = 'preset' AND status =
 -- [AI生成] 用户食材中未归类的：只回填空的，不覆盖用户手选。
 selectUserIngredientsWithoutFoodGroup:
 SELECT id, name FROM ingredient WHERE source = 'user' AND food_group = '' AND status = 1;
+
+-- ===== 食材营养表(我的·全量总览) =====
+
+-- [AI生成] 全量食材+营养(左连,无营养的食材也列出),供"食材营养表"页展示/搜索/排序。
+selectAllIngredientNutrition:
+SELECT i.name AS name, i.food_group AS food_group,
+       n.energy_kcal, n.protein_g, n.fat_g, n.carb_g, n.fiber_g,
+       n.sodium_mg, n.potassium_mg, n.calcium_mg, n.gi, n.purine_mg
+FROM ingredient i
+LEFT JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
+WHERE i.status = 1
+ORDER BY i.name;
