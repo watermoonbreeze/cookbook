@@ -229,8 +229,14 @@ fun NutritionWall(
                         week.forEach { d ->
                             val isToday = d.date == today
                             val cellColor = nutritionWallColor(d.level)
-                            // 格内日期数字：按底色明暗选深/浅文字并调淡，避免整墙数字密集刺眼。
-                            val dayTextColor = if (cellColor.luminance() > 0.5f) Color(0xFF3A352E).copy(alpha = 0.5f) else Color.White.copy(alpha = 0.7f)
+                            val darkBg = cellColor.luminance() > 0.5f
+                            // 格内日期数字：按底色明暗选深/浅文字；普通日调淡避免密集刺眼，今天用足强度突出。
+                            val dayTextColor = when {
+                                isToday && darkBg -> Color(0xFF3A352E)
+                                isToday -> Color.White
+                                darkBg -> Color(0xFF3A352E).copy(alpha = 0.5f)
+                                else -> Color.White.copy(alpha = 0.7f)
+                            }
                             Box(
                                 modifier = Modifier
                                     .size(CELL)
@@ -244,8 +250,8 @@ fun NutritionWall(
                                     .then(if (d.level > 0) Modifier.clickable { onDayClick(d.date) } else Modifier),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                // [AI修改] 只有有记录(有色块)的日子才填日期数字，空日留白，减少整墙密集感。
-                                if (d.level > 0) {
+                                // [AI修改] 有记录的日子填日期数字；空日留白减少密集感——但今天无论有无餐食都显示日期。
+                                if (d.level > 0 || isToday) {
                                     Text(
                                         d.date.dayOfMonth.toString(),
                                         style = MaterialTheme.typography.labelSmall,
