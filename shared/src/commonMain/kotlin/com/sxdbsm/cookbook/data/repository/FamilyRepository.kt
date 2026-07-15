@@ -8,6 +8,7 @@ import com.sxdbsm.cookbook.domain.model.FamilyMember
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -92,6 +93,30 @@ class FamilyRepository(
 
     private fun pickFocus(ms: List<FamilyMember>): FamilyMember? =
         ms.firstOrNull { it.isFocus } ?: ms.firstOrNull { it.isSelf } ?: ms.firstOrNull()
+
+    // ===== 缺席微调（按天持久化） =====
+
+    /** 监听某天缺席成员 id。[AI生成] */
+    fun observeAbsenteeIds(date: String): Flow<Set<Long>> =
+        q.selectAbsenteesByDate(date).asFlow().mapToList(ioDispatcher).map { it.toSet() }.flowOn(ioDispatcher)
+
+    /** 标记/取消某天某成员缺席。[AI生成] */
+    suspend fun setAbsent(date: String, memberId: Long, absent: Boolean) = withContext(ioDispatcher) {
+        if (absent) q.insertAbsentee(date, memberId) else q.deleteAbsentee(date, memberId)
+    }
+
+    /**
+     * 监听某天的关注成员份额：关注系数 ÷ 当天在场成员系数和。[AI生成]
+     *
+     * 关注成员当天自己缺席 → 返回 0（其当天摄入=0，UI 显"未在家吃"不判偏低）。
+     */
+    fun observeFocusShareForDate(date: String): Flow<Double> =
+        combine(observeMembers(), observeAbsenteeIds(date)) { ms, absent ->
+            val f = pickFocus(ms) ?: return@combine 1.0
+            if (f.id in absent) return@combine 0.0
+            val presentSum = ms.filter { it.id !in absent }.sumOf { it.portionCoefficient }
+            if (presentSum > 0.0) f.portionCoefficient / presentSum else 1.0
+        }
 
     /** 同步「我」的身体数据(设置里"我的每日热量目标"快捷编辑，保持与成员档案一致)。[AI生成] */
     suspend fun updateSelfBody(body: BodyMetrics) = withContext(ioDispatcher) {

@@ -122,8 +122,9 @@ class HomeViewModel(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayNutrition: StateFlow<TodayNutrition?> =
-        combine(mealRepo.observeTimelineWindow(today, today), family.observeFocusBody(), family.observeFocusShare()) { cards, body, share -> Triple(cards, body, share) }
+        combine(mealRepo.observeTimelineWindow(today, today), family.observeFocusBody(), family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today))) { cards, body, share -> Triple(cards, body, share) }
             .mapLatest { (cards, body, share) ->
+                if (share <= 0.0) return@mapLatest null // [AI修改] 关注成员今天未在家吃→不显今日营养卡
                 val ids = cards.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
                 if (ids.isEmpty()) return@mapLatest null
                 val totals = nutritionRepo.totalOf(ids)

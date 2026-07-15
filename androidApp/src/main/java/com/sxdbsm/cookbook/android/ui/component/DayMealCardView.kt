@@ -64,7 +64,8 @@ fun DayMealCardView(
     // [AI修改] 达标按「主要关注成员」：身体数据来自关注成员，摄入按其饭量系数占比从全家餐热量估算。
     val familyRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.FamilyRepository>()
     val focusBody by remember(familyRepo) { familyRepo.observeFocusBody() }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.BodyMetrics())
-    val focusShare by remember(familyRepo) { familyRepo.observeFocusShare() }.collectAsStateWithLifecycle(1.0)
+    // [AI修改] 按天份额：那天缺席成员不参与分摊，关注成员当天缺席则份额 0(显"未在家吃")。
+    val focusShare by remember(familyRepo, data.date) { familyRepo.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(data.date)) }.collectAsStateWithLifecycle(1.0)
     val focusName by remember(familyRepo) { familyRepo.observeFocusName() }.collectAsStateWithLifecycle("")
     val dailyTarget = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(focusBody)
     val personalKcal = (dayKcal * focusShare).roundToInt() // 关注成员当天摄入估算(全家餐×份额占比)
@@ -125,11 +126,14 @@ fun DayMealCardView(
                 }
                 Text(
                     buildString {
-                        if (dailyTarget != null) {
-                            if (focusName.isNotBlank()) append("🔥 ${focusName}约 $personalKcal 千卡") else append("🔥 当天约 $personalKcal 千卡")
-                            status?.let { append(" / 目标 $dailyTarget · ${it.label}") }
-                        } else {
-                            append("🔥 全家当天约 $dayKcal 千卡")
+                        when {
+                            dailyTarget != null && focusShare <= 0.0 ->
+                                append("🔥 ${focusName.ifBlank { "关注成员" }}当天未在家吃（全家约 $dayKcal 千卡）")
+                            dailyTarget != null -> {
+                                if (focusName.isNotBlank()) append("🔥 ${focusName}约 $personalKcal 千卡") else append("🔥 当天约 $personalKcal 千卡")
+                                status?.let { append(" / 目标 $dailyTarget · ${it.label}") }
+                            }
+                            else -> append("🔥 全家当天约 $dayKcal 千卡")
                         }
                     },
                     style = MaterialTheme.typography.labelMedium,

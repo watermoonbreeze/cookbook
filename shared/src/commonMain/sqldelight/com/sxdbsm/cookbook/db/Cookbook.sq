@@ -363,6 +363,13 @@ CREATE TABLE member_care (
     PRIMARY KEY (member_id, care_category_id)
 );
 
+-- [AI生成] 缺席微调：某天某成员没在家吃(按天粒度)。个人摄入份额按天排除缺席者，达标更准。
+CREATE TABLE day_absentee (
+    date TEXT NOT NULL,
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    PRIMARY KEY (date, member_id)
+);
+
 -- ========== 厨房小助手 ==========
 
 -- [AI生成] 烹饪计时模板只保存用户配置，不保存运行/暂停/响铃等临时状态。
@@ -1677,3 +1684,14 @@ WHERE fm.status = 1;
 -- [AI生成] 按 id 批量取分类名(忌口并集标签用)。
 selectFoodCategoryNamesByIds:
 SELECT name FROM food_category WHERE id IN ? AND status = 1;
+
+-- ===== day_absentee（缺席微调，按天） =====
+
+insertAbsentee:
+INSERT OR IGNORE INTO day_absentee(date, member_id) VALUES (?, ?);
+
+deleteAbsentee:
+DELETE FROM day_absentee WHERE date = ? AND member_id = ?;
+
+selectAbsenteesByDate:
+SELECT member_id FROM day_absentee WHERE date = ?;

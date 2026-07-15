@@ -1,0 +1,8 @@
+-- [AI生成] v21：缺席微调按天表 day_absentee。
+-- 纯新表，老库升级安全(无 ALTER)。个人摄入份额按天排除缺席成员。
+
+CREATE TABLE day_absentee (
+    date TEXT NOT NULL,
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    PRIMARY KEY (date, member_id)
+);

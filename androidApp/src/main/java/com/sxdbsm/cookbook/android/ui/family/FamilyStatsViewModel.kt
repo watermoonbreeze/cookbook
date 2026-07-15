@@ -35,6 +35,8 @@ class FamilyStatsViewModel(
     private val nutritionRepo: NutritionRepository,
 ) : ViewModel() {
 
+    private val todayStr = DateTime.formatDate(DateTime.today())
+
     /** 选中对象：null=家庭(全家)，否则成员 id。 */
     private val _selected = MutableStateFlow<Long?>(null)
     val selected: StateFlow<Long?> = _selected
@@ -46,14 +48,14 @@ class FamilyStatsViewModel(
         viewModelScope.launch { family.ensureInitialized() }
     }
 
-    // [AI修改] 切换选中时清空缺席微调(what-if 仅本次查看，跨视图/成员不残留，与文案一致)。
-    fun select(memberId: Long?) { _selected.value = memberId; _excluded.value = emptySet() }
+    fun select(memberId: Long?) { _selected.value = memberId }
 
-    /** 家庭视图"在场"微调(what-if)：排除的成员 id，其份额分给其余在场成员。不持久化。[AI生成] P2 缺席微调轻量版。 */
-    private val _excluded = MutableStateFlow<Set<Long>>(emptySet())
-    val excluded: StateFlow<Set<Long>> = _excluded
+    /** 今天缺席成员(持久化到 day_absentee)：其份额分给其余在场成员，联动今日卡/今日营养卡。[AI修改] P2缺席微调持久化。 */
+    val excluded: StateFlow<Set<Long>> =
+        family.observeAbsenteeIds(todayStr).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
     fun togglePresent(memberId: Long) {
-        _excluded.value = if (memberId in _excluded.value) _excluded.value - memberId else _excluded.value + memberId
+        viewModelScope.launch { family.setAbsent(todayStr, memberId, memberId !in excluded.value) }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -62,7 +64,7 @@ class FamilyStatsViewModel(
             mealRepo.observeTimelineWindow(DateTime.plusDays(DateTime.today(), -6), DateTime.today()),
             family.observeMembers(),
             _selected,
-            _excluded,
+            family.observeAbsenteeIds(todayStr),
         ) { cards, ms, sel, excluded -> StatsInput(cards, ms, sel, excluded) }
             .mapLatest { (cards, ms, sel, excluded) ->
                 val member = sel?.let { id -> ms.firstOrNull { it.id == id } }

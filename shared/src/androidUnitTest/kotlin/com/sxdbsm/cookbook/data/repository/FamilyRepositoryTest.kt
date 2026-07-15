@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.data.repository
 import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
 import com.sxdbsm.cookbook.domain.model.BodyMetrics
 import com.sxdbsm.cookbook.domain.model.FamilyMember
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -72,6 +73,28 @@ class FamilyRepositoryTest {
         // 我不可删
         fam.deleteMember(me.id)
         assertEquals(1, fam.listMembers().size, "默认成员我不可删")
+    }
+
+    @Test
+    fun `缺席微调_按天持久化且份额排除缺席者`() = runBlocking {
+        val (fam, _, _) = setup()
+        fam.ensureInitialized()
+        val me = fam.listMembers().first()
+        val dadId = fam.createMember(FamilyMember(id = 0, name = "爸"))
+        fam.setFocus(me.id)
+        val date = "2026-07-15"
+
+        val share0 = fam.observeFocusShareForDate(date).first() // 无缺席：我 ÷ (我+爸)
+        fam.setAbsent(date, dadId, true) // 爸没吃
+        assertTrue(dadId in fam.observeAbsenteeIds(date).first(), "缺席应持久化")
+        val share1 = fam.observeFocusShareForDate(date).first()
+        assertTrue(share1 > share0, "缺席后关注成员份额变大")
+
+        fam.setAbsent(date, me.id, true) // 关注成员自己也没吃
+        assertEquals(0.0, fam.observeFocusShareForDate(date).first(), "关注成员当天缺席→份额0")
+
+        fam.setAbsent(date, dadId, false) // 取消爸的缺席
+        assertTrue(dadId !in fam.observeAbsenteeIds(date).first(), "取消缺席应生效")
     }
 
     @Test
