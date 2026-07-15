@@ -86,6 +86,11 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 表单**多字段"改一个 copy 写回全部"有竞态**：字段 onChange 用异步 flow 回灌的值 `flow.copy(该字段=新值)` 写回时，快速连改两字段会用**旧值**覆盖丢数据。所有字段写回**以本地 UI 态为单一真相源**（`build()` 带全部本地值 + 仅覆盖显式变更项），不读迟滞 flow。
 - 数字输入框**别只 `filter{isDigit()||'.'}`**：会放行 `1.7.5`/`30.` → `toDouble/IntOrNull` 恒 null → 依赖值(目标等)静默消失。小数字段限最多一个小数点、整数字段(年龄)禁小数点。
 - StateFlow 结合**多源 + 逐项异步计算**用 `combine(...)+mapLatest{}`（mapLatest 可 suspend、新值取消旧算）；里面批量 `dishNutrition(allIds)` 一次查再按 id map，别 `.map{}`(不能 suspend)也别逐项查。
+- VM 多 init 加载器**并发**（loadUnits/loadCategories… 各自 launch）：写回一律用**最新** `_state.value.copy(...)` 或 `_state.update{it.copy()}`；禁 `val cur=_state.value` 捕获后经**挂起**再 `_state.value=cur.copy()` 写回——会把挂起期间别处填的字段冲掉（曾致食材单位下拉空）。排查 grep `\.value = \w+\.copy(`。
+- SQLDelight 迁移**改字典项名**（如单位统一英文 克→g/毫升→ml/升→L）：用 `UPDATE ...SET name=` **保 id 不变**（`unit_id`/FK 不断、数据不丢）；name 有 UNIQUE 时**先删重复**(`WHERE name IN(...) AND source='preset'`)**再带** `AND NOT EXISTS(SELECT 1 ...WHERE name='目标')` 守卫重命名（防迁移 UNIQUE 崩=真机"初始化失败"）；同步改 seed json 的 unit 字段 + `PRESET_MEASUREMENT_UNITS` + 按名单测(`units["克"]`→`units["g"]`)。
+- 加列**升级无损**：`ALTER ADD COLUMN col ...DEFAULT ''`(老行只补默认值零改动)+CREATE TABLE 同步加列；预设值回填放 seeder **只填空的**(`WHERE col=''`,不覆盖用户)；老用户数据靠"**编辑时预填+保存即应用**"补齐（如老自建食材编辑按名预选营养大类、点保存补挂分类），非强制数据迁移。
+- `FoodCategory`/`food_category` 表**无 code 列**：Group→顶层分类只能**按 name 映射**(`FoodGroup.CATEGORY_NAME`)；改 general 大类名会打断映射/按名断言。
+- 真机诊断"数据有但没传到 UI"：`adb -s <序列号>`(多设备)；Compose 底栏文本不进无障碍树(`uiautomator dump` 抓不到)；华为等 shell 无 `sqlite3`，`adb exec-out run-as <pkg> cat databases/x.db>本地` 用 python 读；在**查(repo)→存(state)→读(UI)** 三处埋 `AppLogger.d`/`CookbookLog.d`，一次 logcat 定位断点，完事删日志。
 
 ## 技术栈
 
