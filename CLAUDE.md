@@ -90,6 +90,8 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - SQLDelight 迁移**改字典项名**（如单位统一英文 克→g/毫升→ml/升→L）：用 `UPDATE ...SET name=` **保 id 不变**（`unit_id`/FK 不断、数据不丢）；name 有 UNIQUE 时**先删重复**(`WHERE name IN(...) AND source='preset'`)**再带** `AND NOT EXISTS(SELECT 1 ...WHERE name='目标')` 守卫重命名（防迁移 UNIQUE 崩=真机"初始化失败"）；同步改 seed json 的 unit 字段 + `PRESET_MEASUREMENT_UNITS` + 按名单测(`units["克"]`→`units["g"]`)。
 - 加列**升级无损**：`ALTER ADD COLUMN col ...DEFAULT ''`(老行只补默认值零改动)+CREATE TABLE 同步加列；预设值回填放 seeder **只填空的**(`WHERE col=''`,不覆盖用户)；老用户数据靠"**编辑时预填+保存即应用**"补齐（如老自建食材编辑按名预选营养大类、点保存补挂分类），非强制数据迁移。
 - `FoodCategory`/`food_category` 表**无 code 列**：Group→顶层分类只能**按 name 映射**(`FoodGroup.CATEGORY_NAME`)；改 general 大类名会打断映射/按名断言。
+- 中文食材 `classify` 按**尾词**(末尾 head-noun：菜/苗/肉/奶/蛋/腐/油)判定，优先于前缀关键词 + `NAME_OVERRIDE` 特例表；否则"脱脂纯牛奶"含牛→肉、"鸡毛菜"含鸡→禽。DAIRY 判在 meat/FISH 前、FRUIT 在 VEG 前。新特例加进 `NAME_OVERRIDE` 而非堆关键词。
+- 权威数据核准(营养/GI/嘌呤)用**分片后台 agent 联网**(先 `ToolSearch select:WebSearch,WebFetch`)各写 `temp/*_N.json`→python **覆盖升级式**合并(auth 值覆盖、**保留 auth 未覆盖字段**不 null 老值、ref+review 取 auth)；查不到的字段**省略不编造**、口径不确定标 `pending`+ref 注明，一手权威成分表才 `verified`；合并后跑 `validateNutritionSeedForTest`+`:shared:testDebugUnitTest`。
 - 真机诊断"数据有但没传到 UI"：`adb -s <序列号>`(多设备)；Compose 底栏文本不进无障碍树(`uiautomator dump` 抓不到)；华为等 shell 无 `sqlite3`，`adb exec-out run-as <pkg> cat databases/x.db>本地` 用 python 读；在**查(repo)→存(state)→读(UI)** 三处埋 `AppLogger.d`/`CookbookLog.d`，一次 logcat 定位断点，完事删日志。
 
 ## 技术栈
