@@ -110,7 +110,8 @@ fun FoodTimelineScreen(
         vm.consumeCopyMessage()
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
+      Column(Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("食历", fontWeight = FontWeight.SemiBold) },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -127,10 +128,7 @@ fun FoodTimelineScreen(
                 }
             },
             actions = {
-                // [AI生成] "回今天"一键入口：家庭最常问"今天/最近吃了啥"，直达当天不用翻月历。
-                TextButton(onClick = { vm.jumpToDate(DateTime.today()) }) {
-                    Text("今天", style = MaterialTheme.typography.labelMedium)
-                }
+                // [AI修改] "今天"移到右下角悬浮"今"按钮(见下方 Box)，不再占标题行——原来挤得"食历"标题换行。
                 TextButton(onClick = { calendarOpen = true }) {
                     Icon(Icons.Outlined.CalendarMonth, contentDescription = "选择日期")
                     Spacer(Modifier.width(4.dp))
@@ -167,6 +165,21 @@ fun FoodTimelineScreen(
                 }
             }
         }
+      }
+      // [AI生成] "今"悬浮按钮：右下角，点击快速滚到今天(操作同原"今天"按钮)，不再占标题行挤"食历"。
+      if (state.pages.isNotEmpty()) {
+          SmallFloatingActionButton(
+              onClick = { vm.jumpToDate(DateTime.today()) },
+              containerColor = MaterialTheme.colorScheme.primaryContainer,
+              contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+              modifier = Modifier
+                  .align(Alignment.BottomEnd)
+                  .navigationBarsPadding()
+                  .padding(end = 16.dp, bottom = 16.dp),
+          ) {
+              Text("今", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+          }
+      }
     }
 
     if (calendarOpen) {
