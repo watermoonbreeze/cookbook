@@ -59,6 +59,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -95,6 +96,8 @@ private fun Context.findActivity(): Activity? {
  * <p>
  * [AI生成] 用户要求在"我的"放一张全量食材营养表。
  **/
+private const val SELECTED_ROW_ALPHA = 0.14f // 选中行高亮背景透明度
+
 private data class NutriCol(val key: NutriSortKey?, val title: String, val width: Dp, val value: (IngredientNutritionRow) -> String)
 
 private fun fmt(v: Double?, int: Boolean = false): String =
@@ -244,7 +247,7 @@ fun NutritionTableScreen(
                         Row(
                             Modifier
                                 .height(36.dp)
-                                .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else androidx.compose.ui.graphics.Color.Transparent)
+                                .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = SELECTED_ROW_ALPHA) else Color.Transparent)
                                 .clickable { vm.toggleSelect(row.name) },
                         ) {
                             cols.forEachIndexed { i, c ->
