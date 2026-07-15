@@ -427,14 +427,7 @@ private fun MealBlockCard(
                 }
             }
 
-            if (block.mealTime == null) {
-                Text(
-                    "请选择用餐时间",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 6.dp),
-                )
-            }
+            // [AI修改] 移除"请选择用餐时间"死分支：newBlock/setMealType 恒给默认时间(固定餐次defaultTime/加餐nowTime)，mealTime 不会为 null。
 
             Spacer(Modifier.height(10.dp))
             Divider(color = MaterialTheme.colorScheme.outlineVariant)

@@ -127,6 +127,10 @@ fun FoodTimelineScreen(
                 }
             },
             actions = {
+                // [AI生成] "回今天"一键入口：家庭最常问"今天/最近吃了啥"，直达当天不用翻月历。
+                TextButton(onClick = { vm.jumpToDate(DateTime.today()) }) {
+                    Text("今天", style = MaterialTheme.typography.labelMedium)
+                }
                 TextButton(onClick = { calendarOpen = true }) {
                     Icon(Icons.Outlined.CalendarMonth, contentDescription = "选择日期")
                     Spacer(Modifier.width(4.dp))

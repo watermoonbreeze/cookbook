@@ -77,6 +77,20 @@ class AddMealViewModel(
     companion object {
         private const val TAG = "MealFlow" // [AI生成] 添加/编辑餐食链路统一日志 Tag。
         private const val AFTERNOON_START_HOUR = 12 // [AI生成] ≥12点视为下午/晚上：无未来餐食时新建默认明天；上午(<12)默认今天。
+
+        /**
+         * 新建空餐次块的默认餐次：按当前钟点选"默认时间最接近现在"的固定餐次。[AI生成]
+         *
+         * 修"晚上记晚饭进来却是早餐/07:30"——原来恒取 BREAKFAST。未来计划日从早餐排起更自然。
+         * 纯函数(nowHour 提参)便于单测，遵守"today/now 提参"红线。
+         */
+        internal fun pickDefaultMealType(types: List<MealType>, isFuture: Boolean, nowHour: Int): MealType? {
+            if (types.isEmpty()) return null
+            if (isFuture) return types.firstOrNull { it.code == "BREAKFAST" } ?: types.first()
+            return types.filter { it.isFixed }
+                .minByOrNull { kotlin.math.abs(it.defaultTime.hour - nowHour) }
+                ?: types.firstOrNull { it.code == "BREAKFAST" } ?: types.first()
+        }
     }
 
     private val _state = MutableStateFlow(AddMealUiState()) // [AI修改] 内部可变状态，只允许 ViewModel 修改。
@@ -459,8 +473,12 @@ class AddMealViewModel(
         loadedFromDate = if (existingMeals.isNotEmpty()) date else null
         AppLogger.d(TAG, "load meals db result: date=$date existing=${existingMeals.map { it.mealTypeId to it.dishes.map { dish -> dish.id } }}") // [AI生成] 记录数据库返回的餐食摘要。
         val blocks = if (existingMeals.isEmpty()) {
-            val defaultType = _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" }
-                ?: _state.value.mealTypes.firstOrNull()
+            // [AI修改] 新建空块默认餐次按当前时段智能推断(晚上→晚餐,不再恒早餐)；未来计划日从早餐排起。
+            val defaultType = pickDefaultMealType(
+                _state.value.mealTypes,
+                isFuture = date > DateTime.today(),
+                nowHour = DateTime.currentHour(),
+            )
             listOf(newBlock(defaultType))
         } else {
             existingMeals.map { meal ->
