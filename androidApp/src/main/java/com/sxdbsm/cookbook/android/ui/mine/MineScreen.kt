@@ -41,6 +41,7 @@ fun MineScreen(
     onOpenFeatureSettings: () -> Unit = {},
     onOpenShoppingList: () -> Unit = {},
     onOpenFreePairing: () -> Unit = {},
+    onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -245,6 +246,8 @@ fun MineScreen(
             SettingRow(icon = Icons.Outlined.ShoppingCart, title = "采购清单", subtitle = "汇总今天及未来餐食需采购/缺料的食材", trailing = "▸") { onOpenShoppingList() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Restaurant, title = "食材自由搭配", subtitle = "用在手食材按规则搭出组合建议(离线)", trailing = "▸") { onOpenFreePairing() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() } // [AI生成] 食材营养表入口
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.SoupKitchen, title = "厨房小助手", subtitle = "烹饪计时等实用工具", trailing = "▸") { kitchenDialogOpen = true }
         }

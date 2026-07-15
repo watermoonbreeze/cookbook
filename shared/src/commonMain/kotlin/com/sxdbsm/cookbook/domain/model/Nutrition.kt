@@ -40,6 +40,28 @@ data class IngredientNutrition(
 }
 
 /**
+ * 食材营养表一行（我的·全量食材营养总览）。[AI生成]
+ *
+ * foodGroup=FoodGroup.Group 名(营养大类，空=未归类)；营养字段全可空(未录入)。
+ */
+data class IngredientNutritionRow(
+    val name: String,
+    val foodGroup: String,
+    val kcal: Double?,
+    val protein: Double?,
+    val fat: Double?,
+    val carb: Double?,
+    val fiber: Double?,
+    val sodium: Double?,
+    val potassium: Double?,
+    val calcium: Double?,
+    val gi: Double?,
+    val purine: Double?,
+) {
+    val hasNutrition: Boolean get() = listOf(kcal, protein, fat, carb, fiber, sodium, potassium, calcium, gi, purine).any { it != null }
+}
+
+/**
  * 可加性营养汇总（菜品/餐/日通用）。单位：kcal / g / mg。[AI生成]
  */
 data class NutritionTotals(

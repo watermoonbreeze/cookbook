@@ -166,7 +166,11 @@ fun MainScaffold(
                     onOpenFeatureSettings = { nav.navigate(Routes.FEATURE_SETTINGS) },
                     onOpenShoppingList = { nav.navigate(Routes.SHOPPING_LIST) },
                     onOpenFreePairing = { nav.navigate(Routes.FREE_PAIRING) },
+                    onOpenNutritionTable = { nav.navigate(Routes.NUTRITION_TABLE) }, // [AI生成] 食材营养表
                 )
+            }
+            composable(Routes.NUTRITION_TABLE) {
+                com.sxdbsm.cookbook.android.ui.nutrition.NutritionTableScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.COOKING_TIMER) {
                 CookingTimerScreen(onBack = { nav.popBackStack() })

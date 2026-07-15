@@ -65,6 +65,7 @@ val androidModule = module {
     viewModel { SearchViewModel(get(), get(), get()) }
     viewModel { AiRecommendViewModel(get(), get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置+偏好; 配置了模型不自动推荐)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
+    viewModel { com.sxdbsm.cookbook.android.ui.nutrition.NutritionTableViewModel(get()) } // [AI生成] 食材营养表(全量营养总览)。
     viewModel { com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsViewModel(get()) } // [AI修改] 身体数据编辑移入家庭档案，不再需要 FamilyRepository。
     viewModel { com.sxdbsm.cookbook.android.ui.shopping.ShoppingListViewModel(get(), get()) } // [AI生成] 采购清单聚合 + 按份数入库。
     viewModel { com.sxdbsm.cookbook.android.ui.pairing.FreePairingViewModel(get()) } // [AI生成] 食材自由搭配(离线规则)。

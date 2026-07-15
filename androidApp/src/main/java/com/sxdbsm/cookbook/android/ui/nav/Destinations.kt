@@ -34,6 +34,7 @@ object Routes {
     const val SHOPPING_LIST = "shopping_list" // [AI生成] 采购清单(今天及未来餐食采购/缺料汇总)
     const val WEEK_PLAN = "week_plan" // [AI生成] B3 一周计划视图
     const val FREE_PAIRING = "free_pairing" // [AI生成] 食材自由搭配(离线规则轻搭配)
+    const val NUTRITION_TABLE = "nutrition_table" // [AI生成] 食材营养表(全量营养总览)
 
     fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}&dishIds=&copyFrom="
 

@@ -69,6 +69,17 @@ class NutritionRepository(private val db: CookbookDatabase) {
     /** 是否有任何量化营养数据(用于"数据不全"提示)。[AI生成] */
     suspend fun hasNutrition(ingredientId: Long): Boolean = ingredientNutrition(ingredientId)?.hasAny == true
 
+    /** 全量食材+营养(左连，供"食材营养表"页)。[AI生成] */
+    suspend fun allIngredientNutrition(): List<com.sxdbsm.cookbook.domain.model.IngredientNutritionRow> = withContext(ioDispatcher) {
+        q.selectAllIngredientNutrition().executeAsList().map { r ->
+            com.sxdbsm.cookbook.domain.model.IngredientNutritionRow(
+                name = r.name, foodGroup = r.food_group,
+                kcal = r.energy_kcal, protein = r.protein_g, fat = r.fat_g, carb = r.carb_g, fiber = r.fiber_g,
+                sodium = r.sodium_mg, potassium = r.potassium_mg, calcium = r.calcium_mg, gi = r.gi, purine = r.purine_mg,
+            )
+        }
+    }
+
     /**
      * 批量估算多道菜的营养。[AI生成]
      *
