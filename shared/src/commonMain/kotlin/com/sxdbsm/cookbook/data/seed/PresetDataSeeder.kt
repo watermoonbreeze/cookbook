@@ -112,7 +112,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val careRulesJson = SeedResourceLoader.readText("seed/ingredient_care_rules.json").orEmpty()
         val dishesJson = SeedResourceLoader.readText("seed/dishes.json").orEmpty()
         val nutritionJson = SeedResourceLoader.readText("seed/ingredient_nutrition.json").orEmpty() // [AI生成] L2 营养数据文件
-        val fingerprint = fingerprintOf(categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson, nutritionJson)
+        // [AI修改] seed 逻辑版本盐：seed 处理逻辑变更(而非JSON内容)也要让老库跑一次。v2=预设菜配料补齐修复(凉皮0千卡)。
+        val fingerprint = fingerprintOf(SEED_LOGIC_VERSION, categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson, nutritionJson)
 
         val stored = q.selectPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT).executeAsOneOrNull()?.value_
         if (!force && stored == fingerprint) {
@@ -529,6 +530,10 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // [AI生成] 预设烹饪方式/计量单位全集：seed 写入与 dishes.json 引用完整性校验共用同一份，避免硬编码副本漂移。
         val PRESET_COOKING_METHODS = listOf("炒", "蒸", "煮", "炖", "烤", "凉拌", "煎", "炸", "焖", "卤")
 
+        // [AI生成] seed 逻辑版本：seed 处理逻辑(非JSON内容)变更时+1，混入内容指纹让已装老库跑一次修复。
+        // v2(2026-07-15)=预设菜配料补齐修复(菜先于食材入库致关联缺失、0千卡)。
+        private const val SEED_LOGIC_VERSION = "seedlogic-v2"
+
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
         // 勺按“汤勺≈15g”粗估(多用于油盐酱)。dishes.json 引用完整性校验用 name 集合(见 unitNames())。
@@ -580,7 +585,25 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         loadDishes().forEach dish@{ seed ->
             // [AI生成] 先给已存在的预设菜补菜系(幂等，仅当前为空才补)，再判断是否跳过插入——老库升级也能拿到菜系。
             if (seed.cuisine.isNotBlank()) q.updatePresetDishCuisineByName(cuisine = seed.cuisine, name = seed.name)
-            if (q.selectPresetDishIdByName(seed.name).executeAsOneOrNull() != null) return@dish // 已存在则跳过。
+            val existingDishId = q.selectPresetDishIdByName(seed.name).executeAsOneOrNull()
+            if (existingDishId != null) {
+                // [AI修改] 修"凉皮0千卡"根因：菜先于其食材入库时配料没关联上，而原逻辑"已存在即跳过"导致
+                // 之后食材/营养补齐了也永不重建关联。改为**补齐式**(只加不删,零风险)：把 seed 里已能解析、
+                // 但当前未关联的配料补挂上，让热量能算出。已关联的不动、不改用量。
+                val linked = q.selectDishIngredientIdsByDishId(existingDishId).executeAsList().toSet()
+                seed.ingredients.forEach ing@{ di ->
+                    val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id ?: return@ing
+                    if (ingredientId in linked) return@ing
+                    q.insertDishIngredient(
+                        dish_id = existingDishId,
+                        ingredient_id = ingredientId,
+                        quantity = di.quantity,
+                        unit_id = unitIds[di.unit],
+                        is_main = if (di.main) 1L else 0L,
+                    )
+                }
+                return@dish
+            }
             val methodId = methodIds[seed.method]
             q.insertDish(
                 name = seed.name,

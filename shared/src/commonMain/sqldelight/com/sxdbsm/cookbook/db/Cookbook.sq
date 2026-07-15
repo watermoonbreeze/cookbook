@@ -1151,6 +1151,10 @@ ORDER BY di.id ASC;
 deleteIngredientsOfDish:
 UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 
+-- [AI生成] 取某菜已关联(有效)配料的食材id，供 seed 对已存在预设菜"补齐缺失配料关联"(食材后于菜入库时会漏关联致0千卡)。
+selectDishIngredientIdsByDishId:
+SELECT ingredient_id FROM dish_ingredient WHERE dish_id = ? AND status = 1;
+
 deleteDishIngredientsByIngredient:
 UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
 
