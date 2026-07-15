@@ -70,6 +70,7 @@ internal fun IngredientEditorDialog(
     // [AI生成] A1：营养大类(必选，默认按名/已有分类预选)——决定归到主食/鱼肉蛋等分类树 + 色系/均衡统计。
     var selectedGroup by remember(ingredient?.id) { mutableStateOf<com.sxdbsm.cookbook.domain.FoodGroup.Group?>(null) }
     var groupTouched by remember(ingredient?.id) { mutableStateOf(false) }
+    var unitTouched by remember(ingredient?.id) { mutableStateOf(false) } // [AI生成] 用户是否手动选过单位(选过则不再自动预选)
     var commonMethods by remember(ingredient?.id) { mutableStateOf("") }
     var prepTips by remember(ingredient?.id) { mutableStateOf("") }
     var eatingNotes by remember(ingredient?.id) { mutableStateOf("") }
@@ -119,6 +120,17 @@ internal fun IngredientEditorDialog(
         if (groupTouched) return@LaunchedEffect
         val existing = groupOptions.firstOrNull { (_, _, catId) -> catId in ui.editorCategoryIds }?.first
         selectedGroup = existing ?: com.sxdbsm.cookbook.domain.FoodGroup.classify(name)
+    }
+    // [AI生成] 新建食材时按营养大类预选一个合理默认单位(蛋/水果→个、奶→ml、其余→g)，减少"每次记用量都要选单位"；用户可改。
+    LaunchedEffect(selectedGroup, ui.availableUnits) {
+        if (ingredient != null || unitTouched || defaultUnitId != null) return@LaunchedEffect
+        val g = selectedGroup ?: return@LaunchedEffect
+        val prefer = when (g) {
+            com.sxdbsm.cookbook.domain.FoodGroup.Group.EGG, com.sxdbsm.cookbook.domain.FoodGroup.Group.FRUIT -> listOf("个", "g")
+            com.sxdbsm.cookbook.domain.FoodGroup.Group.DAIRY -> listOf("ml", "g")
+            else -> listOf("g")
+        }
+        defaultUnitId = prefer.firstNotNullOfOrNull { pn -> ui.availableUnits.firstOrNull { it.name == pn }?.id }
     }
     val editableCustomCategories = ui.allCategories.filter { it.isEditableUserGeneralCategory() }
     val selectedCategoryNames = editableCustomCategories
@@ -226,8 +238,8 @@ internal fun IngredientEditorDialog(
                             UnitDropdown(
                                 units = ui.availableUnits,
                                 selectedUnitId = defaultUnitId,
-                                onSelect = { defaultUnitId = it },
-                                onAddUnit = { newName -> onAddUnit(newName) { id -> if (id != null) defaultUnitId = id } },
+                                onSelect = { defaultUnitId = it; unitTouched = true },
+                                onAddUnit = { newName -> onAddUnit(newName) { id -> if (id != null) { defaultUnitId = id; unitTouched = true } } },
                             )
                         }
                         ImagePickerButton(
