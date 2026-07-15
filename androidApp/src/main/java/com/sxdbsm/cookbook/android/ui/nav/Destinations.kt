@@ -28,7 +28,8 @@ object Routes {
     fun aiRecommend() = "ai_recommend?returnResult=false" // 从首页/我的进入：选它开新加餐页
     fun aiRecommendForMeal() = "ai_recommend?returnResult=true" // 从餐次块进入：选它回传该餐次
     const val AI_SETTINGS = "ai_settings" // [AI生成] AI 设置(Key/运行时)
-    const val FAMILY = "family" // [AI生成] 家庭成员管理
+    const val FAMILY = "family"
+    const val FAMILY_STATS = "family_stats" // [AI生成] 膳食统计 // [AI生成] 家庭成员管理
     const val FEATURE_SETTINGS = "feature_settings" // [AI生成] 功能设置(分步执行等开关)
     const val SHOPPING_LIST = "shopping_list" // [AI生成] 采购清单(今天及未来餐食采购/缺料汇总)
     const val WEEK_PLAN = "week_plan" // [AI生成] B3 一周计划视图

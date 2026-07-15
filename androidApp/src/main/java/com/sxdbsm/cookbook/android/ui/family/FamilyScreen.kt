@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.StarBorder
@@ -70,6 +71,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FamilyScreen(
     onBack: () -> Unit,
+    onOpenStats: () -> Unit = {},
     vm: FamilyViewModel = koinViewModel(),
 ) {
     val members by vm.members.collectAsStateWithLifecycle()
@@ -85,6 +87,7 @@ fun FamilyScreen(
                 title = "家庭成员",
                 onBack = onBack,
                 actions = {
+                    IconButton(onClick = onOpenStats) { Icon(Icons.Outlined.BarChart, contentDescription = "膳食统计") }
                     IconButton(onClick = { creating = true }) { Icon(Icons.Outlined.Add, contentDescription = "添加成员") }
                 },
             )

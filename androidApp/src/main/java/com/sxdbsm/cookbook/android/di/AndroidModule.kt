@@ -58,7 +58,8 @@ val androidModule = module {
     viewModel { AddMealViewModel(get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用。
     viewModel { TimelineViewModel(get()) }
     viewModel { MineViewModel(get(), get(), get(), get(), get()) }
-    viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get()) } // [AI生成] 家庭成员管理 // [AI修改] 追加 PresetDataSeeder 支持“更新基础数据”。
+    viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get()) } // [AI生成] 家庭成员管理
+    viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyStatsViewModel(get(), get(), get()) } // [AI生成] 膳食统计
     viewModel { IngredientPickerViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 Pantry/HealthProfile/Nutrition 支持库存 Tab、忌口高亮、自定义营养录入。
     viewModel { DishPickerViewModel(get()) }
     viewModel { SearchViewModel(get(), get(), get()) }

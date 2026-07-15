@@ -178,7 +178,13 @@ fun MainScaffold(
                 )
             }
             composable(Routes.FAMILY) {
-                com.sxdbsm.cookbook.android.ui.family.FamilyScreen(onBack = { nav.popBackStack() })
+                com.sxdbsm.cookbook.android.ui.family.FamilyScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenStats = { nav.navigate(Routes.FAMILY_STATS) },
+                )
+            }
+            composable(Routes.FAMILY_STATS) {
+                com.sxdbsm.cookbook.android.ui.family.FamilyStatsScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.SHOPPING_LIST) {
                 com.sxdbsm.cookbook.android.ui.shopping.ShoppingListScreen(onBack = { nav.popBackStack() })
