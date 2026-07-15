@@ -134,7 +134,8 @@ object NutritionCalculator {
 
     /** 解析单条配料应计的克数；返回 (克数, 是否兜底估算)。克数为 null 表示无法计算(用量缺失)。 */
     fun resolveGrams(input: NutritionInput): Pair<Double?, Boolean> {
-        val qty = input.quantity ?: return null to false
+        // [AI修改] 防负克数(架构评审):用量理论≥0,但脏数据/负值不该产生负营养,克数下限 0。
+        val qty = (input.quantity ?: return null to false).coerceAtLeast(0.0)
         input.unitGrams?.let { return (qty * it) to false }
         input.nutrition?.pieceGram?.let { return (qty * it) to false }
         return (qty * DEFAULT_PIECE_GRAM) to true // 兜底估算

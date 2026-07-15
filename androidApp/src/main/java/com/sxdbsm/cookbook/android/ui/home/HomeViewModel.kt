@@ -76,7 +76,11 @@ class HomeViewModel(
 
     /** 删除指定日期的全部餐食（首页计划 Flow 会自动刷新）。[AI生成] */
     fun deleteDay(date: LocalDate) {
-        viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }
+        // [AI修改] 删除失败不再全静默(架构评审)：至少落日志，破坏性操作失败可排查。
+        viewModelScope.launch {
+            runCatching { mealRepo.deleteDayMeals(date) }
+                .onFailure { com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "deleteDay 失败: date=$date", it) }
+        }
     }
 
     private fun mondayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, -(d.dayOfWeek.isoDayNumber - 1))

@@ -343,7 +343,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val q = db.cookbookQueries
         loadIngredientNutrition().forEach { nu ->
             val ingredientId = q.selectIngredientIdByNameIncludingInactive(nu.ingredient).executeAsOneOrNull()?.id
-                ?: return@forEach
+                ?: run { com.sxdbsm.cookbook.platform.CookbookLog.w("Seed", "营养数据食材名解析失败,跳过(食材不存在): ${nu.ingredient}"); return@forEach } // [AI修改] 生产侧告警(架构评审#1)
             q.upsertIngredientNutrition(
                 ingredient_id = ingredientId,
                 energy_kcal = nu.kcal,
@@ -592,7 +592,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                 // 但当前未关联的配料补挂上，让热量能算出。已关联的不动、不改用量。
                 val linked = q.selectDishIngredientIdsByDishId(existingDishId).executeAsList().toSet()
                 seed.ingredients.forEach ing@{ di ->
-                    val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id ?: return@ing
+                    val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id
+                        ?: run { com.sxdbsm.cookbook.platform.CookbookLog.w("Seed", "菜「${seed.name}」配料名解析失败,跳过关联(食材不存在): ${di.ingredient}"); return@ing } // [AI修改] 生产侧告警,不再全静默(架构评审#1)
                     if (ingredientId in linked) return@ing
                     q.insertDishIngredient(
                         dish_id = existingDishId,
@@ -620,7 +621,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             val dishId = q.lastInsertId().executeAsOne()
             if (methodId != null) q.linkDishCookingMethod(dishId, methodId)
             seed.ingredients.forEach ing@{ di ->
-                val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id ?: return@ing
+                val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id
+                    ?: run { com.sxdbsm.cookbook.platform.CookbookLog.w("Seed", "菜「${seed.name}」配料名解析失败,跳过关联(食材不存在): ${di.ingredient}"); return@ing } // [AI修改] 生产侧告警(架构评审#1)
                 // [AI修改] 改具名参数：防生成查询日后插字段致位置错位(红线)。
                 q.insertDishIngredient(
                     dish_id = dishId,
