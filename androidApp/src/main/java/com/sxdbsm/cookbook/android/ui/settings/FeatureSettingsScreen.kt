@@ -97,6 +97,14 @@ fun FeatureSettingsScreen(
                         "达标与摄入按「主要关注成员」看。",
                     onClick = onOpenFamily,
                 )
+                // [AI生成] 分组级免责总说明(合规):健康评估均为公开营养公式估算,仅供日常参考,非医嘱。
+                Text(
+                    "以上营养/热量/忌口评估均基于公开营养成分与公式(如中国食物成分表、BMR)估算，" +
+                        "为 AI 整理的参考值，仅供日常记录参考，非医嘱；慢病管理与精确摄入请遵医嘱。",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                )
             }
 
             com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "库存") {
