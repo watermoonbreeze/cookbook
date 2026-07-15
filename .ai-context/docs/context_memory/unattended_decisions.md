@@ -1,5 +1,15 @@
 # 无人值守决策记录
 
+## 2026-07-15 SyncRepository 导入原子性 —— 选「弹性合并」而非「全量事务」
+- **背景**：审查指出 `import()` 无总事务，中途失败半完成残留。
+- **决策**：不做"整段 `db.transaction{}` 包裹"，改**逐行 `runCatching` 隔离 + skipped 计数**。
+- **理由**：核心写入方法(`saveDish`/`createUserIngredient`/`mealRepo.save`)均 `suspend`+`withContext+db.transaction`，而 SQLDelight `transaction{}` 是**非挂起**块，无法在其中调 suspend 方法——真做单事务需给每个核心写入链抽"非挂起内部变体"，动核心路径、风险高。而 import 是**幂等合并**(按名 upsert/复用/同名跳过)，单行失败隔离 + 可重导补齐，比大重构更安全且同样消除"半写后抛错中断"。
+- **落地**：`SyncImportResult` 加 `skipped`；六大合并环逐行 runCatching；`meals` 环补 `parseDate` 保护(原唯一未防的抛点)。新增单测 `弹性合并-单条坏数据被跳过不中断整批且skipped计数`。
+- **遗留**：真正的"全有或全无原子回滚"若未来需要，仍需核心写入链非挂起变体重构，记入待办。
+
+---
+
+
 > 用户 2026-07-08 下班启动无人值守。指令：按待办顺序逐步执行；**暂无上架计划，P0 存储合规不做**；其他继续。
 > 规则：深度执行；高风险/需真机 → 待确认队列不擅自做；每阶段 `[unattended]` 提交不 push；≤15 文件/阶段。
 

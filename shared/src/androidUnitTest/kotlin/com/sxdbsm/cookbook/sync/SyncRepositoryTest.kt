@@ -149,6 +149,29 @@ class SyncRepositoryTest {
     }
 
     @Test
+    fun `弹性合并-单条坏数据被跳过不中断整批且skipped计数`() = runBlocking {
+        // [AI生成] 综合审查：import 是幂等合并，单行异常(如日期非法)应隔离跳过、不"半写后抛错"中断整批。
+        val dst = RepositoryTestDatabase.create()
+        dst.cookbookQueries.insertMealType("LUNCH", "中餐", "12:00", 1L, "preset")
+        seedSource(dst) // dst 建 土豆炖肉，供餐食引用
+        val bundle = SyncBundle(
+            schemaVersion = CookbookDatabase.Schema.version.toInt(),
+            meals = listOf(
+                SyncMeal(date = "2026-07-11", mealTypeCode = "LUNCH", mealTime = "12:00", note = "正常", dishNames = listOf("土豆炖肉")),
+                SyncMeal(date = "非法日期", mealTypeCode = "LUNCH", mealTime = "12:00", note = "坏行", dishNames = listOf("土豆炖肉")),
+            ),
+        )
+        val res = sync(dst).import(bundle) // 不应抛异常
+        assertEquals(1, res.mealsMerged, "正常餐食应导入成功")
+        assertTrue(res.skipped >= 1, "坏日期行应被跳过并计入 skipped")
+        // 正常行确实落地
+        val lunchId = dst.cookbookQueries.selectMealTypeIdByCode("LUNCH").executeAsOneOrNull()
+        assertNotNull(lunchId)
+        assertNotNull(dst.cookbookQueries.selectMealRecordIdByDateType("2026-07-11", lunchId).executeAsOneOrNull())
+        Unit
+    }
+
+    @Test
     fun `餐食历史同步-按日期餐次合并且菜品重映射`() = runBlocking {
         val src = RepositoryTestDatabase.create()
         src.cookbookQueries.insertMealType("LUNCH", "中餐", "12:00", 1L, "preset")

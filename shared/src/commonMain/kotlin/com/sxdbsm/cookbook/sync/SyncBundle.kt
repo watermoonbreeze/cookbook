@@ -138,4 +138,5 @@ data class SyncImportResult(
     val mealsMerged: Int = 0,
     val stepTemplatesAdded: Int = 0, // [AI生成] #2 新增的自建步骤模板数
     val ingredientGroupsAdded: Int = 0, // [AI生成] B5 新增的自建配料组数
+    val skipped: Int = 0, // [AI生成] 弹性合并：因单行数据异常(如日期非法)被跳过的条数，>0 表示部分未导入、可修数据后重导。
 )

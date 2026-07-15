@@ -137,27 +137,31 @@ class SyncRepository(
         var favAdded = 0
         var mealsMerged = 0
         var stepTplAdded = 0
+        var skipped = 0 // [AI生成] 弹性合并：单行写入异常被隔离跳过的计数(不中断整体，失败行可修数据后重导)。
         val nameToId = HashMap<String, Long>() // 食材名→id
         val dishNameToId = HashMap<String, Long>() // 菜品名→id
 
         // 食材：同名复用(不覆盖对方已有)，缺则新建 + 详情。
+        // [AI修改] 每行 runCatching 隔离：一条坏数据不再中断整个合并、也不"半写后抛错"(import 幂等、可重导补齐)。
         for (si in bundle.ingredients) {
             val name = si.name.trim()
             if (name.isEmpty()) continue
-            val existing = q.selectActiveIngredientIdByName(name).executeAsOneOrNull()
-            val id = existing ?: run {
-                val newId = ingredientRepo.createUserIngredient(
-                    name = name, alias = si.alias.trim(), imagePath = si.imagePath, thumbnailPath = si.thumbnailPath,
-                )
-                si.detail?.let {
-                    ingredientRepo.saveIngredientDetail(
-                        IngredientDetail(newId, it.commonMethods, it.prepTips, it.eatingNotes, it.storageTips, it.healthNote),
+            runCatching {
+                val existing = q.selectActiveIngredientIdByName(name).executeAsOneOrNull()
+                val id = existing ?: run {
+                    val newId = ingredientRepo.createUserIngredient(
+                        name = name, alias = si.alias.trim(), imagePath = si.imagePath, thumbnailPath = si.thumbnailPath,
                     )
+                    si.detail?.let {
+                        ingredientRepo.saveIngredientDetail(
+                            IngredientDetail(newId, it.commonMethods, it.prepTips, it.eatingNotes, it.storageTips, it.healthNote),
+                        )
+                    }
+                    ingAdded++
+                    newId
                 }
-                ingAdded++
-                newId
-            }
-            nameToId[name] = id
+                nameToId[name] = id
+            }.onFailure { skipped++ }
         }
         suspend fun resolveIngredientId(rawName: String): Long? {
             val n = rawName.trim(); if (n.isEmpty()) return null
@@ -170,26 +174,28 @@ class SyncRepository(
         for (sd in bundle.dishes) {
             val name = sd.name.trim()
             if (name.isEmpty()) continue
-            val dishIngredients = sd.ingredients.mapNotNull { di ->
-                val tid = resolveIngredientId(di.name) ?: return@mapNotNull null
-                DishIngredient(ingredient = Ingredient(id = tid, name = di.name.trim()), quantity = di.quantity, isMain = di.isMain)
-            }
-            val existingDishId = q.selectUserDishIdByName(name).executeAsOneOrNull() ?: 0L
-            val savedId = dishRepo.saveDish(
-                id = existingDishId,
-                name = name,
-                cookingMethodId = null,
-                cookingMethodNames = sd.cookingMethodNames,
-                specialNote = sd.specialNote,
-                description = sd.description,
-                imagePath = sd.imagePath,
-                thumbnailPath = sd.thumbnailPath,
-                tagNames = sd.tagNames,
-                ingredients = dishIngredients,
-                steps = sd.steps.map { DishStep(sortOrder = it.sortOrder, text = it.text, imagePath = it.imagePath, thumbnailPath = it.thumbnailPath) },
-            )
-            dishNameToId[name] = savedId
-            if (existingDishId > 0) dishUpdated++ else dishAdded++
+            runCatching {
+                val dishIngredients = sd.ingredients.mapNotNull { di ->
+                    val tid = resolveIngredientId(di.name) ?: return@mapNotNull null
+                    DishIngredient(ingredient = Ingredient(id = tid, name = di.name.trim()), quantity = di.quantity, isMain = di.isMain)
+                }
+                val existingDishId = q.selectUserDishIdByName(name).executeAsOneOrNull() ?: 0L
+                val savedId = dishRepo.saveDish(
+                    id = existingDishId,
+                    name = name,
+                    cookingMethodId = null,
+                    cookingMethodNames = sd.cookingMethodNames,
+                    specialNote = sd.specialNote,
+                    description = sd.description,
+                    imagePath = sd.imagePath,
+                    thumbnailPath = sd.thumbnailPath,
+                    tagNames = sd.tagNames,
+                    ingredients = dishIngredients,
+                    steps = sd.steps.map { DishStep(sortOrder = it.sortOrder, text = it.text, imagePath = it.imagePath, thumbnailPath = it.thumbnailPath) },
+                )
+                dishNameToId[name] = savedId
+                if (existingDishId > 0) dishUpdated++ else dishAdded++
+            }.onFailure { skipped++ }
         }
         fun resolveDishId(rawName: String): Long? { // 仅查询, 无需 suspend
             val n = rawName.trim(); if (n.isEmpty()) return null
@@ -200,11 +206,13 @@ class SyncRepository(
         val now = DateTime.nowEpochSeconds()
         for (sp in bundle.pantry) {
             val ingId = resolveIngredientId(sp.ingredientName) ?: continue
-            db.transaction {
-                q.insertPantryIfAbsent(ingredient_id = ingId, added_at = now)
-                q.activatePantry(serving_count = sp.servingCount.coerceAtLeast(0).toLong(), added_at = now, ingredient_id = ingId)
-            }
-            pantryMerged++
+            runCatching {
+                db.transaction {
+                    q.insertPantryIfAbsent(ingredient_id = ingId, added_at = now)
+                    q.activatePantry(serving_count = sp.servingCount.coerceAtLeast(0).toLong(), added_at = now, ingredient_id = ingId)
+                }
+                pantryMerged++
+            }.onFailure { skipped++ }
         }
 
         // 健康档案：按人群名启用(seed 人群, 名字稳定)。
@@ -221,11 +229,13 @@ class SyncRepository(
             for (fav in bundle.favorites) {
                 val fname = fav.name.trim()
                 if (fname.isEmpty() || fname in existingComboNames) continue
-                val dishIds = fav.dishNames.mapNotNull { resolveDishId(it) }.distinct()
-                if (dishIds.isNotEmpty()) {
-                    favoriteRepo.createCombo(fname, dishIds)
-                    favAdded++
-                }
+                runCatching {
+                    val dishIds = fav.dishNames.mapNotNull { resolveDishId(it) }.distinct()
+                    if (dishIds.isNotEmpty()) {
+                        favoriteRepo.createCombo(fname, dishIds)
+                        favAdded++
+                    }
+                }.onFailure { skipped++ }
             }
         }
 
@@ -236,17 +246,21 @@ class SyncRepository(
             val mealTypeId = q.selectMealTypeIdByCode(code).executeAsOneOrNull() ?: continue
             val dishIds = m.dishNames.mapNotNull { resolveDishId(it) }.distinct()
             if (dishIds.isEmpty()) continue
-            q.selectMealRecordIdByDateType(m.date, mealTypeId).executeAsOneOrNull()?.let { old ->
-                db.transaction { q.deleteMealRecordDishesHard(old); q.deleteMealRecordHard(old) }
-            }
-            mealRepo.save(
-                date = DateTime.parseDate(m.date),
-                mealTypeId = mealTypeId,
-                mealTime = runCatching { DateTime.parseTime(m.mealTime) }.getOrElse { DateTime.parseTime("12:00") },
-                note = m.note,
-                dishIds = dishIds,
-            )
-            mealsMerged++
+            // [AI修改] 整段 runCatching：date 非法(parseDate 抛)等坏行只跳过该餐、不中断整批合并。
+            runCatching {
+                val date = DateTime.parseDate(m.date) // 非法日期在此抛出→本餐跳过，不影响其余
+                q.selectMealRecordIdByDateType(m.date, mealTypeId).executeAsOneOrNull()?.let { old ->
+                    db.transaction { q.deleteMealRecordDishesHard(old); q.deleteMealRecordHard(old) }
+                }
+                mealRepo.save(
+                    date = date,
+                    mealTypeId = mealTypeId,
+                    mealTime = runCatching { DateTime.parseTime(m.mealTime) }.getOrElse { DateTime.parseTime("12:00") },
+                    note = m.note,
+                    dishIds = dishIds,
+                )
+                mealsMerged++
+            }.onFailure { skipped++ }
         }
 
         // 步骤模板：同名(预设或自建)跳过，缺则新建为自建。
@@ -256,8 +270,10 @@ class SyncRepository(
                 val tname = st.name.trim()
                 val steps = st.steps.map { it.trim() }.filter { it.isNotBlank() }
                 if (tname.isEmpty() || steps.isEmpty() || tname in existingNames) continue
-                stepTemplateRepo.createTemplate(tname, steps)
-                stepTplAdded++
+                runCatching {
+                    stepTemplateRepo.createTemplate(tname, steps)
+                    stepTplAdded++
+                }.onFailure { skipped++ }
             }
         }
 
@@ -269,15 +285,17 @@ class SyncRepository(
                 val gname = g.name.trim()
                 val items = g.items.map { IngredientGroupItem(it.name.trim(), it.isMain, it.quantity) }.filter { it.name.isNotBlank() }
                 if (gname.isEmpty() || items.isEmpty() || gname in existingNames) continue
-                ingredientGroupRepo.createGroup(gname, items)
-                groupAdded++
+                runCatching {
+                    ingredientGroupRepo.createGroup(gname, items)
+                    groupAdded++
+                }.onFailure { skipped++ }
             }
         }
 
         SyncImportResult(
             ingredientsAdded = ingAdded, dishesAdded = dishAdded, dishesUpdated = dishUpdated,
             pantryMerged = pantryMerged, healthMerged = healthMerged, favoritesAdded = favAdded, mealsMerged = mealsMerged,
-            stepTemplatesAdded = stepTplAdded, ingredientGroupsAdded = groupAdded,
+            stepTemplatesAdded = stepTplAdded, ingredientGroupsAdded = groupAdded, skipped = skipped,
         )
     }
 }
