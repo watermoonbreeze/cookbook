@@ -176,7 +176,7 @@ class FlowIntegrationTest {
         r.pantry.addToPantry(potato, null, null, null, "")
         r.pantry.addServings(potato, 2)
 
-        val ds = RecommendationDataSource(db, r.pantry, r.dish, HealthProfileRepository(db), r.ing, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
+        val ds = RecommendationDataSource(db, r.pantry, r.dish, com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)), r.ing, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
         val input = ds.gather(RecommendMode.PANTRY)
         assertTrue(input.dishes.any { it.id == dishId }, "在手土豆→醋溜土豆丝应进候选")
         val cands = HealthRuleEngine().evaluate(input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds, input.shortageIngredientIds)

@@ -130,9 +130,16 @@ class FamilyRepository(
         db.transaction { q.clearAllFocus(); q.setFocusMember(id) }
     }
 
-    /** 全家启用成员的病种并集(忌口口径)。[AI生成] */
+    /**
+     * 忌口口径 = 全家成员病种 ∪ 旧个人健康档案(user_health_profile 启用)，去重。[AI生成]
+     *
+     * 并入旧档案：默认成员「我」由旧档案迁移而来；且「我的」页仍可编辑个人档案，
+     * 两处都汇入忌口并集，避免迁移后编辑漂移导致漏忌口。
+     */
     suspend fun allEnabledCareIds(): List<Long> = withContext(ioDispatcher) {
-        q.selectAllEnabledCareIds().executeAsList()
+        val fromMembers = q.selectAllEnabledCareIds().executeAsList()
+        val fromLegacy = q.selectEnabledHealthProfiles().executeAsList().map { it.care_category_id }
+        (fromMembers + fromLegacy).distinct()
     }
 
     private fun toModel(

@@ -1673,3 +1673,7 @@ selectAllEnabledCareIds:
 SELECT DISTINCT mc.care_category_id FROM member_care mc
 JOIN family_member fm ON mc.member_id = fm.id
 WHERE fm.status = 1;
+
+-- [AI生成] 按 id 批量取分类名(忌口并集标签用)。
+selectFoodCategoryNamesByIds:
+SELECT name FROM food_category WHERE id IN ? AND status = 1;

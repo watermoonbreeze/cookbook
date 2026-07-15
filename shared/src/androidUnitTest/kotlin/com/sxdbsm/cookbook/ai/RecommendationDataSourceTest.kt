@@ -39,7 +39,7 @@ class RecommendationDataSourceTest {
         val ingredientRepo = IngredientRepository(db)
         val dishRepo = DishRepository(db)
         val pantry = PantryRepository(db)
-        val ds = RecommendationDataSource(db, pantry, dishRepo, HealthProfileRepository(db), ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
+        val ds = RecommendationDataSource(db, pantry, dishRepo, com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)), ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
 
         val porkId = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
         // 用户自建"我的红烧肉"：主料=预设五花肉，无步骤、无图片、source=user
@@ -71,7 +71,7 @@ class RecommendationDataSourceTest {
         val dishRepo = DishRepository(db)
         val pantry = PantryRepository(db)
         val mealRepo = MealRecordRepository(db)
-        val ds = RecommendationDataSource(db, pantry, dishRepo, HealthProfileRepository(db), ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
+        val ds = RecommendationDataSource(db, pantry, dishRepo, com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)), ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
 
         val pork = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
         val dishId = dishRepo.saveDish(
@@ -106,7 +106,7 @@ class RecommendationDataSourceTest {
         val ingredientRepo = IngredientRepository(db)
         val dishRepo = DishRepository(db)
         val pantry = PantryRepository(db)
-        val ds = RecommendationDataSource(db, pantry, dishRepo, HealthProfileRepository(db), ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
+        val ds = RecommendationDataSource(db, pantry, dishRepo, com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)), ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
 
         val pork = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
         val presetHongshao = q.selectAllDishes().executeAsList().first { it.name == "红烧肉" }.id
@@ -143,7 +143,7 @@ class RecommendationDataSourceTest {
         val pantry = PantryRepository(db)
         val ingredientRepo = IngredientRepository(db)
         val dataSource = RecommendationDataSource(
-            db, pantry, DishRepository(db), HealthProfileRepository(db), ingredientRepo,
+            db, pantry, DishRepository(db), com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)), ingredientRepo,
             com.sxdbsm.cookbook.data.repository.NutritionRepository(db),
         )
 

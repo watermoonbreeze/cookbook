@@ -12,7 +12,6 @@ import com.sxdbsm.cookbook.ai.model.RecommendMode
 import com.sxdbsm.cookbook.ai.model.RuleDish
 import com.sxdbsm.cookbook.ai.model.RuleDishIngredient
 import com.sxdbsm.cookbook.data.repository.DishRepository
-import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
@@ -38,7 +37,7 @@ class RecommendationDataSource(
     private val db: CookbookDatabase,
     private val pantryRepo: PantryRepository,
     private val dishRepo: DishRepository,
-    private val healthRepo: HealthProfileRepository,
+    private val familyRepo: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI修改] 忌口取全家成员病种并集(含旧个人档案)。
     private val ingredientRepo: IngredientRepository,
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] P2：营养互补度画像
 ) {
@@ -78,13 +77,13 @@ class RecommendationDataSource(
         val dishes = fullDishes.map { it.toRuleDish(seasoningIds) }
 
         // 忌口约束：启用的健康档案 → care 分类 → 调养规则。
-        val enabledProfiles = healthRepo.listAll().filter { it.enabled }
-        val careCategoryIds = enabledProfiles.map { it.crowdTypeId }
+        val careCategoryIds = familyRepo.allEnabledCareIds()
         val careIngredients = if (careCategoryIds.isEmpty()) emptyList() else ingredientRepo.listByCareCategories(careCategoryIds)
         val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
-        val labels = enabledProfiles.map { "关注:${it.crowdName}" } // 粗标签给模型(不含敏感明细)
+        val labels = if (careCategoryIds.isEmpty()) emptyList()
+            else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList().map { "关注:$it" } // 粗标签给模型(不含敏感明细)
 
         // [AI修改] B2：改为**日期窗口**去重(默认一周)——取窗口内吃过的菜及其距今天数，用于排最后+标注"N天前吃过"。
         val sinceDate = DateTime.formatDate(DateTime.plusDays(today, -recentWindowDays.coerceAtLeast(1)))
@@ -215,13 +214,12 @@ class RecommendationDataSource(
     suspend fun gatherForPlan(): PlanContext = withContext(ioDispatcher) {
         val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
         // 健康约束
-        val enabledProfiles = healthRepo.listAll().filter { it.enabled }
-        val careCategoryIds = enabledProfiles.map { it.crowdTypeId }
+        val careCategoryIds = familyRepo.allEnabledCareIds()
         val careIngredients = if (careCategoryIds.isEmpty()) emptyList() else ingredientRepo.listByCareCategories(careCategoryIds)
         val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
-        val healthAware = enabledProfiles.isNotEmpty()
+        val healthAware = careCategoryIds.isNotEmpty()
         // 营养/应季标签(按食材)
         val tagRows = q.selectNutritionSeasonTags().executeAsList()
         val nutritionByIng = tagRows.filter { it.dim == "nutrition" }.groupBy({ it.ingredient_id }, { it.tag_name }).mapValues { it.value.toSet() }
