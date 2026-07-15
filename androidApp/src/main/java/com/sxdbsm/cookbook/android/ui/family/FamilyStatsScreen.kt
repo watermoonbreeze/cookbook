@@ -131,7 +131,7 @@ fun FamilyStatsScreen(
                 Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp, modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
                         Text("今日各成员摄入(按饭量系数估算)", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                        Text("点成员名可标「没吃」，其份额分给其余在场成员(仅本次查看，不保存)。", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                        Text("点成员名可标「没吃」，其份额分给其余在场成员；标记保存到当天，重开仍在，再点一次取消。", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                         Spacer(Modifier.height(8.dp))
                         stats.breakdown.forEach { mi ->
                             Row(

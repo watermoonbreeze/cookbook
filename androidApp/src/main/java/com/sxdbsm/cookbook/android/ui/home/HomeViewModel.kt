@@ -113,14 +113,16 @@ class HomeViewModel(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayNutrition: StateFlow<TodayNutrition?> =
-        combine(mealRepo.observeTimelineWindow(today, today), family.observeFocusBody(), family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today))) { cards, body, share -> Triple(cards, body, share) }
-            .mapLatest { (cards, body, share) ->
-                if (share <= 0.0) return@mapLatest null // [AI修改] 关注成员今天未在家吃→不显今日营养卡
+        combine(mealRepo.observeTimelineWindow(today, today), family.observeFocusBody(), family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today)), explicitGroups) { cards, body, share, explicit ->
+                if (share <= 0.0) return@combine null // [AI修改] 关注成员今天未在家吃→不显今日营养卡
                 val ids = cards.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
-                if (ids.isEmpty()) return@mapLatest null
+                if (ids.isEmpty()) return@combine null
                 val totals = nutritionRepo.totalOf(ids)
-                if (totals.energyKcal <= 0) return@mapLatest null
+                if (totals.energyKcal <= 0) return@combine null
                 val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
+                // [AI生成] 今日"还缺什么"如实解读(缺优质蛋白/主食/蔬菜)，非推荐非医嘱。
+                val mains = cards.flatMap { it.meals }.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
+                val gaps = FoodGroup.nutritionGaps(FoodGroup.groupsOf(mains, explicit))
                 // [AI修改] 今日营养卡按关注成员个人摄入(全家餐×份额)展示 + 达标评定。
                 val kcal = totals.energyKcal * share
                 TodayNutrition(
@@ -130,6 +132,7 @@ class HomeViewModel(
                     carbG = (totals.carbG * share).roundToInt(),
                     target = target,
                     status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, it) },
+                    gaps = gaps,
                 )
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -172,6 +175,7 @@ data class TodayNutrition(
     val carbG: Int,
     val target: Int?, // 每日目标(填了身体数据才有)
     val status: com.sxdbsm.cookbook.domain.model.CalorieStatus?,
+    val gaps: List<String> = emptyList(), // [AI生成] 今日三支柱里还缺哪几类(优质蛋白/主食/蔬菜)，如实非医嘱
 )
 
 /** 某一年的平均营养级别(色系墙往年概览用)。[AI生成] */

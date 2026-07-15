@@ -110,6 +110,15 @@ fun NutritionTodayCard(data: TodayNutrition, modifier: Modifier = Modifier) {
                 Spacer(Modifier.width(10.dp))
                 MacroLegend(Color(0xFF6E9BD1), "碳水 ${data.carbG}g")
             }
+            // [AI生成] "还缺什么"如实解读(仅陈述缺哪类食物组,非推荐具体菜/非医嘱)。
+            if (data.gaps.isNotEmpty()) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "今天还缺 ${data.gaps.joinToString("、")}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

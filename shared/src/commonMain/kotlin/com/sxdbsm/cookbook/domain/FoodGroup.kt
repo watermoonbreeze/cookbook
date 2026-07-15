@@ -163,6 +163,21 @@ object FoodGroup {
     val PROTEIN_GROUPS = setOf(Group.FISH, Group.RED_MEAT, Group.WHITE_MEAT, Group.EGG, Group.DAIRY, Group.BEAN)
 
     /**
+     * 三大支柱里当前"还缺哪几类"(如实归纳，非推荐、非医嘱)。[AI生成]
+     *
+     * 只陈述"缺优质蛋白/主食/蔬菜"这三支柱中未覆盖的项，供首页今日卡"还缺什么"提示。
+     * 空(无记录)或三支柱齐时返回空列表(不显示)。措辞与 nutritionSummary 一致，不含推测性内容。
+     */
+    fun nutritionGaps(groups: List<Group>): List<String> {
+        if (groups.isEmpty()) return emptyList()
+        val gaps = mutableListOf<String>()
+        if (groups.none { it in PROTEIN_GROUPS }) gaps += "优质蛋白"
+        if (Group.STAPLE !in groups) gaps += "主食"
+        if (groups.none { it == Group.VEGETABLE || it == Group.FUNGI || it == Group.FRUIT }) gaps += "蔬菜"
+        return gaps
+    }
+
+    /**
      * 营养均衡级别 0~4。[AI生成]
      *
      * 按三大支柱覆盖度评级：优质蛋白 / 主食·碳水 / 蔬果·膳食纤维。
