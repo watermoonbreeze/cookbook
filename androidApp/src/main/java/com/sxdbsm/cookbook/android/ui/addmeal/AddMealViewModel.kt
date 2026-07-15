@@ -320,7 +320,8 @@ class AddMealViewModel(
         AppLogger.d(TAG, "save meals begin: date=${s.date} drafts=${drafts.map { it.mealTypeId to it.dishIds }}") // [AI生成] 记录保存前的餐食草稿摘要。
         viewModelScope.launch {
             // [AI修改] viewModelScope 会随 ViewModel 销毁自动取消，避免页面关闭后继续持有 UI。
-            _state.value = s.copy(saving = true)
+            // [AI修改] D10：saving 标志用最新 _state.value 写回(不用启动前捕获的 s 快照)，避免理论上冲掉并发字段。
+            _state.value = _state.value.copy(saving = true)
             runCatching {
                 // [AI修改] 抬喜爱度基线=loadedFromDate：编辑同日=本日、移动=来源日、新增=null(视目标日)。
                 // 修"移动到空日期时把来源日已计过的菜再+1"的 bug。

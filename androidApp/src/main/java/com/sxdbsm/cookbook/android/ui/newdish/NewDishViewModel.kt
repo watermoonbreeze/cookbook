@@ -558,7 +558,8 @@ class NewDishViewModel(
         val s = _state.value
         if (s.name.isBlank() || s.loading) return
         viewModelScope.launch {
-            _state.value = s.copy(saving = true)
+            // [AI修改] D10：saving 标志用最新 _state.value 写回，不用启动前捕获的 s 快照。
+            _state.value = _state.value.copy(saving = true)
             runCatching {
                 dishRepo.saveDish(
                     id = s.editingId ?: 0L,
