@@ -48,6 +48,39 @@ data class BodyMetrics(
     val activityEnum: ActivityLevel get() = ActivityLevel.fromName(activity)
 }
 
+/**
+ * 家庭成员档案。[AI生成] 多人记菜：各自身体数据 + 饭量系数 + 病种。
+ *
+ * 饭量系数(portionCoefficient)：把一餐的全家总热量按各成员系数占比分到人(个人摄入估算)。
+ * isSelf=默认「我」(不可删)；isFocus=主要关注成员(达标/色系墙默认围绕他)。careCategoryIds=该成员病种(忌口取全家并集)。
+ */
+data class FamilyMember(
+    val id: Long,
+    val name: String,
+    val gender: String = Gender.MALE.name,
+    val heightCm: Double? = null,
+    val weightKg: Double? = null,
+    val age: Int? = null,
+    val activity: String = ActivityLevel.MODERATE.name,
+    val portionCoefficient: Double = 1.0,
+    val isSelf: Boolean = false,
+    val isFocus: Boolean = false,
+    val careCategoryIds: List<Long> = emptyList(),
+) {
+    /** 该成员的身体数据(算每日目标热量用)。[AI生成] */
+    fun toBodyMetrics(): BodyMetrics = BodyMetrics(gender = gender, heightCm = heightCm, weightKg = weightKg, age = age, activity = activity)
+
+    companion object {
+        /** 按性别/年龄给饭量系数默认值：成年男1.2/成年女1.0/老人0.8/小孩0.5。[AI生成] */
+        fun defaultCoefficient(gender: String, age: Int?): Double = when {
+            age != null && age < 12 -> 0.5
+            age != null && age >= 60 -> 0.8
+            gender == Gender.FEMALE.name -> 1.0
+            else -> 1.2
+        }
+    }
+}
+
 /** 当天热量相对目标的达标状态。[AI生成] */
 enum class CalorieStatus(val label: String) { BELOW("偏低"), ON("达标"), ABOVE("超标") }
 

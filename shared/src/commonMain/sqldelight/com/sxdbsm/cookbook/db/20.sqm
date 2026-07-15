@@ -1,0 +1,25 @@
+-- [AI生成] v20：家庭成员档案（多人记菜）。
+-- 新增 family_member（各自身体数据/饭量系数/is_self/is_focus）+ member_care（每成员病种，忌口取全家并集）。
+-- 注意：纯新表，老库升级安全；默认成员「我」与旧健康档案迁移在运行时幂等处理(FamilyRepository.ensureInitialized)，不在迁移里插数据。
+
+CREATE TABLE family_member (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    gender TEXT NOT NULL DEFAULT 'MALE',
+    height_cm REAL,
+    weight_kg REAL,
+    age INTEGER,
+    activity TEXT NOT NULL DEFAULT 'MODERATE',
+    portion_coefficient REAL NOT NULL DEFAULT 1.0,
+    is_self INTEGER NOT NULL DEFAULT 0,
+    is_focus INTEGER NOT NULL DEFAULT 0,
+    sort INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE member_care (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    care_category_id INTEGER NOT NULL,
+    PRIMARY KEY (member_id, care_category_id)
+);

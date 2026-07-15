@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
 
     private val prefs: PreferenceRepository by inject() // [AI修改] 从 Koin 获取 shared 层偏好仓库。
     private val seeder: PresetDataSeeder by inject() // [AI修改] 授权并创建公共目录后再初始化预置数据。
+    private val familyRepo: com.sxdbsm.cookbook.data.repository.FamilyRepository by inject() // [AI生成] 家庭档案：首启建默认成员「我」并迁旧数据。
     private val openTimerRequested = mutableStateOf(false) // [AI生成] 通知点击请求打开烹饪计时页。
 
     companion object {
@@ -101,7 +102,7 @@ class MainActivity : ComponentActivity() {
         LaunchedEffect(initAttempt) {
             initError = null
             // [AI修改] seed 放到权限和公共目录准备之后，避免 Application 启动时提前创建数据库。
-            runCatching { seeder.seedIfNeeded() }
+            runCatching { seeder.seedIfNeeded(); familyRepo.ensureInitialized() }
                 .onSuccess {
                     initialized = true
                     AppLogger.event("app_start", mapOf("storageReady" to true, "initAttempt" to initAttempt)) // [AI生成] 内测埋点：记录应用启动和初始化成功。

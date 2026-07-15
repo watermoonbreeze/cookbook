@@ -337,6 +337,32 @@ CREATE TABLE user_health_profile (
 
 CREATE UNIQUE INDEX uq_user_health_profile ON user_health_profile(care_category_id);
 
+-- ========== 家庭成员档案（多人记菜） ==========
+
+-- [AI生成] 家庭成员：各自身体数据(算各自每日目标)、饭量系数(把全家餐热量按比例分到人)、is_self=默认「我」、is_focus=主要关注成员。
+CREATE TABLE family_member (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    gender TEXT NOT NULL DEFAULT 'MALE',
+    height_cm REAL,
+    weight_kg REAL,
+    age INTEGER,
+    activity TEXT NOT NULL DEFAULT 'MODERATE',
+    portion_coefficient REAL NOT NULL DEFAULT 1.0,
+    is_self INTEGER NOT NULL DEFAULT 0,
+    is_focus INTEGER NOT NULL DEFAULT 0,
+    sort INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+);
+
+-- [AI生成] 成员病种：每成员各自的调养病种(care_category_id 对齐 user_health_profile 口径)。忌口取全家启用成员并集。
+CREATE TABLE member_care (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    care_category_id INTEGER NOT NULL,
+    PRIMARY KEY (member_id, care_category_id)
+);
+
 -- ========== 厨房小助手 ==========
 
 -- [AI生成] 烹饪计时模板只保存用户配置，不保存运行/暂停/响铃等临时状态。
@@ -1592,3 +1618,58 @@ UPDATE pantry SET status = 0, serving_count = 0 WHERE ingredient_id = :ingredien
 
 countPantry:
 SELECT COUNT(*) FROM pantry WHERE status = 1;
+
+-- ===== family_member（家庭成员档案） =====
+
+insertFamilyMember:
+INSERT INTO family_member(name, gender, height_cm, weight_kg, age, activity, portion_coefficient, is_self, is_focus, sort, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+selectAllFamilyMembers:
+SELECT * FROM family_member WHERE status = 1 ORDER BY is_self DESC, sort, id;
+
+selectFamilyMemberById:
+SELECT * FROM family_member WHERE id = ? AND status = 1;
+
+selectSelfMemberId:
+SELECT id FROM family_member WHERE is_self = 1 AND status = 1 ORDER BY id LIMIT 1;
+
+selectFocusMember:
+SELECT * FROM family_member WHERE is_focus = 1 AND status = 1 ORDER BY id LIMIT 1;
+
+countFamilyMembers:
+SELECT COUNT(*) FROM family_member WHERE status = 1;
+
+updateFamilyMember:
+UPDATE family_member SET name = ?, gender = ?, height_cm = ?, weight_kg = ?, age = ?, activity = ?, portion_coefficient = ? WHERE id = ?;
+
+softDeleteFamilyMember:
+UPDATE family_member SET status = 0 WHERE id = ? AND is_self = 0;
+
+clearAllFocus:
+UPDATE family_member SET is_focus = 0;
+
+setFocusMember:
+UPDATE family_member SET is_focus = 1 WHERE id = ?;
+
+-- ===== member_care（成员病种，忌口取全家并集） =====
+
+insertMemberCare:
+INSERT OR IGNORE INTO member_care(member_id, care_category_id) VALUES (?, ?);
+
+deleteMemberCare:
+DELETE FROM member_care WHERE member_id = ? AND care_category_id = ?;
+
+deleteAllMemberCare:
+DELETE FROM member_care WHERE member_id = ?;
+
+selectMemberCareIds:
+SELECT care_category_id FROM member_care WHERE member_id = ?;
+
+selectAllEnabledCareIds:
+SELECT DISTINCT mc.care_category_id FROM member_care mc
+JOIN family_member fm ON mc.member_id = fm.id
+WHERE fm.status = 1;
