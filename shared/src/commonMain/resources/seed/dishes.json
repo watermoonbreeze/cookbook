@@ -6534,11 +6534,15 @@
     "ingredients": [
       {
         "ingredient": "大黑菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6557,11 +6561,15 @@
     "ingredients": [
       {
         "ingredient": "菜苔",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6580,11 +6588,15 @@
     "ingredients": [
       {
         "ingredient": "空心菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6603,11 +6615,15 @@
     "ingredients": [
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6626,11 +6642,15 @@
     "ingredients": [
       {
         "ingredient": "上海青",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6649,11 +6669,15 @@
     "ingredients": [
       {
         "ingredient": "油麦菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6672,11 +6696,15 @@
     "ingredients": [
       {
         "ingredient": "小白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6695,11 +6723,15 @@
     "ingredients": [
       {
         "ingredient": "杭白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6718,11 +6750,15 @@
     "ingredients": [
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6741,11 +6777,15 @@
     "ingredients": [
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6764,11 +6804,15 @@
     "ingredients": [
       {
         "ingredient": "西兰花",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6787,11 +6831,15 @@
     "ingredients": [
       {
         "ingredient": "菜花",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6810,11 +6858,15 @@
     "ingredients": [
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6833,11 +6885,15 @@
     "ingredients": [
       {
         "ingredient": "卷心菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6856,11 +6912,15 @@
     "ingredients": [
       {
         "ingredient": "豆芽",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6879,11 +6939,15 @@
     "ingredients": [
       {
         "ingredient": "豆芽",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6902,11 +6966,15 @@
     "ingredients": [
       {
         "ingredient": "苦瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6925,11 +6993,15 @@
     "ingredients": [
       {
         "ingredient": "苦瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6948,15 +7020,21 @@
     "ingredients": [
       {
         "ingredient": "茄子",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6975,11 +7053,15 @@
     "ingredients": [
       {
         "ingredient": "茄子",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -6998,15 +7080,21 @@
     "ingredients": [
       {
         "ingredient": "茄子",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "豆瓣酱",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7025,11 +7113,15 @@
     "ingredients": [
       {
         "ingredient": "冬瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7048,11 +7140,15 @@
     "ingredients": [
       {
         "ingredient": "冬瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7071,7 +7167,9 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7090,11 +7188,15 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "小葱",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7113,11 +7215,15 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7136,15 +7242,21 @@
     "ingredients": [
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "醋",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -7163,11 +7275,15 @@
     "ingredients": [
       {
         "ingredient": "莲藕",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7186,11 +7302,15 @@
     "ingredients": [
       {
         "ingredient": "莲藕",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7209,11 +7329,15 @@
     "ingredients": [
       {
         "ingredient": "豆干",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7232,11 +7356,15 @@
     "ingredients": [
       {
         "ingredient": "胡萝卜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7255,11 +7383,15 @@
     "ingredients": [
       {
         "ingredient": "紫甘蓝",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "醋",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -7278,11 +7410,15 @@
     "ingredients": [
       {
         "ingredient": "四季豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7301,11 +7437,15 @@
     "ingredients": [
       {
         "ingredient": "豇豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7324,11 +7464,15 @@
     "ingredients": [
       {
         "ingredient": "海带",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7347,11 +7491,15 @@
     "ingredients": [
       {
         "ingredient": "海带",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7370,11 +7518,15 @@
     "ingredients": [
       {
         "ingredient": "绿甘蓝",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7393,11 +7545,15 @@
     "ingredients": [
       {
         "ingredient": "芹菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7416,11 +7572,15 @@
     "ingredients": [
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7439,11 +7599,15 @@
     "ingredients": [
       {
         "ingredient": "芹菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "豆干",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7462,11 +7626,15 @@
     "ingredients": [
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7485,11 +7653,15 @@
     "ingredients": [
       {
         "ingredient": "猪血",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7508,11 +7680,15 @@
     "ingredients": [
       {
         "ingredient": "猪血",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "油豆腐",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7531,11 +7707,15 @@
     "ingredients": [
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "油豆腐",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7554,11 +7734,15 @@
     "ingredients": [
       {
         "ingredient": "金针菇",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7577,11 +7761,15 @@
     "ingredients": [
       {
         "ingredient": "金针菇",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "蚝油",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -7600,11 +7788,15 @@
     "ingredients": [
       {
         "ingredient": "平菇",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7623,11 +7815,15 @@
     "ingredients": [
       {
         "ingredient": "杏鲍菇",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "孜然",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7646,11 +7842,15 @@
     "ingredients": [
       {
         "ingredient": "西兰花",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "口蘑",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7669,11 +7869,15 @@
     "ingredients": [
       {
         "ingredient": "素鸡",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7692,11 +7896,15 @@
     "ingredients": [
       {
         "ingredient": "西芹",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7715,11 +7923,15 @@
     "ingredients": [
       {
         "ingredient": "苋菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7738,11 +7950,15 @@
     "ingredients": [
       {
         "ingredient": "苋菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7761,11 +7977,15 @@
     "ingredients": [
       {
         "ingredient": "生菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7784,11 +8004,15 @@
     "ingredients": [
       {
         "ingredient": "生菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "蚝油",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -7807,11 +8031,15 @@
     "ingredients": [
       {
         "ingredient": "娃娃菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7830,15 +8058,21 @@
     "ingredients": [
       {
         "ingredient": "娃娃菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "皮蛋",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       },
       {
         "ingredient": "咸鸭蛋",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7857,11 +8091,15 @@
     "ingredients": [
       {
         "ingredient": "茼蒿",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7880,11 +8118,15 @@
     "ingredients": [
       {
         "ingredient": "茼蒿",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7903,11 +8145,15 @@
     "ingredients": [
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7926,11 +8172,15 @@
     "ingredients": [
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "蚝油",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -7949,11 +8199,15 @@
     "ingredients": [
       {
         "ingredient": "黄瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7972,11 +8226,15 @@
     "ingredients": [
       {
         "ingredient": "茄子",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -7995,15 +8253,21 @@
     "ingredients": [
       {
         "ingredient": "皮蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       },
       {
         "ingredient": "香菜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8022,11 +8286,15 @@
     "ingredients": [
       {
         "ingredient": "西红柿",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "白糖",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8045,15 +8313,21 @@
     "ingredients": [
       {
         "ingredient": "土豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "醋",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8072,11 +8346,15 @@
     "ingredients": [
       {
         "ingredient": "秋葵",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -8095,11 +8373,15 @@
     "ingredients": [
       {
         "ingredient": "秋葵",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8118,11 +8400,15 @@
     "ingredients": [
       {
         "ingredient": "青椒",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8141,11 +8427,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "小葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8164,11 +8454,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "盐",
-        "main": false
+        "main": false,
+        "quantity": 3,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8187,11 +8481,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "小葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8210,11 +8508,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "虾米",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8233,11 +8535,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8256,11 +8562,15 @@
     "ingredients": [
       {
         "ingredient": "咸鸭蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8279,11 +8589,15 @@
     "ingredients": [
       {
         "ingredient": "西红柿",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8302,11 +8616,15 @@
     "ingredients": [
       {
         "ingredient": "鸡毛菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8325,15 +8643,21 @@
     "ingredients": [
       {
         "ingredient": "紫菜",
-        "main": true
+        "main": true,
+        "quantity": 10,
+        "unit": "克"
       },
       {
         "ingredient": "虾米",
-        "main": true
+        "main": true,
+        "quantity": 15,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8352,11 +8676,15 @@
     "ingredients": [
       {
         "ingredient": "丝瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8375,11 +8703,15 @@
     "ingredients": [
       {
         "ingredient": "瓠子",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8398,11 +8730,15 @@
     "ingredients": [
       {
         "ingredient": "平菇",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8421,11 +8757,15 @@
     "ingredients": [
       {
         "ingredient": "黄瓜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "皮蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8444,11 +8784,15 @@
     "ingredients": [
       {
         "ingredient": "榨菜",
-        "main": true
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8467,11 +8811,15 @@
     "ingredients": [
       {
         "ingredient": "艾蒿",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8490,11 +8838,15 @@
     "ingredients": [
       {
         "ingredient": "马兰头",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8513,11 +8865,15 @@
     "ingredients": [
       {
         "ingredient": "菊花脑",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8536,11 +8892,15 @@
     "ingredients": [
       {
         "ingredient": "四季豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8559,11 +8919,15 @@
     "ingredients": [
       {
         "ingredient": "蒜薹",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8582,15 +8946,21 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "火腿肠",
-        "main": true
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8609,11 +8979,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -8632,11 +9006,15 @@
     "ingredients": [
       {
         "ingredient": "蒜苗",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8655,11 +9033,15 @@
     "ingredients": [
       {
         "ingredient": "韭菜花",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8678,11 +9060,15 @@
     "ingredients": [
       {
         "ingredient": "芹菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8701,11 +9087,15 @@
     "ingredients": [
       {
         "ingredient": "毛豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8724,15 +9114,21 @@
     "ingredients": [
       {
         "ingredient": "土豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8751,11 +9147,15 @@
     "ingredients": [
       {
         "ingredient": "茭白",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8774,15 +9174,21 @@
     "ingredients": [
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8801,11 +9207,15 @@
     "ingredients": [
       {
         "ingredient": "茼蒿",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8824,15 +9234,21 @@
     "ingredients": [
       {
         "ingredient": "青椒",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "木耳",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8851,11 +9267,15 @@
     "ingredients": [
       {
         "ingredient": "蒜苗",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8874,11 +9294,15 @@
     "ingredients": [
       {
         "ingredient": "丝瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8897,11 +9321,15 @@
     "ingredients": [
       {
         "ingredient": "苦瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8920,11 +9348,15 @@
     "ingredients": [
       {
         "ingredient": "杭白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8943,15 +9375,21 @@
     "ingredients": [
       {
         "ingredient": "牛肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "樟树椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8970,11 +9408,15 @@
     "ingredients": [
       {
         "ingredient": "牛肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -8993,15 +9435,21 @@
     "ingredients": [
       {
         "ingredient": "牛肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9020,11 +9468,15 @@
     "ingredients": [
       {
         "ingredient": "苦瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "牛肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9043,11 +9495,15 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "牛肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9066,15 +9522,21 @@
     "ingredients": [
       {
         "ingredient": "牛肉",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 3,
+        "unit": "克"
       },
       {
         "ingredient": "桂皮",
-        "main": false
+        "main": false,
+        "quantity": 3,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9093,11 +9555,15 @@
     "ingredients": [
       {
         "ingredient": "猪肝",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9116,15 +9582,21 @@
     "ingredients": [
       {
         "ingredient": "猪肝",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9143,11 +9615,15 @@
     "ingredients": [
       {
         "ingredient": "猪肝",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9166,11 +9642,15 @@
     "ingredients": [
       {
         "ingredient": "猪肝",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9189,11 +9669,15 @@
     "ingredients": [
       {
         "ingredient": "猪肝",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9212,11 +9696,15 @@
     "ingredients": [
       {
         "ingredient": "猪心",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9235,11 +9723,15 @@
     "ingredients": [
       {
         "ingredient": "猪腰",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9258,11 +9750,15 @@
     "ingredients": [
       {
         "ingredient": "猪肚",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9281,11 +9777,15 @@
     "ingredients": [
       {
         "ingredient": "猪舌头",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9304,15 +9804,21 @@
     "ingredients": [
       {
         "ingredient": "肥肠",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9331,11 +9837,15 @@
     "ingredients": [
       {
         "ingredient": "肥肠",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "蒜苗",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9354,15 +9864,21 @@
     "ingredients": [
       {
         "ingredient": "鸭杂",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9381,15 +9897,21 @@
     "ingredients": [
       {
         "ingredient": "鸭肫",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "酸菜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "泡椒",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9408,15 +9930,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胗",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "线椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "酸豆角",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9435,15 +9963,21 @@
     "ingredients": [
       {
         "ingredient": "鸭杂",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9462,11 +9996,15 @@
     "ingredients": [
       {
         "ingredient": "鸭肠",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9485,19 +10023,27 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "千张结",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "木耳",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9516,15 +10062,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "泡椒",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9543,15 +10095,21 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9570,15 +10128,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "黑胡椒粉",
-        "main": false
+        "main": false,
+        "quantity": 2,
+        "unit": "克"
       },
       {
         "ingredient": "迷迭香",
-        "main": false
+        "main": false,
+        "quantity": 2,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9597,15 +10161,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "花椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9624,11 +10194,15 @@
     "ingredients": [
       {
         "ingredient": "毛豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9647,11 +10221,15 @@
     "ingredients": [
       {
         "ingredient": "菜花",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9670,15 +10248,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "杏鲍菇",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "孜然",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9697,15 +10281,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "茄子",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9724,11 +10314,15 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "毛豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9747,15 +10341,21 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9774,11 +10374,15 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "土豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9797,15 +10401,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "平菇",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9824,11 +10434,15 @@
     "ingredients": [
       {
         "ingredient": "鸡爪",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -9847,11 +10461,15 @@
     "ingredients": [
       {
         "ingredient": "鸡爪",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "毛豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9870,11 +10488,15 @@
     "ingredients": [
       {
         "ingredient": "翅中",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -9893,11 +10515,15 @@
     "ingredients": [
       {
         "ingredient": "翅中",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9916,11 +10542,15 @@
     "ingredients": [
       {
         "ingredient": "翅中",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "毛豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9939,15 +10569,21 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 3,
+        "unit": "克"
       },
       {
         "ingredient": "桂皮",
-        "main": false
+        "main": false,
+        "quantity": 3,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9966,11 +10602,15 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "彩椒",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -9989,11 +10629,15 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "酸豆角",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10012,15 +10656,21 @@
     "ingredients": [
       {
         "ingredient": "鸭腿",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10039,11 +10689,15 @@
     "ingredients": [
       {
         "ingredient": "鸭腿",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -10062,15 +10716,21 @@
     "ingredients": [
       {
         "ingredient": "鸭腿",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "花椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10089,11 +10749,15 @@
     "ingredients": [
       {
         "ingredient": "鸭翅",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -10112,15 +10776,21 @@
     "ingredients": [
       {
         "ingredient": "老母鸡",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "枸杞",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10139,11 +10809,15 @@
     "ingredients": [
       {
         "ingredient": "老母鸡",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "平菇",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10162,15 +10836,21 @@
     "ingredients": [
       {
         "ingredient": "虾",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10189,11 +10869,15 @@
     "ingredients": [
       {
         "ingredient": "小龙虾",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10212,11 +10896,15 @@
     "ingredients": [
       {
         "ingredient": "河虾",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10235,11 +10923,15 @@
     "ingredients": [
       {
         "ingredient": "虾",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10258,11 +10950,15 @@
     "ingredients": [
       {
         "ingredient": "苦瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "虾仁",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10281,15 +10977,21 @@
     "ingredients": [
       {
         "ingredient": "虾仁",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "芹菜",
-        "main": false
+        "main": false,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10308,15 +11010,21 @@
     "ingredients": [
       {
         "ingredient": "鲈鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10335,15 +11043,21 @@
     "ingredients": [
       {
         "ingredient": "桂鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10362,15 +11076,21 @@
     "ingredients": [
       {
         "ingredient": "桂鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "西红柿",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "小葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10389,11 +11109,15 @@
     "ingredients": [
       {
         "ingredient": "鲫鱼",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10412,11 +11136,15 @@
     "ingredients": [
       {
         "ingredient": "鲫鱼",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10435,11 +11163,15 @@
     "ingredients": [
       {
         "ingredient": "昂刺鱼",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10458,15 +11190,21 @@
     "ingredients": [
       {
         "ingredient": "鳊鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10485,15 +11223,21 @@
     "ingredients": [
       {
         "ingredient": "带鱼",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10512,15 +11256,21 @@
     "ingredients": [
       {
         "ingredient": "草鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "酸菜",
-        "main": false
+        "main": false,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "泡椒",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10539,11 +11289,15 @@
     "ingredients": [
       {
         "ingredient": "草鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10562,11 +11316,15 @@
     "ingredients": [
       {
         "ingredient": "梭子蟹",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10585,15 +11343,21 @@
     "ingredients": [
       {
         "ingredient": "蛤蜊",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10612,11 +11376,15 @@
     "ingredients": [
       {
         "ingredient": "蛤蜊",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "雪菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10635,11 +11403,15 @@
     "ingredients": [
       {
         "ingredient": "螺蛳",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10658,11 +11430,15 @@
     "ingredients": [
       {
         "ingredient": "螺蛳",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10681,11 +11457,15 @@
     "ingredients": [
       {
         "ingredient": "小鱼干",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10704,11 +11484,15 @@
     "ingredients": [
       {
         "ingredient": "小鱼干",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -10727,11 +11511,15 @@
     "ingredients": [
       {
         "ingredient": "小鱼干",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "剁椒",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10750,15 +11538,21 @@
     "ingredients": [
       {
         "ingredient": "咸鱼",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10777,15 +11571,21 @@
     "ingredients": [
       {
         "ingredient": "草鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10804,11 +11604,15 @@
     "ingredients": [
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10827,11 +11631,15 @@
     "ingredients": [
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "小葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10850,11 +11658,15 @@
     "ingredients": [
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "小葱",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10873,11 +11685,15 @@
     "ingredients": [
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10896,11 +11712,15 @@
     "ingredients": [
       {
         "ingredient": "酸菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10919,11 +11739,15 @@
     "ingredients": [
       {
         "ingredient": "酸菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "冻豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10942,15 +11766,21 @@
     "ingredients": [
       {
         "ingredient": "猪血",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "冻豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "木耳",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10969,11 +11799,15 @@
     "ingredients": [
       {
         "ingredient": "鸭血",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "冻豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -10992,11 +11826,15 @@
     "ingredients": [
       {
         "ingredient": "鸭血",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11015,15 +11853,21 @@
     "ingredients": [
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "冻豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11042,15 +11886,21 @@
     "ingredients": [
       {
         "ingredient": "娃娃菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11069,15 +11919,21 @@
     "ingredients": [
       {
         "ingredient": "娃娃菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11096,11 +11952,15 @@
     "ingredients": [
       {
         "ingredient": "面筋",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11119,11 +11979,15 @@
     "ingredients": [
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11142,11 +12006,15 @@
     "ingredients": [
       {
         "ingredient": "油豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11165,11 +12033,15 @@
     "ingredients": [
       {
         "ingredient": "酸菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11188,11 +12060,15 @@
     "ingredients": [
       {
         "ingredient": "厚百叶",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "洋葱",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11211,11 +12087,15 @@
     "ingredients": [
       {
         "ingredient": "面筋",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11234,11 +12114,15 @@
     "ingredients": [
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "咸菜",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11257,11 +12141,15 @@
     "ingredients": [
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "韭黄",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11280,11 +12168,15 @@
     "ingredients": [
       {
         "ingredient": "雪菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11303,11 +12195,15 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11326,11 +12222,15 @@
     "ingredients": [
       {
         "ingredient": "干豆角",
-        "main": true
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11349,11 +12249,15 @@
     "ingredients": [
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "冻豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11372,11 +12276,15 @@
     "ingredients": [
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "土豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11395,11 +12303,15 @@
     "ingredients": [
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11418,11 +12330,15 @@
     "ingredients": [
       {
         "ingredient": "五花肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11441,15 +12357,21 @@
     "ingredients": [
       {
         "ingredient": "蹄髈",
-        "main": true
+        "main": true,
+        "quantity": 800,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
       },
       {
         "ingredient": "冰糖",
-        "main": false
+        "main": false,
+        "quantity": 20,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11468,11 +12390,15 @@
     "ingredients": [
       {
         "ingredient": "蹄髈",
-        "main": true
+        "main": true,
+        "quantity": 800,
+        "unit": "克"
       },
       {
         "ingredient": "冻豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11491,11 +12417,15 @@
     "ingredients": [
       {
         "ingredient": "酸菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "排骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11514,15 +12444,21 @@
     "ingredients": [
       {
         "ingredient": "排骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "千张结",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11541,11 +12477,15 @@
     "ingredients": [
       {
         "ingredient": "排骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "四季豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11564,11 +12504,15 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "排骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11587,11 +12531,15 @@
     "ingredients": [
       {
         "ingredient": "鸭肉",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "竹笋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11610,11 +12558,15 @@
     "ingredients": [
       {
         "ingredient": "排骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "海带",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11633,11 +12585,15 @@
     "ingredients": [
       {
         "ingredient": "大骨头",
-        "main": true
+        "main": true,
+        "quantity": 600,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11656,11 +12612,15 @@
     "ingredients": [
       {
         "ingredient": "大骨头",
-        "main": true
+        "main": true,
+        "quantity": 600,
+        "unit": "克"
       },
       {
         "ingredient": "黄豆",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11679,11 +12639,15 @@
     "ingredients": [
       {
         "ingredient": "猪心",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11702,11 +12666,15 @@
     "ingredients": [
       {
         "ingredient": "猪心",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡毛菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11725,15 +12693,21 @@
     "ingredients": [
       {
         "ingredient": "扇子骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "冬瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "山药",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11752,11 +12726,15 @@
     "ingredients": [
       {
         "ingredient": "扇子骨",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -11775,15 +12753,21 @@
     "ingredients": [
       {
         "ingredient": "咸鹅",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "银耳",
-        "main": true
+        "main": true,
+        "quantity": 30,
+        "unit": "克"
       },
       {
         "ingredient": "娃娃菜",
-        "main": false
+        "main": false,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11802,11 +12786,15 @@
     "ingredients": [
       {
         "ingredient": "咸鸡",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "银耳",
-        "main": true
+        "main": true,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11825,11 +12813,15 @@
     "ingredients": [
       {
         "ingredient": "老母鸡",
-        "main": true
+        "main": true,
+        "quantity": 600,
+        "unit": "克"
       },
       {
         "ingredient": "银耳",
-        "main": true
+        "main": true,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11848,11 +12840,15 @@
     "ingredients": [
       {
         "ingredient": "小白菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "排骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11871,11 +12867,15 @@
     "ingredients": [
       {
         "ingredient": "鸡毛菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "排骨",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11894,15 +12894,21 @@
     "ingredients": [
       {
         "ingredient": "虾仁",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "鹌鹑蛋",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "西兰花",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11921,11 +12927,15 @@
     "ingredients": [
       {
         "ingredient": "西红柿",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "海带",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11944,11 +12954,15 @@
     "ingredients": [
       {
         "ingredient": "丝瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11967,15 +12981,21 @@
     "ingredients": [
       {
         "ingredient": "黄瓜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "虾米",
-        "main": true
+        "main": true,
+        "quantity": 20,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -11994,11 +13014,15 @@
     "ingredients": [
       {
         "ingredient": "冬瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "虾米",
-        "main": true
+        "main": true,
+        "quantity": 20,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12017,19 +13041,27 @@
     "ingredients": [
       {
         "ingredient": "牛肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12048,15 +13080,21 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "小白菜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12075,15 +13113,21 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "猪肝",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "小白菜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12102,15 +13146,21 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "雪菜",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12129,11 +13179,15 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "小葱",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12152,11 +13206,15 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "黄瓜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12175,11 +13233,15 @@
     "ingredients": [
       {
         "ingredient": "荞麦",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "黄瓜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12198,15 +13260,21 @@
     "ingredients": [
       {
         "ingredient": "刀削面",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "西红柿",
-        "main": false
+        "main": false,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12225,15 +13293,21 @@
     "ingredients": [
       {
         "ingredient": "乌冬面",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "虾仁",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12252,11 +13326,15 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "卷心菜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12275,11 +13353,15 @@
     "ingredients": [
       {
         "ingredient": "年糕",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "卷心菜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12298,11 +13380,15 @@
     "ingredients": [
       {
         "ingredient": "河粉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆芽",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12321,19 +13407,27 @@
     "ingredients": [
       {
         "ingredient": "大米",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "小白菜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12352,19 +13446,27 @@
     "ingredients": [
       {
         "ingredient": "大米",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "酸菜",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12383,15 +13485,21 @@
     "ingredients": [
       {
         "ingredient": "螺蛳粉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "鸭血",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12410,15 +13518,21 @@
     "ingredients": [
       {
         "ingredient": "牛肉丸",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12437,15 +13551,21 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "豆芽",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12464,15 +13584,21 @@
     "ingredients": [
       {
         "ingredient": "面条",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "黄豆酱",
-        "main": false
+        "main": false,
+        "quantity": 2,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -12491,19 +13617,27 @@
     "ingredients": [
       {
         "ingredient": "大米",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "香肠",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "咸肉",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12522,23 +13656,33 @@
     "ingredients": [
       {
         "ingredient": "大米",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "排骨",
-        "main": false
+        "main": false,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "玉米",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "毛豆",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12557,19 +13701,27 @@
     "ingredients": [
       {
         "ingredient": "大米",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "小白菜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       },
       {
         "ingredient": "咸鹅",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12588,15 +13740,21 @@
     "ingredients": [
       {
         "ingredient": "饺子皮",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "芹菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12615,15 +13773,21 @@
     "ingredients": [
       {
         "ingredient": "饺子皮",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12642,15 +13806,21 @@
     "ingredients": [
       {
         "ingredient": "饺子皮",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12669,11 +13839,15 @@
     "ingredients": [
       {
         "ingredient": "馄饨",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12692,15 +13866,21 @@
     "ingredients": [
       {
         "ingredient": "馄饨",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12719,15 +13899,21 @@
     "ingredients": [
       {
         "ingredient": "面粉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12746,15 +13932,21 @@
     "ingredients": [
       {
         "ingredient": "面粉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12773,11 +13965,15 @@
     "ingredients": [
       {
         "ingredient": "土豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12796,11 +13992,15 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12819,11 +14019,15 @@
     "ingredients": [
       {
         "ingredient": "莲藕",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12842,11 +14046,15 @@
     "ingredients": [
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12865,11 +14073,15 @@
     "ingredients": [
       {
         "ingredient": "香菇",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12888,11 +14100,15 @@
     "ingredients": [
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "淀粉",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12911,11 +14127,15 @@
     "ingredients": [
       {
         "ingredient": "冬瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "肉丸",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12934,11 +14154,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "茶叶蛋",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12957,11 +14181,15 @@
     "ingredients": [
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -12980,11 +14208,15 @@
     "ingredients": [
       {
         "ingredient": "鸡爪",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "泡椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13003,11 +14235,15 @@
     "ingredients": [
       {
         "ingredient": "茄子",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13026,11 +14262,15 @@
     "ingredients": [
       {
         "ingredient": "西红柿",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13049,7 +14289,9 @@
     "ingredients": [
       {
         "ingredient": "香肠",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13068,11 +14310,15 @@
     "ingredients": [
       {
         "ingredient": "凉皮",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "黄瓜",
-        "main": false
+        "main": false,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13091,19 +14337,27 @@
     "ingredients": [
       {
         "ingredient": "草鱼",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "面粉",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13122,19 +14376,27 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "土豆",
-        "main": false
+        "main": false,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13153,11 +14415,15 @@
     "ingredients": [
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       },
       {
         "ingredient": "剁椒",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13175,15 +14441,21 @@
     "ingredients": [
       {
         "ingredient": "鸡胸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "花椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13201,19 +14473,27 @@
     "ingredients": [
       {
         "ingredient": "莲藕",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13231,11 +14511,15 @@
     "ingredients": [
       {
         "ingredient": "花生",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "花生油",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -13254,15 +14538,21 @@
     "ingredients": [
       {
         "ingredient": "牛腱",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "桂皮",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13281,11 +14571,15 @@
     "ingredients": [
       {
         "ingredient": "咸鸡",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13303,11 +14597,15 @@
     "ingredients": [
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐皮",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13326,11 +14624,15 @@
     "ingredients": [
       {
         "ingredient": "猪耳朵",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13349,15 +14651,21 @@
     "ingredients": [
       {
         "ingredient": "猪蹄",
-        "main": true
+        "main": true,
+        "quantity": 500,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "桂皮",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13376,11 +14684,15 @@
     "ingredients": [
       {
         "ingredient": "猪肝",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -13399,11 +14711,15 @@
     "ingredients": [
       {
         "ingredient": "腊肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "豇豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13422,11 +14738,15 @@
     "ingredients": [
       {
         "ingredient": "腊肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "卷心菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13445,11 +14765,15 @@
     "ingredients": [
       {
         "ingredient": "腊肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "菜花",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13468,11 +14792,15 @@
     "ingredients": [
       {
         "ingredient": "翅中",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "咸鸭蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13491,11 +14819,15 @@
     "ingredients": [
       {
         "ingredient": "南瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "咸鸭蛋",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13514,11 +14846,15 @@
     "ingredients": [
       {
         "ingredient": "鸡翅",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "可乐",
-        "main": false
+        "main": false,
+        "quantity": 200,
+        "unit": "毫升"
       }
     ],
     "steps": [
@@ -13537,15 +14873,21 @@
     "ingredients": [
       {
         "ingredient": "鸡腿",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       },
       {
         "ingredient": "花椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13564,11 +14906,15 @@
     "ingredients": [
       {
         "ingredient": "卷心菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13587,15 +14933,21 @@
     "ingredients": [
       {
         "ingredient": "西瓜皮",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       },
       {
         "ingredient": "醋",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -13614,11 +14966,15 @@
     "ingredients": [
       {
         "ingredient": "西瓜皮",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -13637,11 +14993,15 @@
     "ingredients": [
       {
         "ingredient": "南瓜头",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13660,11 +15020,15 @@
     "ingredients": [
       {
         "ingredient": "红薯梗",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13683,11 +15047,15 @@
     "ingredients": [
       {
         "ingredient": "橄榄菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13706,11 +15074,15 @@
     "ingredients": [
       {
         "ingredient": "酸菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13729,11 +15101,15 @@
     "ingredients": [
       {
         "ingredient": "雪菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13752,11 +15128,15 @@
     "ingredients": [
       {
         "ingredient": "萝卜干",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13775,19 +15155,27 @@
     "ingredients": [
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "豆芽",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "鸡蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13806,15 +15194,21 @@
     "ingredients": [
       {
         "ingredient": "茭白",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "豆干",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13833,15 +15227,21 @@
     "ingredients": [
       {
         "ingredient": "咸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "芹菜",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13860,11 +15260,15 @@
     "ingredients": [
       {
         "ingredient": "咸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": true
+        "main": true,
+        "quantity": 50,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13883,11 +15287,15 @@
     "ingredients": [
       {
         "ingredient": "咸鸭",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "咸肉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13906,11 +15314,15 @@
     "ingredients": [
       {
         "ingredient": "咸鹅",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "姜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13929,11 +15341,15 @@
     "ingredients": [
       {
         "ingredient": "咸鸭",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13952,11 +15368,15 @@
     "ingredients": [
       {
         "ingredient": "咸猪蹄",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "黄豆",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13975,11 +15395,15 @@
     "ingredients": [
       {
         "ingredient": "咸肉",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "白萝卜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -13998,7 +15422,9 @@
     "ingredients": [
       {
         "ingredient": "香肠",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14017,11 +15443,15 @@
     "ingredients": [
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "香肠",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14040,11 +15470,15 @@
     "ingredients": [
       {
         "ingredient": "香肠",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14063,11 +15497,15 @@
     "ingredients": [
       {
         "ingredient": "大红肠",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14086,11 +15524,15 @@
     "ingredients": [
       {
         "ingredient": "芹菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "火腿肠",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14109,11 +15551,15 @@
     "ingredients": [
       {
         "ingredient": "卷心菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14132,15 +15578,21 @@
     "ingredients": [
       {
         "ingredient": "卷心菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "豆豉",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       },
       {
         "ingredient": "泡椒",
-        "main": false
+        "main": false,
+        "quantity": 30,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14159,11 +15611,15 @@
     "ingredients": [
       {
         "ingredient": "红薯梗",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14182,11 +15638,15 @@
     "ingredients": [
       {
         "ingredient": "扁豆",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14205,15 +15665,21 @@
     "ingredients": [
       {
         "ingredient": "豇豆",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14232,11 +15698,15 @@
     "ingredients": [
       {
         "ingredient": "豇豆",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14255,11 +15725,15 @@
     "ingredients": [
       {
         "ingredient": "豇豆",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14278,11 +15752,15 @@
     "ingredients": [
       {
         "ingredient": "四季豆",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14301,11 +15779,15 @@
     "ingredients": [
       {
         "ingredient": "雪菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "毛豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14324,11 +15806,15 @@
     "ingredients": [
       {
         "ingredient": "毛豆",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14347,11 +15833,15 @@
     "ingredients": [
       {
         "ingredient": "茄子",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "猪肉末",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14370,11 +15860,15 @@
     "ingredients": [
       {
         "ingredient": "西瓜皮",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14393,11 +15887,15 @@
     "ingredients": [
       {
         "ingredient": "菜瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14416,11 +15914,15 @@
     "ingredients": [
       {
         "ingredient": "菜瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14439,15 +15941,21 @@
     "ingredients": [
       {
         "ingredient": "香肠",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "蒜苗",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14466,11 +15974,15 @@
     "ingredients": [
       {
         "ingredient": "黄瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14489,11 +16001,15 @@
     "ingredients": [
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14512,11 +16028,15 @@
     "ingredients": [
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "虾糕",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14535,11 +16055,15 @@
     "ingredients": [
       {
         "ingredient": "冬瓜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "虾糕",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14558,11 +16082,15 @@
     "ingredients": [
       {
         "ingredient": "空心菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14581,11 +16109,15 @@
     "ingredients": [
       {
         "ingredient": "西红柿",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14604,15 +16136,21 @@
     "ingredients": [
       {
         "ingredient": "芹菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "豆干",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14631,11 +16169,15 @@
     "ingredients": [
       {
         "ingredient": "菊花脑",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14654,11 +16196,15 @@
     "ingredients": [
       {
         "ingredient": "酱豆",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14677,11 +16223,15 @@
     "ingredients": [
       {
         "ingredient": "青椒",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14700,11 +16250,15 @@
     "ingredients": [
       {
         "ingredient": "辣椒",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 15,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14723,11 +16277,15 @@
     "ingredients": [
       {
         "ingredient": "辣椒",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "生抽",
-        "main": false
+        "main": false,
+        "quantity": 1,
+        "unit": "勺"
       }
     ],
     "steps": [
@@ -14746,11 +16304,15 @@
     "ingredients": [
       {
         "ingredient": "酸豆角",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14769,11 +16331,15 @@
     "ingredients": [
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14792,11 +16358,15 @@
     "ingredients": [
       {
         "ingredient": "咸菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "辣椒",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14815,11 +16385,15 @@
     "ingredients": [
       {
         "ingredient": "鸭头",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14838,11 +16412,15 @@
     "ingredients": [
       {
         "ingredient": "鸭爪",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "八角",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14861,11 +16439,15 @@
     "ingredients": [
       {
         "ingredient": "鸭肉",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "孜然",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14884,7 +16466,9 @@
     "ingredients": [
       {
         "ingredient": "紫燕百味鸡",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14902,11 +16486,15 @@
     "ingredients": [
       {
         "ingredient": "小白菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "豆腐",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14925,15 +16513,21 @@
     "ingredients": [
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "油豆腐",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14952,11 +16546,15 @@
     "ingredients": [
       {
         "ingredient": "木耳",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14975,11 +16573,15 @@
     "ingredients": [
       {
         "ingredient": "白菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -14998,11 +16600,15 @@
     "ingredients": [
       {
         "ingredient": "菜心",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": true
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15021,11 +16627,15 @@
     "ingredients": [
       {
         "ingredient": "菜心",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15044,11 +16654,15 @@
     "ingredients": [
       {
         "ingredient": "生菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "大蒜",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15067,11 +16681,15 @@
     "ingredients": [
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15090,11 +16708,15 @@
     "ingredients": [
       {
         "ingredient": "大黑菜",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "香菇",
-        "main": true
+        "main": true,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15113,11 +16735,15 @@
     "ingredients": [
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15136,15 +16762,21 @@
     "ingredients": [
       {
         "ingredient": "青占鱼",
-        "main": true
+        "main": true,
+        "quantity": 400,
+        "unit": "克"
       },
       {
         "ingredient": "干辣椒",
-        "main": false
+        "main": false,
+        "quantity": 5,
+        "unit": "克"
       },
       {
         "ingredient": "小米辣",
-        "main": false
+        "main": false,
+        "quantity": 10,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15163,15 +16795,21 @@
     "ingredients": [
       {
         "ingredient": "菠菜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       },
       {
         "ingredient": "皮蛋",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       },
       {
         "ingredient": "咸鸭蛋",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15190,11 +16828,15 @@
     "ingredients": [
       {
         "ingredient": "西兰花",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "皮蛋",
-        "main": false
+        "main": false,
+        "quantity": 60,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15213,11 +16855,15 @@
     "ingredients": [
       {
         "ingredient": "猪血",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "韭菜",
-        "main": true
+        "main": true,
+        "quantity": 150,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15236,11 +16882,15 @@
     "ingredients": [
       {
         "ingredient": "猪血",
-        "main": true
+        "main": true,
+        "quantity": 350,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15259,15 +16909,21 @@
     "ingredients": [
       {
         "ingredient": "猪血",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "芹菜",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15286,11 +16942,15 @@
     "ingredients": [
       {
         "ingredient": "猪血",
-        "main": true
+        "main": true,
+        "quantity": 300,
+        "unit": "克"
       },
       {
         "ingredient": "丝瓜",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15309,15 +16969,21 @@
     "ingredients": [
       {
         "ingredient": "咸肉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "木耳",
-        "main": false
+        "main": false,
+        "quantity": 50,
+        "unit": "克"
       },
       {
         "ingredient": "娃娃菜",
-        "main": false
+        "main": false,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15336,15 +17002,21 @@
     "ingredients": [
       {
         "ingredient": "酸菜",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "青椒",
-        "main": false
+        "main": false,
+        "quantity": 80,
+        "unit": "克"
       },
       {
         "ingredient": "猪瘦肉",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15363,11 +17035,15 @@
     "ingredients": [
       {
         "ingredient": "皮蛋",
-        "main": true
+        "main": true,
+        "quantity": 120,
+        "unit": "克"
       },
       {
         "ingredient": "粉丝",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15386,7 +17062,9 @@
     "ingredients": [
       {
         "ingredient": "大红肠",
-        "main": true
+        "main": true,
+        "quantity": 250,
+        "unit": "克"
       }
     ],
     "steps": [
@@ -15404,15 +17082,21 @@
     "ingredients": [
       {
         "ingredient": "千张",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "莴笋",
-        "main": true
+        "main": true,
+        "quantity": 200,
+        "unit": "克"
       },
       {
         "ingredient": "胡萝卜",
-        "main": true
+        "main": true,
+        "quantity": 100,
+        "unit": "克"
       }
     ],
     "steps": [
