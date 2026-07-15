@@ -73,6 +73,7 @@ fun NewDishScreen(
     var ingredientGroupSheetOpen by remember { mutableStateOf(false) } // [AI生成] B5 "配料组"弹层开关
     var groupEditorOpen by remember { mutableStateOf(false) } // [AI生成] 需求2 全屏配料组编辑器开关
     var focusedStepIndex by remember { mutableStateOf<Int?>(null) } // [AI生成] #2 当前定位(聚焦)的步骤下标：模板插入到这一步
+    var noIngredientPromptOpen by remember { mutableStateOf(false) } // [AI生成] 无食材保存前的"建议添加食材"提示
     val context = LocalContext.current
 
     /**
@@ -123,7 +124,8 @@ fun NewDishScreen(
                     Spacer(Modifier.width(4.dp))
                     com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
                         text = "保存",
-                        onClick = { vm.save() },
+                        // [AI修改] 无食材时先提示(添加食材利于统计健康膳食指标)，让用户选"继续保存/添加食材"。
+                        onClick = { if (state.ingredients.isEmpty()) noIngredientPromptOpen = true else vm.save() },
                         enabled = state.name.isNotBlank() && !state.saving && !state.loading && state.errorMessage == null,
                     )
                     Spacer(Modifier.width(8.dp))
@@ -391,6 +393,27 @@ fun NewDishScreen(
     }
 
     // [AI修改] 移除"食材已存在"AlertDialog：VM 本就去重，重复静默跳过即可，无需打断确认。
+
+    // [AI生成] 无食材保存提示：添加食材后才能统计营养/热量等健康膳食指标；点"添加食材"直接开选择器。
+    if (noIngredientPromptOpen) {
+        AlertDialog(
+            onDismissRequest = { noIngredientPromptOpen = false },
+            title = { Text("这道菜还没添加食材") },
+            text = { Text("添加食材后，才能统计这道菜的营养、热量等健康膳食指标。要现在添加吗？") },
+            confirmButton = {
+                TextButton(onClick = {
+                    noIngredientPromptOpen = false
+                    ingredientPickerOpen = true // [AI生成] 等同触发"添加食材"事件
+                }) { Text("添加食材") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    noIngredientPromptOpen = false
+                    vm.save()
+                }) { Text("继续保存") }
+            },
+        )
+    }
 
     if (tagInputOpen) {
         // [AI修改] T3：标签弹窗改为库选择器——展示标签库可直接选，输入并添加会存进库，可编辑删除自建标签。
