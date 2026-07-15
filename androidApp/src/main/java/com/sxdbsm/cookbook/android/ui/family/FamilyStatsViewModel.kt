@@ -55,7 +55,9 @@ class FamilyStatsViewModel(
         family.observeAbsenteeIds(todayStr).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     fun togglePresent(memberId: Long) {
-        viewModelScope.launch { family.setAbsent(todayStr, memberId, memberId !in excluded.value) }
+        // [AI修改] 修"点没吃后再点回不来"：原读 excluded.value，但该 stateIn 无直接订阅者、值冻结在初始空集，
+        // 每次都算"未缺席"→反复设为缺席。改为 repo 读实时 DB 状态再翻转。
+        viewModelScope.launch { family.toggleAbsent(todayStr, memberId) }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

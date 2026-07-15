@@ -105,6 +105,17 @@ class FamilyRepository(
         if (absent) q.insertAbsentee(date, memberId) else q.deleteAbsentee(date, memberId)
     }
 
+    /** 实时查某天缺席成员 id 集(供 toggle 按最新状态翻转，避免读到冻结的 stateIn 值)。[AI生成] */
+    suspend fun absenteeIds(date: String): Set<Long> = withContext(ioDispatcher) {
+        q.selectAbsenteesByDate(date).executeAsList().toSet()
+    }
+
+    /** 翻转某成员某天在场/缺席(读实时状态再取反，修"点没吃后再点回不来")。[AI生成] */
+    suspend fun toggleAbsent(date: String, memberId: Long) = withContext(ioDispatcher) {
+        val absent = q.selectAbsenteesByDate(date).executeAsList().toSet()
+        if (memberId in absent) q.deleteAbsentee(date, memberId) else q.insertAbsentee(date, memberId)
+    }
+
     /**
      * 监听某天的关注成员份额：关注系数 ÷ 当天在场成员系数和。[AI生成]
      *
