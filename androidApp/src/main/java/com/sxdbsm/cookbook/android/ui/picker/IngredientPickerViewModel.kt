@@ -180,7 +180,9 @@ class IngredientPickerViewModel(
             val allCategories = current.allCategories.ifEmpty { categoryRepo.listAll() }
             val tops = allCategories.filter { it.parentId == null }
             val ingredients = loadAllForTab(tab, "")
-            _state.value = current.copy(
+            // [AI修改] 基于最新 _state.value 写回(非启动时捕获的旧快照 current)：
+            // 否则挂起期间并发更新的字段(如 loadUnits 填的 availableUnits)会被旧快照冲掉→单位下拉空。
+            _state.value = _state.value.copy(
                 mainTab = tab,
                 keyword = "",
                 selectedCategoryId = ALL_CATEGORY_ID,
