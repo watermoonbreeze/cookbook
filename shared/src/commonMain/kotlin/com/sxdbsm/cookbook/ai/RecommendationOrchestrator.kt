@@ -87,7 +87,14 @@ class RecommendationOrchestrator(
      */
     private fun rotate(candidates: List<DishCandidate>, rotation: Int): List<DishCandidate> {
         if (candidates.size <= DISPLAY_BATCH) return candidates
-        val batches = (candidates.size + DISPLAY_BATCH - 1) / DISPLAY_BATCH
+        // [AI修改] 修"随机推荐翻出整批忌口菜"：忌口菜(avoidNames非空)被罚到列表末尾，
+        // 而 RANDOM 模式 rotation 是随机数，rotation%batches 可能正好翻到全是忌口菜的末批。
+        // 轮转批次只按**非忌口**候选数计算，start 落在可接受区；忌口菜仍保留在末尾(标红)，
+        // 只会作为边界批的尾部零星出现，绝不会独占一整批被当推荐推出。
+        val acceptable = candidates.indexOfFirst { it.avoidNames.isNotEmpty() }
+            .let { if (it < 0) candidates.size else it }
+            .coerceAtLeast(1)
+        val batches = (acceptable + DISPLAY_BATCH - 1) / DISPLAY_BATCH
         val start = (rotation.coerceAtLeast(0) % batches) * DISPLAY_BATCH
         return candidates.drop(start).take(DISPLAY_BATCH)
     }
