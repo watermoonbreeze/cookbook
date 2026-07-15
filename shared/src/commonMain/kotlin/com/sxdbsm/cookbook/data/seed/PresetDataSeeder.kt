@@ -525,10 +525,9 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
         // 勺按“汤勺≈15g”粗估(多用于油盐酱)。dishes.json 引用完整性校验用 name 集合(见 unitNames())。
+        // [AI修改] 常用单位统一英文符号(克→g/千克→kg/毫升→ml/升→L)；两/斤/个/勺等无通用英文的保留中文。
         val PRESET_MEASUREMENT_UNITS: List<Pair<String, Double?>> = listOf(
-            "克" to 1.0, "两" to 50.0, "斤" to 500.0, "毫升" to 1.0, "升" to 1000.0,
-            // [AI生成] 常用国际单位符号(与克/毫升同义，方便习惯用字母的用户)：g=克、kg=千克、ml=毫升。
-            "g" to 1.0, "kg" to 1000.0, "ml" to 1.0,
+            "g" to 1.0, "kg" to 1000.0, "两" to 50.0, "斤" to 500.0, "ml" to 1.0, "L" to 1000.0,
             "个" to null, "片" to null, "勺" to 15.0, "颗" to null, "把" to null,
             "碗" to null, "块" to null, "根" to null, "条" to null, "段" to null,
             "瓣" to null, "只" to null, "适量" to null, "少许" to null,

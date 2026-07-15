@@ -1,0 +1,8 @@
+-- [AI生成] v23：常用单位统一英文符号(克→g / 毫升→ml / 升→L)；两/斤/个/勺等无通用英文的保留中文。
+-- 安全:重命名保 unit_id 不变(dish_ingredient/pantry 按 id 引用、FK 不断)。
+-- 先删可能存在的重复英文预设单位(此前 force-seed 加过的 g/ml，未被引用)，再带守卫重命名(目标名已存在则跳过，防 UNIQUE 崩)。
+
+DELETE FROM measurement_unit WHERE name IN ('g', 'ml') AND source = 'preset';
+UPDATE measurement_unit SET name = 'g' WHERE name = '克' AND NOT EXISTS (SELECT 1 FROM measurement_unit WHERE name = 'g');
+UPDATE measurement_unit SET name = 'ml' WHERE name = '毫升' AND NOT EXISTS (SELECT 1 FROM measurement_unit WHERE name = 'ml');
+UPDATE measurement_unit SET name = 'L' WHERE name = '升' AND NOT EXISTS (SELECT 1 FROM measurement_unit WHERE name = 'L');

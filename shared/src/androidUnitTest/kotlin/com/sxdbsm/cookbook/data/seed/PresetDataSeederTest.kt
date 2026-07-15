@@ -58,9 +58,9 @@ class PresetDataSeederTest {
         val n = nutritionRepo.ingredientNutrition(eggId)
         assertTrue(n != null && n.energyKcal == 144.0 && n.pieceGram == 50.0, "鸡蛋营养应入库(每100g 144kcal, 单件50g)")
 
-        // 单位克当量已回填：克=1、两=50。
+        // [AI修改] 单位克当量已回填：g=1、两=50(常用单位统一英文符号)。
         val units = db.cookbookQueries.selectAllMeasurementUnits().executeAsList().associateBy { it.name }
-        assertEquals(1.0, units["克"]?.grams)
+        assertEquals(1.0, units["g"]?.grams)
         assertEquals(50.0, units["两"]?.grams)
     }
 
