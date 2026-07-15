@@ -491,17 +491,27 @@ private fun MealBlockCard(
                 }
             }
 
-            OutlinedTextField(
-                value = block.note,
-                onValueChange = onNoteChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp),
-                placeholder = { Text("备注（可选）") },
-                minLines = 1,
-                maxLines = 2,
-                shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
-            )
+            // [AI修改] 备注默认收起(低频、多块时空备注框拉长页面)：点"+ 备注"才展开；已有备注则默认展开。
+            var noteExpanded by remember(block.id) { mutableStateOf(block.note.isNotBlank()) }
+            if (noteExpanded) {
+                OutlinedTextField(
+                    value = block.note,
+                    onValueChange = onNoteChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    placeholder = { Text("备注（可选）") },
+                    minLines = 1,
+                    maxLines = 2,
+                    shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
+                )
+            } else {
+                TextButton(onClick = { noteExpanded = true }, modifier = Modifier.padding(top = 4.dp)) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("备注")
+                }
+            }
         }
     }
 }
