@@ -46,6 +46,7 @@ class HomeViewModel(
     private val prefs: PreferenceRepository,
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 2c：色系墙评级结合当天热量达标度
     private val family: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI生成] 达标/摄入按主要关注成员(身体数据+饭量系数份额)。
+    private val ingredientRepo: com.sxdbsm.cookbook.data.repository.IngredientRepository, // [AI生成] A1：食材显式营养大类(food_group)覆盖色系/均衡判定。
 ) : ViewModel() {
 
     /**
@@ -86,18 +87,22 @@ class HomeViewModel(
     private val wallStart = mondayOf(LocalDate(today.year, 1, 1))
     private val wallEnd = sundayOf(LocalDate(today.year, 12, 31))
 
+    // [AI生成] A1：食材名→显式营养大类(food_group)，覆盖名字无关键词的自定义食材归类。一次加载(编辑后下次进页面刷新)。
+    private val explicitGroups: StateFlow<Map<String, FoodGroup.Group>> =
+        kotlinx.coroutines.flow.flow { emit(FoodGroup.explicitFrom(ingredientRepo.foodGroupByName())) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
     /**
      * 营养色系墙：本公历年每天的营养均衡级别(整周对齐、含空日)。[AI修改]
      *
      * 固定 1~12 月；UI 默认定位今天所在周、可左右滑。仅功能设置开启营养色系时渲染。
      */
     val nutritionWall: StateFlow<List<DayNutrition>> =
-        mealRepo.observeTimelineWindow(wallStart, wallEnd)
-            .map { cards ->
-                // [AI修改] 色系墙=全家膳食结构均衡度(蛋白+主食+蔬果齐不齐)，与成员/热量/关注成员无关——切换成员不改历史色块。
+        combine(mealRepo.observeTimelineWindow(wallStart, wallEnd), explicitGroups) { cards, explicit ->
+                // [AI修改] 色系墙=全家膳食结构均衡度(蛋白+主食+蔬果齐不齐)，与成员/热量无关；食材显式大类优先于关键词。
                 cards.map { card ->
                     val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
-                    DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains)))
+                    DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit)))
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -139,12 +144,13 @@ class HomeViewModel(
             emit(emptyList())
             return@flow
         }
+        val explicit = FoodGroup.explicitFrom(ingredientRepo.foodGroupByName()) // [AI生成] A1：显式大类覆盖
         emitAll(
             mealRepo.observeTimelineWindow(LocalDate(min.year, 1, 1), LocalDate(today.year - 1, 12, 31)).map { cards ->
                 cards.filter { it.meals.isNotEmpty() }
                     .mapNotNull { card ->
                         val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
-                        val lv = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains))
+                        val lv = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit))
                         if (lv > 0) card.date.year to lv else null
                     }
                     .groupBy({ it.first }, { it.second })

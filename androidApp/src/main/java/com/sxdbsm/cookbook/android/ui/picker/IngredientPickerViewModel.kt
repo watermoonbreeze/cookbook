@@ -582,6 +582,7 @@ class IngredientPickerViewModel(
         detail: IngredientDetail,
         careRules: List<IngredientCareRule>,
         nutrition: com.sxdbsm.cookbook.domain.model.IngredientNutrition? = null, // [AI生成] Item4：自定义营养(每100g)，非空且有值才写
+        foodGroup: String = "", // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)——存 food_group + 挂到对应顶层分类。
     ) {
         val trimmedName = name.trim()
         if (trimmedName.isBlank()) {
@@ -591,14 +592,24 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(creatingIngredient = true, createError = null, lastSavedIngredientId = null)
             runCatching {
-                // [AI修改] 分类不再必选：自定义食材可不选分类直接保存，在「自定义-全部」中查看(search 不按分类 join)。
+                // [AI生成] A1：营养大类 → 顶层分类 id；及全部可归类顶层分类 id 集(编辑切换时去旧留新)。
+                val groupCatId = foodGroup.takeIf { it.isNotBlank() }?.let { g ->
+                    runCatching { com.sxdbsm.cookbook.domain.FoodGroup.Group.valueOf(g) }.getOrNull()?.let { grp ->
+                        val catName = com.sxdbsm.cookbook.domain.FoodGroup.CATEGORY_NAME[grp]
+                        _state.value.allCategories.firstOrNull { it.parentId == null && it.name == catName }?.id
+                    }
+                }
+                val foodGroupCatIds = _state.value.allCategories
+                    .filter { it.parentId == null && it.name in com.sxdbsm.cookbook.domain.FoodGroup.CATEGORY_NAMES }
+                    .map { it.id }.toSet()
+                // [AI修改] 营养大类必选,其它分类可选：创建时把大类分类并入。
                 val ingredientId = ingredient?.id ?: ingredientRepo.createUserIngredient(
                     name = trimmedName,
                     alias = alias.trim(),
                     imagePath = imagePath.trim(),
                     thumbnailPath = thumbnailPath.trim(),
                     defaultUnitId = defaultUnitId,
-                    categoryIds = categoryIds,
+                    categoryIds = (categoryIds + listOfNotNull(groupCatId)).distinct(),
                 )
                 if (ingredient?.source == "preset") {
                     ingredientRepo.updateUserIngredient(
@@ -627,7 +638,15 @@ class IngredientPickerViewModel(
                     } else {
                         emptyList()
                     }
-                    ingredientRepo.replaceIngredientCategories(ingredientId, (categoryIds + preservedCategoryIds).distinct())
+                    // [AI修改] A1：保留其它维度分类，但顶层营养大类去旧留新(排除所有可归类顶层，再并入选中的)。
+                    val preservedNoGroup = preservedCategoryIds.filterNot { it in foodGroupCatIds }
+                    ingredientRepo.replaceIngredientCategories(
+                        ingredientId, (categoryIds + preservedNoGroup + listOfNotNull(groupCatId)).distinct(),
+                    )
+                }
+                // [AI生成] A1：存营养大类到 food_group(仅自定义食材;预设由 seeder 回填,不覆盖)。
+                if (ingredient?.source != "preset" && foodGroup.isNotBlank()) {
+                    ingredientRepo.setFoodGroup(ingredientId, foodGroup)
                 }
                 if (ingredient?.source != "preset") {
                     ingredientRepo.saveIngredientDetail(detail.copy(ingredientId = ingredientId))

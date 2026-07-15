@@ -163,6 +163,20 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun seed回填营养大类food_group() = runBlocking {
+        // [AI生成] A1：seed 后预设食材应按名回填 food_group(空的才填,不覆盖)；供色系/均衡按显式大类判定。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val map = IngredientRepository(db).foodGroupByName()
+        assertEquals("EGG", map["鸡蛋"], "鸡蛋应回填为蛋类")
+        assertEquals("RED_MEAT", map["猪瘦肉"], "猪瘦肉应回填为红肉")
+        // 显式大类覆盖关键词
+        val explicit = com.sxdbsm.cookbook.domain.FoodGroup.explicitFrom(mapOf("某自定义无关键词菜" to "VEGETABLE"))
+        val groups = com.sxdbsm.cookbook.domain.FoodGroup.groupsOf(listOf("某自定义无关键词菜"), explicit)
+        assertTrue(groups.contains(com.sxdbsm.cookbook.domain.FoodGroup.Group.VEGETABLE), "显式大类应覆盖关键词判定")
+    }
+
+    @Test
     fun detailAndCategorySeedHasNoDanglingOrDuplicateReferences() {
         // [AI生成] 补数据回归守卫：食材详情引用、食材/调养规则挂载的分类 code、以及各 JSON 内部 name/code 重复都要干净，
         // 否则 seeder 静默丢关联（详情/分类不生效）而非报红。

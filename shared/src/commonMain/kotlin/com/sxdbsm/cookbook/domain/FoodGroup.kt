@@ -40,6 +40,26 @@ object FoodGroup {
     )
     private val FRUIT_KW = listOf("苹果", "梨", "香蕉", "橙", "柚", "猕猴桃", "草莓", "蓝莓", "葡萄", "西瓜", "桃", "樱桃", "枣", "橘", "芒果", "菠萝", "荔枝", "火龙果", "哈密瓜", "石榴", "柿子", "无花果", "桑葚", "山竹", "榴莲", "椰", "枇杷", "杨梅", "李子", "木瓜", "甘蔗")
 
+    /**
+     * 营养大类 → food_categories 顶层分类**名**。[AI生成] 自定义食材归类：编辑器按此把选中大类挂到分类树。
+     * (food_category 表无 code 列，只能按名匹配。)红肉/禽肉都归畜禽肉类；调料/油脂不属营养大类，不在此表。
+     */
+    val CATEGORY_NAME: Map<Group, String> = mapOf(
+        Group.STAPLE to "谷薯主食类",
+        Group.VEGETABLE to "蔬菜类",
+        Group.FUNGI to "菌藻类",
+        Group.FRUIT to "水果类",
+        Group.FISH to "水产类",
+        Group.RED_MEAT to "畜禽肉类",
+        Group.WHITE_MEAT to "畜禽肉类",
+        Group.EGG to "蛋类",
+        Group.DAIRY to "奶类",
+        Group.BEAN to "大豆及坚果",
+    )
+
+    /** 可归类的顶层分类名集合(编辑保存时"切换大类"去旧留新)。[AI生成] */
+    val CATEGORY_NAMES: Set<String> = CATEGORY_NAME.values.toSet()
+
     /** 单个主料名 → 食物大类(命中优先级：蛋→水产→禽→红肉→主食→豆→奶→菌→蔬菜→水果)。[AI生成] */
     fun classify(name: String): Group? = when {
         // [AI修改] 血制品(鸭血/猪血/鸡血)归红肉类(富铁)，先于禽/水产判断，避免"鸭血"被"鸭"误判为禽肉。
@@ -57,11 +77,19 @@ object FoodGroup {
         else -> null
     }
 
-    /** 一餐涵盖的食物大类(按主料名去重，保持枚举顺序)。[AI生成] */
-    fun groupsOf(mainNamesOfMeal: List<String>): List<Group> {
-        val set = mainNamesOfMeal.mapNotNull { classify(it) }.toSet()
+    /**
+     * 一餐涵盖的食物大类(按主料名去重，保持枚举顺序)。[AI修改]
+     *
+     * explicit=名→大类覆盖(食材的显式营养大类 food_group)：优先于关键词，覆盖名字无关键词的自定义食材。
+     */
+    fun groupsOf(mainNamesOfMeal: List<String>, explicit: Map<String, Group> = emptyMap()): List<Group> {
+        val set = mainNamesOfMeal.mapNotNull { name -> explicit[name] ?: classify(name) }.toSet()
         return Group.entries.filter { it in set }
     }
+
+    /** 把"名→大类名(food_group)"字符串映射转成"名→Group"(忽略非法值)。[AI生成] */
+    fun explicitFrom(nameToGroupName: Map<String, String>): Map<String, Group> =
+        nameToGroupName.mapNotNull { (n, g) -> runCatching { Group.valueOf(g) }.getOrNull()?.let { n to it } }.toMap()
 
     /**
      * 营养构成摘要(只反映当前菜品实际包含的营养素/分类，不做推荐)。[AI修改]

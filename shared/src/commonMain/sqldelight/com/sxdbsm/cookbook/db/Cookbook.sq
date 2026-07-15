@@ -45,7 +45,8 @@ CREATE TABLE ingredient (
     created_at INTEGER NOT NULL,
     last_referenced_at INTEGER NOT NULL DEFAULT 0,
     status INTEGER NOT NULL DEFAULT 1,
-    reason TEXT NOT NULL DEFAULT '' -- [AI生成] 失效原因：status=0 时说明为何失效（后台下架说明 / 用户删除）。
+    reason TEXT NOT NULL DEFAULT '', -- [AI生成] 失效原因：status=0 时说明为何失效（后台下架说明 / 用户删除）。
+    food_group TEXT NOT NULL DEFAULT '' -- [AI生成] 营养大类(FoodGroup.Group 名，如 WHITE_MEAT)：供色系/均衡按显式大类判定，名字无关键词也能归类。
 );
 
 CREATE INDEX idx_ingredient_pinyin ON ingredient(pinyin);
@@ -1695,3 +1696,16 @@ DELETE FROM day_absentee WHERE date = ? AND member_id = ?;
 
 selectAbsenteesByDate:
 SELECT member_id FROM day_absentee WHERE date = ?;
+
+-- ===== ingredient.food_group（营养大类归类） =====
+
+updateIngredientFoodGroup:
+UPDATE ingredient SET food_group = ? WHERE id = ?;
+
+-- [AI生成] 名→营养大类(只取已设的)，供色系/均衡按显式大类判定(覆盖名字无关键词的自定义食材)。
+selectIngredientFoodGroupNames:
+SELECT name, food_group FROM ingredient WHERE food_group != '' AND status = 1;
+
+-- [AI生成] seed 回填:仅回填 food_group 为空的食材(不覆盖用户已选)。
+selectIngredientsWithoutFoodGroup:
+SELECT id, name FROM ingredient WHERE food_group = '';

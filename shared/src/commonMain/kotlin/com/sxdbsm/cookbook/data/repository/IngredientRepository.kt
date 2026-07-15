@@ -286,6 +286,16 @@ class IngredientRepository(private val db: CookbookDatabase) {
         q.softDeleteUserMeasurementUnit(id)
     }
 
+    /** 设置食材营养大类(FoodGroup.Group 名，空串=清除)。[AI生成] 自定义食材归类。 */
+    suspend fun setFoodGroup(id: Long, group: String) = withContext(ioDispatcher) {
+        q.updateIngredientFoodGroup(group, id)
+    }
+
+    /** 名→营养大类映射(仅已设的)，供色系/均衡按显式大类判定。[AI生成] */
+    suspend fun foodGroupByName(): Map<String, String> = withContext(ioDispatcher) {
+        q.selectIngredientFoodGroupNames().executeAsList().associate { it.name to it.food_group }
+    }
+
     /** 一组食材的营养维度标签(去重)。[AI生成] 菜品详情营养概要(标签版)。 */
     suspend fun nutritionTagsOf(ingredientIds: List<Long>): List<String> = withContext(ioDispatcher) {
         if (ingredientIds.isEmpty()) return@withContext emptyList()

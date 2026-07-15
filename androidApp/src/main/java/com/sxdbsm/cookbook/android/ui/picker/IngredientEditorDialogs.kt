@@ -38,7 +38,7 @@ import com.sxdbsm.cookbook.domain.model.MeasurementUnit
  *
  * 阶段 B 先以全屏 Dialog 承载完整表单，后续可平滑迁移为独立页面。
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 internal fun IngredientEditorDialog(
     ingredient: Ingredient?,
@@ -57,6 +57,7 @@ internal fun IngredientEditorDialog(
         IngredientDetail,
         List<IngredientCareRule>,
         com.sxdbsm.cookbook.domain.model.IngredientNutrition?,
+        String, // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)
     ) -> Unit,
 ) {
     var name by remember(ingredient?.id) { mutableStateOf(ingredient?.name.orEmpty()) }
@@ -65,6 +66,9 @@ internal fun IngredientEditorDialog(
     var thumbnails by remember(ingredient?.id) { mutableStateOf(decodeImagePaths(ingredient?.thumbnailPath.orEmpty())) }
     var defaultUnitId by remember(ingredient?.id) { mutableStateOf(ingredient?.defaultUnitId) }
     var categoryIds by remember(ingredient?.id) { mutableStateOf<Set<Long>>(emptySet()) }
+    // [AI生成] A1：营养大类(必选，默认按名/已有分类预选)——决定归到主食/鱼肉蛋等分类树 + 色系/均衡统计。
+    var selectedGroup by remember(ingredient?.id) { mutableStateOf<com.sxdbsm.cookbook.domain.FoodGroup.Group?>(null) }
+    var groupTouched by remember(ingredient?.id) { mutableStateOf(false) }
     var commonMethods by remember(ingredient?.id) { mutableStateOf("") }
     var prepTips by remember(ingredient?.id) { mutableStateOf("") }
     var eatingNotes by remember(ingredient?.id) { mutableStateOf("") }
@@ -102,6 +106,19 @@ internal fun IngredientEditorDialog(
         gi = nGi.toDoubleOrNull(), purineMg = nPurine.toDoubleOrNull(), pieceGram = nPiece.toDoubleOrNull(),
     )
     val isPreset = ingredient?.source == "preset"
+    // [AI生成] A1：营养大类可选项(9个)——distinct 分类名 + 代表 Group + 该顶层分类 id(存在才可选)。
+    val groupOptions = remember(ui.allCategories) {
+        com.sxdbsm.cookbook.domain.FoodGroup.CATEGORY_NAME.entries.distinctBy { it.value }.mapNotNull { e ->
+            ui.allCategories.firstOrNull { it.parentId == null && it.name == e.value }?.let { Triple(e.key, e.value, it.id) }
+        }
+    }
+    // 预选：编辑现有食材优先用其已挂的顶层大类；否则按名猜(未手动改过时随名跟随)。
+    LaunchedEffect(name, ui.editorCategoryIds, groupOptions, ui.editorLoading) {
+        if (ingredient != null && ui.editorLoading) return@LaunchedEffect
+        if (groupTouched) return@LaunchedEffect
+        val existing = groupOptions.firstOrNull { (_, _, catId) -> catId in ui.editorCategoryIds }?.first
+        selectedGroup = existing ?: com.sxdbsm.cookbook.domain.FoodGroup.classify(name)
+    }
     val editableCustomCategories = ui.allCategories.filter { it.isEditableUserGeneralCategory() }
     val selectedCategoryNames = editableCustomCategories
         .filter { it.id in categoryIds }
@@ -159,9 +176,11 @@ internal fun IngredientEditorDialog(
                                     ),
                                     careRules,
                                     buildNutrition(), // [AI生成] Item4：自定义营养(空则VM侧不写)
+                                    selectedGroup?.name ?: "", // [AI生成] A1：营养大类
                                 )
                             },
-                            enabled = name.isNotBlank() && !ui.creatingIngredient && !ui.editorLoading,
+                            // [AI修改] A1：营养大类必选(预设无此要求,预设不显该区)。
+                            enabled = name.isNotBlank() && (isPreset || selectedGroup != null) && !ui.creatingIngredient && !ui.editorLoading,
                             modifier = Modifier.padding(end = 12.dp),
                         ) {
                             Text(if (ui.creatingIngredient) "保存中" else "保存")
@@ -223,10 +242,35 @@ internal fun IngredientEditorDialog(
                     }
 
                     if (!isPreset) {
-                        EditorSection("分类归属（可选）") {
+                        // [AI生成] A1：营养大类(必选)——归到主食/鱼肉蛋等分类树，并让色系/均衡按它统计。默认按名预选。
+                        EditorSection("营养大类（必选）") {
+                            Text(
+                                "决定这个食材归到「主食/蔬菜/鱼肉蛋…」哪一类——用于分类浏览和营养均衡统计。已按名字自动选好，可改。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            androidx.compose.foundation.layout.FlowRow(
+                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                            ) {
+                                groupOptions.forEach { (group, catName, _) ->
+                                    val sel = selectedGroup?.let { com.sxdbsm.cookbook.domain.FoodGroup.CATEGORY_NAME[it] } == catName
+                                    androidx.compose.material3.FilterChip(
+                                        selected = sel,
+                                        onClick = { selectedGroup = group; groupTouched = true },
+                                        label = { Text(catName) },
+                                    )
+                                }
+                            }
+                            if (selectedGroup == null) {
+                                Text("请选择一个营养大类", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+
+                        EditorSection("其它分类（可选）") {
                             Text(
                                 // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
-                                selectedCategoryNames.ifBlank { "未选择分类（可不选，保存后在「全部」查看）" },
+                                selectedCategoryNames.ifBlank { "未选择其它分类（营养维度/自建分类等，可不选）" },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

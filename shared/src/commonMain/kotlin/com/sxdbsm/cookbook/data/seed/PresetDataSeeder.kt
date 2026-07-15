@@ -57,6 +57,22 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
         // 大批量内容：内容指纹未变则整段跳过。
         reseedContentIfChanged(now, force = false)
+
+        // [AI生成] 营养大类回填：仅填 food_group 为空的食材(按名分类)，不覆盖用户已选——升级/老库幂等补齐。
+        backfillFoodGroups()
+    }
+
+    /** 按名给未归类食材回填营养大类(food_group)。只填空的、classify 命中的；不覆盖用户已选。[AI生成] */
+    private fun backfillFoodGroups() {
+        val q = db.cookbookQueries
+        val pending = q.selectIngredientsWithoutFoodGroup().executeAsList()
+        if (pending.isEmpty()) return
+        db.transaction {
+            pending.forEach { row ->
+                val g = com.sxdbsm.cookbook.domain.FoodGroup.classify(row.name)?.name
+                if (g != null) q.updateIngredientFoodGroup(g, row.id)
+            }
+        }
     }
 
     /**

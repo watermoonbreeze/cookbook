@@ -1,0 +1,5 @@
+-- [AI生成] v22：ingredient 加营养大类列 food_group。
+-- 安全:ALTER ADD COLUMN 带 DEFAULT '',老行只补空默认值、不改任何现有数据(升级无损)。
+-- 预设食材的 food_group 由 seeder 按名回填(只填空的,不覆盖用户已选);老自建食材编辑保存时补齐。
+
+ALTER TABLE ingredient ADD COLUMN food_group TEXT NOT NULL DEFAULT '';
