@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,8 +71,6 @@ fun NewDishScreen(
     var ingredientGroupSheetOpen by remember { mutableStateOf(false) } // [AI生成] B5 "配料组"弹层开关
     var groupEditorOpen by remember { mutableStateOf(false) } // [AI生成] 需求2 全屏配料组编辑器开关
     var focusedStepIndex by remember { mutableStateOf<Int?>(null) } // [AI生成] #2 当前定位(聚焦)的步骤下标：模板插入到这一步
-    var duplicateIngredientNames by remember { mutableStateOf<List<String>>(emptyList()) } // [AI生成] 选择食材后用于提示已存在的食材名称。
-    var pendingNewIngredients by remember { mutableStateOf<List<Ingredient>>(emptyList()) } // [AI生成] 用户确认重复提示后实际追加的新增食材。
     val context = LocalContext.current
 
     /**
@@ -87,12 +87,7 @@ fun NewDishScreen(
             onBack()
         }
     }
-    LaunchedEffect(state.editProbeToastSerial) {
-        val message = state.editProbeToastMessage ?: return@LaunchedEffect
-        AppLogger.d("NewDishEdit", "show edit probe toast: serial=${state.editProbeToastSerial} message=$message") // [AI生成] 记录一次性 Toast 是否被 UI 消费。
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-        vm.consumeEditProbeToast()
-    }
+    // [AI修改] 移除面向用户的"编辑诊断 Toast"(内测排查"Toast成功但界面空白"的遗留)，正式版不打扰用户；诊断改看日志。
     LaunchedEffect(state.editingId, state.loading, state.name, state.tags.size, state.ingredients.size, state.errorMessage) {
         AppLogger.d(
             "NewDishEdit",
@@ -281,7 +276,7 @@ fun NewDishScreen(
                                 Text(nameText, modifier = Modifier.weight(1f))
                                 // [AI修改] #55：克数剂量 −N+(±5，最小0)。
                                 val grams = ing.quantity?.toInt() ?: 100
-                                GramStepper(grams = grams, onDelta = { d -> vm.changeIngredientGrams(ing.ingredient.id, d) })
+                                GramStepper(grams = grams, onDelta = { d -> vm.changeIngredientGrams(ing.ingredient.id, d) }, onSet = { g -> vm.setIngredientGrams(ing.ingredient.id, g) })
                                 Spacer(Modifier.width(4.dp))
                                 IconButton(onClick = { vm.removeIngredient(ing.ingredient.id) }) {
                                     Icon(Icons.Outlined.Close, contentDescription = "移除", modifier = Modifier.size(16.dp))
@@ -386,52 +381,14 @@ fun NewDishScreen(
             excludeIngredientIds = emptySet(), // [AI修改] 不再过滤当前菜品已有食材，确保保存后进入“最近使用”的食材在再次打开选择器时可见；重复添加由 ViewModel 兜底。
             onDismiss = { ingredientPickerOpen = false },
             onConfirm = { selected ->
+                // [AI修改] 已在菜中的食材静默跳过(不再弹"食材已存在"确认反模式)，只追加新增，已有用量/备注不覆盖。
                 val existingIds = state.ingredients.map { it.ingredient.id }.toSet()
-                val duplicates = selected.filter { it.id in existingIds }
-                val additions = selected.filterNot { it.id in existingIds }
-                if (duplicates.isNotEmpty()) {
-                    duplicateIngredientNames = duplicates.map { it.displayNameText() }
-                    pendingNewIngredients = additions // [AI修改] 确认后只追加新增食材，已有食材的用量/备注不被覆盖。
-                } else {
-                    additions.forEach { vm.addIngredient(it) }
-                }
+                selected.filterNot { it.id in existingIds }.forEach { vm.addIngredient(it) }
             },
         )
     }
 
-    if (duplicateIngredientNames.isNotEmpty()) {
-        AlertDialog(
-            onDismissRequest = {
-                duplicateIngredientNames = emptyList()
-                pendingNewIngredients = emptyList()
-            },
-            title = { Text("食材已存在") },
-            text = {
-                Text("食材 ${duplicateIngredientNames.joinToString("、")} 已经在菜品中存在。")
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        pendingNewIngredients.forEach { vm.addIngredient(it) }
-                        duplicateIngredientNames = emptyList()
-                        pendingNewIngredients = emptyList()
-                    },
-                ) {
-                    Text("确定")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        duplicateIngredientNames = emptyList()
-                        pendingNewIngredients = emptyList()
-                    },
-                ) {
-                    Text("取消")
-                }
-            },
-        )
-    }
+    // [AI修改] 移除"食材已存在"AlertDialog：VM 本就去重，重复静默跳过即可，无需打断确认。
 
     if (tagInputOpen) {
         // [AI修改] T3：标签弹窗改为库选择器——展示标签库可直接选，输入并添加会存进库，可编辑删除自建标签。
@@ -526,15 +483,37 @@ fun NewDishScreen(
  *
  * #55：每味食材剂量以克为单位，±5g，最小 0。
  */
-// [AI修改] 苹果风格：克数步进器改用统一的 MiniStepper(−/＋ 缩小成可点标签)。
+// [AI修改] 苹果风格：克数步进器改用统一的 MiniStepper(−/＋ 缩小成可点标签)；点数值可直接输入(大跨度免狂点±)。
 @Composable
-private fun GramStepper(grams: Int, onDelta: (Int) -> Unit) {
+private fun GramStepper(grams: Int, onDelta: (Int) -> Unit, onSet: (Int) -> Unit) {
+    var editing by remember { mutableStateOf(false) }
     com.sxdbsm.cookbook.android.ui.component.MiniStepper(
         valueText = "$grams g",
         onMinus = { onDelta(-5) },
         onPlus = { onDelta(5) },
         minusEnabled = grams > 0,
+        onValueClick = { editing = true },
     )
+    if (editing) {
+        var text by remember { mutableStateOf(grams.toString()) }
+        AlertDialog(
+            onDismissRequest = { editing = false },
+            title = { Text("输入用量") },
+            text = {
+                OutlinedTextField(
+                    value = text,
+                    // [AI生成] 整数克数：仅数字(禁小数点,遵守数字输入红线)。
+                    onValueChange = { v -> text = v.filter { it.isDigit() }.take(5) },
+                    singleLine = true,
+                    suffix = { Text("g") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    shape = MaterialTheme.shapes.medium,
+                )
+            },
+            confirmButton = { TextButton(onClick = { onSet(text.toIntOrNull() ?: grams); editing = false }) { Text("确定") } },
+            dismissButton = { TextButton(onClick = { editing = false }) { Text("取消") } },
+        )
+    }
 }
 
 /**
@@ -933,9 +912,11 @@ private fun IngredientGroupEditorScreen(
                                 ) {
                                     Text(ing.ingredient.name, modifier = Modifier.weight(1f))
                                     val grams = ing.quantity?.toInt() ?: 100
-                                    GramStepper(grams = grams, onDelta = { d ->
-                                        items[index] = ing.copy(quantity = (grams + d).coerceAtLeast(0).toDouble())
-                                    })
+                                    GramStepper(
+                                        grams = grams,
+                                        onDelta = { d -> items[index] = ing.copy(quantity = (grams + d).coerceAtLeast(0).toDouble()) },
+                                        onSet = { g -> items[index] = ing.copy(quantity = g.coerceAtLeast(0).toDouble()) },
+                                    )
                                     Spacer(Modifier.width(4.dp))
                                     IconButton(onClick = { items.removeAt(index) }) {
                                         Icon(Icons.Outlined.Close, contentDescription = "移除", modifier = Modifier.size(16.dp))

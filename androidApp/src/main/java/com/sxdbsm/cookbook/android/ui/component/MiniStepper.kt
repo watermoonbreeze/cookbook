@@ -34,6 +34,7 @@ fun MiniStepper(
     modifier: Modifier = Modifier,
     minusEnabled: Boolean = true,
     plusEnabled: Boolean = true,
+    onValueClick: (() -> Unit)? = null, // [AI生成] 传入则中间数值可点(用于大跨度直接输入,免狂点±)
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Seg("−", minusEnabled, onMinus)
@@ -41,7 +42,9 @@ fun MiniStepper(
             valueText,
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier
+                .let { if (onValueClick != null) it.clip(RoundedCornerShape(6.dp)).clickable { onValueClick() } else it }
+                .padding(horizontal = 8.dp, vertical = 2.dp),
         )
         Seg("＋", plusEnabled, onPlus)
     }

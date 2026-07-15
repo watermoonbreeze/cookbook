@@ -391,13 +391,18 @@ class NewDishViewModel(
 
     /** 调整某食材克数(±，最小0)。[AI生成] #55 剂量 −N+，步进 5g。 */
     fun changeIngredientGrams(ingredientId: Long, delta: Int) {
+        val cur = _state.value.ingredients.firstOrNull { it.ingredient.id == ingredientId }?.quantity?.toInt() ?: DEFAULT_GRAMS
+        setIngredientGrams(ingredientId, (cur + delta).coerceAtLeast(0))
+    }
+
+    /** 直接设置某食材克数(大跨度改用量时点数值输入,免狂点±)。[AI生成] */
+    fun setIngredientGrams(ingredientId: Long, grams: Int) {
         val gram = gramUnit()
+        val g = grams.coerceAtLeast(0)
         _state.value = _state.value.copy(
             ingredients = _state.value.ingredients.map {
                 if (it.ingredient.id == ingredientId) {
-                    val cur = it.quantity?.toInt() ?: DEFAULT_GRAMS
-                    val next = (cur + delta).coerceAtLeast(0)
-                    it.copy(quantity = next.toDouble(), unitName = gram?.name ?: "克", unitId = gram?.id ?: it.unitId)
+                    it.copy(quantity = g.toDouble(), unitName = gram?.name ?: it.unitName, unitId = gram?.id ?: it.unitId)
                 } else {
                     it
                 }
@@ -405,9 +410,9 @@ class NewDishViewModel(
         )
     }
 
-    /** 取"克"单位(用于剂量)。[AI生成] */
+    /** 取"克"单位(用于剂量)。[AI修改] 单位已英文化(克→g)，兼容新(g)/老库(克)。 */
     private fun gramUnit(): com.sxdbsm.cookbook.domain.model.MeasurementUnit? =
-        _state.value.availableUnits.firstOrNull { it.name == "克" }
+        _state.value.availableUnits.firstOrNull { it.name == "g" || it.name == "克" }
 
     /**
      * 切换某个食材是否为主料。[AI修改]
