@@ -10,7 +10,8 @@
 - 上次总结会话点：2026-07-15 家庭档案体系(family_member/member_care/day_absentee表20-21.sqm+FamilyRepository默认成员迁移/忌口并集/关注成员达标/饭量系数份额/缺席按天+成员管理页+膳食统计页+缺席微调持久化+健康膳食设置分组+色系墙与成员/热量解耦)+A1自定义食材归类(food_group列22.sqm+营养大类必选预选+映射分类树+classify显式覆盖)+常用单位英文化(克→g等,23.sqm rename保FK)+私人菜单数据补全(食材279→440/菜品147→516/营养100%/842用量)+修食材单位下拉为空bug(selectMainTab旧快照copy)+D10旧快照排查。关键坑=多init并发+旧快照copy写回丢字段、迁移rename保FK带守卫、加列升级无损、表无code按名映射、真机logcat+埋点定位UI数据问题
 - 上次总结会话点：2026-07-15 数据核对轮(食材归类核准 classify尾词优先+NAME_OVERRIDE54项特例 + 全量440食材营养从权威平台nlc.chinanutri.cn/USDA/悉尼GI/2024痛风指南 15组agent联网核准 覆盖升级式合并verified278/pending162 + 食材营养表功能combine5筛选排序VM/横滚可排序表/数据来源弹窗 + 数据来源.md记档)。关键坑=中文食材分类看尾词head-noun非前缀关键词、健康数据禁编造出处必标ref+verified/pending、覆盖升级式合并保留auth未覆盖字段、agent联网分片核准数据模式
 - 上次总结会话点：2026-07-15 无人值守UX深挖轮(4个Apple-UX agent深挖食材/菜品/餐食/健康膳食→方案→主线程落地15项安全改进+高风险入待确认队列 + 营养表体验行高亮/搜索进标题栏/横竖屏悬浮按钮/上划收筛选栏)。关键坑=字典英文化后按旧名硬编码查(gramUnit找"克"恒null丢unitId)、健康提示守免责红线(如实非医嘱nutritionGaps)、combine多源suspend可内联(别用list+cast)、无人值守研究agent产方案+主线程落地安全项模式(安全vs需拍板判定)
-- 总结次数：30
+- 上次总结会话点：2026-07-15深夜 无人值守三评审+bug大轮(用户报bug:凉皮0千卡=seedDishes已存在即跳过致配料关联永久残缺→补齐式重挂+SEED_LOGIC_VERSION盐;随机推荐翻忌口菜=rotate随机翻到全忌口末批;膳食统计没吃回不来=togglePresent读冻结的stateIn.value + 3专家agent深挖算法/架构/创建流程,落地avoid50→5/onHandMain封顶/seed缺失项告警/deleteDay落日志/resolveGrams防负/编辑未保存守卫/详情记这道菜CTA/首页计划上移/备注折叠/存为菜品,需拍板项入待办E节)。关键坑=seed已存在即跳过致关联永久残缺(补齐式)、stateIn(WhileSubscribed)无订阅者value冻结致toggle失效、rotate随机翻罚分末批、打分硬约束巨值靠分层排序冗余、专家agent产方案+主线程落安全项
+- 总结次数：31
 
 ## 文件索引
 

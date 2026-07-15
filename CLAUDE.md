@@ -89,6 +89,8 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 数字输入框**别只 `filter{isDigit()||'.'}`**：会放行 `1.7.5`/`30.` → `toDouble/IntOrNull` 恒 null → 依赖值(目标等)静默消失。小数字段限最多一个小数点、整数字段(年龄)禁小数点。
 - StateFlow 结合**多源 + 逐项异步计算**用 `combine(...)+mapLatest{}`（mapLatest 可 suspend、新值取消旧算）；里面批量 `dishNutrition(allIds)` 一次查再按 id map，别 `.map{}`(不能 suspend)也别逐项查。
 - VM 多 init 加载器**并发**（loadUnits/loadCategories… 各自 launch）：写回一律用**最新** `_state.value.copy(...)` 或 `_state.update{it.copy()}`；禁 `val cur=_state.value` 捕获后经**挂起**再 `_state.value=cur.copy()` 写回——会把挂起期间别处填的字段冲掉（曾致食材单位下拉空）。排查 grep `\.value = \w+\.copy(`。
+- `stateIn(WhileSubscribed)` 的 flow **无人直接 collect 时 `.value` 冻结在初始值**（upstream 不激活）：禁用它做 toggle 方向判定（`id !in flow.value` 会恒判一个方向→"点了回不来"，如膳食统计"没吃"）；toggle 类"读当前态再取反"改**读实时 DB**（repo 加 suspend `toggleX`/查询）。
+- 推荐 `rotate` 分批：**RANDOM 模式 `rotation%batches` 会随机翻到"罚分末批"（整批忌口/低分）**→轮转批次只按"可接受(非忌口)"候选数算(`indexOfFirst{avoidNames非空}`为界)。忌口排末已由 `sortedWith` 分层保证，别再靠 `avoid=50` 巨值混进 score（排序冗余、淹没其余因子）；单因子(onHandMain)封顶 `min(count,3)` 防线性碾压。
 - SQLDelight 迁移**改字典项名**（如单位统一英文 克→g/毫升→ml/升→L）：用 `UPDATE ...SET name=` **保 id 不变**（`unit_id`/FK 不断、数据不丢）；name 有 UNIQUE 时**先删重复**(`WHERE name IN(...) AND source='preset'`)**再带** `AND NOT EXISTS(SELECT 1 ...WHERE name='目标')` 守卫重命名（防迁移 UNIQUE 崩=真机"初始化失败"）；同步改 seed json 的 unit 字段 + `PRESET_MEASUREMENT_UNITS` + 按名单测(`units["克"]`→`units["g"]`)。
 - 重命名字典项(单位/分类等)后必 grep **全仓按旧名硬编码查的代码**(`=="克"`/`firstOrNull{it.name=="克"}` 等)改兼容新旧或按 id 查：漏改会静默失效（`gramUnit()` 找"克"恒 null→改克数丢 `unitId`/克当量算不出）。改 seed/迁移只是一半，代码硬编码名是另一半。
 - 加列**升级无损**：`ALTER ADD COLUMN col ...DEFAULT ''`(老行只补默认值零改动)+CREATE TABLE 同步加列；预设值回填放 seeder **只填空的**(`WHERE col=''`,不覆盖用户)；老用户数据靠"**编辑时预填+保存即应用**"补齐（如老自建食材编辑按名预选营养大类、点保存补挂分类），非强制数据迁移。
