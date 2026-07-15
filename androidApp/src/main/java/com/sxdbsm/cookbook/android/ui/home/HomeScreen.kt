@@ -189,44 +189,6 @@ fun HomeScreen(
             item { Spacer(Modifier.height(28.dp)) }
         }
 
-        // [AI修改] 热门菜品横向列表。
-        item { SectionHeader(title = "🔥 热门", action = "更多 ▸", onActionClick = onOpenDishes) }
-        if (ui.popular.isEmpty()) {
-            item { EmptyState(text = "还没记录餐食，热门会随着记录自动出现", icon = "🔥") }
-        } else {
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(ui.popular, key = { it.id }) { dish ->
-                        DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
-                    }
-                }
-            }
-        }
-
-        item { Spacer(Modifier.height(28.dp)) }
-
-        // [AI修改] 最近菜品横向列表。
-        item { SectionHeader(title = "⏱ 最近", action = "更多 ▸", onActionClick = onOpenDishes) }
-        if (ui.recent.isEmpty()) {
-            item { EmptyState(text = "暂无最近餐食", icon = "⏱") }
-        } else {
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(ui.recent, key = { it.id }) { dish ->
-                        DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
-                    }
-                }
-            }
-        }
-
-        item { Spacer(Modifier.height(28.dp)) }
-
         // [AI修改] 计划标题始终展示；没有计划时内容区显示“暂无计划”。
         item { SectionHeader(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
         // [AI生成] B3：一周计划入口——"周末排下周饭"整周概览 + 逐日安排。
@@ -264,6 +226,44 @@ fun HomeScreen(
                 }
             }
         }
+
+        item { Spacer(Modifier.height(28.dp)) }
+
+        // [AI修改] 发现型内容(热门/最近)下移到"计划(含今天)"之后——首屏先回答"今天吃了啥/该吃啥"，再看发现。
+        item { SectionHeader(title = "🔥 热门", action = "更多 ▸", onActionClick = onOpenDishes) }
+        if (ui.popular.isEmpty()) {
+            item { EmptyState(text = "还没记录餐食，热门会随着记录自动出现", icon = "🔥") }
+        } else {
+            item {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(ui.popular, key = { it.id }) { dish ->
+                        DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
+                    }
+                }
+            }
+        }
+
+        item { Spacer(Modifier.height(28.dp)) }
+
+        item { SectionHeader(title = "⏱ 最近", action = "更多 ▸", onActionClick = onOpenDishes) }
+        if (ui.recent.isEmpty()) {
+            item { EmptyState(text = "暂无最近餐食", icon = "⏱") }
+        } else {
+            item {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(ui.recent, key = { it.id }) { dish ->
+                        DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
+                    }
+                }
+            }
+        }
+
         item { Spacer(Modifier.height(80.dp)) } // [AI修改] 留底部 FAB 空间。
     }
     }
