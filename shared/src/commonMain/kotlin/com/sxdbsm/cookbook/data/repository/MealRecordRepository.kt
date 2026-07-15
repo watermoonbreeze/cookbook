@@ -100,8 +100,16 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             .asFlow()
             .mapToList(ioDispatcher)
             .map { dates ->
-                val today = DateTime.today()
-                dates.map { dateStr -> buildDayMealCard(DateTime.parseDate(dateStr), q.selectMealRecordsByDate(dateStr).executeAsList(), plan = DateTime.parseDate(dateStr) > today) }
+                if (dates.isEmpty()) return@map emptyList()
+                // [AI修改] 消除逐日 N+1：一次批量取回所有日期的餐食 + 一次预取餐次/菜品映射，
+                // 再按 selectDistinctDates 的 DESC 原顺序组装(不改展示顺序)。
+                val records = q.selectMealRecordsByDates(dates).executeAsList()
+                val mealTypes = q.selectAllMealTypes().executeAsList().associateBy { it.id }
+                val dishesByRecord = buildDishesByMealRecord(records.map { it.id })
+                val recordsByDate = records.groupBy { it.date }
+                dates.map { dateStr ->
+                    buildDayMealCard(DateTime.parseDate(dateStr), recordsByDate[dateStr].orEmpty(), mealTypes, dishesByRecord)
+                }
             }
             .flowOn(ioDispatcher)
 
