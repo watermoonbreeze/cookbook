@@ -290,6 +290,10 @@
 ### Git 检查点（本轮，未 push）
 - 营养表功能/权威营养入库/经验总结/行高亮/搜索栏+横竖屏/上划收起 等多个 commit（master）。
 
-### 自主执行（安全、构建可验、无需真机）
-- 逐条追加。
+### 自主执行（安全、构建可验、无需真机）——已完成
+- 4 个 Apple-UX agent 深挖(食材/菜品/餐食/健康)，落地 15 项安全改进(餐食3/菜品6/食材3/健康3)，均 [unattended] commit + 构建/单测通过。清单见 `context_memory/2026-07-15_UX深挖与无人值守落地.md` 与 `待办总览.md` D节。
+- 高风险/涉健康语义/信息架构项(巨型Composable拆分、删确认改ActionSheet、AppTopBar收敛、详情主CTA、编辑未保存保护、首页重构、评级纳入热量慢病、推荐今日缺口、独立膳食统计页等)**全部入待确认队列**，不无人值守执行。
+- 附带修真bug：单位英文化(克→g)后 `gramUnit()` 仍找"克"恒null，改克数丢unitId/克当量失效。
+- androidApp 无单测基建(仅main)，未为 pickDefaultMealType/nutritionGaps 单独搭 JUnit(过度)；纯函数+构建验证。
+- 本轮无人值守默认不 push，等用户回来。
 
