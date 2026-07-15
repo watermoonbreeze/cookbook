@@ -31,6 +31,9 @@ object PreferenceKeys {
     // [AI生成] 营养色系开关：开启后餐食卡片按营养均衡级别配背景色，并驱动首页"每天营养色系墙"；默认关。
     const val NUTRITION_COLOR_ENABLED = "nutrition_color_enabled"
 
+    // [AI生成] 热量数值显示开关：开启后餐食卡片/详情显示估算热量与达标(数字)；与营养色系独立控制；默认关。
+    const val CALORIE_NUMBER_ENABLED = "calorie_number_enabled"
+
     // [AI生成] 推荐风格(增长型推荐轻干预)：BALANCED/FAMILIAR/FRESH/NUTRITION，默认综合(BALANCED)。
     const val RECOMMEND_STYLE = "recommend_style"
 

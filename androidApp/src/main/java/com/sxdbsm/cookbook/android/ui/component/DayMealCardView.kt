@@ -47,11 +47,15 @@ fun DayMealCardView(
     val nutritionColorEnabled by remember(prefs) {
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
     }.collectAsStateWithLifecycle(false)
+    // [AI修改] 热量数值显示与营养色系拆分独立控制：数字只看本开关，配色只看营养色系。
+    val calorieNumberEnabled by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, false)
+    }.collectAsStateWithLifecycle(false)
     val nutritionLevel = if (data.meals.isNotEmpty()) nutritionLevelOfDishes(data.meals.flatMap { it.dishes }) else 0
-    // [AI生成] 当天总热量估算(随营养色系开关显示)：按当天所有菜的营养折算求和；无数据则不显示。
+    // [AI生成] 当天总热量估算(随"热量数值显示"开关显示)：按当天所有菜的营养折算求和；无数据则不显示。
     val nutritionRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.NutritionRepository>()
     var dayKcal by remember(data) { mutableStateOf(0) }
-    if (nutritionColorEnabled) {
+    if (calorieNumberEnabled) {
         LaunchedEffect(data) {
             val ids = data.meals.flatMap { it.dishes }.map { it.id }.distinct()
             dayKcal = if (ids.isEmpty()) 0 else nutritionRepo.totalOf(ids).energyKcal.roundToInt()
@@ -104,8 +108,8 @@ fun DayMealCardView(
                     CardIcon(Icons.Outlined.Delete, "删除", MaterialTheme.colorScheme.error, onDeleteClick)
                 }
             }
-            // [AI修改] 第二行：当天总热量 + 达标状态(填了身体数据才显示达标)，与日期行上下排列。
-            if (nutritionColorEnabled && dayKcal > 0) {
+            // [AI修改] 第二行：当天总热量 + 达标状态(填了身体数据才显示达标)，由"热量数值显示"开关独立控制。
+            if (calorieNumberEnabled && dayKcal > 0) {
                 Spacer(Modifier.height(2.dp))
                 val status = dailyTarget?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(dayKcal.toDouble(), it) }
                 val statusColor = when (status) {

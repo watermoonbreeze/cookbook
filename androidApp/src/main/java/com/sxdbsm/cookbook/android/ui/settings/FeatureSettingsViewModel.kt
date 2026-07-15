@@ -41,6 +41,15 @@ class FeatureSettingsViewModel(
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.NUTRITION_COLOR_ENABLED, enabled) }
     }
 
+    /** 热量数值显示开关：默认关。[AI生成] 与营养色系独立控制(数字/配色分开)。 */
+    val calorieNumberEnabled: StateFlow<Boolean> =
+        prefs.observeFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, default = false)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun setCalorieNumber(enabled: Boolean) {
+        viewModelScope.launch { prefs.setFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, enabled) }
+    }
+
     /** 身体数据(每日卡路里目标用)。[AI生成] 2a */
     val bodyMetrics: StateFlow<com.sxdbsm.cookbook.domain.model.BodyMetrics> =
         prefs.observeBodyMetrics()

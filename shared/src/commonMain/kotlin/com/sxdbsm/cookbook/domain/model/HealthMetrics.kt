@@ -18,12 +18,12 @@ import kotlin.math.roundToInt
 /** 性别。[AI生成] */
 enum class Gender(val label: String) { MALE("男"), FEMALE("女") }
 
-/** 活动水平 → TDEE 系数(参考通用估算)。[AI生成] */
-enum class ActivityLevel(val factor: Double, val label: String) {
-    SEDENTARY(1.2, "久坐"),
-    LIGHT(1.375, "轻度"),
-    MODERATE(1.55, "中度"),
-    ACTIVE(1.725, "高度"),
+/** 活动水平 → TDEE 系数(参考通用估算)。[AI生成] desc 供选择时下方小字说明，帮用户选准。 */
+enum class ActivityLevel(val factor: Double, val label: String, val desc: String) {
+    SEDENTARY(1.2, "久坐", "几乎不运动，办公室久坐、以脑力活动为主"),
+    LIGHT(1.375, "轻度", "每周轻度运动 1-3 天，或日常走动较多"),
+    MODERATE(1.55, "中度", "每周中等强度运动 3-5 天"),
+    ACTIVE(1.725, "高度", "每周高强度运动 6-7 天，或从事体力劳动"),
     ;
 
     companion object {

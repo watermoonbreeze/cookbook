@@ -85,9 +85,14 @@ internal fun IngredientEditorDialog(
     var nPurine by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.purineMg)) }
     var nPiece by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.pieceGram)) }
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
-    val nutritionColorOn by remember(prefs) {
+    // [AI修改] 营养录入提示：营养色系或热量数值任一开启即提示(两者都吃这份营养数据)。
+    val nutritionColorFlag by remember(prefs) {
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
     }.collectAsState(false)
+    val calorieNumberFlag by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, false)
+    }.collectAsState(false)
+    val nutritionColorOn = nutritionColorFlag || calorieNumberFlag
     fun buildNutrition() = com.sxdbsm.cookbook.domain.model.IngredientNutrition(
         ingredientId = ingredient?.id ?: 0L,
         energyKcal = nKcal.toDoubleOrNull(), proteinG = nProtein.toDoubleOrNull(), fatG = nFat.toDoubleOrNull(),

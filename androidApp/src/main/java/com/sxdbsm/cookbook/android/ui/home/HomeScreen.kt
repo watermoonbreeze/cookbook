@@ -58,6 +58,10 @@ fun HomeScreen(
     val nutritionColorEnabled by remember(prefs) {
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
     }.collectAsStateWithLifecycle(false)
+    // [AI生成] 热量数值显示(与营养色系独立)：控制首页「今日营养」卡的数字呈现。
+    val calorieNumberEnabled by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, false)
+    }.collectAsStateWithLifecycle(false)
     val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
     val yearAverages by vm.yearAverages.collectAsStateWithLifecycle()
     val todayNutrition by vm.todayNutrition.collectAsStateWithLifecycle()
@@ -176,8 +180,8 @@ fun HomeScreen(
                     )
                 }
             }
-            // [AI生成] 3c：今日营养分配卡(有当天营养数据才显示)。
-            todayNutrition?.let { tn ->
+            // [AI生成] 3c：今日营养分配卡(有当天营养数据 且 开启"热量数值显示"才显示)。
+            todayNutrition?.takeIf { calorieNumberEnabled }?.let { tn ->
                 item {
                     NutritionTodayCard(tn, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
                 }

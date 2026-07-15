@@ -44,6 +44,7 @@ fun FeatureSettingsScreen(
 ) {
     val stepMode by vm.stepModeEnabled.collectAsStateWithLifecycle()
     val nutritionColor by vm.nutritionColorEnabled.collectAsStateWithLifecycle()
+    val calorieNumber by vm.calorieNumberEnabled.collectAsStateWithLifecycle()
     val body by vm.bodyMetrics.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -71,10 +72,18 @@ fun FeatureSettingsScreen(
             com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "餐食") {
                 SwitchRow(
                     title = "营养色系",
-                    subtitle = "开启后：餐食卡片按当天营养均衡级别配背景色(越均衡越偏健康绿、越单一越偏暖)，" +
-                        "并用于首页「每天营养色系墙」。默认关闭。",
+                    subtitle = "按当天营养均衡度给餐食卡片上色——越均衡越偏健康绿、越单一越偏暖，" +
+                        "首页「每天营养色系墙」用同一口径。只是直观提示，不代表精确评分。默认关闭。",
                     checked = nutritionColor,
                     onCheckedChange = vm::setNutritionColor,
+                )
+                // [AI生成] 与营养色系拆分：热量数字单独开关(用户要求)。
+                SwitchRow(
+                    title = "热量数值显示",
+                    subtitle = "在餐食卡片显示当天估算热量与达标(数字)。数值按食材每100g营养×用量折算，" +
+                        "用量或营养缺失时为估算值，仅供参考。与营养色系独立，关闭则只看颜色不看数字。默认关闭。",
+                    checked = calorieNumber,
+                    onCheckedChange = vm::setCalorieNumber,
                 )
             }
 
@@ -162,11 +171,19 @@ private fun BodyMetricsSection(
         // 活动水平
         Text("活动水平", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(4.dp))
+        val activityIndex = activities.indexOfFirst { it.name == body.activity }.coerceAtLeast(0)
         com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
             options = activities.map { it.label },
-            selectedIndex = activities.indexOfFirst { it.name == body.activity }.coerceAtLeast(0),
+            selectedIndex = activityIndex,
             onSelect = { onChange(build(activity = activities[it].name)) },
             modifier = Modifier.fillMaxWidth(),
+        )
+        // [AI生成] 选中活动水平的说明(小字)，帮用户选准。
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "${activities[activityIndex].label}：${activities[activityIndex].desc}（热量系数 ×${activities[activityIndex].factor}）",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(12.dp))
         // 目标显示
