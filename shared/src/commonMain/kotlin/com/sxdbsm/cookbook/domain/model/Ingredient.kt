@@ -78,6 +78,7 @@ enum class AdviceLevel { RECOMMEND, LIMIT, AVOID;
 data class MeasurementUnit(
     val id: Long,
     val name: String,
+    val preset: Boolean = true, // [AI生成] 预设单位不可删；用户自建(source=user)可删。
 )
 
 /**

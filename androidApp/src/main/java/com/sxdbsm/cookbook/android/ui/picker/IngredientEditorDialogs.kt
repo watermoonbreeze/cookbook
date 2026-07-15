@@ -45,6 +45,7 @@ internal fun IngredientEditorDialog(
     ui: IngredientPickerUiState,
     onDismiss: () -> Unit,
     onAddCategory: () -> Unit,
+    onAddUnit: (String, (Long?) -> Unit) -> Unit, // [AI生成] 单位库：手填新单位入库并回选。
     onSave: (
         Ingredient?,
         String,
@@ -206,6 +207,7 @@ internal fun IngredientEditorDialog(
                                 units = ui.availableUnits,
                                 selectedUnitId = defaultUnitId,
                                 onSelect = { defaultUnitId = it },
+                                onAddUnit = { newName -> onAddUnit(newName) { id -> if (id != null) defaultUnitId = id } },
                             )
                         }
                         ImagePickerButton(
@@ -331,8 +333,11 @@ internal fun UnitDropdown(
     units: List<MeasurementUnit>,
     selectedUnitId: Long?,
     onSelect: (Long?) -> Unit,
+    onAddUnit: (String) -> Unit = {}, // [AI生成] 单位库：手填新单位入库并回选。
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var addingCustom by remember { mutableStateOf(false) }
+    var customText by remember { mutableStateOf("") }
     val selectedName = units.firstOrNull { it.id == selectedUnitId }?.name
     Box {
         OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
@@ -356,7 +361,43 @@ internal fun UnitDropdown(
                     },
                 )
             }
+            // [AI生成] 单位库：填新单位，保存到单位库(source=user)后即选中、下次可复用。
+            DropdownMenuItem(
+                text = { Text("＋ 自定义单位…", color = MaterialTheme.colorScheme.primary) },
+                onClick = {
+                    addingCustom = true
+                    expanded = false
+                },
+            )
         }
+    }
+    if (addingCustom) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { addingCustom = false; customText = "" },
+            title = { Text("自定义单位") },
+            text = {
+                androidx.compose.material3.OutlinedTextField(
+                    value = customText,
+                    onValueChange = { customText = it.take(8) }, // 单位名短，限 8 字
+                    label = { Text("单位名（如 碗/把/罐）") },
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium,
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    enabled = customText.isNotBlank(),
+                    onClick = {
+                        onAddUnit(customText.trim())
+                        addingCustom = false
+                        customText = ""
+                    },
+                ) { Text("保存并选用") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { addingCustom = false; customText = "" }) { Text("取消") }
+            },
+        )
     }
 }
 

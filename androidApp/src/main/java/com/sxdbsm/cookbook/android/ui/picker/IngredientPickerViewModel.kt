@@ -148,6 +148,15 @@ class IngredientPickerViewModel(
         }
     }
 
+    /** 新建自定义单位入库并刷新单位列表；回调返回新单位 id 供表单选中。[AI生成] 单位库 */
+    fun addUnit(name: String, onCreated: (Long?) -> Unit) {
+        viewModelScope.launch {
+            val id = ingredientRepo.ensureMeasurementUnit(name)
+            _state.value = _state.value.copy(availableUnits = ingredientRepo.listMeasurementUnits())
+            onCreated(id)
+        }
+    }
+
     private fun loadCategories() {
         viewModelScope.launch {
             val tops = categoryRepo.listTopLevel()

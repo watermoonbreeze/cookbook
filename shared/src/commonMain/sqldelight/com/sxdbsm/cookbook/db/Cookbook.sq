@@ -468,6 +468,14 @@ SELECT * FROM measurement_unit WHERE status = 1 ORDER BY id;
 updateMeasurementUnitGrams:
 UPDATE measurement_unit SET grams = :grams WHERE name = :name;
 
+-- [AI生成] 用户自建单位：按名精确取 id(name UNIQUE)，供 ensureMeasurementUnit 落库后回查。
+selectMeasurementUnitIdByName:
+SELECT id FROM measurement_unit WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 软删单位(仅用户自建，预设不可删)。
+softDeleteUserMeasurementUnit:
+UPDATE measurement_unit SET status = 0 WHERE id = ? AND source = 'user';
+
 -- ===== ingredient_nutrition（营养素 L2 数值层）=====
 
 -- [AI生成] 营养素补齐式写入：sqlite_3_18 无 UPSERT，用 INSERT OR REPLACE（PK=ingredient_id，无子表引用，安全）。

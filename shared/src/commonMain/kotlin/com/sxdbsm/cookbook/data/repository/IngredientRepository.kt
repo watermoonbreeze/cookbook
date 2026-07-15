@@ -266,7 +266,24 @@ class IngredientRepository(private val db: CookbookDatabase) {
      * 读取计量单位字典。[AI修改]
      */
     suspend fun listMeasurementUnits(): List<MeasurementUnit> = withContext(ioDispatcher) {
-        q.selectAllMeasurementUnits().executeAsList().map { MeasurementUnit(id = it.id, name = it.name) }
+        q.selectAllMeasurementUnits().executeAsList().map { MeasurementUnit(id = it.id, name = it.name, preset = it.source == "preset") }
+    }
+
+    /**
+     * 按名获取或创建计量单位(用户自建)。[AI生成] 单位库——仿烹饪方式 ensureCookingMethod。
+     *
+     * 手填新单位先落字典表(source=user, grams 留空=计件类由食材单件克重折算)，再按名回查 id。
+     */
+    suspend fun ensureMeasurementUnit(name: String): Long? = withContext(ioDispatcher) {
+        val trimmed = name.trim()
+        if (trimmed.isBlank()) return@withContext null
+        q.insertMeasurementUnit(trimmed, "user", null) // grams 未知留空
+        q.selectMeasurementUnitIdByName(trimmed).executeAsOneOrNull()
+    }
+
+    /** 删除单位(仅用户自建，预设不可删)。[AI生成] */
+    suspend fun deleteMeasurementUnit(id: Long) = withContext(ioDispatcher) {
+        q.softDeleteUserMeasurementUnit(id)
     }
 
     /** 一组食材的营养维度标签(去重)。[AI生成] 菜品详情营养概要(标签版)。 */

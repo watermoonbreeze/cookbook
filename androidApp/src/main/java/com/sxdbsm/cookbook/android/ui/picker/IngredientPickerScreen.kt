@@ -429,6 +429,7 @@ fun IngredientPickerScreen(
                 categoryParentIdDraft = null
                 categoryEditOpen = true
             },
+            onAddUnit = vm::addUnit,
             onSave = vm::saveIngredientEditor,
         )
     }
@@ -447,6 +448,7 @@ fun IngredientPickerScreen(
                 categoryParentIdDraft = null
                 categoryEditOpen = true
             },
+            onAddUnit = vm::addUnit,
             onSave = vm::saveIngredientEditor,
         )
     }
