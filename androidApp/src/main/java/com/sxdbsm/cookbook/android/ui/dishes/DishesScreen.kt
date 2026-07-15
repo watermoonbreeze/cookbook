@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Color
@@ -28,6 +29,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -452,6 +454,17 @@ private fun DishFilterChips(ui: DishesUiState, vm: DishesViewModel) {
         }
         items(ui.availableTags, key = { "t-$it" }) { t ->
             FilterChip(selected = ui.selectedTag == t, onClick = { vm.toggleTagFilter(t) }, label = { Text("#$t") })
+        }
+        // [AI生成] 叠了筛选时给"清除"一键回全量,免逐个再点取消。
+        if (ui.selectedMethod != null || ui.selectedTag != null || ui.selectedCuisine != null || ui.keyword.isNotBlank()) {
+            item(key = "clear-filters") {
+                FilterChip(
+                    selected = false,
+                    onClick = { vm.clearFilters() },
+                    label = { Text("清除") },
+                    leadingIcon = { Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                )
+            }
         }
     }
 }

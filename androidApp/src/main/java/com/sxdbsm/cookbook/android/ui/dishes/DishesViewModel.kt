@@ -184,6 +184,14 @@ class DishesViewModel(
     /** 直接选择菜系(左侧菜系栏)：null=全部(不筛)。[AI生成] */
     fun selectCuisine(cuisine: String?) { _cuisineFilter.value = cuisine }
 
+    /** 一键清除所有筛选(烹饪方式/标签/菜系/关键词)。[AI生成] 叠了多个筛选后回到全量免逐个再点。 */
+    fun clearFilters() {
+        _methodFilter.value = null
+        _tagFilter.value = null
+        _cuisineFilter.value = null
+        setKeyword("")
+    }
+
     /**
      * 从搜索弹框点某道菜：跳到它所在菜系分类下，并清空搜索关闭弹框。[AI生成]
      *
