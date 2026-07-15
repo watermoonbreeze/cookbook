@@ -51,6 +51,8 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - JUnit4 `@Test` 须返回 void：`fun x()=runBlocking{…}` 末尾禁用返回非 Unit 的断言（如 `assertNotNull`），否则 `InvalidTestClassError`，末尾补 `Unit`。
 - SQLDelight 迁移：单测走 `Schema.create` 不跑迁移链、迁移错误测不出——改动涉及迁移必推演旧库各历史版本升级；`ALTER ADD COLUMN` 对已有列会崩，用幂等/无副作用写法（否则真机「初始化数据失败」）。
 - 大批量改 seed（食材/分类/详情/菜品）用脚本 + 引用完整性校验 + `:shared:testDebugUnitTest`；未知食材/分类 code、以及菜品的**食材名/烹饪方式/单位（均按名解析）**被 seeder 静默跳过（不崩但少关联）——扩菜品只用已存在名字并加/跑引用完整性单测；改 general 大类名会打断测试按名断言。
+- `seedDishes` 对**已存在同名预设菜"补齐式"重挂缺失配料**（只加不删、不改用量），别"已存在即 return 跳过"：菜先于其食材入库时配料没关联上→之后补了食材/营养重 seed 仍跳过→**关联永久残缺→热量算 0**（"凉皮 0 千卡"根因）。菜品热量算 0 先查 dish_ingredient 是否真关联上了。
+- seed **处理逻辑**变更（非 JSON 内容）要让已装老库跑一次：把 `SEED_LOGIC_VERSION` 盐混入内容指纹（`fingerprintOf(SEED_LOGIC_VERSION, …)`）+1，否则指纹不变、老库跳过 seed 拿不到修复；用户侧"更新基础数据"(force) 也可即时修复。
 - 健康数据（食材/营养/详情）为 AI 参考整理、非权威核对：涉及数据来源必须如实标注 + 免责，禁编造权威出处。
 - 每个新文件用 Write 写（bash heredoc 遇引号/emoji 易挂）；git 提交多行信息用 `-F 文件`（Git Bash 无 PowerShell here-string）。
 - 食材 `name` 全新库有 **UNIQUE 约束**（`CREATE TABLE ingredient ... name TEXT NOT NULL UNIQUE`），老库经迁移升级可能没有、仍存同名多 id。`createUserIngredient` 必须**按去空格名先查复用已有 id**（全新库防 UNIQUE 崩、老库防同名多 id）；库存推荐按名扩展(`selectIngredientIdsByNames`)兼容老库同名多 id。
