@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -72,11 +73,14 @@ class SearchViewModel(
             _state.value = _state.value.copy(loadingMoreMeals = true)
             val more = mealRepo.searchMealCards(current.keyword, limit = MEAL_PAGE_SIZE, offset = mealOffset)
             mealOffset += more.size
-            _state.value = _state.value.copy(
-                meals = (current.meals + more).distinctBy { it.date },
-                loadingMoreMeals = false,
-                canLoadMoreMeals = more.size.toLong() == MEAL_PAGE_SIZE,
-            )
+            // [AI修改] D：追加读最新 it.meals(非启动前捕获的 current.meals)，用 update{} 避免挂起期并发写被冲掉。
+            _state.update {
+                it.copy(
+                    meals = (it.meals + more).distinctBy { m -> m.date },
+                    loadingMoreMeals = false,
+                    canLoadMoreMeals = more.size.toLong() == MEAL_PAGE_SIZE,
+                )
+            }
         }
     }
 

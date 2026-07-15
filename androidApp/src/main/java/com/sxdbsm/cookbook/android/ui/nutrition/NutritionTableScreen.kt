@@ -77,6 +77,7 @@ fun NutritionTableScreen(
     val group by vm.groupFilter.collectAsStateWithLifecycle()
     val sortKey by vm.sortKey.collectAsStateWithLifecycle()
     val sortDesc by vm.sortDesc.collectAsStateWithLifecycle()
+    val selectedName by vm.selectedName.collectAsStateWithLifecycle()
     var sourceOpen by remember { mutableStateOf(false) }
 
     val cols = remember {
@@ -158,7 +159,14 @@ fun NutritionTableScreen(
                 }
                 LazyColumn(Modifier.fillMaxSize()) {
                     items(rows, key = { it.name }) { row ->
-                        Row(Modifier.height(36.dp)) {
+                        val selected = row.name == selectedName
+                        // [AI生成] 选中整行高亮：横滑到后面列时仍能一眼锁定是哪个食材。点行切换。
+                        Row(
+                            Modifier
+                                .height(36.dp)
+                                .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.14f) else androidx.compose.ui.graphics.Color.Transparent)
+                                .clickable { vm.toggleSelect(row.name) },
+                        ) {
                             cols.forEachIndexed { i, c ->
                                 Box(
                                     modifier = Modifier.width(c.width).height(36.dp).padding(horizontal = 4.dp),
@@ -167,7 +175,12 @@ fun NutritionTableScreen(
                                     Text(
                                         c.value(row),
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = if (i == 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = when {
+                                            selected -> MaterialTheme.colorScheme.primary
+                                            i == 0 -> MaterialTheme.colorScheme.onSurface
+                                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
                                         maxLines = 1,
                                     )
                                 }

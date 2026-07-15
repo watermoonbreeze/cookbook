@@ -30,6 +30,8 @@ class NutritionTableViewModel(
     val groupFilter = MutableStateFlow<String?>(null) // FoodGroup.Group 名，null=全部
     val sortKey = MutableStateFlow(NutriSortKey.NAME)
     val sortDesc = MutableStateFlow(false)
+    /** 选中(高亮)的食材名，横滑时锁定视线用；再次点同一行取消。[AI生成] */
+    val selectedName = MutableStateFlow<String?>(null)
 
     init {
         viewModelScope.launch { all.value = nutritionRepo.allIngredientNutrition() }
@@ -37,6 +39,8 @@ class NutritionTableViewModel(
 
     fun setQuery(q: String) { query.value = q }
     fun setGroup(g: String?) { groupFilter.value = g }
+    /** 点行切换高亮：点已选行=取消。[AI生成] */
+    fun toggleSelect(name: String) { selectedName.value = if (selectedName.value == name) null else name }
     /** 点表头排序：同列切升降，换列默认升序(名称)/降序(数值,大在前更常用)。[AI生成] */
     fun setSort(key: NutriSortKey) {
         if (sortKey.value == key) sortDesc.value = !sortDesc.value
