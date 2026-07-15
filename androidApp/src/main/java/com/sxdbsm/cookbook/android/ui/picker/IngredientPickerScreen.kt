@@ -51,6 +51,7 @@ fun IngredientPickerScreen(
     // [AI修改] 选择状态统一来自 ViewModel；弹窗输入框内容使用 remember 保存临时值。
     val ui by vm.state.collectAsStateWithLifecycle()
     var createDialogOpen by remember { mutableStateOf(false) }
+    var createPrefillName by remember { mutableStateOf("") } // [AI生成] 搜索无结果"新建关键词"时预填的名称
     var editingIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var deletingIngredient by remember { mutableStateOf<Ingredient?>(null) }
     var categoryManageOpen by remember { mutableStateOf(false) } // [AI生成] 分类管理弹框开关。
@@ -162,6 +163,34 @@ fun IngredientPickerScreen(
                             }
                         },
                     )
+                } else if (ui.keyword.isNotBlank()) {
+                    // [AI生成] 搜到库里没有的食材=直接给"＋新建『关键词』"直达(免清空重打名字),预填名称、大类仍按名自动预选。
+                    Surface(
+                        tonalElevation = 4.dp,
+                        color = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    createPrefillName = ui.keyword.trim()
+                                    vm.clearCreateError()
+                                    vm.loadIngredientEditor(null)
+                                    createDialogOpen = true
+                                }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Outlined.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "未找到「${ui.keyword.trim()}」，点此新建",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
                 }
                 // [AI修改] 苹果风格：主分类改可滚动 FilterChip 行(去 Material TabRow 的下划线 indicator)。
                 LazyRow(
@@ -423,9 +452,11 @@ fun IngredientPickerScreen(
     if (createDialogOpen) {
         IngredientEditorDialog(
             ingredient = null,
+            initialName = createPrefillName, // [AI生成] 搜索无结果新建时预填名称
             ui = ui,
             onDismiss = {
                 createDialogOpen = false
+                createPrefillName = ""
                 vm.clearCreateError()
             },
             onAddCategory = {

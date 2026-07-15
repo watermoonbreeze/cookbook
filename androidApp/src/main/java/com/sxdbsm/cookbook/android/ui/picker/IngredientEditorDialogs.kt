@@ -44,6 +44,7 @@ internal fun IngredientEditorDialog(
     ingredient: Ingredient?,
     ui: IngredientPickerUiState,
     onDismiss: () -> Unit,
+    initialName: String = "", // [AI生成] 新建时预填名称(搜索无结果直达新建用)
     onAddCategory: () -> Unit,
     onAddUnit: (String, (Long?) -> Unit) -> Unit, // [AI生成] 单位库：手填新单位入库并回选。
     onSave: (
@@ -60,7 +61,7 @@ internal fun IngredientEditorDialog(
         String, // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)
     ) -> Unit,
 ) {
-    var name by remember(ingredient?.id) { mutableStateOf(ingredient?.name.orEmpty()) }
+    var name by remember(ingredient?.id) { mutableStateOf(ingredient?.name ?: initialName) } // [AI修改] 新建时可预填名称
     var alias by remember(ingredient?.id) { mutableStateOf(ingredient?.alias.orEmpty()) }
     var images by remember(ingredient?.id) { mutableStateOf(decodeImagePaths(ingredient?.imagePath.orEmpty())) }
     var thumbnails by remember(ingredient?.id) { mutableStateOf(decodeImagePaths(ingredient?.thumbnailPath.orEmpty())) }
