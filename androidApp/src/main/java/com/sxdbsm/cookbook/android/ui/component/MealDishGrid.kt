@@ -9,13 +9,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.domain.StapleFood
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -63,19 +68,32 @@ fun MealDishGrid(
     }
 }
 
-/** "主食"角标。[AI生成] */
+/** "主食"角标：左上角直角三角形 + "主"字。[AI修改] */
 @Composable
 fun StapleBadge(modifier: Modifier = Modifier) {
-    Surface(
-        color = MaterialTheme.colorScheme.primary,
-        shape = MaterialTheme.shapes.small,
-        modifier = modifier.padding(2.dp),
+    val color = MaterialTheme.colorScheme.primary
+    val onColor = MaterialTheme.colorScheme.onPrimary
+    Box(
+        modifier = modifier
+            .size(20.dp)
+            .clip(RoundedCornerShape(topStart = 10.dp)) // 外角贴合卡片圆角
+            .drawBehind {
+                // 铺满左上角的直角三角形：(0,0)-(w,0)-(0,h)。
+                val p = Path().apply {
+                    moveTo(0f, 0f)
+                    lineTo(size.width, 0f)
+                    lineTo(0f, size.height)
+                    close()
+                }
+                drawPath(p, color)
+            },
     ) {
         Text(
-            "主食",
+            "主",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+            fontWeight = FontWeight.Bold,
+            color = onColor,
+            modifier = Modifier.align(Alignment.TopStart).padding(start = 2.dp),
         )
     }
 }

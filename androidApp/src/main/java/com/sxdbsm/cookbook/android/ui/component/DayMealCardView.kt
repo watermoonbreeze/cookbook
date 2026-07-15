@@ -199,7 +199,9 @@ private fun MealSectionRow(
     onDishClick: ((DishMini) -> Unit)? = null,
 ) {
     // [AI生成] N8：一餐涵盖的食物大类(按主料名归纳)→餐次名后的分类图标 + 菜品下方营养搭配。
+    // [AI修改] 主食(STAPLE)排最前：分类图标行/营养行都让主食标签打头。
     val groups = com.sxdbsm.cookbook.domain.FoodGroup.groupsOf(section.dishes.flatMap { it.mainIngredientNames })
+        .sortedByDescending { it == com.sxdbsm.cookbook.domain.FoodGroup.Group.STAPLE }
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -244,6 +246,8 @@ private fun MealSectionRow(
             )
             // [AI修改] N8：菜品下方只显示本餐**实际包含**的营养素/分类，不做"建议再加"推荐(避免不准确)。
             val nutri = com.sxdbsm.cookbook.domain.FoodGroup.nutritionSummary(groups)
+                .sortedByDescending { it.startsWith("主食") } // [AI修改] 主食标签放最前
+
             if (nutri.isNotEmpty()) {
                 Spacer(Modifier.height(6.dp))
                 Text(
