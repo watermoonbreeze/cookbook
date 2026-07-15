@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.family
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -116,12 +117,26 @@ fun FamilyStatsScreen(
                 Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp, modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
                         Text("今日各成员摄入(按饭量系数估算)", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("点成员名可标「没吃」，其份额分给其余在场成员(仅本次查看，不保存)。", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                         Spacer(Modifier.height(8.dp))
                         stats.breakdown.forEach { mi ->
-                            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text(mi.name, style = MaterialTheme.typography.bodyMedium)
+                            Row(
+                                Modifier.fillMaxWidth()
+                                    .clickable { vm.togglePresent(mi.id) }
+                                    .padding(vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    mi.name + if (!mi.present) " · 没吃" else "",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (mi.present) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+                                )
                                 Spacer(Modifier.weight(1f))
-                                Text("${mi.kcal} 千卡", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    if (mi.present) "${mi.kcal} 千卡" else "—",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }

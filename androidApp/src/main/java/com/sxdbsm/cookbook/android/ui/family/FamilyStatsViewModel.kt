@@ -48,14 +48,22 @@ class FamilyStatsViewModel(
 
     fun select(memberId: Long?) { _selected.value = memberId }
 
+    /** 家庭视图"在场"微调(what-if)：排除的成员 id，其份额分给其余在场成员。不持久化。[AI生成] P2 缺席微调轻量版。 */
+    private val _excluded = MutableStateFlow<Set<Long>>(emptySet())
+    val excluded: StateFlow<Set<Long>> = _excluded
+    fun togglePresent(memberId: Long) {
+        _excluded.value = if (memberId in _excluded.value) _excluded.value - memberId else _excluded.value + memberId
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val stats: StateFlow<FamilyStats> =
         combine(
             mealRepo.observeTimelineWindow(DateTime.plusDays(DateTime.today(), -6), DateTime.today()),
             family.observeMembers(),
             _selected,
-        ) { cards, ms, sel -> Triple(cards, ms, sel) }
-            .mapLatest { (cards, ms, sel) ->
+            _excluded,
+        ) { cards, ms, sel, excluded -> StatsInput(cards, ms, sel, excluded) }
+            .mapLatest { (cards, ms, sel, excluded) ->
                 val member = sel?.let { id -> ms.firstOrNull { it.id == id } }
                 val share = when {
                     member == null -> 1.0 // 家庭视图=全家总量
@@ -90,10 +98,12 @@ class FamilyStatsViewModel(
                         ?.meals?.flatMap { it.dishes }?.map { it.id }?.distinct().orEmpty()
                     ids.mapNotNull { perDish[it]?.totals?.energyKcal }.sum()
                 }
-                val coeffSum = ms.sumOf { it.portionCoefficient }
+                // 在场成员(排除 what-if 缺席者)分摊全家餐；缺席者显示 0。
+                val presentSum = ms.filter { it.id !in excluded }.sumOf { it.portionCoefficient }
                 val breakdown = if (member != null || ms.size <= 1) emptyList() else ms.map { mem ->
-                    val s = if (coeffSum > 0.0) mem.portionCoefficient / coeffSum else 1.0
-                    MemberIntake(mem.name, (familyTodayKcal * s).roundToInt())
+                    val isPresent = mem.id !in excluded
+                    val s = if (isPresent && presentSum > 0.0) mem.portionCoefficient / presentSum else 0.0
+                    MemberIntake(mem.id, mem.name, (familyTodayKcal * s).roundToInt(), isPresent)
                 }
                 FamilyStats(
                     isFamily = member == null,
@@ -126,5 +136,13 @@ data class FamilyStats(
     val breakdown: List<MemberIntake> = emptyList(), // 家庭视图：各成员今日摄入拆分
 )
 
-/** 成员今日摄入估算(家庭视图拆分)。[AI生成] */
-data class MemberIntake(val name: String, val kcal: Int)
+/** 成员今日摄入估算(家庭视图拆分)。[AI生成] present=在场(参与分摊)。 */
+data class MemberIntake(val id: Long, val name: String, val kcal: Int, val present: Boolean = true)
+
+/** stats combine 4 源载体。[AI生成] */
+private data class StatsInput(
+    val cards: List<com.sxdbsm.cookbook.domain.model.DayMealCardData>,
+    val ms: List<FamilyMember>,
+    val sel: Long?,
+    val excluded: Set<Long>,
+)
