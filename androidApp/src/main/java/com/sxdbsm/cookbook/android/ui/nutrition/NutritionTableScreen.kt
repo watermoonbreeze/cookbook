@@ -1,26 +1,38 @@
 package com.sxdbsm.cookbook.android.ui.nutrition
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.ScreenRotation
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -28,25 +40,46 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sxdbsm.cookbook.android.ui.component.AppTopBar
 import com.sxdbsm.cookbook.domain.FoodGroup
 import com.sxdbsm.cookbook.domain.model.IngredientNutritionRow
 import org.koin.androidx.compose.koinViewModel
+import kotlin.math.roundToInt
+
+/** 从 Compose Context 找到宿主 Activity(用于运行时改屏幕方向)。[AI生成] */
+private fun Context.findActivity(): Activity? {
+    var c: Context? = this
+    while (c is ContextWrapper) {
+        if (c is Activity) return c
+        c = c.baseContext
+    }
+    return null
+}
 
 /**
  * @File : NutritionTableScreen
@@ -80,6 +113,16 @@ fun NutritionTableScreen(
     val selectedName by vm.selectedName.collectAsStateWithLifecycle()
     var sourceOpen by remember { mutableStateOf(false) }
 
+    // [AI生成] 横竖屏切换：悬浮可拖动旋转按钮，点它锁横屏(表更宽、少滑动)再点回竖屏；离开页面还原竖屏。
+    // Manifest 已给 MainActivity 加 configChanges，旋转不重建 Activity(Compose 重组保状态)。
+    val context = LocalContext.current
+    val activity = remember(context) { context.findActivity() }
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    var fabOffset by remember { mutableStateOf(Offset.Zero) } // 相对默认右下角的拖动位移
+    DisposableEffect(Unit) {
+        onDispose { activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT }
+    }
+
     val cols = remember {
         listOf(
             NutriCol(NutriSortKey.NAME, "食材", 92.dp) { it.name },
@@ -98,26 +141,38 @@ fun NutritionTableScreen(
     }
     val hScroll = rememberScrollState()
 
-    Scaffold(
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+      val density = LocalDensity.current
+      val maxWpx = with(density) { maxWidth.toPx() }
+      val maxHpx = with(density) { maxHeight.toPx() }
+      val fabPx = with(density) { 76.dp.toPx() } // 按钮+边距约束，保证拖动后不出屏
+      Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            AppTopBar(
-                title = "食材营养表",
-                onBack = onBack,
+            // [AI修改] 搜索框内嵌标题栏一行(返回+搜索框+ⓘ)，省一整行、下方表格空间更大。
+            TopAppBar(
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") } },
+                title = {
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = vm::setQuery,
+                        placeholder = { Text("搜索食材", style = MaterialTheme.typography.bodyMedium) },
+                        singleLine = true,
+                        textStyle = MaterialTheme.typography.bodyMedium,
+                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                        trailingIcon = if (query.isNotEmpty()) {
+                            { IconButton(onClick = { vm.setQuery("") }) { Icon(Icons.Outlined.Close, contentDescription = "清除", modifier = Modifier.size(18.dp)) } }
+                        } else null,
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 52.dp),
+                        shape = MaterialTheme.shapes.large,
+                        colors = OutlinedTextFieldDefaults.colors(),
+                    )
+                },
                 actions = { IconButton(onClick = { sourceOpen = true }) { Icon(Icons.Outlined.Info, contentDescription = "数据来源") } },
             )
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = vm::setQuery,
-                label = { Text("搜索食材") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                shape = MaterialTheme.shapes.medium,
-            )
             // 大类筛选
             Row(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp),
@@ -190,6 +245,36 @@ fun NutritionTableScreen(
                 }
             }
         }
+      }
+
+      // [AI生成] 悬浮可拖动旋转按钮：默认右下角，可拖到任意位置；点击切换横/竖屏，样式随当前方向变。
+      SmallFloatingActionButton(
+          onClick = {
+              activity?.requestedOrientation =
+                  if (isLandscape) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT else ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+          },
+          containerColor = if (isLandscape) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+          contentColor = if (isLandscape) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+          modifier = Modifier
+              .align(Alignment.BottomEnd)
+              .padding(16.dp)
+              .offset { IntOffset(fabOffset.x.roundToInt(), fabOffset.y.roundToInt()) }
+              .pointerInput(Unit) {
+                  detectDragGestures { change, delta ->
+                      change.consume()
+                      fabOffset = Offset(
+                          (fabOffset.x + delta.x).coerceIn(-(maxWpx - fabPx), 0f),
+                          (fabOffset.y + delta.y).coerceIn(-(maxHpx - fabPx), 0f),
+                      )
+                  }
+              },
+      ) {
+          Icon(
+              Icons.Outlined.ScreenRotation,
+              contentDescription = if (isLandscape) "切回竖屏" else "横屏查看",
+              modifier = Modifier.graphicsLayer { rotationZ = if (isLandscape) 90f else 0f },
+          )
+      }
     }
 
     if (sourceOpen) {
