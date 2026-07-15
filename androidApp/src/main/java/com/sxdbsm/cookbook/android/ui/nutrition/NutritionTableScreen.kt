@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -48,10 +50,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -140,6 +144,23 @@ fun NutritionTableScreen(
         )
     }
     val hScroll = rememberScrollState()
+    // [AI生成] 上划(内容上移)收起大类筛选栏腾空间、到顶或下划再现；表头栏始终固定在标题下方。
+    val listState = rememberLazyListState()
+    var chipsVisible by remember { mutableStateOf(true) }
+    LaunchedEffect(listState) {
+        var lastIndex = 0
+        var lastOffset = 0
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .collect { (idx, off) ->
+                when {
+                    idx == 0 && off == 0 -> chipsVisible = true
+                    idx > lastIndex || off > lastOffset + 6 -> chipsVisible = false
+                    idx < lastIndex || off < lastOffset - 6 -> chipsVisible = true
+                }
+                lastIndex = idx
+                lastOffset = off
+            }
+    }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
       val density = LocalDensity.current
@@ -173,22 +194,26 @@ fun NutritionTableScreen(
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            // 大类筛选
-            Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                FilterChip(selected = group == null, onClick = { vm.setGroup(null) }, label = { Text("全部") })
-                FoodGroup.Group.values().forEach { g ->
-                    FilterChip(selected = group == g.name, onClick = { vm.setGroup(g.name) }, label = { Text(g.label) })
+            // 大类筛选 + 提示：上划收起、到顶/下划展开(AnimatedVisibility 高度动画)。[AI修改]
+            AnimatedVisibility(visible = chipsVisible) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        FilterChip(selected = group == null, onClick = { vm.setGroup(null) }, label = { Text("全部") })
+                        FoodGroup.Group.values().forEach { g ->
+                            FilterChip(selected = group == g.name, onClick = { vm.setGroup(g.name) }, label = { Text(g.label) })
+                        }
+                    }
+                    Text(
+                        "共 ${rows.size} 项 · 每100g可食部 · 点表头排序 · 横向可滑",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    )
                 }
             }
-            Text(
-                "共 ${rows.size} 项 · 每100g可食部 · 点表头排序 · 横向可滑",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            )
             // 表：整体横向可滑，列固定宽。
             Column(Modifier.horizontalScroll(hScroll)) {
                 // 表头(可点排序)
@@ -212,7 +237,7 @@ fun NutritionTableScreen(
                         }
                     }
                 }
-                LazyColumn(Modifier.fillMaxSize()) {
+                LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                     items(rows, key = { it.name }) { row ->
                         val selected = row.name == selectedName
                         // [AI生成] 选中整行高亮：横滑到后面列时仍能一眼锁定是哪个食材。点行切换。
