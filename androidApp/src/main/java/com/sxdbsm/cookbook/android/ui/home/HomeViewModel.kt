@@ -91,27 +91,13 @@ class HomeViewModel(
      *
      * 固定 1~12 月；UI 默认定位今天所在周、可左右滑。仅功能设置开启营养色系时渲染。
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
     val nutritionWall: StateFlow<List<DayNutrition>> =
-        combine(mealRepo.observeTimelineWindow(wallStart, wallEnd), family.observeFocusBody(), family.observeFocusShare()) { cards, body, share -> Triple(cards, body, share) }
-            .mapLatest { (cards, body, share) ->
-                // [AI修改] 2c：填了关注成员身体数据时，其当天个人摄入(全家餐×份额)偏离目标则营养级别降一档。
-                val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
-                val dayDishIds = cards.associate { it.date to it.meals.flatMap { m -> m.dishes }.map { it.id }.distinct() }
-                val perDish = if (target == null) emptyMap() else {
-                    val allIds = dayDishIds.values.flatten().distinct()
-                    if (allIds.isEmpty()) emptyMap() else nutritionRepo.dishNutrition(allIds)
-                }
+        mealRepo.observeTimelineWindow(wallStart, wallEnd)
+            .map { cards ->
+                // [AI修改] 色系墙=全家膳食结构均衡度(蛋白+主食+蔬果齐不齐)，与成员/热量/关注成员无关——切换成员不改历史色块。
                 cards.map { card ->
                     val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
-                    var level = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains))
-                    if (target != null && level > 0) {
-                        val kcal = dayDishIds[card.date].orEmpty().sumOf { perDish[it]?.totals?.energyKcal ?: 0.0 } * share
-                        if (kcal > 0 && com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, target) != com.sxdbsm.cookbook.domain.model.CalorieStatus.ON) {
-                            level = maxOf(1, level - 1) // 偏离目标降一档
-                        }
-                    }
-                    DayNutrition(card.date, level)
+                    DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains)))
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

@@ -21,7 +21,6 @@ import kotlinx.coroutines.launch
  **/
 class FeatureSettingsViewModel(
     private val prefs: PreferenceRepository,
-    private val family: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI生成] "我的目标"同步到成员「我」。
 ) : ViewModel() {
 
     /** 分步执行开关：默认关（只按用户书写顺序展示步骤，不显示步骤序号、不进分步烹饪）。[AI生成] */
@@ -49,18 +48,5 @@ class FeatureSettingsViewModel(
 
     fun setCalorieNumber(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, enabled) }
-    }
-
-    /** 身体数据(每日卡路里目标用)。[AI生成] 2a */
-    val bodyMetrics: StateFlow<com.sxdbsm.cookbook.domain.model.BodyMetrics> =
-        prefs.observeBodyMetrics()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.sxdbsm.cookbook.domain.model.BodyMetrics())
-
-    fun setBodyMetrics(m: com.sxdbsm.cookbook.domain.model.BodyMetrics) {
-        viewModelScope.launch {
-            prefs.setBodyMetrics(m)
-            family.ensureInitialized() // 确保有「我」
-            family.updateSelfBody(m) // [AI生成] 同步到成员「我」，与家庭档案/达标口径一致。
-        }
     }
 }

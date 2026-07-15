@@ -50,7 +50,6 @@ fun FeatureSettingsScreen(
     val stepMode by vm.stepModeEnabled.collectAsStateWithLifecycle()
     val nutritionColor by vm.nutritionColorEnabled.collectAsStateWithLifecycle()
     val calorieNumber by vm.calorieNumberEnabled.collectAsStateWithLifecycle()
-    val body by vm.bodyMetrics.collectAsStateWithLifecycle()
 
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
@@ -91,18 +90,13 @@ fun FeatureSettingsScreen(
                     checked = calorieNumber,
                     onCheckedChange = vm::setCalorieNumber,
                 )
-                // [AI生成] 家庭成员档案入口(多人记菜)：各自身体数据/病种/饭量系数。
+                // [AI修改] 家庭成员档案入口：身体数据/每日热量目标也在此编辑(含你自己「我」)，不再单列。
                 EntryRow(
                     title = "家庭成员档案",
-                    subtitle = "多人吃饭，为每位家人建档(身体数据/病种/饭量系数)。忌口按全家合并提示；" +
-                        "每日目标与摄入按「主要关注成员」看。",
+                    subtitle = "为每位家人(含你自己)建档：身高体重年龄/活动量算每日热量目标、病种(忌口按全家合并)、饭量系数。" +
+                        "达标与摄入按「主要关注成员」看。",
                     onClick = onOpenFamily,
                 )
-            }
-
-            // [AI生成] 2a：每日热量目标——填身体数据算 BMR/TDEE(此处编辑「我」的快捷入口，多人请进家庭成员档案)。
-            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "我的每日热量目标") {
-                BodyMetricsSection(body = body, onChange = vm::setBodyMetrics)
             }
 
             com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "库存") {
@@ -136,101 +130,6 @@ private fun SwitchRow(
         Spacer(Modifier.width(12.dp))
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
-}
-
-/** 身体数据录入 + 每日热量目标显示。[AI生成] 2a */
-@Composable
-private fun BodyMetricsSection(
-    body: com.sxdbsm.cookbook.domain.model.BodyMetrics,
-    onChange: (com.sxdbsm.cookbook.domain.model.BodyMetrics) -> Unit,
-) {
-    val genders = com.sxdbsm.cookbook.domain.model.Gender.values()
-    val activities = com.sxdbsm.cookbook.domain.model.ActivityLevel.values()
-    // 数字输入用本地字符串态，随 body 首次载入播种；改动即写回。
-    var height by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
-    var weight by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
-    var age by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
-    var seeded by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
-    androidx.compose.runtime.LaunchedEffect(body) {
-        if (!seeded && (body.heightCm != null || body.weightKg != null || body.age != null)) {
-            height = body.heightCm?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
-            weight = body.weightKg?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
-            age = body.age?.toString() ?: ""
-            seeded = true
-        }
-    }
-    // [AI修改] G1：所有字段写回都以「本地 UI 态 + 显式变更项」为单一真相源，避免读迟滞的 body 互相覆盖。
-    fun build(gender: String = body.gender, activity: String = body.activity) =
-        body.copy(gender = gender, activity = activity, heightCm = height.toDoubleOrNull(), weightKg = weight.toDoubleOrNull(), age = age.toIntOrNull())
-
-    Column(Modifier.fillMaxWidth().padding(16.dp)) {
-        // 性别
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("性别", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.width(64.dp))
-            com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-                options = genders.map { it.label },
-                selectedIndex = genders.indexOfFirst { it.name == body.gender }.coerceAtLeast(0),
-                onSelect = { onChange(build(gender = genders[it].name)) },
-                modifier = Modifier.weight(1f),
-            )
-        }
-        Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            NumberField("身高cm", height, decimal = true, { height = it; onChange(build()) }, Modifier.weight(1f))
-            NumberField("体重kg", weight, decimal = true, { weight = it; onChange(build()) }, Modifier.weight(1f))
-            NumberField("年龄", age, decimal = false, { age = it; onChange(build()) }, Modifier.weight(1f))
-        }
-        Spacer(Modifier.height(10.dp))
-        // 活动水平
-        Text("活动水平", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(4.dp))
-        val activityIndex = activities.indexOfFirst { it.name == body.activity }.coerceAtLeast(0)
-        com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-            options = activities.map { it.label },
-            selectedIndex = activityIndex,
-            onSelect = { onChange(build(activity = activities[it].name)) },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        // [AI生成] 选中活动水平的说明(小字)，帮用户选准。
-        Spacer(Modifier.height(6.dp))
-        Text(
-            "${activities[activityIndex].label}：${activities[activityIndex].desc}（热量系数 ×${activities[activityIndex].factor}）",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(12.dp))
-        // 目标显示
-        val preview = body.copy(heightCm = height.toDoubleOrNull(), weightKg = weight.toDoubleOrNull(), age = age.toIntOrNull())
-        val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(preview)
-        Text(
-            if (target != null) "🔥 每日目标约 $target 千卡（按 BMR×活动量估算，非医嘱，仅供参考）"
-            else "填完身高/体重/年龄即可算出每日目标热量",
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun NumberField(label: String, value: String, decimal: Boolean, onValueChange: (String) -> Unit, modifier: Modifier = Modifier) {
-    androidx.compose.material3.OutlinedTextField(
-        value = value,
-        // [AI修改] G2：仅数字；允许小数的字段最多一个小数点，年龄等整数字段禁小数点。
-        onValueChange = { s ->
-            val filtered = if (decimal) {
-                val digitsDots = s.filter { it.isDigit() || it == '.' }
-                if (digitsDots.count { it == '.' } <= 1) digitsDots else value // 出现第二个小数点则保持不变
-            } else {
-                s.filter { it.isDigit() }
-            }
-            onValueChange(filtered)
-        },
-        label = { Text(label, style = MaterialTheme.typography.labelSmall) },
-        singleLine = true,
-        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-        shape = MaterialTheme.shapes.medium,
-        modifier = modifier,
-    )
 }
 
 @Composable
