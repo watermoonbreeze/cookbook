@@ -16,7 +16,9 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.FormatListNumbered
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -246,7 +248,7 @@ fun NewDishScreen(
                 FormFieldLabel("食材清单")
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = { vm.loadIngredientGroups(); ingredientGroupSheetOpen = true }) {
-                    Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Outlined.Category, contentDescription = null, modifier = Modifier.size(18.dp)) // [AI修改] 与"导入整菜/选择步骤"区分图标语义
                     Spacer(Modifier.width(4.dp))
                     Text("配料组")
                 }
@@ -538,25 +540,13 @@ private fun OperationStepsEditor(
         FormFieldLabel("操作步骤")
         Spacer(Modifier.weight(1f))
         TextButton(onClick = onPickTemplate) {
-            Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.Outlined.FormatListNumbered, contentDescription = null, modifier = Modifier.size(18.dp)) // [AI修改] 步骤模板用列表编号图标,与"导入整菜/配料组"区分
             Spacer(Modifier.width(4.dp))
             Text("选择步骤")
         }
     }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (steps.isEmpty()) {
-            OutlinedCard(
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
-                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-            ) {
-                Text(
-                    "还没添加步骤",
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        // [AI修改] 去掉"还没添加步骤"空卡：很多家庭菜不写步骤，空卡徒增纵向重量；下方"添加步骤"按钮即入口。
         steps.forEachIndexed { index, step ->
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),

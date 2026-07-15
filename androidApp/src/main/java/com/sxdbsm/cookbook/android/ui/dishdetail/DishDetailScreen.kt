@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.*
@@ -40,6 +41,7 @@ fun DishDetailScreen(
     onEdit: (Long) -> Unit,
     onOpenDish: (Long) -> Unit = {}, // [AI生成] 相关菜品跳转
     onStartCook: (Long) -> Unit = {}, // [AI生成] 进入分步烹饪
+    onCopyDish: (Long) -> Unit = {}, // [AI生成] 预设菜"另存为我的菜"(复制后可改)
     vm: DishDetailViewModel = koinViewModel(),
 ) {
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
@@ -65,10 +67,14 @@ fun DishDetailScreen(
                         IconButton(onClick = { vm.toggleFavorite(d.id) }) {
                             Text(if (vm.isFavorite) "⭐" else "☆", style = MaterialTheme.typography.titleLarge)
                         }
-                        // [AI修改] 预设菜隐藏编辑（如需修改可在"创建菜品"里导入该菜后编辑，等同复制）；自建菜正常编辑。
+                        // [AI修改] 自建菜正常编辑；预设菜给"另存为我的菜"(复制后可改)，不再让用户猜怎么改。
                         if (d.source != "preset") {
                             IconButton(onClick = { onEdit(d.id) }) {
                                 Icon(Icons.Outlined.Edit, contentDescription = "编辑")
+                            }
+                        } else {
+                            IconButton(onClick = { onCopyDish(d.id) }) {
+                                Icon(Icons.Outlined.ContentCopy, contentDescription = "另存为我的菜")
                             }
                         }
                     }
