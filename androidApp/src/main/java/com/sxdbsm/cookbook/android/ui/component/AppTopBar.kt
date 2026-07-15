@@ -19,8 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
  * @Author : SXD-AI
  * @Desc : 统一顶栏（苹果风）——收敛各屏重复内联的 topAppBarColors/返回图标/标题字重
  * <p>
- * 标准：背景=background、标题 titleMedium SemiBold onBackground、返回/操作图标 primary tint。
- * 大标题页(首页/我的)用 LargeTopAppBar，不走本组件。
+ * 标准：背景=background、标题 titleLarge(TopAppBar 默认字号，与各屏内联顶栏一致) SemiBold onBackground、
+ * 返回/操作图标 primary tint。大标题页(首页/我的)用 LargeTopAppBar，不走本组件。
  * <p>
  * [AI生成] UX C1：统一顶栏，消除 10+ 屏的重复颜色配置。
  **/
@@ -32,7 +32,8 @@ fun AppTopBar(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
-        title = { Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) },
+        // [AI修改] 用 TopAppBar 默认标题字号(titleLarge)+SemiBold，与其余各屏内联顶栏完全一致(不缩小)。
+        title = { Text(title, fontWeight = FontWeight.SemiBold) },
         navigationIcon = {
             if (onBack != null) {
                 IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }

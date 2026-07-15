@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.*
@@ -56,19 +55,10 @@ fun DishDetailScreen(
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         topBar = {
-            TopAppBar(
-                title = { Text("菜品详情", fontWeight = FontWeight.SemiBold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
+            // [AI修改] C1：收敛到统一 AppTopBar(颜色/字号/返回图标一致)。
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = "菜品详情",
+                onBack = onBack,
                 actions = {
                     dish?.let { d ->
                         // [AI生成] B1：收藏(置顶)——⭐/☆ 一键切换，家庭"看家菜"钉到菜品列表最前。
