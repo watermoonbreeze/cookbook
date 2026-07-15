@@ -43,7 +43,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
         // 字典类小表：表为空才写入。
         if (q.countCookingMethods().executeAsOne() == 0L) seedCookingMethods(now)
-        if (q.countMeasurementUnits().executeAsOne() == 0L) seedMeasurementUnits()
+        seedMeasurementUnits() // [AI修改] 每次启动幂等补齐预设单位(INSERT OR IGNORE)：老库也能拿到后加的 g/kg/ml 等。
         seedMeasurementUnitGrams() // [AI生成] 每次启动幂等补齐单位克当量(v19 新列，老库回填)。
         if (q.countCrowdTypes().executeAsOne() == 0L) seedCrowdTypes(now)
         if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes()
@@ -527,6 +527,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // 勺按“汤勺≈15g”粗估(多用于油盐酱)。dishes.json 引用完整性校验用 name 集合(见 unitNames())。
         val PRESET_MEASUREMENT_UNITS: List<Pair<String, Double?>> = listOf(
             "克" to 1.0, "两" to 50.0, "斤" to 500.0, "毫升" to 1.0, "升" to 1000.0,
+            // [AI生成] 常用国际单位符号(与克/毫升同义，方便习惯用字母的用户)：g=克、kg=千克、ml=毫升。
+            "g" to 1.0, "kg" to 1000.0, "ml" to 1.0,
             "个" to null, "片" to null, "勺" to 15.0, "颗" to null, "把" to null,
             "碗" to null, "块" to null, "根" to null, "条" to null, "段" to null,
             "瓣" to null, "只" to null, "适量" to null, "少许" to null,
