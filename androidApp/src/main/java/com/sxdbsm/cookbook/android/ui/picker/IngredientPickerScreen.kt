@@ -301,6 +301,11 @@ fun IngredientPickerScreen(
                                     )
                                 }
                             }
+                        } else if (ui.ingredients.isEmpty() && ui.keyword.isBlank()) {
+                            // [AI生成] 网格空态：避免纯空白让用户以为出错，按 Tab 给"下一步"引导(苹果式永远给下一步)。
+                            item(key = "empty-state", span = { GridItemSpan(maxLineSpan) }) {
+                                IngredientGridEmptyState(tab = ui.mainTab)
+                            }
                         } else {
                             items(ui.ingredients, key = { it.id }) { ing ->
                                 IngredientCard(
@@ -673,6 +678,33 @@ private fun SearchResultsPanel(
                 Divider()
             }
         }
+    }
+}
+
+/**
+ * 食材网格空态：按 Tab 给出"下一步"引导，避免纯空白让用户以为出错。[AI生成]
+ */
+@Composable
+private fun IngredientGridEmptyState(tab: IngredientMainTab) {
+    val (emoji, title, hint) = when (tab) {
+        IngredientMainTab.RECENT -> Triple("🍽️", "还没有最近用过的食材", "记一餐后，这里会显示你家常用的食材")
+        IngredientMainTab.PANTRY -> Triple("🧊", "冰箱还是空的", "在下方搜索或分类里，把家里有的食材『入库』")
+        IngredientMainTab.CUSTOM -> Triple("🥗", "还没有自建食材", "点右上角 ＋ 添加你家常用的食材")
+        else -> Triple("🔍", "这个分类下暂无食材", "换个分类看看，或用上方搜索")
+    }
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 48.dp, bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(emoji, style = MaterialTheme.typography.displaySmall)
+        Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            hint,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 

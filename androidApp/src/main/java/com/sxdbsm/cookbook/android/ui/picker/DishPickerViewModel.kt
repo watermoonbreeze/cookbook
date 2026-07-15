@@ -58,9 +58,17 @@ class DishPickerViewModel(
     }
 
     val state: StateFlow<DishPickerUiState> = combine(listState, _excludeDishIds) { list, exclude ->
+        val visible = list.dishes.filterNot { it.id in exclude }
+        // [AI修改] 无搜索浏览时把"最近做过/常做"稳定置顶(家庭选菜高度集中在那几道);搜索时保持相关性顺序。
+        val ordered = if (list.keyword.isBlank()) {
+            val priority = (list.recent.map { it.id } + list.popular.map { it.id }).toSet()
+            visible.sortedByDescending { it.id in priority } // sortedBy 稳定:置顶项保持原相对序
+        } else {
+            visible
+        }
         DishPickerUiState(
             keyword = list.keyword,
-            dishes = list.dishes.filterNot { it.id in exclude },
+            dishes = ordered,
             popular = list.popular.filterNot { it.id in exclude },
             recent = list.recent.filterNot { it.id in exclude },
             selected = list.selected.filterNot { it.id in exclude },
