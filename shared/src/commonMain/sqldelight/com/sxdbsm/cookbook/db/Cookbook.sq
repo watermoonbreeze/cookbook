@@ -1706,6 +1706,10 @@ UPDATE ingredient SET food_group = ? WHERE id = ?;
 selectIngredientFoodGroupNames:
 SELECT name, food_group FROM ingredient WHERE food_group != '' AND status = 1;
 
--- [AI生成] seed 回填:仅回填 food_group 为空的食材(不覆盖用户已选)。
-selectIngredientsWithoutFoodGroup:
-SELECT id, name FROM ingredient WHERE food_group = '';
+-- [AI生成] 预设食材 id/名/现营养大类：预设 food_group 仅来自回填(编辑器对预设不开大类选择)，可随 classify 改进重刷。
+selectPresetIngredientFoodGroups:
+SELECT id, name, food_group FROM ingredient WHERE source = 'preset' AND status = 1;
+
+-- [AI生成] 用户食材中未归类的：只回填空的，不覆盖用户手选。
+selectUserIngredientsWithoutFoodGroup:
+SELECT id, name FROM ingredient WHERE source = 'user' AND food_group = '' AND status = 1;

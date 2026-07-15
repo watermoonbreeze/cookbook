@@ -60,21 +60,40 @@ object FoodGroup {
     /** 可归类的顶层分类名集合(编辑保存时"切换大类"去旧留新)。[AI生成] */
     val CATEGORY_NAMES: Set<String> = CATEGORY_NAME.values.toSet()
 
-    /** 单个主料名 → 食物大类(命中优先级：蛋→水产→禽→红肉→主食→豆→奶→菌→蔬菜→水果)。[AI生成] */
-    fun classify(name: String): Group? = when {
-        // [AI修改] 血制品(鸭血/猪血/鸡血)归红肉类(富铁)，先于禽/水产判断，避免"鸭血"被"鸭"误判为禽肉。
-        name.contains("血") -> Group.RED_MEAT
-        EGG_KW.any { name.contains(it) } -> Group.EGG
-        FISH_KW.any { name.contains(it) } -> Group.FISH
-        WHITE_MEAT_KW.any { name.contains(it) } -> Group.WHITE_MEAT
-        RED_MEAT_KW.any { name.contains(it) } -> Group.RED_MEAT
-        StapleFood.isStaple(name, listOf(name)) -> Group.STAPLE
-        BEAN_KW.any { name.contains(it) } -> Group.BEAN
-        DAIRY_KW.any { name.contains(it) } -> Group.DAIRY
-        FUNGI_KW.any { name.contains(it) } -> Group.FUNGI
-        VEG_KW.any { name.contains(it) } -> Group.VEGETABLE
-        FRUIT_KW.any { name.contains(it) } -> Group.FRUIT
-        else -> null
+    /**
+     * 单个主料名 → 食物大类。[AI修改]
+     *
+     * **尾词优先**：中文食材"中心词在末尾"(鸡毛菜=菜、脱脂牛奶=奶、兔肉=肉)，先按尾词判定，
+     * 避免前缀修饰词误判(鸡毛菜被"鸡"判成禽肉、脱脂牛奶被"牛"判成红肉)；尾词判不了再按关键词子串。
+     */
+    fun classify(name: String): Group? {
+        // 1) 强尾词(中心词)——最可靠，优先。
+        when {
+            name.endsWith("蛋") -> return Group.EGG
+            name.endsWith("奶") -> return Group.DAIRY
+            // xxx肉：含 鸡/鸭/鹅 归禽肉，否则红肉(兔肉/驴肉/腊肉等)。
+            name.endsWith("肉") -> return if (WHITE_MEAT_KW.any { name.contains(it) }) Group.WHITE_MEAT else Group.RED_MEAT
+        }
+        // 2) 血制品归红肉(鸭血别被"鸭"判禽)。
+        if (name.contains("血")) return Group.RED_MEAT
+        // 3) 藻菌先于"菜"尾字(紫菜/海带也以菜/带结尾但属菌藻)。
+        if (FUNGI_KW.any { name.contains(it) } || name.endsWith("蘑")) return Group.FUNGI
+        // 4) xxx菜/xxx苗 = 蔬菜(鸡毛菜/上海青菜/蒜苗)——尾词优先于前缀修饰词。
+        if (name.endsWith("菜") || name.endsWith("苗")) return Group.VEGETABLE
+        // 5) 其余按关键词子串(含优先级)。
+        return when {
+            EGG_KW.any { name.contains(it) } -> Group.EGG
+            DAIRY_KW.any { name.contains(it) } -> Group.DAIRY
+            FISH_KW.any { name.contains(it) } -> Group.FISH
+            WHITE_MEAT_KW.any { name.contains(it) } -> Group.WHITE_MEAT
+            RED_MEAT_KW.any { name.contains(it) } -> Group.RED_MEAT
+            StapleFood.isStaple(name, listOf(name)) -> Group.STAPLE
+            BEAN_KW.any { name.contains(it) } -> Group.BEAN
+            // 水果先于蔬菜(西瓜/哈密瓜/木瓜/菠萝的"瓜/菠"在蔬菜里会先命中)。
+            FRUIT_KW.any { name.contains(it) } -> Group.FRUIT
+            VEG_KW.any { name.contains(it) } -> Group.VEGETABLE
+            else -> null
+        }
     }
 
     /**
