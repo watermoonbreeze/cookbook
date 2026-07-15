@@ -300,6 +300,7 @@ fun MainScaffold(
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) }, // [AI生成] 相关菜品跳转
                     onStartCook = { id -> nav.navigate(Routes.cookMode(id)) }, // [AI生成] 进入分步烹饪
                     onCopyDish = { id -> nav.navigate(Routes.copyDish(id)) }, // [AI生成] 预设菜"另存为我的菜"
+                    onAddToMeal = { id -> nav.navigate(Routes.addMealWithDishes(listOf(id))) }, // [AI生成] 详情"记这道菜"→加餐流程预填
                 )
             }
             composable(Routes.COOK_MODE) { entry ->

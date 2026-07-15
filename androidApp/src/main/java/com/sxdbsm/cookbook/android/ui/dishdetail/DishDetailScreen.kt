@@ -42,6 +42,7 @@ fun DishDetailScreen(
     onOpenDish: (Long) -> Unit = {}, // [AI生成] 相关菜品跳转
     onStartCook: (Long) -> Unit = {}, // [AI生成] 进入分步烹饪
     onCopyDish: (Long) -> Unit = {}, // [AI生成] 预设菜"另存为我的菜"(复制后可改)
+    onAddToMeal: (Long) -> Unit = {}, // [AI生成] 详情主CTA:把这道菜记到某餐(带入加餐流程预填)
     vm: DishDetailViewModel = koinViewModel(),
 ) {
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
@@ -80,6 +81,24 @@ fun DishDetailScreen(
                     }
                 },
             )
+        },
+        bottomBar = {
+            // [AI生成] 详情主CTA：详情从"死胡同"变"行动终点"——就地把这道菜记进某餐(带入加餐流程预填)。
+            dish?.let { d ->
+                androidx.compose.material3.Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                        text = "记这道菜",
+                        onClick = { onAddToMeal(d.id) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                    )
+                }
+            }
         },
     ) { padding ->
         val d = dish
