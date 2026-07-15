@@ -359,18 +359,7 @@ fun IngredientPickerScreen(
                         }
                     }
                 }
-                // [AI修改] 库存 Tab 下方小提示：入库入口统一在食材详情，这里只作说明，不再放添加按钮。
-                if (!selectionMode && ui.mainTab == IngredientMainTab.PANTRY) {
-                    Text(
-                        "从现有食材中添加入库",
-                        style = MaterialTheme.typography.labelSmall, // [AI生成] 小两号提示字号。
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                    )
-                }
+                // [AI修改] 移除库存 Tab 底部"从现有食材中添加入库"冗余提示——空态已有引导，非空时也不需常驻这行。
                 // 底部固定栏：仅选择模式且有已选时出现。
                 if (selectionMode && ui.selectedIds.isNotEmpty()) {
                     SelectionBottomBar(
@@ -719,7 +708,7 @@ private fun SearchResultsPanel(
 private fun IngredientGridEmptyState(tab: IngredientMainTab) {
     val (emoji, title, hint) = when (tab) {
         IngredientMainTab.RECENT -> Triple("🍽️", "还没有最近用过的食材", "记一餐后，这里会显示你家常用的食材")
-        IngredientMainTab.PANTRY -> Triple("🧊", "冰箱还是空的", "在下方搜索或分类里，把家里有的食材『入库』")
+        IngredientMainTab.PANTRY -> Triple("🧊", "冰箱还是空的", "从搜索或分类里，把家里有的食材『入库』")
         IngredientMainTab.CUSTOM -> Triple("🥗", "还没有自建食材", "点右上角 ＋ 添加你家常用的食材")
         else -> Triple("🔍", "这个分类下暂无食材", "换个分类看看，或用上方搜索")
     }
@@ -736,6 +725,16 @@ private fun IngredientGridEmptyState(tab: IngredientMainTab) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
+        // [AI生成] 库存空态补充：餐次里缺/没有的食材可在采购清单统一添加(引导到集中入口)。
+        if (tab == IngredientMainTab.PANTRY) {
+            Text(
+                "餐次里缺少或没有的食材，可在「我的 → 采购清单」中统一添加",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 4.dp, start = 24.dp, end = 24.dp),
+            )
+        }
     }
 }
 
