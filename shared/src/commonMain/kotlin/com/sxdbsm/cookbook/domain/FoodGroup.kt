@@ -66,7 +66,41 @@ object FoodGroup {
      * **尾词优先**：中文食材"中心词在末尾"(鸡毛菜=菜、脱脂牛奶=奶、兔肉=肉)，先按尾词判定，
      * 避免前缀修饰词误判(鸡毛菜被"鸡"判成禽肉、脱脂牛奶被"牛"判成红肉)；尾词判不了再按关键词子串。
      */
+    /**
+     * 名称→营养大类**特例表**（关键词启发式判不准的具体食材，用户确认后录入）。[AI生成]
+     *
+     * classify 最先查此表；后续新食材可按"已有分类规律"续加。料理包/沙拉酱等调料不属九大类，不入表(food_group 留空)。
+     */
+    private val NAME_OVERRIDE: Map<String, Group> = mapOf(
+        // 蔬菜
+        "西兰花" to Group.VEGETABLE, "西红柿" to Group.VEGETABLE, "芥蓝" to Group.VEGETABLE, "茼蒿" to Group.VEGETABLE,
+        "西葫芦" to Group.VEGETABLE, "豆芽" to Group.VEGETABLE, "香椿" to Group.VEGETABLE, "马兰头" to Group.VEGETABLE,
+        "上海青" to Group.VEGETABLE, "菊花脑" to Group.VEGETABLE, "艾蒿" to Group.VEGETABLE, "苜蓿" to Group.VEGETABLE,
+        "瓠子" to Group.VEGETABLE, "百合" to Group.VEGETABLE, "干百合" to Group.VEGETABLE, "二荆条" to Group.VEGETABLE,
+        "大蒜" to Group.VEGETABLE, "西瓜皮" to Group.VEGETABLE,
+        // 主食
+        "小麦" to Group.STAPLE, "米粉" to Group.STAPLE, "螺蛳粉" to Group.STAPLE, "吐司" to Group.STAPLE,
+        "油条" to Group.STAPLE, "小笼包" to Group.STAPLE, "馓子" to Group.STAPLE, "蒸饺" to Group.STAPLE,
+        "三明治" to Group.STAPLE, "凉皮" to Group.STAPLE, "速冻水饺" to Group.STAPLE,
+        // 红肉 / 禽肉
+        "蹄髈" to Group.RED_MEAT, "扇子骨" to Group.RED_MEAT, "大排" to Group.RED_MEAT, "大骨头" to Group.RED_MEAT,
+        "菲力" to Group.RED_MEAT, "西冷" to Group.RED_MEAT, "肉丸" to Group.RED_MEAT, "肥肠" to Group.RED_MEAT,
+        "大红肠" to Group.RED_MEAT, "翅中" to Group.WHITE_MEAT,
+        // 水产
+        "田螺" to Group.FISH, "螺蛳" to Group.FISH,
+        // 豆坚果
+        "葵花籽" to Group.BEAN, "亚麻籽" to Group.BEAN, "奇亚籽" to Group.BEAN, "青豆" to Group.BEAN,
+        "蚕豆" to Group.BEAN, "豌豆" to Group.BEAN, "扁豆" to Group.BEAN, "厚百叶" to Group.BEAN,
+        // 水果
+        "桂圆干" to Group.FRUIT, "人参果" to Group.FRUIT, "柠檬" to Group.FRUIT, "水果罐头" to Group.FRUIT,
+    )
+
     fun classify(name: String): Group? {
+        // 0) 特例表最优先(人工确认的具体食材)。
+        NAME_OVERRIDE[name]?.let { return it }
+        // 0b) 各种"油"不归九大类(大豆油/花生油/橄榄油/紫苏油…)；"腐"归豆坚果(豆腐/腐乳/鱼豆腐/臭豆腐)。
+        if (name.endsWith("油")) return null
+        if (name.endsWith("腐")) return Group.BEAN
         // 1) 强尾词(中心词)——最可靠，优先。
         when {
             name.endsWith("蛋") -> return Group.EGG
