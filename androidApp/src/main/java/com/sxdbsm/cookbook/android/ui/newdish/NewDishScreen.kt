@@ -74,7 +74,12 @@ fun NewDishScreen(
     var groupEditorOpen by remember { mutableStateOf(false) } // [AI生成] 需求2 全屏配料组编辑器开关
     var focusedStepIndex by remember { mutableStateOf<Int?>(null) } // [AI生成] #2 当前定位(聚焦)的步骤下标：模板插入到这一步
     var noIngredientPromptOpen by remember { mutableStateOf(false) } // [AI生成] 无食材保存前的"建议添加食材"提示
+    var discardPromptOpen by remember { mutableStateOf(false) } // [AI生成] 有未保存改动时返回的"放弃更改?"守卫
     val context = LocalContext.current
+
+    // [AI生成] 返回统一走这里：有未保存改动→弹"放弃更改?"，无改动→直接返回。防厨房场景误触丢数据。
+    val requestBack = { if (vm.isDirty()) discardPromptOpen = true else onBack() }
+    androidx.activity.compose.BackHandler(enabled = true) { requestBack() }
 
     /**
      * 页面入口统一交给 ViewModel 处理，避免编辑、新建、导入在同一实例中串状态。[AI修改]
@@ -110,7 +115,7 @@ fun NewDishScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = { requestBack() }) {
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
                     }
                 },
@@ -393,6 +398,22 @@ fun NewDishScreen(
     }
 
     // [AI修改] 移除"食材已存在"AlertDialog：VM 本就去重，重复静默跳过即可，无需打断确认。
+
+    // [AI生成] 未保存改动返回守卫：厨房场景误触返回易丢数据，dirty 时确认"放弃更改"。
+    if (discardPromptOpen) {
+        AlertDialog(
+            onDismissRequest = { discardPromptOpen = false },
+            title = { Text("放弃未保存的更改？") },
+            text = { Text("你对这道菜的改动还没保存，返回将丢失。") },
+            confirmButton = {
+                TextButton(
+                    onClick = { discardPromptOpen = false; onBack() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) { Text("放弃更改") }
+            },
+            dismissButton = { TextButton(onClick = { discardPromptOpen = false }) { Text("继续编辑") } },
+        )
+    }
 
     // [AI生成] 无食材保存提示：添加食材后才能统计营养/热量等健康膳食指标；点"添加食材"直接开选择器。
     if (noIngredientPromptOpen) {

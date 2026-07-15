@@ -70,6 +70,21 @@ class NewDishViewModel(
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
     val state: StateFlow<NewDishUiState> = _state.asStateFlow() // [AI修改] UI 只能观察，不能直接改。
     private var activeStartKey: String? = null // [AI生成] 记录当前路由参数，避免同一编辑页重复触发 start 清空表单。
+    private var baselineSig: String? = null // [AI生成] 加载/新建时的表单内容签名，用于返回前判断是否有未保存改动。
+
+    /** 表单可编辑内容的签名(只含用户内容，排除字典/瞬态标志)。[AI生成] */
+    private fun NewDishUiState.contentSig(): String = listOf(
+        name.trim(), tags.sorted().toString(), cookingMethodId, cookingMethodNames.sorted().toString(),
+        cookingMethodInput.trim(), cuisine, specialNote.trim(), description.trim(), imagePath, thumbnailPath,
+        ingredients.map { it.ingredient.id to it.quantity }.toString(),
+        steps.map { it.text.trim() to it.imagePath }.toString(),
+    ).toString()
+
+    /** 记录当前为"无改动基线"(加载完成/新建重置后调用)。[AI生成] */
+    private fun markBaseline() { baselineSig = _state.value.contentSig() }
+
+    /** 表单相对基线是否有未保存改动(供返回前"放弃更改?"守卫)。[AI生成] */
+    fun isDirty(): Boolean = baselineSig?.let { it != _state.value.contentSig() } ?: false
 
     private companion object {
         private const val TAG = "NewDishEdit" // [AI生成] 菜品编辑链路统一日志 Tag，方便 logcat 过滤排查。
@@ -122,6 +137,7 @@ class NewDishViewModel(
         when {
             editId != null -> loadForEdit(editId)
             sourceId != null -> importFromDishId(sourceId)
+            else -> markBaseline() // [AI生成] 纯新建：空表单为基线，之后任何输入即算 dirty。
         }
     }
 
@@ -173,6 +189,7 @@ class NewDishViewModel(
                             editProbeToastMessage = "正在编辑：${d.name} ID=${d.id}",
                             editProbeToastSerial = _state.value.editProbeToastSerial + 1,
                         )
+                        markBaseline() // [AI生成] 载入既有菜品后记基线，之后改动才算 dirty。
                     }
                 }
                 .onFailure { error ->
@@ -231,6 +248,7 @@ class NewDishViewModel(
                         _state.value = _state.value.copy(loading = false, errorMessage = "未找到要导入的菜品")
                     } else {
                         importFrom(dish)
+                        markBaseline() // [AI生成] 导入(复制)完成后以导入内容为基线，之后改动才算 dirty。
                     }
                 }
                 .onFailure {
