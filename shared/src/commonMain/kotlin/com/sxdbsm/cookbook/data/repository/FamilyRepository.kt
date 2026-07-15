@@ -151,8 +151,17 @@ class FamilyRepository(
         }
     }
 
-    /** 删除成员(仅非「我」)。[AI生成] */
-    suspend fun deleteMember(id: Long) = withContext(ioDispatcher) { q.softDeleteFamilyMember(id) }
+    /** 删除成员(仅非「我」)；若删的是关注成员，把关注转移给剩余第一个(通常「我」)。[AI修改] */
+    suspend fun deleteMember(id: Long) = withContext(ioDispatcher) {
+        db.transaction {
+            val wasFocus = q.selectFamilyMemberById(id).executeAsOneOrNull()?.is_focus == 1L
+            q.softDeleteFamilyMember(id)
+            if (wasFocus) {
+                val next = q.selectAllFamilyMembers().executeAsList().firstOrNull() // status=1，已排除刚删的
+                if (next != null) { q.clearAllFocus(); q.setFocusMember(next.id) }
+            }
+        }
+    }
 
     /** 设主要关注成员(单选)。[AI生成] */
     suspend fun setFocus(id: Long) = withContext(ioDispatcher) {

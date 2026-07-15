@@ -242,9 +242,10 @@ private fun MemberEditorDialog(
     var coeff by remember { mutableStateOf(member?.portionCoefficient?.let { fmt(it) } ?: "1.2") }
     var careIds by remember { mutableStateOf(member?.careCategoryIds?.toSet() ?: emptySet()) }
 
-    // 系数自动预选（未手动改过时，随性别/年龄更新）。
-    val autoCoeff = FamilyMember.defaultCoefficient(gender, age.toIntOrNull())
-    if (!coeffEdited) coeff = fmt(autoCoeff)
+    // 系数自动预选（未手动改过时，随性别/年龄更新）——放 LaunchedEffect 避免组合期写 state。
+    androidx.compose.runtime.LaunchedEffect(gender, age) {
+        if (!coeffEdited) coeff = fmt(FamilyMember.defaultCoefficient(gender, age.toIntOrNull()))
+    }
     val activityIndex = activities.indexOfFirst { it.name == activity }.coerceAtLeast(0)
 
     AlertDialog(
@@ -324,7 +325,7 @@ private fun MemberEditorDialog(
                             weightKg = weight.toDoubleOrNull(),
                             age = age.toIntOrNull(),
                             activity = activity,
-                            portionCoefficient = coeff.toDoubleOrNull() ?: 1.0,
+                            portionCoefficient = (coeff.toDoubleOrNull() ?: 1.0).coerceAtLeast(0.1), // 防 0/空导致该成员摄入恒 0
                             careCategoryIds = careIds.toList(),
                         ),
                     )

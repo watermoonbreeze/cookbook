@@ -66,13 +66,27 @@ fun FamilyStatsScreen(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (options.size > 1) {
+            // [AI修改] 成员≤4用分段控件；更多用可横滚 chip 行(SegmentedControl 项多会挤压/截断)。
+            if (options.size in 2..4) {
                 SegmentedControl(
                     options = options.map { it.second },
                     selectedIndex = selectedIndex,
                     onSelect = { vm.select(options[it].first) },
                     modifier = Modifier.fillMaxWidth(),
                 )
+            } else if (options.size > 4) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    options.forEachIndexed { i, opt ->
+                        androidx.compose.material3.FilterChip(
+                            selected = i == selectedIndex,
+                            onClick = { vm.select(opt.first) },
+                            label = { Text(opt.second) },
+                        )
+                    }
+                }
             }
 
             // 今日卡
@@ -137,6 +151,19 @@ fun FamilyStatsScreen(
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
+                                Spacer(Modifier.width(8.dp))
+                                // 明确可点的在场/没吃胶囊
+                                Surface(
+                                    shape = RoundedCornerShape(50),
+                                    color = if (mi.present) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                                ) {
+                                    Text(
+                                        if (mi.present) "在场" else "没吃",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = if (mi.present) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    )
+                                }
                             }
                         }
                     }
@@ -152,6 +179,9 @@ fun FamilyStatsScreen(
                         Text("日均 ${stats.weekAvgKcal} 千卡", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(Modifier.height(10.dp))
+                    if (stats.dailyKcal.all { it == 0 }) {
+                        Text("近 7 天暂无餐食记录", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
                     // 简易柱状：每日热量相对最大值。
                     val maxKcal = (stats.dailyKcal.maxOrNull() ?: 0).coerceAtLeast(1)
                     Row(
@@ -167,6 +197,7 @@ fun FamilyStatsScreen(
                                     .background(if (k > 0) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.surfaceVariant),
                             )
                         }
+                    }
                     }
                 }
             }

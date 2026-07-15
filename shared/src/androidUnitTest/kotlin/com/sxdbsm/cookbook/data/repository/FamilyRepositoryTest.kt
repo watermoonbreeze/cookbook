@@ -6,6 +6,7 @@ import com.sxdbsm.cookbook.domain.model.FamilyMember
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
@@ -71,5 +72,21 @@ class FamilyRepositoryTest {
         // 我不可删
         fam.deleteMember(me.id)
         assertEquals(1, fam.listMembers().size, "默认成员我不可删")
+    }
+
+    @Test
+    fun `删除关注成员_关注自动转移不丢失`() = runBlocking {
+        val (fam, _, _) = setup()
+        fam.ensureInitialized()
+        val me = fam.listMembers().first()
+        val dadId = fam.createMember(FamilyMember(id = 0, name = "爸"))
+        fam.setFocus(dadId)
+        assertEquals(dadId, fam.focusMember()!!.id)
+
+        fam.deleteMember(dadId) // 删的是关注成员
+        val focus = fam.focusMember()
+        assertNotNull(focus, "删关注成员后应仍有关注成员")
+        assertEquals(me.id, focus!!.id, "关注应转移给剩余的我")
+        assertTrue(fam.listMembers().first { it.id == me.id }.isFocus, "我应被标为关注")
     }
 }

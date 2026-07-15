@@ -46,7 +46,8 @@ class FamilyStatsViewModel(
         viewModelScope.launch { family.ensureInitialized() }
     }
 
-    fun select(memberId: Long?) { _selected.value = memberId }
+    // [AI修改] 切换选中时清空缺席微调(what-if 仅本次查看，跨视图/成员不残留，与文案一致)。
+    fun select(memberId: Long?) { _selected.value = memberId; _excluded.value = emptySet() }
 
     /** 家庭视图"在场"微调(what-if)：排除的成员 id，其份额分给其余在场成员。不持久化。[AI生成] P2 缺席微调轻量版。 */
     private val _excluded = MutableStateFlow<Set<Long>>(emptySet())
@@ -65,6 +66,8 @@ class FamilyStatsViewModel(
         ) { cards, ms, sel, excluded -> StatsInput(cards, ms, sel, excluded) }
             .mapLatest { (cards, ms, sel, excluded) ->
                 val member = sel?.let { id -> ms.firstOrNull { it.id == id } }
+                // [AI修改] 选中成员被删除→id 悬空，归一回全家，避免该成员恢复时突然跳回。
+                if (sel != null && member == null) _selected.value = null
                 val share = when {
                     member == null -> 1.0 // 家庭视图=全家总量
                     else -> {
