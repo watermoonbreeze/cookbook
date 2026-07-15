@@ -27,7 +27,7 @@ data class RecommendationWeights(
     val recent: Double = 0.5,           // 最近吃过（罚）
     val shortage: Double = 0.3,         // 库存不足（罚）
     val missing: Double = 0.2,          // 缺辅料/味（罚）
-    val avoid: Double = 50.0,           // 忌口（罚，保留+标红+排末）
+    val avoid: Double = 5.0,            // [AI修改] 忌口(罚)。排末由 sortedWith 分层保证,此值不再需-50巨量;降到象征值让 score 回到可比可解释区间(算法评审P0)。
     // ↓ P1 新增因子（无画像数据时为 0，不影响现有行为）
     val nutritionBalance: Double = 0.8, // 与当日/本餐已选的营养互补度（[-1,1]）
     val preference: Double = 0.6,       // 偏好画像分（[0,1]：爱吃/常做/收藏）

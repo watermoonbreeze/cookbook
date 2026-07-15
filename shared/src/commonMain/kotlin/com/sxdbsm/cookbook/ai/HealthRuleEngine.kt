@@ -77,14 +77,14 @@ class HealthRuleEngine {
 
         // [AI修改] 因子化打分：权重来自 RecommendationWeights(默认=原常量、可由推荐风格切换)。
         var score = weights.base + weights.seasoning * seasoningRichness
-        score += weights.onHandMain * onHandMainCount // 用到在手主料 → 强力靠前(物尽其用)
+        score += weights.onHandMain * minOf(onHandMainCount, 3) // [AI修改] 用到在手主料→靠前;前3味已足够表达"物尽其用",封顶避免"用5味在手主料"单因子线性碾压营养/偏好(算法评审P1)
         score += weights.recommend * recommendHits.size
         score -= weights.limit * limitHits.size
         if (isRecent) score -= weights.recent
         // [AI修改] 份数不足/缺辅料只做「轻微靠后」的排序微调，不再是断崖式重罚——
         // 用户要求「不管库存有几份、只要在库存中，用到它的菜都要推出来」，故份数/缺料不得把菜挤出推荐。
         if (shortageNames.isNotEmpty()) score -= weights.shortage
-        if (missingNames.isNotEmpty()) score -= weights.missing * missingNames.size
+        if (missingNames.isNotEmpty()) score -= weights.missing * minOf(missingNames.size, 3) // [AI修改] 缺辅料罚分封顶,保证"配料多的复杂菜"缺料靠后但不塌陷(不挤出红线,算法评审P2)
         // [AI生成] 增长型 P1 新因子(无画像数据时为 0，行为同现有)：
         //   营养搭配互补度[-1,1]、偏好画像[0,1]加分；近期同主料重复罚分。
         score += weights.nutritionBalance * (nutritionBalanceScores[dish.id] ?: 0.0)
