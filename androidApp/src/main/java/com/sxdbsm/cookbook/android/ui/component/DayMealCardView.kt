@@ -61,9 +61,13 @@ fun DayMealCardView(
             dayKcal = if (ids.isEmpty()) 0 else nutritionRepo.totalOf(ids).energyKcal.roundToInt()
         }
     }
-    // [AI生成] 2b：每日目标(身体数据算出)→ 当天热量达标/偏低/超标。
-    val body by remember(prefs) { prefs.observeBodyMetrics() }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.BodyMetrics())
-    val dailyTarget = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
+    // [AI修改] 达标按「主要关注成员」：身体数据来自关注成员，摄入按其饭量系数占比从全家餐热量估算。
+    val familyRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.FamilyRepository>()
+    val focusBody by remember(familyRepo) { familyRepo.observeFocusBody() }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.BodyMetrics())
+    val focusShare by remember(familyRepo) { familyRepo.observeFocusShare() }.collectAsStateWithLifecycle(1.0)
+    val focusName by remember(familyRepo) { familyRepo.observeFocusName() }.collectAsStateWithLifecycle("")
+    val dailyTarget = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(focusBody)
+    val personalKcal = (dayKcal * focusShare).roundToInt() // 关注成员当天摄入估算(全家餐×份额占比)
     val containerColor = when {
         nutritionColorEnabled && data.meals.isNotEmpty() -> nutritionTint(nutritionLevel)
         data.isPlanState -> MaterialTheme.colorScheme.secondaryContainer
@@ -111,7 +115,8 @@ fun DayMealCardView(
             // [AI修改] 第二行：当天总热量 + 达标状态(填了身体数据才显示达标)，由"热量数值显示"开关独立控制。
             if (calorieNumberEnabled && dayKcal > 0) {
                 Spacer(Modifier.height(2.dp))
-                val status = dailyTarget?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(dayKcal.toDouble(), it) }
+                // 有目标时按关注成员的个人摄入估算(全家餐×份额)评达标；无目标只显全家总量。
+                val status = dailyTarget?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(personalKcal.toDouble(), it) }
                 val statusColor = when (status) {
                     com.sxdbsm.cookbook.domain.model.CalorieStatus.ON -> MaterialTheme.colorScheme.primary
                     com.sxdbsm.cookbook.domain.model.CalorieStatus.BELOW -> MaterialTheme.colorScheme.onSurfaceVariant
@@ -120,8 +125,12 @@ fun DayMealCardView(
                 }
                 Text(
                     buildString {
-                        append("🔥 当天约 $dayKcal 千卡")
-                        if (dailyTarget != null && status != null) append(" / 目标 $dailyTarget · ${status.label}")
+                        if (dailyTarget != null) {
+                            if (focusName.isNotBlank()) append("🔥 ${focusName}约 $personalKcal 千卡") else append("🔥 当天约 $personalKcal 千卡")
+                            status?.let { append(" / 目标 $dailyTarget · ${it.label}") }
+                        } else {
+                            append("🔥 全家当天约 $dayKcal 千卡")
+                        }
                     },
                     style = MaterialTheme.typography.labelMedium,
                     color = statusColor,

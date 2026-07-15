@@ -74,6 +74,35 @@ class FamilyRepository(
         }
     }
 
+    /** 监听主要关注成员的身体数据(每日目标用)：无关注则回退「我」/第一个。[AI生成] */
+    fun observeFocusBody(): Flow<BodyMetrics> =
+        observeMembers().map { ms -> (pickFocus(ms)?.toBodyMetrics()) ?: BodyMetrics() }
+
+    /** 监听关注成员的餐食份额占比(饭量系数 / 全家系数和)：把全家餐热量估算到关注成员。[AI生成] */
+    fun observeFocusShare(): Flow<Double> =
+        observeMembers().map { ms ->
+            val f = pickFocus(ms) ?: return@map 1.0
+            val sum = ms.sumOf { it.portionCoefficient }
+            if (sum > 0.0) (f.portionCoefficient / sum) else 1.0
+        }
+
+    /** 监听关注成员昵称(展示用；单人或无则空)。[AI生成] */
+    fun observeFocusName(): Flow<String> =
+        observeMembers().map { ms -> if (ms.size <= 1) "" else (pickFocus(ms)?.name ?: "") }
+
+    private fun pickFocus(ms: List<FamilyMember>): FamilyMember? =
+        ms.firstOrNull { it.isFocus } ?: ms.firstOrNull { it.isSelf } ?: ms.firstOrNull()
+
+    /** 同步「我」的身体数据(设置里"我的每日热量目标"快捷编辑，保持与成员档案一致)。[AI生成] */
+    suspend fun updateSelfBody(body: BodyMetrics) = withContext(ioDispatcher) {
+        val selfId = q.selectSelfMemberId().executeAsOneOrNull() ?: return@withContext
+        val self = q.selectFamilyMemberById(selfId).executeAsOneOrNull() ?: return@withContext
+        q.updateFamilyMember(
+            name = self.name, gender = body.gender, height_cm = body.heightCm, weight_kg = body.weightKg,
+            age = body.age?.toLong(), activity = body.activity, portion_coefficient = self.portion_coefficient, id = selfId,
+        )
+    }
+
     /** 主要关注成员(无则回退「我」，再无则第一个)。[AI生成] 达标/色系墙默认围绕他。 */
     suspend fun focusMember(): FamilyMember? = withContext(ioDispatcher) {
         val focus = q.selectFocusMember().executeAsOneOrNull()

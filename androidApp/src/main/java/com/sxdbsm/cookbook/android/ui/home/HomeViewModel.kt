@@ -45,6 +45,7 @@ class HomeViewModel(
     private val mealRepo: MealRecordRepository,
     private val prefs: PreferenceRepository,
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 2c：色系墙评级结合当天热量达标度
+    private val family: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI生成] 达标/摄入按主要关注成员(身体数据+饭量系数份额)。
 ) : ViewModel() {
 
     /**
@@ -92,9 +93,9 @@ class HomeViewModel(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val nutritionWall: StateFlow<List<DayNutrition>> =
-        combine(mealRepo.observeTimelineWindow(wallStart, wallEnd), prefs.observeBodyMetrics()) { cards, body -> cards to body }
-            .mapLatest { (cards, body) ->
-                // [AI生成] 2c：填了身体数据时，当天热量偏离目标(偏低/超标)则营养级别降一档——不只看搭配多样性。
+        combine(mealRepo.observeTimelineWindow(wallStart, wallEnd), family.observeFocusBody(), family.observeFocusShare()) { cards, body, share -> Triple(cards, body, share) }
+            .mapLatest { (cards, body, share) ->
+                // [AI修改] 2c：填了关注成员身体数据时，其当天个人摄入(全家餐×份额)偏离目标则营养级别降一档。
                 val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
                 val dayDishIds = cards.associate { it.date to it.meals.flatMap { m -> m.dishes }.map { it.id }.distinct() }
                 val perDish = if (target == null) emptyMap() else {
@@ -105,7 +106,7 @@ class HomeViewModel(
                     val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
                     var level = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains))
                     if (target != null && level > 0) {
-                        val kcal = dayDishIds[card.date].orEmpty().sumOf { perDish[it]?.totals?.energyKcal ?: 0.0 }
+                        val kcal = dayDishIds[card.date].orEmpty().sumOf { perDish[it]?.totals?.energyKcal ?: 0.0 } * share
                         if (kcal > 0 && com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, target) != com.sxdbsm.cookbook.domain.model.CalorieStatus.ON) {
                             level = maxOf(1, level - 1) // 偏离目标降一档
                         }
@@ -121,20 +122,22 @@ class HomeViewModel(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayNutrition: StateFlow<TodayNutrition?> =
-        combine(mealRepo.observeTimelineWindow(today, today), prefs.observeBodyMetrics()) { cards, body -> cards to body }
-            .mapLatest { (cards, body) ->
+        combine(mealRepo.observeTimelineWindow(today, today), family.observeFocusBody(), family.observeFocusShare()) { cards, body, share -> Triple(cards, body, share) }
+            .mapLatest { (cards, body, share) ->
                 val ids = cards.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
                 if (ids.isEmpty()) return@mapLatest null
                 val totals = nutritionRepo.totalOf(ids)
                 if (totals.energyKcal <= 0) return@mapLatest null
                 val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
+                // [AI修改] 今日营养卡按关注成员个人摄入(全家餐×份额)展示 + 达标评定。
+                val kcal = totals.energyKcal * share
                 TodayNutrition(
-                    kcal = totals.energyKcal.roundToInt(),
-                    proteinG = totals.proteinG.roundToInt(),
-                    fatG = totals.fatG.roundToInt(),
-                    carbG = totals.carbG.roundToInt(),
+                    kcal = kcal.roundToInt(),
+                    proteinG = (totals.proteinG * share).roundToInt(),
+                    fatG = (totals.fatG * share).roundToInt(),
+                    carbG = (totals.carbG * share).roundToInt(),
                     target = target,
-                    status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(totals.energyKcal, it) },
+                    status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, it) },
                 )
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 

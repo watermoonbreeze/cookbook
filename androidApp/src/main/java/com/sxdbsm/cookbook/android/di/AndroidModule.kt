@@ -50,7 +50,7 @@ val androidModule = module {
         )
     }
 
-    viewModel { HomeViewModel(get(), get(), get(), get()) } // [AI修改] 首页主题弹框需要读取/写入主题偏好；营养仓库供色系墙热量评级。
+    viewModel { HomeViewModel(get(), get(), get(), get(), get()) } // [AI修改] 首页色系墙/达标按关注成员，追加 FamilyRepository。
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
     viewModel { DishDetailViewModel(get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)
@@ -64,7 +64,7 @@ val androidModule = module {
     viewModel { SearchViewModel(get(), get(), get()) }
     viewModel { AiRecommendViewModel(get(), get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置+偏好; 配置了模型不自动推荐)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
-    viewModel { com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsViewModel(get()) } // [AI生成] 功能设置(分步执行等开关)。
+    viewModel { com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsViewModel(get(), get()) } // [AI修改] 追加 FamilyRepository 同步「我」目标。
     viewModel { com.sxdbsm.cookbook.android.ui.shopping.ShoppingListViewModel(get(), get()) } // [AI生成] 采购清单聚合 + 按份数入库。
     viewModel { com.sxdbsm.cookbook.android.ui.pairing.FreePairingViewModel(get()) } // [AI生成] 食材自由搭配(离线规则)。
     single { com.sxdbsm.cookbook.android.sync.SelectiveSyncBundler(get()) } // [AI生成] 选择性同步打包/合并。
