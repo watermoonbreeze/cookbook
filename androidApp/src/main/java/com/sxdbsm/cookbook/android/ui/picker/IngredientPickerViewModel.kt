@@ -794,6 +794,39 @@ class IngredientPickerViewModel(
     fun addToPantry(ingredient: Ingredient) = addServings(ingredient.id, 1)
 
     /**
+     * 把某食材快速存成一道"同名单食材菜品"(即食品/直接吃的场景一步到位，便于记餐+算营养)。[AI生成]
+     *
+     * 已有同名菜品则不重复建。回调 already=true 表示已存在。默认用量 100g。
+     */
+    fun saveIngredientAsDish(ingredient: Ingredient, onResult: (already: Boolean) -> Unit) {
+        viewModelScope.launch {
+            val existed = dishRepo.dishIdByName(ingredient.name)
+            if (existed != null) { onResult(true); return@launch }
+            val gram = _state.value.availableUnits.firstOrNull { it.name == "g" || it.name == "克" }
+            dishRepo.saveDish(
+                id = 0L,
+                name = ingredient.name,
+                cookingMethodId = null,
+                specialNote = "",
+                description = "",
+                imagePath = "",
+                thumbnailPath = "",
+                tagNames = emptyList(),
+                ingredients = listOf(
+                    com.sxdbsm.cookbook.domain.model.DishIngredient(
+                        ingredient = ingredient,
+                        quantity = 100.0,
+                        unitId = gram?.id,
+                        unitName = gram?.name ?: "g",
+                        isMain = true,
+                    ),
+                ),
+            )
+            onResult(false)
+        }
+    }
+
+    /**
      * 按 id 加入库存（供「新建食材入库」创建后直接入库），默认 1 份。[AI修改]
      */
     fun addToPantry(ingredientId: Long) = addServings(ingredientId, 1)

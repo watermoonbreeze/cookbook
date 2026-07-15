@@ -411,6 +411,11 @@ class DishRepository(private val db: CookbookDatabase) {
     /**
      * 保存一个菜品（含标签与食材）。新建时 id<=0，编辑时 id>0。[AI修改]
      */
+    /** 按名查任意来源的有效菜品 id(不区分预设/自建)，用于"存为菜品"防重复建。[AI生成] */
+    suspend fun dishIdByName(name: String): Long? = withContext(ioDispatcher) {
+        q.selectDishIdByNameAny(name).executeAsOneOrNull()
+    }
+
     suspend fun saveDish(
         id: Long,
         name: String,

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -54,6 +55,7 @@ internal fun IngredientDetailSheet(
     pantryServing: Int = 0, // [AI生成] 库存总份数(用户提供)。
     onAddServings: ((Int) -> Unit)? = null, // [AI生成] 入库/加份数(累加)。
     onSetServings: ((Int) -> Unit)? = null, // [AI生成] 设置份数(减份数用)。
+    onSaveAsDish: (() -> Unit)? = null, // [AI生成] 快速把该食材存成同名单食材菜品(即食品直接吃场景);传入才显示入口。
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -219,6 +221,20 @@ internal fun IngredientDetailSheet(
                             onSetServings = onSetServings,
                             onRemove = onTogglePantry,
                         )
+                    }
+                    // [AI生成] 快速"存为菜品"：即食品/直接吃的食材一步建成同名单食材菜品，便于记餐+算营养。
+                    onSaveAsDish?.let { save ->
+                        Divider()
+                        OutlinedButton(
+                            onClick = save,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                        ) {
+                            Icon(Icons.Outlined.RestaurantMenu, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("存为菜品（即食/直接吃）")
+                        }
                     }
                     // [AI修改] 编辑/删除区按是否传入 onEdit/onDelete 显示(调用方已决定权限)：
                     // 选择模式下自建食材也传 onEdit/onDelete，故能编辑/删除自建食材。

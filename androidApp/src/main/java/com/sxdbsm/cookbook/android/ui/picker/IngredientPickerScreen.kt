@@ -426,6 +426,17 @@ fun IngredientPickerScreen(
             pantryServing = ui.pantryServings[ingredient.id] ?: 0,
             onAddServings = if (!selectionMode) ({ count -> vm.addServings(ingredient.id, count) }) else null,
             onSetServings = if (!selectionMode) ({ count -> vm.setServings(ingredient.id, count) }) else null,
+            // [AI生成] 仅浏览模式(非选食材)给"存为菜品"：即食品直接吃场景一步建成同名单食材菜品。
+            onSaveAsDish = if (!selectionMode) ({
+                vm.saveIngredientAsDish(ingredient) { already ->
+                    Toast.makeText(
+                        context,
+                        if (already) "已有同名菜品「${ingredient.name}」" else "已把「${ingredient.name}」存成一道菜，记餐时可直接选",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+                selectedIngredient = null
+            }) else null,
         )
     }
 
