@@ -197,9 +197,11 @@ internal fun IngredientDetailSheet(
                                 if (info.healthNote.isNotBlank()) DetailLine("健康说明", info.healthNote)
                             }
                         }
-                        DetailLine(label = "来源", value = if (ingredient.source == "user") "用户创建" else "预设食材")
-                        ingredient.defaultUnitName.takeIf { it.isNotBlank() }?.let { unit ->
-                            DetailLine(label = "默认单位", value = unit)
+                        // [AI修改] 减负:去掉"来源"行(卡片徽章已表达预设/自建),默认单位仅自建且已设置时显示。
+                        if (ingredient.source == "user") {
+                            ingredient.defaultUnitName.takeIf { it.isNotBlank() }?.let { unit ->
+                                DetailLine(label = "默认单位", value = unit)
+                            }
                         }
 
                         Divider()
