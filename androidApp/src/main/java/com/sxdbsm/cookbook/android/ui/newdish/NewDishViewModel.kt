@@ -366,6 +366,13 @@ class NewDishViewModel(
         )
     }
 
+    /** 预填新建菜品(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)：设菜名+批量加食材，并以此为"无改动基线"(返回不立即弹放弃)。[AI生成] */
+    fun applyPrefill(name: String, ingredients: List<Ingredient>) {
+        if (name.isNotBlank()) _state.value = _state.value.copy(name = name)
+        ingredients.forEach { addIngredient(it) }
+        markBaseline()
+    }
+
     // ========== B5 常用配料组 ==========
 
     /** 加载可用配料组(预设+自建)。[AI生成] B5 */

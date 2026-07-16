@@ -236,6 +236,8 @@ fun MainScaffold(
                         ingredientJumpBus.request(ingredient)
                         nav.navigateRootTab(Routes.INGREDIENTS)
                     },
+                    onNewDish = { nav.navigate(Routes.newDish()) }, // [AI生成] 全无结果新建菜品(预填名走总线)
+                    onNewIngredient = { nav.navigateRootTab(Routes.INGREDIENTS) }, // [AI生成] 全无结果新建食材(按名开编辑器走总线)
                 )
             }
             composable(Routes.ADD_MEAL) {

@@ -47,6 +47,7 @@ fun IngredientPickerScreen(
     asDialog: Boolean = true,
     selectionMode: Boolean = true,
     openDetailFor: Ingredient? = null, // [AI生成] 跨屏(首页搜索)跳来时直接开该食材详情,替代jumpToIngredient定位(自建食材不再跳错到常规)
+    openCreateWithName: String? = null, // [AI生成] 跨屏(首页搜索"新建食材")跳来时按名开新增食材编辑器
     vm: IngredientPickerViewModel = koinViewModel(),
 ) {
     // [AI修改] 选择状态统一来自 ViewModel；弹窗输入框内容使用 remember 保存临时值。
@@ -64,6 +65,15 @@ fun IngredientPickerScreen(
     var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) } // [AI修改] 食材详情统一通过底部弹层展示，首页和菜品选择共用。
     // [AI生成] 跨屏(首页搜索)跳来:直接开该食材详情(顶部有分类路径),不再靠 jumpToIngredient 定位网格(自建食材跳错常规)。
     LaunchedEffect(openDetailFor?.id) { openDetailFor?.let { selectedIngredient = it } }
+    // [AI生成] 跨屏(首页搜索"新建食材")跳来:按名开新增食材编辑器,预填名。
+    LaunchedEffect(openCreateWithName) {
+        openCreateWithName?.takeIf { it.isNotBlank() }?.let {
+            createPrefillName = it
+            vm.clearCreateError()
+            vm.loadIngredientEditor(null)
+            createDialogOpen = true
+        }
+    }
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
     val context = androidx.compose.ui.platform.LocalContext.current // [AI生成] A8：入库即时反馈 Toast

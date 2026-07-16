@@ -62,6 +62,7 @@ fun NewDishScreen(
     // [AI生成] 分步执行开关(功能设置)：关闭时步骤不显示"步骤N"序号。
     // [AI修改] observeFlag 用 remember 缓存，避免每次重组新建 Flow 反复订阅查库。
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
+    val prefillBus = org.koin.compose.koinInject<NewDishPrefillBus>() // [AI生成] 搜索"点此新建"/食材"组成菜品"预填总线
     val stepModeEnabled by remember(prefs) {
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
     }.collectAsStateWithLifecycle(false)
@@ -87,6 +88,13 @@ fun NewDishScreen(
     LaunchedEffect(editingDishId, importDishId) {
         AppLogger.d("NewDishEdit", "screen start effect: editingDishId=$editingDishId importDishId=$importDishId") // [AI生成] 记录页面收到的导航参数。
         vm.start(editingDishId, importDishId)
+        // [AI生成] 消费预填(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)——仅纯新建(无编辑/导入)时。
+        if (editingDishId == null && importDishId == null) {
+            prefillBus.pending.value?.let { pf ->
+                vm.applyPrefill(pf.name, pf.ingredients)
+                prefillBus.consume()
+            }
+        }
     }
     LaunchedEffect(state.done) {
         if (state.done) {

@@ -38,6 +38,16 @@ fun IngredientsScreen() {
             jumpBus.consume()
         }
     }
+    // [AI生成] 首页搜索"新建食材"→按名开新增编辑器。
+    val createBus: IngredientCreateBus = koinInject()
+    val createPending by createBus.pending.collectAsStateWithLifecycle()
+    var createName by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(createPending) {
+        createPending?.let {
+            createName = it
+            createBus.consume()
+        }
+    }
 
     IngredientPickerScreen(
         excludeIngredientIds = emptySet(),
@@ -46,6 +56,7 @@ fun IngredientsScreen() {
         asDialog = false,
         selectionMode = false,
         openDetailFor = jumpDetail,
+        openCreateWithName = createName,
         vm = vm,
     )
 }
