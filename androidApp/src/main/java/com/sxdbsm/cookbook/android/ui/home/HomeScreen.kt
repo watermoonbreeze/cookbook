@@ -1,7 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.home
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -24,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DayMealCardView
-import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SectionHeader
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
@@ -230,44 +228,9 @@ fun HomeScreen(
             }
         }
 
-        item { Spacer(Modifier.height(28.dp)) }
-
-        // [AI修改] 发现型内容(热门/最近)下移到"计划(含今天)"之后——首屏先回答"今天吃了啥/该吃啥"，再看发现。
-        item { SectionHeader(title = "🔥 热门", action = "更多 ▸", onActionClick = onOpenDishes) }
-        if (ui.popular.isEmpty()) {
-            item { EmptyState(text = "还没记录餐食，热门会随着记录自动出现", icon = "🔥") }
-        } else {
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(ui.popular, key = { it.id }) { dish ->
-                        DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
-                    }
-                }
-            }
-        }
-
-        item { Spacer(Modifier.height(28.dp)) }
-
-        item { SectionHeader(title = "⏱ 最近", action = "更多 ▸", onActionClick = onOpenDishes) }
-        if (ui.recent.isEmpty()) {
-            item { EmptyState(text = "暂无最近餐食", icon = "⏱") }
-        } else {
-            item {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(ui.recent, key = { it.id }) { dish ->
-                        DishMiniCard(dish = dish, onClick = { onOpenDish(dish.id) })
-                    }
-                }
-            }
-        }
-
-        item { Spacer(Modifier.height(80.dp)) } // [AI修改] 留底部 FAB 空间。
+        // [AI修改] 用户 2026-07-16：去除首页"🔥热门/⏱最近"发现区——菜品页(最近/喜爱Tab)已有相关推荐，
+        //   首页聚焦"今天吃了啥/该吃啥"(今日卡+计划含今天)，更克制、少重复。
+        item { Spacer(Modifier.height(80.dp)) } // 留底部 FAB 空间。
     }
     }
 

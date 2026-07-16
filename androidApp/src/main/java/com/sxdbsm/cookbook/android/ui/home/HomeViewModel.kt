@@ -30,8 +30,7 @@ import kotlin.math.roundToInt
  * Compose 页面只读取这个不可变对象；状态变化时用 copy 生成新对象。
  */
 data class HomeUiState(
-    val popular: List<DishMini> = emptyList(),
-    val recent: List<DishMini> = emptyList(),
+    // [AI修改] 用户 2026-07-16：首页去"热门/最近"发现区 → 移除 popular/recent，不再观察这两路 DB(省查询)。
     val plans: List<DayMealCardData> = emptyList(),
 )
 
@@ -55,13 +54,10 @@ class HomeViewModel(
      *
      * `combine` 类似把多个 Observable 合并；任意一路变化都会重新生成 HomeUiState。
      */
-    val uiState: StateFlow<HomeUiState> = combine(
-        dishRepo.observePopularDishes(limit = 6),
-        dishRepo.observeRecentDishes(limit = 6),
-        mealRepo.observeTodayPlusFuture(DateTime.today()),
-    ) { popular, recent, plans ->
-        HomeUiState(popular = popular, recent = recent, plans = plans)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
+    val uiState: StateFlow<HomeUiState> =
+        mealRepo.observeTodayPlusFuture(DateTime.today())
+            .map { plans -> HomeUiState(plans = plans) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
     /**
      * 当前主题模式。[AI生成]
