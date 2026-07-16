@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 data class NewDishPrefill(
     val name: String = "",
     val ingredients: List<Ingredient> = emptyList(),
+    val cookingMethodName: String = "", // [AI生成] 自由搭配"存为菜品"：预填做法(如清炒/红烧)，空=不预填
 )
 
 class NewDishPrefillBus {

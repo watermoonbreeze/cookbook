@@ -223,7 +223,10 @@ fun MainScaffold(
                 )
             }
             composable(Routes.FREE_PAIRING) {
-                com.sxdbsm.cookbook.android.ui.pairing.FreePairingScreen(onBack = { nav.popBackStack() })
+                com.sxdbsm.cookbook.android.ui.pairing.FreePairingScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenNewDish = { nav.navigate(Routes.newDish()) }, // [AI生成] 存为菜品→预填新建菜品页
+                )
             }
             composable(
                 route = Routes.AI_RECOMMEND,

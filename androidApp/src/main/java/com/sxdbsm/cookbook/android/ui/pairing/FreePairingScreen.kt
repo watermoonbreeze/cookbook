@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkAdd
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -46,9 +49,12 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun FreePairingScreen(
     onBack: () -> Unit,
+    onOpenNewDish: () -> Unit = {}, // [AI生成] "存为菜品"→跳预填新建菜品页
     vm: FreePairingViewModel = koinViewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
+    // [AI生成] 存为菜品预填总线(复用食材"组成菜品"同一条路)。
+    val prefillBus = org.koin.compose.koinInject<com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefillBus>()
 
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
@@ -114,6 +120,21 @@ fun FreePairingScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
+                                // [AI生成] 卡底右对齐"存为菜品"次操作(§UX设计:TextButton克制、整卡不可点)：
+                                //   点→按名解析食材+做法预填新建菜品页，菜名留用户填。直接跳转即反馈、不弹 Toast。
+                                Spacer(Modifier.height(8.dp))
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    TextButton(onClick = {
+                                        vm.buildPrefill(s) { pf ->
+                                            prefillBus.request(pf)
+                                            onOpenNewDish()
+                                        }
+                                    }) {
+                                        Icon(Icons.Outlined.BookmarkAdd, contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("存为菜品")
+                                    }
+                                }
                             }
                         }
                     }

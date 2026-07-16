@@ -376,9 +376,11 @@ class NewDishViewModel(
     }
 
     /** 预填新建菜品(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)：设菜名+批量加食材，并以此为"无改动基线"(返回不立即弹放弃)。[AI生成] */
-    fun applyPrefill(name: String, ingredients: List<Ingredient>) {
+    fun applyPrefill(name: String, ingredients: List<Ingredient>, cookingMethodName: String = "") {
         if (name.isNotBlank()) _state.value = _state.value.copy(name = name)
         ingredients.forEach { addIngredient(it) }
+        // [AI生成] 自由搭配"存为菜品"：预填做法(空则不填)。放 markBaseline 前，让预填态成为基线(不误判未保存)。
+        if (cookingMethodName.isNotBlank()) addCookingMethod(cookingMethodName)
         markBaseline()
     }
 

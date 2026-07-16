@@ -91,7 +91,7 @@ fun NewDishScreen(
         // [AI生成] 消费预填(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)——仅纯新建(无编辑/导入)时。
         if (editingDishId == null && importDishId == null) {
             prefillBus.pending.value?.let { pf ->
-                vm.applyPrefill(pf.name, pf.ingredients)
+                vm.applyPrefill(pf.name, pf.ingredients, pf.cookingMethodName)
                 prefillBus.consume()
             }
         }
