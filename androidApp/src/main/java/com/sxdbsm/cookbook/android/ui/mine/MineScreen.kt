@@ -540,7 +540,20 @@ private fun ColorPaletteDialog(
                                 ),
                         )
                         Spacer(Modifier.width(14.dp))
-                        Text(p.displayName, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                            Text(p.displayName, style = MaterialTheme.typography.bodyLarge)
+                            if (p == AppPalette.TERRACOTTA) { // [AI生成] 默认配色标签
+                                Spacer(Modifier.width(6.dp))
+                                Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f), shape = RoundedCornerShape(4.dp)) {
+                                    Text(
+                                        "默认",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
+                                    )
+                                }
+                            }
+                        }
                         if (selected) {
                             Icon(Icons.Outlined.Check, contentDescription = "已选", tint = MaterialTheme.colorScheme.primary)
                         }

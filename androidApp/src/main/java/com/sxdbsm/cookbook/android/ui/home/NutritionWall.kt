@@ -140,8 +140,8 @@ private fun MacroLegend(color: Color, label: String) {
 }
 
 /**
- * 宏量占比渐变条：保留三段真实占比，仅柔化相邻段接缝(soft seam)，胶囊端头。[AI生成]
- * 数据可视化仍能看清"各占多少"(边界=占比分界)，只消除硬拼接的廉价感。三色固定不随主题变。
+ * 宏量占比渐变条：整条从每段"中心色"平滑过渡(绿→琥珀→蓝)，自然真实、非"实块+糊边"。[AI生成]
+ * 每种宏量在自己占比区域内主导，段间大范围柔和渐变；具体克数由下方图例给出。胶囊端头，三色固定不随主题。
  */
 @Composable
 private fun MacroBar(p: Int, f: Int, c: Int, protein: Color, fat: Color, carb: Color) {
@@ -161,21 +161,27 @@ private fun MacroBar(p: Int, f: Int, c: Int, protein: Color, fat: Color, carb: C
     )
 }
 
-/** 生成占比条渐变 stop：每段浅→深微渐变增光泽、段间约 2% 羽化过渡；强制位置严格递增防极小段反转。[AI生成] */
+/**
+ * 渐变 stop：在每段**中心**放纯色 + 两端各锚首/末色，段中心之间整段平滑过渡——像真实渐变而非实块糊边。[AI生成]
+ * 单段时给同色浅→深的细微光泽。位置强制严格递增防反转。
+ */
 private fun macroStops(segs: List<Pair<Color, Float>>): Array<Pair<Float, Color>> {
-    val seam = 0.02f
-    val raw = mutableListOf<Pair<Float, Color>>()
-    var pos = 0f
-    segs.forEachIndexed { i, (col, w) ->
-        val start = pos
-        val end = pos + w
-        val s = minOf(seam, w * 0.4f)
-        val lo = androidx.compose.ui.graphics.lerp(col, Color.White, 0.10f)
-        val hi = androidx.compose.ui.graphics.lerp(col, Color.Black, 0.06f)
-        raw.add((if (i == 0) start else start + s) to lo)
-        raw.add((if (i == segs.lastIndex) end else end - s) to hi)
-        pos = end
+    if (segs.isEmpty()) return arrayOf(0f to Color.Transparent, 1f to Color.Transparent)
+    if (segs.size == 1) {
+        val col = segs[0].first
+        return arrayOf(
+            0f to androidx.compose.ui.graphics.lerp(col, Color.White, 0.06f),
+            1f to androidx.compose.ui.graphics.lerp(col, Color.Black, 0.05f),
+        )
     }
+    val raw = mutableListOf<Pair<Float, Color>>()
+    raw.add(0f to segs.first().first) // 左端=首段色
+    var pos = 0f
+    segs.forEach { (col, w) ->
+        raw.add((pos + w / 2f) to col) // 每段中心=纯色
+        pos += w
+    }
+    raw.add(1f to segs.last().first) // 右端=末段色
     var last = -1f
     return raw.map { (position, col) ->
         val pp = maxOf(position, last + 0.0001f).coerceIn(0f, 1f)
