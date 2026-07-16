@@ -91,7 +91,14 @@ class NewDishViewModel(
         private const val DEFAULT_GRAMS = 100 // [AI生成] #55 新加食材默认剂量(克)。
     }
 
+    // [AI生成] 调料(调味品/油脂类)id 集合：加配料时按调料给正常默认克数(非100g)。init 异步加载，空集时退回默认100g。
+    @Volatile
+    private var seasoningIds: Set<Long> = emptySet()
+
     init {
+        viewModelScope.launch {
+            seasoningIds = runCatching { ingredientRepo.seasoningIngredientIds() }.getOrDefault(emptySet())
+        }
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
             // [AI修改] 先把挂起查询结果放到局部变量，再基于最新 state 合并，避免旧空表单快照覆盖编辑加载结果。
@@ -352,14 +359,16 @@ class NewDishViewModel(
      */
     fun addIngredient(ingredient: Ingredient, quantity: Double? = null) {
         if (_state.value.ingredients.any { it.ingredient.id == ingredient.id }) return
-        // [AI修改] #55：新加食材默认剂量 100 克(克为单位)，用户可用 −N+ 调整(±5，最小0)。
-        // [AI修改] B5/需求2：配料组套用时带过来的克数优先(quantity)，否则默认 100g。
+        // [AI修改] #55：新加食材默认剂量(克)，用户可用 −N+ 调整(±5，最小0)。配料组套用带来的克数优先(quantity)。
+        // [AI修改] 调料按正常每菜用量给默认(盐3g/酱油10g…)，非调料仍100g——避免调料默认100g把钠等营养算爆。
         val gram = gramUnit()
+        val defaultGram = com.sxdbsm.cookbook.domain.SeasoningDefaults
+            .defaultGramFor(ingredient.name, ingredient.id in seasoningIds).toDouble()
         _state.value = _state.value.copy(
             ingredients = _state.value.ingredients + DishIngredient(
                 ingredient = ingredient,
                 isMain = false, // [AI修改] 当前版本暂不暴露/保存“主料”语义，后续再扩展原料/调味料分类。
-                quantity = quantity ?: DEFAULT_GRAMS.toDouble(),
+                quantity = quantity ?: defaultGram,
                 unitName = gram?.name ?: "克",
                 unitId = gram?.id ?: ingredient.defaultUnitId,
             ),

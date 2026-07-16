@@ -296,6 +296,11 @@ class IngredientRepository(private val db: CookbookDatabase) {
         q.selectIngredientFoodGroupNames().executeAsList().associate { it.name to it.food_group }
     }
 
+    /** 调料(调味品/油脂类)食材 id 集合。[AI生成] 供菜品编辑按调料给正常默认克数(非100g)。 */
+    suspend fun seasoningIngredientIds(): Set<Long> = withContext(ioDispatcher) {
+        q.selectSeasoningIngredientIds().executeAsList().toSet()
+    }
+
     /** 一组食材的营养维度标签(去重)。[AI生成] 菜品详情营养概要(标签版)。 */
     suspend fun nutritionTagsOf(ingredientIds: List<Long>): List<String> = withContext(ioDispatcher) {
         if (ingredientIds.isEmpty()) return@withContext emptyList()
