@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -138,6 +139,13 @@ class MainActivity : ComponentActivity() {
             }
         }
         CookbookTheme(themeMode = mode) {
+            // [AI修改] 系统状态栏/导航栏色跟随 Compose 主题背景色(而非透明露出 android 默认 windowBackground)：
+            // 修"app深色但系统仍浅色时,全屏页导航栏区域露白"——让系统栏与当前界面浑然一体、明暗自适应。
+            val barColor = androidx.compose.material3.MaterialTheme.colorScheme.background
+            SideEffect {
+                window.statusBarColor = barColor.toArgb()
+                window.navigationBarColor = barColor.toArgb()
+            }
             MainScaffold(
                 openTimer = openTimerRequested.value,
                 onTimerConsumed = { openTimerRequested.value = false },
