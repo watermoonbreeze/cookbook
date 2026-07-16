@@ -47,6 +47,7 @@ class HomeViewModel(
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 2c：色系墙评级结合当天热量达标度
     private val family: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI生成] 达标/摄入按主要关注成员(身体数据+饭量系数份额)。
     private val ingredientRepo: com.sxdbsm.cookbook.data.repository.IngredientRepository, // [AI生成] A1：食材显式营养大类(food_group)覆盖色系/均衡判定。
+    private val health: com.sxdbsm.cookbook.data.repository.HealthProfileRepository, // [AI生成] A-1：解析关注成员病种→慢病提示(今日卡"偏咸·高血压留意")。
 ) : ViewModel() {
 
     /**
@@ -115,9 +116,26 @@ class HomeViewModel(
      *
      * 供首页"今日营养分配"卡；当天无餐食/无营养数据则 null(不显示)。仅营养色系开启时消费。
      */
+    // [AI生成] A-1：关注成员的慢病(病种名→HealthCondition)，供今日卡慢病提示(如"偏咸·高血压留意")。
+    private val focusConditions: StateFlow<Set<com.sxdbsm.cookbook.domain.HealthCondition>> =
+        combine(family.observeMembers(), kotlinx.coroutines.flow.flow { emit(health.listAllCrowdTypes()) }) { members, crowds ->
+            val nameById = crowds.associate { it.id to it.name }
+            val focus = members.firstOrNull { it.isFocus } ?: members.firstOrNull { it.isSelf } ?: members.firstOrNull()
+            focus?.careCategoryIds.orEmpty()
+                .mapNotNull { nameById[it] }
+                .flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }
+                .toSet()
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayNutrition: StateFlow<TodayNutrition?> =
-        combine(mealRepo.observeTimelineWindow(today, today), family.observeFocusBody(), family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today)), explicitGroups) { cards, body, share, explicit ->
+        combine(
+            mealRepo.observeTimelineWindow(today, today),
+            family.observeFocusBody(),
+            family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today)),
+            explicitGroups,
+            focusConditions,
+        ) { cards, body, share, explicit, conditions ->
                 if (share <= 0.0) return@combine null // [AI修改] 关注成员今天未在家吃→不显今日营养卡
                 val ids = cards.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
                 if (ids.isEmpty()) return@combine null
@@ -129,14 +147,24 @@ class HomeViewModel(
                 val gaps = FoodGroup.nutritionGaps(FoodGroup.groupsOf(mains, explicit))
                 // [AI修改] 今日营养卡按关注成员个人摄入(全家餐×份额)展示 + 达标评定。
                 val kcal = totals.energyKcal * share
+                val status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, it) }
+                // [AI生成] A-1：慢病温和提示(个人视角，色系墙不动)——按关注成员份额的钠 + 热量达标评估，缺数据不下调。
+                val baseLevel = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit))
+                val personalTotals = com.sxdbsm.cookbook.domain.model.NutritionTotals(
+                    energyKcal = kcal, sodiumMg = totals.sodiumMg * share,
+                )
+                val assessment = com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.evaluate(
+                    baseLevel = baseLevel, totals = personalTotals, calorieStatus = status, conditions = conditions,
+                )
                 TodayNutrition(
                     kcal = kcal.roundToInt(),
                     proteinG = (totals.proteinG * share).roundToInt(),
                     fatG = (totals.fatG * share).roundToInt(),
                     carbG = (totals.carbG * share).roundToInt(),
                     target = target,
-                    status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, it) },
+                    status = status,
                     gaps = gaps,
+                    concerns = assessment.concerns,
                 )
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -180,6 +208,7 @@ data class TodayNutrition(
     val target: Int?, // 每日目标(填了身体数据才有)
     val status: com.sxdbsm.cookbook.domain.model.CalorieStatus?,
     val gaps: List<String> = emptyList(), // [AI生成] 今日三支柱里还缺哪几类(优质蛋白/主食/蔬菜)，如实非医嘱
+    val concerns: List<String> = emptyList(), // [AI生成] A-1：慢病温和提示(偏咸·高血压留意/热量超标)，缺数据为空、仅供参考非医嘱
 )
 
 /** 某一年的平均营养级别(色系墙往年概览用)。[AI生成] */

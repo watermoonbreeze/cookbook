@@ -52,7 +52,7 @@ val androidModule = module {
         )
     }
 
-    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 IngredientRepository(A1 色系墙用显式营养大类)。
+    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 HealthProfileRepository(A-1 关注成员病种→慢病提示)。
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
     viewModel { DishDetailViewModel(get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)

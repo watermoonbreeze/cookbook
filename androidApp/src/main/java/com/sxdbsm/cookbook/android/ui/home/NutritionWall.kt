@@ -90,34 +90,40 @@ fun NutritionTodayCard(data: TodayNutrition, modifier: Modifier = Modifier) {
                 )
             }
             Spacer(Modifier.height(8.dp))
-            // 三大宏量供能占比条(蛋白/脂肪/碳水)。
+            val ext = com.sxdbsm.cookbook.android.ui.theme.LocalExtendedColors.current
+            // 三大宏量供能占比条(蛋白/脂肪/碳水)：保留三段真实占比 + 柔化接缝的渐变，胶囊端头(设计师方案)。
             val p = data.proteinG * 4
             val f = data.fatG * 9
             val c = data.carbG * 4
             if (p + f + c > 0) {
-                Row(modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp))) {
-                    if (p > 0) Box(Modifier.weight(p.toFloat()).fillMaxWidth().height(8.dp).background(Color(0xFF5C9A6A)))
-                    if (f > 0) Box(Modifier.weight(f.toFloat()).fillMaxWidth().height(8.dp).background(Color(0xFFE0A23C)))
-                    if (c > 0) Box(Modifier.weight(c.toFloat()).fillMaxWidth().height(8.dp).background(Color(0xFF6E9BD1)))
-                }
+                MacroBar(p, f, c, ext.macroProtein, ext.macroFat, ext.macroCarb)
                 Spacer(Modifier.height(4.dp))
             }
-            // 图例：色点 + 宏量克数，与占比条同色对应。
+            // 图例：色点 + 宏量克数，与占比条同色对应(固定协调三色，不随主题变)。
             Row(verticalAlignment = Alignment.CenterVertically) {
-                MacroLegend(Color(0xFF5C9A6A), "蛋白 ${data.proteinG}g")
+                MacroLegend(ext.macroProtein, "蛋白 ${data.proteinG}g")
                 Spacer(Modifier.width(10.dp))
-                MacroLegend(Color(0xFFE0A23C), "脂肪 ${data.fatG}g")
+                MacroLegend(ext.macroFat, "脂肪 ${data.fatG}g")
                 Spacer(Modifier.width(10.dp))
-                MacroLegend(Color(0xFF6E9BD1), "碳水 ${data.carbG}g")
+                MacroLegend(ext.macroCarb, "碳水 ${data.carbG}g")
             }
-            // [AI生成] "还缺什么"如实解读(仅陈述缺哪类食物组,非推荐具体菜/非医嘱)。
-            if (data.gaps.isNotEmpty()) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "今天还缺 ${data.gaps.joinToString("、")}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            // [AI生成] 统一"今日提示"区：gaps(绿点·补什么，正向) + concerns(琥珀点·慢病留意，温和)；空则整区隐藏。
+            // 呈现按 Apple-UX 方案：小圆点+一行文字、无红报警无底色；concerns 末尾统一挂一行淡色免责。
+            if (data.gaps.isNotEmpty() || data.concerns.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (data.gaps.isNotEmpty()) {
+                        TipRow(ext.success, "今天还缺 ${data.gaps.joinToString("、")}")
+                    }
+                    data.concerns.take(3).forEach { TipRow(ext.warning, it) }
+                    if (data.concerns.isNotEmpty()) {
+                        Text(
+                            "· 均为饮食参考，非医疗建议",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        )
+                    }
+                }
             }
         }
     }
@@ -130,6 +136,66 @@ private fun MacroLegend(color: Color, label: String) {
         Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(color))
         Spacer(Modifier.width(3.dp))
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * 宏量占比渐变条：保留三段真实占比，仅柔化相邻段接缝(soft seam)，胶囊端头。[AI生成]
+ * 数据可视化仍能看清"各占多少"(边界=占比分界)，只消除硬拼接的廉价感。三色固定不随主题变。
+ */
+@Composable
+private fun MacroBar(p: Int, f: Int, c: Int, protein: Color, fat: Color, carb: Color) {
+    val total = (p + f + c).toFloat()
+    if (total <= 0f) return
+    val segs = buildList {
+        if (p > 0) add(protein to p / total)
+        if (f > 0) add(fat to f / total)
+        if (c > 0) add(carb to c / total)
+    }
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(8.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(androidx.compose.ui.graphics.Brush.horizontalGradient(colorStops = macroStops(segs))),
+    )
+}
+
+/** 生成占比条渐变 stop：每段浅→深微渐变增光泽、段间约 2% 羽化过渡；强制位置严格递增防极小段反转。[AI生成] */
+private fun macroStops(segs: List<Pair<Color, Float>>): Array<Pair<Float, Color>> {
+    val seam = 0.02f
+    val raw = mutableListOf<Pair<Float, Color>>()
+    var pos = 0f
+    segs.forEachIndexed { i, (col, w) ->
+        val start = pos
+        val end = pos + w
+        val s = minOf(seam, w * 0.4f)
+        val lo = androidx.compose.ui.graphics.lerp(col, Color.White, 0.10f)
+        val hi = androidx.compose.ui.graphics.lerp(col, Color.Black, 0.06f)
+        raw.add((if (i == 0) start else start + s) to lo)
+        raw.add((if (i == segs.lastIndex) end else end - s) to hi)
+        pos = end
+    }
+    var last = -1f
+    return raw.map { (position, col) ->
+        val pp = maxOf(position, last + 0.0001f).coerceIn(0f, 1f)
+        last = pp
+        pp to col
+    }.toTypedArray()
+}
+
+/** 今日提示行：小圆点 + 一行温和文字(无红报警、无底色)。[AI生成] gaps 用绿点、concerns 用琥珀点。 */
+@Composable
+private fun TipRow(dotColor: Color, text: String) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        Box(Modifier.padding(top = 4.dp).size(7.dp).clip(RoundedCornerShape(50)).background(dotColor))
+        Spacer(Modifier.width(5.dp))
+        Text(
+            text,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
