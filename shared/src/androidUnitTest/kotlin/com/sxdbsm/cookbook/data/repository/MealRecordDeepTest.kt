@@ -44,6 +44,25 @@ class MealRecordDeepTest {
     }
 
     @Test
+    fun `删整天撤销还原_不重复抬喜爱度`() = runBlocking {
+        // [AI生成] Google 代码审查阻断项复验：删→撤销(saveDayMeals bumpPreference=false)不应把每道菜再+1。
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val d = newDish(dishRepo, "回锅肉")
+        val bf = mealType(db, "BREAKFAST", "早餐", "07:30")
+        val day = LocalDate(2026, 7, 13)
+        mealRepo.saveDayMeals(day, listOf(DayMealDraft(bf, LocalTime(7, 30), "", listOf(d))))
+        assertEquals(1, dishRepo.getDishMiniById(d)!!.preference)
+        val snap = mealRepo.snapshotDay(day)
+        assertEquals(1, snap.size, "快照应含那天的餐")
+        mealRepo.deleteDayMeals(day)
+        mealRepo.saveDayMeals(day, snap, bumpPreference = false)
+        assertEquals(1, dishRepo.getDishMiniById(d)!!.preference, "撤销还原不应重复抬喜爱度")
+        assertEquals(1, mealRepo.loadDayMealsForEdit(day).size, "餐食应被还原")
+    }
+
+    @Test
     fun `新增新菜_首次入餐抬喜爱度`() = runBlocking {
         val db = RepositoryTestDatabase.create()
         val dishRepo = DishRepository(db)

@@ -140,11 +140,20 @@ class TimelineViewModel(
     /** 删整天并支持撤销(§9.12)：先快照→删→回调给 showUndo(点撤销即 saveDayMeals 还原)。[AI生成] B-5 */
     fun deleteDayUndoable(date: LocalDate, showUndo: (onUndo: () -> Unit) -> Unit) {
         viewModelScope.launch {
-            val snapshot = runCatching { repo.snapshotDay(date) }.getOrDefault(emptyList())
+            // [AI修改] 代码审查#3：快照读失败/为空不该照删致无法撤销。
+            val snapshot = runCatching { repo.snapshotDay(date) }.getOrNull()
+            if (snapshot.isNullOrEmpty()) {
+                _state.value = _state.value.copy(copyMessage = null, copyError = "删除失败，请稍后重试")
+                return@launch
+            }
             runCatching { repo.deleteDayMeals(date) }
                 .onSuccess {
                     showUndo {
-                        viewModelScope.launch { runCatching { repo.saveDayMeals(date, snapshot) } }
+                        viewModelScope.launch {
+                            // [AI修改] 代码审查#1：撤销不抬喜爱度(bumpPreference=false)；#2：还原失败落提示。
+                            runCatching { repo.saveDayMeals(date, snapshot, bumpPreference = false) }
+                                .onFailure { e -> _state.value = _state.value.copy(copyMessage = null, copyError = e.message ?: "撤销失败，请稍后重试") }
+                        }
                     }
                 }
                 .onFailure { e -> _state.value = _state.value.copy(copyMessage = null, copyError = e.message ?: "删除失败，请稍后重试") }

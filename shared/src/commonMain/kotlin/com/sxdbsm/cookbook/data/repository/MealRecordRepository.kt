@@ -240,6 +240,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         // [AI修改] 抬喜爱度的基线日期(默认=本日)：编辑同日填本日；"移动"(改到新日期)填**来源日期**，
         // 避免移动到空目标日时把来源日已计过的菜再次 +1(重复抬喜爱度 bug)。
         incrementBaselineDate: LocalDate? = null,
+        // [AI生成] 是否为新出现的菜抬喜爱度。撤销/纯还原(删整天撤销)传 false：原样还原、非新记一餐，
+        // 否则该日刚被删空→oldDishIds 为空→所有恢复菜误 +1 污染排序(Google 代码审查阻断项)。
+        bumpPreference: Boolean = true,
     ): List<Long> = withContext(ioDispatcher) {
         val dateStr = DateTime.formatDate(date)
         val baselineStr = DateTime.formatDate(incrementBaselineDate ?: date)
@@ -249,7 +252,8 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             // [AI修改] 编辑某天餐食采用整日替换：删除旧记录和写入新记录必须保持原子性。
             val oldDishIds = q.selectDishIdsByMealDate(baselineStr).executeAsList().toSet()
             val newDishIds = meals.flatMap { it.dishIds }.toSet()
-            val dishIdsToIncrement = newDishIds - oldDishIds // [AI生成] 只对相对基线"新出现"的菜抬喜爱值，编辑/移动都不重复抬。
+            // [AI修改] 撤销还原(bumpPreference=false)不抬喜爱度；否则只对相对基线"新出现"的菜抬(编辑/移动不重复抬)。
+            val dishIdsToIncrement = if (bumpPreference) newDishIds - oldDishIds else emptySet()
             q.deleteMealRecordDishesByDate(dateStr)
             q.deleteMealRecordsByDate(dateStr)
             meals.forEach { meal ->

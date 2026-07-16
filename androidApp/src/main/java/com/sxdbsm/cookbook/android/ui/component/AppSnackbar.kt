@@ -5,6 +5,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -22,9 +23,13 @@ class AppSnackbarController(
     val hostState: SnackbarHostState,
     private val scope: CoroutineScope,
 ) {
+    // [AI修改] 代码审查#5：单 job 串行化，避免两次快速调用交错导致未点的撤销被挤丢(新提示取代旧的)。
+    private var job: Job? = null
+
     /** 纯告知轻提示(如"已保存")。[AI生成] */
     fun showMessage(text: String) {
-        scope.launch {
+        job?.cancel()
+        job = scope.launch {
             hostState.currentSnackbarData?.dismiss()
             hostState.showSnackbar(text, duration = SnackbarDuration.Short)
         }
@@ -32,9 +37,11 @@ class AppSnackbarController(
 
     /** 可逆破坏操作：带"撤销"，点撤销回调 onUndo（§9.12/9.16 撤销优于确认）。[AI生成] */
     fun showUndo(text: String, actionLabel: String = "撤销", onUndo: () -> Unit) {
-        scope.launch {
+        job?.cancel()
+        job = scope.launch {
             hostState.currentSnackbarData?.dismiss()
-            val result = hostState.showSnackbar(text, actionLabel = actionLabel, duration = SnackbarDuration.Short)
+            // [AI修改] 代码审查#4：撤销需用户反应+点击，用 Long(~10s)而非 Short(~4s)。
+            val result = hostState.showSnackbar(text, actionLabel = actionLabel, duration = SnackbarDuration.Long)
             if (result == SnackbarResult.ActionPerformed) onUndo()
         }
     }

@@ -87,12 +87,18 @@ class HomeViewModel(
     /** 删整天并支持撤销(§9.12)：先快照→删→回调给 showUndo(点撤销即 saveDayMeals 还原)。[AI生成] B-5 */
     fun deleteDayUndoable(date: LocalDate, showUndo: (onUndo: () -> Unit) -> Unit) {
         viewModelScope.launch {
-            val snapshot = runCatching { mealRepo.snapshotDay(date) }.getOrDefault(emptyList())
+            // [AI修改] 代码审查#3：快照读失败/为空(异常吞成空)不该照删致无法撤销——先确保拿到快照再删。
+            val snapshot = runCatching { mealRepo.snapshotDay(date) }.getOrNull()
+            if (snapshot.isNullOrEmpty()) {
+                com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "deleteDay 取消: 快照为空/读失败 date=$date")
+                return@launch
+            }
             runCatching { mealRepo.deleteDayMeals(date) }
                 .onSuccess {
                     showUndo {
                         viewModelScope.launch {
-                            runCatching { mealRepo.saveDayMeals(date, snapshot) }
+                            // [AI修改] 代码审查#1：撤销=原样还原,不抬喜爱度(bumpPreference=false)避免污染排序。
+                            runCatching { mealRepo.saveDayMeals(date, snapshot, bumpPreference = false) }
                                 .onFailure { com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "restoreDay 失败: date=$date", it) }
                         }
                     }
