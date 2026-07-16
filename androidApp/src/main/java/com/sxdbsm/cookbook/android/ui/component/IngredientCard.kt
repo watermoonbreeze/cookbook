@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android.ui.component
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -61,6 +63,7 @@ fun IngredientCard(
     highlighted: Boolean = false, // [AI生成] 搜索跳转后短暂高亮定位到该食材。
     imageSize: Dp = 64.dp,
     onClick: (() -> Unit)? = null,
+    onToggleSelect: (() -> Unit)? = null, // [AI生成] 选择模式:传入则右上角显勾选圈(点圈=选/取消,点卡=详情),苹果Photos式
     onEdit: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
     showAdviceBadge: Boolean = true,
@@ -136,6 +139,31 @@ fun IngredientCard(
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp, vertical = 2.dp),
                 )
+            }
+            // [AI生成] 选择模式勾选圈(右上角,苹果Photos式):点圈=选/取消(点卡=看详情,detail不隐藏)。
+            onToggleSelect?.let { toggle ->
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(22.dp)
+                        .clip(CircleShape)
+                        .then(
+                            if (selected) Modifier.background(MaterialTheme.colorScheme.primary)
+                            else Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)).border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                        )
+                        .clickable { toggle() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (selected) {
+                        Icon(
+                            Icons.Outlined.Check,
+                            contentDescription = "已选",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(15.dp),
+                        )
+                    }
+                }
             }
             if (canEdit) {
                 Surface(

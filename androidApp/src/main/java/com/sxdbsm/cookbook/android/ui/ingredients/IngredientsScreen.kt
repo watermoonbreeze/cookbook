@@ -3,6 +3,9 @@ package com.sxdbsm.cookbook.android.ui.ingredients
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerScreen
 import com.sxdbsm.cookbook.android.ui.picker.IngredientPickerViewModel
@@ -26,10 +29,12 @@ fun IngredientsScreen() {
     val jumpBus: IngredientJumpBus = koinInject()
     val pending by jumpBus.pending.collectAsStateWithLifecycle()
 
-    // [AI生成] 收到跨屏跳转请求 → 复用成熟的 jumpToIngredient 定位高亮，随后清空。
+    // [AI修改] 收到跨屏跳转请求 → 直接开该食材详情(顶部显分类路径),不再 jumpToIngredient 定位网格
+    // (自建/家庭食材会跳错到常规 Tab)。消费后清空。
+    var jumpDetail by remember { mutableStateOf<com.sxdbsm.cookbook.domain.model.Ingredient?>(null) }
     LaunchedEffect(pending) {
         pending?.let {
-            vm.jumpToIngredient(it)
+            jumpDetail = it
             jumpBus.consume()
         }
     }
@@ -40,6 +45,7 @@ fun IngredientsScreen() {
         onConfirm = {},
         asDialog = false,
         selectionMode = false,
+        openDetailFor = jumpDetail,
         vm = vm,
     )
 }

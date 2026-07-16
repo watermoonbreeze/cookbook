@@ -46,6 +46,7 @@ fun IngredientPickerScreen(
     onConfirm: (List<Ingredient>) -> Unit,
     asDialog: Boolean = true,
     selectionMode: Boolean = true,
+    openDetailFor: Ingredient? = null, // [AI生成] 跨屏(首页搜索)跳来时直接开该食材详情,替代jumpToIngredient定位(自建食材不再跳错到常规)
     vm: IngredientPickerViewModel = koinViewModel(),
 ) {
     // [AI修改] 选择状态统一来自 ViewModel；弹窗输入框内容使用 remember 保存临时值。
@@ -61,6 +62,8 @@ fun IngredientPickerScreen(
     var categoryNameDraft by remember { mutableStateOf("") }
     var categoryParentIdDraft by remember { mutableStateOf<Long?>(null) }
     var selectedIngredient by remember { mutableStateOf<Ingredient?>(null) } // [AI修改] 食材详情统一通过底部弹层展示，首页和菜品选择共用。
+    // [AI生成] 跨屏(首页搜索)跳来:直接开该食材详情(顶部有分类路径),不再靠 jumpToIngredient 定位网格(自建食材跳错常规)。
+    LaunchedEffect(openDetailFor?.id) { openDetailFor?.let { selectedIngredient = it } }
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
     val context = androidx.compose.ui.platform.LocalContext.current // [AI生成] A8：入库即时反馈 Toast
@@ -329,6 +332,7 @@ fun IngredientPickerScreen(
                                         selected = ing.id in ui.selectedIds,
                                         highlighted = ing.id == ui.highlightIngredientId,
                                         onClick = { selectedIngredient = ing },
+                                        onToggleSelect = if (selectionMode) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 选择模式:点勾选圈直接选
                                     )
                                 }
                             }
@@ -346,6 +350,7 @@ fun IngredientPickerScreen(
                                     onClick = {
                                         selectedIngredient = ing // [AI修改] 点击食材统一先打开详情，是否加入已选由详情顶部按钮决定。
                                     },
+                                    onToggleSelect = if (selectionMode) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 选择模式:点勾选圈直接选(点卡仍看详情)
                                 )
                             }
                         }
