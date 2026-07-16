@@ -12,7 +12,8 @@
 - 上次总结会话点：2026-07-15 无人值守UX深挖轮(4个Apple-UX agent深挖食材/菜品/餐食/健康膳食→方案→主线程落地15项安全改进+高风险入待确认队列 + 营养表体验行高亮/搜索进标题栏/横竖屏悬浮按钮/上划收筛选栏)。关键坑=字典英文化后按旧名硬编码查(gramUnit找"克"恒null丢unitId)、健康提示守免责红线(如实非医嘱nutritionGaps)、combine多源suspend可内联(别用list+cast)、无人值守研究agent产方案+主线程落地安全项模式(安全vs需拍板判定)
 - 上次总结会话点：2026-07-15深夜 无人值守三评审+bug大轮(用户报bug:凉皮0千卡=seedDishes已存在即跳过致配料关联永久残缺→补齐式重挂+SEED_LOGIC_VERSION盐;随机推荐翻忌口菜=rotate随机翻到全忌口末批;膳食统计没吃回不来=togglePresent读冻结的stateIn.value + 3专家agent深挖算法/架构/创建流程,落地avoid50→5/onHandMain封顶/seed缺失项告警/deleteDay落日志/resolveGrams防负/编辑未保存守卫/详情记这道菜CTA/首页计划上移/备注折叠/存为菜品,需拍板项入待办E节)。关键坑=seed已存在即跳过致关联永久残缺(补齐式)、stateIn(WhileSubscribed)无订阅者value冻结致toggle失效、rotate随机翻罚分末批、打分硬约束巨值靠分层排序冗余、专家agent产方案+主线程落安全项
 - 上次总结会话点：2026-07-16 体验修复轮(小米8拍照90°旋转=EXIF方向未应用加androidx.exifinterface读+Matrix摆正、主食角标改苹果式贴角小圆、个人健康档案整合进家庭档案=与成员"我"同套care分类纯UI去重取消独立入口用户卡取我的健康状态数据层保留、导航栏色跟随主题背景=透明系统栏在app深色但系统浅色时露android默认白windowBackground改SideEffect设navigationBarColor=colorScheme.background)。关键坑=拍照EXIF方向需读取+Matrix摆正(minSdk21用androidx.exifinterface)、透明系统栏≠跟随界面色需显式设Compose主题背景、健康档案与家庭成员同套care分类整合纯UI去重
-- 总结次数：32
+- 上次总结会话点：2026-07-16 无人值守健康参考轮(排骨海带汤等预设菜0千卡新根因=补齐只补缺失关联忽略已关联NULL用量→fillDishIngredientQuantityIfNull回填空用量+SEED v3;软删菜reseed重插带新数据、未删走补齐分支被跳过;华为真机adb拉库python模拟368菜838行验证 + MMR批内多样性diversify主料Jaccard贪心只重排正常菜层四风格全开含单测 + 膳食参考依据页DietaryReference静态数据6分类12来源4片agent联网核准钠糖GI嘌呤脂肪+关于链接 + 营养级别评级方案只出文档 + 食材表单低频折叠+新建返回守卫 + build-cli.sh JDK17自动探测兼容Mac)。关键坑=0千卡补齐要回填空用量非只补缺失关联、Git Bash adb访问/sdcard需MSYS_NO_PATHCONV=1、db在getExternalFilesDir/cookbook/db非databases/、嘌呤三级分级非国标(WS/T560只定性)、GI 55/70是FAO/WHO非WS/T652、真机拉库python模拟SQL先证修复再改代码
+- 总结次数：33
 
 ## 文件索引
 

@@ -55,7 +55,9 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 大批量改 seed（食材/分类/详情/菜品）用脚本 + 引用完整性校验 + `:shared:testDebugUnitTest`；未知食材/分类 code、以及菜品的**食材名/烹饪方式/单位（均按名解析）**被 seeder 静默跳过（不崩但少关联）——扩菜品只用已存在名字并加/跑引用完整性单测；改 general 大类名会打断测试按名断言。
 - `seedDishes` 对**已存在同名预设菜"补齐式"重挂缺失配料**（只加不删、不改用量），别"已存在即 return 跳过"：菜先于其食材入库时配料没关联上→之后补了食材/营养重 seed 仍跳过→**关联永久残缺→热量算 0**（"凉皮 0 千卡"根因）。菜品热量算 0 先查 dish_ingredient 是否真关联上了。
 - seed **处理逻辑**变更（非 JSON 内容）要让已装老库跑一次：把 `SEED_LOGIC_VERSION` 盐混入内容指纹（`fingerprintOf(SEED_LOGIC_VERSION, …)`）+1，否则指纹不变、老库跳过 seed 拿不到修复；用户侧"更新基础数据"(force) 也可即时修复。
+- seedDishes 补齐**只补"缺失关联"不够**：早期 seed 无 quantity 时**已关联但 `quantity/unit_id=NULL`** 的行按克算营养恒 0（"排骨海带汤 0 千卡"），`if(id in linked) return@ing` 会跳过它永不修——补齐分支须再跑 `fillDishIngredientQuantityIfNull`（`UPDATE...WHERE quantity IS NULL`，只回填空值不覆盖用户）+ `SEED_LOGIC_VERSION`+1。软删菜(status=0)reseed 会当新菜重插带新数据、未删的走补齐分支——解释"删掉再更新就好、没删的一直 0"。
 - 健康数据（食材/营养/详情）为 AI 参考整理、非权威核对：涉及数据来源必须如实标注 + 免责，禁编造权威出处。
+- 营养阈值/分级用**国标口径**：钠(膳食指南 5g/2000mg、高血压 2400mg)、GB 28050-2011 NRV 与低/高含量声称、GI 低≤55/中/高≥70(**FAO/WHO 口径，非 WS/T 652-2019——该标准只规定测定方法**)有据可依；**嘌呤"低/中/高"三级(25/150 mg/100g)无国标**(WS/T 560-2017 只给"应避免/限制/可选择"定性食物清单、附录嘌呤单位 mg/kg 不设临界值)——用则必标"非国标·惯例口径"，别当权威阈值。参考页/评级见 `feature/膳食参考依据`、`营养级别评级方案.md`。
 - 每个新文件用 Write 写（bash heredoc 遇引号/emoji 易挂）；git 提交多行信息用 `-F 文件`（Git Bash 无 PowerShell here-string）。
 - 食材 `name` 全新库有 **UNIQUE 约束**（`CREATE TABLE ingredient ... name TEXT NOT NULL UNIQUE`），老库经迁移升级可能没有、仍存同名多 id。`createUserIngredient` 必须**按去空格名先查复用已有 id**（全新库防 UNIQUE 崩、老库防同名多 id）；库存推荐按名扩展(`selectIngredientIdsByNames`)兼容老库同名多 id。
 - 库存推荐"某菜没推出来"排查：先看 `PantryRec` 日志——②预筛候选(用到在手食材)有、④规则评估后没了 = 被 `HealthRuleEngine` **忌口(avoid)过滤**（启用了健康档案，如高血脂忌五花肉）。忌口菜现为**保留+`AVOID_PENALTY`排最后+`avoidNames`标红**，不再隐藏（家庭 app 列出告知而非替用户隐藏）。
@@ -102,6 +104,7 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 中文食材 `classify` 按**尾词**(末尾 head-noun：菜/苗/肉/奶/蛋/腐/油)判定，优先于前缀关键词 + `NAME_OVERRIDE` 特例表；否则"脱脂纯牛奶"含牛→肉、"鸡毛菜"含鸡→禽。DAIRY 判在 meat/FISH 前、FRUIT 在 VEG 前。新特例加进 `NAME_OVERRIDE` 而非堆关键词。
 - 权威数据核准(营养/GI/嘌呤)用**分片后台 agent 联网**(先 `ToolSearch select:WebSearch,WebFetch`)各写 `temp/*_N.json`→python **覆盖升级式**合并(auth 值覆盖、**保留 auth 未覆盖字段**不 null 老值、ref+review 取 auth)；查不到的字段**省略不编造**、口径不确定标 `pending`+ref 注明，一手权威成分表才 `verified`；合并后跑 `validateNutritionSeedForTest`+`:shared:testDebugUnitTest`。
 - 真机诊断"数据有但没传到 UI"：`adb -s <序列号>`(多设备)；Compose 底栏文本不进无障碍树(`uiautomator dump` 抓不到)；华为等 shell 无 `sqlite3`，`adb exec-out run-as <pkg> cat databases/x.db>本地` 用 python 读；在**查(repo)→存(state)→读(UI)** 三处埋 `AppLogger.d`/`CookbookLog.d`，一次 logcat 定位断点，完事删日志。
+- 本项目 db **不在默认 `databases/`**：落 `getExternalFilesDir(null)/cookbook/db/cookbook.db`(app 专属外部目录，零权限)，`run-as ... cat databases/` 取不到——直接 `adb pull` 该外部路径(无需 run-as)。**Git Bash 调 adb 访问 `/sdcard/...` 必须 `export MSYS_NO_PATHCONV=1`**，否则被转成 `C:/Program Files/Git/sdcard/...` 报 No such file。数据 bug 修复先 `adb pull` 拉库→python 模拟要跑的 SQL 统计影响行数+抽查目标→证明有效再改代码。
 
 ## 技术栈
 
