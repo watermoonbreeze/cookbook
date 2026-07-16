@@ -176,8 +176,13 @@ class HomeViewModel(
                 val personalTotals = com.sxdbsm.cookbook.domain.model.NutritionTotals(
                     energyKcal = kcal, sodiumMg = totals.sodiumMg * share,
                 )
+                // [AI生成] P4 痛风：从今日主料名匹配"应避免"高嘌呤定性食物(与"健康定性按主料判定"口径一致)，命中→痛风提示。
+                //   [AI修改] 仅登记痛风才算匹配(gate 最外层省无谓匹配)。
+                val highPurineHits = if (com.sxdbsm.cookbook.domain.HealthCondition.GOUT in conditions)
+                    com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.matchHighPurineFoods(mains) else emptyList()
                 val assessment = com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.evaluate(
                     baseLevel = baseLevel, totals = personalTotals, calorieStatus = status, conditions = conditions,
+                    highPurineHits = highPurineHits,
                 )
                 TodayNutrition(
                     kcal = kcal.roundToInt(),

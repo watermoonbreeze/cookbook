@@ -65,6 +65,49 @@ class NutritionLevelEvaluatorTest {
     }
 
     @Test
+    fun `P4痛风_命中高嘌呤定性食物_下调并提示_仅登记痛风生效`() {
+        val hits = NutritionLevelEvaluator.matchHighPurineFoods(listOf("猪肝", "青菜", "浓肉汤"))
+        assertEquals(listOf("猪肝", "浓肉汤"), hits, "主料名匹配内脏/浓肉汤")
+        // 登记痛风 + 命中 → 封到 2 + 提示
+        val gout = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0), CalorieStatus.ON, setOf(HealthCondition.GOUT), highPurineHits = hits,
+        )
+        assertEquals(2, gout.level)
+        assertTrue(gout.concerns.any { it.contains("嘌呤") && it.contains("痛风") }, "应给痛风提示: ${gout.concerns}")
+        // 没登记痛风 → 命中也不下调
+        val noGout = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0), CalorieStatus.ON, emptySet(), highPurineHits = hits,
+        )
+        assertEquals(4, noGout.level)
+        assertTrue(noGout.concerns.isEmpty())
+        // 登记痛风但未命中 → 不下调
+        val goutNoHit = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0), CalorieStatus.ON, setOf(HealthCondition.GOUT), highPurineHits = emptyList(),
+        )
+        assertEquals(4, goutNoHit.level)
+    }
+
+    @Test
+    fun `主料空_不误触发痛风`() {
+        // 红线:mainIngredientNames 曾恒空——空输入应返空、不误触发。
+        assertTrue(NutritionLevelEvaluator.matchHighPurineFoods(emptyList()).isEmpty())
+        // "凤尾"泛词已删:凤尾菇不应命中(凤尾鱼仍命中)。
+        assertTrue(NutritionLevelEvaluator.matchHighPurineFoods(listOf("凤尾菇", "青菜")).isEmpty())
+        assertEquals(listOf("凤尾鱼"), NutritionLevelEvaluator.matchHighPurineFoods(listOf("凤尾鱼")))
+    }
+
+    @Test
+    fun `高血压钠加痛风嘌呤同时命中_取最严且两提示`() {
+        // 多慢病叠加:level 各分支 minOf 取最严、concerns 各自追加不覆盖。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 3000.0), CalorieStatus.ON,
+            setOf(HealthCondition.HYPERTENSION, HealthCondition.GOUT), highPurineHits = listOf("猪肝"),
+        )
+        assertEquals(2, r.level)
+        assertTrue(r.concerns.any { it.contains("偏咸") } && r.concerns.any { it.contains("嘌呤") }, "两提示都在: ${r.concerns}")
+    }
+
+    @Test
     fun `病种名映射`() {
         assertTrue(HealthCondition.HYPERTENSION in HealthCondition.fromCareName("高血压"))
         assertTrue(HealthCondition.GOUT in HealthCondition.fromCareName("痛风/高尿酸"))
