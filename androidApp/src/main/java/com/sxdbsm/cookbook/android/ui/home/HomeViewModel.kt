@@ -176,9 +176,12 @@ class HomeViewModel(
                 //   [AI修改] 仅登记痛风才算匹配(gate 最外层省无谓匹配)。
                 val highPurineHits = if (com.sxdbsm.cookbook.domain.HealthCondition.GOUT in conditions)
                     com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.matchHighPurineFoods(mains) else emptyList()
+                // [AI生成] P2 糖尿病：仅登记糖尿病才查 gi 表(gate 省无谓查询)，从今日主料名匹配高GI(≥70)食物→"可换低GI"提示。
+                val highGiFoods = if (com.sxdbsm.cookbook.domain.HealthCondition.DIABETES in conditions)
+                    com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.matchHighGiFoods(mains, nutritionRepo.giByName()) else emptyList()
                 val assessment = com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.evaluate(
                     baseLevel = baseLevel, totals = personalTotals, calorieStatus = status, conditions = conditions,
-                    highPurineHits = highPurineHits,
+                    highPurineHits = highPurineHits, highGiFoods = highGiFoods,
                 )
                 TodayNutrition(
                     kcal = kcal.roundToInt(),

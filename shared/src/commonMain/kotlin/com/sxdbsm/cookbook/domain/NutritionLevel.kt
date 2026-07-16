@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
  * <p>
  * 修「营养级别只看多样性→偏咸/超量也显绿」的误导。口径与阈值见 `feature/营养级别评级方案.md`、
  * 「膳食参考依据」页(钠每日上限、热量±15% 达标带)。**缺营养数据→退回多样性级别、不下调**(向后兼容)。
- * 全部提示挂「仅供参考·非医嘱」由 UI 承接。P1 只上热量+钠(数据齐)；GI/嘌呤/脂肪待逐项数据齐再扩展。
+ * 全部提示挂「仅供参考·非医嘱」由 UI 承接。已上：热量+钠(P1 高血压)、嘌呤定性(P4 痛风)、GI(P2 糖尿病)；饱脂/胆固醇/添加糖待扩展。
  * <p>
  * [AI生成] 营养级别评级方案落地：纯函数、可单测；慢病只对已登记病种触发。
  **/
@@ -20,8 +20,8 @@ import kotlin.math.roundToInt
 /** 慢病类型（决定触发哪些指标）。[AI生成] */
 enum class HealthCondition {
     HYPERTENSION, // 高血压 → 钠
-    DIABETES, // 糖尿病 → GI/添加糖(待数据)
-    GOUT, // 痛风/高尿酸 → 嘌呤(待数据)
+    DIABETES, // 糖尿病 → GI(已落地)/添加糖(待数据)
+    GOUT, // 痛风/高尿酸 → 嘌呤(已落地·定性)
     HYPERLIPIDEMIA, // 高血脂 → 饱和脂肪/胆固醇(待数据)
     ;
 
@@ -67,6 +67,19 @@ object NutritionLevelEvaluator {
     fun matchHighPurineFoods(names: List<String>): List<String> =
         names.filter { n -> HIGH_PURINE_KEYWORDS.any { n.contains(it) } }.distinct()
 
+    // [AI生成] P2 糖尿病：GI 分级 **FAO/WHO 口径**(低≤55/中/高≥70，非 WS/T 652-2019——该标准只规定测定方法)。
+    //   与 P4 痛风不同，GI 有**已在库实测/惯例数值**(ingredient_nutrition.gi)，故按名查真实 gi 值判高GI，非关键词。
+    const val GI_HIGH = 70.0
+
+    /**
+     * 从(主料)食材名匹配"高GI"(≥70)食物：按名查已在库 gi 值，命中高GI去重。空=未命中/无 gi 数据。[AI生成] P2
+     *
+     * @param names 主料食材名(与"健康定性按主料判定"口径一致)
+     * @param giByName 名→GI 值映射(仅含有 gi 值的食材；key 已去空格归一；无 gi 的名不在表中→不误判)
+     */
+    fun matchHighGiFoods(names: List<String>, giByName: Map<String, Double>): List<String> =
+        names.filter { n -> giByName[n.trim()]?.let { it >= GI_HIGH } == true }.distinct()
+
     /**
      * 综合评级：以结构多样性 [baseLevel] 为底，按热量达标 + 慢病指标下调，产出级别+提示。[AI生成]
      *
@@ -83,6 +96,7 @@ object NutritionLevelEvaluator {
         conditions: Set<HealthCondition>,
         dayCount: Int = 1,
         highPurineHits: List<String> = emptyList(), // [AI生成] P4：命中"应避免"高嘌呤定性食物名(空=未命中)，仅痛风成员生效
+        highGiFoods: List<String> = emptyList(), // [AI生成] P2：命中"高GI"(≥70)食物名(空=未命中/无数据)，仅糖尿病成员生效
     ): NutritionAssessment {
         if (totals == null || totals.energyKcal <= 0.0) return NutritionAssessment(baseLevel, emptyList())
         var level = baseLevel
@@ -102,6 +116,13 @@ object NutritionLevelEvaluator {
                     concerns += "钠偏高 · 高血压注意少盐"
                 }
             }
+        }
+
+        // GI(糖尿病)：高GI(≥70,FAO/WHO)主食升糖快→提示换低GI/控量。命中已在库高GI食物→注意(个人视角,非医嘱)。
+        //   缺 gi 数据→highGiFoods 空→不下调(向后兼容,同缺数据退多样性口径)。
+        if (HealthCondition.DIABETES in conditions && highGiFoods.isNotEmpty()) {
+            level = minOf(level, 2)
+            concerns += "含${highGiFoods.take(2).joinToString("、")}等高GI食物 · 糖尿病可换低GI或控量"
         }
 
         // 嘌呤(痛风)：无国标数值阈值→定性。命中"应避免"食物(内脏/浓肉汤/部分海鲜)→注意，非数值分级。

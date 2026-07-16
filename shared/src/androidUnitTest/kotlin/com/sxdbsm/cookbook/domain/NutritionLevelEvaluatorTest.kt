@@ -108,6 +108,55 @@ class NutritionLevelEvaluatorTest {
     }
 
     @Test
+    fun `P2糖尿病_命中高GI食物_下调并提示_仅登记糖尿病生效`() {
+        // 白米饭 GI 83、馒头 88 高GI；燕麦 55 非高GI(≥70 才算)；青菜无 gi 数据→不入表。
+        val gi = mapOf("白米饭" to 83.0, "馒头" to 88.0, "燕麦" to 55.0)
+        val hits = NutritionLevelEvaluator.matchHighGiFoods(listOf("白米饭", "燕麦", "馒头", "青菜"), gi)
+        assertEquals(listOf("白米饭", "馒头"), hits, "只匹配 gi≥70")
+        // 登记糖尿病 + 命中 → 封到 2 + 提示
+        val dm = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0), CalorieStatus.ON, setOf(HealthCondition.DIABETES), highGiFoods = hits,
+        )
+        assertEquals(2, dm.level)
+        assertTrue(dm.concerns.any { it.contains("高GI") && it.contains("糖尿病") }, "应给糖尿病提示: ${dm.concerns}")
+        // 没登记糖尿病 → 命中也不下调
+        val noDm = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0), CalorieStatus.ON, emptySet(), highGiFoods = hits,
+        )
+        assertEquals(4, noDm.level)
+        assertTrue(noDm.concerns.isEmpty())
+        // 登记糖尿病但无 gi 数据(命中空) → 不下调(向后兼容,同缺数据退多样性)
+        val dmNoData = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0), CalorieStatus.ON, setOf(HealthCondition.DIABETES), highGiFoods = emptyList(),
+        )
+        assertEquals(4, dmNoData.level)
+    }
+
+    @Test
+    fun `主料空或无gi数据_不误触发糖尿病`() {
+        // 空主料 / 空 gi 表 / 主料不在 gi 表(无数据) 均不命中。
+        assertTrue(NutritionLevelEvaluator.matchHighGiFoods(emptyList(), mapOf("白米饭" to 83.0)).isEmpty())
+        assertTrue(NutritionLevelEvaluator.matchHighGiFoods(listOf("白米饭"), emptyMap()).isEmpty())
+        assertTrue(NutritionLevelEvaluator.matchHighGiFoods(listOf("青菜"), mapOf("白米饭" to 83.0)).isEmpty())
+        // 边界:GI 恰 70 算高、69 不算。
+        assertEquals(listOf("A"), NutritionLevelEvaluator.matchHighGiFoods(listOf("A"), mapOf("A" to 70.0)))
+        assertTrue(NutritionLevelEvaluator.matchHighGiFoods(listOf("A"), mapOf("A" to 69.9)).isEmpty())
+        // 主料名首尾空格归一(红线:去空格比对)：" 白米饭 " 应命中库中 "白米饭"。
+        assertEquals(listOf(" 白米饭 "), NutritionLevelEvaluator.matchHighGiFoods(listOf(" 白米饭 "), mapOf("白米饭" to 83.0)))
+    }
+
+    @Test
+    fun `糖尿病GI加痛风嘌呤同时命中_取最严且各自提示`() {
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0), CalorieStatus.ON,
+            setOf(HealthCondition.DIABETES, HealthCondition.GOUT),
+            highPurineHits = listOf("猪肝"), highGiFoods = listOf("白米饭"),
+        )
+        assertEquals(2, r.level)
+        assertTrue(r.concerns.any { it.contains("高GI") } && r.concerns.any { it.contains("嘌呤") }, "两提示都在: ${r.concerns}")
+    }
+
+    @Test
     fun `病种名映射`() {
         assertTrue(HealthCondition.HYPERTENSION in HealthCondition.fromCareName("高血压"))
         assertTrue(HealthCondition.GOUT in HealthCondition.fromCareName("痛风/高尿酸"))

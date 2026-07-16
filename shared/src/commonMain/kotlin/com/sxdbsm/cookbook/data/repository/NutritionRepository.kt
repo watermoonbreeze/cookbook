@@ -81,6 +81,19 @@ class NutritionRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 名→GI 映射(仅含有 gi 值的食材)。供糖尿病"高GI主食"按主料名识别。[AI生成] P2
+     *
+     * 同名多形态(生/熟/老库同名多 id)取**较高** gi，偏保守(高GI提示宁多勿漏)。无 gi 的食材不入表→不误判。
+     * key 去空格归一(红线:按去空格名比对)，与主料名 trim 后精确对齐、防首尾空格差异漏匹配。
+     */
+    suspend fun giByName(): Map<String, Double> = withContext(ioDispatcher) {
+        q.selectAllIngredientNutrition().executeAsList()
+            .mapNotNull { r -> r.gi?.let { r.name.trim() to it } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, v) -> v.max() }
+    }
+
+    /**
      * 批量估算多道菜的营养。[AI生成]
      *
      * @return dishId -> DishNutrition（含覆盖率/是否估算）。查询不到配料的菜返回空营养。
