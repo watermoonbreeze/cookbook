@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -12,6 +13,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 
 /**
  * @File : AppTopBar
@@ -29,11 +31,33 @@ import androidx.compose.ui.text.font.FontWeight
 fun AppTopBar(
     title: String,
     onBack: (() -> Unit)? = null,
+    subtitle: String? = null, // [AI生成] B-8：可选副标题(如 AI 推荐"推荐来源：xxx")，非空时标题下加一行小灰字。
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
         // [AI修改] 用 TopAppBar 默认标题字号(titleLarge)+SemiBold，与其余各屏内联顶栏完全一致(不缩小)。
-        title = { Text(title, fontWeight = FontWeight.SemiBold) },
+        title = {
+            if (subtitle.isNullOrBlank()) {
+                Text(title, fontWeight = FontWeight.SemiBold)
+            } else {
+                // [AI生成] 两行标题(主+副)：各限 1 行省略，防长标题在固定高度顶栏内换行挤压裁切。
+                Column {
+                    Text(
+                        title,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        },
         navigationIcon = {
             if (onBack != null) {
                 IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }

@@ -506,6 +506,7 @@ fun IngredientPickerScreen(
             ingredient = null,
             initialName = createPrefillName, // [AI生成] 搜索无结果新建时预填名称
             ui = ui,
+            canSaveAndContinue = true, // [AI生成] B-6：新建入口给"再记一个"连续录入(编辑入口不传)
             onDismiss = {
                 createDialogOpen = false
                 createPrefillName = ""

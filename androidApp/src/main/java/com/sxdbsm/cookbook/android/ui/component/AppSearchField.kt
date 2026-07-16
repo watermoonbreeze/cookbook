@@ -18,6 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 
@@ -38,6 +40,7 @@ fun AppSearchField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null, // [AI生成] B-7：可选自动聚焦(如搜索覆盖层进入即聚焦)，不传则无影响
 ) {
     Row(
         modifier = modifier
@@ -61,7 +64,9 @@ fun AppSearchField(
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier.fillMaxWidth(),
+                // [AI修改] then(空Modifier) 是可选 modifier 拼接的 Compose 惯例(比 .let 更稳定/清晰)。
+                modifier = Modifier.fillMaxWidth()
+                    .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
             )
             if (value.isEmpty()) {
                 Text(

@@ -243,6 +243,9 @@ Apple 的关键差异：**正文用 17pt、层级拉开、字重克制（多用 
 
 ### 9.15 大标题页 vs 普通顶栏页
 - **从底部 Tab 直达的内容落地页**(首页/菜品/食材/我的)用 `LargeTopAppBar`(下滑折叠、右上单主操作+搜索整行)；**从别处 push 进入、带返回的二级/详情/表单页**用 `AppTopBar`。判据：Tab 落地→大标题，带返回→AppTopBar。
+- **大标题折叠燃料**(B-7 落地)：`LargeTopAppBar` 折叠靠 `nestedScroll(scrollBehavior)` 由滚动内容驱动——把搜索行/Tab/计数/筛选一律**下沉进滚动列表头部作 item**(而非固定在 Scaffold 内 Column)，随内容滚走。否则头部固定、只有列表滚，大标题不折叠/不连贯。左右分栏(如菜系档)由右侧列表驱动折叠，左侧 rail 独立 scroll 不干扰。列表头部新增 item 会打乱字母跳转偏移——`animateScrollToItem` 基数须 +头部 item 数并纳入 remember key。
+- 全屏 `Dialog`/覆盖层会**盖住下沉进列表的搜索行**：覆盖层需自带搜索框(进入即 `FocusRequester` 聚焦)让搜索时仍可改词(iOS Mail 式)，别指望被盖住的列表内搜索行。
+- **`AppTopBar` 能力**：`title`(String)+可选 `onBack`(空则不显返回图标，天然支持"同屏两路由：Tab 落地无返回/push 有返回")+可选 `subtitle`(两行标题，各限 1 行省略)+`actions`。标题是搜索框/空标题透明栏/用 Close 图标的全屏模式等**特例保留内联**，别硬塞 AppTopBar 污染其简洁契约。
 
 ### 9.16 多操作收进 ActionSheet
 - 列表项/卡片的多个操作(编辑/复制/删除/收藏)收进 `ActionSheet`(长按或"⋯"触发)，破坏项 `destructive=true` 红字、"取消"自动置底；禁把多操作排成一行小图标或塞进居中 AlertDialog。

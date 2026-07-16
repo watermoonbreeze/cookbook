@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -86,21 +85,11 @@ fun AiRecommendScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    // [AI生成] 标题后标注当前推荐来源：云端AI模型/本地模型/离线规则。
-                    Column {
-                        Text("AI 推荐")
-                        if (state.engineLabel.isNotBlank()) {
-                            Text(
-                                "推荐来源：${state.engineLabel}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") } },
+            // [AI修改] B-8(§9.15)：AppTopBar 收敛；副标题标注当前推荐来源(云端/本地/离线规则)。
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = "AI 推荐",
+                onBack = onBack,
+                subtitle = state.engineLabel.takeIf { it.isNotBlank() }?.let { "推荐来源：$it" },
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },

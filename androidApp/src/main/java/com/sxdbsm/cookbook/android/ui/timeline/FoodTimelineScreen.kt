@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -112,21 +111,10 @@ fun FoodTimelineScreen(
 
     Box(Modifier.fillMaxSize()) {
       Column(Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("食历", fontWeight = FontWeight.SemiBold) },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                titleContentColor = MaterialTheme.colorScheme.onBackground,
-                navigationIconContentColor = MaterialTheme.colorScheme.primary,
-                actionIconContentColor = MaterialTheme.colorScheme.primary,
-            ),
-            navigationIcon = {
-                onBack?.let { back ->
-                    IconButton(onClick = back) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                }
-            },
+        // [AI修改] B-8(§9.15)：AppTopBar 收敛；onBack 为空时(Tab/营养墙落地)自动不显返回图标，非空时(首页 push)显返回。
+        com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+            title = "食历",
+            onBack = onBack,
             actions = {
                 // [AI修改] "今天"移到右下角悬浮"今"按钮(见下方 Box)，不再占标题行——原来挤得"食历"标题换行。
                 TextButton(onClick = { calendarOpen = true }) {

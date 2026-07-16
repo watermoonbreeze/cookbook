@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.picker
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,10 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.sxdbsm.cookbook.android.ui.component.FormBottomBar
 import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
@@ -48,6 +53,8 @@ internal fun IngredientEditorDialog(
     initialName: String = "", // [AI生成] 新建时预填名称(搜索无结果直达新建用)
     onAddCategory: () -> Unit,
     onAddUnit: (String, (Long?) -> Unit) -> Unit, // [AI生成] 单位库：手填新单位入库并回选。
+    // [AI生成] B-6：是否显示"再记一个"次操作(连续录入)。由调用方决定(新建入口传 true)，非组件内按 ingredient==null 硬判。
+    canSaveAndContinue: Boolean = false,
     onSave: (
         Ingredient?,
         String,
@@ -60,6 +67,7 @@ internal fun IngredientEditorDialog(
         List<IngredientCareRule>,
         com.sxdbsm.cookbook.domain.model.IngredientNutrition?,
         String, // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)
+        Boolean, // [AI生成] B-6：keepOpen——true=保存并继续(留页复位)，false=保存并返回。
     ) -> Unit,
 ) {
     var name by remember(ingredient?.id) { mutableStateOf(ingredient?.name ?: initialName) } // [AI修改] 新建时可预填名称
@@ -94,6 +102,14 @@ internal fun IngredientEditorDialog(
     var nGi by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.gi)) }
     var nPurine by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.purineMg)) }
     var nPiece by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.pieceGram)) }
+    // [AI生成] B-6：连续录入("保存并继续")支撑——聚焦名称框、记录本次意图与已存名(供 Toast)。
+    val context = LocalContext.current
+    val nameFocus = remember { FocusRequester() }
+    var savingContinuation by remember { mutableStateOf(false) }
+    var continuedName by remember { mutableStateOf("") }
+    // [AI生成] B-6：记已处理的 nonce——只在"本弹层点过再记一个(savingContinuation) 且 nonce 真增长"时复位，
+    // 不依赖"nonce 仅 keepOpen 成功递增"这一隐蔽不变量，避免保存失败后 savingContinuation 残留导致误触发。
+    var lastHandledNonce by remember { mutableStateOf(ui.continueSavedNonce) }
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
     // [AI修改] 营养录入提示：营养色系或热量数值任一开启即提示(两者都吃这份营养数据)。
     val nutritionColorFlag by remember(prefs) {
@@ -167,6 +183,64 @@ internal fun IngredientEditorDialog(
     var confirmDiscard by remember { mutableStateOf(false) }
     fun attemptDismiss() { if (hasUnsavedNew && !ui.creatingIngredient) confirmDiscard = true else onDismiss() }
 
+    // [AI生成] B-6：统一提交(keepOpen=true 保存并继续/false 保存并返回)——两路复用同一组表单值。
+    val submit: (Boolean) -> Unit = { keepOpen ->
+        onSave(
+            ingredient,
+            name,
+            alias,
+            encodeImagePaths(images),
+            encodeImagePaths(thumbnails),
+            defaultUnitId,
+            categoryIds.toList(),
+            IngredientDetail(
+                ingredientId = ingredient?.id ?: 0L,
+                commonMethods = commonMethods,
+                prepTips = prepTips,
+                eatingNotes = eatingNotes,
+                storageTips = storageTips,
+                healthNote = healthNote,
+            ),
+            careRules,
+            buildNutrition(), // [AI生成] Item4：自定义营养(空则VM侧不写)
+            selectedGroup?.name ?: "", // [AI生成] A1：营养大类
+            keepOpen,
+        )
+    }
+    // [AI生成] B-6：保存并继续成功后把表单复位到"新建初始态"(名称清空而非回预填名)，供连续录入下一个。
+    val resetForm: () -> Unit = {
+        name = ""
+        alias = ""
+        images = emptyList()
+        thumbnails = emptyList()
+        defaultUnitId = null
+        unitTouched = false // 恢复"未手动选单位"→ 随新大类自动预选默认单位
+        categoryIds = emptySet()
+        selectedGroup = null
+        groupTouched = false // 恢复"按名预选营养大类"
+        moreExpanded = false // 折叠低频区回到快速建材态
+        commonMethods = ""
+        prepTips = ""
+        eatingNotes = ""
+        storageTips = ""
+        healthNote = ""
+        careRules = emptyList()
+        nKcal = ""; nProtein = ""; nFat = ""; nCarb = ""; nFiber = ""; nSodium = ""
+        nPotassium = ""; nCalcium = ""; nGi = ""; nPurine = ""; nPiece = ""
+        confirmDiscard = false
+    }
+    // [AI生成] B-6：监听"保存并继续"成功计数(continueSavedNonce)——本弹层触发过才复位+提示+聚焦(首帧初值不触发)。
+    // 用 Toast 而非统一 Snackbar：全屏 Dialog 会遮住 MainScaffold 的共享 Snackbar 宿主(不可见)；此提示纯告知无跟进项(§9.12 允许)。
+    LaunchedEffect(ui.continueSavedNonce) {
+        if (savingContinuation && ui.continueSavedNonce != lastHandledNonce) {
+            lastHandledNonce = ui.continueSavedNonce
+            savingContinuation = false
+            resetForm()
+            Toast.makeText(context, "已保存「$continuedName」，继续添加", Toast.LENGTH_SHORT).show()
+            runCatching { nameFocus.requestFocus() }
+        }
+    }
+
     Dialog(
         onDismissRequest = { if (!ui.creatingIngredient) attemptDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
@@ -183,37 +257,7 @@ internal fun IngredientEditorDialog(
                             Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
                         }
                     },
-                    actions = {
-                        Button(
-                            onClick = {
-                                onSave(
-                                    ingredient,
-                                    name,
-                                    alias,
-                                    encodeImagePaths(images),
-                                    encodeImagePaths(thumbnails),
-                                    defaultUnitId,
-                                    categoryIds.toList(),
-                                    IngredientDetail(
-                                        ingredientId = ingredient?.id ?: 0L,
-                                        commonMethods = commonMethods,
-                                        prepTips = prepTips,
-                                        eatingNotes = eatingNotes,
-                                        storageTips = storageTips,
-                                        healthNote = healthNote,
-                                    ),
-                                    careRules,
-                                    buildNutrition(), // [AI生成] Item4：自定义营养(空则VM侧不写)
-                                    selectedGroup?.name ?: "", // [AI生成] A1：营养大类
-                                )
-                            },
-                            // [AI修改] A1：营养大类必选(预设无此要求,预设不显该区)。
-                            enabled = name.isNotBlank() && (isPreset || selectedGroup != null) && !ui.creatingIngredient && !ui.editorLoading,
-                            modifier = Modifier.padding(end = 12.dp),
-                        ) {
-                            Text(if (ui.creatingIngredient) "保存中" else "保存")
-                        }
-                    },
+                    // [AI修改] B-6：主 CTA 从顶栏右上下移到底部常驻 FormBottomBar(§9.13)，顶栏只留返回。
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -226,7 +270,9 @@ internal fun IngredientEditorDialog(
 
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        // [AI修改] B-6：改 weight(1f) 占满剩余高度并可滚，让底部 FormBottomBar 常驻不被推走。
+                        .weight(1f)
+                        .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -238,7 +284,8 @@ internal fun IngredientEditorDialog(
                             label = { Text("食材名称 *") },
                             singleLine = true,
                             enabled = !isPreset,
-                            modifier = Modifier.fillMaxWidth(),
+                            // [AI修改] B-6：挂 FocusRequester，"保存并继续"复位后聚焦此框直接可打字。
+                            modifier = Modifier.fillMaxWidth().focusRequester(nameFocus),
                             shape = MaterialTheme.shapes.medium,
                         )
                         OutlinedTextField(
@@ -368,8 +415,30 @@ internal fun IngredientEditorDialog(
                     ui.createError?.let { error ->
                         Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
                     }
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
+
+                // [AI生成] B-6：保存可用条件(单一真相)——[AI修改] A1：营养大类必选(预设无此要求,预设不显该区)。
+                val formValid = name.isNotBlank() && (isPreset || selectedGroup != null) &&
+                    !ui.creatingIngredient && !ui.editorLoading
+                // [AI生成] B-6：底部常驻 CTA(§9.13)——主"保存/完成"胶囊；新建态左侧加"再记一个"连续录入。
+                FormBottomBar(
+                    primaryText = when {
+                        ui.creatingIngredient -> "保存中…"
+                        isPreset -> "完成"
+                        else -> "保存"
+                    },
+                    onPrimary = { submit(false) },
+                    primaryEnabled = formValid,
+                    // 次操作仅新建入口(canSaveAndContinue)显示；此时 isPreset=false，enabled 与主保存等价。
+                    secondaryText = if (canSaveAndContinue) "再记一个" else null,
+                    onSecondary = if (canSaveAndContinue) {
+                        { continuedName = name.trim(); savingContinuation = true; submit(true) }
+                    } else {
+                        null
+                    },
+                    secondaryEnabled = formValid,
+                )
             }
         }
     }

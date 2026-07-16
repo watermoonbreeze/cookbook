@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -57,9 +56,10 @@ fun WeekPlanScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("一周计划", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") } },
+            // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛。
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = "一周计划",
+                onBack = onBack,
             )
         },
     ) { padding ->

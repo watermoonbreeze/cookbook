@@ -22,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -167,19 +166,10 @@ fun AddDayFoodScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         snackbarHost = { SnackbarHost(snackbar) }, // [AI生成] A6：移除撤销
         topBar = {
-            TopAppBar(
-                title = { Text("添加餐食", fontWeight = FontWeight.SemiBold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                navigationIcon = {
-                    IconButton(onClick = requestBack) { // [AI修改] §9.17：走未保存守卫
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
+            // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛。
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = "添加餐食",
+                onBack = requestBack, // [AI修改] §9.17：走未保存守卫
                 actions = {
                     com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
                         text = if (state.isPlan) "保存计划" else "保存",

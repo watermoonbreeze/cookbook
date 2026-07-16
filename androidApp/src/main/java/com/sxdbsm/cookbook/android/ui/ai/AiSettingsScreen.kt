@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,11 +47,10 @@ fun AiSettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("AI 设置") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Outlined.ArrowBack, contentDescription = "返回") }
-                },
+            // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛(原用默认 surface 色,收敛后与全局一致)。
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = "AI 设置",
+                onBack = onBack,
             )
         },
     ) { padding ->

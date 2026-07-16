@@ -114,19 +114,10 @@ fun NewDishScreen(
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         topBar = {
-            TopAppBar(
-                title = { Text(if (editingDishId != null || state.editingId != null) "编辑菜品" else "新建菜品", fontWeight = FontWeight.SemiBold) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                navigationIcon = {
-                    IconButton(onClick = { requestBack() }) {
-                        Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
-                    }
-                },
+            // [AI修改] B-8(§9.15)：带返回二级页统一用 AppTopBar 收敛(替代内联 topAppBarColors/返回图标)。
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = if (editingDishId != null || state.editingId != null) "编辑菜品" else "新建菜品",
+                onBack = { requestBack() },
                 actions = {
                     // [AI修改] 苹果风格：导入降为纯文字次操作，避免与主 CTA 争视觉；保存为胶囊主按钮。
                     TextButton(onClick = { importPickerOpen = true }) {

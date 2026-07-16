@@ -64,6 +64,8 @@ data class IngredientPickerUiState(
     val operationError: String? = null,
     val lastCreatedIngredientId: Long? = null,
     val lastSavedIngredientId: Long? = null, // [AI生成] 完整编辑表单保存成功后用于关闭弹层。
+    // [AI生成] B-6：保存并继续(keepOpen)成功计数——每次+1，弹层监听它做"复位表单+留页"，与关闭链路(lastSavedIngredientId)分开。
+    val continueSavedNonce: Int = 0,
     val editorLoading: Boolean = false,
     val editorIngredientId: Long? = null,
     val editorCategoryIds: Set<Long> = emptySet(),
@@ -590,6 +592,7 @@ class IngredientPickerViewModel(
         careRules: List<IngredientCareRule>,
         nutrition: com.sxdbsm.cookbook.domain.model.IngredientNutrition? = null, // [AI生成] Item4：自定义营养(每100g)，非空且有值才写
         foodGroup: String = "", // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)——存 food_group + 挂到对应顶层分类。
+        keepOpen: Boolean = false, // [AI生成] B-6："保存并继续"——成功后不置 lastSavedIngredientId(不关弹层)，改+1 continueSavedNonce 让弹层复位留页。
     ) {
         val trimmedName = name.trim()
         if (trimmedName.isBlank()) {
@@ -694,7 +697,9 @@ class IngredientPickerViewModel(
                         _state.value.selectedIngredients.map { if (it.id == ingredientId) savedIngredient else it }
                     },
                     lastCreatedIngredientId = if (ingredient == null) ingredientId else _state.value.lastCreatedIngredientId,
-                    lastSavedIngredientId = ingredientId,
+                    // [AI修改] B-6：keepOpen(保存并继续)不触发关弹层，改+1 continueSavedNonce 让弹层复位留页；否则置 lastSavedIngredientId 关弹层。
+                    lastSavedIngredientId = if (keepOpen) _state.value.lastSavedIngredientId else ingredientId,
+                    continueSavedNonce = if (keepOpen) _state.value.continueSavedNonce + 1 else _state.value.continueSavedNonce,
                     // [AI修改] E2：新建食材后跳到"家庭"Tab + 所选分类(或家庭-全部)，并清空搜索，让用户看到刚建的已选中食材。
                     mainTab = if (ingredient == null) IngredientMainTab.CUSTOM else _state.value.mainTab,
                     // [AI修改] Bug 修复：跳到 CUSTOM 时同步重建左侧分类树，否则树停留在上个 Tab、看不到刚建的自定义分类节点。

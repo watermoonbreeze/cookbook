@@ -23,10 +23,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
@@ -35,14 +39,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +64,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.DishRow
+import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SourceBadge
 import androidx.compose.material3.Surface
@@ -101,9 +107,11 @@ fun DishesScreen(
     }
     val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
     val isCuisineTab = ui.sortTab == DishesSortTab.ALL // [AI修改] 第三档=菜系(左二级栏+右菜品)
-    // [AI修改] 菜系档的菜品 LazyColumn 只含字母 section(表头/Tab/筛选都在其外)，字母跳转索引从 0 起算。
-    val letterIndexMap = remember(sections) {
-        var index = 0
+    // [AI修改] B-7：菜系档列表头部现有 4 个 item(搜索/Tab/计数/筛选)在字母 section 之前，字母跳转索引须从 4 起算。
+    // 红线：新增/条件插入 item 必须同步偏移量并纳入 remember key，否则跳转偏位。
+    val letterHeaderCount = 4
+    val letterIndexMap = remember(sections, letterHeaderCount) {
+        var index = letterHeaderCount
         buildMap {
             sections.forEach { (letter, dishes) ->
                 put(letter, index)
@@ -123,32 +131,26 @@ fun DishesScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     } // [AI生成] 从新建/编辑菜品返回时主动刷新，补足非 Flow 搜索态列表。
 
+    // [AI修改] B-7(§9.15)：Tab 落地页改大标题(下滑折叠)；搜索行/Tab/计数/筛选下沉进列表头部作折叠燃料。
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("菜品", fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.width(12.dp))
-                        AppSearchField(
-                            value = ui.keyword,
-                            onValueChange = vm::setKeyword,
-                            placeholder = "搜索",
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                },
+            LargeTopAppBar(
+                title = { Text("菜品", fontWeight = FontWeight.Bold) },
+                scrollBehavior = scrollBehavior,
                 actions = {
                     IconButton(onClick = onAddDish) {
                         Icon(Icons.Outlined.Add, contentDescription = "添加菜品")
                     }
                 },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
+                ),
             )
         },
     ) { padding ->
@@ -160,95 +162,77 @@ fun DishesScreen(
             ui.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜品\n给菜品评分后会出现在这里"
             else -> "还没有菜品\n点击右上角 + 添加"
         }
+        // [AI修改] B-7：Tab/计数下沉进列表头部(dishHeaderItems)作大标题折叠燃料，与搜索行同随内容滚走(§9.15)。
+        val sortTabs = listOf(
+            DishesSortTab.RECENT to "最近",
+            DishesSortTab.FAVORITE to "喜爱",
+            DishesSortTab.ALL to "菜系",
+            DishesSortTab.HOME to "家庭",
+        )
+        val tabCount = when (ui.sortTab) {
+            DishesSortTab.RECENT -> ui.recentCount
+            DishesSortTab.FAVORITE -> ui.favoriteCount
+            DishesSortTab.ALL -> ui.allCount
+            DishesSortTab.HOME -> ui.homeCount
+        }
         Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            Column(Modifier.fillMaxSize()) {
-                Spacer(Modifier.height(4.dp))
-                // [AI修改] 苹果风格：一级分类改用 segmented control(最近/喜爱/菜系/家庭)；移除坏掉的下拉刷新(靠返回页自动刷新)。
-                val sortTabs = listOf(
-                    DishesSortTab.RECENT to "最近",
-                    DishesSortTab.FAVORITE to "喜爱",
-                    DishesSortTab.ALL to "菜系",
-                    DishesSortTab.HOME to "家庭",
-                )
-                com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-                    options = sortTabs.map { it.second },
-                    selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
-                    onSelect = { idx -> vm.setSortTab(sortTabs[idx].first) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                )
-                // [AI修改] 菜品档个数移到 segmented 下方一行(原在 Tab 文字里，改 segmented 后放这里)。
-                val tabCount = when (ui.sortTab) {
-                    DishesSortTab.RECENT -> ui.recentCount
-                    DishesSortTab.FAVORITE -> ui.favoriteCount
-                    DishesSortTab.ALL -> ui.allCount
-                    DishesSortTab.HOME -> ui.homeCount
-                }
-                Text(
-                    "共 $tabCount 道",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 16.dp, bottom = 4.dp),
-                )
-
-                Box(Modifier.weight(1f).fillMaxSize()) {
-                    if (isCuisineTab) {
-                        // 菜系档：左侧二级分类(全部+家常菜+八大菜系) | 右侧该分类菜品(上方烹饪方式筛选 + 拼音检索)。
-                        Row(Modifier.fillMaxSize()) {
-                            CuisineRail(selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
-                            Column(Modifier.weight(1f).fillMaxSize()) {
-                                DishFilterChips(ui, vm)
-                                Box(Modifier.weight(1f).fillMaxSize()) {
-                                    if (ui.all.isEmpty()) {
-                                        EmptyState(text = emptyText, icon = "🥗")
-                                    } else {
-                                        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                                            sections.forEach { (letter, dishes) ->
-                                                item(key = "section-$letter") {
-                                                    Text(
-                                                        text = letter,
-                                                        style = MaterialTheme.typography.labelLarge,
-                                                        color = MaterialTheme.colorScheme.primary,
-                                                        modifier = Modifier.fillMaxWidth()
-                                                            .background(MaterialTheme.colorScheme.background)
-                                                            .padding(horizontal = 16.dp, vertical = 6.dp),
-                                                    )
-                                                }
-                                                items(dishes, key = { it.id }) { dish ->
-                                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
-                                                }
-                                            }
-                                            item { Spacer(Modifier.height(80.dp)) }
-                                        }
-                                        if (sections.isNotEmpty()) {
-                                            LetterIndexBar(
-                                                letters = sections.keys.toList(),
-                                                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
-                                                onLetterSelected = { letter ->
-                                                    letterIndexMap[letter]?.let { index -> scope.launch { listState.animateScrollToItem(index) } }
-                                                },
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        // 最近/喜爱/家庭：统一为(烹饪方式筛选 + 列表)，去掉喜爱横滑区，各分类展示一致。
+            if (isCuisineTab) {
+                // 菜系档：左侧二级分类栏 | 右侧列表(搜索/Tab/计数/筛选/字母段均在右侧列表内，滚动驱动大标题折叠)。
+                Row(Modifier.fillMaxSize()) {
+                    CuisineRail(selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
+                    Box(Modifier.weight(1f).fillMaxSize()) {
                         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                            if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
+                            dishHeaderItems(ui, vm, sortTabs, tabCount)
+                            // 无条件加 filters item(即使 DishFilterChips 空返回也占一个 0 高度槽位)——这是 letterHeaderCount=4 的前提，勿改为条件加，否则字母跳转偏位。
+                            item(key = "dish-filters") { DishFilterChips(ui, vm) }
                             if (ui.all.isEmpty()) {
-                                item { EmptyState(text = emptyText, icon = "🥗") }
+                                item(key = "dish-empty") { EmptyState(text = emptyText, icon = "🥗") }
                             } else {
-                                itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
-                                    DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                sections.forEach { (letter, dishes) ->
+                                    item(key = "section-$letter") {
+                                        Text(
+                                            text = letter,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.fillMaxWidth()
+                                                .background(MaterialTheme.colorScheme.background)
+                                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                                        )
+                                    }
+                                    items(dishes, key = { it.id }) { dish ->
+                                        DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                    }
                                 }
                                 item { Spacer(Modifier.height(80.dp)) }
                             }
                         }
+                        if (sections.isNotEmpty()) {
+                            LetterIndexBar(
+                                letters = sections.keys.toList(),
+                                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
+                                onLetterSelected = { letter ->
+                                    letterIndexMap[letter]?.let { index -> scope.launch { listState.animateScrollToItem(index) } }
+                                },
+                            )
+                        }
+                    }
+                }
+            } else {
+                // 最近/喜爱/家庭：搜索/Tab/计数/筛选均在列表头部随内容滚(驱动大标题折叠)，其后列表。
+                LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                    dishHeaderItems(ui, vm, sortTabs, tabCount)
+                    if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
+                    if (ui.all.isEmpty()) {
+                        item { EmptyState(text = emptyText, icon = "🥗") }
+                    } else {
+                        itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
+                            DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                        }
+                        item { Spacer(Modifier.height(80.dp)) }
                     }
                 }
             }
@@ -257,6 +241,7 @@ fun DishesScreen(
                 DishSearchOverlay(
                     results = ui.searchResults,
                     keyword = ui.keyword,
+                    onKeywordChange = vm::setKeyword,
                     onOpen = { dish ->
                         vm.openFromSearch(dish) // 跳到该菜的菜系分类 + 关闭弹框
                         onOpenDish(dish.id) // 同时打开详情
@@ -348,6 +333,43 @@ fun DishesScreen(
 }
 
 /**
+ * 菜品列表头部三件套(搜索行 / 四Tab / 计数)下沉进列表——作大标题折叠燃料。[AI生成] B-7(§9.15)
+ *
+ * 三件套随内容一起上滑折叠(不吸顶)；筛选行/字母段头由调用处按档吸顶。
+ */
+private fun LazyListScope.dishHeaderItems(
+    ui: DishesUiState,
+    vm: DishesViewModel,
+    sortTabs: List<Pair<DishesSortTab, String>>,
+    tabCount: Int,
+) {
+    item(key = "dish-search") {
+        AppSearchField(
+            value = ui.keyword,
+            onValueChange = vm::setKeyword,
+            placeholder = "搜菜名 / 烹饪方式",
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
+        )
+    }
+    item(key = "dish-tabs") {
+        SegmentedControl(
+            options = sortTabs.map { it.second },
+            selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
+            onSelect = { idx -> vm.setSortTab(sortTabs[idx].first) },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        )
+    }
+    item(key = "dish-count") {
+        Text(
+            "共 $tabCount 道",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp, bottom = 4.dp),
+        )
+    }
+}
+
+/**
  * 菜品搜索结果弹框覆盖层。[AI生成]
  *
  * 仿食材搜索：单独弹框展示匹配菜品——左侧菜名+下方烹饪方式+旁边预设/自建，右侧详情按钮；
@@ -357,19 +379,36 @@ fun DishesScreen(
 private fun DishSearchOverlay(
     results: List<DishMini>,
     keyword: String,
+    onKeywordChange: (String) -> Unit, // [AI生成] B-7：覆盖层自带搜索框改词(列表内搜索行被本层盖住)
     onOpen: (DishMini) -> Unit,
     onCreateNew: () -> Unit,
     onClose: () -> Unit,
 ) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, tonalElevation = 2.dp) {
         Column(Modifier.fillMaxSize()) {
+            // [AI生成] B-7：搜索行下沉进列表后会被本覆盖层盖住——覆盖层自带搜索框(进入即聚焦)让搜索时仍可改词，iOS Mail 式。
+            val searchFocus = remember { FocusRequester() }
+            LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("搜索结果 ${results.size}", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                TextButton(onClick = onClose) { Text("关闭") }
+                AppSearchField(
+                    value = keyword,
+                    onValueChange = onKeywordChange,
+                    placeholder = "搜菜名 / 烹饪方式",
+                    modifier = Modifier.weight(1f),
+                    focusRequester = searchFocus,
+                )
+                Spacer(Modifier.width(8.dp))
+                TextButton(onClick = onClose) { Text("取消") }
             }
+            Text(
+                "搜索结果 ${results.size}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
             Divider()
             if (results.isEmpty()) {
                 // [AI修改] 无结果给"＋新建菜品「x」"直达(与食材搜索统一),不再只是空态。
