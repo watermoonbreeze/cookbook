@@ -225,3 +225,27 @@ Apple 的关键差异：**正文用 17pt、层级拉开、字重克制（多用 
 - 长表格上划时**次要栏(筛选chip/统计)收起**、表头固定、下划再现——腾内容空间。
 - 宽表横滑时**选中整行高亮**(锁定视线)。
 - 默认值智能化：按当前钟点选默认餐次、按大类预选默认单位、按名预选营养大类——少一步操作。
+
+> [AI生成 2026-07-16] 以下 9.12–9.17 由 Apple-UX 审阅全库后新增，配套 4 个复用组件(`AppSnackbarHost`/`UnsavedGuard`/`EmptyState`+action/`FormBottomBar`)。**复用对照与 B 批映射见 `交互组件复用指南.md`**。
+
+### 9.12 保存/结果反馈：Snackbar 优先、Toast 仅纯告知
+- 全 App **单一 Snackbar 宿主**挂在 `MainScaffold`，各屏经统一封装调用，禁每屏各建 `SnackbarHostState`。
+- **可逆破坏操作**(删整天/移除菜/删自建项)→ Snackbar + `actionLabel="撤销"`，`ActionPerformed` 时还原(须先做成软删)。
+- **日常成功**("已保存")→ Snackbar 轻提示；**Toast 只留纯告知无跟进项**("已是最新""文件无效")。
+- 禁"确定删除…不可撤销"硬确认 AlertDialog 用于可逆删除——**撤销优于确认**。
+
+### 9.13 表单底部 CTA 与"保存并继续"
+- 表单主 CTA 用胶囊 `CapsuleButton`、一屏一个、底部常驻(`navigationBarsPadding`+`WindowInsets(0)` 防双下边距)；次操作纯文字。用 `FormBottomBar` 统一摆位。
+- 连续录入(建材/建菜)给次 CTA **"保存并继续"**：存后**清空表单+复位默认+留本页+聚焦首输入**并 Snackbar"已保存「X」，继续添加"；主 CTA"保存"仍是存并返回。主按钮永远是"保存/完成"，不是"继续"。
+
+### 9.14 就地数量增减一律用 MiniStepper
+- 份数/克数/人数的就地增减统一 `MiniStepper`，禁裸 `+/−`。带单位显示；大跨度(克数)传 `onValueClick` 让中间值可点直接输入；边界用 `minusEnabled/plusEnabled` 锁(份数到 1 禁减)。
+
+### 9.15 大标题页 vs 普通顶栏页
+- **从底部 Tab 直达的内容落地页**(首页/菜品/食材/我的)用 `LargeTopAppBar`(下滑折叠、右上单主操作+搜索整行)；**从别处 push 进入、带返回的二级/详情/表单页**用 `AppTopBar`。判据：Tab 落地→大标题，带返回→AppTopBar。
+
+### 9.16 多操作收进 ActionSheet
+- 列表项/卡片的多个操作(编辑/复制/删除/收藏)收进 `ActionSheet`(长按或"⋯"触发)，破坏项 `destructive=true` 红字、"取消"自动置底；禁把多操作排成一行小图标或塞进居中 AlertDialog。
+
+### 9.17 未保存返回守卫用统一封装
+- 有 `isDirty` 的编辑表单统一套 `UnsavedGuard`(内部管 `BackHandler`+顶栏返回+"放弃未保存的更改？"弹框，放弃=红字/继续编辑)，禁每屏内联复制。"放弃编辑"属主动丢弃、保留确认；"删除数据"属可逆、走撤销(区别见 9.12)。

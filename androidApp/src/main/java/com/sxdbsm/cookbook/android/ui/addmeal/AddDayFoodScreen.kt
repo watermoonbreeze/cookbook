@@ -121,6 +121,12 @@ fun AddDayFoodScreen(
     val snackbar = remember { SnackbarHostState() } // [AI生成] A6：移除菜品撤销提示
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
+    // [AI生成] §9.17：未保存返回守卫(复用 UnsavedGuard)——厨房场景误触返回易丢这餐编辑。
+    val requestBack = com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard(
+        isDirty = { vm.isDirty() },
+        onConfirmLeave = onBack,
+        dialogText = "你还没保存这餐的改动，返回将丢失。",
+    )
 
     // [AI生成] AI 推荐从餐次块进入并"选它"回传：把菜品加入发起的那个餐次块。
     LaunchedEffect(aiPickedDishIds) {
@@ -170,7 +176,7 @@ fun AddDayFoodScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = requestBack) { // [AI修改] §9.17：走未保存守卫
                         Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
                     }
                 },

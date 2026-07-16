@@ -106,6 +106,22 @@ class AddMealViewModel(
     private var loadedFromDate: LocalDate? = null // [AI生成] F7：本次编辑加载自哪个已有日期(用于"改日期=移动"时删旧)。
     private var copyFromDate: LocalDate? = null // [AI生成] F8：食历"复制"来源日期→按其餐次预填成新建草稿(日期=源+1，可改)。
     private var copyConfigured = false // [AI生成] F8：复制入口一次性守卫(独立于 configured，避免被 init 默认 configure 抢跑吞掉)。
+    private var baselineSig: String? = null // [AI生成] 未保存返回守卫(§9.17)：加载完成时的内容签名基线；与当前不同=有未保存改动。
+
+    /** 当前表单内容签名(日期+各餐次的餐次/时间/菜品id)。[AI生成] */
+    private fun sigNow(): String = buildString {
+        append(_state.value.date)
+        _state.value.mealBlocks.forEach { b ->
+            append("|"); append(b.mealTypeId); append(":"); append(b.mealTime)
+            append(":"); append(b.dishes.map { it.id }.sorted().joinToString(","))
+        }
+    }
+
+    /** 加载完成后记基线(此后任何增删改=dirty)。[AI生成] */
+    private fun markBaseline() { baselineSig = sigNow() }
+
+    /** 有未保存改动(供 UnsavedGuard)。[AI生成] 未记基线(尚未加载完)时视为不脏，避免误报。 */
+    fun isDirty(): Boolean = baselineSig?.let { it != sigNow() } ?: false
 
     init {
         viewModelScope.launch {
@@ -449,6 +465,7 @@ class AddMealViewModel(
             isEditingExisting = false, // 复制是新建，日期可改
             minSelectableDate = target, // target 之前(含所有已有餐食日期)不可选
         )
+        markBaseline() // [AI生成] 复制加载完成记基线
         AppLogger.d(TAG, "load copy-from: source=$sourceDate latest=$latest target=$target blocks=${finalBlocks.size}")
     }
 
@@ -519,6 +536,7 @@ class AddMealViewModel(
             // [AI生成] N3：加载到既有餐食=编辑模式→日期锁定；空日期(新增)→可改。
             isEditingExisting = existingMeals.isNotEmpty(),
         )
+        markBaseline() // [AI生成] 加载完成记基线，供未保存返回守卫
         AppLogger.d(TAG, "load meals applied: date=$date blocks=${finalBlocks.map { it.id to it.dishes.map { dish -> dish.id } }}") // [AI生成] 记录加载应用到 UI 状态后的摘要。
     }
 
