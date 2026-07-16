@@ -168,6 +168,7 @@ fun MainScaffold(
                     onOpenFreePairing = { nav.navigate(Routes.FREE_PAIRING) },
                     onOpenNutritionTable = { nav.navigate(Routes.NUTRITION_TABLE) }, // [AI生成] 食材营养表
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] 膳食参考依据
+                    onOpenDataSource = { nav.navigate(Routes.DATA_SOURCE) }, // [AI生成] 数据来源
                     onOpenFamily = { nav.navigate(Routes.FAMILY) }, // [AI生成] 档案整合:家庭档案统一入口
                 )
             }
@@ -176,6 +177,9 @@ fun MainScaffold(
             }
             composable(Routes.DIETARY_REFERENCE) {
                 com.sxdbsm.cookbook.android.ui.reference.DietaryReferenceScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.DATA_SOURCE) {
+                com.sxdbsm.cookbook.android.ui.reference.DataSourceScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.COOKING_TIMER) {
                 CookingTimerScreen(onBack = { nav.popBackStack() })

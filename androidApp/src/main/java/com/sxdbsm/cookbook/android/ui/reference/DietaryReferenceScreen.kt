@@ -39,9 +39,32 @@ import com.sxdbsm.cookbook.android.ui.component.InsetGroup
  **/
 @Composable
 fun DietaryReferenceScreen(onBack: () -> Unit) {
+    ReferenceScaffold(
+        title = "膳食参考依据",
+        disclaimer = DietaryReference.disclaimer,
+        categories = DietaryReference.categories,
+        sources = DietaryReference.sources,
+        footNote = "注：以上为公开标准/指南的口径整理，个别数值以原文最新版为准；标「待核」项尚未取得一手确切数值，未采用估算参与任何判定。",
+        onBack = onBack,
+    )
+}
+
+/**
+ * 参考类页面通用骨架（膳食参考依据 / 数据来源 共用）。[AI生成]
+ * 顶部免责 + 分类分组(每条指标+级别+口径+适用+依据) + 底部全部来源清单 + 脚注。
+ */
+@Composable
+fun ReferenceScaffold(
+    title: String,
+    disclaimer: String,
+    categories: List<DietaryRefCategory>,
+    sources: List<DietaryRefSource>,
+    footNote: String,
+    onBack: () -> Unit,
+) {
     Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            topBar = { AppTopBar(title = "膳食参考依据", onBack = onBack) },
+            topBar = { AppTopBar(title = title, onBack = onBack) },
             containerColor = MaterialTheme.colorScheme.background,
         ) { padding ->
             Column(
@@ -52,9 +75,9 @@ fun DietaryReferenceScreen(onBack: () -> Unit) {
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                DisclaimerBanner(DietaryReference.disclaimer)
+                DisclaimerBanner(disclaimer)
 
-                DietaryReference.categories.forEach { cat ->
+                categories.forEach { cat ->
                     InsetGroup(title = cat.title) {
                         if (cat.intro.isNotBlank()) {
                             Text(
@@ -73,7 +96,7 @@ fun DietaryReferenceScreen(onBack: () -> Unit) {
 
                 // 全部参考来源清单（去重）
                 InsetGroup(title = "全部参考来源") {
-                    DietaryReference.sources.forEachIndexed { i, s ->
+                    sources.forEachIndexed { i, s ->
                         Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
                             Text(
                                 "${i + 1}. ",
@@ -93,12 +116,14 @@ fun DietaryReferenceScreen(onBack: () -> Unit) {
                     }
                 }
 
-                Text(
-                    "注：以上为公开标准/指南的口径整理，个别数值以原文最新版为准；标「待核」项尚未取得一手确切数值，未采用估算参与任何判定。",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
+                if (footNote.isNotBlank()) {
+                    Text(
+                        footNote,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
                 Spacer(Modifier.height(80.dp))
             }
         }

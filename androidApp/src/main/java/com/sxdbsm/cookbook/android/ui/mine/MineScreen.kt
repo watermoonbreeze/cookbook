@@ -43,6 +43,7 @@ fun MineScreen(
     onOpenFreePairing: () -> Unit = {},
     onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
     onOpenDietaryReference: () -> Unit = {}, // [AI生成] 膳食参考依据(阈值/分级引用的权威标准透明展示)
+    onOpenDataSource: () -> Unit = {}, // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品来源)
     onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
     vm: MineViewModel = koinViewModel(),
 ) {
@@ -257,11 +258,16 @@ fun MineScreen(
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Restaurant, title = "食材自由搭配", subtitle = "用在手食材按规则搭出组合建议(离线)", trailing = "▸") { onOpenFreePairing() }
             InsetDivider(52)
-            SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() } // [AI生成] 食材营养表入口
-            InsetDivider(52)
-            SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() } // [AI生成] 膳食参考依据入口
-            InsetDivider(52)
             SettingRow(icon = Icons.Outlined.SoupKitchen, title = "厨房小助手", subtitle = "烹饪计时等实用工具", trailing = "▸") { kitchenDialogOpen = true }
+        }
+
+        // [AI生成] 参考资料组：营养表(数据查阅)/膳食参考依据(标准)/数据来源(出处)——参考·依据类统一收纳，后续可扩展。
+        InsetGroup(title = "参考资料") {
+            SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
         }
 
         InsetGroup(title = "AI 助手") {
@@ -349,6 +355,7 @@ fun MineScreen(
         AboutCookbookDialog(
             onDismiss = { aboutDialogOpen = false },
             onOpenReference = { aboutDialogOpen = false; onOpenDietaryReference() },
+            onOpenDataSource = { aboutDialogOpen = false; onOpenDataSource() },
         )
     }
 
@@ -398,7 +405,11 @@ private fun KitchenAssistantDialog(
  * 展示产品定位、版本和项目开源许可说明。
  */
 @Composable
-private fun AboutCookbookDialog(onDismiss: () -> Unit, onOpenReference: () -> Unit = {}) {
+private fun AboutCookbookDialog(
+    onDismiss: () -> Unit,
+    onOpenReference: () -> Unit = {},
+    onOpenDataSource: () -> Unit = {},
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("关于 Cookbook") },
@@ -415,44 +426,30 @@ private fun AboutCookbookDialog(onDismiss: () -> Unit, onOpenReference: () -> Un
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(12.dp))
-                // [AI生成] 数据来源：如实说明食材数据的性质与参考出处，避免让用户误以为是权威核验数据。
+                // [AI生成] 数据来源与依据：内容改为专门页(数据来源/膳食参考依据)，关于页只留简述+链接，避免长文堆叠。
                 Text(
-                    text = "数据来源",
+                    text = "数据来源与依据",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "• 分类框架参考：《中国居民膳食指南（2022）》（中国营养学会）——食材大类划分依据。\n" +
-                        "• 食材条目与详情（做法、处理、保存等）：由 AI 依据公开的通用营养与烹饪常识整理。\n" +
-                        "• 营养、嘌呤、升糖指数（GI）等标签及三高/痛风等慢病提示：基于公开常识判断，尚未逐条经权威数据库核对。\n" +
-                        "• 菜系分类：参考中国传统八大菜系（川鲁粤苏闽浙湘徽，公认餐饮常识分类）+ 家常菜整理；具体菜品归属为便于筛选的参考，可能存在地域交叉，非官方权威认定。\n" +
-                        "• 拟采纳并逐步核对/替换的权威来源：《中国食物成分表（标准版）》（中国疾控中心营养与健康所）、相关慢病膳食指南（如高尿酸血症与痛风、2 型糖尿病膳食指南）。",
+                    text = "食材分类/营养/GI/嘌呤及预设菜品的来源，营养提示所依据的国家标准与权威指南，均已按分类逐条列出并附全部出处。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.height(10.dp))
+                TextButton(onClick = onOpenDataSource, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
+                    Text("查看数据来源 ▸")
+                }
+                TextButton(onClick = onOpenReference, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
+                    Text("查看膳食参考依据 ▸")
+                }
+                Spacer(Modifier.height(6.dp))
                 Text(
-                    text = "免责声明：以上食材与营养内容当前为参考性整理，仅供日常饮食记录参考，不构成医疗或营养专业建议，具体请遵医嘱。",
+                    text = "免责声明：以上食材与营养内容为参考性整理，仅供日常饮食记录参考，不构成医疗或营养专业建议，具体请遵医嘱。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
-                Spacer(Modifier.height(12.dp))
-                // [AI生成] 膳食参考依据：营养提示的阈值/分级引用的权威标准，分类+全部来源在专门页透明列出。
-                Text(
-                    text = "膳食参考依据",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = "App 中钠/糖/GI/嘌呤/血脂等营养阈值与分级，均引用国家标准与权威指南（如膳食指南2022、GB 28050、WS/T 系列、相关慢病指南）。已按分类逐条列出，并附全部参考来源。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                TextButton(onClick = onOpenReference, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
-                    Text("查看膳食参考依据与全部来源 ▸")
-                }
                 Spacer(Modifier.height(12.dp))
                 Text(
                     text = "开源说明",
