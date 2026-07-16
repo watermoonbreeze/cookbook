@@ -16,12 +16,34 @@ enum class ThemeMode(val code: String) {
 }
 
 /**
+ * App 配色主题（与明暗模式 [ThemeMode] 独立）。[AI生成]
+ *
+ * 6 套 Apple 风格高级配色，每套单一强调色贯穿 + 协调中性骨架；默认赤陶橘（现状）。
+ * `code` 稳定写库；具体 light/dark 色板在 androidApp 的 Palettes.kt 按此枚举取。
+ */
+enum class AppPalette(val code: String, val displayName: String) {
+    TERRACOTTA("terracotta", "赤陶橘"), // 默认：温暖有食欲
+    SAGE("sage", "黛绿"), // 沉静治愈
+    INDIGO("indigo", "藏蓝"), // 理性可信
+    PLUM("plum", "绛紫"), // 雅致内敛
+    TEAL("teal", "墨青"), // 清冽通透
+    AMBER("amber", "暖金"); // 温润丰盈
+
+    companion object {
+        fun fromCode(code: String?): AppPalette = entries.firstOrNull { it.code == code } ?: TERRACOTTA
+    }
+}
+
+/**
  * 用户偏好表的 key 常量集合。[AI修改]
  *
  * Kotlin 的 `object` 是单例，类似 Java 中只有 static 常量的工具类。
  */
 object PreferenceKeys {
     const val THEME_MODE = "theme_mode"
+
+    // [AI生成] 配色主题(赤陶橘默认 + 多套高级预设)：存 AppPalette.code，默认赤陶橘。与明暗(THEME_MODE)独立。
+    const val APP_PALETTE = "app_palette"
     const val HOME_RECENT_COUNT = "home_recent_count"
     const val HOME_POPULAR_COUNT = "home_popular_count"
 

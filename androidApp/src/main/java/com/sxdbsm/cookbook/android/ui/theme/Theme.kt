@@ -12,16 +12,19 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sxdbsm.cookbook.domain.model.AppPalette
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 
 /**
  * App 全局主题入口。[AI修改]
  *
  * 所有页面都应包在这里，才能统一使用 MaterialTheme 与业务扩展色。
+ * [AI修改] 加 palette 维度：按用户所选配色取对应 light/dark 色板（默认赤陶橘=现状）。
  */
 @Composable
 fun CookbookTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
+    palette: AppPalette = AppPalette.TERRACOTTA,
     content: @Composable () -> Unit
 ) {
     val systemDark = isSystemInDarkTheme() // [AI修改] 读取系统深色模式。
@@ -30,7 +33,8 @@ fun CookbookTheme(
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    val colorScheme = if (useDark) DarkColors else LightColors
+    val paletteColors = paletteColorsOf(palette)
+    val colorScheme = if (useDark) paletteColors.dark else paletteColors.light
     val extendedColors = if (useDark) DarkExtendedColors else LightExtendedColors
 
     val typography = Typography(

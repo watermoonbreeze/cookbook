@@ -115,6 +115,14 @@ class MineViewModel(
         viewModelScope.launch { prefs.setThemeMode(mode) }
     }
 
+    /** 当前配色主题。[AI生成] */
+    val palette: StateFlow<com.sxdbsm.cookbook.domain.model.AppPalette> = prefs.observePalette()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.sxdbsm.cookbook.domain.model.AppPalette.TERRACOTTA)
+
+    fun setPalette(p: com.sxdbsm.cookbook.domain.model.AppPalette) {
+        viewModelScope.launch { prefs.setPalette(p) }
+    }
+
     fun refreshBackups() {
         viewModelScope.launch { _backups.value = backup.listBackups() }
     }

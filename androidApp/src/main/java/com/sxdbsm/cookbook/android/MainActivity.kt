@@ -125,6 +125,8 @@ class MainActivity : ComponentActivity() {
 
         // [AI修改] collectAsState 会把 Flow 转成 Compose State，主题变化后界面自动重组。
         val mode by prefs.observeThemeMode().collectAsState(initial = ThemeMode.SYSTEM)
+        // [AI生成] 配色主题：切换即时生效(自动重组)。默认赤陶橘。
+        val palette by prefs.observePalette().collectAsState(initial = com.sxdbsm.cookbook.domain.model.AppPalette.TERRACOTTA)
         val systemDark = isSystemInDarkTheme()
         val useDark = when (mode) {
             ThemeMode.SYSTEM -> systemDark
@@ -138,7 +140,7 @@ class MainActivity : ComponentActivity() {
                 isAppearanceLightNavigationBars = !useDark
             }
         }
-        CookbookTheme(themeMode = mode) {
+        CookbookTheme(themeMode = mode, palette = palette) {
             // [AI修改] 系统状态栏/导航栏色跟随 Compose 主题背景色(而非透明露出 android 默认 windowBackground)：
             // 修"app深色但系统仍浅色时,全屏页导航栏区域露白"——让系统栏与当前界面浑然一体、明暗自适应。
             val barColor = androidx.compose.material3.MaterialTheme.colorScheme.background

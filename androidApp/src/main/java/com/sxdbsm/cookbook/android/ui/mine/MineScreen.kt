@@ -1,7 +1,13 @@
 package com.sxdbsm.cookbook.android.ui.mine
 
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -22,7 +28,10 @@ import com.sxdbsm.cookbook.android.ui.component.InsetGroup
 import com.sxdbsm.cookbook.android.ui.component.InsetDivider
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
 import com.sxdbsm.cookbook.domain.model.CrowdType
+import com.sxdbsm.cookbook.domain.model.AppPalette
 import com.sxdbsm.cookbook.domain.model.ThemeMode
+import com.sxdbsm.cookbook.android.ui.theme.paletteColorsOf
+import androidx.compose.ui.draw.clip
 import com.sxdbsm.cookbook.platform.BackupInfo
 import com.sxdbsm.cookbook.android.util.LogFileInfo
 import org.koin.androidx.compose.koinViewModel
@@ -49,6 +58,7 @@ fun MineScreen(
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
+    val palette by vm.palette.collectAsStateWithLifecycle() // [AI生成] 当前配色主题
     val healthCard by vm.healthCard.collectAsStateWithLifecycle() // [AI生成] 档案整合:用户卡取"我"的健康状态
     val backups by vm.backups.collectAsStateWithLifecycle()
     val updatingBaseData by vm.updatingBaseData.collectAsStateWithLifecycle()
@@ -56,6 +66,7 @@ fun MineScreen(
     val selectedLogContent by vm.selectedLogContent.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var themeDialogOpen by remember { mutableStateOf(false) }
+    var paletteDialogOpen by remember { mutableStateOf(false) } // [AI生成] 配色选择器开关
     var backupDialogOpen by remember { mutableStateOf(false) }
     var deviceSyncDialogOpen by remember { mutableStateOf(false) } // [AI生成] 双设备局域网同传弹框。
     var logDialogOpen by remember { mutableStateOf(false) }
@@ -226,6 +237,13 @@ fun MineScreen(
                 },
                 trailing = "▸",
             ) { themeDialogOpen = true }
+            InsetDivider(52)
+            SettingRow(
+                icon = Icons.Outlined.Palette,
+                title = "配色",
+                subtitle = palette.displayName,
+                trailing = "▸",
+            ) { paletteDialogOpen = true } // [AI生成] 配色主题切换
         }
 
         InsetGroup(title = "数据") {
@@ -292,6 +310,15 @@ fun MineScreen(
             current = mode,
             onSelect = { vm.setThemeMode(it); themeDialogOpen = false },
             onDismiss = { themeDialogOpen = false },
+        )
+    }
+
+    if (paletteDialogOpen) {
+        ColorPaletteDialog(
+            current = palette,
+            isDark = androidx.compose.foundation.isSystemInDarkTheme() && mode == ThemeMode.SYSTEM || mode == ThemeMode.DARK,
+            onSelect = { vm.setPalette(it) }, // 不关弹框，让用户即时预览多套切换
+            onDismiss = { paletteDialogOpen = false },
         )
     }
 
@@ -470,6 +497,58 @@ private fun AboutCookbookDialog(
         confirmButton = {
             TextButton(onClick = onDismiss) { Text("关闭") }
         },
+    )
+}
+
+/**
+ * 配色选择器。[AI生成] 6 套高级配色，圆形色块预览 + 选中打勾；点选即时切换预览、"完成"关闭。
+ * 色块按当前明暗显示对应代表色；交互沿用 iOS Settings 列表选择范式。
+ */
+@Composable
+private fun ColorPaletteDialog(
+    current: AppPalette,
+    isDark: Boolean,
+    onSelect: (AppPalette) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("配色") },
+        text = {
+            Column {
+                AppPalette.entries.forEach { p ->
+                    val colors = paletteColorsOf(p)
+                    val swatch = if (isDark) colors.swatchDark else colors.swatchLight
+                    val selected = p == current
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { onSelect(p) }
+                            .padding(vertical = 10.dp, horizontal = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(swatch)
+                                .border(
+                                    width = if (selected) 2.dp else 1.dp,
+                                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                                    shape = CircleShape,
+                                ),
+                        )
+                        Spacer(Modifier.width(14.dp))
+                        Text(p.displayName, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        if (selected) {
+                            Icon(Icons.Outlined.Check, contentDescription = "已选", tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("完成") } },
     )
 }
 

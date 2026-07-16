@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.sxdbsm.cookbook.db.CookbookDatabase
+import com.sxdbsm.cookbook.domain.model.AppPalette
 import com.sxdbsm.cookbook.domain.model.PreferenceKeys
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.util.DateTime
@@ -35,6 +36,17 @@ class PreferenceRepository(private val db: CookbookDatabase) {
      */
     suspend fun setThemeMode(mode: ThemeMode) = withContext(ioDispatcher) {
         q.upsertPreference(PreferenceKeys.THEME_MODE, mode.code, DateTime.nowEpochSeconds())
+    }
+
+    /** 监听配色主题（默认赤陶橘）。[AI生成] */
+    fun observePalette(): Flow<AppPalette> =
+        q.selectPreference(PreferenceKeys.APP_PALETTE).asFlow().mapToOneOrNull(ioDispatcher).map { row ->
+            AppPalette.fromCode(row?.value_)
+        }
+
+    /** 写入配色主题。[AI生成] */
+    suspend fun setPalette(palette: AppPalette) = withContext(ioDispatcher) {
+        q.upsertPreference(PreferenceKeys.APP_PALETTE, palette.code, DateTime.nowEpochSeconds())
     }
 
     /**
