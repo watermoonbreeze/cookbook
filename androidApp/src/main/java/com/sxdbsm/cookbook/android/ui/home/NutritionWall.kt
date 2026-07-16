@@ -140,54 +140,22 @@ private fun MacroLegend(color: Color, label: String) {
 }
 
 /**
- * 宏量占比渐变条：整条从每段"中心色"平滑过渡(绿→琥珀→蓝)，自然真实、非"实块+糊边"。[AI生成]
- * 每种宏量在自己占比区域内主导，段间大范围柔和渐变；具体克数由下方图例给出。胶囊端头，三色固定不随主题。
+ * 宏量占比条：蛋白/脂肪/碳水按供能占比分三段实色(清晰体现各占多少)，整条胶囊端头。[AI生成]
+ * 三色用 ExtendedColors 固定编码色、不随主题变。用户反馈渐变不好看且不体现占比，故用分段实色。
  */
 @Composable
 private fun MacroBar(p: Int, f: Int, c: Int, protein: Color, fat: Color, carb: Color) {
-    val total = (p + f + c).toFloat()
-    if (total <= 0f) return
-    val segs = buildList {
-        if (p > 0) add(protein to p / total)
-        if (f > 0) add(fat to f / total)
-        if (c > 0) add(carb to c / total)
-    }
-    Box(
-        Modifier
+    if (p + f + c <= 0) return
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
             .height(8.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(androidx.compose.ui.graphics.Brush.horizontalGradient(colorStops = macroStops(segs))),
-    )
-}
-
-/**
- * 渐变 stop：在每段**中心**放纯色 + 两端各锚首/末色，段中心之间整段平滑过渡——像真实渐变而非实块糊边。[AI生成]
- * 单段时给同色浅→深的细微光泽。位置强制严格递增防反转。
- */
-private fun macroStops(segs: List<Pair<Color, Float>>): Array<Pair<Float, Color>> {
-    if (segs.isEmpty()) return arrayOf(0f to Color.Transparent, 1f to Color.Transparent)
-    if (segs.size == 1) {
-        val col = segs[0].first
-        return arrayOf(
-            0f to androidx.compose.ui.graphics.lerp(col, Color.White, 0.06f),
-            1f to androidx.compose.ui.graphics.lerp(col, Color.Black, 0.05f),
-        )
+            .clip(RoundedCornerShape(4.dp)),
+    ) {
+        if (p > 0) Box(Modifier.weight(p.toFloat()).fillMaxWidth().height(8.dp).background(protein))
+        if (f > 0) Box(Modifier.weight(f.toFloat()).fillMaxWidth().height(8.dp).background(fat))
+        if (c > 0) Box(Modifier.weight(c.toFloat()).fillMaxWidth().height(8.dp).background(carb))
     }
-    val raw = mutableListOf<Pair<Float, Color>>()
-    raw.add(0f to segs.first().first) // 左端=首段色
-    var pos = 0f
-    segs.forEach { (col, w) ->
-        raw.add((pos + w / 2f) to col) // 每段中心=纯色
-        pos += w
-    }
-    raw.add(1f to segs.last().first) // 右端=末段色
-    var last = -1f
-    return raw.map { (position, col) ->
-        val pp = maxOf(position, last + 0.0001f).coerceIn(0f, 1f)
-        last = pp
-        pp to col
-    }.toTypedArray()
 }
 
 /** 今日提示行：小圆点 + 一行温和文字(无红报警、无底色)。[AI生成] gaps 用绿点、concerns 用琥珀点。 */

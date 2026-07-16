@@ -95,8 +95,14 @@ fun MainScaffold(
         }
     }
 
+    // [AI生成] §9.12：全 App 单一 Snackbar 宿主 + 控制器，经 LocalAppSnackbar 下发给各屏(统一保存/撤销反馈)。
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    val snackScope = androidx.compose.runtime.rememberCoroutineScope()
+    val appSnackbar = remember { com.sxdbsm.cookbook.android.ui.component.AppSnackbarController(snackbarHostState, snackScope) }
+
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 根 Scaffold 不再自动避让系统栏，由透明系统栏和页面背景承接沉浸式效果。
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
         bottomBar = {
             if (showBottomBar) BottomBar(
                 nav = nav,
@@ -105,6 +111,7 @@ fun MainScaffold(
             )
         },
     ) { padding ->
+      androidx.compose.runtime.CompositionLocalProvider(com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar provides appSnackbar) {
         NavHost(
             navController = nav,
             startDestination = Routes.HOME,
@@ -326,6 +333,7 @@ fun MainScaffold(
                 )
             }
         }
+      } // CompositionLocalProvider(LocalAppSnackbar)
     }
 }
 
