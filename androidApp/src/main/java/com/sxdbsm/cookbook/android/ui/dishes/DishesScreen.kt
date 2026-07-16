@@ -276,7 +276,10 @@ fun DishesScreen(
                 add(com.sxdbsm.cookbook.android.ui.component.SheetAction("编辑", onClick = { onEditDish(d.id) }))
             }
             add(com.sxdbsm.cookbook.android.ui.component.SheetAction("基于此另存", onClick = { onCopyDish(d.id) }))
-            add(com.sxdbsm.cookbook.android.ui.component.SheetAction("删除", destructive = true, onClick = { vm.requestDeleteDish(d) }))
+            // [AI修改] 删除只对自建(user)菜品显示——预设菜不可删(原来预设也显删除、点了才提示"无法删除"，不合理)。
+            if (d.source == "user") {
+                add(com.sxdbsm.cookbook.android.ui.component.SheetAction("删除", destructive = true, onClick = { vm.requestDeleteDish(d) }))
+            }
         }
         com.sxdbsm.cookbook.android.ui.component.ActionSheet(
             title = d.name,
