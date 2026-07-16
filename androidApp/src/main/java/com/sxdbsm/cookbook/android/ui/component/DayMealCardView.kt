@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
@@ -74,6 +75,7 @@ fun DayMealCardView(
         data.isPlanState -> MaterialTheme.colorScheme.secondaryContainer
         else -> MaterialTheme.colorScheme.surface // [AI修改] 内容卡片白底，计划态浅底色。
     }
+    var actionSheetOpen by remember { mutableStateOf(false) } // [AI生成] B-4：三操作收进 ActionSheet(§9.16)
 
     // [AI修改] 苹果风格：无阴影填充白卡(计划态浅底)，圆角 medium(12)与全局一致。
     Surface(
@@ -102,16 +104,20 @@ fun DayMealCardView(
                     Badge("计划", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                 }
                 Spacer(Modifier.weight(1f))
-                // 右侧操作图标(同一行)
-                if (onCopyClick != null && data.meals.isNotEmpty()) {
-                    CardIcon(Icons.Outlined.ContentCopy, "复制", MaterialTheme.colorScheme.primary, onCopyClick)
+                // [AI修改] B-4：复制/编辑/删除三图标收进一个"⋯"→ ActionSheet(§9.16)，卡面更干净、破坏项红字。
+                val hasCopy = onCopyClick != null && data.meals.isNotEmpty()
+                val hasDelete = onDeleteClick != null && data.meals.isNotEmpty()
+                if (hasCopy || onEditClick != null || hasDelete) {
+                    CardIcon(Icons.Outlined.MoreVert, "更多", MaterialTheme.colorScheme.primary) { actionSheetOpen = true }
                 }
-                if (onEditClick != null) {
-                    CardIcon(Icons.Outlined.Edit, "编辑", MaterialTheme.colorScheme.primary, onEditClick)
+            }
+            if (actionSheetOpen) {
+                val acts = buildList {
+                    if (onCopyClick != null && data.meals.isNotEmpty()) add(SheetAction("复制到…") { actionSheetOpen = false; onCopyClick.invoke() })
+                    if (onEditClick != null) add(SheetAction("编辑") { actionSheetOpen = false; onEditClick.invoke() })
+                    if (onDeleteClick != null && data.meals.isNotEmpty()) add(SheetAction("删除", destructive = true) { actionSheetOpen = false; onDeleteClick.invoke() })
                 }
-                if (onDeleteClick != null && data.meals.isNotEmpty()) {
-                    CardIcon(Icons.Outlined.Delete, "删除", MaterialTheme.colorScheme.error, onDeleteClick)
-                }
+                ActionSheet(actions = acts, onDismiss = { actionSheetOpen = false })
             }
             // [AI修改] 第二行：当天总热量 + 达标状态(填了身体数据才显示达标)，由"热量数值显示"开关独立控制。
             if (calorieNumberEnabled && dayKcal > 0) {
