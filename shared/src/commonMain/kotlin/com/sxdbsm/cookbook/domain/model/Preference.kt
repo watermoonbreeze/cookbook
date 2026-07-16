@@ -68,4 +68,7 @@ object PreferenceKeys {
 
     // [AI生成] 旧库 NULL 文本字段清洗标记：清洗只需执行一次，避免每次启动全表 UPDATE。
     const val SEED_LEGACY_SANITIZED = "seed_legacy_sanitized_v1"
+
+    // [AI生成] 首次启动引导：已看过功能介绍则不再自动弹(仍可从"我的"入口手动看)。
+    const val HAS_SEEN_GUIDE = "has_seen_guide_v1"
 }

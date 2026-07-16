@@ -40,6 +40,7 @@ import com.sxdbsm.cookbook.android.ui.search.SearchScreen
 import com.sxdbsm.cookbook.android.ui.timeline.FoodTimelineScreen
 import com.sxdbsm.cookbook.util.DateTime
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.first
 
 /**
  * App 主导航骨架。[AI修改]
@@ -56,6 +57,7 @@ fun MainScaffold(
     val currentRoute = current?.destination?.route
     val context = LocalContext.current
     val ingredientJumpBus: IngredientJumpBus = koinInject() // [AI生成] 搜索点食材→跳到该食材总线。
+    val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository = koinInject() // [AI生成] 首启引导标记读写。
     var lastBackAt by remember { mutableStateOf(0L) }
 
     // [AI生成] 点击计时通知 → 进入烹饪计时页（非首页）。
@@ -63,6 +65,15 @@ fun MainScaffold(
         if (openTimer) {
             if (currentRoute != Routes.COOKING_TIMER) nav.navigate(Routes.COOKING_TIMER)
             onTimerConsumed()
+        }
+    }
+
+    // [AI生成] 首次启动自动弹「功能介绍」(一期基础打磨)：仅第一次进 App 弹一次；之后仍可从"我的·功能介绍"手动看。
+    //   先置标记再导航，避免因导航引发的重组重复触发；已看过则不打扰。
+    LaunchedEffect(Unit) {
+        if (!prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, false).first()) {
+            prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, true)
+            nav.navigate(Routes.FEATURE_GUIDE)
         }
     }
 
