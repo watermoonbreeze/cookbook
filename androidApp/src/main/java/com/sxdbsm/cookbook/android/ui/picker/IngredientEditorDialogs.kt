@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -78,6 +79,8 @@ internal fun IngredientEditorDialog(
     var healthNote by remember(ingredient?.id) { mutableStateOf("") }
     var careRules by remember(ingredient?.id) { mutableStateOf<List<IngredientCareRule>>(emptyList()) }
     var categoryPickerOpen by remember { mutableStateOf(false) } // [AI生成] 自定义食材分类选择器开关。
+    // [AI生成] UX：低频区折叠(苹果式高频少露、低频收纳)。新建默认收起(填名+大类即可快速建材)，编辑默认展开(便于看全已填内容)。
+    var moreExpanded by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
     // [AI生成] Item4：自定义食材营养素(每100g)录入，预填已有；营养色系开时给"影响哪些统计"提示。
     fun fmtNum(v: Double?): String = v?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
     var nKcal by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.energyKcal)) }
@@ -152,8 +155,20 @@ internal fun IngredientEditorDialog(
         }
     }
 
+    // [AI生成] UX：新建食材未保存返回守卫——填过内容时返回先确认，避免误触丢失长表单。
+    // 只守新建态(编辑态字段异步回填、基线难判，交既有流程，避免误报)。
+    val hasUnsavedNew = ingredient == null && (
+        name != initialName || alias.isNotBlank() || images.isNotEmpty() || categoryIds.isNotEmpty() ||
+            commonMethods.isNotBlank() || prepTips.isNotBlank() || eatingNotes.isNotBlank() ||
+            storageTips.isNotBlank() || healthNote.isNotBlank() || careRules.isNotEmpty() ||
+            (groupTouched && selectedGroup != null) ||
+            listOf(nKcal, nProtein, nFat, nCarb, nFiber, nSodium, nPotassium, nCalcium, nGi, nPurine, nPiece).any { it.isNotBlank() }
+        )
+    var confirmDiscard by remember { mutableStateOf(false) }
+    fun attemptDismiss() { if (hasUnsavedNew && !ui.creatingIngredient) confirmDiscard = true else onDismiss() }
+
     Dialog(
-        onDismissRequest = { if (!ui.creatingIngredient) onDismiss() },
+        onDismissRequest = { if (!ui.creatingIngredient) attemptDismiss() },
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
     ) {
         Surface(
@@ -164,7 +179,7 @@ internal fun IngredientEditorDialog(
                 TopAppBar(
                     title = { Text(if (ingredient == null) "添加食材" else "编辑食材", fontWeight = FontWeight.SemiBold) },
                     navigationIcon = {
-                        IconButton(onClick = onDismiss, enabled = !ui.creatingIngredient) {
+                        IconButton(onClick = { attemptDismiss() }, enabled = !ui.creatingIngredient) {
                             Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
                         }
                     },
@@ -280,6 +295,9 @@ internal fun IngredientEditorDialog(
                             }
                         }
 
+                        // [AI生成] UX：以下均为选填低频项(分类/详情/营养素/调养)，折叠收纳，减少新建时的表单负担。
+                        MoreOptionsHeader(expanded = moreExpanded) { moreExpanded = !moreExpanded }
+                        if (moreExpanded) {
                         EditorSection("其它分类（可选）") {
                             Text(
                                 // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
@@ -344,6 +362,7 @@ internal fun IngredientEditorDialog(
                             rules = careRules,
                             onRulesChange = { careRules = it },
                         )
+                        } // if (moreExpanded)
                     }
 
                     ui.createError?.let { error ->
@@ -353,6 +372,20 @@ internal fun IngredientEditorDialog(
                 }
             }
         }
+    }
+
+    if (confirmDiscard) {
+        AlertDialog(
+            onDismissRequest = { confirmDiscard = false },
+            title = { Text("放弃新建？") },
+            text = { Text("已填写的内容尚未保存，返回将不保留。") },
+            confirmButton = {
+                TextButton(onClick = { confirmDiscard = false; onDismiss() }) {
+                    Text("放弃", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text("继续编辑") } },
+        )
     }
 
     if (categoryPickerOpen) {
@@ -369,6 +402,34 @@ internal fun IngredientEditorDialog(
     }
 }
 
+
+/**
+ * 低频区折叠头。[AI生成] 苹果式：高频项常露、选填低频项收纳一行，点开再填。
+ */
+@Composable
+internal fun MoreOptionsHeader(expanded: Boolean, onToggle: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onToggle() }
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            "更多信息（分类 / 详情 / 营养素 / 调养，均选填）",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f),
+        )
+        Icon(
+            Icons.Outlined.ExpandMore,
+            contentDescription = if (expanded) "收起" else "展开",
+            modifier = Modifier.rotate(if (expanded) 180f else 0f),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
 
 /**
  * 编辑器分组容器。[AI生成]
