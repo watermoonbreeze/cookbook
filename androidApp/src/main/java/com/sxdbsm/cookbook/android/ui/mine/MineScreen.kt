@@ -42,6 +42,7 @@ fun MineScreen(
     onOpenShoppingList: () -> Unit = {},
     onOpenFreePairing: () -> Unit = {},
     onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
+    onOpenDietaryReference: () -> Unit = {}, // [AI生成] 膳食参考依据(阈值/分级引用的权威标准透明展示)
     onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
     vm: MineViewModel = koinViewModel(),
 ) {
@@ -258,6 +259,8 @@ fun MineScreen(
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() } // [AI生成] 食材营养表入口
             InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() } // [AI生成] 膳食参考依据入口
+            InsetDivider(52)
             SettingRow(icon = Icons.Outlined.SoupKitchen, title = "厨房小助手", subtitle = "烹饪计时等实用工具", trailing = "▸") { kitchenDialogOpen = true }
         }
 
@@ -343,7 +346,10 @@ fun MineScreen(
     }
 
     if (aboutDialogOpen) {
-        AboutCookbookDialog(onDismiss = { aboutDialogOpen = false })
+        AboutCookbookDialog(
+            onDismiss = { aboutDialogOpen = false },
+            onOpenReference = { aboutDialogOpen = false; onOpenDietaryReference() },
+        )
     }
 
     selectedLogFileName?.let { fileName ->
@@ -392,7 +398,7 @@ private fun KitchenAssistantDialog(
  * 展示产品定位、版本和项目开源许可说明。
  */
 @Composable
-private fun AboutCookbookDialog(onDismiss: () -> Unit) {
+private fun AboutCookbookDialog(onDismiss: () -> Unit, onOpenReference: () -> Unit = {}) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("关于 Cookbook") },
@@ -431,6 +437,22 @@ private fun AboutCookbookDialog(onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
+                Spacer(Modifier.height(12.dp))
+                // [AI生成] 膳食参考依据：营养提示的阈值/分级引用的权威标准，分类+全部来源在专门页透明列出。
+                Text(
+                    text = "膳食参考依据",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "App 中钠/糖/GI/嘌呤/血脂等营养阈值与分级，均引用国家标准与权威指南（如膳食指南2022、GB 28050、WS/T 系列、相关慢病指南）。已按分类逐条列出，并附全部参考来源。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = onOpenReference, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
+                    Text("查看膳食参考依据与全部来源 ▸")
+                }
                 Spacer(Modifier.height(12.dp))
                 Text(
                     text = "开源说明",
