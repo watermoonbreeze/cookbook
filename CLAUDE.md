@@ -81,7 +81,11 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - LazyColumn 手工算 `animateScrollToItem` 偏移（字母索引等）：新增/条件插入任一 item 必须同步偏移量**并**纳入 `remember` key，否则跳转偏位。
 - 派生逻辑别依赖内部 `DateTime.today()`（否则固定日期单测测不了）：把 today 提为参数，生产传 `DateTime.today()`。
 - `DishMini` 有一堆默认空字段（`mainIngredientNames` 等）：用某字段前先 grep 确认真被赋值——`mainIngredientNames` 曾在 `buildDishMinis`/`buildDishesByMealRecord` 都没填、恒空，导致依赖它的分类图标/主食判定/主料副文本静默失效。
-- Material3 版本为 **1.1.2**：**无 `SelectableDates`、无 `SegmentedButton`**（均 1.2.0+）——DatePicker 禁选日期改在**确认回调**校验+提示；分段控件自绘胶囊（有 `ModalBottomSheet`/`SwipeToDismiss`/`LargeTopAppBar`/`FilterChip` 实验但可用）。
+- Material3 版本为 **1.1.2**：**无 `SelectableDates`、无 `SegmentedButton`、无 `HorizontalDivider`**（均 1.2.0+）——DatePicker 禁选日期改在**确认回调**校验+提示；分段控件自绘胶囊；分隔线用 `Divider`（非 `HorizontalDivider`）。（有 `ModalBottomSheet`/`SwipeToDismiss`/`LargeTopAppBar`/`FilterChip` 实验但可用）。
+- **做 UI/交互先查 `.ai-context/docs/feature/交互组件复用指南.md` + §九(9.1–9.17)**：能复用的 22 个组件/统一件必复用（`AppTopBar`/`AppSearchField`/`CapsuleButton`/`SegmentedControl`/`InsetGroup`/`ActionSheet`/`MiniStepper`/`EmptyState`/`UnsavedGuard` 等），别内联复制。未保存返回守卫用 `rememberUnsavedGuard`（非包裹式返 requestBack）；就地份数/克数增减用 `MiniStepper`；多操作收 `ActionSheet`；保存反馈 Snackbar 优先(Toast 仅纯告知)、可逆删除走撤销不硬确认；大标题页(Tab落地)用 `LargeTopAppBar`、带返回二级页用 `AppTopBar`。
+- **改主题色/加配色**走 `AppPalette`枚举(shared) + `theme/Palettes.kt`(每套 light/dark ColorScheme+代表色) + `CookbookTheme(themeMode,palette)` + `PreferenceRepository.observe/setPalette`，别把色值硬编码散落；默认赤陶橘(复用 Color.kt LightColors/DarkColors)。宏量三色放 `ExtendedColors`(固定不随主题)。宏量渐变条别"实块+糊接缝"(显假)，用段中心纯色+两端锚色的 `Brush.horizontalGradient` 整条平滑过渡。
+- **色系墙只看膳食结构、不关联热量/慢病**(用户决策)：热量是个人概念(需身体数据)→只放今日卡；慢病提示(钠等)→个人视角(今日卡 concerns 琥珀点+免责)。`NutritionLevelEvaluator`(热量+钠,缺数据退多样性)只服务个人卡，`FoodGroup.nutritionLevel`(色系墙)维持纯结构不变。
+- 调料加进菜品默认克数用 `SeasoningDefaults.defaultGramFor(name,isSeasoning)`(盐3/酱油油10…)：**只对分类判定为调料**(`seasoningIngredientIds`=调味品/油脂类)缩小，普通食材(含名带油的油菜)仍 100g，否则钠/油脂算爆。
 - 删"死导入"易翻车：`perl` 用 `$` 锚行尾在 **CRLF** 文件匹配不到；肉眼判"没用"可能删掉**仍被引用**的 import → 编译红。删 import 用 `Edit` 逐个删、删前 `Grep` 确认无引用；死导入只是 warning，拿不准就留。
 - 可复用组件的"能力显隐"由**回调是否传入**决定（如 `IngredientDetailSheet` 编辑区），别在组件内用 `!selectionMode` 等 mode 布尔硬编码，否则换场景要复用时被挡。
 - 多入口共享一个 ViewModel（新增/编辑/复制）：每个入口用**独立一次性守卫**（如 `copyConfigured`），别共用一个 `configured`，否则被 `init` 默认 configure 抢跑 `if(configured)return` 吞掉；"改日期=移动删旧"只在真编辑既有日期(loadedFromDate!=null)时触发。
