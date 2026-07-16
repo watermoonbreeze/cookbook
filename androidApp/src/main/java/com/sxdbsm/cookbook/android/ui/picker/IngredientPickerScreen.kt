@@ -141,7 +141,7 @@ fun IngredientPickerScreen(
                         }
                     },
                 )
-                // [AI生成] 全局搜索下拉：有输入且有匹配时紧贴搜索框下方弹出，点结果跳到分类并高亮。
+                // [AI生成] 全局搜索下拉：有输入且有匹配时紧贴搜索框下方弹出。
                 if (ui.searchResults.isNotEmpty()) {
                     SearchResultsPanel(
                         results = ui.searchResults,
@@ -149,8 +149,10 @@ fun IngredientPickerScreen(
                         selectedIds = ui.selectedIds,
                         pantryIds = ui.pantryIngredientIds,
                         onPick = {
-                            selectedIngredient = null
-                            vm.jumpToIngredient(it)
+                            // [AI修改] 搜索结果点击直接开详情(顶部显分类路径)——不再靠 jumpToIngredient 定位网格,
+                            // 修"食材还没加载到当前页时点击没反应"。收起搜索下拉,详情弹层浮在上层。
+                            vm.setKeyword("")
+                            selectedIngredient = it
                         },
                         onToggleSelect = { vm.toggleSelection(it) },
                         onTogglePantry = { ing ->
@@ -395,6 +397,7 @@ fun IngredientPickerScreen(
             selected = ingredient.id in ui.selectedIds,
             loading = ui.detailLoading && ui.detailIngredientId == ingredient.id,
             categories = ui.detailCategories,
+            categoryPath = buildGeneralCategoryPath(ui.detailCategories, ui.allCategories), // [AI生成] 顶部分类路径
             detail = ui.detailInfo,
             careRules = ui.detailCareRules,
             dishMatches = ui.detailDishMatches,
@@ -747,5 +750,29 @@ private fun IngredientGridEmptyState(tab: IngredientMainTab) {
             )
         }
     }
+}
+
+/**
+ * 拼食材的常规分类路径(常规›蔬菜类›叶菜)。[AI生成]
+ *
+ * 取该食材所挂的 general 维度分类里最深的一个，沿 parentId 链向上收集名，正序拼接。无 general 分类返回空。
+ */
+private fun buildGeneralCategoryPath(ingredientCategories: List<FoodCategory>, all: List<FoodCategory>): String {
+    val byId = all.associateBy { it.id }
+    fun depth(c: FoodCategory): Int {
+        var d = 0; var cur = c; var g = 0
+        while (cur.parentId != null && g++ < 12) { cur = byId[cur.parentId] ?: break; d++ }
+        return d
+    }
+    val leaf = ingredientCategories.filter { it.dimension == "general" }.maxByOrNull { depth(it) } ?: return ""
+    val chain = mutableListOf<String>()
+    var cur: FoodCategory? = leaf
+    var g = 0
+    while (g++ < 12) {
+        val c = cur ?: break
+        chain.add(c.name)
+        cur = c.parentId?.let { byId[it] }
+    }
+    return chain.asReversed().joinToString(" › ")
 }
 

@@ -41,6 +41,7 @@ internal fun IngredientDetailSheet(
     selected: Boolean,
     loading: Boolean,
     categories: List<FoodCategory>,
+    categoryPath: String = "", // [AI生成] 分类路径(常规›蔬菜类›叶菜)，搜索点进来时标明食材所在分类
     detail: IngredientDetail?,
     careRules: List<IngredientCareRule>,
     dishMatches: List<DishIngredientMatch>,
@@ -67,13 +68,13 @@ internal fun IngredientDetailSheet(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.35f)
+                    .weight(0.15f) // [AI修改] 详情占屏调高(0.65→0.85):内容多时少滚动。
                     .clickable { onDismiss() }, // [AI修改] 底部详情弹层外部空白支持点击关闭。
             )
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.65f),
+                    .weight(0.85f),
                 shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 6.dp,
@@ -135,6 +136,15 @@ internal fun IngredientDetailSheet(
                                         "二级名称：${ingredient.alias}", // [AI修改] 食材详情文案同步新命名。
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                // [AI生成] 分类路径:搜索点进来时标明食材所在分类(常规›蔬菜类›叶菜)。
+                                if (categoryPath.isNotBlank()) {
+                                    Text(
+                                        categoryPath,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(top = 2.dp),
                                     )
                                 }
                             }
