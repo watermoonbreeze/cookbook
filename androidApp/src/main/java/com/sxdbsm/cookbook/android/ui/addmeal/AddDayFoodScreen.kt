@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.heightIn
@@ -37,6 +38,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +54,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.rememberCoroutineScope
 import android.widget.Toast
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -77,6 +80,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.MealDishGrid
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
+import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealType
 import kotlinx.datetime.Instant
@@ -109,6 +113,7 @@ fun AddDayFoodScreen(
 ) {
     // [AI修改] 页面订阅 ViewModel 状态，任何字段变化都会触发相关 UI 重组。
     val state by vm.state.collectAsStateWithLifecycle()
+    val frequentDishes by vm.frequentDishes.collectAsStateWithLifecycle() // [AI生成] part1：餐次块"常吃"一键 chips 候选
     var pickerOpen by rememberSaveable { mutableStateOf(false) }
     var pickingBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
     var dateDialogOpen by rememberSaveable { mutableStateOf(false) }
@@ -119,6 +124,16 @@ fun AddDayFoodScreen(
     var aiTargetBlockId by rememberSaveable { mutableStateOf<Long?>(null) } // [AI生成] 记录哪个餐次块发起了 AI 推荐。
     val snackbar = remember { SnackbarHostState() } // [AI生成] A6：移除菜品撤销提示
     val scope = rememberCoroutineScope()
+    // [AI生成] part1/审查建议1(§9.12 红线)：撤销 Snackbar **单 job 串行化**——连点多 chip/连续操作时，
+    //   cancel 前一个再 show，避免新提示无声挤掉旧撤销条(否则连加 A/B/C 只剩 C 可撤，A/B 撤销窗口被吞)。
+    var undoJob by remember { mutableStateOf<Job?>(null) }
+    val showUndoLocal: (String, () -> Unit) -> Unit = { message, onUndo ->
+        undoJob?.cancel()
+        undoJob = scope.launch {
+            val res = snackbar.showSnackbar(message = message, actionLabel = "撤销", duration = SnackbarDuration.Short)
+            if (res == SnackbarResult.ActionPerformed) onUndo()
+        }
+    }
     val context = androidx.compose.ui.platform.LocalContext.current
     // [AI生成] §9.17：未保存返回守卫(复用 UnsavedGuard)——厨房场景误触返回易丢这餐编辑。
     val requestBack = com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard(
@@ -254,13 +269,11 @@ fun AddDayFoodScreen(
                     },
                     onRemoveDish = { dishId ->
                         // [AI生成] A6：移除后弹 Snackbar 可撤销(误删家常事)，撤销即把该菜重新加回本块。
+                        // [AI修改] 审查建议1：改走单 job 串行化 showUndoLocal(防连续操作挤丢撤销)。
                         val removed = block.dishes.firstOrNull { it.id == dishId }
                         vm.removeDish(block.id, dishId)
                         if (removed != null) {
-                            scope.launch {
-                                val res = snackbar.showSnackbar(message = "已移除「${removed.name}」", actionLabel = "撤销", duration = SnackbarDuration.Short)
-                                if (res == SnackbarResult.ActionPerformed) vm.addDishes(block.id, listOf(removed))
-                            }
+                            showUndoLocal("已移除「${removed.name}」") { vm.addDishes(block.id, listOf(removed)) }
                         }
                     },
                     onOpenDish = onOpenDish, // [AI生成] F1：点菜进详情
@@ -281,6 +294,12 @@ fun AddDayFoodScreen(
                         saveComboBlockId = block.id
                     },
                     hasCombos = state.favoriteCombos.isNotEmpty(),
+                    quickDishes = frequentDishes, // [AI生成] part1：常吃 chips 候选(组件内再排除本块已加)
+                    onQuickAddDish = { dish ->
+                        // [AI生成] part1：点 chip 即入餐 + Snackbar 撤销(误点高频，撤销优于确认，单 job 串行化防连点挤丢)。
+                        vm.addDishes(block.id, listOf(dish))
+                        showUndoLocal("已加入「${dish.name}」") { vm.removeDish(block.id, dish.id) }
+                    },
                 )
             }
 
@@ -382,6 +401,7 @@ fun AddDayFoodScreen(
  * 排版和首页/食历里的餐食卡片保持同类结构：上方餐次与时间，下方横向菜品。
  */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class) // [AI生成] FilterChip 在 M3 1.1.2 为实验 API
 private fun MealBlockCard(
     block: MealBlockUiState,
     mealTypes: List<MealType>,
@@ -397,6 +417,8 @@ private fun MealBlockCard(
     onSaveCombo: () -> Unit,
     onAiRecommend: () -> Unit,
     hasCombos: Boolean,
+    quickDishes: List<DishMini> = emptyList(), // [AI生成] part1：本块"常吃"一键 chips 候选(全局常吃菜，本组件再排除本块已加)
+    onQuickAddDish: (DishMini) -> Unit = {}, // [AI生成] part1：点 chip 即把该菜加入本块(点后移出列表=天然反馈)
 ) {
     // [AI修改] 苹果风格：无阴影填充白卡，圆角 medium(12)。
     Surface(
@@ -434,8 +456,15 @@ private fun MealBlockCard(
             Divider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(10.dp))
 
+            // [AI生成] part1 餐次常吃 chips：排除本块已加菜后取前 8，点即入餐(少一步)。无候选则整行不渲染(不占位)。
+            // [AI修改] 审查建议2：纯派生态用 remember 缓存(依赖候选与本块已选)，免每次重组重算。
+            val quickChips = remember(quickDishes, block.dishes) {
+                quickDishes.filter { d -> block.dishes.none { it.id == d.id } }.take(8)
+            }
+
             if (block.dishes.isEmpty()) {
                 Column {
+                    FrequentDishChips(dishes = quickChips, onAdd = onQuickAddDish) // [AI生成] 空块:chips 在"添加菜品"上方
                     TextButton(
                         onClick = onAddDish,
                         modifier = Modifier.fillMaxWidth(),
@@ -470,6 +499,7 @@ private fun MealBlockCard(
                             }
                         },
                     )
+                    FrequentDishChips(dishes = quickChips, onAdd = onQuickAddDish) // [AI生成] 有菜块:chips 在已有网格下方、"添加菜品"上方
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = onAddDish) {
                             Icon(Icons.Outlined.Add, contentDescription = null)
@@ -513,6 +543,54 @@ private fun MealBlockCard(
                     Text("备注")
                 }
             }
+        }
+    }
+}
+
+/**
+ * 餐次块内"常吃"一键 chips 行。[AI生成] part1 餐次常吃 chips
+ *
+ * 家庭高频记菜提速：点 chip 即把该常吃菜加入本块(免开选择器，4 步→1 步)。
+ * 无候选(新用户/都已加)则整行不渲染(不占纵向空间)。点后该菜被上层过滤移出列表=天然"已加"反馈，撤销由调用方 Snackbar 承接。
+ * 设计门禁偏离说明：未用 SectionHeader(其自带 16dp padding+titleSmall 会在卡内 16dp padding 下双重内缩/字号偏大)，
+ *   改用克制内联小标签(labelMedium/onSurfaceVariant)，更贴卡内紧凑场景、更苹果式克制。
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FrequentDishChips(
+    dishes: List<DishMini>,
+    onAdd: (DishMini) -> Unit,
+) {
+    if (dishes.isEmpty()) return // 无候选不占位
+    Column(modifier = Modifier.padding(bottom = 8.dp)) {
+        Text(
+            "常吃",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 6.dp),
+        )
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            dishes.forEach { dish ->
+                FilterChip(
+                    selected = false, // 点即入餐并移出列表，无常驻选中态
+                    onClick = { onAdd(dish) },
+                    label = {
+                        Text(
+                            dish.name,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.widthIn(max = 160.dp), // 超长菜名截断防撑满整行
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                    },
+                )
+            }
+            Spacer(Modifier.width(8.dp)) // 末尾留白提示可横滚
         }
     }
 }

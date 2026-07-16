@@ -13,8 +13,11 @@ import com.sxdbsm.cookbook.domain.model.MealType
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -95,6 +98,23 @@ class AddMealViewModel(
 
     private val _state = MutableStateFlow(AddMealUiState()) // [AI修改] 内部可变状态，只允许 ViewModel 修改。
     val state: StateFlow<AddMealUiState> = _state.asStateFlow() // [AI修改] 对 UI 暴露只读 StateFlow。
+
+    /**
+     * "常吃"菜品(供餐次块内一键 chips 快捷加菜)。[AI生成] part1 餐次常吃 chips
+     *
+     * 口径(Apple-UX 设计门禁定)：**喜爱度>0(真被记过餐)** 的常吃菜为主 + 最近记录兜底补齐，去重取 16；
+     * UI 层各餐次块再按"排除本块已加菜"过滤取前 8（每块已选不同，过滤放 UI 而非此处）。
+     * 全新用户无历史→两路皆空→列表空→UI 不渲染 chips 区(无数据不占位)。
+     * 冷流用 stateIn(WhileSubscribed)，UI 用 collectAsStateWithLifecycle 消费(勿裸 collect)。
+     */
+    val frequentDishes: StateFlow<List<DishMini>> =
+        combine(
+            dishRepo.observePopularDishes(24),
+            dishRepo.observeRecentDishes(16),
+        ) { popular, recent ->
+            val eaten = popular.filter { it.preference > 0 } // 真正被记过餐的"常吃"
+            (eaten + recent).distinctBy { it.id }.take(16) // 不足则最近记录兜底(recent 亦均有餐记录)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private var nextBlockId = 1L
     private var configured = false // [AI生成] 标记外部入口是否已指定，避免 init 默认日期覆盖编辑日期。
