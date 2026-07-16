@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.compose.material.icons)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core)
+    implementation(libs.androidx.exifinterface) // [AI生成] 读取拍照 EXIF 方向,修部分设备(如小米8)拍照90°旋转
     debugImplementation(libs.compose.ui.tooling)
 
     // Navigation

@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,6 +24,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sxdbsm.cookbook.domain.StapleFood
 import com.sxdbsm.cookbook.domain.model.DishMini
 
@@ -68,32 +71,23 @@ fun MealDishGrid(
     }
 }
 
-/** "主食"角标：左上角直角三角形 + "主"字。[AI修改] */
+/** "主食"角标：左上角贴角小圆点 + "主"字(苹果式克制圆形徽章)。[AI修改] */
 @Composable
 fun StapleBadge(modifier: Modifier = Modifier) {
-    val color = MaterialTheme.colorScheme.primary
-    val onColor = MaterialTheme.colorScheme.onPrimary
     Box(
         modifier = modifier
-            .size(20.dp)
-            .clip(RoundedCornerShape(topStart = 10.dp)) // 外角贴合卡片圆角
-            .drawBehind {
-                // 铺满左上角的直角三角形：(0,0)-(w,0)-(0,h)。
-                val p = Path().apply {
-                    moveTo(0f, 0f)
-                    lineTo(size.width, 0f)
-                    lineTo(0f, size.height)
-                    close()
-                }
-                drawPath(p, color)
-            },
+            .padding(3.dp) // 距卡片边缘小内缩，圆点嵌入圆角处更精致
+            .size(16.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             "主",
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold,
-            color = onColor,
-            modifier = Modifier.align(Alignment.TopStart).padding(start = 2.dp),
+            fontSize = 9.sp, // 单字更小，正好嵌进圆里
+            lineHeight = 9.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onPrimary,
         )
     }
 }

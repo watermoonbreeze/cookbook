@@ -244,8 +244,10 @@ private fun createCameraUri(context: Context): Uri {
  */
 private fun saveImagePair(context: Context, sourceUri: Uri): StoredImagePair? = runCatching {
     val originalBounds = readImageBounds(context, sourceUri) ?: return@runCatching null
-    val originalBitmap = decodeScaledBitmap(context, sourceUri, originalBounds, ORIGINAL_MAX_SIDE) ?: return@runCatching null
-    val thumbBitmap = decodeScaledBitmap(context, sourceUri, originalBounds, THUMB_MAX_SIDE) ?: return@runCatching null
+    // [AI修改] 修部分设备(小米8等)拍照结果 90°旋转：解码后按 EXIF 方向摆正，再保存(存了摆正后的像素,读取处无需再转)。
+    val exifMatrix = readExifOrientationMatrix(context, sourceUri)
+    val originalBitmap = decodeScaledBitmap(context, sourceUri, originalBounds, ORIGINAL_MAX_SIDE)?.let { applyMatrix(it, exifMatrix) } ?: return@runCatching null
+    val thumbBitmap = decodeScaledBitmap(context, sourceUri, originalBounds, THUMB_MAX_SIDE)?.let { applyMatrix(it, exifMatrix) } ?: return@runCatching null
     val baseName = timestampFileName()
     val dir = cookbookImageDir(context).apply { mkdirs() }
     val imageFile = File(dir, "$baseName.jpg")
@@ -299,6 +301,44 @@ private fun decodeScaledBitmap(
     val scaled = Bitmap.createScaledBitmap(decoded, targetWidth, targetHeight, true)
     decoded.recycle()
     return scaled
+}
+
+/**
+ * 读取图片 EXIF 方向并转成校正用的 Matrix(旋转/翻转)；无方向信息返回 null。[AI生成]
+ *
+ * 部分设备(小米8/华为等)相机把方向只写进 EXIF、像素不转，直接解码会 90/180/270°偏。
+ */
+private fun readExifOrientationMatrix(context: Context, uri: Uri): android.graphics.Matrix? {
+    val orientation = runCatching {
+        context.contentResolver.openInputStream(uri)?.use { stream ->
+            androidx.exifinterface.media.ExifInterface(stream).getAttributeInt(
+                androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION,
+                androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL,
+            )
+        }
+    }.getOrNull() ?: return null
+    val m = android.graphics.Matrix()
+    when (orientation) {
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90 -> m.postRotate(90f)
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180 -> m.postRotate(180f)
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270 -> m.postRotate(270f)
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> m.postScale(-1f, 1f)
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_FLIP_VERTICAL -> m.postScale(1f, -1f)
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_TRANSPOSE -> { m.postRotate(90f); m.postScale(-1f, 1f) }
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_TRANSVERSE -> { m.postRotate(270f); m.postScale(-1f, 1f) }
+        else -> return null // NORMAL/UNDEFINED：无需校正
+    }
+    return m
+}
+
+/** 对 bitmap 应用方向校正 Matrix；matrix 为 null 则原样返回。[AI生成] */
+private fun applyMatrix(bitmap: Bitmap, matrix: android.graphics.Matrix?): Bitmap {
+    if (matrix == null) return bitmap
+    return runCatching {
+        val rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        if (rotated != bitmap) bitmap.recycle()
+        rotated
+    }.getOrDefault(bitmap)
 }
 
 /**
