@@ -125,12 +125,15 @@ class RecommendationDataSource(
             val mains = d.ingredients.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }
             d.id to (mains.maxOfOrNull { recentMainFreq[it] ?: 0 } ?: 0)
         }.filterValues { it > 0 }
-        // 营养互补度[-1,1]：候选相对近期已吃的宏量补足程度(有营养数据才非 0，随数据成长)。
-        val recentTotals = if (recentIds.isEmpty()) com.sxdbsm.cookbook.domain.model.NutritionTotals.EMPTY
-            else nutritionRepo.totalOf(recentIds)
+        // [AI修改] 营养互补度[-1,1] 改「今日缺口」基线(用户 2026-07-16)：候选补足**今天已吃(daysAgo==0)**还缺的宏量→加分。
+        //   原用近 recentWindowDays(默认7天)窗口总量作基线——一周食物平均化后三大宏量占比接近目标、缺口趋零→因子近乎失效(算法评审)；
+        //   改取今天已吃作基线(缺口更 sharp，对"下一餐补今天所缺"更有意义)。今天没吃(基线空)→NutritionBalance.score 返 0，因子中性、行为向后兼容。
+        val todayDishIds = recentDishDaysAgo.filterValues { it == 0 }.keys.toList()
+        val todayTotals = if (todayDishIds.isEmpty()) com.sxdbsm.cookbook.domain.model.NutritionTotals.EMPTY
+            else nutritionRepo.totalOf(todayDishIds)
         val nutritionBalanceScores = if (candidateIds.isEmpty()) emptyMap() else
             nutritionRepo.dishNutrition(candidateIds)
-                .mapValues { (_, dn) -> com.sxdbsm.cookbook.domain.model.NutritionBalance.score(recentTotals, dn.totals) }
+                .mapValues { (_, dn) -> com.sxdbsm.cookbook.domain.model.NutritionBalance.score(todayTotals, dn.totals) }
                 .filterValues { it != 0.0 }
         // 推荐风格(用户轻干预)：从偏好读取，默认综合。
         val style = RecommendationStyle.fromKey(
