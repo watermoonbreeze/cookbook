@@ -1156,6 +1156,12 @@ UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 selectDishIngredientIdsByDishId:
 SELECT ingredient_id FROM dish_ingredient WHERE dish_id = ? AND status = 1;
 
+-- [AI生成] 补齐老库预设菜配料的空用量：早期 seed 未带 quantity/unit_id，已关联行留 NULL 致热量算 0（如排骨海带汤）。
+-- 仅回填 quantity IS NULL 的行，不覆盖已有用量（用户手改/新库不受影响）；零风险幂等，纯新查询无需迁移。
+fillDishIngredientQuantityIfNull:
+UPDATE dish_ingredient SET quantity = ?, unit_id = ?
+WHERE dish_id = ? AND ingredient_id = ? AND status = 1 AND quantity IS NULL;
+
 deleteDishIngredientsByIngredient:
 UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
 

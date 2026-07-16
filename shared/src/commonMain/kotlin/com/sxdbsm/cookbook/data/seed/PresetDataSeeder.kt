@@ -532,7 +532,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
 
         // [AI生成] seed 逻辑版本：seed 处理逻辑(非JSON内容)变更时+1，混入内容指纹让已装老库跑一次修复。
         // v2(2026-07-15)=预设菜配料补齐修复(菜先于食材入库致关联缺失、0千卡)。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v2"
+        // v3(2026-07-16)=补齐已关联但用量为空的预设菜配料(早期 seed 无 quantity 致排骨海带汤等 0 千卡)。
+        private const val SEED_LOGIC_VERSION = "seedlogic-v3"
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
@@ -594,7 +595,20 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                 seed.ingredients.forEach ing@{ di ->
                     val ingredientId = q.selectIngredientIdByNameIncludingInactive(di.ingredient).executeAsOneOrNull()?.id
                         ?: run { com.sxdbsm.cookbook.platform.CookbookLog.w("Seed", "菜「${seed.name}」配料名解析失败,跳过关联(食材不存在): ${di.ingredient}"); return@ing } // [AI修改] 生产侧告警,不再全静默(架构评审#1)
-                    if (ingredientId in linked) return@ing
+                    if (ingredientId in linked) {
+                        // [AI生成] 已关联但用量为空(早期 seed 无 quantity)则补齐——修"排骨海带汤等 0 千卡":
+                        // 原逻辑只补"缺失关联"，对已关联却 NULL 用量的行直接跳过，导致热量永远算 0。
+                        // fillDishIngredientQuantityIfNull 仅回填 quantity IS NULL 的行，不覆盖已有用量，零风险。
+                        if (di.quantity != null) {
+                            q.fillDishIngredientQuantityIfNull(
+                                quantity = di.quantity,
+                                unit_id = unitIds[di.unit],
+                                dish_id = existingDishId,
+                                ingredient_id = ingredientId,
+                            )
+                        }
+                        return@ing
+                    }
                     q.insertDishIngredient(
                         dish_id = existingDishId,
                         ingredient_id = ingredientId,
