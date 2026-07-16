@@ -63,6 +63,7 @@ fun IngredientCard(
     highlighted: Boolean = false, // [AI生成] 搜索跳转后短暂高亮定位到该食材。
     imageSize: Dp = 64.dp,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null, // [AI生成] 传入则长按走它(如食材页长按进多选组菜),否则长按开编辑菜单
     onToggleSelect: (() -> Unit)? = null, // [AI生成] 选择模式:传入则右上角显勾选圈(点圈=选/取消,点卡=详情),苹果Photos式
     onEdit: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
@@ -90,7 +91,7 @@ fun IngredientCard(
             )
             .combinedClickable(
                 onClick = { onClick?.invoke() },
-                onLongClick = { if (canEdit) menuOpen = true },
+                onLongClick = { if (onLongClick != null) onLongClick() else if (canEdit) menuOpen = true },
             ),
         shape = MaterialTheme.shapes.medium,
         color = bg,

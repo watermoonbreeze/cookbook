@@ -24,9 +24,12 @@ import org.koin.compose.koinInject
  * [AI修改] 消费 IngredientJumpBus，从全局搜索点食材结果时跳到该食材并高亮。
  **/
 @Composable
-fun IngredientsScreen() {
+fun IngredientsScreen(
+    onOpenNewDish: () -> Unit = {}, // [AI生成] 食材"组成菜品"→跳新建菜品页(预填食材走总线)
+) {
     val vm: IngredientPickerViewModel = koinViewModel()
     val jumpBus: IngredientJumpBus = koinInject()
+    val prefillBus: com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefillBus = koinInject()
     val pending by jumpBus.pending.collectAsStateWithLifecycle()
 
     // [AI修改] 收到跨屏跳转请求 → 直接开该食材详情(顶部显分类路径),不再 jumpToIngredient 定位网格
@@ -57,6 +60,10 @@ fun IngredientsScreen() {
         selectionMode = false,
         openDetailFor = jumpDetail,
         openCreateWithName = createName,
+        onComposeDish = { ings -> // [AI生成] 从食材出发组成菜品:预填食材进新建菜品页
+            prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(ingredients = ings))
+            onOpenNewDish()
+        },
         vm = vm,
     )
 }

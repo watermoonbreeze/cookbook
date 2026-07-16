@@ -48,8 +48,12 @@ fun IngredientPickerScreen(
     selectionMode: Boolean = true,
     openDetailFor: Ingredient? = null, // [AI生成] 跨屏(首页搜索)跳来时直接开该食材详情,替代jumpToIngredient定位(自建食材不再跳错到常规)
     openCreateWithName: String? = null, // [AI生成] 跨屏(首页搜索"新建食材")跳来时按名开新增食材编辑器
+    onComposeDish: ((List<Ingredient>) -> Unit)? = null, // [AI生成] 食材页:长按进多选,"组成菜品"回传选中食材(从食材出发生成菜品)
     vm: IngredientPickerViewModel = koinViewModel(),
 ) {
+    // [AI生成] 食材页多选"组成菜品"态：仅浏览模式(非菜品选食材)+ onComposeDish 提供时可长按进入。
+    var composeMode by remember { mutableStateOf(false) }
+    val selecting = selectionMode || composeMode // 显勾选圈/选中态的统一开关
     // [AI修改] 选择状态统一来自 ViewModel；弹窗输入框内容使用 remember 保存临时值。
     val ui by vm.state.collectAsStateWithLifecycle()
     var createDialogOpen by remember { mutableStateOf(false) }
@@ -342,7 +346,8 @@ fun IngredientPickerScreen(
                                         selected = ing.id in ui.selectedIds,
                                         highlighted = ing.id == ui.highlightIngredientId,
                                         onClick = { selectedIngredient = ing },
-                                        onToggleSelect = if (selectionMode) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 选择模式:点勾选圈直接选
+                                        onToggleSelect = if (selecting) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 点勾选圈直接选
+                                        onLongClick = if (!selectionMode && onComposeDish != null) ({ composeMode = true; if (ing.id !in ui.selectedIds) vm.toggleSelection(ing) }) else null, // [AI生成] 长按进"组成菜品"多选
                                     )
                                 }
                             }
@@ -360,7 +365,8 @@ fun IngredientPickerScreen(
                                     onClick = {
                                         selectedIngredient = ing // [AI修改] 点击食材统一先打开详情，是否加入已选由详情顶部按钮决定。
                                     },
-                                    onToggleSelect = if (selectionMode) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 选择模式:点勾选圈直接选(点卡仍看详情)
+                                    onToggleSelect = if (selecting) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 点勾选圈直接选(点卡仍看详情)
+                                    onLongClick = if (!selectionMode && onComposeDish != null) ({ composeMode = true; if (ing.id !in ui.selectedIds) vm.toggleSelection(ing) }) else null, // [AI生成] 长按进"组成菜品"多选
                                 )
                             }
                         }
@@ -388,6 +394,19 @@ fun IngredientPickerScreen(
                         onConfirm = {
                             onConfirm(vm.confirmSelected())
                             onDismiss()
+                        },
+                    )
+                }
+                // [AI生成] 食材页"组成菜品"多选底栏:长按进入后出现,显已选+组成菜品(从食材出发生成菜品)+取消。
+                if (composeMode && onComposeDish != null) {
+                    ComposeDishBottomBar(
+                        selectedCount = ui.selectedIds.size,
+                        onCancel = { composeMode = false; vm.clearSelection() },
+                        onCompose = {
+                            val picked = ui.selectedIngredients
+                            composeMode = false
+                            vm.clearSelection()
+                            onComposeDish(picked)
                         },
                     )
                 }
@@ -617,6 +636,44 @@ fun IngredientPickerScreen(
                 TextButton(onClick = { categoryDeleteTarget = null }) { Text("取消") }
             },
         )
+    }
+}
+
+/**
+ * 食材页"组成菜品"多选底栏（已选 N · 组成菜品 · 取消）。[AI生成]
+ *
+ * 从食材出发生成菜品：长按进多选后出现，点"组成菜品"带选中食材跳新建菜品页。
+ */
+@Composable
+private fun ComposeDishBottomBar(
+    selectedCount: Int,
+    onCancel: () -> Unit,
+    onCompose: () -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 3.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextButton(onClick = onCancel) { Text("取消") }
+            Text(
+                "已选 $selectedCount 项",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f).padding(start = 8.dp),
+            )
+            com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                text = "组成菜品",
+                onClick = onCompose,
+                enabled = selectedCount > 0,
+            )
+        }
     }
 }
 

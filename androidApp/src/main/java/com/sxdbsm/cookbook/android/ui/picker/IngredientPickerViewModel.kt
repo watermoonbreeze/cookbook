@@ -421,6 +421,11 @@ class IngredientPickerViewModel(
         )
     }
 
+    /** 清空已选(食材页"组成菜品"多选态退出用)。[AI生成] */
+    fun clearSelection() {
+        _state.value = _state.value.copy(selectedIds = emptySet(), selectedIngredients = emptyList())
+    }
+
     /**
      * 读取食材详情弹层需要展示的真实数据。[AI生成]
      */

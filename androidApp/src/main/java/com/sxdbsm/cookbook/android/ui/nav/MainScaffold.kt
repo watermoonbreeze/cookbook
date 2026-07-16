@@ -156,7 +156,7 @@ fun MainScaffold(
                 )
             }
             composable(Routes.INGREDIENTS) {
-                IngredientsScreen()
+                IngredientsScreen(onOpenNewDish = { nav.navigate(Routes.newDish()) }) // [AI生成] 从食材"组成菜品"→新建菜品(预填食材走总线)
             }
             composable(Routes.MINE) {
                 MineScreen(
