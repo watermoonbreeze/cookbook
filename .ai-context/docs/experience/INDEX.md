@@ -14,7 +14,8 @@
 - 上次总结会话点：2026-07-16 体验修复轮(小米8拍照90°旋转=EXIF方向未应用加androidx.exifinterface读+Matrix摆正、主食角标改苹果式贴角小圆、个人健康档案整合进家庭档案=与成员"我"同套care分类纯UI去重取消独立入口用户卡取我的健康状态数据层保留、导航栏色跟随主题背景=透明系统栏在app深色但系统浅色时露android默认白windowBackground改SideEffect设navigationBarColor=colorScheme.background)。关键坑=拍照EXIF方向需读取+Matrix摆正(minSdk21用androidx.exifinterface)、透明系统栏≠跟随界面色需显式设Compose主题背景、健康档案与家庭成员同套care分类整合纯UI去重
 - 上次总结会话点：2026-07-16 无人值守健康参考轮(排骨海带汤等预设菜0千卡新根因=补齐只补缺失关联忽略已关联NULL用量→fillDishIngredientQuantityIfNull回填空用量+SEED v3;软删菜reseed重插带新数据、未删走补齐分支被跳过;华为真机adb拉库python模拟368菜838行验证 + MMR批内多样性diversify主料Jaccard贪心只重排正常菜层四风格全开含单测 + 膳食参考依据页DietaryReference静态数据6分类12来源4片agent联网核准钠糖GI嘌呤脂肪+关于链接 + 营养级别评级方案只出文档 + 食材表单低频折叠+新建返回守卫 + build-cli.sh JDK17自动探测兼容Mac)。关键坑=0千卡补齐要回填空用量非只补缺失关联、Git Bash adb访问/sdcard需MSYS_NO_PATHCONV=1、db在getExternalFilesDir/cookbook/db非databases/、嘌呤三级分级非国标(WS/T560只定性)、GI 55/70是FAO/WHO非WS/T652、真机拉库python模拟SQL先证修复再改代码
 - 上次总结会话点：2026-07-16 下半场(调料默认克数SeasoningDefaults只对分类调料缩小油菜仍100g + 数据来源页/参考资料组ReferenceScaffold复用 + 功能介绍页Apple欢迎范式 + 配色切换7套AppPalette/Palettes向iOS系统色调校鲜亮有活力+我的外观选择器 + 今日卡宏量渐变条段中心平滑过渡+慢病提示个人视角concerns琥珀点色系墙保持纯结构决策A + 组合部分选 + 交互模式库Apple-UX审阅§九增补9.12-9.17+交互组件复用指南+CLAUDE门禁 + B-1餐食页守卫UnsavedGuard复用件)。关键坑=Material3-1.1.2无HorizontalDivider用Divider、配色改走AppPalette+Palettes别硬编码散落、色系墙不关联热量慢病(热量个人放今日卡)、调料默认克数只对分类调料缩小、宏量渐变别实块糊接缝改段中心平滑过渡、未保存守卫用rememberUnsavedGuard非包裹式、UI交互先Apple-UX过再编码+做UI先查交互组件复用指南
-- 总结次数：34
+- 上次总结会话点：2026-07-16 收尾(B批UX B-1~B-5 双门禁完成:UnsavedGuard复用件+餐食页守卫、AppSnackbar统一宿主、库存Tab MiniStepper就地加减、食历卡三图标收ActionSheet、删整天软删撤销snapshotDay+showUndo；渲染宏量渐变回退分段实色；Google代码审查阻断项=撤销saveDayMeals重复抬喜爱度→bumpPreference开关+回归单测；CLAUDE加代码质量门禁=Google工程师审查agent)。关键坑=删/还原走save路径别重复抬统计(saveDayMeals bumpPreference=false)、可逆删除软删+撤销别硬确认(快照读失败别照删/Snackbar Long/单job串行化)、未保存守卫非包裹式rememberUnsavedGuard、卡片能力用可选footer槽、CompositionLocal宿主null默认挂MainScaffold、两门禁(UI先Apple-UX后Google审查)
+- 总结次数：35
 
 ## 文件索引
 
