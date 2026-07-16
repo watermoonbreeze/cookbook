@@ -11,7 +11,8 @@
 - 上次总结会话点：2026-07-15 数据核对轮(食材归类核准 classify尾词优先+NAME_OVERRIDE54项特例 + 全量440食材营养从权威平台nlc.chinanutri.cn/USDA/悉尼GI/2024痛风指南 15组agent联网核准 覆盖升级式合并verified278/pending162 + 食材营养表功能combine5筛选排序VM/横滚可排序表/数据来源弹窗 + 数据来源.md记档)。关键坑=中文食材分类看尾词head-noun非前缀关键词、健康数据禁编造出处必标ref+verified/pending、覆盖升级式合并保留auth未覆盖字段、agent联网分片核准数据模式
 - 上次总结会话点：2026-07-15 无人值守UX深挖轮(4个Apple-UX agent深挖食材/菜品/餐食/健康膳食→方案→主线程落地15项安全改进+高风险入待确认队列 + 营养表体验行高亮/搜索进标题栏/横竖屏悬浮按钮/上划收筛选栏)。关键坑=字典英文化后按旧名硬编码查(gramUnit找"克"恒null丢unitId)、健康提示守免责红线(如实非医嘱nutritionGaps)、combine多源suspend可内联(别用list+cast)、无人值守研究agent产方案+主线程落地安全项模式(安全vs需拍板判定)
 - 上次总结会话点：2026-07-15深夜 无人值守三评审+bug大轮(用户报bug:凉皮0千卡=seedDishes已存在即跳过致配料关联永久残缺→补齐式重挂+SEED_LOGIC_VERSION盐;随机推荐翻忌口菜=rotate随机翻到全忌口末批;膳食统计没吃回不来=togglePresent读冻结的stateIn.value + 3专家agent深挖算法/架构/创建流程,落地avoid50→5/onHandMain封顶/seed缺失项告警/deleteDay落日志/resolveGrams防负/编辑未保存守卫/详情记这道菜CTA/首页计划上移/备注折叠/存为菜品,需拍板项入待办E节)。关键坑=seed已存在即跳过致关联永久残缺(补齐式)、stateIn(WhileSubscribed)无订阅者value冻结致toggle失效、rotate随机翻罚分末批、打分硬约束巨值靠分层排序冗余、专家agent产方案+主线程落安全项
-- 总结次数：31
+- 上次总结会话点：2026-07-16 体验修复轮(小米8拍照90°旋转=EXIF方向未应用加androidx.exifinterface读+Matrix摆正、主食角标改苹果式贴角小圆、个人健康档案整合进家庭档案=与成员"我"同套care分类纯UI去重取消独立入口用户卡取我的健康状态数据层保留、导航栏色跟随主题背景=透明系统栏在app深色但系统浅色时露android默认白windowBackground改SideEffect设navigationBarColor=colorScheme.background)。关键坑=拍照EXIF方向需读取+Matrix摆正(minSdk21用androidx.exifinterface)、透明系统栏≠跟随界面色需显式设Compose主题背景、健康档案与家庭成员同套care分类整合纯UI去重
+- 总结次数：32
 
 ## 文件索引
 
