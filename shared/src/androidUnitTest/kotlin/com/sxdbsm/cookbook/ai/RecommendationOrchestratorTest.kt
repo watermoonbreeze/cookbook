@@ -132,7 +132,7 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
-    fun `偏新鲜风格MMR打散同主料霸屏_综合风格保持分数序`() = runBlocking {
+    fun `MMR四风格全开都打散同主料霸屏_首位仍最相关`() = runBlocking {
         // 5 道五花肉菜 + 青菜/鱼/豆腐各1，主料都在手→分数相同(引擎稳定序保持输入序:五花肉在前)。
         val dishes = listOf(
             RuleDish(1, "五花肉A", listOf(main(200, "五花肉"))),
@@ -147,15 +147,13 @@ class RecommendationOrchestratorTest {
         val base = RecommendationInput(dishes, setOf(200L, 201, 202, 203), HealthConstraints(), emptySet())
         val orch = RecommendationOrchestrator(MockAiRuntime()) // 兜底确定性
 
-        // 综合(默认λ=1.0)：不重排，分数相同→保持输入序，前 3 名全是五花肉。
-        val balanced = orch.recommend(base, mealCount = 1, rotation = 0).candidates
-        assertTrue(balanced.take(3).all { it.mainNames == listOf("五花肉") }, "综合应保持分数序: ${balanced.take(3).map { it.name }}")
-
-        // 偏新鲜(λ=0.6)：MMR 批内打散，首位仍最相关(五花肉)，第 2 名应换成不同主料。
-        val fresh = orch.recommend(base.copy(style = RecommendationStyle.FRESH), mealCount = 1, rotation = 0).candidates
-        assertEquals(listOf("五花肉"), fresh.first().mainNames, "首位仍是最相关的高分菜")
-        assertTrue(fresh[1].mainNames != listOf("五花肉"), "偏新鲜第2名应被打散成不同主料: ${fresh.take(3).map { it.name }}")
-        assertTrue(fresh.take(3).map { it.mainNames.firstOrNull() }.distinct().size >= 2, "偏新鲜前3应含≥2种主料")
+        // 四风格全开(λ 各异但都<1)：首位仍最相关(高分五花肉)，第2名应被打散成不同主料，前3含≥2种主料。
+        RecommendationStyle.entries.forEach { style ->
+            val c = orch.recommend(base.copy(style = style), mealCount = 1, rotation = 0).candidates
+            assertEquals(listOf("五花肉"), c.first().mainNames, "[$style] 首位仍是最相关的高分菜")
+            assertTrue(c[1].mainNames != listOf("五花肉"), "[$style] 第2名应被打散成不同主料: ${c.take(3).map { it.name }}")
+            assertTrue(c.take(3).map { it.mainNames.firstOrNull() }.distinct().size >= 2, "[$style] 前3应含≥2种主料")
+        }
     }
 
     @Test
