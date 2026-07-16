@@ -76,6 +76,17 @@ enum class RecommendationStyle {
         )
     }
 
+    /**
+     * 批内多样性重排强度 λ（MMR）。[AI生成] 算法评审#3.1：只有"跨天硬去重"缺"同一批列表内多样性"，
+     * 易整批同簇（库存五花肉→满屏五花肉菜）。λ=1.0 关（纯分数序），越小越打散主料。
+     * 仅"偏新鲜"默认开——该风格语义即"尝新/多样"，用户选它就预期非严格分数序；
+     * "综合/偏熟悉"保持严格分数序不打乱（默认零惊讶、行为不变）。
+     */
+    fun diversityLambda(): Double = when (this) {
+        FRESH -> 0.6
+        else -> 1.0
+    }
+
     companion object {
         val DEFAULT = BALANCED
 

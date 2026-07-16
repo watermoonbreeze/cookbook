@@ -44,7 +44,8 @@ class RecommendationOrchestrator(
         if (evaluated.isEmpty()) {
             return RecommendationResult(emptyList(), evaluated, RecommendationSource.EMPTY)
         }
-        val candidates = rotate(evaluated, rotation)
+        // [AI生成] 算法评审#3.1：取批后做 MMR 批内多样性重排(仅"偏新鲜"默认开)，打散同主料霸屏。
+        val candidates = diversify(rotate(evaluated, rotation), input.style.diversityLambda())
 
         val prompt = RecommendationPrompt.build(
             candidates, input.constraints, mealCount,
@@ -97,6 +98,51 @@ class RecommendationOrchestrator(
         val batches = (acceptable + DISPLAY_BATCH - 1) / DISPLAY_BATCH
         val start = (rotation.coerceAtLeast(0) % batches) * DISPLAY_BATCH
         return candidates.drop(start).take(DISPLAY_BATCH)
+    }
+
+    /**
+     * MMR 批内多样性重排。[AI生成] 算法评审#3.1
+     *
+     * 只在"正常菜层"（非最近、非忌口）内部按主料相似度贪心打散，避免同主料菜霸屏
+     * （库存有五花肉→满屏五花肉菜）。最近/忌口层是分层末尾（红线，不能被多样性打乱），
+     * 原样保留在尾部。λ=1.0（默认"综合/偏熟悉"）或候选≤2 时直接返回，不改分数序。
+     * 每步选 `λ·相关度 −(1−λ)·与已选最大相似度` 最高者；相关度=层内 score 归一化，相似度=主料 Jaccard。
+     * 纯确定性（无随机），tie-break 取先者，稳定可测。
+     */
+    private fun diversify(batch: List<DishCandidate>, lambda: Double): List<DishCandidate> {
+        if (lambda >= 0.999 || batch.size <= 2) return batch
+        val head = batch.takeWhile { !it.isRecent && it.avoidNames.isEmpty() } // 可重排的正常菜层
+        if (head.size <= 2) return batch
+        val tail = batch.drop(head.size) // 最近/忌口层：保持分层末位不动
+        val maxScore = head.maxOf { it.score }
+        val minScore = head.minOf { it.score }
+        val span = (maxScore - minScore).takeIf { it > 1e-9 }
+        fun rel(c: DishCandidate) = if (span == null) 1.0 else (c.score - minScore) / span
+        val remaining = head.toMutableList()
+        val selected = ArrayList<DishCandidate>(head.size)
+        selected.add(remaining.removeAt(0)) // 头部(最高分)先入选，保证首位仍是最相关
+        while (remaining.isNotEmpty()) {
+            var best = remaining.first()
+            var bestVal = Double.NEGATIVE_INFINITY
+            for (c in remaining) {
+                val sim = selected.maxOf { mainJaccard(c, it) }
+                val mmr = lambda * rel(c) - (1 - lambda) * sim
+                if (mmr > bestVal) { bestVal = mmr; best = c }
+            }
+            selected.add(best)
+            remaining.remove(best)
+        }
+        return selected + tail
+    }
+
+    /** 两菜主料 Jaccard 相似度[0,1]：|交|/|并|，用于 MMR 打散同主料菜。[AI生成] */
+    private fun mainJaccard(a: DishCandidate, b: DishCandidate): Double {
+        val sa = a.mainNames.toSet()
+        val sb = b.mainNames.toSet()
+        if (sa.isEmpty() && sb.isEmpty()) return 0.0
+        val inter = sa.count { it in sb }
+        val union = sa.size + sb.size - inter
+        return if (union == 0) 0.0 else inter.toDouble() / union
     }
 
     /** 纯规则兜底：把规则 top 候选按每餐 2 菜切成 mealCount 餐。[AI生成] */
