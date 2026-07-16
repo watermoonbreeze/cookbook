@@ -26,6 +26,10 @@ data class ExtendedColors(
     val onDanger: Color,
     val dangerContainer: Color,
     val onDangerContainer: Color,
+    // [AI生成] 宏量数据编码色(蛋白/脂肪/碳水)：固定协调三元色、不随 6 套主题变(仅明暗适配)，保"颜色→宏量"记忆稳定。
+    val macroProtein: Color,
+    val macroFat: Color,
+    val macroCarb: Color,
 )
 
 // [AI修改] 苹果风格 Phase 0：语义色对齐方案——健康绿 / 限量琥珀 / 忌口红，克制用于状态。
@@ -42,6 +46,9 @@ val LightExtendedColors = ExtendedColors(
     onDanger = Color(0xFFFFFFFF),
     dangerContainer = Color(0xFFF7DDD6),
     onDangerContainer = Color(0xFF5A1F16),
+    macroProtein = Color(0xFF5C9A6A),
+    macroFat = Color(0xFFE0A23C),
+    macroCarb = Color(0xFF6E9BD1),
 )
 
 val DarkExtendedColors = ExtendedColors(
@@ -57,6 +64,9 @@ val DarkExtendedColors = ExtendedColors(
     onDanger = Color(0xFF3A1510),
     dangerContainer = Color(0xFF5A2A22),
     onDangerContainer = Color(0xFFFBDDD5),
+    macroProtein = Color(0xFF84BE91),
+    macroFat = Color(0xFFEDB65C),
+    macroCarb = Color(0xFF8FB4E0),
 )
 
 val LocalExtendedColors = compositionLocalOf { LightExtendedColors }

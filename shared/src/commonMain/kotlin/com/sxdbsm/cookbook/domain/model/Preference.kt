@@ -22,12 +22,13 @@ enum class ThemeMode(val code: String) {
  * `code` 稳定写库；具体 light/dark 色板在 androidApp 的 Palettes.kt 按此枚举取。
  */
 enum class AppPalette(val code: String, val displayName: String) {
-    TERRACOTTA("terracotta", "赤陶橘"), // 默认：温暖有食欲
-    SAGE("sage", "黛绿"), // 沉静治愈
-    INDIGO("indigo", "藏蓝"), // 理性可信
-    PLUM("plum", "绛紫"), // 雅致内敛
-    TEAL("teal", "墨青"), // 清冽通透
-    AMBER("amber", "暖金"); // 温润丰盈
+    TERRACOTTA("terracotta", "赤陶橘"), // 默认：陶土暖橘，温暖有食欲(现状基准)
+    CITRUS("citrus", "柑橘橙"), // 柑橘/南瓜/胡萝卜，更鲜亮开胃
+    GARDEN("garden", "蔬鲜绿"), // 叶菜/西兰花/牛油果，均衡健康
+    BLUEBERRY("blueberry", "蓝莓靛"), // 蓝莓/深色浆果，抗氧护心
+    MINT("mint", "薄荷青"), // 薄荷/黄瓜/清茶，清新解腻
+    TOMATO("tomato", "番茄红"), // 番茄/红椒/石榴，热情暖胃
+    GRAPE("grape", "葡萄紫"); // 紫葡萄/紫甘蓝/茄子，彩虹饮食
 
     companion object {
         fun fromCode(code: String?): AppPalette = entries.firstOrNull { it.code == code } ?: TERRACOTTA

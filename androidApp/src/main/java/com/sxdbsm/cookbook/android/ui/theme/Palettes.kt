@@ -74,99 +74,122 @@ private fun darkScheme(
     error = ERR_D, onError = ON_ERR_D, errorContainer = ERR_CONT_D, onErrorContainer = ON_ERR_CONT_D,
 )
 
-// ============ 6 套配色（hex 由设计师核定，见 苹果风格UI设计方案 配色套装）============
+// ============ 7 套配色（赤陶橘默认 + 6 套 Apple 系统色·鲜亮有活力·膳食意象）============
 
-// 套1 赤陶橘：直接复用现状 Color.kt 的 LightColors/DarkColors（即基准）。
+// 0 赤陶橘 Terracotta（默认）：陶土暖橘，现状基准——直接复用 Color.kt 的 LightColors/DarkColors。
 private val Terracotta = PaletteColors(LightColors, DarkColors, Color(0xFFDC6E3C), Color(0xFFF0895A))
 
-private val Sage = PaletteColors(
+// 1 柑橘橙 Citrus：柑橘/南瓜/胡萝卜，更鲜亮开胃（systemOrange 调校）。
+private val Citrus = PaletteColors(
     light = lightScheme(
-        0xFF5C8A63, 0xFFFFFFFF, 0xFFE2EDE1, 0xFF1E3821,
-        0xFF7E9877, 0xFFFFFFFF, 0xFFE6EBE2, 0xFF3A4238,
-        0xFFF1F4EE, 0xFF191C19, 0xFFFFFFFF, 0xFF191C19,
-        0xFFE9EDE6, 0xFF79817A, 0xFFD6DDD2, 0xFFE4E9E0,
+        0xFFF5751E, 0xFFFFFFFF, 0xFFFFE6CC, 0xFF5A2C08,
+        0xFFD98F4A, 0xFFFFFFFF, 0xFFF6EADD, 0xFF4A3B2A,
+        0xFFFBF7F2, 0xFF1D1A16, 0xFFFFFFFF, 0xFF1D1A16,
+        0xFFF4EBE0, 0xFF877B6C, 0xFFE4D9CA, 0xFFEFE7DB,
     ),
     dark = darkScheme(
-        0xFF89BE8E, 0xFF123016, 0xFF2E4A31, 0xFFD3EBD4,
-        0xFFA8C2A2, 0xFF1B2E1B, 0xFF333B31, 0xFFDDE7D9,
-        0xFF141712, 0xFFEAF1E8, 0xFF1F231E, 0xFFEAF1E8,
-        0xFF2A2E28, 0xFFA8B0A4, 0xFF363B34, 0xFF2A2E28,
+        0xFFFF9F4D, 0xFF3A1C05, 0xFF6A3810, 0xFFFFE0C4,
+        0xFFE0A972, 0xFF331F0C, 0xFF3C3125, 0xFFF3E3D1,
+        0xFF171310, 0xFFF7F1E9, 0xFF241E18, 0xFFF7F1E9,
+        0xFF2F2820, 0xFFB6AA99, 0xFF3B3227, 0xFF2F2820,
     ),
-    swatchLight = Color(0xFF5C8A63), swatchDark = Color(0xFF89BE8E),
+    swatchLight = Color(0xFFF5751E), swatchDark = Color(0xFFFF9F4D),
 )
 
-private val Indigo = PaletteColors(
+// 2 蔬鲜绿 Garden：绿叶菜/西兰花/牛油果，均衡生机（systemGreen 调校）。
+private val Garden = PaletteColors(
     light = lightScheme(
-        0xFF3F5D9E, 0xFFFFFFFF, 0xFFE2E8F5, 0xFF182644,
-        0xFF6C7791, 0xFFFFFFFF, 0xFFE5E8EF, 0xFF383F4E,
-        0xFFF0F2F6, 0xFF191B20, 0xFFFFFFFF, 0xFF191B20,
-        0xFFE8EAF0, 0xFF767A85, 0xFFD3D7E1, 0xFFE3E6EE,
+        0xFF22A657, 0xFFFFFFFF, 0xFFCFF3D9, 0xFF0A3D1F,
+        0xFF5AA579, 0xFFFFFFFF, 0xFFE1EEE3, 0xFF26382D,
+        0xFFF4F8F3, 0xFF171C18, 0xFFFFFFFF, 0xFF171C18,
+        0xFFE6EFE7, 0xFF727F74, 0xFFD3E0D5, 0xFFE2ECE3,
     ),
     dark = darkScheme(
-        0xFF9CB4E8, 0xFF132347, 0xFF2E436E, 0xFFDCE5FA,
-        0xFFAAB4CC, 0xFF1E2740, 0xFF333B4C, 0xFFDCE1EE,
-        0xFF13151A, 0xFFE8EBF2, 0xFF1F2229, 0xFFE8EBF2,
-        0xFF2A2E36, 0xFFA6ABB8, 0xFF373B44, 0xFF2A2E36,
+        0xFF43D67C, 0xFF04270F, 0xFF1A5A32, 0xFFC4F5D2,
+        0xFF7BC095, 0xFF0A2A16, 0xFF2A342D, 0xFFDBEEE0,
+        0xFF111512, 0xFFECF3EC, 0xFF1C221D, 0xFFECF3EC,
+        0xFF262D27, 0xFFA6B3A8, 0xFF333C35, 0xFF262D27,
     ),
-    swatchLight = Color(0xFF3F5D9E), swatchDark = Color(0xFF9CB4E8),
+    swatchLight = Color(0xFF22A657), swatchDark = Color(0xFF43D67C),
 )
 
-private val Plum = PaletteColors(
+// 3 蓝莓靛 Blueberry：蓝莓/深海鱼，抗氧护心（systemBlue/Indigo 调校）。
+private val Blueberry = PaletteColors(
     light = lightScheme(
-        0xFF8A5470, 0xFFFFFFFF, 0xFFF3E4EC, 0xFF3C2030,
-        0xFF9A8189, 0xFFFFFFFF, 0xFFEEE6EA, 0xFF453B41,
-        0xFFF5F1F3, 0xFF1F1A1D, 0xFFFFFFFF, 0xFF1F1A1D,
-        0xFFEEE8EB, 0xFF847A80, 0xFFDED4DA, 0xFFEAE2E7,
+        0xFF2E64E8, 0xFFFFFFFF, 0xFFD9E3FD, 0xFF0C2A6E,
+        0xFF5F7BB5, 0xFFFFFFFF, 0xFFE1E7F1, 0xFF293347,
+        0xFFF4F6FB, 0xFF171A21, 0xFFFFFFFF, 0xFF171A21,
+        0xFFE6EAF3, 0xFF727889, 0xFFD2DAE8, 0xFFE2E7F1,
     ),
     dark = darkScheme(
-        0xFFD7A0BC, 0xFF3C2030, 0xFF5C3A4C, 0xFFF5DDEA,
-        0xFFC4A6B2, 0xFF33232B, 0xFF3C333A, 0xFFEBDCE3,
-        0xFF171315, 0xFFF1E8ED, 0xFF241E22, 0xFFF1E8ED,
-        0xFF2E282C, 0xFFB3A7AE, 0xFF3A3337, 0xFF2E282C,
+        0xFF6E9BFF, 0xFF062057, 0xFF1E4099, 0xFFD4E1FF,
+        0xFF8AA4D6, 0xFF0C2150, 0xFF2A3140, 0xFFDCE4F4,
+        0xFF101218, 0xFFECEFF6, 0xFF1B1E26, 0xFFECEFF6,
+        0xFF262A33, 0xFFA6ADBE, 0xFF333A47, 0xFF262A33,
     ),
-    swatchLight = Color(0xFF8A5470), swatchDark = Color(0xFFD7A0BC),
+    swatchLight = Color(0xFF2E64E8), swatchDark = Color(0xFF6E9BFF),
 )
 
-private val Teal = PaletteColors(
+// 4 薄荷青 Mint：薄荷/黄瓜/清茶，清新解腻（systemTeal/Mint 调校）。
+private val Mint = PaletteColors(
     light = lightScheme(
-        0xFF2F8079, 0xFFFFFFFF, 0xFFD9EBE8, 0xFF0C3330,
-        0xFF5E8683, 0xFFFFFFFF, 0xFFE1EAE8, 0xFF33423F,
-        0xFFEEF3F2, 0xFF171D1C, 0xFFFFFFFF, 0xFF171D1C,
-        0xFFE5EDEB, 0xFF748280, 0xFFD0DCDA, 0xFFE1E9E7,
+        0xFF12A8B4, 0xFFFFFFFF, 0xFFC6F1F2, 0xFF043C41,
+        0xFF4FA3AA, 0xFFFFFFFF, 0xFFDEEDED, 0xFF243839,
+        0xFFF3F8F8, 0xFF161C1D, 0xFFFFFFFF, 0xFF161C1D,
+        0xFFE4EFEF, 0xFF6F7E7F, 0xFFCFE0E0, 0xFFE0ECEC,
     ),
     dark = darkScheme(
-        0xFF5CC5BB, 0xFF003732, 0xFF1F4B46, 0xFFB6ECE5,
-        0xFF9FC5C0, 0xFF1B302D, 0xFF31423F, 0xFFD5E7E4,
-        0xFF111716, 0xFFE5F1EF, 0xFF1C2322, 0xFFE5F1EF,
-        0xFF28302E, 0xFFA2B0AD, 0xFF343D3B, 0xFF28302E,
+        0xFF3AD4DE, 0xFF00272B, 0xFF0A5A62, 0xFFBEF3F6,
+        0xFF70BEC4, 0xFF022A2E, 0xFF283435, 0xFFD6EEEF,
+        0xFF0F1515, 0xFFEAF4F4, 0xFF1A2122, 0xFFEAF4F4,
+        0xFF242D2D, 0xFFA2B2B2, 0xFF323C3C, 0xFF242D2D,
     ),
-    swatchLight = Color(0xFF2F8079), swatchDark = Color(0xFF5CC5BB),
+    swatchLight = Color(0xFF12A8B4), swatchDark = Color(0xFF3AD4DE),
 )
 
-private val Amber = PaletteColors(
+// 5 番茄红 Tomato：番茄/红椒/石榴，热情暖胃（systemRed/Pink 调校）。
+private val Tomato = PaletteColors(
     light = lightScheme(
-        0xFFB07A25, 0xFFFFFFFF, 0xFFF6E9CF, 0xFF4A320C,
-        0xFF9A855F, 0xFFFFFFFF, 0xFFEFE9DC, 0xFF453D2C,
-        0xFFF5F1E9, 0xFF1E1B15, 0xFFFFFFFF, 0xFF1E1B15,
-        0xFFEEE9DE, 0xFF847C6D, 0xFFDFD7C7, 0xFFEAE4D6,
+        0xFFE5392F, 0xFFFFFFFF, 0xFFFBD9D5, 0xFF5E140E,
+        0xFFC77168, 0xFFFFFFFF, 0xFFF5E5E2, 0xFF4A312D,
+        0xFFFBF5F4, 0xFF1F1917, 0xFFFFFFFF, 0xFF1F1917,
+        0xFFF3E7E5, 0xFF88756F, 0xFFE7D3CF, 0xFFEFDFDB,
     ),
     dark = darkScheme(
-        0xFFE4B45C, 0xFF3D2A05, 0xFF553D14, 0xFFF8E3BE,
-        0xFFCBB68C, 0xFF352B15, 0xFF3A3527, 0xFFEAE0CC,
-        0xFF15130D, 0xFFF2ECE0, 0xFF232019, 0xFFF2ECE0,
-        0xFF2D2A22, 0xFFB0A896, 0xFF38342A, 0xFF2D2A22,
+        0xFFFF6B5E, 0xFF42100A, 0xFF7A241C, 0xFFFFD9D3,
+        0xFFE0968D, 0xFF3A130E, 0xFF3D2C29, 0xFFF5DCD7,
+        0xFF191211, 0xFFF7ECEA, 0xFF251C1A, 0xFFF7ECEA,
+        0xFF302623, 0xFFB9A6A1, 0xFF3F312D, 0xFF302623,
     ),
-    swatchLight = Color(0xFFB07A25), swatchDark = Color(0xFFE4B45C),
+    swatchLight = Color(0xFFE5392F), swatchDark = Color(0xFFFF6B5E),
+)
+
+// 6 葡萄紫 Grape：紫葡萄/紫甘蓝/茄子，彩虹饮食（systemPurple/Indigo 调校）。
+private val Grape = PaletteColors(
+    light = lightScheme(
+        0xFF9B47D6, 0xFFFFFFFF, 0xFFEDD8FA, 0xFF43126B,
+        0xFF9271B5, 0xFFFFFFFF, 0xFFEAE1F1, 0xFF372D45,
+        0xFFF8F4FB, 0xFF1B171F, 0xFFFFFFFF, 0xFF1B171F,
+        0xFFEDE6F2, 0xFF7E7488, 0xFFDED2E8, 0xFFE7DEEF,
+    ),
+    dark = darkScheme(
+        0xFFC583F5, 0xFF3A0C63, 0xFF6A2599, 0xFFEEDBFC,
+        0xFFB79AD4, 0xFF2C1547, 0xFF332B3D, 0xFFE6DBF2,
+        0xFF141017, 0xFFF1EBF6, 0xFF1F1A25, 0xFFF1EBF6,
+        0xFF2A2431, 0xFFAEA2BB, 0xFF3C3447, 0xFF2A2431,
+    ),
+    swatchLight = Color(0xFF9B47D6), swatchDark = Color(0xFFC583F5),
 )
 
 /** 配色枚举 → 明暗方案 + 代表色。[AI生成] */
 val PALETTES: Map<AppPalette, PaletteColors> = mapOf(
     AppPalette.TERRACOTTA to Terracotta,
-    AppPalette.SAGE to Sage,
-    AppPalette.INDIGO to Indigo,
-    AppPalette.PLUM to Plum,
-    AppPalette.TEAL to Teal,
-    AppPalette.AMBER to Amber,
+    AppPalette.CITRUS to Citrus,
+    AppPalette.GARDEN to Garden,
+    AppPalette.BLUEBERRY to Blueberry,
+    AppPalette.MINT to Mint,
+    AppPalette.TOMATO to Tomato,
+    AppPalette.GRAPE to Grape,
 )
 
 fun paletteColorsOf(palette: AppPalette): PaletteColors = PALETTES[palette] ?: Terracotta
