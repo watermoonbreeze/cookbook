@@ -53,10 +53,15 @@ class HealthRuleEngine {
         // [AI修改] 忌口(avoid)：不再直接剔除——改为「照样列出、排到最后、标红警示」。
         // 家庭 app：有慢病的成员应避免，但库存有的菜仍要让用户看到(家人也能做)，由用户自行判断，不替他隐藏。
         // [AI修改] 忌口/限量只算**非调料**食材：否则"盐对高血压忌口/生抽限量"会让几乎所有菜都命中(每道菜都放盐)，忌口失去意义。
-        val avoidNames = nonSeasoning.filter { it.ingredientId in constraints.avoidIngredientIds }.map { it.name }.distinct()
+        // [AI修改] 剂量占比门槛(用户 2026-07-16)：忌口/限量/调养只按**主料(role==MAIN)**判定，忽略辅料/点缀。
+        //   否则克数极少的配料会主导调养结论——如「咸肉炒木耳娃娃菜」木耳仅 50g(辅料)却显"忌木耳"、「咸排骨焖饭」
+        //   香菇占比极小却显香菇，对不能吃咸者失真。主料=菜真正"是什么"；辅料/香辛料/点缀菌菇不改变菜的健康定性。
+        //   注：规则层无逐食材克数，用 is_main 主料标记作占比代理(数据已 populated)；无主料标记的菜不触发定性(宁可不误报)。
+        val mainIngredients = nonSeasoning.filter { it.role == IngredientRole.MAIN }
+        val avoidNames = mainIngredients.filter { it.ingredientId in constraints.avoidIngredientIds }.map { it.name }.distinct()
 
-        val limitHits = nonSeasoning.filter { it.ingredientId in constraints.limitIngredientIds }
-        val recommendHits = nonSeasoning.filter { it.ingredientId in constraints.recommendIngredientIds }
+        val limitHits = mainIngredients.filter { it.ingredientId in constraints.limitIngredientIds }
+        val recommendHits = mainIngredients.filter { it.ingredientId in constraints.recommendIngredientIds }
         // [AI生成] 调料若命中忌口/限量 → 不判菜品忌口，而是转成做法提示(少盐/少糖/少油)，让用户少放而非不做这道菜。
         val cookingCautions = seasonings
             .filter { it.ingredientId in constraints.avoidIngredientIds || it.ingredientId in constraints.limitIngredientIds }

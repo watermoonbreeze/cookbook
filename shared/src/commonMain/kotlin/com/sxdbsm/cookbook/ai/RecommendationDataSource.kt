@@ -230,9 +230,11 @@ class RecommendationDataSource(
             val ings = d.ingredients
             val ingIds = ings.map { it.ingredient.id }
             // [AI修改] 忌口/限量/推荐只算非调料食材：否则盐/生抽等调料几乎每道菜都有，会让所有菜都判忌口。
-            val avoidHits = ings.filter { it.ingredient.id in avoidIds && it.ingredient.id !in seasoningIds }
-            val limitHits = ings.filter { it.ingredient.id in limitIds && it.ingredient.id !in seasoningIds }
-            val recommendHits = ings.filter { it.ingredient.id in recommendIds && it.ingredient.id !in seasoningIds }
+            // [AI修改] 剂量占比门槛(用户 2026-07-16)：进一步只按**主料(isMain)**判定，与 HealthRuleEngine 一致——
+            //   克数极少的辅料/点缀不改变菜的健康定性(如木耳50g配料不该让菜显"忌木耳")。
+            val avoidHits = ings.filter { it.isMain && it.ingredient.id in avoidIds && it.ingredient.id !in seasoningIds }
+            val limitHits = ings.filter { it.isMain && it.ingredient.id in limitIds && it.ingredient.id !in seasoningIds }
+            val recommendHits = ings.filter { it.isMain && it.ingredient.id in recommendIds && it.ingredient.id !in seasoningIds }
             val planMainNames = ings.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }
             PlanDish(
                 id = d.id,

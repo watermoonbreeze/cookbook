@@ -101,9 +101,11 @@ class DishDetailViewModel(
             purchaseNames = purchase.distinct(),
             shortageNames = shortage.distinct(),
             hasHealthProfile = profiles.isNotEmpty(),
-            avoidNames = dish.ingredients.filter { it.ingredient.id in avoid }.map { it.ingredient.name }.distinct(),
-            limitNames = dish.ingredients.filter { it.ingredient.id in limit }.map { it.ingredient.name }.distinct(),
-            recommendNames = dish.ingredients.filter { it.ingredient.id in recommend }.map { it.ingredient.name }.distinct(),
+            // [AI修改] 剂量占比门槛(用户 2026-07-16)：忌口/限量/调养只按**主料(isMain)**判定，与 HealthRuleEngine/
+            //   gatherForPlan 口径一致——避免克数极少的辅料(如木耳50g)让详情页显"忌木耳"等失真定性。
+            avoidNames = dish.ingredients.filter { it.isMain && it.ingredient.id in avoid }.map { it.ingredient.name }.distinct(),
+            limitNames = dish.ingredients.filter { it.isMain && it.ingredient.id in limit }.map { it.ingredient.name }.distinct(),
+            recommendNames = dish.ingredients.filter { it.isMain && it.ingredient.id in recommend }.map { it.ingredient.name }.distinct(),
             cookedCount = stats.first,
             lastCookedDate = stats.second,
             nutritionTags = nutrition,

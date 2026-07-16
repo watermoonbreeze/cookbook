@@ -78,10 +78,11 @@ class HealthRuleEngineTest {
     }
 
     @Test
-    fun `限量limit食材保留但降分`() {
+    fun `限量limit主料保留但降分`() {
+        // [AI修改] 剂量占比门槛后：限量只按主料判定，故限量目标取主料(腊肉)。辅料限量的场景见下方专门测试。
         val plain = RuleDish(1, "清炒时蔬", listOf(main(101, "青菜")))
-        val salty = RuleDish(2, "咸菜炒肉", listOf(main(102, "猪肉"), sec(201, "咸菜")))
-        val constraints = HealthConstraints(limitIngredientIds = setOf(201)) // 咸菜限量(低钠)
+        val salty = RuleDish(2, "腊肉炒饭", listOf(main(102, "腊肉"), sec(201, "米饭")))
+        val constraints = HealthConstraints(limitIngredientIds = setOf(102)) // 腊肉(主料)限量(高钠)
         val result = engine.evaluate(
             listOf(plain, salty),
             pantryIngredientIds = setOf(101, 102, 201),
@@ -90,9 +91,42 @@ class HealthRuleEngineTest {
         // 两个都可做、都不剔除
         assertEquals(2, result.size)
         val saltyCand = result.first { it.id == 2L }
-        assertEquals(listOf("咸菜"), saltyCand.limitHits)
+        assertEquals(listOf("腊肉"), saltyCand.limitHits)
         // 限量的排在无限量的后面
         assertEquals(1L, result.first().id)
+    }
+
+    @Test
+    fun `剂量占比门槛_忌口限量调养只按主料_辅料命中不判定`() {
+        // [AI生成] 用户 2026-07-16：克数极少的配料不该主导忌口/调养定性。
+        // 「咸肉炒木耳娃娃菜」：咸肉(主料)、木耳(辅料 50g)、娃娃菜(主料)。
+        val dish = RuleDish(
+            1, "咸肉炒木耳娃娃菜",
+            listOf(main(101, "咸肉"), sec(201, "木耳"), main(102, "娃娃菜")),
+        )
+        val pantry = setOf(101L, 201L, 102L)
+
+        // 咸肉(主料)+木耳(辅料)都在忌口集：只按主料判 → 只标咸肉，木耳(辅料)不计。
+        val avoid = engine.evaluate(
+            listOf(dish), pantry,
+            HealthConstraints(avoidIngredientIds = setOf(101, 201)),
+        ).first()
+        assertEquals(listOf("咸肉"), avoid.avoidNames, "只按主料判忌口，辅料木耳不计入")
+
+        // 木耳(辅料)命中限量/调养 → 均不计入。
+        val secHit = engine.evaluate(
+            listOf(dish), pantry,
+            HealthConstraints(limitIngredientIds = setOf(201), recommendIngredientIds = setOf(201)),
+        ).first()
+        assertTrue(secHit.limitHits.isEmpty(), "辅料木耳限量不计入")
+        assertTrue(secHit.recommendHits.isEmpty(), "辅料木耳调养不计入")
+
+        // 主料娃娃菜命中调养 → 计入。
+        val mainHit = engine.evaluate(
+            listOf(dish), pantry,
+            HealthConstraints(recommendIngredientIds = setOf(102)),
+        ).first()
+        assertEquals(listOf("娃娃菜"), mainHit.recommendHits, "主料命中调养正常计入")
     }
 
     @Test
