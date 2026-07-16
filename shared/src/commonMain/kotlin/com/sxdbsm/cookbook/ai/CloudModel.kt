@@ -20,6 +20,7 @@ data class CloudModel(
     val endpoint: String, // OpenAI 兼容 chat/completions URL
     val model: String, // API 模型名
     val free: Boolean = false, // 是否免费
+    val applyUrl: String = "", // [AI生成] 该厂商 API Key 申请入口官网(配置指南"打开官网"跳转用；同厂共用)
 )
 
 object CloudModels {
@@ -32,6 +33,7 @@ object CloudModels {
             endpoint = "https://open.bigmodel.cn/api/paas/v4/chat/completions",
             model = "glm-4-flash",
             free = true,
+            applyUrl = "https://open.bigmodel.cn/usercenter/apikeys",
         ),
         CloudModel(
             id = "zhipu_glm4_air",
@@ -40,6 +42,7 @@ object CloudModels {
             vendorName = "智谱",
             endpoint = "https://open.bigmodel.cn/api/paas/v4/chat/completions",
             model = "glm-4-air",
+            applyUrl = "https://open.bigmodel.cn/usercenter/apikeys",
         ),
         CloudModel(
             id = "deepseek_chat",
@@ -48,6 +51,7 @@ object CloudModels {
             vendorName = "DeepSeek",
             endpoint = "https://api.deepseek.com/chat/completions",
             model = "deepseek-chat",
+            applyUrl = "https://platform.deepseek.com/api_keys",
         ),
         CloudModel(
             id = "qwen_turbo",
@@ -56,6 +60,7 @@ object CloudModels {
             vendorName = "通义千问",
             endpoint = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
             model = "qwen-turbo",
+            applyUrl = "https://bailian.console.aliyun.com/",
         ),
         CloudModel(
             id = "moonshot_v1_8k",
@@ -64,6 +69,7 @@ object CloudModels {
             vendorName = "月之暗面",
             endpoint = "https://api.moonshot.cn/v1/chat/completions",
             model = "moonshot-v1-8k",
+            applyUrl = "https://platform.moonshot.cn/console/api-keys",
         ),
     )
 
