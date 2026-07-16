@@ -44,6 +44,7 @@ fun MineScreen(
     onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
     onOpenDietaryReference: () -> Unit = {}, // [AI生成] 膳食参考依据(阈值/分级引用的权威标准透明展示)
     onOpenDataSource: () -> Unit = {}, // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品来源)
+    onOpenFeatureGuide: () -> Unit = {}, // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
     onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
     vm: MineViewModel = koinViewModel(),
 ) {
@@ -277,6 +278,8 @@ fun MineScreen(
         }
 
         InsetGroup(title = "关于") {
+            SettingRow(icon = Icons.Outlined.Lightbulb, title = "功能介绍", subtitle = "一页看懂 Cookbook 能做什么、怎么用", trailing = "▸") { onOpenFeatureGuide() } // [AI生成] 首次使用引导
+            InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") { aboutDialogOpen = true }
         }
 
