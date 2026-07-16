@@ -157,6 +157,33 @@ class NutritionLevelEvaluatorTest {
     }
 
     @Test
+    fun `详情页dishQualitativeHits_gate病种_去重care覆盖_只算传入主料`() {
+        val gi = mapOf("白米饭" to 83.0, "馒头" to 88.0)
+        // 登记糖尿病+痛风：白米饭高GI、猪肝高嘌呤；但"白米饭"已在 care limit → GI 去重排除，只剩"馒头"。
+        val (hiGi, hiPur) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = listOf("白米饭", "馒头", "猪肝", "青菜"),
+            conditions = setOf(HealthCondition.DIABETES, HealthCondition.GOUT),
+            giByName = gi,
+            alreadyFlagged = setOf("白米饭"), // care 已标(limit)
+        )
+        assertEquals(listOf("馒头"), hiGi, "白米饭被 care 覆盖去重，只剩馒头")
+        assertEquals(listOf("猪肝"), hiPur, "猪肝高嘌呤未被 care 覆盖")
+
+        // 未登记病种 → 两者皆空(gate)。
+        val (noGi, noPur) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = listOf("白米饭", "猪肝"), conditions = emptySet(), giByName = gi, alreadyFlagged = emptySet(),
+        )
+        assertTrue(noGi.isEmpty() && noPur.isEmpty(), "未登记病种不命中")
+
+        // 只登记糖尿病 → 嘌呤不算(即便命中主料)。
+        val (dmGi, dmPur) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = listOf("馒头", "猪肝"), conditions = setOf(HealthCondition.DIABETES), giByName = gi, alreadyFlagged = emptySet(),
+        )
+        assertEquals(listOf("馒头"), dmGi)
+        assertTrue(dmPur.isEmpty(), "只登记糖尿病→不算嘌呤")
+    }
+
+    @Test
     fun `病种名映射`() {
         assertTrue(HealthCondition.HYPERTENSION in HealthCondition.fromCareName("高血压"))
         assertTrue(HealthCondition.GOUT in HealthCondition.fromCareName("痛风/高尿酸"))

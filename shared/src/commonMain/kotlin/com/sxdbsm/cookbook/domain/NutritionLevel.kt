@@ -81,6 +81,34 @@ object NutritionLevelEvaluator {
         names.filter { n -> giByName[n.trim()]?.let { it >= GI_HIGH } == true }.distinct()
 
     /**
+     * 单道菜的高GI/高嘌呤定性命中(供菜品详情页展示，作为 care 忌口的 data-driven 补充)。[AI生成] P2/P4 详情页
+     *
+     * 多角色评审收敛(临床营养+架构 2026-07-16)：仅登记对应病种才命中(gate)、只算主料名(与 care 同 isMain 口径)、
+     * **去重排除已被 care avoid/limit 标记的食材**(care=人工策展更强定性优先，GI/嘌呤只补 care 漏网的客观高GI/高嘌呤)。
+     * 措辞由 UI 用"含X等高GI/高嘌呤"成分陈述(非整菜定性，规避 GL 陷阱)，复用详情页现有免责行。
+     *
+     * @param mainNames 主料食材名(dish.ingredients.filter{isMain})
+     * @param conditions 已登记病种(详情页取全家 enabled 档案 → fromCareName，与其 avoid/limit 同源自洽)
+     * @param giByName 名→GI(仅登记糖尿病时由调用方查表传入，否则传空 map 省查询)
+     * @param alreadyFlagged 已在 care avoid∪limit 中的主料名(去重集)
+     * @return first=高GI名(仅糖尿病), second=高嘌呤名(仅痛风)；均已排除 alreadyFlagged
+     */
+    fun dishQualitativeHits(
+        mainNames: List<String>,
+        conditions: Set<HealthCondition>,
+        giByName: Map<String, Double>,
+        alreadyFlagged: Set<String>,
+    ): Pair<List<String>, List<String>> {
+        // [AI修改] 审查建议1：去重两侧统一按 trim 归一比对(不依赖"调用方两侧都不 trim"的隐含前提，防日后一侧加归一致静默失效)。
+        val flagged = alreadyFlagged.mapTo(mutableSetOf()) { it.trim() }
+        val gi = if (HealthCondition.DIABETES in conditions)
+            matchHighGiFoods(mainNames, giByName).filterNot { it.trim() in flagged } else emptyList()
+        val purine = if (HealthCondition.GOUT in conditions)
+            matchHighPurineFoods(mainNames).filterNot { it.trim() in flagged } else emptyList()
+        return gi to purine
+    }
+
+    /**
      * 综合评级：以结构多样性 [baseLevel] 为底，按热量达标 + 慢病指标下调，产出级别+提示。[AI生成]
      *
      * @param baseLevel 结构多样性级别 0~4（[FoodGroup.nutritionLevel]）

@@ -335,6 +335,14 @@ private fun DishInsightsSection(insights: DishInsights) {
                     insights.recommendNames.isNotEmpty() -> InsightLine("✅ 有益", "含推荐：${insights.recommendNames.joinToString("、")}", MaterialTheme.colorScheme.primary)
                     else -> InsightLine("💚 健康", "无忌口/限量，适合", MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                // [AI生成] P4/P2：GI/嘌呤定性补充(care 忌口的 data-driven 补漏，独立维度可与忌口并存；已去重 care 覆盖的食材)。
+                //   仅登记对应病种才非空(VM 纯函数已 gate)；成分陈述非整菜定性(规避 GL 陷阱)，个人视角非医嘱。
+                if (insights.highPurineNames.isNotEmpty()) {
+                    InsightLine("🍖 嘌呤", "偏高：${insights.highPurineNames.joinToString("、")} · 痛风建议避免", MaterialTheme.colorScheme.error)
+                }
+                if (insights.highGiNames.isNotEmpty()) {
+                    InsightLine("📈 升糖", "高GI：${insights.highGiNames.joinToString("、")} · 糖尿病可换低GI或控量", MaterialTheme.colorScheme.primary)
+                }
             }
             val cookText = if (insights.cookedCount <= 0) "还没做过" else buildString {
                 append("做过 ${insights.cookedCount} 次")

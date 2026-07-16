@@ -9,6 +9,8 @@ import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
+import com.sxdbsm.cookbook.domain.HealthCondition
+import com.sxdbsm.cookbook.domain.NutritionLevelEvaluator
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.Dish
 import kotlinx.coroutines.flow.Flow
@@ -96,21 +98,40 @@ class DishDetailViewModel(
         val related = if (mainIds.isEmpty()) emptyList()
         else dishRepo.findDishesByIngredients(mainIds, limit = 12).map { it.dish }.filter { it.id != dish.id }.take(8)
 
+        // [AI修改] 剂量占比门槛：忌口/限量/调养只按**主料(isMain)**判定(与 HealthRuleEngine/gatherForPlan 一致)。
+        //   提为 val 以便 GI/嘌呤定性提示去重复用(避免同一食材两处重复)。
+        val avoidNames = dish.ingredients.filter { it.isMain && it.ingredient.id in avoid }.map { it.ingredient.name }.distinct()
+        val limitNames = dish.ingredients.filter { it.isMain && it.ingredient.id in limit }.map { it.ingredient.name }.distinct()
+        val recommendNames = dish.ingredients.filter { it.isMain && it.ingredient.id in recommend }.map { it.ingredient.name }.distinct()
+
+        // [AI生成] P2/P4 详情页：GI(糖尿病)/嘌呤(痛风)定性提示——care 忌口的 data-driven 补充(多角色评审收敛)。
+        //   病种取全家 enabled 档案(与本页 avoid/limit 同源自洽；与今日卡按关注成员的差异属"菜品视角 vs 当日摄入视角"，合理)。
+        //   仅登记糖尿病才查 gi 表(gate 省无谓查询)；聚合+去重(排除已在 avoid/limit 的食材)逻辑下沉 shared 纯函数(可测)。
+        val conditions = profiles.flatMap { HealthCondition.fromCareName(it.crowdName) }.toSet()
+        val mainNames = dish.ingredients.filter { it.isMain }.map { it.ingredient.name }
+        val giByName = if (HealthCondition.DIABETES in conditions) nutritionRepo.giByName() else emptyMap()
+        val (highGiNames, highPurineNames) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = mainNames,
+            conditions = conditions,
+            giByName = giByName,
+            alreadyFlagged = (avoidNames + limitNames).toSet(),
+        )
+
         return DishInsights(
             usingPantry = usingPantry,
             purchaseNames = purchase.distinct(),
             shortageNames = shortage.distinct(),
             hasHealthProfile = profiles.isNotEmpty(),
-            // [AI修改] 剂量占比门槛(用户 2026-07-16)：忌口/限量/调养只按**主料(isMain)**判定，与 HealthRuleEngine/
-            //   gatherForPlan 口径一致——避免克数极少的辅料(如木耳50g)让详情页显"忌木耳"等失真定性。
-            avoidNames = dish.ingredients.filter { it.isMain && it.ingredient.id in avoid }.map { it.ingredient.name }.distinct(),
-            limitNames = dish.ingredients.filter { it.isMain && it.ingredient.id in limit }.map { it.ingredient.name }.distinct(),
-            recommendNames = dish.ingredients.filter { it.isMain && it.ingredient.id in recommend }.map { it.ingredient.name }.distinct(),
+            avoidNames = avoidNames,
+            limitNames = limitNames,
+            recommendNames = recommendNames,
             cookedCount = stats.first,
             lastCookedDate = stats.second,
             nutritionTags = nutrition,
             nutritionEstimate = nutritionEstimate, // [AI生成] 营养估算(每道菜热量/宏量)
             related = related, // [AI修改] 修复：此前漏传导致"相关菜品"永不显示。
+            highGiNames = highGiNames, // [AI生成] 高GI主料(仅糖尿病·已去重 care 覆盖的)
+            highPurineNames = highPurineNames, // [AI生成] 高嘌呤主料(仅痛风·已去重 care 覆盖的)
         )
     }
 }
@@ -129,6 +150,8 @@ data class DishInsights(
     val nutritionTags: List<String>,
     val nutritionEstimate: com.sxdbsm.cookbook.domain.model.DishNutrition? = null, // [AI生成] 营养估算(热量+宏量+覆盖率)
     val related: List<com.sxdbsm.cookbook.domain.model.DishMini> = emptyList(),
+    val highGiNames: List<String> = emptyList(), // [AI生成] P2 高GI主料(仅登记糖尿病·已去重 care 覆盖，GI≥70 FAO/WHO)
+    val highPurineNames: List<String> = emptyList(), // [AI生成] P4 高嘌呤主料(仅登记痛风·已去重 care 覆盖，WS/T560 定性)
 ) {
     /** 当前库存能否直接做（在用库存且无采购无缺料）。 */
     val canCook: Boolean get() = usingPantry && purchaseNames.isEmpty() && shortageNames.isEmpty()
