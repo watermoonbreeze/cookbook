@@ -60,6 +60,8 @@ fun ShoppingListScreen(
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+    // [AI生成] 库存挂钩关→采购清单无意义(纯库存派生)。入口已在"我的"隐藏，此为深链/返回栈残留的防御性空态。
+    val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
     // [AI生成] 入库结果/未勾选提示。
     LaunchedEffect(state.toast) {
         state.toast?.let { snackbar.showSnackbar(it); vm.consumeToast() }
@@ -86,6 +88,11 @@ fun ShoppingListScreen(
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when {
+                !pantryHookOn -> com.sxdbsm.cookbook.android.ui.component.EmptyState(
+                    text = "采购清单已关闭\n开启「库存挂钩」（我的 → 功能设置）后，这里会汇总需采购和缺料的食材",
+                    icon = "🛒",
+                    modifier = Modifier.align(Alignment.Center),
+                )
                 state.loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                 state.items.isEmpty() -> Column(
                     Modifier.align(Alignment.Center),

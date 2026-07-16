@@ -15,6 +15,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -150,6 +153,8 @@ private fun DayPreset(label: String, value: Int, current: Int, onSelect: (Int) -
 
 @Composable
 private fun DayCard(day: DayPlan, dateLabel: String? = null) {
+    // [AI生成] 库存挂钩关→周期规划不显缺料/采购标注、缺料菜不变灰(与食历/详情同口径去噪)。
+    val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
         shape = MaterialTheme.shapes.medium,
@@ -182,8 +187,8 @@ private fun DayCard(day: DayPlan, dateLabel: String? = null) {
                 }
                 meal.dishes.forEach { d ->
                     Spacer(Modifier.height(2.dp))
-                    // [AI生成] 库存不足(缺料/采购)的菜半透明灰显 + 标注，与食历缺料样式一致。
-                    val lack = d.shortageNames.isNotEmpty() || d.purchaseNames.isNotEmpty()
+                    // [AI生成] 库存不足(缺料/采购)的菜半透明灰显 + 标注，与食历缺料样式一致。库存挂钩关则不判(去噪)。
+                    val lack = pantryHookOn && (d.shortageNames.isNotEmpty() || d.purchaseNames.isNotEmpty())
                     Column(modifier = if (lack) Modifier.alpha(0.6f) else Modifier) { // [AI修改] 0.45→0.6, 缺料菜也保持可读
                         // [AI修改] 菜名显式用 onSurface 深色 + Medium 字重，避免在 surfaceVariant 卡片上默认淡色看不清。
                         Text(
@@ -196,10 +201,10 @@ private fun DayCard(day: DayPlan, dateLabel: String? = null) {
                             Text("　${d.reason}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
-                    if (d.purchaseNames.isNotEmpty()) {
+                    if (pantryHookOn && d.purchaseNames.isNotEmpty()) {
                         Text("　🛒 采购：${d.purchaseNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     }
-                    if (d.shortageNames.isNotEmpty()) {
+                    if (pantryHookOn && d.shortageNames.isNotEmpty()) {
                         Text("　⚠ 缺：${d.shortageNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     }
                 }

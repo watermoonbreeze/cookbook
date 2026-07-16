@@ -14,6 +14,7 @@ import com.sxdbsm.cookbook.domain.NutritionLevelEvaluator
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.Dish
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -28,6 +29,7 @@ class DishDetailViewModel(
     private val healthRepo: HealthProfileRepository,
     private val ingredientRepo: IngredientRepository,
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 营养估算
+    private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] 库存挂钩开关(关则详情不显库存洞察)
 ) : ViewModel() {
 
     var insights by mutableStateOf<DishInsights?>(null)
@@ -66,7 +68,9 @@ class DishDetailViewModel(
         // 扣掉截至今天所有已发生餐 + 今日排期餐的占用(不预支未来)。故同一天多餐争用同一在库食材、或历史餐
         // 已把份数占光时，详情页会比食历卡片更早报"缺"。这是"现在整体能否做(保守)" vs 卡片按餐次时间序
         // rank 判"这张排期餐是否轮得到(乐观, PantryAllocation.shortages 只对 date>=今天的餐标缺)"的固有语义差异，非 bug。
-        val servings = pantryRepo.servingCounts()
+        // [AI生成] 库存挂钩关闭→当作没有库存(usingPantry=false)，采购/缺料/可做整块不判不显(源头 gate 去噪)。
+        val pantryHookOn = prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.PANTRY_HOOK_ENABLED, default = true).first()
+        val servings = if (pantryHookOn) pantryRepo.servingCounts() else emptyMap()
         val usingPantry = servings.isNotEmpty()
         val remaining = if (usingPantry) pantryRepo.remaining() else emptyMap()
         val purchase = mutableListOf<String>()

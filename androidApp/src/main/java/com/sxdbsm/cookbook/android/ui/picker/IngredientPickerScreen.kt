@@ -29,6 +29,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.IngredientCard
+import com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.FoodCategory
 import com.sxdbsm.cookbook.domain.model.Ingredient
@@ -57,6 +58,8 @@ fun IngredientPickerScreen(
     val selecting = selectionMode || composeMode // 显勾选圈/选中态的统一开关
     // [AI修改] 选择状态统一来自 ViewModel；弹窗输入框内容使用 remember 保存临时值。
     val ui by vm.state.collectAsStateWithLifecycle()
+    // [AI生成] 库存挂钩总开关(提到顶层，供 库存Tab/详情入库出库/搜索面板入库 统一 gate，防漏点)。
+    val pantryHookOn by rememberPantryHookEnabled()
     var createDialogOpen by remember { mutableStateOf(false) }
     var createPrefillName by remember { mutableStateOf("") } // [AI生成] 搜索无结果"新建关键词"时预填的名称
     var editingIngredient by remember { mutableStateOf<Ingredient?>(null) }
@@ -193,7 +196,8 @@ fun IngredientPickerScreen(
                             selectedIngredient = it
                         },
                         onToggleSelect = { vm.toggleSelection(it) },
-                        onTogglePantry = { ing ->
+                        // [AI修改] 阻断-1:库存挂钩关→搜索面板不显入库/出库(传 null)。
+                        onTogglePantry = if (pantryHookOn) { ing ->
                             // [AI修改] A8：入库默认 1 份即时入库(免弹窗)，份数可在库存Tab/详情再调；已在库则出库。
                             if (ing.id in ui.pantryIngredientIds) {
                                 vm.removeFromPantry(ing)
@@ -201,7 +205,7 @@ fun IngredientPickerScreen(
                                 vm.addToPantry(ing)
                                 Toast.makeText(context, "已把「${ing.name}」入库 1 份，可在库存调整份数", Toast.LENGTH_SHORT).show()
                             }
-                        },
+                        } else null,
                     )
                 } else if (ui.keyword.isNotBlank()) {
                     // [AI生成] 搜到库里没有的食材=直接给"＋新建『关键词』"直达(免清空重打名字),预填名称、大类仍按名自动预选。
@@ -232,12 +236,17 @@ fun IngredientPickerScreen(
                         }
                     }
                 }
+                // [AI生成] 库存挂钩关→隐藏"库存"Tab(用户已明确不用库存，留灰占位是打脸式提醒)；若正停在该 Tab 则回落。
+                androidx.compose.runtime.LaunchedEffect(pantryHookOn, ui.mainTab) {
+                    if (!pantryHookOn && ui.mainTab == IngredientMainTab.PANTRY) vm.selectMainTab(IngredientMainTab.RECENT)
+                }
+                val visibleTabs = IngredientMainTab.values().filter { it != IngredientMainTab.PANTRY || pantryHookOn }
                 // [AI修改] 苹果风格：主分类改可滚动 FilterChip 行(去 Material TabRow 的下划线 indicator)。
                 LazyRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    items(IngredientMainTab.values()) { tab ->
+                    items(visibleTabs) { tab ->
                         FilterChip(
                             selected = ui.mainTab == tab,
                             onClick = {
@@ -494,11 +503,12 @@ fun IngredientPickerScreen(
                 null
             },
             inPantry = ingredient.id in ui.pantryIngredientIds,
-            onTogglePantry = if (!selectionMode) ({ vm.removeFromPantry(ingredient) }) else null, // [AI修改] 仅承担出库
+            // [AI修改] 阻断-1:库存挂钩关→详情弹层不显入库/出库/份数(回调置 null,能力显隐由回调决定,组件不改)。
+            onTogglePantry = if (!selectionMode && pantryHookOn) ({ vm.removeFromPantry(ingredient) }) else null, // [AI修改] 仅承担出库
             pantryRemaining = ui.pantryRemaining[ingredient.id] ?: 0,
             pantryServing = ui.pantryServings[ingredient.id] ?: 0,
-            onAddServings = if (!selectionMode) ({ count -> vm.addServings(ingredient.id, count) }) else null,
-            onSetServings = if (!selectionMode) ({ count -> vm.setServings(ingredient.id, count) }) else null,
+            onAddServings = if (!selectionMode && pantryHookOn) ({ count -> vm.addServings(ingredient.id, count) }) else null,
+            onSetServings = if (!selectionMode && pantryHookOn) ({ count -> vm.setServings(ingredient.id, count) }) else null,
             // [AI生成] 仅浏览模式(非选食材)给"存为菜品"：即食品直接吃场景一步建成同名单食材菜品。
             onSaveAsDish = if (!selectionMode) ({
                 vm.saveIngredientAsDish(ingredient) { already ->
@@ -776,7 +786,7 @@ private fun SearchResultsPanel(
     pantryIds: Set<Long>,
     onPick: (Ingredient) -> Unit,
     onToggleSelect: (Ingredient) -> Unit,
-    onTogglePantry: (Ingredient) -> Unit,
+    onTogglePantry: ((Ingredient) -> Unit)? = null, // [AI修改] 阻断-1:库存挂钩关时传 null→不显入库/出库按钮
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -810,7 +820,7 @@ private fun SearchResultsPanel(
                         } else {
                             OutlinedButton(onClick = { onToggleSelect(ing) }, contentPadding = compact) { Text("选择") }
                         }
-                    } else {
+                    } else if (onTogglePantry != null) { // [AI修改] 阻断-1:库存挂钩关(回调null)→管理模式不显入库/出库
                         if (ing.id in pantryIds) {
                             OutlinedButton(onClick = { onTogglePantry(ing) }, contentPadding = compact) { Text("出库") }
                         } else {

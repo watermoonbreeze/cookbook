@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -132,7 +133,13 @@ fun FeatureGuideScreen(onBack: () -> Unit) {
             ) {
                 GuideHero(primary)
                 Spacer(Modifier.height(20.dp))
-                BLOCKS.forEachIndexed { i, block ->
+                // [AI生成] 阻断-2:库存挂钩关→功能介绍不列"库存推荐/食材自由搭配"(依赖在手食材,已全 App 隐藏,不能这里还介绍)。
+                val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
+                val pantryFeatureNames = setOf("库存推荐", "食材自由搭配")
+                val visibleBlocks = if (pantryHookOn) BLOCKS else BLOCKS.map { b ->
+                    b.copy(features = b.features.filterNot { it.name in pantryFeatureNames })
+                }
+                visibleBlocks.forEachIndexed { i, block ->
                     GuideSectionCard(block, accents[i])
                     Spacer(Modifier.height(16.dp))
                 }

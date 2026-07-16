@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +66,11 @@ fun AiRecommendScreen(
     val planState = planVm.state
     var showPlan by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
+    // [AI生成] 库存挂钩关→隐藏"库存推荐"档(名不副实的标签最迷茫)；若正处 PANTRY 模式则回落随机。
+    val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
+    LaunchedEffect(pantryHookOn) {
+        if (!pantryHookOn && state.mode == RecommendMode.PANTRY) vm.recommend(RecommendMode.RANDOM)
+    }
 
     LaunchedEffect(Unit) {
         // [AI修改] 进页面由 VM 判定：规则模式自动推荐；配置了 AI 模型则等用户点击「开始推荐」，不自动调云端。
@@ -121,14 +127,20 @@ fun AiRecommendScreen(
             modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
         ) {
             Spacer(Modifier.height(8.dp))
-            // [AI修改] 苹果风格：三档用 segmented control(库存推荐/随机推荐/周期计划)。
+            // [AI修改] 苹果风格：segmented control。库存挂钩关→隐藏"库存推荐"档(仅随机/周期计划)；用 label 分发避免索引错位。
+            val recommendOptions = if (pantryHookOn) listOf("库存推荐", "随机推荐", "周期计划") else listOf("随机推荐", "周期计划")
+            val selectedIndex = when {
+                showPlan -> recommendOptions.lastIndex
+                pantryHookOn && state.mode == RecommendMode.PANTRY -> 0
+                else -> recommendOptions.indexOf("随机推荐")
+            }
             com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-                options = listOf("库存推荐", "随机推荐", "周期计划"),
-                selectedIndex = if (showPlan) 2 else if (state.mode == RecommendMode.PANTRY) 0 else 1,
+                options = recommendOptions,
+                selectedIndex = selectedIndex,
                 onSelect = { idx ->
-                    when (idx) {
-                        0 -> { showPlan = false; if (state.mode != RecommendMode.PANTRY) vm.recommend(RecommendMode.PANTRY) }
-                        1 -> { showPlan = false; if (state.mode != RecommendMode.RANDOM) vm.recommend(RecommendMode.RANDOM) }
+                    when (recommendOptions[idx]) {
+                        "库存推荐" -> { showPlan = false; if (state.mode != RecommendMode.PANTRY) vm.recommend(RecommendMode.PANTRY) }
+                        "随机推荐" -> { showPlan = false; if (state.mode != RecommendMode.RANDOM) vm.recommend(RecommendMode.RANDOM) }
                         else -> showPlan = true
                     }
                 },

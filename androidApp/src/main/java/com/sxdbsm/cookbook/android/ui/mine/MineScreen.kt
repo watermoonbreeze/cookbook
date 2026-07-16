@@ -65,6 +65,8 @@ fun MineScreen(
     val logFiles by vm.logFiles.collectAsStateWithLifecycle()
     val selectedLogContent by vm.selectedLogContent.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    // [AI生成] 库存挂钩关→"采购清单"入口不显(纯库存派生物，关了无意义，零残留)。
+    val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
     var themeDialogOpen by remember { mutableStateOf(false) }
     var paletteDialogOpen by remember { mutableStateOf(false) } // [AI生成] 配色选择器开关
     var backupDialogOpen by remember { mutableStateOf(false) }
@@ -273,10 +275,13 @@ fun MineScreen(
         }
 
         InsetGroup(title = "实用工具") {
-            SettingRow(icon = Icons.Outlined.ShoppingCart, title = "采购清单", subtitle = "汇总今天及未来餐食需采购/缺料的食材", trailing = "▸") { onOpenShoppingList() }
-            InsetDivider(52)
-            SettingRow(icon = Icons.Outlined.Restaurant, title = "食材自由搭配", subtitle = "用在手食材按规则搭出组合建议(离线)", trailing = "▸") { onOpenFreePairing() }
-            InsetDivider(52)
+            // [AI生成] 库存挂钩关→采购清单 + 食材自由搭配 均隐藏(都依赖在手食材，关则无意义/无输出，零残留)。
+            if (pantryHookOn) {
+                SettingRow(icon = Icons.Outlined.ShoppingCart, title = "采购清单", subtitle = "汇总今天及未来餐食需采购/缺料的食材", trailing = "▸") { onOpenShoppingList() }
+                InsetDivider(52)
+                SettingRow(icon = Icons.Outlined.Restaurant, title = "食材自由搭配", subtitle = "用在手食材按规则搭出组合建议(离线)", trailing = "▸") { onOpenFreePairing() }
+                InsetDivider(52)
+            }
             SettingRow(icon = Icons.Outlined.SoupKitchen, title = "厨房小助手", subtitle = "烹饪计时等实用工具", trailing = "▸") { kitchenDialogOpen = true }
         }
 

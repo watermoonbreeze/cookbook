@@ -50,6 +50,7 @@ fun FeatureSettingsScreen(
     val stepMode by vm.stepModeEnabled.collectAsStateWithLifecycle()
     val nutritionColor by vm.nutritionColorEnabled.collectAsStateWithLifecycle()
     val calorieNumber by vm.calorieNumberEnabled.collectAsStateWithLifecycle()
+    val pantryHook by vm.pantryHookEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
@@ -101,10 +102,15 @@ fun FeatureSettingsScreen(
                 )
             }
 
-            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "库存") {
-                PlaceholderRow(
-                    title = "库存 / 份数配置",
-                    subtitle = "库存启用、采购/缺料标注等配置即将在这里统一管理。",
+            // [AI修改] 库存占位升级为真开关(用户提)：不做库存管理的家庭可一键去噪。
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "库存管理") {
+                SwitchRow(
+                    title = "库存挂钩",
+                    subtitle = "开启后，App 会记住你家有哪些食材，并在菜品、食历、采购清单里提示" +
+                        "「现在可做 / 需采购 / 缺料」。若你家不做库存管理，可关闭——全 App 将不再出现" +
+                        "库存与采购相关标注，界面更清爽。默认开启。",
+                    checked = pantryHook,
+                    onCheckedChange = vm::setPantryHook,
                 )
             }
 

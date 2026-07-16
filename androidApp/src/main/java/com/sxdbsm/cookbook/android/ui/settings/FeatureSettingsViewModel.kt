@@ -49,4 +49,13 @@ class FeatureSettingsViewModel(
     fun setCalorieNumber(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, enabled) }
     }
+
+    /** 库存挂钩开关：**默认开**(既有行为，关掉=去噪不再显示库存/采购标注)。[AI生成] */
+    val pantryHookEnabled: StateFlow<Boolean> =
+        prefs.observeFlag(PreferenceKeys.PANTRY_HOOK_ENABLED, default = true)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    fun setPantryHook(enabled: Boolean) {
+        viewModelScope.launch { prefs.setFlag(PreferenceKeys.PANTRY_HOOK_ENABLED, enabled) }
+    }
 }

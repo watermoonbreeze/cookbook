@@ -229,17 +229,19 @@ private fun MealSectionRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
+            // [AI生成] 库存挂钩开关：关则不显缺料/采购标注、且缺料菜恢复不变灰(变灰与标注同生同灭，避免"关了还灰"莫名)。
+            val pantryHookOn by rememberPantryHookEnabled() // [AI修改] 审查建议2:统一 helper 读取(防多点重复漏 gate)
             // [AI修改] F2/F3：复用 MealDishGrid(4列网格+主食置顶+角标)；缺料/采购半透明+下方标注由 slot 注入。
             MealDishGrid(
                 dishes = section.dishes,
                 onDishClick = { dish -> onDishClick?.invoke(dish) },
                 cardAlpha = { dish ->
-                    val lack = dish.shortageIngredients.isNotEmpty() || dish.purchaseIngredients.isNotEmpty()
+                    val lack = pantryHookOn && (dish.shortageIngredients.isNotEmpty() || dish.purchaseIngredients.isNotEmpty())
                     if (lack) 0.4f else 1f
                 },
                 cellBelow = { dish ->
-                    val purchase = dish.purchaseIngredients.distinct()
-                    val shortage = dish.shortageIngredients.distinct()
+                    val purchase = if (pantryHookOn) dish.purchaseIngredients.distinct() else emptyList()
+                    val shortage = if (pantryHookOn) dish.shortageIngredients.distinct() else emptyList()
                     if (purchase.isNotEmpty()) {
                         Spacer(Modifier.height(2.dp))
                         LackText("采：${purchase.joinToString("、")}")

@@ -12,6 +12,7 @@ import com.sxdbsm.cookbook.ai.model.DishCandidate
 import com.sxdbsm.cookbook.ai.model.RecommendationResult
 import com.sxdbsm.cookbook.ai.model.RecommendationSource
 import com.sxdbsm.cookbook.ai.model.RecommendMode
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -55,7 +56,10 @@ class AiRecommendViewModel(
                     engineLabel = engineLabelOf(aiConfig.activeType(), modelReady = true, source = null),
                 )
             } else {
-                recommend(state.mode)
+                // [AI修改] 审查建议1：库存挂钩关→以随机起步(默认 mode=PANTRY，否则首帧跑无用的库存取数+PANTRY结果闪现，
+                //   再被 UI 层回落纠正)。从源头避免，也让"库存关时 PANTRY 模式不可达"真正成立。
+                val pantryOn = prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.PANTRY_HOOK_ENABLED, default = true).first()
+                recommend(if (pantryOn) state.mode else RecommendMode.RANDOM)
             }
         }
     }
