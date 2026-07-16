@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.android.ui.mine
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.data.repository.FamilyRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
@@ -16,8 +17,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/**
+ * 我的用户卡健康信息(档案整合后)。[AI生成]
+ *
+ * @param selfStates "我"的健康状态名(空=未设置)
+ * @param focusName 当前关注成员名(达标/摄入按它算)
+ * @param focusIsSelf 关注成员是否就是"我"(否则卡片提示当前关注谁)
+ */
+data class MineHealthCard(
+    val selfStates: List<String> = emptyList(),
+    val focusName: String = "",
+    val focusIsSelf: Boolean = true,
+)
 
 /**
  * 我的页聚合状态。[AI修改]
@@ -41,7 +57,26 @@ class MineViewModel(
     private val backup: BackupManager,
     private val logFileManager: LogFileManager,
     private val seeder: PresetDataSeeder, // [AI生成] 供“更新基础数据”手动刷新预设内容。
+    private val family: FamilyRepository, // [AI生成] 档案整合：用户卡健康状态改取家庭成员"我"。
 ) : ViewModel() {
+
+    /**
+     * 我的用户卡健康信息(档案整合后)：显示"我"(is_self)的健康状态；关注成员≠我时提示当前关注谁。[AI生成]
+     *
+     * 数据源从旧"个人健康档案"(HealthProfileRepository)切到家庭成员"我"——两者本是同一套 care 分类，
+     * 统一到家庭档案单一入口，忌口/调养口径不变。
+     */
+    val healthCard: StateFlow<MineHealthCard> =
+        combine(family.observeMembers(), flow { emit(health.listAllCrowdTypes()) }) { members, crowds ->
+            val nameById = crowds.associate { it.id to it.name }
+            val self = members.firstOrNull { it.isSelf } ?: members.firstOrNull()
+            val focus = members.firstOrNull { it.isFocus } ?: self
+            MineHealthCard(
+                selfStates = self?.careCategoryIds?.mapNotNull { nameById[it] } ?: emptyList(),
+                focusName = focus?.name ?: "",
+                focusIsSelf = focus?.id == self?.id,
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MineHealthCard())
 
     /**
      * 当前主题模式。[AI修改]

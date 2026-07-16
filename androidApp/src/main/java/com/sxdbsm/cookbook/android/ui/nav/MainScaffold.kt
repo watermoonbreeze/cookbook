@@ -167,6 +167,7 @@ fun MainScaffold(
                     onOpenShoppingList = { nav.navigate(Routes.SHOPPING_LIST) },
                     onOpenFreePairing = { nav.navigate(Routes.FREE_PAIRING) },
                     onOpenNutritionTable = { nav.navigate(Routes.NUTRITION_TABLE) }, // [AI生成] 食材营养表
+                    onOpenFamily = { nav.navigate(Routes.FAMILY) }, // [AI生成] 档案整合:家庭档案统一入口
                 )
             }
             composable(Routes.NUTRITION_TABLE) {

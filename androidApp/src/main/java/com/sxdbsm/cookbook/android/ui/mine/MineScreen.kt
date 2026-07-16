@@ -42,18 +42,17 @@ fun MineScreen(
     onOpenShoppingList: () -> Unit = {},
     onOpenFreePairing: () -> Unit = {},
     onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
+    onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
-    val profiles by vm.profiles.collectAsStateWithLifecycle()
-    val crowdTypes by vm.crowdTypes.collectAsStateWithLifecycle()
+    val healthCard by vm.healthCard.collectAsStateWithLifecycle() // [AI生成] 档案整合:用户卡取"我"的健康状态
     val backups by vm.backups.collectAsStateWithLifecycle()
     val updatingBaseData by vm.updatingBaseData.collectAsStateWithLifecycle()
     val logFiles by vm.logFiles.collectAsStateWithLifecycle()
     val selectedLogContent by vm.selectedLogContent.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var themeDialogOpen by remember { mutableStateOf(false) }
-    var healthDialogOpen by remember { mutableStateOf(false) }
     var backupDialogOpen by remember { mutableStateOf(false) }
     var deviceSyncDialogOpen by remember { mutableStateOf(false) } // [AI生成] 双设备局域网同传弹框。
     var logDialogOpen by remember { mutableStateOf(false) }
@@ -133,8 +132,9 @@ fun MineScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        // [AI修改] 苹果风格：顶部用户卡改无边框填充白卡(浮于灰底)。
+        // [AI修改] 苹果风格：顶部用户卡改无边框填充白卡(浮于灰底)。整卡可点=进家庭档案(设置"我"的健康状态)。
         Card(
+            onClick = onOpenFamily,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
@@ -153,14 +153,14 @@ fun MineScreen(
                 Column(Modifier.weight(1f)) {
                     Text("Cookbook 用户", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(4.dp))
-                    if (profiles.isEmpty()) {
+                    // [AI修改] 档案整合：显示"我"的健康状态(来自家庭成员"我")，替代旧个人健康档案。
+                    if (healthCard.selfStates.isEmpty()) {
                         Text(
-                            "还没设置健康档案，点击去选择",
+                            "还没设置健康状态，点击进家庭档案设置",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
-                        // [AI修改] 健康档案标签横向滚动展示，档案多时可滑动查看全部。
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -168,14 +168,14 @@ fun MineScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            profiles.forEach { profile ->
+                            healthCard.selfStates.forEach { state ->
                                 Surface(
                                     shape = RoundedCornerShape(50),
                                     color = MaterialTheme.colorScheme.secondaryContainer,
                                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                                 ) {
                                     Text(
-                                        profile.crowdName,
+                                        state,
                                         style = MaterialTheme.typography.labelMedium,
                                         maxLines = 1,
                                         softWrap = false,
@@ -185,18 +185,27 @@ fun MineScreen(
                             }
                         }
                     }
+                    // [AI生成] 关注成员≠我时提示当前在为谁优化饮食(达标/摄入按关注成员算)。
+                    if (!healthCard.focusIsSelf && healthCard.focusName.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "当前关注：${healthCard.focusName}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
                 }
             }
         }
 
-        // [AI修改] 苹果风格：设置项改为分组内嵌白卡(InsetGroup) + inset 分隔(末行不画)。
-        InsetGroup(title = "健康") {
+        // [AI修改] 档案整合：取消独立"个人健康档案"，统一到"家庭档案"(含"我"个人档案)；家庭档案从功能设置提到这里。
+        InsetGroup(title = "档案") {
             SettingRow(
-                icon = Icons.Outlined.Favorite,
-                title = "个人健康档案",
-                subtitle = if (profiles.isEmpty()) "未设置" else profiles.joinToString { it.crowdName },
+                icon = Icons.Outlined.Groups,
+                title = "家庭档案",
+                subtitle = if (healthCard.selfStates.isEmpty()) "为每位家人(含你自己)建档：身体数据/健康状态" else "我：${healthCard.selfStates.joinToString("、")}",
                 trailing = "▸",
-            ) { healthDialogOpen = true }
+            ) { onOpenFamily() }
         }
 
         InsetGroup(title = "通用") {
@@ -274,19 +283,7 @@ fun MineScreen(
         )
     }
 
-    if (healthDialogOpen) {
-        HealthProfileDialog(
-            crowdTypes = crowdTypes,
-            selectedIds = profiles.map { it.crowdTypeId }.toSet(),
-            onDismiss = { healthDialogOpen = false },
-            onSave = { selected ->
-                vm.saveHealthProfiles(selected) {
-                    android.widget.Toast.makeText(context, "健康档案已保存", android.widget.Toast.LENGTH_SHORT).show()
-                    healthDialogOpen = false
-                }
-            },
-        )
-    }
+    // [AI修改] 档案整合:移除旧"个人健康档案"选择弹窗——统一走家庭档案(成员"我"的健康状态)。
 
     if (backupDialogOpen) {
         BackupManageDialog(
@@ -490,67 +487,6 @@ private fun SettingRow(
         }
     }
     // [AI修改] 苹果风格：分隔线由外层分组卡(InsetGroup + InsetDivider)控制，行本身不画。
-}
-
-/**
- * 健康档案多选弹框。[AI生成]
- */
-@Composable
-private fun HealthProfileDialog(
-    crowdTypes: List<CrowdType>,
-    selectedIds: Set<Long>,
-    onDismiss: () -> Unit,
-    onSave: (Set<Long>) -> Unit,
-) {
-    var selected by remember(selectedIds) { mutableStateOf(selectedIds) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("个人健康档案") },
-        text = {
-            // [AI修改] 病种统一到调养类后可达十余项，弹框内容需可纵向滚动。
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                if (crowdTypes.isEmpty()) {
-                    Text("暂无可选健康档案")
-                } else {
-                    crowdTypes.forEach { crowd ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    selected = if (crowd.id in selected) selected - crowd.id else selected + crowd.id
-                                }
-                                .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Checkbox(
-                                checked = crowd.id in selected,
-                                onCheckedChange = { checked ->
-                                    selected = if (checked) selected + crowd.id else selected - crowd.id
-                                },
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Column {
-                                Text(crowd.name, style = MaterialTheme.typography.bodyLarge)
-                                if (crowd.description.isNotBlank()) {
-                                    Text(
-                                        crowd.description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onSave(selected) }) { Text("保存") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
-        },
-    )
 }
 
 /**

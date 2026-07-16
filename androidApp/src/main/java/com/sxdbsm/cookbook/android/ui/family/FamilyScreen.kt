@@ -141,7 +141,7 @@ fun FamilyScreen(
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
             title = { Text("删除成员") },
-            text = { Text("确定删除成员「${m.name}」？其档案与病种将一并移除。") },
+            text = { Text("确定删除成员「${m.name}」？其档案与健康状态将一并移除。") },
             confirmButton = {
                 TextButton(onClick = { vm.delete(m.id); deleteTarget = null }) {
                     Text("删除", color = MaterialTheme.colorScheme.error)
@@ -208,7 +208,7 @@ private fun MemberCard(
             )
             if (careNames.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
-                Text("忌口关注：${careNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("健康状态：${careNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -295,7 +295,7 @@ private fun MemberEditorDialog(
                 }
                 if (careOptions.isNotEmpty()) {
                     Spacer(Modifier.height(12.dp))
-                    Text("病种（忌口关注，可多选）", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("健康状态（三高/痛风等，可多选；与忌口·调养挂钩）", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     careOptions.forEach { c ->
                         Row(
                             modifier = Modifier.fillMaxWidth().clickable {

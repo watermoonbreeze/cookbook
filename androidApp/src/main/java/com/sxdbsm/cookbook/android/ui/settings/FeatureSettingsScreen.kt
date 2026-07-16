@@ -90,13 +90,7 @@ fun FeatureSettingsScreen(
                     checked = calorieNumber,
                     onCheckedChange = vm::setCalorieNumber,
                 )
-                // [AI修改] 家庭成员档案入口：身体数据/每日热量目标也在此编辑(含你自己「我」)，不再单列。
-                EntryRow(
-                    title = "家庭成员档案",
-                    subtitle = "为每位家人(含你自己)建档：身高体重年龄/活动量算每日热量目标、病种(忌口按全家合并)、饭量系数。" +
-                        "达标与摄入按「主要关注成员」看。",
-                    onClick = onOpenFamily,
-                )
+                // [AI修改] 档案整合:家庭档案入口移到"我的→档案"顶层,这里不再重复(避免两处入口)。
                 // [AI生成] 分组级免责总说明(合规):健康评估均为公开营养公式估算,仅供日常参考,非医嘱。
                 Text(
                     "以上营养/热量/忌口评估均基于公开营养成分与公式(如中国食物成分表、BMR)估算，" +
