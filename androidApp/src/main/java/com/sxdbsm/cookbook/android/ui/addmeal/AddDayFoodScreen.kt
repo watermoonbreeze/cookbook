@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.Divider
@@ -60,11 +63,13 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -355,8 +360,8 @@ fun AddDayFoodScreen(
         FavoriteComboPickerDialog(
             combos = state.favoriteCombos,
             onDismiss = { comboPickerBlockId = null },
-            onPick = { combo ->
-                vm.addComboDishes(blockId, combo)
+            onConfirm = { combo, selectedIds ->
+                vm.addComboDishes(blockId, combo, selectedIds)
                 comboPickerBlockId = null
             },
         )
@@ -523,29 +528,105 @@ private fun MealBlockCard(
 private fun FavoriteComboPickerDialog(
     combos: List<FavoriteCombo>,
     onDismiss: () -> Unit,
-    onPick: (FavoriteCombo) -> Unit,
+    onConfirm: (FavoriteCombo, Set<Long>) -> Unit,
 ) {
+    // [AI修改] 选组合时展开列出菜品，可全选/部分选后再加入(不再整组直接加)。
+    var expandedId by remember { mutableStateOf<Long?>(combos.firstOrNull()?.id) }
+    // 各组合的已选菜品(缺省=全选)；点某菜切换。
+    val selected = remember { mutableStateMapOf<Long, Set<Long>>() }
+    fun selOf(combo: FavoriteCombo): Set<Long> = selected[combo.id] ?: combo.dishes.map { it.id }.toSet()
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("选择收藏组合") },
         text = {
-            Column {
-                if (combos.isEmpty()) {
-                    // [AI修改] A10：空态给可操作引导——告诉用户怎么创建组合。
-                    Text("还没有收藏组合。\n先在某餐次添加好几道菜，点「保存组合」存成组合，之后就能一键整餐照搬。", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                } else {
+            if (combos.isEmpty()) {
+                Text("还没有收藏组合。\n先在某餐次添加好几道菜，点「保存组合」存成组合，之后就能一键整餐照搬。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 460.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
                     combos.forEach { combo ->
-                        TextButton(
-                            onClick = { onPick(combo) },
-                            modifier = Modifier.fillMaxWidth(),
+                        val expanded = expandedId == combo.id
+                        val cur = selOf(combo)
+                        // 组合标题行：点开/收起
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expandedId = if (expanded) null else combo.id }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text("${combo.name}（${combo.dishes.size} 道菜）", modifier = Modifier.weight(1f))
+                            Text("${combo.name}（${combo.dishes.size} 道菜）", modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
+                            Icon(
+                                Icons.Outlined.ExpandMore,
+                                contentDescription = if (expanded) "收起" else "展开",
+                                modifier = Modifier.rotate(if (expanded) 180f else 0f),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
+                        if (expanded) {
+                            val allChecked = cur.size == combo.dishes.size && combo.dishes.isNotEmpty()
+                            // 全选行
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selected[combo.id] = if (allChecked) emptySet() else combo.dishes.map { it.id }.toSet()
+                                    }
+                                    .padding(start = 8.dp, top = 2.dp, bottom = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Checkbox(checked = allChecked, onCheckedChange = {
+                                    selected[combo.id] = if (allChecked) emptySet() else combo.dishes.map { it.id }.toSet()
+                                })
+                                Text("全选", style = MaterialTheme.typography.bodyMedium)
+                            }
+                            combo.dishes.forEach { dish ->
+                                val checked = dish.id in cur
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selected[combo.id] = if (checked) cur - dish.id else cur + dish.id
+                                        }
+                                        .padding(start = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Checkbox(checked = checked, onCheckedChange = {
+                                        selected[combo.id] = if (checked) cur - dish.id else cur + dish.id
+                                    })
+                                    Text(dish.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                                }
+                            }
+                            Button(
+                                onClick = { onConfirm(combo, cur) },
+                                enabled = cur.isNotEmpty(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 6.dp, bottom = 4.dp),
+                            ) {
+                                Text("添加所选（${cur.size} 道）")
+                            }
+                        }
+                        InsetHairline()
                     }
                 }
             }
         },
         confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+    )
+}
+
+/** 组合项之间的细分隔。[AI生成] Material3 1.1.2 用 Divider(无 HorizontalDivider)。 */
+@Composable
+private fun InsetHairline() {
+    Divider(
+        thickness = 0.5.dp,
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
     )
 }
 
