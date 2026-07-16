@@ -68,6 +68,7 @@ fun IngredientCard(
     onEdit: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
     showAdviceBadge: Boolean = true,
+    footer: (@Composable () -> Unit)? = null, // [AI生成] 卡底可选槽(如库存Tab就地加减份数的 MiniStepper)，不传则无
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     val canDelete = ingredient.source == "user" && onDelete != null
@@ -140,6 +141,12 @@ fun IngredientCard(
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp, vertical = 2.dp),
                 )
+                // [AI生成] 卡底槽：库存Tab 就地加减份数(MiniStepper)等。
+                footer?.let {
+                    Spacer(Modifier.height(2.dp))
+                    it()
+                    Spacer(Modifier.height(4.dp))
+                }
             }
             // [AI生成] 选择模式勾选圈(右上角,苹果Photos式):点圈=选/取消(点卡=看详情,detail不隐藏)。
             onToggleSelect?.let { toggle ->

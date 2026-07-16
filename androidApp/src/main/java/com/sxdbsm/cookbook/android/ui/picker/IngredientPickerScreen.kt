@@ -358,6 +358,20 @@ fun IngredientPickerScreen(
                             }
                         } else {
                             items(ui.ingredients, key = { it.id }) { ing ->
+                                // [AI生成] B-3：库存Tab 卡底就地加减份数(复用 MiniStepper，§9.14)，免开详情。
+                                val pantryFooter: (@Composable () -> Unit)? =
+                                    if (ui.mainTab == IngredientMainTab.PANTRY && !selectionMode) {
+                                        val serving = ui.pantryServings[ing.id] ?: 0
+                                        {
+                                            com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+                                                valueText = "$serving 份",
+                                                onMinus = { vm.setServings(ing.id, (serving - 1).coerceAtLeast(0)) },
+                                                onPlus = { vm.addServings(ing.id, 1) },
+                                                minusEnabled = serving > 0,
+                                                modifier = Modifier.padding(horizontal = 4.dp),
+                                            )
+                                        }
+                                    } else null
                                 IngredientCard(
                                     ingredient = ing,
                                     selected = ing.id in ui.selectedIds,
@@ -367,6 +381,7 @@ fun IngredientPickerScreen(
                                     },
                                     onToggleSelect = if (selecting) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 点勾选圈直接选(点卡仍看详情)
                                     onLongClick = if (!selectionMode && onComposeDish != null) ({ composeMode = true; if (ing.id !in ui.selectedIds) vm.toggleSelection(ing) }) else null, // [AI生成] 长按进"组成菜品"多选
+                                    footer = pantryFooter,
                                 )
                             }
                         }
