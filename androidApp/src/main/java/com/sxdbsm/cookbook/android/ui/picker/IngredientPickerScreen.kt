@@ -20,6 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -111,53 +112,73 @@ fun IngredientPickerScreen(
             },
         )
     }
+    // [AI修改] B(2026-07-16)：Tab 落地页(selectionMode=false)统一大标题(与首页/菜品/我的一致)，下滑折叠；
+    //   弹窗选择器(selectionMode=true)保持原紧凑顶栏(返回+整行搜索)不动。共享主体(搜索面板/主Tab/网格/底栏)两模式共用。
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val content: @Composable () -> Unit = {
+        // 右上"添加食材"两模式共用。
+        val addAction: @Composable () -> Unit = {
+            IconButton(
+                onClick = {
+                    vm.clearCreateError()
+                    vm.loadIngredientEditor(null)
+                    createDialogOpen = true
+                },
+            ) {
+                Icon(Icons.Outlined.Add, contentDescription = "添加食材")
+            }
+        }
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            // Tab 模式给 Surface 挂 nestedScroll：右侧网格滚动驱动 LargeTopAppBar 折叠；弹窗模式不挂。
+            modifier = Modifier.fillMaxSize()
+                .then(if (!selectionMode) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier),
             color = MaterialTheme.colorScheme.surface,
         ) {
             Column(Modifier.fillMaxSize()) {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
-                        actionIconContentColor = MaterialTheme.colorScheme.primary,
-                    ), // [AI修改] 食材选择弹窗顶栏按暖杏规范使用背景一体化样式。
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (!selectionMode) {
-                                Text("食材", fontWeight = FontWeight.SemiBold)
-                                Spacer(Modifier.width(12.dp))
-                            }
+                if (selectionMode) {
+                    // 弹窗选择器：返回 + 整行搜索 + 添加(原样保留，紧凑、无大标题、不折叠)。
+                    TopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            titleContentColor = MaterialTheme.colorScheme.onBackground,
+                            navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                            actionIconContentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                        title = {
                             AppSearchField(
                                 value = ui.keyword,
                                 onValueChange = vm::setKeyword,
                                 placeholder = "搜索食材...",
                                 modifier = Modifier.fillMaxWidth(),
                             )
-                        }
-                    },
-                    navigationIcon = {
-                        if (selectionMode) {
+                        },
+                        navigationIcon = {
                             IconButton(onClick = onDismiss) {
                                 Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
                             }
-                        }
-                    },
-                    actions = {
-                        // [AI修改] E1：选择模式下也在顶部搜索框后显示"＋新增食材"，随时可加，不再只靠底部。
-                        IconButton(
-                            onClick = {
-                                vm.clearCreateError()
-                                vm.loadIngredientEditor(null)
-                                createDialogOpen = true
-                            },
-                        ) {
-                            Icon(Icons.Outlined.Add, contentDescription = "添加食材")
-                        }
-                    },
-                )
+                        },
+                        actions = { addAction() },
+                    )
+                } else {
+                    // Tab 落地页：大标题「食材」下滑折叠 + 右上添加；搜索行移到大标题下方(常驻，随折叠上移不消失)。
+                    LargeTopAppBar(
+                        title = { Text("食材", fontWeight = FontWeight.Bold) },
+                        scrollBehavior = scrollBehavior,
+                        actions = { addAction() },
+                        colors = TopAppBarDefaults.largeTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            scrolledContainerColor = MaterialTheme.colorScheme.background,
+                            titleContentColor = MaterialTheme.colorScheme.onBackground,
+                            actionIconContentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    )
+                    AppSearchField(
+                        value = ui.keyword,
+                        onValueChange = vm::setKeyword,
+                        placeholder = "搜索食材...",
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                    )
+                }
                 // [AI生成] 全局搜索下拉：有输入且有匹配时紧贴搜索框下方弹出。
                 if (ui.searchResults.isNotEmpty()) {
                     SearchResultsPanel(
