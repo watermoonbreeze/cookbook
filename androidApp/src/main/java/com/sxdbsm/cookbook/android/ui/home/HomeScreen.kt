@@ -67,7 +67,7 @@ fun HomeScreen(
     val todayNutrition by vm.todayNutrition.collectAsStateWithLifecycle()
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     var wallExpanded by rememberSaveable { mutableStateOf(true) } // [AI生成] 营养色系墙折叠态：默认展开(整墙显示)，收起后标题右侧显示昨/今/明三色块。
-    var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除计划餐食的日期(确认弹窗)。
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI生成] B-5：删整天撤销 Snackbar
     // [AI修改] 苹果风格：首页用大标题(Large Title)，下滑折叠为小标题。
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
@@ -221,7 +221,10 @@ fun HomeScreen(
                         onDishClick = { dish -> onOpenDish(dish.id) },
                         onEditClick = { onEditMealDate(card.date) },
                         onCopyClick = { onCopyMeal(card.date) }, // [AI生成] A1：复制该日为新建草稿(日期源+1可改)。
-                        onDeleteClick = { deleteDate = card.date }, // [AI生成] 删除该日计划餐食(带确认)。
+                        onDeleteClick = { // [AI修改] B-5/§9.12：可逆删除改软删+撤销 Snackbar，不再硬确认。
+                            val d = card.date
+                            vm.deleteDayUndoable(d) { onUndo -> appSnackbar?.showUndo("已删除 $d 的餐食", onUndo = onUndo) }
+                        },
                     )
                 }
             }
@@ -279,18 +282,4 @@ fun HomeScreen(
         )
     }
 
-    deleteDate?.let { date ->
-        AlertDialog(
-            onDismissRequest = { deleteDate = null },
-            title = { Text("删除餐食") },
-            text = { Text("确定删除 $date 的全部餐食吗？此操作不可撤销。") },
-            confirmButton = {
-                TextButton(onClick = {
-                    vm.deleteDay(date)
-                    deleteDate = null
-                }) { Text("删除", color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = { TextButton(onClick = { deleteDate = null }) { Text("取消") } },
-        )
-    }
 }

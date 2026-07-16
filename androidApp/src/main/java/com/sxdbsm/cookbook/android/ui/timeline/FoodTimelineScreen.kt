@@ -61,7 +61,7 @@ fun FoodTimelineScreen(
         }
     }
     var calendarOpen by remember { mutableStateOf(false) }
-    var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除餐食的日期(确认弹窗)。
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI生成] B-5：删整天撤销 Snackbar
 
     LaunchedEffect(state.scrollRequestVersion, state.scrollTargetIndex, state.pages.size) {
         if (state.scrollTargetIndex >= 0 && state.pages.isNotEmpty()) {
@@ -154,7 +154,10 @@ fun FoodTimelineScreen(
                         data = card,
                         onEditClick = { onEditMealDate(card.date) },
                         onCopyClick = { onCopyMeal(card.date) }, // [AI修改] F8：复制改为进入新建草稿(预填该日餐次+日期源+1可改)，不再直接"复用到今天/明天"
-                        onDeleteClick = { deleteDate = card.date }, // [AI生成] 删除该日餐食(带确认)。
+                        onDeleteClick = { // [AI修改] B-5/§9.12：可逆删除改软删+撤销 Snackbar。
+                            val d = card.date
+                            vm.deleteDayUndoable(d) { onUndo -> appSnackbar?.showUndo("已删除 ${DateTime.formatDate(d)} 的餐食", onUndo = onUndo) }
+                        },
                         onDishClick = { dish -> onOpenDish(dish.id) }, // [AI修改] 食历餐食卡片内的菜品 block 点击进入菜品详情。
                     )
                 }
@@ -193,20 +196,6 @@ fun FoodTimelineScreen(
         )
     }
 
-    deleteDate?.let { date ->
-        AlertDialog(
-            onDismissRequest = { deleteDate = null },
-            title = { Text("删除餐食") },
-            text = { Text("确定删除 ${DateTime.formatDate(date)} 的全部餐食吗？此操作不可撤销。") },
-            confirmButton = {
-                TextButton(onClick = {
-                    vm.deleteDay(date)
-                    deleteDate = null
-                }) { Text("删除", color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = { TextButton(onClick = { deleteDate = null }) { Text("取消") } },
-        )
-    }
 }
 
 /**

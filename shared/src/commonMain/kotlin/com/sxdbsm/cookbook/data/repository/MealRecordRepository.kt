@@ -288,6 +288,18 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         }
     }
 
+    /** 快照某天餐食为草稿(供删整天撤销:先快照→删→撤销时 saveDayMeals 还原)。[AI生成] §9.12 */
+    suspend fun snapshotDay(date: LocalDate): List<DayMealDraft> = withContext(ioDispatcher) {
+        loadDayMealsForEdit(date).map { rec ->
+            DayMealDraft(
+                mealTypeId = rec.mealTypeId,
+                mealTime = rec.mealTime,
+                note = rec.note,
+                dishIds = rec.dishes.map { it.id },
+            )
+        }
+    }
+
     /** 删除指定日期的全部餐食（记录 + 记录-菜品关联）。[AI生成] */
     suspend fun deleteDayMeals(date: LocalDate) = withContext(ioDispatcher) {
         val dateStr = DateTime.formatDate(date)

@@ -84,6 +84,23 @@ class HomeViewModel(
         }
     }
 
+    /** 删整天并支持撤销(§9.12)：先快照→删→回调给 showUndo(点撤销即 saveDayMeals 还原)。[AI生成] B-5 */
+    fun deleteDayUndoable(date: LocalDate, showUndo: (onUndo: () -> Unit) -> Unit) {
+        viewModelScope.launch {
+            val snapshot = runCatching { mealRepo.snapshotDay(date) }.getOrDefault(emptyList())
+            runCatching { mealRepo.deleteDayMeals(date) }
+                .onSuccess {
+                    showUndo {
+                        viewModelScope.launch {
+                            runCatching { mealRepo.saveDayMeals(date, snapshot) }
+                                .onFailure { com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "restoreDay 失败: date=$date", it) }
+                        }
+                    }
+                }
+                .onFailure { com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "deleteDay 失败: date=$date", it) }
+        }
+    }
+
     private fun mondayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, -(d.dayOfWeek.isoDayNumber - 1))
     private fun sundayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, 7 - d.dayOfWeek.isoDayNumber)
 
