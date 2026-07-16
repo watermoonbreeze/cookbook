@@ -1,0 +1,21 @@
+-- [AI生成] v24：性能优化——给高频 JOIN/反查列补索引(纯加索引，不改表结构/不动数据，向后无损)。
+-- 现有主键/唯一索引已覆盖"前导列"查询(如 dish_ingredient 按 dish_id、meal_record_dish 按 meal_record_id、
+-- ingredient_category 按 ingredient_id)；下列是"非前导列"的高频查询，此前全表扫，补单列索引提速。
+-- IF NOT EXISTS 幂等，重复升级/已存在均不崩(守迁移红线:对已存在无副作用)。
+
+-- 按分类列食材(IngredientPicker 分类浏览: WHERE ic.category_id = ? / IN)。
+CREATE INDEX IF NOT EXISTS idx_ingredient_category_category ON ingredient_category(category_id);
+
+-- 按菜反查最近/做过次数(selectDishesByRecent JOIN d.id=mrd.dish_id、cookStats COUNT by dish_id)。
+CREATE INDEX IF NOT EXISTS idx_meal_record_dish_dish ON meal_record_dish(dish_id);
+
+-- 按食材反查/删除关联(删食材清关联 WHERE ingredient_id=?、食材→菜反查)。
+CREATE INDEX IF NOT EXISTS idx_dish_ingredient_ingredient ON dish_ingredient(ingredient_id);
+
+-- [AI生成] 审查建议1同批补：以下 3 个多对多关系表同构(PK 前导另一列)，按下列列反查亦全表扫。
+-- 按标签反查菜(标签筛选菜品: PK 前导 dish_id)。
+CREATE INDEX IF NOT EXISTS idx_dish_tag_rel_tag ON dish_tag_rel(tag_id);
+-- 按烹饪方式反查菜(PK 前导 dish_id)。
+CREATE INDEX IF NOT EXISTS idx_dish_cooking_method_rel_method ON dish_cooking_method_rel(cooking_method_id);
+-- 按菜删收藏组合关联(deleteFavoriteComboDishesByDish WHERE dish_id=?: PK 前导 combo_id)。
+CREATE INDEX IF NOT EXISTS idx_favorite_combo_dish_dish ON favorite_combo_dish(dish_id);

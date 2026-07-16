@@ -74,6 +74,9 @@ CREATE TABLE ingredient_category (
     PRIMARY KEY (ingredient_id, category_id)
 );
 
+-- [AI生成] v24：按分类列食材(PK 前导为 ingredient_id，category_id 需单独索引)。
+CREATE INDEX idx_ingredient_category_category ON ingredient_category(category_id);
+
 -- [AI生成] 食材详情扩展表：承载做法、处理、注意事项、保存和健康说明。
 CREATE TABLE ingredient_detail (
     ingredient_id INTEGER NOT NULL PRIMARY KEY REFERENCES ingredient(id) ON DELETE CASCADE,
@@ -165,6 +168,9 @@ CREATE TABLE dish_cooking_method_rel (
     PRIMARY KEY (dish_id, cooking_method_id)
 );
 
+-- [AI生成] v24：按烹饪方式反查菜(PK 前导 dish_id)。
+CREATE INDEX idx_dish_cooking_method_rel_method ON dish_cooking_method_rel(cooking_method_id);
+
 CREATE TABLE dish_tag (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
@@ -180,6 +186,9 @@ CREATE TABLE dish_tag_rel (
     PRIMARY KEY (dish_id, tag_id)
 );
 
+-- [AI生成] v24：按标签反查菜(标签筛选菜品，PK 前导 dish_id)。
+CREATE INDEX idx_dish_tag_rel_tag ON dish_tag_rel(tag_id);
+
 CREATE TABLE dish_ingredient (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
@@ -191,6 +200,8 @@ CREATE TABLE dish_ingredient (
 );
 
 CREATE UNIQUE INDEX uq_dish_ingredient ON dish_ingredient(dish_id, ingredient_id);
+-- [AI生成] v24：按食材反查/删除关联(uq 前导为 dish_id，ingredient_id 需单独索引)。
+CREATE INDEX idx_dish_ingredient_ingredient ON dish_ingredient(ingredient_id);
 
 -- [AI生成] 菜品操作步骤：每一步保存文字和多图路径，图片路径沿用 `|` 分隔编码。
 CREATE TABLE dish_step (
@@ -250,6 +261,9 @@ CREATE TABLE meal_record_dish (
     PRIMARY KEY (meal_record_id, dish_id)
 );
 
+-- [AI生成] v24：按菜反查(最近吃过/做过次数，PK 前导为 meal_record_id，dish_id 需单独索引)。
+CREATE INDEX idx_meal_record_dish_dish ON meal_record_dish(dish_id);
+
 -- 喜爱度自动累加：MVP 在应用层 Repository 里维护（SQLDelight 当前方言不支持触发器 NEW 引用）。
 -- 在 MealRecordRepository.save() 中插入 meal_record_dish 后调用 incrementDishPreference()。
 
@@ -269,6 +283,9 @@ CREATE TABLE favorite_combo_dish (
     status INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (combo_id, dish_id)
 );
+
+-- [AI生成] v24：按菜删收藏组合关联(deleteFavoriteComboDishesByDish WHERE dish_id=?，PK 前导 combo_id)。
+CREATE INDEX idx_favorite_combo_dish_dish ON favorite_combo_dish(dish_id);
 
 -- [AI生成] 操作步骤模板：把常用做法步骤(文字)存成可复用模板，编辑菜品时"选择步骤"一键套用。
 -- source: preset(内置)/user(自建)；仅文字，图片仍按每道菜单独添加。全新装走 Schema.create 建表，旧库走 15.sqm。
