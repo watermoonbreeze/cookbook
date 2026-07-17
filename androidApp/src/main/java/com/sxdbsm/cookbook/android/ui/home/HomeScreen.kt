@@ -209,6 +209,17 @@ fun HomeScreen(
                 }
             }
         }
+        // [AI生成] #2:说明计划卡只展示"今天+下一个有安排的日期"(观 observeTodayPlusFuture 逻辑),避免用户困惑为何只有1~2天;仅有计划时显示。
+        if (ui.plans.isNotEmpty()) {
+            item {
+                Text(
+                    "只显示今天和下一个有安排的日期，点「全部」看完整食历",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
+        }
         if (ui.plans.isEmpty()) {
             item { EmptyState(text = "暂无计划", icon = "📅") }
         } else {

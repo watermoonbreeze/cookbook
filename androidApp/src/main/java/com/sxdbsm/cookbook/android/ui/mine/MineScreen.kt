@@ -76,6 +76,7 @@ fun MineScreen(
     var aboutDialogOpen by remember { mutableStateOf(false) }
     var selectedLogFileName by remember { mutableStateOf<String?>(null) }
     var pendingExportFile by remember { mutableStateOf<String?>(null) } // [AI生成] 待导出的备份文件名(等 SAF 选好目标位置)。
+    var clearCacheConfirm by remember { mutableStateOf(false) } // [AI生成] #1:清除缓存二次确认(兼安抚"不删记录/照片")
 
     // [AI生成] SAF 导出：把选中备份写到用户选择的位置(下载/网盘/U盘)。
     val exportLauncher = rememberLauncherForActivityResult(
@@ -272,6 +273,14 @@ fun MineScreen(
                     }
                 }
             }
+            InsetDivider(52)
+            // [AI生成] #1:清除缓存——只清系统缓存目录(相机临时图等),不动数据库/照片/备份。
+            SettingRow(
+                icon = Icons.Outlined.CleaningServices,
+                title = "清除缓存",
+                subtitle = "清理临时文件、释放空间，不影响你的记录和照片",
+                trailing = "▸",
+            ) { clearCacheConfirm = true }
         }
 
         InsetGroup(title = "实用工具") {
@@ -315,6 +324,26 @@ fun MineScreen(
             current = mode,
             onSelect = { vm.setThemeMode(it); themeDialogOpen = false },
             onDismiss = { themeDialogOpen = false },
+        )
+    }
+
+    // [AI生成] #1:清除缓存二次确认——文案兼安抚"不会删记录/照片";确认后只清系统缓存目录并 Toast 释放量。
+    if (clearCacheConfirm) {
+        AlertDialog(
+            onDismissRequest = { clearCacheConfirm = false },
+            title = { Text("清除缓存？") },
+            text = { Text("只清理临时缓存文件（如相机中转图），不会删除你的菜品、餐食记录和照片。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    clearCacheConfirm = false
+                    val freed = clearAppCache(context)
+                    val msg = if (freed <= 0L) "没有需要清理的缓存" else "已清除 ${formatBackupSize(freed)} 缓存"
+                    android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                }) { Text("清除") }
+            },
+            dismissButton = {
+                TextButton(onClick = { clearCacheConfirm = false }) { Text("取消") }
+            },
         )
     }
 
@@ -778,3 +807,21 @@ private fun formatBackupSize(bytes: Long): String =
     else "${(bytes / 1024.0 / 1024.0).formatOne()} MB"
 
 private fun Double.formatOne(): String = kotlin.math.round(this * 10.0).div(10.0).toString()
+
+/**
+ * 清除应用缓存：只清系统缓存目录 `context.cacheDir` 与 `externalCacheDir` 下的内容(相机中转图等,可随时重建)。[AI生成] #1
+ *
+ * **数据安全红线**：绝不触碰 `getExternalFilesDir/cookbook`（db/img/backups/log 是用户数据与日志），只删 cache 目录内的文件。
+ * 只删缓存目录内的子项、保留缓存目录本身(系统托管)。
+ * @return 释放的字节数(删除前统计的文件总大小)
+ */
+private fun clearAppCache(context: android.content.Context): Long {
+    var freed = 0L
+    listOfNotNull(context.cacheDir, context.externalCacheDir).forEach { dir ->
+        dir.listFiles()?.forEach { child ->
+            freed += child.walkBottomUp().filter { it.isFile }.sumOf { it.length() }
+            runCatching { child.deleteRecursively() }
+        }
+    }
+    return freed
+}
