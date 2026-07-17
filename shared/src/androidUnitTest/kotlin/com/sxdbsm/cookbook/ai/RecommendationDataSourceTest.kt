@@ -137,6 +137,30 @@ class RecommendationDataSourceTest {
     }
 
     @Test
+    fun `gatherForPlan_批量取数_覆盖全库有效菜且主料分组正确`() = runBlocking {
+        // [AI生成] 性能优化回归：gatherForPlan 由"逐菜 getDishById(N+1)"改为"两条批量查询+内存分组"，
+        //   守护：①不漏菜(覆盖 selectAllDishes 全量) ②每道菜配料按 dish_id 正确分组(主料不串行)。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val q = db.cookbookQueries
+        val ds = RecommendationDataSource(
+            db, PantryRepository(db), DishRepository(db),
+            com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)),
+            IngredientRepository(db), com.sxdbsm.cookbook.data.repository.NutritionRepository(db),
+        )
+
+        val ctx = ds.gatherForPlan()
+        val activeCount = q.selectAllDishes().executeAsList().size
+        assertEquals(activeCount, ctx.dishes.size, "PlanContext 应覆盖全库有效菜(批量取数不漏菜)")
+
+        // 已知预设菜主料正确(批量 join 分组无误、未把别的菜配料串到红烧肉)。
+        val hongshao = ctx.dishes.first { it.name == "红烧肉" }
+        assertTrue(hongshao.mainNames.contains("五花肉"), "红烧肉主料应含五花肉(批量配料按 dish_id 分组正确)")
+        assertFalse(hongshao.mainNames.isEmpty(), "有配料的菜 mainNames 不应为空")
+        Unit
+    }
+
+    @Test
     fun freePairingWorksOnRealSeedData() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded() // 灌入食材 + general 大类关联

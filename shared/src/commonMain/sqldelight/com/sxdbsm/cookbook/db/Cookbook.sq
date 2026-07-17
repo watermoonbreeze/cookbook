@@ -1174,6 +1174,27 @@ JOIN ingredient i ON di.ingredient_id = i.id AND i.status = 1
 WHERE di.dish_id IN ? AND di.status = 1 AND di.is_main = 1
 ORDER BY di.id ASC;
 
+-- [AI生成] 周期规划批量取数(消除 gatherForPlan 逐菜 getDishById 的 N+1)：一次查全库有效菜的
+-- 全部配料(id/名/是否主料)。仅取 PlanDish 所需三字段，不带步骤/图片/标签等重字段。
+-- 不过滤 i.status(与 selectIngredientsOfDish 一致，保留对失效食材的引用参与健康/主料判定)。
+selectAllDishIngredientsForPlan:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name, di.is_main AS is_main
+FROM dish_ingredient di
+JOIN dish d ON d.id = di.dish_id AND d.status = 1
+JOIN ingredient i ON di.ingredient_id = i.id
+WHERE di.status = 1
+ORDER BY di.dish_id ASC, di.is_main DESC, di.id ASC;
+
+-- [AI生成] 按一组 dishId 批量取各菜主料(id+名)，用于周期规划库存标注(消除 annotatePlanWithPantry 逐菜 getDishById)。
+-- 不过滤 i.status(与 getDishById 原路径一致，保留对失效食材引用)；调料排除在 Kotlin 侧按 seasoningIds 做。
+selectMainIngredientsByDishIds:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id, COALESCE(i.name, '') AS ingredient_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+WHERE di.dish_id IN ? AND di.status = 1 AND di.is_main = 1
+ORDER BY di.id ASC;
+
 deleteIngredientsOfDish:
 UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
 

@@ -210,9 +210,14 @@ class RecommendationDataSource(
         // [AI生成] 库存完全为空(未用库存功能)时不标注，避免整份规划全标"采购"灰显打扰。
         if (servings0.isEmpty()) return@withContext plan
         val dishIds = plan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
+        // [AI修改] 性能：原先逐 planned dish getDishById(N+1)。改为一条批量查询取这些菜的主料(id+名)后分组。
+        // [AI修改] 主料排除调料：与 gatherForPlan.planMainNames / mainRepeatCounts 口径统一，契合
+        //   PantryPlanAnnotator"盐/油等调料不标(常备)"设计契约——即便调料被误标 is_main 也不进采购/缺料标注。
+        val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
+        val mainRows = if (dishIds.isEmpty()) emptyList() else q.selectMainIngredientsByDishIds(dishIds).executeAsList()
+        val grouped = mainRows.filter { it.ingredient_id !in seasoningIds }.groupBy { it.dish_id }
         val mainByDish = dishIds.associateWith { id ->
-            dishRepo.getDishById(id)?.ingredients?.filter { it.isMain }
-                ?.map { PlanMainIngredient(it.ingredient.id, it.ingredient.name) }.orEmpty()
+            grouped[id].orEmpty().map { PlanMainIngredient(it.ingredient_id, it.ingredient_name) }
         }
         val remaining = pantryRepo.remaining() // [AI修改] "入库日起"窗口剩余份数作预算
         PantryPlanAnnotator.annotate(plan, mainByDish, servings0.keys, remaining)
@@ -233,17 +238,20 @@ class RecommendationDataSource(
         val nutritionByIng = tagRows.filter { it.dim == "nutrition" }.groupBy({ it.ingredient_id }, { it.tag_name }).mapValues { it.value.toSet() }
         val seasonByIng = tagRows.filter { it.dim == "season" }.groupBy({ it.ingredient_id }, { it.tag_name }).mapValues { it.value.toSet() }
         // 全库菜品 → PlanDish
-        val allDishIds = q.selectAllDishes().executeAsList().map { it.id }
-        val dishes = allDishIds.mapNotNull { dishRepo.getDishById(it) }.map { d ->
-            val ings = d.ingredients
-            val ingIds = ings.map { it.ingredient.id }
+        // [AI修改] 性能：原先对全库每道菜逐个 dishRepo.getDishById(每菜 5~6 条 SQL)，516 菜≈2500+ 查询/次，
+        //   月计划生成明显卡顿。改为**两条批量查询**(菜列表 + 全库配料)后内存分组组装，PlanDish 只需 id/名/配料，不用重字段。
+        val allDishRows = q.selectAllDishes().executeAsList()
+        val ingredientsByDish = q.selectAllDishIngredientsForPlan().executeAsList().groupBy { it.dish_id }
+        val dishes = allDishRows.map { d ->
+            val ings = ingredientsByDish[d.id].orEmpty()
+            val ingIds = ings.map { it.ingredient_id }
             // [AI修改] 忌口/限量/推荐只算非调料食材：否则盐/生抽等调料几乎每道菜都有，会让所有菜都判忌口。
             // [AI修改] 剂量占比门槛(用户 2026-07-16)：进一步只按**主料(isMain)**判定，与 HealthRuleEngine 一致——
             //   克数极少的辅料/点缀不改变菜的健康定性(如木耳50g配料不该让菜显"忌木耳")。
-            val avoidHits = ings.filter { it.isMain && it.ingredient.id in avoidIds && it.ingredient.id !in seasoningIds }
-            val limitHits = ings.filter { it.isMain && it.ingredient.id in limitIds && it.ingredient.id !in seasoningIds }
-            val recommendHits = ings.filter { it.isMain && it.ingredient.id in recommendIds && it.ingredient.id !in seasoningIds }
-            val planMainNames = ings.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }
+            val avoidHits = ings.filter { it.is_main == 1L && it.ingredient_id in avoidIds && it.ingredient_id !in seasoningIds }
+            val limitHits = ings.filter { it.is_main == 1L && it.ingredient_id in limitIds && it.ingredient_id !in seasoningIds }
+            val recommendHits = ings.filter { it.is_main == 1L && it.ingredient_id in recommendIds && it.ingredient_id !in seasoningIds }
+            val planMainNames = ings.filter { it.is_main == 1L && it.ingredient_id !in seasoningIds }.map { it.ingredient_name }
             PlanDish(
                 id = d.id,
                 name = d.name,
@@ -255,8 +263,8 @@ class RecommendationDataSource(
                 hasAvoid = avoidHits.isNotEmpty(),
                 isBreakfast = BREAKFAST_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 按菜名判早餐菜(符合中式饮食)。
                 breakfastSoft = BREAKFAST_SOFT_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 软/饮 vs 硬/主食(软硬搭配)。
-                recommendHits = recommendHits.map { it.ingredient.name }.distinct(),
-                limitHits = limitHits.map { it.ingredient.name }.distinct(),
+                recommendHits = recommendHits.map { it.ingredient_name }.distinct(),
+                limitHits = limitHits.map { it.ingredient_name }.distinct(),
             )
         }
         PlanContext(dishes = dishes, season = currentSeason(), healthAware = healthAware)
