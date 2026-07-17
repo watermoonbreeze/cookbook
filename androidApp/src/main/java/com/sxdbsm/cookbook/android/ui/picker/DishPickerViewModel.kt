@@ -2,7 +2,10 @@ package com.sxdbsm.cookbook.android.ui.picker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab // [AI生成] C深度:复用菜品页分类Tab枚举(最近/喜爱/菜系ALL/家庭)
+import com.sxdbsm.cookbook.android.ui.dishes.dishInitial // [AI生成] C深度:菜系/家庭档按拼音首字母排序
 import com.sxdbsm.cookbook.data.repository.DishRepository
+import com.sxdbsm.cookbook.domain.model.Cuisines // [AI生成] C深度:菜系固定顺序
 import com.sxdbsm.cookbook.domain.model.DishMini
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,6 +28,10 @@ data class DishPickerUiState(
     val recent: List<DishMini> = emptyList(),
     val selected: List<DishMini> = emptyList(),
     val excludeDishIds: Set<Long> = emptySet(),
+    // [AI生成] C深度:选择菜品加分类导航(与菜品页/选择食材统一操作逻辑)。tab=最近/喜爱/菜系/家庭;菜系用横向chip(弹窗宽度受限,不用左竖栏)。
+    val sortTab: com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab = com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab.RECENT,
+    val selectedCuisine: String? = null,
+    val availableCuisines: List<String> = emptyList(),
 )
 
 /**
@@ -40,6 +47,8 @@ class DishPickerViewModel(
     private val _dishes = MutableStateFlow<List<DishMini>>(emptyList()) // [AI修改] 当前搜索结果。
     private val _selected = MutableStateFlow<List<DishMini>>(emptyList()) // [AI修改] 当前已选菜品。
     private val _excludeDishIds = MutableStateFlow<Set<Long>>(emptySet()) // [AI修改] 外部传入的不可选菜品 id。
+    private val _sortTab = MutableStateFlow(DishesSortTab.RECENT) // [AI生成] C深度:分类Tab(最近/喜爱/菜系/家庭)
+    private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] C深度:菜系筛选(仅菜系Tab生效)
     private var lastRefreshKeyword: String? = null
     private var searchJob: Job? = null // [AI修改] 搜索输入防抖任务；force 刷新不走延迟。
 
@@ -57,22 +66,40 @@ class DishPickerViewModel(
         ListState(base.first, base.second, base.third, recent, selected)
     }
 
-    val state: StateFlow<DishPickerUiState> = combine(listState, _excludeDishIds) { list, exclude ->
+    // [AI生成] C深度:分类Tab+菜系筛选合一路(combine 最多 5 路)。
+    private val viewOpts = combine(_sortTab, _cuisineFilter) { t, c -> t to c }
+
+    val state: StateFlow<DishPickerUiState> = combine(listState, _excludeDishIds, viewOpts) { list, exclude, opts ->
+        val (tab, cuisine) = opts
         val visible = list.dishes.filterNot { it.id in exclude }
+        // [AI生成] C深度:菜系可选项从可见菜派生(去无菜的菜系),按 Cuisines.ALL 固定序;选中菜系若已无菜视为未选(自愈)。
+        val cuisineSet = visible.mapTo(HashSet()) { it.cuisine }
+        val cuisines = Cuisines.ALL.filter { it in cuisineSet }
+        val effCuisine = cuisine?.takeIf { it in cuisineSet }
         // [AI修改] 无搜索浏览时把"最近做过/常做"稳定置顶(家庭选菜高度集中在那几道);搜索时保持相关性顺序。
-        val ordered = if (list.keyword.isBlank()) {
-            val priority = (list.recent.map { it.id } + list.popular.map { it.id }).toSet()
-            visible.sortedByDescending { it.id in priority } // sortedBy 稳定:置顶项保持原相对序
-        } else {
-            visible
+        val priority = (list.recent.map { it.id } + list.popular.map { it.id }).toSet()
+        val recentOrdered = if (list.keyword.isBlank()) visible.sortedByDescending { it.id in priority } else visible
+        // [AI生成] C深度:按分类Tab过滤/排序(与菜品页口径一致)。**搜索时(keyword非空)显示全部匹配、不受Tab约束**(搜索是全局的,否则"搜了X但在喜爱Tab看不到")。
+        val tabDishes = if (list.keyword.isNotBlank()) {
+            visible // [AI修改] 审查⑤:搜索时全部匹配原序,直接用 visible(不复用 recentOrdered,避免命名语义漂移)
+        } else when (tab) {
+            DishesSortTab.RECENT -> recentOrdered
+            DishesSortTab.FAVORITE -> visible.filter { it.preference > 0 }.sortedByDescending { it.preference }
+            DishesSortTab.ALL -> (if (effCuisine == null) visible else visible.filter { it.cuisine == effCuisine })
+                .sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
+            DishesSortTab.HOME -> visible.filter { it.source == "user" }
+                .sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
         }
         DishPickerUiState(
             keyword = list.keyword,
-            dishes = ordered,
+            dishes = tabDishes,
             popular = list.popular.filterNot { it.id in exclude },
             recent = list.recent.filterNot { it.id in exclude },
             selected = list.selected.filterNot { it.id in exclude },
             excludeDishIds = exclude,
+            sortTab = tab,
+            selectedCuisine = effCuisine,
+            availableCuisines = cuisines,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishPickerUiState())
 
@@ -90,6 +117,15 @@ class DishPickerViewModel(
         _keyword.value = value
         refresh(value, debounce = true)
     }
+
+    /** 切换分类Tab(最近/喜爱/菜系/家庭);离开菜系Tab清菜系筛选。[AI生成] C深度 */
+    fun setSortTab(tab: DishesSortTab) {
+        _sortTab.value = tab
+        if (tab != DishesSortTab.ALL) _cuisineFilter.value = null
+    }
+
+    /** 选/取消菜系(横向chip):null=全部。[AI生成] C深度 */
+    fun selectCuisine(cuisine: String?) { _cuisineFilter.value = cuisine }
 
     /**
      * 切换菜品选中状态。[AI修改]

@@ -27,6 +27,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
+import com.sxdbsm.cookbook.android.ui.component.SegmentedControl // [AI生成] C深度:分类Tab
+import com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab // [AI生成] C深度:复用分类Tab枚举
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.DishRow
 import com.sxdbsm.cookbook.android.ui.component.TagChip
@@ -140,7 +142,42 @@ fun DishPickerScreen(
                     SelectedDishesBar(selected = state.selected, onRemove = { vm.toggle(it, true) })
                 }
 
-                if (showRecentChips && state.recent.isNotEmpty() && state.keyword.isBlank()) {
+                // [AI生成] C深度:选择菜品加分类导航(与菜品页/选择食材统一操作逻辑)。搜索时隐藏(搜索是全局的);菜系用横向chip(弹窗宽度受限,不用左竖栏)。
+                if (state.keyword.isBlank()) {
+                    val pickerTabs = listOf(
+                        DishesSortTab.RECENT to "最近",
+                        DishesSortTab.FAVORITE to "喜爱",
+                        DishesSortTab.ALL to "菜系",
+                        DishesSortTab.HOME to "家庭",
+                    )
+                    SegmentedControl(
+                        options = pickerTabs.map { it.second },
+                        selectedIndex = pickerTabs.indexOfFirst { it.first == state.sortTab }.coerceAtLeast(0),
+                        onSelect = { idx -> vm.setSortTab(pickerTabs[idx].first) },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    )
+                    if (state.sortTab == DishesSortTab.ALL && state.availableCuisines.isNotEmpty()) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        ) {
+                            item(key = "cuisine-all") {
+                                FilterChip(selected = state.selectedCuisine == null, onClick = { vm.selectCuisine(null) }, label = { Text("全部") })
+                            }
+                            items(state.availableCuisines, key = { it }) { c ->
+                                FilterChip(
+                                    selected = state.selectedCuisine == c,
+                                    onClick = { vm.selectCuisine(if (state.selectedCuisine == c) null else c) },
+                                    label = { Text(c) },
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // [AI修改] C深度:"最近常吃/喜爱"快捷入口收进"最近"Tab(不再全局常驻挤占其它Tab),仅无搜索时显。
+                if (showRecentChips && state.recent.isNotEmpty() && state.keyword.isBlank() && state.sortTab == DishesSortTab.RECENT) {
                     SectionHeader(title = "最近常吃", compact = true)
                     Row(
                         modifier = Modifier
@@ -165,7 +202,7 @@ fun DishPickerScreen(
                     }
                 }
 
-                if (state.popular.isNotEmpty() && state.keyword.isBlank()) {
+                if (state.popular.isNotEmpty() && state.keyword.isBlank() && state.sortTab == DishesSortTab.RECENT) {
                     SectionHeader(title = "喜爱", compact = true)
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
