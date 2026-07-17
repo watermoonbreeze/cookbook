@@ -65,4 +65,21 @@ class WeekPlanViewModel(
     fun deleteDay(date: LocalDate) {
         viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }
     }
+
+    /**
+     * 删整天并支持撤销(§9.12)：先快照→删→回调给 showUndo(点撤销即还原)。[AI生成]
+     * 与 TimelineViewModel/HomeViewModel 同一软删撤销范式，替代硬确认弹框。快照空/读失败不照删。
+     */
+    fun deleteDayUndoable(date: LocalDate, showUndo: (onUndo: () -> Unit) -> Unit) {
+        viewModelScope.launch {
+            val snapshot = runCatching { mealRepo.snapshotDay(date) }.getOrNull()
+            if (snapshot.isNullOrEmpty()) return@launch
+            runCatching { mealRepo.deleteDayMeals(date) }.onSuccess {
+                showUndo {
+                    // 撤销还原不抬喜爱度(bumpPreference=false，非新记一餐)。
+                    viewModelScope.launch { runCatching { mealRepo.saveDayMeals(date, snapshot, bumpPreference = false) } }
+                }
+            }
+        }
+    }
 }

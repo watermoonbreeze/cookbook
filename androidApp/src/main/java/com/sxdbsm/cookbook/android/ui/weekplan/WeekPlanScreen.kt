@@ -52,7 +52,7 @@ fun WeekPlanScreen(
     vm: WeekPlanViewModel = koinViewModel(),
 ) {
     val ui by vm.uiState.collectAsStateWithLifecycle()
-    var deleteDate by remember { mutableStateOf<LocalDate?>(null) } // [AI生成] 待删除日期(确认)
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI修改] UX:删除改软删+撤销(§9.12)，替代硬确认弹框
 
     Scaffold(
         topBar = {
@@ -117,7 +117,11 @@ fun WeekPlanScreen(
                                 onDishClick = { dish -> onOpenDish(dish.id) },
                                 onEditClick = { onEditMealDate(day.date) },
                                 onCopyClick = { onCopyMeal(day.date) },
-                                onDeleteClick = { deleteDate = day.date }, // [AI修改] 补删除入口
+                                onDeleteClick = { // [AI修改] UX:软删+撤销(§9.12)替代硬确认弹框，与食历/首页一致
+                                    vm.deleteDayUndoable(day.date) { onUndo ->
+                                        appSnackbar?.showUndo("已删除${weekdayLabel(day.date)}的餐食", onUndo = onUndo)
+                                    }
+                                },
                             )
                         }
                     }
@@ -125,20 +129,6 @@ fun WeekPlanScreen(
                 item { Spacer(Modifier.height(60.dp)) }
             }
         }
-    }
-
-    deleteDate?.let { date ->
-        AlertDialog(
-            onDismissRequest = { deleteDate = null },
-            title = { Text("删除餐食") },
-            text = { Text("确认删除 ${weekdayLabel(date)} 的全部餐食？") },
-            confirmButton = {
-                TextButton(onClick = { vm.deleteDay(date); deleteDate = null }) {
-                    Text("删除", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = { TextButton(onClick = { deleteDate = null }) { Text("取消") } },
-        )
     }
 }
 
