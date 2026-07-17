@@ -13,6 +13,8 @@ import kotlin.math.roundToInt
  * 修「营养级别只看多样性→偏咸/超量也显绿」的误导。口径与阈值见 `feature/营养级别评级方案.md`、
  * 「膳食参考依据」页(钠每日上限、热量±15% 达标带)。**缺营养数据→退回多样性级别、不下调**(向后兼容)。
  * 全部提示挂「仅供参考·非医嘱」由 UI 承接。已上：热量+钠(P1 高血压)、嘌呤定性(P4 痛风)、GI(P2 糖尿病)；饱脂/胆固醇/添加糖待扩展。
+ * 高血压深挖(2026-07-17)：加**钾正向提示**(DASH 限钠增钾)——钾只锦上添花(接近 PI-NCD 3600mg 建议量→"钾较充足·利于钠钾平衡")，
+ * **不改级别、不抵消钠罚分、不因低钾下调**(钠钾比无国标阈值、低钾扣分越免责红线)。
  * <p>
  * [AI生成] 营养级别评级方案落地：纯函数、可单测；慢病只对已登记病种触发。
  **/
@@ -51,6 +53,15 @@ object NutritionLevelEvaluator {
     // 占比阈值：≥WARN→注意(下调更多)、≥MID→中(略下调)。见方案，可拍板调整。
     const val WARN_RATIO = 1.0
     const val MID_RATIO = 0.7
+
+    // [AI生成] 钾/钠钾比(高血压·DASH"限钠增钾")：**钾只做正向信息、不改级别、不抵消钠罚分**。
+    //   权威口径(多角色核准 2026-07-17)：中国 DRIs 钾 PI-NCD(预防慢病建议摄入量) 3600mg/日(WS/T 578.2-2018)、
+    //   膳食指南2022 背书 DASH"高钾低钠"；WHO 2013 增钾≥3510mg/日(条件性推荐)。
+    //   **"理想钠钾比≈摩尔比1"仅 WHO 定性方向、无国标数值阈值**——把无阈值量做成改级别的硬评级=自造标准=误导(红线)，故
+    //   钾**不做数值降级、不把钠罚分扣回**(会稀释"这道偏咸"真实警示、无权威换算)；低钾更不下调(隐含病理判断，且肾病/服保钾药者反需限钾)。
+    //   仅当钾摄入接近每日建议量→追加一条**正向 concern**(锦上添花)，缺钾数据→不触发(向后兼容)。
+    const val POTASSIUM_PI_NCD_MG = 3600.0
+    const val K_ADEQUATE_RATIO = 0.8 // 达每日建议量八成视为"较充足"→正向提示(纯信息、不改级别，故阈值低风险可调)
 
     // [AI生成] P4 痛风：嘌呤**无国标数值阈值**→不做数值分级，改按 WS/T 560-2017"应避免"食物类别做**定性**提示。
     //   关键词匹配食材名(与"健康定性按主料判定"口径一致，仅对主料判)：动物内脏/浓肉汤/部分海鲜。惯例·非数值分级。
@@ -163,6 +174,16 @@ object NutritionLevelEvaluator {
         if (calorieStatus == CalorieStatus.ABOVE) {
             level = minOf(level, 2)
             concerns += "热量超标"
+        }
+
+        // 钾(高血压·DASH 增钾)：钾摄入接近每日建议量→正向提示。**只加信息、不改 level、不抵消钠**(见 POTASSIUM_PI_NCD_MG 注释)。
+        //   放最末→正向 concern 排在负向(偏咸/钠偏高)之后；高钠高钾时"偏咸留意"与"钾较充足"两条诚实并存(即 DASH"增钾改善钠钾平衡")。
+        //   缺钾数据→不触发(向后兼容)；措辞"较充足/利于"(非"达标/降压")守免责·非医嘱。
+        if (HealthCondition.HYPERTENSION in conditions && totals.potassiumMg > 0.0) {
+            val kRatio = totals.potassiumMg / (POTASSIUM_PI_NCD_MG * days)
+            if (kRatio >= K_ADEQUATE_RATIO) {
+                concerns += "钾摄入较充足（约${(kRatio * 100).roundToInt()}%建议量）· 利于钠钾平衡 · 仅供参考"
+            }
         }
 
         return NutritionAssessment(level, concerns)

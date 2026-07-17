@@ -16,8 +16,8 @@ import kotlin.test.assertTrue
  **/
 class NutritionLevelEvaluatorTest {
 
-    private fun totals(kcal: Double, sodium: Double) =
-        NutritionTotals(energyKcal = kcal, sodiumMg = sodium)
+    private fun totals(kcal: Double, sodium: Double, potassium: Double = 0.0) =
+        NutritionTotals(energyKcal = kcal, sodiumMg = sodium, potassiumMg = potassium)
 
     @Test
     fun `缺营养数据退回多样性级别不下调`() {
@@ -181,6 +181,68 @@ class NutritionLevelEvaluatorTest {
         )
         assertEquals(listOf("馒头"), dmGi)
         assertTrue(dmPur.isEmpty(), "只登记糖尿病→不算嘌呤")
+    }
+
+    @Test
+    fun `高血压钾充足_正向提示且不改级别`() {
+        // 钾 3000mg / 3600 ≈ 83% ≥ 80% → 正向提示；钠正常→级别不降(钾只锦上添花)。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 500.0, potassium = 3000.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+        )
+        assertEquals(4, r.level, "钾不改级别")
+        assertTrue(r.concerns.any { it.contains("钾") && it.contains("钠钾平衡") }, "应给钾正向提示: ${r.concerns}")
+    }
+
+    @Test
+    fun `高血压高钠高钾_偏咸与钾提示并存_钾不抵消钠罚分`() {
+        // 钠 3000>2400 上限 → 级别封 2；钾 3200/3600≈89% → 正向提示。两条并存、级别仍 2(钾不把下调扣回)。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 3000.0, potassium = 3200.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+        )
+        assertEquals(2, r.level, "钾不抵消钠罚分，仍封到 2")
+        assertTrue(r.concerns.any { it.contains("偏咸") }, "偏咸提示在: ${r.concerns}")
+        assertTrue(r.concerns.any { it.contains("钾") }, "钾正向提示并存: ${r.concerns}")
+        // 负向(偏咸)排在正向(钾)之前。
+        assertTrue(
+            r.concerns.indexOfFirst { it.contains("偏咸") } < r.concerns.indexOfFirst { it.contains("钾") },
+            "负向应排在正向前: ${r.concerns}",
+        )
+    }
+
+    @Test
+    fun `高血压钠中档高钾_封3级且钾提示并存_钾不动level`() {
+        // 钠 2000/2400≈83% ∈[0.7,1.0) → 封 level=3；钾 3200/3600≈89% → 正向提示。
+        // DASH 语境下"钠偏高·注意少盐"与"钾较充足"诚实并存(增钾平衡钠)；钾只加提示不动 level(仍 3)。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 2000.0, potassium = 3200.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+        )
+        assertEquals(3, r.level, "MID 档 level=3，钾不动 level")
+        assertTrue(r.concerns.any { it.contains("钠偏高") }, "钠偏高提示在: ${r.concerns}")
+        assertTrue(r.concerns.any { it.contains("钾") }, "钾正向提示并存: ${r.concerns}")
+    }
+
+    @Test
+    fun `高血压钾不足_不提示也不下调`() {
+        // 钾 2000/3600≈56% < 80% → 无钾提示；低钾绝不下调(免责红线)。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 500.0, potassium = 2000.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+        )
+        assertEquals(4, r.level)
+        assertTrue(r.concerns.none { it.contains("钾") }, "低钾不提示、不下调: ${r.concerns}")
+    }
+
+    @Test
+    fun `无钾数据或未登记高血压_不触发钾提示`() {
+        // 无钾数据(potassium=0)→不触发(向后兼容)。
+        val noData = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 500.0, potassium = 0.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+        )
+        assertTrue(noData.concerns.none { it.contains("钾") }, "无钾数据不触发")
+        // 未登记高血压 + 高钾 → 不触发(gate)。
+        val noHtn = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 500.0, potassium = 5000.0), CalorieStatus.ON, setOf(HealthCondition.GOUT),
+        )
+        assertTrue(noHtn.concerns.none { it.contains("钾") }, "未登记高血压不触发钾提示")
     }
 
     @Test

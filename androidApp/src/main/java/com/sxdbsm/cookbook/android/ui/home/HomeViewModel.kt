@@ -171,6 +171,7 @@ class HomeViewModel(
                 val baseLevel = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit))
                 val personalTotals = com.sxdbsm.cookbook.domain.model.NutritionTotals(
                     energyKcal = kcal, sodiumMg = totals.sodiumMg * share,
+                    potassiumMg = totals.potassiumMg * share, // [AI生成] 高血压深挖：补钾份额，供评级器钾正向提示(DASH 增钾)
                 )
                 // [AI生成] P4 痛风：从今日主料名匹配"应避免"高嘌呤定性食物(与"健康定性按主料判定"口径一致)，命中→痛风提示。
                 //   [AI修改] 仅登记痛风才算匹配(gate 最外层省无谓匹配)。
