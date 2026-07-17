@@ -58,6 +58,8 @@ fun DishPickerScreen(
     // [AI修改] 选择器内部状态由 ViewModel 管理，外部只传初始选中和排除列表。
     val state by vm.state.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
+    // [AI生成] 修复"选菜品搜索无结果→添加菜品未带搜索词":去新建前把当前搜索关键词写入预填总线(与全局搜索一致)。
+    val prefillBus = org.koin.compose.koinInject<com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefillBus>()
 
     /**
      * 外部参数变化时重新配置选择器。[AI修改]
@@ -253,6 +255,10 @@ fun DishPickerScreen(
                     ) {
                         TextButton(
                             onClick = {
+                                // [AI修改] 有搜索词则带入新建菜品名(修"选菜品搜索无结果新建时不带名称")。
+                                if (state.keyword.isNotBlank()) {
+                                    prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = state.keyword.trim()))
+                                }
                                 onAddNewDish(vm.confirmSelected()) // [AI修改] 带出当前已勾选，去新建前先保留
                             },
                             modifier = Modifier
