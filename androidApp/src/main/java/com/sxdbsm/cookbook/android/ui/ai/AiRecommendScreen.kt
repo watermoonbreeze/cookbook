@@ -326,7 +326,7 @@ private fun SuggestionGroupCard(
             }
             if (!group.cookingHint.isNullOrBlank()) {
                 Spacer(Modifier.height(2.dp))
-                Text("🍳 做法：${group.cookingHint}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("做法：${group.cookingHint}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(4.dp))
             group.dishes.forEach { dish ->

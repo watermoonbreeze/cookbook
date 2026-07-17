@@ -153,7 +153,7 @@ internal fun IngredientDetailSheet(
                         // ① 🍳 做法：常见做法 + 相关菜品（按烹饪方式分组）
                         val methodsText = detail?.commonMethods?.takeIf { it.isNotBlank() }
                         if (methodsText != null || dishMatches.isNotEmpty()) {
-                            SectionTitle("🍳 做法")
+                            SectionTitle("做法")
                             if (methodsText != null) DetailLine("常见做法", methodsText)
                             if (dishMatches.isNotEmpty()) {
                                 // [AI修改] 相关菜品按烹饪方式分组：方式为一级标题、菜品为二级条目；多方式菜品每组都出现，无方式归"其他"。
@@ -180,7 +180,7 @@ internal fun IngredientDetailSheet(
                         // ② 🩺 忌口/宜忌：调养建议（用户健康档案病种置顶高亮）+ 当前病种建议
                         val sortedCare = careRules.sortedByDescending { it.categoryId in enabledCareCategoryIds }
                         if (careRules.isNotEmpty() || ingredient.adviceLevel != null) {
-                            SectionTitle("🩺 忌口 / 宜忌")
+                            SectionTitle("忌口 / 宜忌")
                             ingredient.adviceLevel?.let { level ->
                                 val lv = when (level) {
                                     AdviceLevel.RECOMMEND -> "推荐"; AdviceLevel.LIMIT -> "限量"; AdviceLevel.AVOID -> "避免"
@@ -195,14 +195,14 @@ internal fun IngredientDetailSheet(
                         // ③ 🥗 属性：品类 / 营养 / 应季（按维度分组，统一走 groupByDimension/DimensionRows）
                         val dimensionGroups = categories.groupByDimension()
                         if (!dimensionGroups.isEmpty) {
-                            SectionTitle("🥗 属性")
+                            SectionTitle("属性")
                             DimensionRows(dimensionGroups)
                         }
 
                         // ④ 📋 处理与保存 + 来源
                         detail?.let { info ->
                             if (listOf(info.prepTips, info.eatingNotes, info.storageTips, info.healthNote).any { it.isNotBlank() }) {
-                                SectionTitle("📋 处理与保存")
+                                SectionTitle("处理与保存")
                                 if (info.prepTips.isNotBlank()) DetailLine("处理建议", info.prepTips)
                                 if (info.eatingNotes.isNotBlank()) DetailLine("食用注意", info.eatingNotes)
                                 if (info.storageTips.isNotBlank()) DetailLine("保存建议", info.storageTips)
