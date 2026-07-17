@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,6 +54,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -93,6 +95,13 @@ fun DishesScreen(
     val ui by vm.uiState.collectAsStateWithLifecycle()
     var dropdownDish by remember { mutableStateOf<DishMini?>(null) }
     var searchOpen by remember { mutableStateOf(false) } // [AI生成] #4:搜索改右上角图标触发→展开全屏搜索覆盖层
+    // [AI生成] 修#3(切Tab状态丢失):用户选的分类Tab/菜系记进 rememberSaveable(存进 nav saved bundle,跨切换留存);再入时按保存值回灌VM,恢复幂等无害。
+    var savedSortTab by rememberSaveable { mutableStateOf(DishesSortTab.RECENT.name) }
+    var savedCuisine by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        runCatching { DishesSortTab.valueOf(savedSortTab) }.getOrNull()?.let { if (ui.sortTab != it) vm.setSortTab(it) }
+        savedCuisine?.let { if (ui.selectedCuisine != it) vm.selectCuisine(it) }
+    }
     // [AI生成] #4:搜索覆盖层可见时,系统返回键=关搜索回列表(而非退出Tab)。
     BackHandler(enabled = searchOpen) { searchOpen = false; vm.setKeyword("") }
     val listState = rememberLazyListState()
@@ -140,6 +149,9 @@ fun DishesScreen(
 
     // [AI修改] B-7(§9.15)：Tab 落地页改大标题(下滑折叠)；搜索行/Tab/计数/筛选下沉进列表头部作折叠燃料。
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    // [AI修改] 修#2(Google审查):顶层Box包住整个Scaffold,搜索覆盖层作Scaffold的兄弟节点→能盖住 LargeTopAppBar。
+    //   (Material3 Scaffold 的 topBar 是独立 slot、绘于 content 之上;覆盖层若放 content lambda 内会被顶栏压住,搜索框仍不置顶。)
+    Box(Modifier.fillMaxSize()) {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
@@ -198,13 +210,18 @@ fun DishesScreen(
                 SegmentedControl(
                     options = sortTabs.map { it.second },
                     selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
-                    onSelect = { idx -> vm.setSortTab(sortTabs[idx].first) },
+                    onSelect = { idx ->
+                        val t = sortTabs[idx].first
+                        vm.setSortTab(t)
+                        savedSortTab = t.name // [AI生成] 修#3:记住用户选的分类Tab
+                        if (t != DishesSortTab.ALL) savedCuisine = null
+                    },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                 )
                 if (isCuisineTab) {
                     // 菜系档：左侧二级菜系栏 | 右侧列表(搜索/计数/筛选/字母段在右列表内,滚动驱动折叠)。一级已固定在上方,切Tab不跳。
                     Row(Modifier.fillMaxSize()) {
-                        CuisineRail(cuisines = ui.availableCuisines, selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
+                        CuisineRail(cuisines = ui.availableCuisines, selected = ui.selectedCuisine, onSelect = { c -> vm.selectCuisine(c); savedCuisine = c }) // [AI修改] 修#3:记住用户选的菜系
                         Box(Modifier.weight(1f).fillMaxSize()) {
                             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                                 dishHeaderItems(ui, vm, tabCount)
@@ -258,29 +275,30 @@ fun DishesScreen(
                     }
                 }
             }
-            // [AI修改] #4:搜索覆盖层由右上角搜索图标触发(searchOpen),而非"关键词非空"。展示搜索结果(名+烹饪方式+预设/自建+详情)。
-            if (searchOpen) {
-                DishSearchOverlay(
-                    results = ui.searchResults,
-                    keyword = ui.keyword,
-                    onKeywordChange = vm::setKeyword,
-                    onOpen = { dish ->
-                        searchOpen = false
-                        vm.openFromSearch(dish) // 跳到该菜的菜系分类 + 关闭弹框
-                        onOpenDish(dish.id) // 同时打开详情
-                    },
-                    onCreateNew = {
-                        // [AI生成] 搜索无结果"＋新建菜品「x」":预填菜名进新建菜品页(与食材搜索无结果统一)。
-                        searchOpen = false
-                        prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = ui.keyword.trim()))
-                        vm.setKeyword("")
-                        onAddDish()
-                    },
-                    onClose = { searchOpen = false; vm.setKeyword("") },
-                )
-            }
         }
     }
+    // [AI修改] #4/修#2:搜索覆盖层作 Scaffold 的兄弟(顶层Box内)→盖住 LargeTopAppBar 覆盖整屏,搜索框置顶对齐食材。searchOpen 触发,非"关键词非空"。
+    if (searchOpen) {
+        DishSearchOverlay(
+            results = ui.searchResults,
+            keyword = ui.keyword,
+            onKeywordChange = vm::setKeyword,
+            onOpen = { dish ->
+                searchOpen = false
+                vm.openFromSearch(dish) // 跳到该菜的菜系分类 + 关闭弹框
+                onOpenDish(dish.id) // 同时打开详情
+            },
+            onCreateNew = {
+                // [AI生成] 搜索无结果"＋新建菜品「x」":预填菜名进新建菜品页(与食材搜索无结果统一)。
+                searchOpen = false
+                prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = ui.keyword.trim()))
+                vm.setKeyword("")
+                onAddDish()
+            },
+            onClose = { searchOpen = false; vm.setKeyword("") },
+        )
+    }
+    } // [AI修改] 修#2:顶层Box收尾
 
     dropdownDish?.let { d ->
         // [AI修改] 苹果风格：长按操作改底部 Action Sheet(破坏项红字、取消置底)，替代 AlertDialog 竖排反模式。
@@ -392,7 +410,8 @@ private fun DishSearchOverlay(
     onClose: () -> Unit,
 ) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, tonalElevation = 2.dp) {
-        Column(Modifier.fillMaxSize()) {
+        // [AI修改] 修#2:覆盖层现覆盖整屏(含顶栏),内容加 statusBarsPadding 让搜索框避让状态栏、置顶(对齐食材页)。
+        Column(Modifier.fillMaxSize().statusBarsPadding()) {
             // [AI生成] B-7：搜索行下沉进列表后会被本覆盖层盖住——覆盖层自带搜索框(进入即聚焦)让搜索时仍可改词，iOS Mail 式。
             val searchFocus = remember { FocusRequester() }
             LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }

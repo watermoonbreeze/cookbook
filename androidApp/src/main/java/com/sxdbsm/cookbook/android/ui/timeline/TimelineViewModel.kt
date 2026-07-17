@@ -109,16 +109,21 @@ class TimelineViewModel(
      * 日历中选择某个有餐食的日期后定位到对应 item。[AI生成]
      */
     fun jumpToDate(date: LocalDate) {
-        val index = allDates.indexOf(date)
+        if (allDates.isEmpty()) return
+        // [AI修改] 修#1:精确日不在 allDates(口径细微不一致)时就近定位(优先≤目标的最近有餐日,否则≥目标最近),而非直接放弃退回今天。
+        val exact = allDates.indexOf(date)
+        val index = if (exact >= 0) exact
+            else allDates.indexOfLast { it <= date }.takeIf { it >= 0 } ?: allDates.indexOfFirst { it >= date }
         if (index < 0) return
-        val visibleIndex = dateIndexInLoadedPage(date)
+        val target = allDates[index]
+        val visibleIndex = dateIndexInLoadedPage(target)
         if (visibleIndex >= 0) {
             requestScroll(visibleIndex)
             return
         }
         loadedStartIndex = (index - PAGE_DAYS + 1).coerceAtLeast(0)
         loadedEndIndex = (index + PAGE_DAYS - 1).coerceAtMost(allDates.lastIndex)
-        pendingScrollTargetDate = date
+        pendingScrollTargetDate = target
         _state.value = _state.value.copy(loading = true)
         refreshLoadedPages()
     }

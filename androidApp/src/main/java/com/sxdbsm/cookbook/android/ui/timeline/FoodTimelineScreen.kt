@@ -52,9 +52,11 @@ fun FoodTimelineScreen(
     var initialScrollDone by remember { mutableStateOf(false) }
     var jumpConsumed by remember { mutableStateOf(false) } // [AI生成] 保证外部日期只定位一次
 
-    // [AI生成] 从营养色系墙进入时，待食历日期列表就绪后定位到目标日(该日有餐才有卡片)。
+    // [AI生成] 从营养色系墙进入时，待食历日期列表就绪后定位到目标日。
+    //   [AI修改] 修#1(全跳到当天):原要求 initialJumpDate 精确在 mealDates 才跳,若首帧 mealDates 未就绪/日期口径细微不一致→条件恒 false→退回默认(今天)。
+    //   改为"日期列表就绪即跳",jumpToDate 内对不精确匹配就近定位;仍 jumpConsumed 单次。
     LaunchedEffect(initialJumpDate, state.mealDates) {
-        if (initialJumpDate != null && !jumpConsumed && initialJumpDate in state.mealDates) {
+        if (initialJumpDate != null && !jumpConsumed && state.mealDates.isNotEmpty()) {
             vm.jumpToDate(initialJumpDate)
             jumpConsumed = true
         }

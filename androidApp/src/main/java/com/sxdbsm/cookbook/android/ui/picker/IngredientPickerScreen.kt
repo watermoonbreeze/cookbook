@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -99,9 +100,17 @@ fun IngredientPickerScreen(
     LaunchedEffect(excludeIngredientIds, selectionMode) {
         vm.configure(excludeIngredientIds, selectionMode)
     }
+    // [AI修改] 修#3(切Tab状态丢失):仅**首次**进入 force 初始化主分类(建树);切底部Tab离开再回来时,
+    //   composition 重建会让本 LaunchedEffect 重跑——若再 force 会把 selectedCategoryId 重置为"全部"、丢失用户已选分类。
+    //   该 Tab 页状态由 Navigation saveState/restoreState 跨切换保留,故再入不该 force 重置分类(force 仅首次建树用)。
+    //   rememberSaveable 保证"首次"标记跨再入留存(存进 nav 的 saved bundle);弹窗选择态每次新开=新 composition,标记自然重置。
+    var mainTabInited by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        vm.selectMainTab(ui.mainTab, force = true)
-    } // [AI修改] 食材页和菜品选择食材统一启用同一套顶部主分类。
+        if (!mainTabInited) {
+            vm.selectMainTab(ui.mainTab, force = true)
+            mainTabInited = true
+        }
+    }
     LaunchedEffect(selectedIngredient?.id, ui.lastSavedIngredientId) {
         selectedIngredient?.let { vm.loadIngredientDetail(it) }
     } // [AI修改] 编辑保存后（lastSavedIngredientId 变化）重新加载详情，修复详情弹层不实时刷新的问题。
