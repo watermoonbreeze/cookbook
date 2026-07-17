@@ -1,6 +1,5 @@
 package com.sxdbsm.cookbook.android.ui.picker
 
-import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,14 +59,10 @@ fun DishPickerScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
-        AppLogger.d("DishPickerFlow", "open picker: title=$title multi=$multiSelect initial=${initialSelected.map { it.id }} exclude=$excludeDishIds showAdd=$showAddNewButton") // [AI生成] 记录菜品选择器入口参数。
-    }
     /**
      * 外部参数变化时重新配置选择器。[AI修改]
      */
     LaunchedEffect(excludeDishIds, initialSelected) {
-        AppLogger.d("DishPickerFlow", "configure picker: initial=${initialSelected.map { it.id }} exclude=$excludeDishIds") // [AI生成] 记录选择器配置变化，排查已选菜品是否传入。
         vm.configure(excludeDishIds, initialSelected)
     }
 
@@ -77,14 +72,12 @@ fun DishPickerScreen(
      * 从“添加菜品”跳到新建菜品并返回后，刚创建的菜品会按创建时间出现在列表前方。
      */
     LaunchedEffect(Unit) {
-        AppLogger.d("DishPickerFlow", "refresh picker on open: title=$title") // [AI生成] 记录每次打开选择器强制刷新。
         vm.refresh(force = true) // [AI修改] 每次重新打开菜品库都强制读取数据库，确保刚新建的菜品立即出现在列表中。
     }
 
     DisposableEffect(lifecycleOwner, showAddNewButton) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME && showAddNewButton) {
-                AppLogger.d("DishPickerFlow", "refresh picker on resume: title=$title selected=${state.selected.map { it.id }}") // [AI生成] 从新建菜品返回等恢复场景强制刷新。
                 vm.refresh(force = true)
             }
         }
@@ -126,7 +119,6 @@ fun DishPickerScreen(
                         if (multiSelect) {
                             Button(
                                 onClick = {
-                                    AppLogger.d("DishPickerFlow", "confirm picker: title=$title selected=${vm.confirmSelected().map { it.id }}") // [AI生成] 记录确认返回给上层的菜品 id。
                                     onConfirm(vm.confirmSelected())
                                     onDismiss()
                                 },
@@ -189,7 +181,6 @@ fun DishPickerScreen(
                             FilterChip(
                                 selected = state.selected.any { it.id == dish.id },
                                 onClick = {
-                                    AppLogger.d("DishPickerFlow", "toggle recent chip: dishId=${dish.id} multi=$multiSelect") // [AI生成] 记录最近菜品点击。
                                     vm.toggle(dish, multiSelect)
                                     if (!multiSelect) {
                                         onConfirm(vm.confirmSelected())
@@ -212,7 +203,6 @@ fun DishPickerScreen(
                             DishMiniCard(
                                 dish = dish,
                                 onClick = {
-                                    AppLogger.d("DishPickerFlow", "toggle popular block: dishId=${dish.id} multi=$multiSelect") // [AI生成] 记录喜爱菜品点击。
                                     vm.toggle(dish, multiSelect)
                                     if (!multiSelect) {
                                         onConfirm(vm.confirmSelected())
@@ -244,7 +234,6 @@ fun DishPickerScreen(
                                 checked = state.selected.any { it.id == dish.id },
                                 onCheckedChange = { vm.toggle(dish, multiSelect) },
                                 onClick = {
-                                    AppLogger.d("DishPickerFlow", "toggle row: dishId=${dish.id} multi=$multiSelect") // [AI生成] 记录列表菜品点击。
                                     vm.toggle(dish, multiSelect)
                                     if (!multiSelect) {
                                         onConfirm(vm.confirmSelected())
@@ -264,7 +253,6 @@ fun DishPickerScreen(
                     ) {
                         TextButton(
                             onClick = {
-                                AppLogger.d("DishPickerFlow", "add new dish click: title=$title selected=${state.selected.map { it.id }}") // [AI生成] 记录从菜品选择器跳转新建菜品。
                                 onAddNewDish(vm.confirmSelected()) // [AI修改] 带出当前已勾选，去新建前先保留
                             },
                             modifier = Modifier
