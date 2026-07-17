@@ -202,7 +202,7 @@ private fun MemberCard(
             }
             Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(
-                if (target != null) "🔥 每日目标约 $target 千卡" else "填完身高/体重/年龄即可算每日目标",
+                if (target != null) "🔥 每日目标约 $target 千卡" else "填好身高·体重·年龄，自动算每日目标", // [AI修改] 文案:更自然(填好…自动算)
                 style = MaterialTheme.typography.bodySmall,
                 color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )

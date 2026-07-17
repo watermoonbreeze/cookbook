@@ -244,7 +244,7 @@ private fun ReceivePane(state: DeviceSyncUiState, vm: DeviceSyncViewModel) {
 
     Column(Modifier.fillMaxWidth()) {
         if (state.done) {
-            Text("✅ 已导入并恢复，建议重新打开应用", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+            Text("✅ 已导入并恢复，请重新打开应用生效", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold) // [AI修改] 文案:说清为什么重开
             return
         }
         Text(

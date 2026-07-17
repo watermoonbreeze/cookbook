@@ -105,7 +105,7 @@ fun MineScreen(
                 vm.importBackup(input) { ok ->
                     android.widget.Toast.makeText(
                         context,
-                        if (ok) "已导入并恢复，建议重新打开应用" else "导入失败：文件无效或版本不兼容",
+                        if (ok) "已导入并恢复，请重新打开应用生效" else "导入失败：文件无效或版本不兼容", // [AI修改] 文案:"建议重新打开"→"请重新打开…生效"(说清为什么)
                         android.widget.Toast.LENGTH_LONG,
                     ).show()
                     if (ok) backupDialogOpen = false
@@ -369,7 +369,7 @@ fun MineScreen(
             },
             onRestore = { file ->
                 vm.restoreBackup(file) {
-                    android.widget.Toast.makeText(context, "备份已恢复，建议重新打开应用", android.widget.Toast.LENGTH_LONG).show()
+                    android.widget.Toast.makeText(context, "备份已恢复，请重新打开应用生效", android.widget.Toast.LENGTH_LONG).show() // [AI修改] 文案:说清为什么重开
                     backupDialogOpen = false
                 }
             },

@@ -145,7 +145,7 @@ fun AddDayFoodScreen(
     val requestBack = com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard(
         isDirty = { vm.isDirty() },
         onConfirmLeave = onBack,
-        dialogText = "你还没保存这餐的改动，返回将丢失。",
+        dialogText = "你的改动还没保存，返回将丢失。", // [AI修改] 文案:统一到 UnsavedGuard 默认文案(守卫措辞全项目一致)
     )
 
     // [AI生成] AI 推荐从餐次块进入并"选它"回传：把菜品加入发起的那个餐次块。
