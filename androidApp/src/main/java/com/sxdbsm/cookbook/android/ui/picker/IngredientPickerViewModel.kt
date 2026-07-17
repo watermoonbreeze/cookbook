@@ -914,7 +914,9 @@ class IngredientPickerViewModel(
     private suspend fun loadAllForTab(tab: IngredientMainTab, keyword: String): List<Ingredient> =
         when (tab) {
             IngredientMainTab.RECENT -> ingredientRepo.listRecentlyUsed()
-            IngredientMainTab.PANTRY -> pantryRepo.listPantryIngredients() // [AI生成] 库存 Tab：在手食材，平铺展示。
+            // [AI修改] 库存 Tab：按拼音首字母默认排序(用户反馈:不要"最近"排序、加食材不应跳到第一)，配合右侧字母定位。
+            IngredientMainTab.PANTRY -> pantryRepo.listPantryIngredients()
+                .sortedWith(com.sxdbsm.cookbook.android.ui.component.pinyinComparator { it.name })
             else -> ingredientRepo.search(keyword).filterForTabSource(tab)
         }
 
