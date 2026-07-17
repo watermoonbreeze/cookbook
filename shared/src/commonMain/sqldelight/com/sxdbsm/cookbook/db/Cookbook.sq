@@ -612,6 +612,10 @@ SELECT * FROM food_category WHERE id = ? AND status = 1;
 countChildren:
 SELECT COUNT(*) FROM food_category WHERE parent_id = ? AND status = 1;
 
+-- [AI生成] 消 N+1:一次取"有子分类的父 id 集"(替代对每个分类逐个 countChildren)。纯新查询、不改表结构、无需迁移。
+selectParentIdsWithChildren:
+SELECT DISTINCT parent_id FROM food_category WHERE parent_id IS NOT NULL AND status = 1;
+
 -- [AI生成] 分类管理使用：读取全部有效分类，避免 UI 只看到已展开的局部分类树。
 selectAllFoodCategories:
 SELECT * FROM food_category

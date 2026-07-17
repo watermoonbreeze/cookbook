@@ -144,6 +144,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
      * 读取食材绑定的完整分类信息。[AI生成]
      */
     suspend fun listCategories(ingredientId: Long): List<FoodCategory> = withContext(ioDispatcher) {
+        val childParents = q.selectParentIdsWithChildren().executeAsList().filterNotNull().toSet() // [AI修改] 消N+1:一次取"有子分类的父id集"替代逐分类 countChildren
         q.selectCategoriesByIngredient(ingredientId).executeAsList().map { row ->
             FoodCategory(
                 id = row.id,
@@ -154,7 +155,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
                 sortOrder = row.sort_order.toInt(),
                 icon = row.icon,
                 source = row.source,
-                hasChildren = q.countChildren(row.id).executeAsOne() > 0,
+                hasChildren = row.id in childParents,
             )
         }
     }
@@ -435,6 +436,7 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
      * 读取一级分类。[AI修改]
      */
     suspend fun listTopLevel(): List<FoodCategory> = withContext(ioDispatcher) {
+        val childParents = q.selectParentIdsWithChildren().executeAsList().filterNotNull().toSet() // [AI修改] 消N+1
         q.selectTopLevelCategories().executeAsList().map { row ->
             FoodCategory(
                 id = row.id,
@@ -445,7 +447,7 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
                 sortOrder = row.sort_order.toInt(),
                 icon = row.icon,
                 source = row.source,
-                hasChildren = q.countChildren(row.id).executeAsOne() > 0,
+                hasChildren = row.id in childParents,
             )
         }
     }
@@ -456,6 +458,7 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
      * 分类树已支持多级结构，返回每个子节点时同步计算它是否还有下一层。
      */
     suspend fun listChildren(parentId: Long): List<FoodCategory> = withContext(ioDispatcher) {
+        val childParents = q.selectParentIdsWithChildren().executeAsList().filterNotNull().toSet() // [AI修改] 消N+1
         q.selectChildCategories(parentId).executeAsList().map { row ->
             FoodCategory(
                 id = row.id,
@@ -466,7 +469,7 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
                 sortOrder = row.sort_order.toInt(),
                 icon = row.icon,
                 source = row.source,
-                hasChildren = q.countChildren(row.id).executeAsOne() > 0, // [AI修改] 多级分类树需要每层都能继续展开。
+                hasChildren = row.id in childParents, // [AI修改] 多级分类树需要每层都能继续展开。
             )
         }
     }
@@ -477,6 +480,7 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
      * 添加食材弹框和分类管理弹框不能依赖左侧是否展开，所以这里单独提供完整列表。
      */
     suspend fun listAll(): List<FoodCategory> = withContext(ioDispatcher) {
+        val childParents = q.selectParentIdsWithChildren().executeAsList().filterNotNull().toSet() // [AI修改] 消N+1
         q.selectAllFoodCategories().executeAsList().map { row ->
             FoodCategory(
                 id = row.id,
@@ -487,7 +491,7 @@ class FoodCategoryRepository(private val db: CookbookDatabase) {
                 sortOrder = row.sort_order.toInt(),
                 icon = row.icon,
                 source = row.source,
-                hasChildren = q.countChildren(row.id).executeAsOne() > 0,
+                hasChildren = row.id in childParents,
             )
         }
     }
