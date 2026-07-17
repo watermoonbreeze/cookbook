@@ -18,6 +18,13 @@ import com.sxdbsm.cookbook.ai.model.RuleDish
  **/
 class HealthRuleEngine {
 
+    companion object {
+        // [AI生成] 慢病数值软约束调参(具名便于调参/测试引用)：每命中一味高GI/高嘌呤主料罚 STEP，每类最多计 CAP 味，整因子封顶 PENALTY_CAP。
+        private const val CHRONIC_HIT_STEP = 0.25
+        private const val CHRONIC_HITS_PER_DIM_CAP = 2
+        private const val CHRONIC_PENALTY_CAP = 0.7
+    }
+
     /**
      * 评估菜品库，产出安全可做的候选（降序）。[AI生成]
      *
@@ -38,6 +45,9 @@ class HealthRuleEngine {
         preferenceScores: Map<Long, Double> = emptyMap(), // 每菜偏好画像分[0,1]：爱吃/常做/收藏
         nutritionBalanceScores: Map<Long, Double> = emptyMap(), // 每菜与当日/本餐已选的营养互补度[-1,1]
         mainRepeatCounts: Map<Long, Int> = emptyMap(), // 每菜主料近期重复次数
+        // [AI生成] 慢病数值软约束:已登记病种(空=不触发)+名→GI(仅糖尿病需,否则空)。仅营养风格(chronicDiseaseNutrition>0)生效。
+        conditions: Set<com.sxdbsm.cookbook.domain.HealthCondition> = emptySet(),
+        giByName: Map<String, Double> = emptyMap(),
     ): List<DishCandidate> = dishes.mapNotNull { dish ->
         val nonSeasoning = dish.ingredients.filter { it.role != IngredientRole.SEASONING }
         val seasonings = dish.ingredients.filter { it.role == IngredientRole.SEASONING }
@@ -95,6 +105,20 @@ class HealthRuleEngine {
         score += weights.nutritionBalance * (nutritionBalanceScores[dish.id] ?: 0.0)
         score += weights.preference * (preferenceScores[dish.id] ?: 0.0)
         score -= weights.mainRepeat * (mainRepeatCounts[dish.id] ?: 0)
+        // [AI生成] 慢病数值软约束(多角色验证收敛)：登记糖尿病/痛风+高GI/高嘌呤**主料**→正常层内轻度罚(高GI/嘌呤各命中≤2味×0.25、整因子封顶0.7，
+        //   显著<avoid=5.0且**不进 sortedWith 分层判据**、不改可选性)。复用 dishQualitativeHits(gate病种+去重已在 avoid∪limit 的料，防双重罚)。
+        //   缺数据/无病种/非营养风格(权重0)→0，向后兼容。**钠不做**(菜级sodiumMg含调料无法拆、每道菜都放盐会误伤全部=红线)，钠靠 care limit+cookingCautions+今日卡。
+        if (weights.chronicDiseaseNutrition > 0.0 && conditions.isNotEmpty()) {
+            val flagged = (avoidNames + limitHits.map { it.name }).toSet()
+            val (highGi, highPurine) = com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.dishQualitativeHits(
+                mainNames = mainIngredients.map { it.name }, conditions = conditions, giByName = giByName, alreadyFlagged = flagged,
+            )
+            // 每类(GI/嘌呤)最多计 CHRONIC_HITS_PER_DIM_CAP 味 × 每味 CHRONIC_HIT_STEP，整因子封顶 CHRONIC_PENALTY_CAP。
+            // 营养风格权重 0.6 下**实际最大软降 ≈ 0.6×0.7 = 0.42 分**(弱可感知,<单个 recommend/nutritionBalance 因子量级 0.9~1.28,故不反超核心信号)。
+            val chronicPenalty = ((minOf(highGi.size, CHRONIC_HITS_PER_DIM_CAP) + minOf(highPurine.size, CHRONIC_HITS_PER_DIM_CAP)) * CHRONIC_HIT_STEP)
+                .coerceAtMost(CHRONIC_PENALTY_CAP)
+            score -= weights.chronicDiseaseNutrition * chronicPenalty
+        }
         // [AI修改] 忌口菜大幅降权排到所有正常菜之后(仍保留、带 avoidNames 让 UI 标红警示)，让用户看得到但明确知道该避免。
         if (avoidNames.isNotEmpty()) score -= weights.avoid
 

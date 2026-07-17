@@ -82,8 +82,11 @@ class RecommendationDataSource(
         val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
-        val labels = if (careCategoryIds.isEmpty()) emptyList()
-            else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList().map { "关注:$it" } // 粗标签给模型(不含敏感明细)
+        val careCategoryNames = if (careCategoryIds.isEmpty()) emptyList() else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList()
+        val labels = careCategoryNames.map { "关注:$it" } // 粗标签给模型(不含敏感明细)
+        // [AI生成] 慢病数值软约束:care 分类名→病种集(与今日卡/详情页同口径 fromCareName)；giByName 仅登记糖尿病才查(GI 只对糖尿病;gate 省无谓全表查)。
+        val conditions = careCategoryNames.flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }.toSet()
+        val giByName = if (com.sxdbsm.cookbook.domain.HealthCondition.DIABETES in conditions) nutritionRepo.giByName() else emptyMap()
 
         // [AI修改] B2：改为**日期窗口**去重(默认一周)——取窗口内吃过的菜及其距今天数，用于排最后+标注"N天前吃过"。
         val sinceDate = DateTime.formatDate(DateTime.plusDays(today, -recentWindowDays.coerceAtLeast(1)))
@@ -156,6 +159,8 @@ class RecommendationDataSource(
             nutritionBalanceScores = nutritionBalanceScores,
             mainRepeatCounts = mainRepeatCounts,
             style = style,
+            conditions = conditions, // [AI生成] 慢病数值软约束(仅营养风格生效)
+            giByName = giByName,
         )
     }
 
@@ -275,6 +280,8 @@ class RecommendationDataSource(
             preferenceScores = input.preferenceScores,
             nutritionBalanceScores = input.nutritionBalanceScores,
             mainRepeatCounts = input.mainRepeatCounts,
+            conditions = input.conditions, // [AI生成] 慢病数值软约束透传
+            giByName = input.giByName,
         )
     }
 

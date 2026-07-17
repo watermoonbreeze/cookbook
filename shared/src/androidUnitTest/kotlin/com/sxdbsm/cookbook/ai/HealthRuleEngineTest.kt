@@ -371,4 +371,70 @@ class HealthRuleEngineTest {
         assertEquals(RecommendationStyle.BALANCED, RecommendationStyle.fromKey("不存在"))
         assertEquals(RecommendationStyle.FRESH, RecommendationStyle.fromKey("FRESH"))
     }
+
+    @Test
+    fun `慢病软降_营养风格下高GI高嘌呤主料菜靠后_默认风格与无病种不动`() {
+        // 白米饭(高GI gi=83)、猪肝(高嘌呤关键词"肝") vs 青菜(普通)——各1味主料,除软降外打分相同。
+        val hiGi = RuleDish(1, "米饭套餐", listOf(main(101, "白米饭")))
+        val hiPur = RuleDish(2, "猪肝汤", listOf(main(102, "猪肝")))
+        val plain = RuleDish(3, "炒青菜", listOf(main(103, "青菜")))
+        val pantry = setOf(101L, 102L, 103L)
+        val gi = mapOf("白米饭" to 83.0)
+        val nutriW = RecommendationStyle.NUTRITION.weights()
+        val dm = setOf(com.sxdbsm.cookbook.domain.HealthCondition.DIABETES, com.sxdbsm.cookbook.domain.HealthCondition.GOUT)
+
+        // 营养风格 + 登记糖尿病+痛风 → 高GI/高嘌呤菜被软降(< 普通青菜)。
+        val soft = engine.evaluate(
+            listOf(hiGi, hiPur, plain), pantryIngredientIds = pantry, HealthConstraints(),
+            weights = nutriW, conditions = dm, giByName = gi,
+        ).associate { it.id to it.score }
+        assertTrue(soft[1]!! < soft[3]!!, "高GI米饭软降后应<普通青菜: $soft")
+        assertTrue(soft[2]!! < soft[3]!!, "高嘌呤猪肝软降后应<普通青菜: $soft")
+
+        // 默认(综合)风格 chronicDiseaseNutrition=0 → 即便登记病种也不软降。
+        val balanced = engine.evaluate(
+            listOf(hiGi, plain), pantryIngredientIds = pantry, HealthConstraints(),
+            weights = RecommendationWeights.DEFAULT, conditions = dm, giByName = gi,
+        ).associate { it.id to it.score }
+        assertEquals(balanced[1], balanced[3], "综合风格权重0→高GI菜不被软降")
+
+        // 营养风格但无登记病种 → 不软降(gate)。
+        val noCond = engine.evaluate(
+            listOf(hiGi, plain), pantryIngredientIds = pantry, HealthConstraints(),
+            weights = nutriW, conditions = emptySet(), giByName = gi,
+        ).associate { it.id to it.score }
+        assertEquals(noCond[1], noCond[3], "无病种→不软降")
+
+        // 软降是轻度:高GI菜仍在候选里(不剔除)、且非忌口→仍排在忌口菜之前(不越分层)。
+        assertTrue(soft.containsKey(1) && soft.containsKey(2), "软降菜仍保留在候选(不剔除)")
+    }
+
+    @Test
+    fun `慢病软降_高GI主料已在limit则不双重罚`() {
+        // 白米饭既高GI(gi=83)又被 care 设为 limit → 只算 limit 罚、软降去重跳过(复用 dishQualitativeHits 的 avoid∪limit 去重)。
+        val rice = RuleDish(1, "米饭", listOf(main(101, "白米饭")))
+        val gi = mapOf("白米饭" to 83.0)
+        val nutriW = RecommendationStyle.NUTRITION.weights()
+        val dm = setOf(com.sxdbsm.cookbook.domain.HealthCondition.DIABETES)
+        // 白米饭在 limit:软降应跳过它(否则 limit0.4 + 软降 双重罚)。
+        val inLimit = engine.evaluate(
+            listOf(rice), pantryIngredientIds = setOf(101L),
+            HealthConstraints(limitIngredientIds = setOf(101L)),
+            weights = nutriW, conditions = dm, giByName = gi,
+        ).first().score
+        // 同菜不在 limit:软降生效(被罚)。
+        val notLimit = engine.evaluate(
+            listOf(rice), pantryIngredientIds = setOf(101L), HealthConstraints(),
+            weights = nutriW, conditions = dm, giByName = gi,
+        ).first().score
+        // in-limit 分 = base+onHandMain - limit0.4(无软降); not-limit 分 = base+onHandMain - 软降。
+        // 断言:in-limit 未叠加软降(其分 = 仅 limit 罚),即 inLimit == notLimit + 软降 - limit ... 直接验去重:
+        // in-limit 只被 limit 罚一次,软降跳过 → inLimit 应 == (base+onHandMain - 0.4)。
+        val baseScore = engine.evaluate(
+            listOf(rice), pantryIngredientIds = setOf(101L), HealthConstraints(),
+            weights = RecommendationWeights.DEFAULT, conditions = emptySet(), giByName = emptyMap(),
+        ).first().score // 无任何健康罚
+        assertEquals(baseScore - 0.4, inLimit, 1e-9, "白米饭在limit→只 limit 罚0.4、软降去重跳过(不双重)")
+        assertTrue(notLimit < baseScore, "白米饭不在limit→营养风格软降生效")
+    }
 }

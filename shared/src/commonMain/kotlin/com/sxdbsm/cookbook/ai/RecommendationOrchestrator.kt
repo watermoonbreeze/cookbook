@@ -40,6 +40,8 @@ class RecommendationOrchestrator(
             preferenceScores = input.preferenceScores,
             nutritionBalanceScores = input.nutritionBalanceScores,
             mainRepeatCounts = input.mainRepeatCounts,
+            conditions = input.conditions, // [AI生成] 慢病数值软约束透传
+            giByName = input.giByName,
         )
         if (evaluated.isEmpty()) {
             return RecommendationResult(emptyList(), evaluated, RecommendationSource.EMPTY)

@@ -38,6 +38,9 @@ data class RecommendationInput(
     val nutritionBalanceScores: Map<Long, Double> = emptyMap(), // 每菜与近期已吃的营养互补度[-1,1]
     val mainRepeatCounts: Map<Long, Int> = emptyMap(), // 每菜主料近期重复次数(去重成长)
     val style: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // 推荐风格→权重
+    // [AI生成] 慢病数值软约束:已登记病种(空=不触发软降)+名→GI(仅糖尿病需)。仅营养风格生效。
+    val conditions: Set<com.sxdbsm.cookbook.domain.HealthCondition> = emptySet(),
+    val giByName: Map<String, Double> = emptyMap(),
 )
 
 /** 规则引擎输入的菜品（已把食材按角色标好）。[AI生成] */

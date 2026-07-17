@@ -32,6 +32,9 @@ data class RecommendationWeights(
     val nutritionBalance: Double = 0.8, // 与当日/本餐已选的营养互补度（[-1,1]）
     val preference: Double = 0.6,       // 偏好画像分（[0,1]：爱吃/常做/收藏）
     val mainRepeat: Double = 0.3,       // 近期同主料重复/次（罚）
+    // [AI生成] 慢病数值软约束(GI/嘌呤)：登记糖尿病/痛风家庭，高GI/高嘌呤主料的菜在正常层内轻度靠后(不剔除、不进忌口分层)。
+    //   **默认 0=不生效**(多角色验证:软降弱可感知,静默默认开有操纵感→仅"偏营养"风格才开=用户主动知情同意)。钠不做(每道菜都放盐会误伤全部)。
+    val chronicDiseaseNutrition: Double = 0.0, // 高GI/高嘌呤梯度罚(仅登记病种+营养风格生效)
 ) {
     companion object {
         val DEFAULT = RecommendationWeights()
@@ -73,6 +76,7 @@ enum class RecommendationStyle {
         NUTRITION -> RecommendationWeights.DEFAULT.copy(
             nutritionBalance = 1.28, // ×1.6 更看重营养互补
             recommend = 0.9,         // ×1.5 更看重调养推荐
+            chronicDiseaseNutrition = 0.6, // [AI生成] 偏营养=用户主动求健康→开启慢病数值软降(高GI/嘌呤菜轻度靠后);其余风格默认0不动
         )
     }
 
