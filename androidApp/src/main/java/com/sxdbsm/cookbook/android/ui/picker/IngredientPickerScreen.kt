@@ -595,7 +595,10 @@ fun IngredientPickerScreen(
             },
             inPantry = ingredient.id in ui.pantryIngredientIds,
             // [AI修改] 阻断-1:库存挂钩关→详情弹层不显入库/出库/份数(回调置 null,能力显隐由回调决定,组件不改)。
-            onTogglePantry = if (!selectionMode && pantryHookOn) ({ vm.removeFromPantry(ingredient) }) else null, // [AI修改] 仅承担出库
+            onTogglePantry = if (!selectionMode && pantryHookOn) ({
+                vm.removeFromPantry(ingredient)
+                selectedIngredient = null // [AI修改] 出库后关闭详情弹层(用户反馈:点出库后详情该退出，与"存为菜品"一致)
+            }) else null, // [AI修改] 仅承担出库
             pantryRemaining = ui.pantryRemaining[ingredient.id] ?: 0,
             pantryServing = ui.pantryServings[ingredient.id] ?: 0,
             onAddServings = if (!selectionMode && pantryHookOn) ({ count -> vm.addServings(ingredient.id, count) }) else null,
