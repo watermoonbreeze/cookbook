@@ -131,7 +131,13 @@ fun FoodTimelineScreen(
         )
 
         if (state.pages.isEmpty() && !state.loading) {
-            EmptyState(text = "还没有任何餐食记录\n中间 + 号开始记录", icon = "📅")
+            // [AI修改] UX(§9.6):空态给可点"下一步"——直接跳今天记一餐,不必找底部+号。
+            EmptyState(
+                text = "还没有任何餐食记录",
+                icon = "📅",
+                actionLabel = "记一餐",
+                onAction = { onEditMealDate(com.sxdbsm.cookbook.util.DateTime.today()) },
+            )
         } else {
             LazyColumn(
                 state = listState,
