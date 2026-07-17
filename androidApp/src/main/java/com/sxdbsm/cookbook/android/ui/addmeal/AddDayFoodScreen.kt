@@ -76,12 +76,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.MealDishGrid
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
+import com.sxdbsm.cookbook.android.ui.component.DayMealCardView // [AI生成] D保存预览:复用首页/食历餐食卡渲染草稿
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
+import com.sxdbsm.cookbook.domain.model.DayMealCardData // [AI生成] D保存预览
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
+import com.sxdbsm.cookbook.domain.model.MealSection // [AI生成] D保存预览
 import com.sxdbsm.cookbook.domain.model.MealType
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -122,6 +127,7 @@ fun AddDayFoodScreen(
     var saveComboBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
     var comboNameDraft by rememberSaveable { mutableStateOf("") }
     var aiTargetBlockId by rememberSaveable { mutableStateOf<Long?>(null) } // [AI生成] 记录哪个餐次块发起了 AI 推荐。
+    var previewOpen by rememberSaveable { mutableStateOf(false) } // [AI生成] D保存预览:点"保存计划"先弹预览sheet,确认再存(仅计划态,实录高频不加确认=守少操作)
     val snackbar = remember { SnackbarHostState() } // [AI生成] A6：移除菜品撤销提示
     val scope = rememberCoroutineScope()
     // [AI生成] part1/审查建议1(§9.12 红线)：撤销 Snackbar **单 job 串行化**——连点多 chip/连续操作时，
@@ -188,7 +194,8 @@ fun AddDayFoodScreen(
                 actions = {
                     com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
                         text = if (state.isPlan) "保存计划" else "保存",
-                        onClick = { vm.save() },
+                        // [AI修改] D保存预览:计划态先弹预览(复用餐食卡)确认再存；实录态高频记餐直存不加确认(守少操作红线)。
+                        onClick = { if (state.isPlan) previewOpen = true else vm.save() },
                         enabled = state.canSave,
                     )
                     Spacer(Modifier.width(8.dp))
@@ -392,6 +399,77 @@ fun AddDayFoodScreen(
                 saveComboBlockId = null
             },
         )
+    }
+
+    // [AI生成] D保存预览:点"保存计划"→底部 sheet 用首页/食历同款餐食卡渲染草稿→确认再存(§7 底部sheet承载确认,§9.12 撤销优于确认此处为"保存前核对"故用确认)。
+    //   仅计划态触发(实录直存),按钮 enabled=canSave 已保证非空草稿,故此处不会弹空卡。
+    if (previewOpen) {
+        val previewSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        // [AI修改] Google审查B1:预览过滤口径必须与 vm.save() 一致(用 it.canSave,含 mealTime!=null 那一维)——
+        //   否则 mealTime 为 null 的餐次会"预览显示但保存被静默丢弃"。canSave 保证 mealTypeId/mealTime 非空,故映射内用 !! 不再兜底。
+        //   B3:派生态 remember 缓存(对齐项目规范,避免 sheet 打开期反复重建)。
+        val previewData = remember(state.mealBlocks, state.mealTypes, state.date, state.isPlan) {
+            DayMealCardData(
+                date = state.date,
+                isToday = state.date == com.sxdbsm.cookbook.util.DateTime.today(),
+                isPlanState = state.isPlan,
+                meals = state.mealBlocks
+                    .filter { it.canSave } // 与 save() 单一真相源一致:mealTypeId!=null && mealTime!=null && dishes 非空
+                    .map { b ->
+                        MealSection(
+                            mealTypeId = b.mealTypeId!!,
+                            mealName = state.mealTypes.firstOrNull { it.id == b.mealTypeId }?.name ?: "",
+                            mealTime = b.mealTime!!,
+                            dishes = b.dishes,
+                            note = b.note,
+                        )
+                    },
+            )
+        }
+        ModalBottomSheet(
+            onDismissRequest = { previewOpen = false },
+            sheetState = previewSheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 24.dp),
+            ) {
+                Text(
+                    "保存前预览",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp),
+                )
+                Text(
+                    "确认这份计划无误后保存，也可返回修改",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+                // 只读预览:不传编辑/复制/删除回调——能力显隐由回调决定(§9.3),预览态无这些操作。
+                DayMealCardView(data = previewData)
+                Spacer(Modifier.height(16.dp))
+                com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                    text = "确定保存",
+                    onClick = {
+                        previewOpen = false
+                        vm.save()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                TextButton(
+                    onClick = { previewOpen = false },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                ) {
+                    Text("返回修改", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
     }
 }
 

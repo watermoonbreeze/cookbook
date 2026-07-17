@@ -135,7 +135,7 @@ fun IngredientPickerScreen(
             // Tab 模式给 Surface 挂 nestedScroll：右侧网格滚动驱动 LargeTopAppBar 折叠；弹窗模式不挂。
             modifier = Modifier.fillMaxSize()
                 .then(if (!selectionMode) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier),
-            color = MaterialTheme.colorScheme.surface,
+            color = MaterialTheme.colorScheme.background, // [AI修改] B背景统一:以菜品页为准,食材页根背景由 surface(白)改 background(分组灰),两页一致。
         ) {
             Column(Modifier.fillMaxSize()) {
                 if (selectionMode) {
@@ -264,7 +264,7 @@ fun IngredientPickerScreen(
                             modifier = Modifier
                                 .width(120.dp)
                                 .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.secondaryContainer), // [AI修改] 左侧分类区使用规范中的分组栏底色。
+                                .background(MaterialTheme.colorScheme.surface), // [AI修改] B背景统一:左栏由 secondaryContainer 改白 surface,靠"灰底(background)→白栏(surface)"建层次(明暗都成立)。
                         ) {
                             item {
                                 CategoryItem(
@@ -326,6 +326,13 @@ fun IngredientPickerScreen(
                                 )
                             }
                         }
+                        // [AI生成] B背景统一:白左栏与右侧内容区之间 1px 分隔线,防白栏与右侧连成一片(M3 1.1.2 无 VerticalDivider,用 Box 竖条)。
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .fillMaxHeight()
+                                .background(MaterialTheme.colorScheme.outlineVariant),
+                        )
                     }
                     // 右侧食材网格
                     // [AI修改] 调养 tab 选中病种分类后按 绿灯/黄灯/红灯 分组展示，剂量语义来自调养规则 advice_level。
