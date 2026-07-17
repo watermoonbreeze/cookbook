@@ -68,7 +68,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.DishRow
-import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
+import com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SourceBadge
 import androidx.compose.material3.Surface
@@ -207,7 +207,8 @@ fun DishesScreen(
                 // [AI修改] A重构:一级主分类(SegmentedControl)移出滚动列表→固定在标题正下方,切Tab不再跳。
                 //   旧版:Tab 在列表头且只有"菜系"Tab 带左栏→切 Tab 布局在"带左栏/纯列表"两形态间跳变,搜索/Tab 跟着跳(用户痛点)。
                 //   新版:Tab 固定不动、外层结构一致,只切换内容区是否含左菜系栏;搜索/计数仍下沉列表头随内容上滑滚走→驱动大标题折叠(§9.15燃料,满足"上滑搜索合并到标题")。
-                SegmentedControl(
+                // [AI修改] §9.18:一级主分类改共享件 PrimaryTabRow(与食材页统一胶囊分段视觉);菜品固定4项→scrollable=false 均分铺满。逻辑不动。
+                PrimaryTabRow(
                     options = sortTabs.map { it.second },
                     selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
                     onSelect = { idx ->
@@ -217,6 +218,7 @@ fun DishesScreen(
                         if (t != DishesSortTab.ALL) savedCuisine = null
                     },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    scrollable = false,
                 )
                 if (isCuisineTab) {
                     // 菜系档：左侧二级菜系栏 | 右侧列表(搜索/计数/筛选/字母段在右列表内,滚动驱动折叠)。一级已固定在上方,切Tab不跳。

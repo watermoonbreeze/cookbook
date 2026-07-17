@@ -252,3 +252,53 @@ Apple 的关键差异：**正文用 17pt、层级拉开、字重克制（多用 
 
 ### 9.17 未保存返回守卫用统一封装
 - 有 `isDirty` 的编辑表单统一套 `UnsavedGuard`(内部管 `BackHandler`+顶栏返回+"放弃未保存的更改？"弹框，放弃=红字/继续编辑)，禁每屏内联复制。"放弃编辑"属主动丢弃、保留确认；"删除数据"属可逆、走撤销(区别见 9.12)。
+
+### 9.18 一级主分类栏：胶囊分段视觉统一（固定均分 / 可滚不均分同一套 token）
+> [AI生成 2026-07-17] 一致性修复：菜品页(`SegmentedControl`,4项固定均分)与食材页(`FilterChip` 横滚,6项可扩)一级主分类**视觉语言不统一**(一个胶囊分段、一个 M3 chip)。用户接受"菜品固定/食材可滑"的**行为差异**，但要求**视觉样式统一**成一套设计语言。**结论：统一到"胶囊分段视觉"(方向③+①融合)——抽共享组件 `PrimaryTabRow`，同一套 token，用 `scrollable` 参数切"均分/横滚"两形态。**
+
+**为什么不选"两页都 FilterChip"**：M3 `FilterChip` 是圆角矩形描边 chip，选中态是"描边+浅底+前导✓"，视觉偏 Material 不够 iOS；菜品 4 项均分铺满时 chip 行会留大片空隙或需手动撑宽，不如胶囊分段规整。**为什么不选"仅统一 token 保留两控件"(纯③)**：两种控件的选中态几何(滑块 vs 描边 chip)本质不同，光调色调不圆角仍是"两个东西"，达不到"看起来同一套"。故取**胶囊分段为唯一视觉**，食材页放弃 FilterChip 改为**可横滚的胶囊分段**(分段轨道整体可滚、项按内容宽度而非均分)。
+
+**统一视觉规范(明暗都成立，全部走主题 token)**：
+| 维度 | 取值 | token |
+|---|---|---|
+| 轨道圆角 | 10dp | `RoundedCornerShape(10)` |
+| 选中滑块圆角 | 8dp | `RoundedCornerShape(8)` |
+| 轨道底色 | `surfaceVariant` | 现 `SegmentedControl` 同款 |
+| 轨道内 padding | 3dp | — |
+| 选中滑块底色 | `surface`(白/深卡) | 现 `SegmentedControl` 同款 |
+| 选中文字色 | `onSurface` | — |
+| 未选文字色 | `onSurfaceVariant` | — |
+| 字号/字重 | `labelLarge`；选中 SemiBold / 未选 Normal | — |
+| 项竖直 padding | 7dp(触达≈40dp,配轨道 padding 达 ~46dp) | — |
+| 项水平 padding | 均分态 4dp；**横滚态 14dp**(项按内容宽,给足呼吸) | — |
+| 项间距 | 2dp | — |
+| 外层边距 | 水平 16dp、竖直 6dp(两页一致) | — |
+
+**两形态套用同一 token**：
+- **菜品(固定4项)** → `PrimaryTabRow(scrollable=false)`：`Row` + 每项 `weight(1f)` **均分铺满**，水平内距 4dp。等价现 `SegmentedControl`(几乎零改，仅换调用名)。
+- **食材(可扩≤6项)** → `PrimaryTabRow(scrollable=true)`：轨道换 `Row`+`horizontalScroll`(**禁用 `LazyRow`**——滑块选中态要跨项连续背景、且项数≤10 无虚拟化必要)，项**不 `weight`、按内容宽度**、水平内距加大到 14dp。选中滑块、圆角、配色与菜品**逐像素一致**，只是整条可左右滑、末项被截时提示"还有更多"。
+
+**共享组件签名(抽 `component/PrimaryTabRow.kt`，`SegmentedControl` 保留供 2~5 项互斥场景如推荐模式/去重周期，或让其内部复用本组件的均分分支)**：
+```kotlin
+@Composable
+fun PrimaryTabRow(
+    options: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    scrollable: Boolean = false,   // false=均分铺满(菜品) / true=横滚不均分(食材)
+)
+```
+内部：`scrollable=false` 走 `Row{ 项.weight(1f) }`；`true` 走 `Row(Modifier.horizontalScroll(rememberScrollState())){ 项.wrapContentWidth,水平14dp }`。两分支共用同一 `trackShape/thumbShape/背景/文字色/字重`常量，保证视觉唯一真相源。
+
+**落点**：
+- 菜品 `DishesScreen.kt` L210 `SegmentedControl(...)` → `PrimaryTabRow(..., scrollable=false)`(签名兼容，`onSelect`/`selectedIndex` 逻辑不动，`setSortTab`/`savedSortTab`/`savedCuisine` 保留)。
+- 食材 `IngredientPickerScreen.kt` L262 `LazyRow{ items{ FilterChip } }` → `PrimaryTabRow(options=visibleTabs.map{it.label}, selectedIndex=visibleTabs.indexOf(ui.mainTab), onSelect={ vm.selectMainTab(visibleTabs[it]); selectedIngredient=null }, scrollable=true)`。`visibleTabs` 过滤(库存挂钩)与 `selectMainTab` 逻辑不动，仅换渲染层。
+- 删除食材页对 `FilterChip`/`LazyRow`(仅主分类用途)的 import(若二级筛选 `DishFilterChips` 仍用 FilterChip 则保留)。
+
+**风险/兼容**：
+- M3 1.1.2 无 `SegmentedButton`——本方案全自绘、不依赖新 API，无兼容问题。
+- **横滚放弃均分**是刻意取舍：项数可变(库存 Tab 条件显隐→5或6项)无法均分铺满而不留白，横滚+内容宽是苹果(iOS Mail/App Store 分段横滚)正解。
+- 别破坏现有逻辑：`sortTab`(菜品)/`mainTab`(食材)的选中判定、`savedSortTab`/`mainTabInited` 守卫、`selectMainTab(force)`、切 Tab 清 `selectedIngredient`/`savedCuisine` 全部保留，本次**只换视觉外壳不动状态机**。菜品"菜系档带左栏"的 `isCuisineTab` 分支不受影响(仍在分段栏下方)。
+- 食材页横滚态**首项左内边距**与搜索行左对齐(外层水平 16dp 起)，选中项若在滚动区外不自动滚入(可选增强：`animateScrollTo` 到选中项,非必须)。
+- **真机验证点**：①两页并排看圆角/选中滑块/配色/字重**肉眼同一套**；②食材 6 项可左右滑、滑块选中态连续无割裂；③菜品 4 项仍均分铺满无留白；④明暗两主题下轨道/滑块/文字对比正常；⑤切 Tab 不误清菜系/不重置守卫、库存挂钩关时食材仅 5 项且不崩。

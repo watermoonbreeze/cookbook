@@ -258,22 +258,17 @@ fun IngredientPickerScreen(
                     if (!pantryHookOn && ui.mainTab == IngredientMainTab.PANTRY) vm.selectMainTab(IngredientMainTab.RECENT)
                 }
                 val visibleTabs = IngredientMainTab.values().filter { it != IngredientMainTab.PANTRY || pantryHookOn }
-                // [AI修改] 苹果风格：主分类改可滚动 FilterChip 行(去 Material TabRow 的下划线 indicator)。
-                LazyRow(
+                // [AI修改] §9.18:主分类改共享件 PrimaryTabRow(与菜品页统一胶囊分段视觉);食材项数可变(≤6)→scrollable=true 横滚、项按内容宽。逻辑(selectMainTab/清详情)不动。
+                com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow(
+                    options = visibleTabs.map { it.label },
+                    selectedIndex = visibleTabs.indexOf(ui.mainTab).coerceAtLeast(0),
+                    onSelect = { idx ->
+                        selectedIngredient = null
+                        vm.selectMainTab(visibleTabs[idx])
+                    },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    items(visibleTabs) { tab ->
-                        FilterChip(
-                            selected = ui.mainTab == tab,
-                            onClick = {
-                                selectedIngredient = null
-                                vm.selectMainTab(tab)
-                            },
-                            label = { Text(tab.label, maxLines = 1, softWrap = false) },
-                        )
-                    }
-                }
+                    scrollable = true,
+                )
                 Row(Modifier.weight(1f).fillMaxWidth()) {
                     // 左侧分类树（最近/库存平铺，无左树）
                     if (ui.mainTab != IngredientMainTab.RECENT && ui.mainTab != IngredientMainTab.PANTRY) {
