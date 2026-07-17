@@ -53,6 +53,7 @@ class TimelineViewModel(
     private var initialized = false
     private var pendingPrependCount = 0 // [AI生成] 只在新窗口数据到达后发布给 UI，避免旧列表上提前消费。
     private var pendingScrollTargetDate: LocalDate? = null
+    private var jumpTargetDate: LocalDate? = null // [AI生成] 修#1(v2):色系墙跳转的"粘性"目标日——refreshLoadedPages 反复尝试直到真正滚到才清,免被 observe 再发/默认今天覆盖冲掉。
 
     private val _state = MutableStateFlow(TimelineUiState(loading = true)) // [AI修改] 内部维护窗口式食历状态。
     val state: StateFlow<TimelineUiState> = _state.asStateFlow()
@@ -115,15 +116,11 @@ class TimelineViewModel(
         val index = if (exact >= 0) exact
             else allDates.indexOfLast { it <= date }.takeIf { it >= 0 } ?: allDates.indexOfFirst { it >= date }
         if (index < 0) return
-        val target = allDates[index]
-        val visibleIndex = dateIndexInLoadedPage(target)
-        if (visibleIndex >= 0) {
-            requestScroll(visibleIndex)
-            return
-        }
+        // [AI修改] 修#1(v2):目标日"粘性"保存,窗口移到目标附近后由 refreshLoadedPages 反复尝试直到真正滚到才清粘性。
+        //   旧版用一次性 pendingScrollTargetDate + dateIndexInLoadedPage 快速路径,遇 observe 首帧默认今天/异步再发时机竞态→跳转被冲掉退回今天。
+        jumpTargetDate = allDates[index]
         loadedStartIndex = (index - PAGE_DAYS + 1).coerceAtLeast(0)
         loadedEndIndex = (index + PAGE_DAYS - 1).coerceAtMost(allDates.lastIndex)
-        pendingScrollTargetDate = target
         _state.value = _state.value.copy(loading = true)
         refreshLoadedPages()
     }
@@ -214,9 +211,13 @@ class TimelineViewModel(
             val cards = repo.loadTimelineCardsByDates(visibleDates)
             val prependCount = pendingPrependCount
             pendingPrependCount = 0
+            // [AI修改] 修#1(v2):粘性 jumpTargetDate 优先(反复尝试),否则一次性 pendingScrollTargetDate(如 loadPrev/Next 的锚点)。
+            //   只有真正在本页找到(scrollIndex>=0)才清粘性,否则保留下次窗口刷新继续尝试→彻底解决"跳转被默认今天冲掉"。
             val pendingDate = pendingScrollTargetDate
             pendingScrollTargetDate = null
-            val scrollIndex = pendingDate?.let { date -> cards.indexOfFirst { it.date == date } } ?: -1
+            val targetDate = jumpTargetDate ?: pendingDate
+            val scrollIndex = targetDate?.let { date -> cards.indexOfFirst { it.date == date } } ?: -1
+            if (scrollIndex >= 0) jumpTargetDate = null
             _state.value = _state.value.copy(
                 pages = cards,
                 rangeMin = allDates.firstOrNull(),
