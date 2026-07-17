@@ -185,9 +185,9 @@ internal fun CategoryItem(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    // [AI修改] B背景统一:选中态由 secondaryContainer 改浅橘 primaryContainer——白左栏上更突出(原选中色与旧左栏底色同为 secondary 系,几乎看不出选中)。
-    val bg = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
-    val fg = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    // [AI修改] 用户要求:与菜品菜系栏(CuisineRail)选中样式统一——选中项底=页面 background(在柔和左栏底上凸显)、文字主色。
+    val bg = if (selected) MaterialTheme.colorScheme.background else Color.Transparent
+    val fg = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
         modifier = Modifier

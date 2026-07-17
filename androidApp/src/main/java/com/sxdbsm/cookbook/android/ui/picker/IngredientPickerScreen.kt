@@ -272,7 +272,8 @@ fun IngredientPickerScreen(
                             modifier = Modifier
                                 .width(120.dp)
                                 .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.surface), // [AI修改] B背景统一:左栏由 secondaryContainer 改白 surface,靠"灰底(background)→白栏(surface)"建层次(明暗都成立)。
+                                // [AI修改] 用户要求:食材二级分类(左栏)背景/样式与菜品菜系栏(CuisineRail)统一——改用同款柔和 surfaceVariant.copy(0.35)(非白),明暗都成立。
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)),
                         ) {
                             item {
                                 CategoryItem(
@@ -334,13 +335,6 @@ fun IngredientPickerScreen(
                                 )
                             }
                         }
-                        // [AI生成] B背景统一:白左栏与右侧内容区之间 1px 分隔线,防白栏与右侧连成一片(M3 1.1.2 无 VerticalDivider,用 Box 竖条)。
-                        Box(
-                            modifier = Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.outlineVariant),
-                        )
                     }
                     // 右侧食材网格
                     // [AI修改] 调养 tab 选中病种分类后按 绿灯/黄灯/红灯 分组展示，剂量语义来自调养规则 advice_level。
@@ -477,7 +471,8 @@ fun IngredientPickerScreen(
                 val searchFocus = remember { FocusRequester() }
                 LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, tonalElevation = 2.dp) {
-                    Column(Modifier.fillMaxSize()) {
+                    // [AI修改] #15 修bug:全屏覆盖层从 y=0 起绘,顶部搜索行须避让状态栏(否则钻到状态栏下显示半个);statusBarsPadding 只让内容下移、Surface 底色仍铺满状态栏区。
+                    Column(Modifier.fillMaxSize().statusBarsPadding()) {
                         Row(
                             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
