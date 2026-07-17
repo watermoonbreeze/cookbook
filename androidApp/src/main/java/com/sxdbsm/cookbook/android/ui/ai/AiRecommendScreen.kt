@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.ai
 
 import androidx.compose.foundation.clickable
+import com.sxdbsm.cookbook.android.ui.component.CapsuleButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -106,19 +107,23 @@ fun AiRecommendScreen(
             if (showPlan) {
                 if (planState.plan != null && planState.plan.days.isNotEmpty()) {
                     Surface(tonalElevation = 3.dp) {
-                        Button(
+                        // [AI修改] UX:主CTA统一胶囊按钮(§9.13)，与全App主动作视觉一致。
+                        CapsuleButton(
+                            text = if (planState.saving) "保存中…" else "保存为未来 ${planState.plan.days.size} 天计划",
                             onClick = { planVm.save() },
                             enabled = !planState.saving,
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        ) { Text(if (planState.saving) "保存中…" else "保存为未来 ${planState.plan.days.size} 天计划") }
+                        )
                     }
                 }
             } else if (state.selectedIds.isNotEmpty()) {
                 Surface(tonalElevation = 3.dp) {
-                    Button(
+                    // [AI修改] UX:胶囊主CTA + 文案动词开头(说人话:点了会把菜记进这一餐)。
+                    CapsuleButton(
+                        text = "加入这一餐（已选 ${state.selectedIds.size} 道）",
                         onClick = { onPickMeal(state.selectedIds.toList()) },
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    ) { Text("确定（已选 ${state.selectedIds.size} 道）") }
+                    )
                 }
             }
         },
@@ -194,7 +199,7 @@ fun AiRecommendScreen(
                                 Spacer(Modifier.height(10.dp))
                             }
                             item {
-                                Text("仅为饮食建议参考，忌口与用量请以你的医嘱为准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(DIET_DISCLAIMER, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -225,7 +230,7 @@ fun AiRecommendScreen(
                             }
                             item {
                                 Spacer(Modifier.height(8.dp))
-                                Text("仅为饮食建议参考，忌口与用量请以你的医嘱为准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(DIET_DISCLAIMER, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -236,6 +241,9 @@ fun AiRecommendScreen(
     }
 }
 
+
+// [AI生成] UX:健康免责单一真相源(原两处重复文案),守免责红线·仅供参考非医嘱。
+private const val DIET_DISCLAIMER = "仅为饮食建议参考，忌口与用量请以你的医嘱为准。"
 
 /**
  * 库存/随机推荐的控件区：餐次 + 去重周期 + 推荐风格。[AI生成]
@@ -256,10 +264,10 @@ private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewMode
             )
         }
     }
-    // B2：去重周期。
+    // B2：去重周期。[AI修改] UX:说明收敛为一行小标题(去长句噪音,结果区上移)。
     Spacer(Modifier.height(6.dp))
     Text(
-        "去重周期：近这段时间吃过的菜排到最后，避免连着几天推同一道",
+        "去重周期（近期吃过的排最后）",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
