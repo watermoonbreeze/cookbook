@@ -335,7 +335,7 @@ fun DishesScreen(
             confirmButton = {
                 TextButton(onClick = vm::confirmDeleteDish) {
                     // [AI修改] 苹果风格：删除为破坏性操作，恒用 error 红字。
-                    Text(if (deleteState.checking) "删除中..." else "删除", color = MaterialTheme.colorScheme.error)
+                    Text(if (deleteState.checking) "删除中…" else "删除", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {

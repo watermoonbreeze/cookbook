@@ -147,7 +147,7 @@ fun NewDishScreen(
             if (state.loading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
-                    text = "加载菜品信息中...",
+                    text = "加载菜品信息中…",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(vertical = 8.dp),

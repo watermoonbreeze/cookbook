@@ -250,7 +250,7 @@ fun CookingTimerScreen(
             if (!loaded) {
                 item {
                     Text(
-                        text = "加载计时模板中...",
+                        text = "加载计时模板中…",
                         modifier = Modifier.padding(18.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium,

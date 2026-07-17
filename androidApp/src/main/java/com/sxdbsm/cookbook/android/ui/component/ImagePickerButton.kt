@@ -142,7 +142,7 @@ fun ImagePickerButton(
         ) {
             Icon(Icons.Outlined.AddAPhoto, contentDescription = null)
             Spacer(Modifier.width(6.dp))
-            Text(if (processing) "压缩中..." else "添加图片 ${imagePaths.size}/$maxCount")
+            Text(if (processing) "压缩中…" else "添加图片 ${imagePaths.size}/$maxCount")
         }
         errorMessage?.let { message ->
             Spacer(Modifier.height(6.dp))

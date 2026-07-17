@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
         }
         if (!initialized) {
             InitializingScreen(
-                message = initError ?: "初始化数据中...",
+                message = initError ?: "初始化数据中…",
                 failed = initError != null,
                 onRetry = { initAttempt++ },
             )
