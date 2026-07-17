@@ -194,8 +194,8 @@ fun AddDayFoodScreen(
                 actions = {
                     com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
                         text = if (state.isPlan) "保存计划" else "保存",
-                        // [AI修改] D保存预览:计划态先弹预览(复用餐食卡)确认再存；实录态高频记餐直存不加确认(守少操作红线)。
-                        onClick = { if (state.isPlan) previewOpen = true else vm.save() },
+                        // [AI修改] D保存预览:保存/编辑餐食均先弹预览(复用餐食卡)确认再存(用户要求:不只保存计划要预览)。
+                        onClick = { previewOpen = true },
                         enabled = state.canSave,
                     )
                     Spacer(Modifier.width(8.dp))
@@ -445,7 +445,7 @@ fun AddDayFoodScreen(
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
                 Text(
-                    "确认这份计划无误后保存，也可返回修改",
+                    "确认无误后保存，也可返回修改",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 12.dp),
