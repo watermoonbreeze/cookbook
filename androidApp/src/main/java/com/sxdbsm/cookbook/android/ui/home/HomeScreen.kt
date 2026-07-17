@@ -149,7 +149,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        "🎨 营养色系墙",
+                        "营养色系墙", // [AI修改] 文案:去标题内嵌装饰emoji(苹果式图标与文字分离,右侧已有展开图标)
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -188,7 +188,7 @@ fun HomeScreen(
         }
 
         // [AI修改] 计划标题始终展示；没有计划时内容区显示“暂无计划”。
-        item { SectionHeader(title = "📅 计划", action = "全部 ▸", onActionClick = onOpenTimeline) }
+        item { SectionHeader(title = "计划", action = "全部 ▸", onActionClick = onOpenTimeline) } // [AI修改] 文案:去标题装饰emoji(与同页其余SectionHeader一致)
         // [AI生成] B3：一周计划入口——"周末排下周饭"整周概览 + 逐日安排。
         // [AI修改] 苹果风格：去描边按钮，改无边框白卡点击行 + chevron。
         item {

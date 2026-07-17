@@ -110,7 +110,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                 val partialRule = state.byAi && state.plan.days.any { d -> d.meals.any { it.fromRule } }
                 Text(
                     buildString {
-                        append(if (state.byAi) "🤖 AI 规划" else "📋 规则规划")
+                        append(if (state.byAi) "AI 规划" else "规则规划") // [AI修改] 文案:去标题装饰emoji(文字本身已表意)
                         if (partialRule) append("（部分餐次由规则补充，已在下方标注）")
                         append(" · 当前季节：${state.season}（应季优先）")
                         if (state.healthAware) append(" · 已参考健康档案（膳食指南口径整理，仅供参考）") // [AI修改] 文案:去伪精确健康断言"利健康≥80%"(守免责·非医嘱)
