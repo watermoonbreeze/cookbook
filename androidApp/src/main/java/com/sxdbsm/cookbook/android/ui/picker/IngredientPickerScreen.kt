@@ -346,9 +346,9 @@ fun IngredientPickerScreen(
                     // [AI修改] 调养 tab 选中病种分类后按 绿灯/黄灯/红灯 分组展示，剂量语义来自调养规则 advice_level。
                     val careGroups = if (ui.mainTab == IngredientMainTab.CARE && ui.selectedCategoryId != null) {
                         listOf(
-                            AdviceLevel.RECOMMEND to "🟢 绿灯推荐",
-                            AdviceLevel.LIMIT to "🟡 黄灯限量",
-                            AdviceLevel.AVOID to "🔴 红灯禁忌",
+                            AdviceLevel.RECOMMEND to "🟢 推荐", // [AI修改] 文案:术语统一"推荐/限量/避免"(与详情页/维度区一致,去"红绿灯/禁忌"另一套词)
+                            AdviceLevel.LIMIT to "🟡 限量",
+                            AdviceLevel.AVOID to "🔴 避免",
                         ).mapNotNull { (level, title) ->
                             val group = ui.ingredients.filter { it.adviceLevel == level }
                             if (group.isEmpty()) null else title to group
@@ -934,7 +934,7 @@ private fun SearchResultsPanel(
 private fun IngredientGridEmptyState(tab: IngredientMainTab) {
     val (emoji, title, hint) = when (tab) {
         IngredientMainTab.RECENT -> Triple("🍽️", "还没有最近用过的食材", "记一餐后，这里会显示你家常用的食材")
-        IngredientMainTab.PANTRY -> Triple("🧊", "冰箱还是空的", "从搜索或分类里，把家里有的食材『入库』")
+        IngredientMainTab.PANTRY -> Triple("🧊", "库存还是空的", "从搜索或分类里，把家里有的食材『入库』") // [AI修改] 文案:术语统一"库存"(不用"冰箱")
         IngredientMainTab.CUSTOM -> Triple("🥗", "还没有自建食材", "点右上角 ＋ 添加你家常用的食材")
         else -> Triple("🔍", "这个分类下暂无食材", "换个分类看看，或用上方搜索")
     }

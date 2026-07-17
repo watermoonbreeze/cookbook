@@ -167,7 +167,7 @@ private fun PairingRuleCard() {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("搭配规则", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             Text(
-                "① 只用你「在手库存」的食材，离线按规则搭，不是完整菜谱。",
+                "① 只用你「在手库存」的食材，离线按规则搭，不是完整菜品做法。", // [AI修改] 文案:术语统一"菜品"(不用"菜谱")
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(

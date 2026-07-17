@@ -332,8 +332,8 @@ private fun DishInsightsSection(insights: DishInsights) {
                 when {
                     insights.avoidNames.isNotEmpty() -> InsightLine("🚫 不适合", "含忌口：${insights.avoidNames.joinToString("、")}", MaterialTheme.colorScheme.error)
                     insights.limitNames.isNotEmpty() -> InsightLine("⚠ 慎吃", "限量：${insights.limitNames.joinToString("、")}", MaterialTheme.colorScheme.primary)
-                    insights.recommendNames.isNotEmpty() -> InsightLine("✅ 有益", "含推荐：${insights.recommendNames.joinToString("、")}", MaterialTheme.colorScheme.primary)
-                    else -> InsightLine("💚 健康", "无忌口/限量，适合", MaterialTheme.colorScheme.onSurfaceVariant)
+                    insights.recommendNames.isNotEmpty() -> InsightLine("✅ 推荐", "含推荐食材：${insights.recommendNames.joinToString("、")}", MaterialTheme.colorScheme.primary) // [AI修改] 文案:去"有益"健康断言,只陈述含推荐食材(守免责)
+                    else -> InsightLine("💚 健康", "无忌口 / 限量", MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 文案:去"适合"个人适宜性断言(守免责·非医嘱)
                 }
                 // [AI生成] P4/P2：GI/嘌呤定性补充(care 忌口的 data-driven 补漏，独立维度可与忌口并存；已去重 care 覆盖的食材)。
                 //   仅登记对应病种才非空(VM 纯函数已 gate)；成分陈述非整菜定性(规避 GL 陷阱)，个人视角非医嘱。

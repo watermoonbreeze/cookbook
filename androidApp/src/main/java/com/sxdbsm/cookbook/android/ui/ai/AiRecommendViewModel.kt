@@ -156,7 +156,7 @@ class AiRecommendViewModel(
         if (result.source == RecommendationSource.EMPTY || result.candidates.isEmpty()) {
             val hint = when {
                 mode == RecommendMode.RANDOM -> "菜品库里还没有可推荐的菜，先去添加些菜品吧"
-                else -> "库存里还没有能用到的食材，先把家里的主料/食材加入库存吧～"
+                else -> "库存里还没有能用到的食材，先把家里的主料加入库存" // [AI修改] 文案:去卖萌"吧～"+去"主料/食材"冗余
             }
             return AiRecommendUiState(loading = false, emptyHint = hint, source = result.source, mode = mode, modelReady = modelReady)
         }

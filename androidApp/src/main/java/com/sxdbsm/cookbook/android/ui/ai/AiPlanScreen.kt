@@ -113,7 +113,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                         append(if (state.byAi) "🤖 AI 规划" else "📋 规则规划")
                         if (partialRule) append("（部分餐次由规则补充，已在下方标注）")
                         append(" · 当前季节：${state.season}（应季优先）")
-                        if (state.healthAware) append(" · 已结合健康档案（利健康≥80%，参考膳食指南整理）")
+                        if (state.healthAware) append(" · 已参考健康档案（膳食指南口径整理，仅供参考）") // [AI修改] 文案:去伪精确健康断言"利健康≥80%"(守免责·非医嘱)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
