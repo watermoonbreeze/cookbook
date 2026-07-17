@@ -16,8 +16,8 @@ import kotlin.test.assertTrue
  **/
 class NutritionLevelEvaluatorTest {
 
-    private fun totals(kcal: Double, sodium: Double, potassium: Double = 0.0) =
-        NutritionTotals(energyKcal = kcal, sodiumMg = sodium, potassiumMg = potassium)
+    private fun totals(kcal: Double, sodium: Double, potassium: Double = 0.0, fiber: Double = 0.0) =
+        NutritionTotals(energyKcal = kcal, sodiumMg = sodium, potassiumMg = potassium, fiberG = fiber)
 
     @Test
     fun `缺营养数据退回多样性级别不下调`() {
@@ -243,6 +243,69 @@ class NutritionLevelEvaluatorTest {
             4, totals(800.0, 500.0, potassium = 5000.0), CalorieStatus.ON, setOf(HealthCondition.GOUT),
         )
         assertTrue(noHtn.concerns.none { it.contains("钾") }, "未登记高血压不触发钾提示")
+    }
+
+    @Test
+    fun `糖尿病纤维充足_正向提示且不改级别`() {
+        // 纤维 21g / 25 ≈ 84% ≥ 80% → 正向提示;无高GI→级别不降(纤维只锦上添花)。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0, fiber = 21.0), CalorieStatus.ON, setOf(HealthCondition.DIABETES),
+        )
+        assertEquals(4, r.level, "纤维不改级别")
+        assertTrue(r.concerns.any { it.contains("纤维") && it.contains("血糖") }, "应给纤维正向提示: ${r.concerns}")
+    }
+
+    @Test
+    fun `糖尿病高GI高纤_升糖提示与纤维提示并存_纤维不抵消GI罚分`() {
+        // 高GI(白米饭)→封级2;纤维 22/25≈88%→正向。两条并存、级别仍2(纤维不把下调扣回)。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0, fiber = 22.0), CalorieStatus.ON, setOf(HealthCondition.DIABETES),
+            highGiFoods = listOf("白米饭"),
+        )
+        assertEquals(2, r.level, "纤维不抵消GI罚分,仍封到2")
+        assertTrue(r.concerns.any { it.contains("高GI") }, "高GI提示在: ${r.concerns}")
+        assertTrue(r.concerns.any { it.contains("纤维") }, "纤维正向提示并存: ${r.concerns}")
+        // 负向(高GI)排在正向(纤维)之前。
+        assertTrue(
+            r.concerns.indexOfFirst { it.contains("高GI") } < r.concerns.indexOfFirst { it.contains("纤维") },
+            "负向应排在正向前: ${r.concerns}",
+        )
+    }
+
+    @Test
+    fun `糖尿病纤维不足_不提示也不下调`() {
+        // 纤维 10/25=40% < 80% → 无提示;低纤绝不下调(免责红线)。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0, fiber = 10.0), CalorieStatus.ON, setOf(HealthCondition.DIABETES),
+        )
+        assertEquals(4, r.level)
+        assertTrue(r.concerns.none { it.contains("纤维") }, "低纤不提示、不下调: ${r.concerns}")
+    }
+
+    @Test
+    fun `无纤维数据或未登记糖尿病_不触发纤维提示`() {
+        // 无纤维数据(fiber=0)→不触发(向后兼容)。
+        val noData = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0, fiber = 0.0), CalorieStatus.ON, setOf(HealthCondition.DIABETES),
+        )
+        assertTrue(noData.concerns.none { it.contains("纤维") }, "无纤维数据不触发")
+        // 未登记糖尿病 + 高纤 → 不触发(gate)。
+        val noDm = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0, fiber = 30.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+        )
+        assertTrue(noDm.concerns.none { it.contains("纤维") }, "未登记糖尿病不触发纤维提示")
+    }
+
+    @Test
+    fun `高血压加糖尿病_钾与纤维两正向并存_互不干扰且都不改级别`() {
+        // 三高家庭:钾 3200/3600≈89% + 纤维 22/25≈88% 均达标,钠正常/无高GI → 两条正向并存、级别不降。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, totals(800.0, 200.0, potassium = 3200.0, fiber = 22.0), CalorieStatus.ON,
+            setOf(HealthCondition.HYPERTENSION, HealthCondition.DIABETES),
+        )
+        assertEquals(4, r.level, "两正向维度都不改级别")
+        assertTrue(r.concerns.any { it.contains("钾") && it.contains("钠钾平衡") }, "钾正向在: ${r.concerns}")
+        assertTrue(r.concerns.any { it.contains("纤维") && it.contains("血糖") }, "纤维正向在: ${r.concerns}")
     }
 
     @Test
