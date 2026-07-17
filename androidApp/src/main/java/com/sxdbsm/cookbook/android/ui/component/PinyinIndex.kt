@@ -1,5 +1,24 @@
 package com.sxdbsm.cookbook.android.ui.component
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import java.nio.charset.Charset
 
 /**
@@ -44,3 +63,51 @@ fun pinyinInitial(name: String): String {
  */
 fun <T> pinyinComparator(nameOf: (T) -> String): Comparator<T> =
     compareBy<T>({ pinyinInitial(nameOf(it)).let { c -> if (c == "#") "￿" else c } }, { nameOf(it) })
+
+/**
+ * 右侧字母定位条：拖动/点击某字母触发 [onLetterSelected]。[AI生成]
+ *
+ * 通用组件(原菜品页私有)，供菜品/食材库存等长列表右侧首字母定位复用。调用方负责把字母映射到滚动位置。
+ */
+@Composable
+fun LetterIndexBar(
+    letters: List<String>,
+    modifier: Modifier = Modifier,
+    onLetterSelected: (String) -> Unit,
+) {
+    var active by remember { mutableStateOf<String?>(null) }
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.82f), MaterialTheme.shapes.small)
+            .padding(vertical = 4.dp)
+            .pointerInput(letters) {
+                detectDragGestures(
+                    onDragEnd = { active = null },
+                    onDragCancel = { active = null },
+                ) { change, _ ->
+                    if (letters.isEmpty()) return@detectDragGestures
+                    val index = ((change.position.y / size.height) * letters.size).toInt().coerceIn(0, letters.lastIndex)
+                    active = letters[index]
+                    onLetterSelected(letters[index])
+                }
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        letters.forEach { letter ->
+            val selected = active == letter
+            Text(
+                text = letter,
+                style = if (selected) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelSmall,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .width(if (selected) 28.dp else 22.dp)
+                    .height(if (selected) 28.dp else 20.dp)
+                    .clickable {
+                        active = letter
+                        onLetterSelected(letter)
+                    },
+            )
+        }
+    }
+}

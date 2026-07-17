@@ -68,6 +68,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.DishRow
+import com.sxdbsm.cookbook.android.ui.component.LetterIndexBar
 import com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SourceBadge
@@ -497,48 +498,6 @@ private fun DishSearchRow(dish: DishMini, onClick: () -> Unit) {
         TextButton(onClick = onClick) { Text("详情") }
     }
     Divider(color = MaterialTheme.colorScheme.outlineVariant)
-}
-
-@Composable
-private fun LetterIndexBar(
-    letters: List<String>,
-    modifier: Modifier = Modifier,
-    onLetterSelected: (String) -> Unit,
-) {
-    var active by remember { mutableStateOf<String?>(null) }
-    Column(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.82f), MaterialTheme.shapes.small)
-            .padding(vertical = 4.dp)
-            .pointerInput(letters) {
-                detectDragGestures(
-                    onDragEnd = { active = null },
-                    onDragCancel = { active = null },
-                ) { change, _ ->
-                    val index = ((change.position.y / size.height) * letters.size).toInt().coerceIn(0, letters.lastIndex)
-                    active = letters[index]
-                    onLetterSelected(letters[index])
-                }
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        letters.forEach { letter ->
-            val selected = active == letter
-            Text(
-                text = letter,
-                style = if (selected) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelSmall,
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .width(if (selected) 28.dp else 22.dp)
-                    .height(if (selected) 28.dp else 20.dp)
-                    .clickable {
-                        active = letter
-                        onLetterSelected(letter)
-                    },
-            )
-        }
-    }
 }
 
 /**

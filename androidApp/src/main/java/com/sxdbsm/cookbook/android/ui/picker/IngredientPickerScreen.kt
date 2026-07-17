@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -359,6 +360,7 @@ fun IngredientPickerScreen(
                         emptyList()
                     }
                     val gridState = rememberLazyGridState()
+                    val letterScope = rememberCoroutineScope() // [AI生成] ②b：字母定位条点击→滚动到该首字母首个食材。
                     // [AI生成] 搜索跳转后滚动到高亮食材（跳转固定在常规 Tab、无 careGroups 头，index 即列表位置）。
                     LaunchedEffect(ui.highlightIngredientId, ui.ingredients) {
                         val hid = ui.highlightIngredientId ?: return@LaunchedEffect
@@ -377,13 +379,19 @@ fun IngredientPickerScreen(
                             }
                         }
                     }
+                    // [AI生成] ②b 库存字母定位：把网格包进 Box 以在右侧叠放 LetterIndexBar(仅库存 Tab)。
+                    Box(Modifier.weight(1f)) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(3),
                         state = gridState,
-                        contentPadding = PaddingValues(12.dp),
+                        // [AI修改] 库存 Tab 右侧留出字母条空间；其余 Tab 正常内边距。
+                        contentPadding = PaddingValues(
+                            start = 12.dp, top = 12.dp, bottom = 12.dp,
+                            end = if (ui.mainTab == IngredientMainTab.PANTRY) 24.dp else 12.dp,
+                        ),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxSize(),
                     ) {
                         if (careGroups.isNotEmpty()) {
                             careGroups.forEach { (title, group) ->
@@ -449,6 +457,25 @@ fun IngredientPickerScreen(
                             }
                         }
                     }
+                    // [AI生成] ②b 库存字母定位条(拖动/点击滚到该首字母首个食材)。仅库存 Tab、超一屏(>12)且多字母才显。
+                    if (ui.mainTab == IngredientMainTab.PANTRY) {
+                        val pantryLetters = remember(ui.ingredients) {
+                            ui.ingredients.map { com.sxdbsm.cookbook.android.ui.component.pinyinInitial(it.name) }.distinct()
+                        }
+                        if (pantryLetters.size > 1 && ui.ingredients.size > 12) {
+                            com.sxdbsm.cookbook.android.ui.component.LetterIndexBar(
+                                letters = pantryLetters,
+                                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp),
+                                onLetterSelected = { letter ->
+                                    val idx = ui.ingredients.indexOfFirst {
+                                        com.sxdbsm.cookbook.android.ui.component.pinyinInitial(it.name) == letter
+                                    }
+                                    if (idx >= 0) letterScope.launch { gridState.animateScrollToItem(idx) }
+                                },
+                            )
+                        }
+                    }
+                    } // Box(字母定位叠放) 收尾
                 }
                 // [AI修改] 移除库存 Tab 底部"从现有食材中添加入库"冗余提示——空态已有引导，非空时也不需常驻这行。
                 // 底部固定栏：仅选择模式且有已选时出现。
