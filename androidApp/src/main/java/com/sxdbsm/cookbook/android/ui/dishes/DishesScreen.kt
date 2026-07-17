@@ -34,6 +34,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Search
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -90,6 +92,9 @@ fun DishesScreen(
     val prefillBus = org.koin.compose.koinInject<com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefillBus>() // [AI生成] 搜索无结果新建菜品预填
     val ui by vm.uiState.collectAsStateWithLifecycle()
     var dropdownDish by remember { mutableStateOf<DishMini?>(null) }
+    var searchOpen by remember { mutableStateOf(false) } // [AI生成] #4:搜索改右上角图标触发→展开全屏搜索覆盖层
+    // [AI生成] #4:搜索覆盖层可见时,系统返回键=关搜索回列表(而非退出Tab)。
+    BackHandler(enabled = searchOpen) { searchOpen = false; vm.setKeyword("") }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     // [AI修改] Google审查要点4:菜系/非菜系档共用同一 listState,切 Tab 后重置滚动位到顶部,避免"切档后列表停在非顶部"。
@@ -109,9 +114,9 @@ fun DishesScreen(
     }
     val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
     val isCuisineTab = ui.sortTab == DishesSortTab.ALL // [AI修改] 第三档=菜系(左二级栏+右菜品)
-    // [AI修改] A重构:Tab 移到固定区(不再进列表)后,菜系档列表头部为 3 个 item(搜索/计数/筛选)在字母 section 之前,字母跳转索引从 3 起算。
+    // [AI修改] #4:搜索移到右上角图标(不再进列表)后,菜系档列表头部为 2 个 item(计数/筛选)在字母 section 之前,字母跳转索引从 2 起算。
     // 红线：新增/条件插入 item 必须同步偏移量并纳入 remember key，否则跳转偏位。
-    val letterHeaderCount = 3
+    val letterHeaderCount = 2
     val letterIndexMap = remember(sections, letterHeaderCount) {
         var index = letterHeaderCount
         buildMap {
@@ -143,6 +148,10 @@ fun DishesScreen(
                 title = { Text("菜品", fontWeight = FontWeight.Bold) },
                 scrollBehavior = scrollBehavior,
                 actions = {
+                    // [AI修改] #4:搜索统一到右上角图标(与+并列,搜索在左),点击展开全屏搜索覆盖层。
+                    IconButton(onClick = { searchOpen = true }) {
+                        Icon(Icons.Outlined.Search, contentDescription = "搜索菜品")
+                    }
                     IconButton(onClick = onAddDish) {
                         Icon(Icons.Outlined.Add, contentDescription = "添加菜品")
                     }
@@ -199,7 +208,7 @@ fun DishesScreen(
                         Box(Modifier.weight(1f).fillMaxSize()) {
                             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                                 dishHeaderItems(ui, vm, tabCount)
-                                // 无条件加 filters item(即使 DishFilterChips 空返回也占一个 0 高度槽位)——letterHeaderCount=3 的前提,勿改条件加,否则字母跳转偏位。
+                                // 无条件加 filters item(即使 DishFilterChips 空返回也占一个 0 高度槽位)——letterHeaderCount=2 的前提,勿改条件加,否则字母跳转偏位。
                                 item(key = "dish-filters") { DishFilterChips(ui, vm) }
                                 if (ui.all.isEmpty()) {
                                     item(key = "dish-empty") { EmptyState(text = emptyText, icon = "🥗") }
@@ -249,23 +258,25 @@ fun DishesScreen(
                     }
                 }
             }
-            // [AI生成] 搜索弹框：搜索框有内容时覆盖在列表上，展示搜索结果(名+烹饪方式+预设/自建+详情)。
-            if (ui.keyword.isNotBlank()) {
+            // [AI修改] #4:搜索覆盖层由右上角搜索图标触发(searchOpen),而非"关键词非空"。展示搜索结果(名+烹饪方式+预设/自建+详情)。
+            if (searchOpen) {
                 DishSearchOverlay(
                     results = ui.searchResults,
                     keyword = ui.keyword,
                     onKeywordChange = vm::setKeyword,
                     onOpen = { dish ->
+                        searchOpen = false
                         vm.openFromSearch(dish) // 跳到该菜的菜系分类 + 关闭弹框
                         onOpenDish(dish.id) // 同时打开详情
                     },
                     onCreateNew = {
                         // [AI生成] 搜索无结果"＋新建菜品「x」":预填菜名进新建菜品页(与食材搜索无结果统一)。
+                        searchOpen = false
                         prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = ui.keyword.trim()))
                         vm.setKeyword("")
                         onAddDish()
                     },
-                    onClose = { vm.setKeyword("") },
+                    onClose = { searchOpen = false; vm.setKeyword("") },
                 )
             }
         }
@@ -346,23 +357,15 @@ fun DishesScreen(
 }
 
 /**
- * 菜品列表头部(搜索行 / 计数)下沉进列表——作大标题折叠燃料。[AI修改] A重构(§9.15)
+ * 菜品列表头部(计数)下沉进列表——作大标题折叠燃料。[AI修改] #4(§9.15)
  *
- * 一级 Tab 已移到固定区(不进列表);搜索/计数随内容一起上滑折叠(不吸顶)；筛选行/字母段头由调用处按档处理。
+ * 一级 Tab 已移到固定区、搜索已移到右上角图标(均不进列表);计数随内容一起上滑折叠(不吸顶)；筛选行/字母段头由调用处按档处理。
  */
 private fun LazyListScope.dishHeaderItems(
     ui: DishesUiState,
     vm: DishesViewModel,
     tabCount: Int,
 ) {
-    item(key = "dish-search") {
-        AppSearchField(
-            value = ui.keyword,
-            onValueChange = vm::setKeyword,
-            placeholder = "搜菜名 / 烹饪方式",
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
-        )
-    }
     item(key = "dish-count") {
         Text(
             "共 $tabCount 道",
@@ -407,28 +410,45 @@ private fun DishSearchOverlay(
                 Spacer(Modifier.width(8.dp))
                 TextButton(onClick = onClose) { Text("取消") }
             }
-            Text(
-                "搜索结果 ${results.size}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
+            // [AI修改] #4:图标触发的覆盖层,空查询时只给提示(不显"搜索结果0"/"未找到「」")。
+            if (keyword.isNotBlank()) {
+                Text(
+                    "搜索结果 ${results.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
             Divider()
-            if (results.isEmpty()) {
-                // [AI修改] 无结果给"＋新建菜品「x」"直达(与食材搜索统一),不再只是空态。
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(top = 40.dp, start = 24.dp, end = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text("🔎", style = MaterialTheme.typography.displaySmall)
-                    Text("未找到「${keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
-                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(text = "＋ 新建菜品「${keyword.trim()}」", onClick = onCreateNew)
+            when {
+                keyword.isBlank() -> {
+                    // [AI生成] #4:空查询态——给一行浅灰提示,不做"未找到/新建"(那是有输入0结果才对)。
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(top = 48.dp, start = 24.dp, end = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text("🔎", style = MaterialTheme.typography.displaySmall)
+                        Text("输入菜名或烹饪方式开始搜索", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
-            } else {
-                LazyColumn(Modifier.fillMaxSize()) {
-                    items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
-                    item { Spacer(Modifier.height(80.dp)) }
+                results.isEmpty() -> {
+                    // [AI修改] 有输入0结果:给"＋新建菜品「x」"直达(与食材搜索统一)。
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(top = 40.dp, start = 24.dp, end = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Text("🔎", style = MaterialTheme.typography.displaySmall)
+                        Text("未找到「${keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
+                        com.sxdbsm.cookbook.android.ui.component.CapsuleButton(text = "＋ 新建菜品「${keyword.trim()}」", onClick = onCreateNew)
+                    }
+                }
+                else -> {
+                    LazyColumn(Modifier.fillMaxSize()) {
+                        items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
+                        item { Spacer(Modifier.height(80.dp)) }
+                    }
                 }
             }
         }

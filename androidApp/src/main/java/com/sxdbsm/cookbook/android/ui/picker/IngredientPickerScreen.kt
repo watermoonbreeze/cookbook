@@ -12,14 +12,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -84,6 +87,10 @@ fun IngredientPickerScreen(
     }
     var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
+    // [AI生成] #4:Tab落地态搜索改右上角图标触发→展开全屏搜索覆盖层(弹窗选择态仍用顶栏整行搜索,不走此开关)。
+    var searchOpen by remember { mutableStateOf(false) }
+    // [AI生成] #4:搜索覆盖层可见时,系统返回键=关搜索(而非退出页面)。仅 Tab 落地态。
+    BackHandler(enabled = !selectionMode && searchOpen) { searchOpen = false; vm.setKeyword("") }
     val context = androidx.compose.ui.platform.LocalContext.current // [AI生成] A8：入库即时反馈 Toast
 
     /**
@@ -137,6 +144,7 @@ fun IngredientPickerScreen(
                 .then(if (!selectionMode) Modifier.nestedScroll(scrollBehavior.nestedScrollConnection) else Modifier),
             color = MaterialTheme.colorScheme.background, // [AI修改] B背景统一:以菜品页为准,食材页根背景由 surface(白)改 background(分组灰),两页一致。
         ) {
+          Box(Modifier.fillMaxSize()) { // [AI生成] #4:包 Box 以叠放 Tab落地态搜索覆盖层
             Column(Modifier.fillMaxSize()) {
                 if (selectionMode) {
                     // 弹窗选择器：返回 + 整行搜索 + 添加(原样保留，紧凑、无大标题、不折叠)。
@@ -163,11 +171,17 @@ fun IngredientPickerScreen(
                         actions = { addAction() },
                     )
                 } else {
-                    // Tab 落地页：大标题「食材」下滑折叠 + 右上添加；搜索行移到大标题下方(常驻，随折叠上移不消失)。
+                    // Tab 落地页：大标题「食材」下滑折叠 + 右上[搜索][添加]；#4 搜索改右上角图标触发覆盖层(不再常驻搜索行)。
                     LargeTopAppBar(
                         title = { Text("食材", fontWeight = FontWeight.Bold) },
                         scrollBehavior = scrollBehavior,
-                        actions = { addAction() },
+                        actions = {
+                            // [AI修改] #4:搜索图标(左)+添加(右),与菜品页一致;点搜索展开全屏搜索覆盖层。
+                            IconButton(onClick = { searchOpen = true }) {
+                                Icon(Icons.Outlined.Search, contentDescription = "搜索食材")
+                            }
+                            addAction()
+                        },
                         colors = TopAppBarDefaults.largeTopAppBarColors(
                             containerColor = MaterialTheme.colorScheme.background,
                             scrolledContainerColor = MaterialTheme.colorScheme.background,
@@ -175,15 +189,9 @@ fun IngredientPickerScreen(
                             actionIconContentColor = MaterialTheme.colorScheme.primary,
                         ),
                     )
-                    AppSearchField(
-                        value = ui.keyword,
-                        onValueChange = vm::setKeyword,
-                        placeholder = "搜索食材...",
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-                    )
                 }
-                // [AI生成] 全局搜索下拉：有输入且有匹配时紧贴搜索框下方弹出。
-                if (ui.searchResults.isNotEmpty()) {
+                // [AI修改] #4:内联搜索面板仅弹窗选择态(整行搜索)用;Tab落地态搜索走覆盖层(见下方 IngredientSearchOverlay)。
+                if (selectionMode && ui.searchResults.isNotEmpty()) {
                     SearchResultsPanel(
                         results = ui.searchResults,
                         selectionMode = selectionMode,
@@ -207,7 +215,7 @@ fun IngredientPickerScreen(
                             }
                         } else null,
                     )
-                } else if (ui.keyword.isNotBlank()) {
+                } else if (selectionMode && ui.keyword.isNotBlank()) {
                     // [AI生成] 搜到库里没有的食材=直接给"＋新建『关键词』"直达(免清空重打名字),预填名称、大类仍按名自动预选。
                     Surface(
                         tonalElevation = 4.dp,
@@ -463,6 +471,83 @@ fun IngredientPickerScreen(
                     )
                 }
             }
+            // [AI生成] #4:Tab落地态全屏搜索覆盖层(右上搜索图标触发)——自带聚焦搜索框+取消,复用 SearchResultsPanel;
+            //   空查询给提示、有输入0结果给"新建"、有结果列表。与菜品页 DishSearchOverlay 同范式。
+            if (!selectionMode && searchOpen) {
+                val searchFocus = remember { FocusRequester() }
+                LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, tonalElevation = 2.dp) {
+                    Column(Modifier.fillMaxSize()) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            AppSearchField(
+                                value = ui.keyword,
+                                onValueChange = vm::setKeyword,
+                                placeholder = "搜索食材...",
+                                modifier = Modifier.weight(1f),
+                                focusRequester = searchFocus,
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            TextButton(onClick = { searchOpen = false; vm.setKeyword("") }) { Text("取消") }
+                        }
+                        Divider()
+                        when {
+                            ui.keyword.isBlank() -> {
+                                Column(
+                                    Modifier.fillMaxWidth().padding(top = 48.dp, start = 24.dp, end = 24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Text("🔎", style = MaterialTheme.typography.displaySmall)
+                                    Text("输入食材名开始搜索", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                            ui.searchResults.isNotEmpty() -> {
+                                SearchResultsPanel(
+                                    results = ui.searchResults,
+                                    selectionMode = false,
+                                    selectedIds = ui.selectedIds,
+                                    pantryIds = ui.pantryIngredientIds,
+                                    fillHeight = true, // [AI生成] #4:全屏覆盖层铺满,不用 320dp 限高
+                                    onPick = { searchOpen = false; vm.setKeyword(""); selectedIngredient = it },
+                                    onToggleSelect = { vm.toggleSelection(it) },
+                                    onTogglePantry = if (pantryHookOn) { ing ->
+                                        if (ing.id in ui.pantryIngredientIds) {
+                                            vm.removeFromPantry(ing)
+                                        } else {
+                                            vm.addToPantry(ing)
+                                            Toast.makeText(context, "已把「${ing.name}」入库 1 份，可在库存调整份数", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } else null,
+                                )
+                            }
+                            else -> {
+                                Column(
+                                    Modifier.fillMaxWidth().padding(top = 40.dp, start = 24.dp, end = 24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    Text("🔎", style = MaterialTheme.typography.displaySmall)
+                                    Text("未找到「${ui.keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
+                                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                                        text = "＋ 新建食材「${ui.keyword.trim()}」",
+                                        onClick = {
+                                            createPrefillName = ui.keyword.trim()
+                                            vm.clearCreateError()
+                                            vm.loadIngredientEditor(null)
+                                            searchOpen = false
+                                            createDialogOpen = true
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+          } // Box(叠放层) 收尾
         }
     }
     if (asDialog) {
@@ -794,13 +879,14 @@ private fun SearchResultsPanel(
     onPick: (Ingredient) -> Unit,
     onToggleSelect: (Ingredient) -> Unit,
     onTogglePantry: ((Ingredient) -> Unit)? = null, // [AI修改] 阻断-1:库存挂钩关时传 null→不显入库/出库按钮
+    fillHeight: Boolean = false, // [AI生成] #4(Google审查🟡5):全屏搜索覆盖层里铺满高度;弹窗内联下拉仍限高 320dp。
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 4.dp,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
+        LazyColumn(modifier = if (fillHeight) Modifier.fillMaxSize() else Modifier.heightIn(max = 320.dp)) {
             items(results, key = { it.id }) { ing ->
                 Row(
                     modifier = Modifier
