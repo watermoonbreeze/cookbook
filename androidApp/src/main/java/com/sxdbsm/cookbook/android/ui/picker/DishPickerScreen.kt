@@ -226,7 +226,15 @@ fun DishPickerScreen(
                 }
 
                 if (state.dishes.isEmpty()) {
-                    EmptyState(text = "没有找到菜品", icon = "🥗")
+                    // [AI修改] C深度审查🟡:空态按 Tab/搜索给具体引导(苹果式空态给下一步),而非泛化"没有找到菜品"。
+                    val emptyText = when {
+                        state.keyword.isNotBlank() -> "没有找到「${state.keyword.trim()}」"
+                        state.sortTab == DishesSortTab.HOME -> "还没有自建菜\n点下方「添加菜品」建一道"
+                        state.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜\n给菜品评分后会出现在这里"
+                        state.sortTab == DishesSortTab.ALL && state.selectedCuisine != null -> "这个菜系下暂无菜品"
+                        else -> "还没有菜品"
+                    }
+                    EmptyState(text = emptyText, icon = "🥗")
                 } else {
                     LazyColumn(Modifier.weight(1f)) {
                         items(state.dishes, key = { it.id }) { dish ->
