@@ -365,6 +365,18 @@ fun IngredientPickerScreen(
                         val idx = ui.ingredients.indexOfFirst { it.id == hid }
                         if (idx >= 0) gridState.animateScrollToItem(idx)
                     }
+                    // [AI生成] 加载更多改为"滑到底部前自动预加载"(替代手动按钮，与搜索页一致)：
+                    //   接近末尾(剩 6 项≈2 行)即续下一页。loadMoreIngredients 为内存分页(同步)、自带 canLoadMore 守卫，安全。
+                    LaunchedEffect(gridState, ui.ingredients.size, ui.canLoadMoreIngredients) {
+                        snapshotFlow {
+                            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                            lastVisible to gridState.layoutInfo.totalItemsCount
+                        }.collect { (lastVisible, total) ->
+                            if (ui.canLoadMoreIngredients && total > 0 && lastVisible >= total - 6) {
+                                vm.loadMoreIngredients()
+                            }
+                        }
+                    }
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(3),
                         state = gridState,
@@ -428,13 +440,11 @@ fun IngredientPickerScreen(
                                 )
                             }
                         }
+                        // [AI修改] 手动"加载更多"按钮已由上方滑到底自动预加载替代；保留加载中占位(可选)。
                         if (ui.canLoadMoreIngredients) {
-                            item {
-                                OutlinedButton(
-                                    onClick = vm::loadMoreIngredients,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    Text("加载更多")
+                            item(key = "load-more-spacer", span = { GridItemSpan(maxLineSpan) }) {
+                                Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                                    Text("加载中…", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
