@@ -13,6 +13,14 @@
 
 `.claude/` 只保留 Claude Code 专属内容（settings.json、agents/、hook 薄包装）；公共内容一律放 `.ai-context/`，不再双份维护。
 
+## 会话交接协议（跨 session 续接，必守）
+
+用户用两句话在 `/clear` 前后无缝续接工作，**唯一交接入口文件** = `.ai-context/docs/context_memory/SESSION_交接.md`：
+
+- **用户说「切换session / 保存session / 交接」** → 立即执行：①把当前对话的进行中任务、上下文、关键决策、经验**落地成文档**（分别写入 `context_memory/`、`experience/`、`feature/` 相应位置）；②**覆盖式更新** `SESSION_交接.md`（含：先读什么、工作规则、当前状态、⏭下一步）；③`git` 提交（在 git 仓库时，`[unattended]`/`docs:` 前缀，不自动 push）；④告知用户"已交接完成，clear 后说『查看session继续』即可接续"。
+- **用户说「查看session继续 / 读session / 接续session」** → **先读 `SESSION_交接.md`**，按其"先读清单"补齐上下文，再按其"⏭下一步"接着干（不重复已完成项）。
+- 该文件是"最新一次交接"的**唯一真相源**（每次交接覆盖），更细的历史流水在同目录的日期快照里。
+
 ## 语言设置
 
 **必须使用中文**与用户对话。
