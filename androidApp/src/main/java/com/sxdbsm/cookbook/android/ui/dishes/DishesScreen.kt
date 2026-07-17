@@ -337,7 +337,7 @@ fun DishesScreen(
                         Text("• ${ref.date} ${ref.mealName} ${ref.mealTime}")
                     }
                     if (deleteState.warningReferences.size > 8) {
-                        Text("还有 ${deleteState.warningReferences.size - 8} 条引用未展示")
+                        Text("还有 ${deleteState.warningReferences.size - 8} 条引用未展示。")
                     }
                 }
             },
