@@ -168,7 +168,7 @@ fun IngredientPickerScreen(
                             AppSearchField(
                                 value = ui.keyword,
                                 onValueChange = vm::setKeyword,
-                                placeholder = "搜索食材...",
+                                placeholder = "搜索食材",
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         },
@@ -484,7 +484,7 @@ fun IngredientPickerScreen(
                             AppSearchField(
                                 value = ui.keyword,
                                 onValueChange = vm::setKeyword,
-                                placeholder = "搜索食材...",
+                                placeholder = "搜索食材",
                                 modifier = Modifier.weight(1f),
                                 focusRequester = searchFocus,
                             )
