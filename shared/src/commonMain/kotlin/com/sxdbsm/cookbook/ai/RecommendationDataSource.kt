@@ -16,7 +16,6 @@ import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
-import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.platform.ioDispatcher
@@ -66,15 +65,33 @@ class RecommendationDataSource(
         val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
 
         // 候选菜：与可用食材有交集的菜(预筛)，再取全食材做角色标注；按餐次适配筛选(全部不筛)。
-        val candidateDishIds = if (pantryIds.isEmpty()) {
+        // [AI修改] 性能：findDishesByIngredients 已返回含 name/preference 的 DishMini，原先又对每个 id 逐个
+        //   getDishById(每菜5~6条SQL)取配料，最多 100 菜≈500+查询。改为保留 DishMini + 一条批量配料查询组装 RuleDish。
+        val candidateMinis = if (pantryIds.isEmpty()) {
             emptyList()
         } else {
-            dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT).map { it.dish.id }
+            dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT)
+                .map { it.dish }
+                .filter { MealSlotMatcher.matches(mealSlot, it.name) }
         }
-        // [AI修改] 保留完整 Dish(用于偏好/主料重复/营养画像)，再转 RuleDish。
-        val fullDishes = candidateDishIds.mapNotNull { dishRepo.getDishById(it) }
-            .filter { MealSlotMatcher.matches(mealSlot, it.name) }
-        val dishes = fullDishes.map { it.toRuleDish(seasoningIds) }
+        val candidateIds = candidateMinis.map { it.id }
+        // 批量取候选菜配料并按 dish_id 分组，替代逐菜 getDishById。角色: 调料=SEASONING，其余按 is_main 分主/辅。
+        val ingredientsByDish = if (candidateIds.isEmpty()) emptyMap()
+            else q.selectDishIngredientsByDishIds(candidateIds).executeAsList().groupBy { it.dish_id }
+        val dishes = candidateMinis.map { mini ->
+            RuleDish(
+                id = mini.id,
+                name = mini.name,
+                ingredients = ingredientsByDish[mini.id].orEmpty().map { ing ->
+                    val role = when {
+                        ing.ingredient_id in seasoningIds -> IngredientRole.SEASONING
+                        ing.is_main == 1L -> IngredientRole.MAIN
+                        else -> IngredientRole.SECONDARY
+                    }
+                    RuleDishIngredient(ing.ingredient_id, ing.ingredient_name, role)
+                },
+            )
+        }
 
         // 忌口约束：启用的健康档案 → care 分类 → 调养规则。
         val careCategoryIds = familyRepo.allEnabledCareIds()
@@ -111,22 +128,22 @@ class RecommendationDataSource(
         }
 
         // [AI生成] 增长型 P2：从用户历史/收藏/营养派生画像信号（数据越多越准，会成长）。
-        val candidateIds = fullDishes.map { it.id }
-        // 偏好画像[0,1]：常做(preference，8 次饱和) + 收藏加成。
+        // 偏好画像[0,1]：常做(preference，8 次饱和) + 收藏加成。preference 直接取自 DishMini(免再查)。
         val favIds = q.selectFavoriteDishIds().executeAsList().toSet()
-        val preferenceScores = fullDishes.associate { d ->
-            val familiar = (d.preference.toDouble() / PREF_SATURATION).coerceIn(0.0, 1.0)
-            val fav = if (d.id in favIds) FAVORITE_BONUS else 0.0
-            d.id to (familiar + fav).coerceAtMost(1.0)
+        val preferenceScores = candidateMinis.associate { mini ->
+            val familiar = (mini.preference.toDouble() / PREF_SATURATION).coerceIn(0.0, 1.0)
+            val fav = if (mini.id in favIds) FAVORITE_BONUS else 0.0
+            mini.id to (familiar + fav).coerceAtMost(1.0)
         }.filterValues { it > 0.0 }
         // 主料近期重复：近窗口吃过菜的主料频次 → 候选取其主料最大频次。
         val recentIds = recentDishDaysAgo.keys.toList()
         val recentMainFreq = if (recentIds.isEmpty()) emptyMap() else
             q.selectMainIngredientNamesByDishIds(recentIds).executeAsList()
                 .map { it.ingredient_name }.groupingBy { it }.eachCount()
-        val mainRepeatCounts = fullDishes.associate { d ->
-            val mains = d.ingredients.filter { it.isMain && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }
-            d.id to (mains.maxOfOrNull { recentMainFreq[it] ?: 0 } ?: 0)
+        val mainRepeatCounts = candidateMinis.associate { mini ->
+            val mains = ingredientsByDish[mini.id].orEmpty()
+                .filter { it.is_main == 1L && it.ingredient_id !in seasoningIds }.map { it.ingredient_name }
+            mini.id to (mains.maxOfOrNull { recentMainFreq[it] ?: 0 } ?: 0)
         }.filterValues { it > 0 }
         // [AI修改] 营养互补度[-1,1] 改「今日缺口」基线(用户 2026-07-16)：候选补足**今天已吃(daysAgo==0)**还缺的宏量→加分。
         //   原用近 recentWindowDays(默认7天)窗口总量作基线——一周食物平均化后三大宏量占比接近目标、缺口趋零→因子近乎失效(算法评审)；
@@ -292,21 +309,6 @@ class RecommendationDataSource(
             giByName = input.giByName,
         )
     }
-
-    /** Dish → 规则引擎输入：调料=SEASONING，其余按 is_main 分主料/辅料。[AI生成] */
-    private fun Dish.toRuleDish(seasoningIds: Set<Long>): RuleDish = RuleDish(
-        id = id,
-        name = name,
-        ingredients = ingredients.map { di ->
-            val ingId = di.ingredient.id
-            val role = when {
-                ingId in seasoningIds -> IngredientRole.SEASONING
-                di.isMain -> IngredientRole.MAIN
-                else -> IngredientRole.SECONDARY
-            }
-            RuleDishIngredient(ingId, di.ingredient.name, role)
-        },
-    )
 
     companion object {
         // [AI生成] 早餐菜关键词(菜名含则视为早餐菜)。

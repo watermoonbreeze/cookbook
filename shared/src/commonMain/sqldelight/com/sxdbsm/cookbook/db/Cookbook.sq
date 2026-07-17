@@ -1186,6 +1186,16 @@ JOIN ingredient i ON di.ingredient_id = i.id
 WHERE di.status = 1
 ORDER BY di.dish_id ASC, di.is_main DESC, di.id ASC;
 
+-- [AI生成] 按一组 dishId 批量取各菜全部配料(id/名/是否主料)，用于下一餐推荐 gather 组装 RuleDish
+-- (消除 candidateDishIds 逐个 getDishById 的 N+1)。不过滤 i.status(与 selectIngredientsOfDish 一致)。
+selectDishIngredientsByDishIds:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name, di.is_main AS is_main
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+WHERE di.dish_id IN ? AND di.status = 1
+ORDER BY di.dish_id ASC, di.is_main DESC, di.id ASC;
+
 -- [AI生成] 按一组 dishId 批量取各菜主料(id+名)，用于周期规划库存标注(消除 annotatePlanWithPantry 逐菜 getDishById)。
 -- 不过滤 i.status(与 getDishById 原路径一致，保留对失效食材引用)；调料排除在 Kotlin 侧按 seasoningIds 做。
 selectMainIngredientsByDishIds:

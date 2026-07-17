@@ -161,6 +161,43 @@ class RecommendationDataSourceTest {
     }
 
     @Test
+    fun `gather_批量组装RuleDish_角色判定正确_主料MAIN调料SEASONING`() = runBlocking {
+        // [AI生成] 性能优化回归：gather 由"逐菜 getDishById + toRuleDish"改为"DishMini + 批量配料内联组角色"。
+        //   守护：主料→MAIN、调料→SEASONING、辅料→SECONDARY(替代 toRuleDish 的角色判定不退化)。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val pantry = PantryRepository(db)
+        val ds = RecommendationDataSource(
+            db, pantry, dishRepo,
+            com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)),
+            ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db),
+        )
+
+        val porkId = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
+        val saltId = ingredientRepo.search("盐").first { it.name == "盐" }.id
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "角色测试红烧肉", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(),
+            ingredients = listOf(
+                DishIngredient(ingredient = Ingredient(id = porkId, name = "五花肉"), isMain = true),
+                DishIngredient(ingredient = Ingredient(id = saltId, name = "盐"), isMain = false),
+            ),
+            steps = emptyList(),
+        )
+        pantry.addToPantry(porkId)
+
+        val input = ds.gather(RecommendMode.PANTRY)
+        val rule = input.dishes.first { it.id == dishId }
+        val pork = rule.ingredients.first { it.ingredientId == porkId }
+        val salt = rule.ingredients.first { it.ingredientId == saltId }
+        assertEquals(com.sxdbsm.cookbook.ai.model.IngredientRole.MAIN, pork.role, "主料五花肉应判 MAIN")
+        assertEquals(com.sxdbsm.cookbook.ai.model.IngredientRole.SEASONING, salt.role, "盐应判 SEASONING(调料默认常备)")
+        Unit
+    }
+
+    @Test
     fun freePairingWorksOnRealSeedData() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded() // 灌入食材 + general 大类关联
