@@ -415,6 +415,7 @@ fun AddDayFoodScreen(
                 isPlanState = state.isPlan,
                 meals = state.mealBlocks
                     .filter { it.canSave } // 与 save() 单一真相源一致:mealTypeId!=null && mealTime!=null && dishes 非空
+                    .sortedBy { it.mealTime } // [AI生成] 用户反馈:添加时餐次顺序可能乱,预览按正常时间序展示(仅展示序,不影响保存)
                     .map { b ->
                         MealSection(
                             mealTypeId = b.mealTypeId!!,

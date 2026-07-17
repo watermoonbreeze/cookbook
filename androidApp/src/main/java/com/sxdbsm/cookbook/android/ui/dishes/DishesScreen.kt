@@ -92,6 +92,8 @@ fun DishesScreen(
     var dropdownDish by remember { mutableStateOf<DishMini?>(null) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    // [AI修改] Google审查要点4:菜系/非菜系档共用同一 listState,切 Tab 后重置滚动位到顶部,避免"切档后列表停在非顶部"。
+    LaunchedEffect(ui.sortTab) { listState.scrollToItem(0) }
     val lifecycleOwner = LocalLifecycleOwner.current
     val hotRankById = remember(ui.popular) {
         // [AI修改] 热度前3取自全局 popular(preference DESC)，而非受"最近30/筛选"缩窄的 ui.all，保持全局语义。
@@ -107,9 +109,9 @@ fun DishesScreen(
     }
     val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
     val isCuisineTab = ui.sortTab == DishesSortTab.ALL // [AI修改] 第三档=菜系(左二级栏+右菜品)
-    // [AI修改] B-7：菜系档列表头部现有 4 个 item(搜索/Tab/计数/筛选)在字母 section 之前，字母跳转索引须从 4 起算。
+    // [AI修改] A重构:Tab 移到固定区(不再进列表)后,菜系档列表头部为 3 个 item(搜索/计数/筛选)在字母 section 之前,字母跳转索引从 3 起算。
     // 红线：新增/条件插入 item 必须同步偏移量并纳入 remember key，否则跳转偏位。
-    val letterHeaderCount = 4
+    val letterHeaderCount = 3
     val letterIndexMap = remember(sections, letterHeaderCount) {
         var index = letterHeaderCount
         buildMap {
@@ -180,59 +182,70 @@ fun DishesScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            if (isCuisineTab) {
-                // 菜系档：左侧二级分类栏 | 右侧列表(搜索/Tab/计数/筛选/字母段均在右侧列表内，滚动驱动大标题折叠)。
-                Row(Modifier.fillMaxSize()) {
-                    CuisineRail(cuisines = ui.availableCuisines, selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
-                    Box(Modifier.weight(1f).fillMaxSize()) {
-                        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                            dishHeaderItems(ui, vm, sortTabs, tabCount)
-                            // 无条件加 filters item(即使 DishFilterChips 空返回也占一个 0 高度槽位)——这是 letterHeaderCount=4 的前提，勿改为条件加，否则字母跳转偏位。
-                            item(key = "dish-filters") { DishFilterChips(ui, vm) }
-                            if (ui.all.isEmpty()) {
-                                item(key = "dish-empty") { EmptyState(text = emptyText, icon = "🥗") }
-                            } else {
-                                sections.forEach { (letter, dishes) ->
-                                    item(key = "section-$letter") {
-                                        Text(
-                                            text = letter,
-                                            style = MaterialTheme.typography.labelLarge,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.fillMaxWidth()
-                                                .background(MaterialTheme.colorScheme.background)
-                                                .padding(horizontal = 16.dp, vertical = 6.dp),
-                                        )
+            Column(Modifier.fillMaxSize()) {
+                // [AI修改] A重构:一级主分类(SegmentedControl)移出滚动列表→固定在标题正下方,切Tab不再跳。
+                //   旧版:Tab 在列表头且只有"菜系"Tab 带左栏→切 Tab 布局在"带左栏/纯列表"两形态间跳变,搜索/Tab 跟着跳(用户痛点)。
+                //   新版:Tab 固定不动、外层结构一致,只切换内容区是否含左菜系栏;搜索/计数仍下沉列表头随内容上滑滚走→驱动大标题折叠(§9.15燃料,满足"上滑搜索合并到标题")。
+                SegmentedControl(
+                    options = sortTabs.map { it.second },
+                    selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
+                    onSelect = { idx -> vm.setSortTab(sortTabs[idx].first) },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                )
+                if (isCuisineTab) {
+                    // 菜系档：左侧二级菜系栏 | 右侧列表(搜索/计数/筛选/字母段在右列表内,滚动驱动折叠)。一级已固定在上方,切Tab不跳。
+                    Row(Modifier.fillMaxSize()) {
+                        CuisineRail(cuisines = ui.availableCuisines, selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
+                        Box(Modifier.weight(1f).fillMaxSize()) {
+                            LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                                dishHeaderItems(ui, vm, tabCount)
+                                // 无条件加 filters item(即使 DishFilterChips 空返回也占一个 0 高度槽位)——letterHeaderCount=3 的前提,勿改条件加,否则字母跳转偏位。
+                                item(key = "dish-filters") { DishFilterChips(ui, vm) }
+                                if (ui.all.isEmpty()) {
+                                    item(key = "dish-empty") { EmptyState(text = emptyText, icon = "🥗") }
+                                } else {
+                                    sections.forEach { (letter, dishes) ->
+                                        item(key = "section-$letter") {
+                                            Text(
+                                                text = letter,
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .background(MaterialTheme.colorScheme.background)
+                                                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                                            )
+                                        }
+                                        items(dishes, key = { it.id }) { dish ->
+                                            DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                        }
                                     }
-                                    items(dishes, key = { it.id }) { dish ->
-                                        DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
-                                    }
+                                    item { Spacer(Modifier.height(80.dp)) }
                                 }
-                                item { Spacer(Modifier.height(80.dp)) }
+                            }
+                            if (sections.isNotEmpty()) {
+                                LetterIndexBar(
+                                    letters = sections.keys.toList(),
+                                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
+                                    onLetterSelected = { letter ->
+                                        letterIndexMap[letter]?.let { index -> scope.launch { listState.animateScrollToItem(index) } }
+                                    },
+                                )
                             }
                         }
-                        if (sections.isNotEmpty()) {
-                            LetterIndexBar(
-                                letters = sections.keys.toList(),
-                                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
-                                onLetterSelected = { letter ->
-                                    letterIndexMap[letter]?.let { index -> scope.launch { listState.animateScrollToItem(index) } }
-                                },
-                            )
-                        }
                     }
-                }
-            } else {
-                // 最近/喜爱/家庭：搜索/Tab/计数/筛选均在列表头部随内容滚(驱动大标题折叠)，其后列表。
-                LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                    dishHeaderItems(ui, vm, sortTabs, tabCount)
-                    if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
-                    if (ui.all.isEmpty()) {
-                        item { EmptyState(text = emptyText, icon = "🥗") }
-                    } else {
-                        itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
-                            DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                } else {
+                    // 最近/喜爱/家庭：无二级左栏,搜索/计数/筛选在列表头随内容滚(驱动折叠),其后列表。
+                    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                        dishHeaderItems(ui, vm, tabCount)
+                        if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
+                        if (ui.all.isEmpty()) {
+                            item { EmptyState(text = emptyText, icon = "🥗") }
+                        } else {
+                            itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
+                                DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                            }
+                            item { Spacer(Modifier.height(80.dp)) }
                         }
-                        item { Spacer(Modifier.height(80.dp)) }
                     }
                 }
             }
@@ -333,14 +346,13 @@ fun DishesScreen(
 }
 
 /**
- * 菜品列表头部三件套(搜索行 / 四Tab / 计数)下沉进列表——作大标题折叠燃料。[AI生成] B-7(§9.15)
+ * 菜品列表头部(搜索行 / 计数)下沉进列表——作大标题折叠燃料。[AI修改] A重构(§9.15)
  *
- * 三件套随内容一起上滑折叠(不吸顶)；筛选行/字母段头由调用处按档吸顶。
+ * 一级 Tab 已移到固定区(不进列表);搜索/计数随内容一起上滑折叠(不吸顶)；筛选行/字母段头由调用处按档处理。
  */
 private fun LazyListScope.dishHeaderItems(
     ui: DishesUiState,
     vm: DishesViewModel,
-    sortTabs: List<Pair<DishesSortTab, String>>,
     tabCount: Int,
 ) {
     item(key = "dish-search") {
@@ -349,14 +361,6 @@ private fun LazyListScope.dishHeaderItems(
             onValueChange = vm::setKeyword,
             placeholder = "搜菜名 / 烹饪方式",
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
-        )
-    }
-    item(key = "dish-tabs") {
-        SegmentedControl(
-            options = sortTabs.map { it.second },
-            selectedIndex = sortTabs.indexOfFirst { it.first == ui.sortTab }.coerceAtLeast(0),
-            onSelect = { idx -> vm.setSortTab(sortTabs[idx].first) },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
         )
     }
     item(key = "dish-count") {

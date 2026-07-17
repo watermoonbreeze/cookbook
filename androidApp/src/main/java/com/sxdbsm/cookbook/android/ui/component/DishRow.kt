@@ -2,9 +2,14 @@ package com.sxdbsm.cookbook.android.ui.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -99,11 +104,27 @@ fun DishRow(
         }
         Spacer(Modifier.width(12.dp))
         if (showCheckbox) {
-            // [AI修改] 多选模式右侧只保留 Checkbox，避免评分星星和勾选框互相挤压。
-            Checkbox(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-            )
+            // [AI修改] C统一:选中态由 Material Checkbox 改勾选圈(与选择食材 IngredientCard 同款,苹果Photos式)——点圈=选/取消。
+            Box(
+                modifier = Modifier
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .then(
+                        if (checked) Modifier.background(MaterialTheme.colorScheme.primary)
+                        else Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)).border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                    )
+                    .clickable { onCheckedChange?.invoke(!checked) },
+                contentAlignment = Alignment.Center,
+            ) {
+                if (checked) {
+                    Icon(
+                        Icons.Outlined.Check,
+                        contentDescription = "已选",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(15.dp),
+                    )
+                }
+            }
         } else {
             // [AI修改] 苹果风格：喜爱度 + 右侧 chevron(可下钻暗示)。
             Row(verticalAlignment = Alignment.CenterVertically) {
