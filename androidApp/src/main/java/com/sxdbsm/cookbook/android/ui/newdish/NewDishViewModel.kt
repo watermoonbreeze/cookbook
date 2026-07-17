@@ -37,7 +37,7 @@ data class NewDishUiState(
     val steps: List<DishStep> = emptyList(), // [AI生成] 菜品操作步骤草稿，保存时随菜品事务一起落库。
     val specialNote: String = "",
     val description: String = "",
-    val cuisine: String = "", // [AI生成] 菜系(可空)
+    val cuisine: String = com.sxdbsm.cookbook.domain.model.Cuisines.HOME, // [AI修改] 菜系分类:自建菜默认"家常菜"(零操作·家庭菜天然家常，解决自建菜在菜系Tab看不到)；编辑既有菜时按 d.cuisine 覆盖
     val imagePath: String = "",
     val thumbnailPath: String = "",
     val loading: Boolean = false,

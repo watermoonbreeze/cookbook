@@ -533,7 +533,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // [AI生成] seed 逻辑版本：seed 处理逻辑(非JSON内容)变更时+1，混入内容指纹让已装老库跑一次修复。
         // v2(2026-07-15)=预设菜配料补齐修复(菜先于食材入库致关联缺失、0千卡)。
         // v3(2026-07-16)=补齐已关联但用量为空的预设菜配料(早期 seed 无 quantity 致排骨海带汤等 0 千卡)。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v3"
+        private const val SEED_LOGIC_VERSION = "seedlogic-v4" // [AI修改] v4:菜系分类-存量自建菜 cuisine 空回填"家常菜"(老库需跑到)
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
@@ -583,6 +583,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val q = db.cookbookQueries
         val methodIds = q.selectAllCookingMethods().executeAsList().associate { it.name to it.id }
         val unitIds = q.selectAllMeasurementUnits().executeAsList().associate { it.name to it.id }
+        // [AI生成] 菜系分类:存量自建菜(cuisine 空)一次性幂等回填默认"家常菜"(只填空不覆盖)——解决自建菜在菜系Tab看不到。
+        q.backfillEmptyUserDishCuisine(cuisine = com.sxdbsm.cookbook.domain.model.Cuisines.HOME)
         loadDishes().forEach dish@{ seed ->
             // [AI生成] 先给已存在的预设菜补菜系(幂等，仅当前为空才补)，再判断是否跳过插入——老库升级也能拿到菜系。
             if (seed.cuisine.isNotBlank()) q.updatePresetDishCuisineByName(cuisine = seed.cuisine, name = seed.name)

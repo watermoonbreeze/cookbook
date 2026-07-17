@@ -994,6 +994,10 @@ SELECT id FROM dish WHERE name = ? AND source = 'preset' AND status = 1 LIMIT 1;
 updatePresetDishCuisineByName:
 UPDATE dish SET cuisine = :cuisine WHERE name = :name AND source = 'preset' AND cuisine = '';
 
+-- [AI生成] 菜系分类:给存量自建菜(cuisine 空)幂等回填默认"家常菜"(只填空、不覆盖已设，解决自建菜在菜系Tab看不到)。纯新查询不改表结构、无需迁移。
+backfillEmptyUserDishCuisine:
+UPDATE dish SET cuisine = :cuisine WHERE source = 'user' AND cuisine = '';
+
 updateDish:
 UPDATE dish
 SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, thumbnail_path = ?, updated_at = ?, cuisine = ?

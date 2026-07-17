@@ -183,7 +183,7 @@ fun DishesScreen(
             if (isCuisineTab) {
                 // 菜系档：左侧二级分类栏 | 右侧列表(搜索/Tab/计数/筛选/字母段均在右侧列表内，滚动驱动大标题折叠)。
                 Row(Modifier.fillMaxSize()) {
-                    CuisineRail(selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
+                    CuisineRail(cuisines = ui.availableCuisines, selected = ui.selectedCuisine, onSelect = vm::selectCuisine)
                     Box(Modifier.weight(1f).fillMaxSize()) {
                         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                             dishHeaderItems(ui, vm, sortTabs, tabCount)
@@ -536,10 +536,10 @@ private fun DishFilterChips(ui: DishesUiState, vm: DishesViewModel) {
  * 竖向固定列表：全部(不筛) + 家常菜 + 八大菜系等；选中项高亮，右侧菜品只显示该菜系。
  */
 @Composable
-private fun CuisineRail(selected: String?, onSelect: (String?) -> Unit) {
-    // 全部(null) 在最前，其后为 Cuisines.ALL(家常菜/川菜/…)。
+private fun CuisineRail(cuisines: List<String>, selected: String?, onSelect: (String?) -> Unit) {
+    // [AI修改] 菜系分类:全部(null)恒在最前，其后只列"有菜的菜系"(cuisines，去徽菜/西餐等稀疏死胡同)。
     val items: List<Pair<String, String?>> =
-        listOf("全部" to null) + com.sxdbsm.cookbook.domain.model.Cuisines.ALL.map { it to it }
+        listOf("全部" to null) + cuisines.map { it to it }
     Column(
         modifier = Modifier
             .width(60.dp)

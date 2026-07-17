@@ -43,6 +43,7 @@ data class DishesUiState(
     val selectedCuisine: String? = null, // [AI生成] 菜系筛选
     val availableMethods: List<String> = emptyList(), // 当前列表可选烹饪方式
     val availableTags: List<String> = emptyList(), // 当前列表可选标签
+    val availableCuisines: List<String> = emptyList(), // [AI生成] 有菜的菜系(CuisineRail 只列这些，去稀疏)
     val recentCount: Int = 0, // [AI生成] 最近 Tab 菜品数(前30, 与该 Tab 实际展示一致)
     val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
@@ -111,11 +112,17 @@ class DishesViewModel(
         // 可选筛选项从筛选前列表派生，避免选中后选项消失。
         val methods = raw.flatMap { it.cookingMethodNames }.filter { it.isNotBlank() }.distinct().sorted()
         val tags = raw.flatMap { it.tags }.filter { it.isNotBlank() }.distinct().sorted()
+        // [AI生成] 菜系分类:CuisineRail 只列"有菜的菜系"(去徽菜4道/西餐1道的稀疏死胡同)，从全量派生、按 Cuisines.ALL 固定顺序。
+        //   [AI修改] 审查建议2:HashSet 派生降 O(cuisines×observed)→O(observed+ALL)。
+        val cuisineSet = observed.mapTo(HashSet()) { it.cuisine }
+        val cuisines = com.sxdbsm.cookbook.domain.model.Cuisines.ALL.filter { it in cuisineSet }
+        // [AI生成] 审查建议1:选中的菜系若已无菜(该菜系最后一道被删/改)→视为未选(否则 rail 无高亮+右侧空态的自愈死角)。仅局部修正不回写 flow。
+        val effectiveCuisine = cuisine?.takeIf { it in cuisineSet }
         val filtered = raw.filter { d ->
             (method == null || method in d.cookingMethodNames) &&
                 (tag == null || tag in d.tags) &&
                 // [AI修改] 菜系筛选只在"菜系"Tab(ALL)生效；最近/喜爱不受菜系影响。
-                (tab != DishesSortTab.ALL || cuisine == null || cuisine == d.cuisine)
+                (tab != DishesSortTab.ALL || effectiveCuisine == null || effectiveCuisine == d.cuisine)
         }
         // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部/家庭展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
@@ -129,8 +136,8 @@ class DishesViewModel(
         }
         DishesUiState(
             popular = popular, all = sortDishes(listForTab, tab), keyword = kw, sortTab = tab,
-            selectedMethod = method, selectedTag = tag, selectedCuisine = cuisine,
-            availableMethods = methods, availableTags = tags,
+            selectedMethod = method, selectedTag = tag, selectedCuisine = effectiveCuisine,
+            availableMethods = methods, availableTags = tags, availableCuisines = cuisines,
             recentCount = recentList.size, favoriteCount = favorites.size, allCount = filtered.size,
             homeCount = userDishes.size,
             // [AI生成] 搜索弹框用原始搜索结果(不叠加 Tab/菜系筛选)：搜索是全局的。
