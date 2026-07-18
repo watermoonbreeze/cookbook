@@ -112,7 +112,9 @@ class CookingTimerService : Service() {
             this,
             0,
             Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                // [AI修改] 修 A12 通知点击闪退：从 Service(非Activity上下文)启 Activity 缺 FLAG_ACTIVITY_NEW_TASK 会抛
+                //   AndroidRuntimeException。补 NEW_TASK(与到点闹钟通知 openPi 一致)。
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra(MainActivity.EXTRA_OPEN_TIMER, true) // [AI生成] 点击进烹饪计时页。
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,

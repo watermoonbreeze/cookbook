@@ -218,16 +218,7 @@ fun MineScreen(
             }
         }
 
-        // [AI生成] 报告模块：回顾入口(周/月看吃得怎么样)，独立"回顾"组靠上(个人化高价值)。
-        InsetGroup(title = "回顾") {
-            SettingRow(
-                icon = Icons.Outlined.Assessment,
-                title = "饮食报告",
-                subtitle = "看这周/这月吃得怎么样",
-                trailing = "▸",
-            ) { onOpenDietReport() }
-        }
-
+        // [AI修改] 我的模块排序(用户 2026-07-18)：档案/回顾/实用工具/AI助手/数据/外观/参考资料/通用/关于。
         // [AI修改] 档案整合：取消独立"个人健康档案"，统一到"家庭档案"(含"我"个人档案)；家庭档案从功能设置提到这里。
         InsetGroup(title = "档案") {
             SettingRow(
@@ -238,28 +229,31 @@ fun MineScreen(
             ) { onOpenFamily() }
         }
 
-        InsetGroup(title = "通用") {
-            SettingRow(icon = Icons.Outlined.Tune, title = "功能设置", subtitle = "分步执行、库存等功能开关", trailing = "▸") { onOpenFeatureSettings() }
+        // [AI生成] 报告模块：回顾入口(周/月看吃得怎么样)。
+        InsetGroup(title = "回顾") {
+            SettingRow(
+                icon = Icons.Outlined.Assessment,
+                title = "饮食报告",
+                subtitle = "看这周/这月吃得怎么样",
+                trailing = "▸",
+            ) { onOpenDietReport() }
         }
 
-        InsetGroup(title = "外观") {
-            SettingRow(
-                icon = Icons.Outlined.LightMode,
-                title = "主题切换",
-                subtitle = when (mode) {
-                    ThemeMode.SYSTEM -> "跟随系统"
-                    ThemeMode.LIGHT -> "浅色"
-                    ThemeMode.DARK -> "深色"
-                },
-                trailing = "▸",
-            ) { themeDialogOpen = true }
+        InsetGroup(title = "实用工具") {
+            // [AI生成] 库存挂钩关→采购清单 + 食材自由搭配 均隐藏(都依赖在手食材，关则无意义/无输出，零残留)。
+            if (pantryHookOn) {
+                SettingRow(icon = Icons.Outlined.ShoppingCart, title = "采购清单", subtitle = "汇总今天及未来餐食需采购/缺料的食材", trailing = "▸") { onOpenShoppingList() }
+                InsetDivider(52)
+                SettingRow(icon = Icons.Outlined.Restaurant, title = "食材自由搭配", subtitle = "用在手食材按规则搭出组合建议(离线)", trailing = "▸") { onOpenFreePairing() }
+                InsetDivider(52)
+            }
+            SettingRow(icon = Icons.Outlined.SoupKitchen, title = "厨房小助手", subtitle = "烹饪计时等实用工具", trailing = "▸") { kitchenDialogOpen = true }
+        }
+
+        InsetGroup(title = "AI 助手") {
+            SettingRow(icon = Icons.Outlined.AutoAwesome, title = "AI 推荐", subtitle = "用现有食材帮你搭配今天吃什么", trailing = "▸") { onOpenAiRecommend() }
             InsetDivider(52)
-            SettingRow(
-                icon = Icons.Outlined.Palette,
-                title = "配色",
-                subtitle = palette.displayName,
-                trailing = "▸",
-            ) { paletteDialogOpen = true } // [AI生成] 配色主题切换
+            SettingRow(icon = Icons.Outlined.Settings, title = "AI 设置", subtitle = "模型来源与 API Key", trailing = "▸") { onOpenAiSettings() }
         }
 
         InsetGroup(title = "数据") {
@@ -296,15 +290,24 @@ fun MineScreen(
             ) { clearCacheConfirm = true }
         }
 
-        InsetGroup(title = "实用工具") {
-            // [AI生成] 库存挂钩关→采购清单 + 食材自由搭配 均隐藏(都依赖在手食材，关则无意义/无输出，零残留)。
-            if (pantryHookOn) {
-                SettingRow(icon = Icons.Outlined.ShoppingCart, title = "采购清单", subtitle = "汇总今天及未来餐食需采购/缺料的食材", trailing = "▸") { onOpenShoppingList() }
-                InsetDivider(52)
-                SettingRow(icon = Icons.Outlined.Restaurant, title = "食材自由搭配", subtitle = "用在手食材按规则搭出组合建议(离线)", trailing = "▸") { onOpenFreePairing() }
-                InsetDivider(52)
-            }
-            SettingRow(icon = Icons.Outlined.SoupKitchen, title = "厨房小助手", subtitle = "烹饪计时等实用工具", trailing = "▸") { kitchenDialogOpen = true }
+        InsetGroup(title = "外观") {
+            SettingRow(
+                icon = Icons.Outlined.LightMode,
+                title = "主题切换",
+                subtitle = when (mode) {
+                    ThemeMode.SYSTEM -> "跟随系统"
+                    ThemeMode.LIGHT -> "浅色"
+                    ThemeMode.DARK -> "深色"
+                },
+                trailing = "▸",
+            ) { themeDialogOpen = true }
+            InsetDivider(52)
+            SettingRow(
+                icon = Icons.Outlined.Palette,
+                title = "配色",
+                subtitle = palette.displayName,
+                trailing = "▸",
+            ) { paletteDialogOpen = true } // [AI生成] 配色主题切换
         }
 
         // [AI生成] 参考资料组：营养表(数据查阅)/膳食参考依据(标准)/数据来源(出处)——参考·依据类统一收纳，后续可扩展。
@@ -313,8 +316,8 @@ fun MineScreen(
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() }
             InsetDivider(52)
-            // [AI生成] 健康状态参考：4 病种饮食关注点 + App 怎么提示 + 口径 + 免责。
-            SettingRow(icon = Icons.Outlined.MonitorHeart, title = "健康状态参考", subtitle = "高血压/糖尿病/痛风/高血脂各自饮食关注点与提示口径，仅供参考", trailing = "▸") { onOpenHealthConditionReference() }
+            // [AI生成] 健康状态参考：病种+生命阶段饮食关注点 + App 怎么提示 + 口径 + 免责。
+            SettingRow(icon = Icons.Outlined.MonitorHeart, title = "健康状态参考", subtitle = "慢病与孕期/婴幼儿等各自饮食关注点与提示口径，仅供参考", trailing = "▸") { onOpenHealthConditionReference() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
             InsetDivider(52)
@@ -322,10 +325,8 @@ fun MineScreen(
             SettingRow(icon = Icons.Outlined.Spa, title = "食养参考", subtitle = "药食同源目录与传统说法，仅供了解", trailing = "▸") { onOpenTcmReference() }
         }
 
-        InsetGroup(title = "AI 助手") {
-            SettingRow(icon = Icons.Outlined.AutoAwesome, title = "AI 推荐", subtitle = "用现有食材帮你搭配今天吃什么", trailing = "▸") { onOpenAiRecommend() }
-            InsetDivider(52)
-            SettingRow(icon = Icons.Outlined.Settings, title = "AI 设置", subtitle = "模型来源与 API Key", trailing = "▸") { onOpenAiSettings() }
+        InsetGroup(title = "通用") {
+            SettingRow(icon = Icons.Outlined.Tune, title = "功能设置", subtitle = "分步执行、库存等功能开关", trailing = "▸") { onOpenFeatureSettings() }
         }
 
         InsetGroup(title = "关于") {
