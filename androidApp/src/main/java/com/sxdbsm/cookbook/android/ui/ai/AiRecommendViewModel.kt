@@ -77,13 +77,7 @@ class AiRecommendViewModel(
         else -> "离线规则"
     }
 
-    /** 返回本页时重取(如刚新建了用了库存食材的菜，立即纳入)。[AI生成]
-     * 仅规则模式自动重取；配了 AI 模型的仍等用户手动点(不擅自调云端)。 */
-    fun refreshOnResume() {
-        if (!started || state.loading || state.pendingManual) return
-        rotation = 0
-        recommend(state.mode)
-    }
+    // [AI修改] 移除 refreshOnResume(用户 2026-07-18)：不再在返回页面/切后台回前台自动重取，改为仅用户手动刷新。
 
     /** 选去重周期(一周/二周/三周/四周)：从第一批重新推荐。[AI生成] B2 */
     fun setRecentWindow(days: Int) {

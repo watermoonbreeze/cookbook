@@ -83,15 +83,9 @@ fun AiRecommendScreen(
         // [AI修改] 进页面由 VM 判定：规则模式自动推荐；配置了 AI 模型则等用户点击「开始推荐」，不自动调云端。
         vm.start()
     }
-    // [AI生成] 返回本页时重取(规则模式)，让刚新建的用了库存食材的菜立即被推荐。
-    val recLifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
-    DisposableEffect(recLifecycleOwner) {
-        val obs = androidx.lifecycle.LifecycleEventObserver { _, e ->
-            if (e == androidx.lifecycle.Lifecycle.Event.ON_RESUME) vm.refreshOnResume()
-        }
-        recLifecycleOwner.lifecycle.addObserver(obs)
-        onDispose { recLifecycleOwner.lifecycle.removeObserver(obs) }
-    }
+    // [AI修改] 移除 ON_RESUME 自动重取(用户 2026-07-18)：已出推荐后，跳去记一餐再返回、或 App 切后台回前台
+    //   都不应自动重新推荐(会打断当前结果、且体感"页面又刷一遍")。推荐刷新一律走用户手动("换一换"/切模式/开始推荐)。
+    //   首次进页面仍由 LaunchedEffect(Unit)+vm.start() 触发一次(规则模式)。
     LaunchedEffect(planState.saved) {
         if (planState.saved) snackbar.showSnackbar("已保存到未来 ${planState.plan?.days?.size ?: 0} 天计划")
     }
