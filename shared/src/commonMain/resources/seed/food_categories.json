@@ -1,132 +1,949 @@
 [
-  {"code":"staple","name":"谷薯主食类","dimension":"general","sort":10,"icon":"🌾"},
-  {"code":"vegetable","name":"蔬菜类","dimension":"general","sort":20,"icon":"🥬"},
-  {"code":"fungi_algae","name":"菌藻类","dimension":"general","sort":30,"icon":"🍄"},
-  {"code":"fruit","name":"水果类","dimension":"general","sort":40,"icon":"🍎"},
-  {"code":"meat","name":"畜禽肉类","dimension":"general","sort":50,"icon":"🥩"},
-  {"code":"aquatic","name":"水产类","dimension":"general","sort":60,"icon":"🐟"},
-  {"code":"egg","name":"蛋类","dimension":"general","sort":70,"icon":"🥚"},
-  {"code":"dairy","name":"奶类","dimension":"general","sort":80,"icon":"🥛"},
-  {"code":"soy_nut","name":"大豆及坚果","dimension":"general","sort":90,"icon":"🥜"},
-  {"code":"oil","name":"油脂类","dimension":"general","sort":100,"icon":"🫒"},
-  {"code":"seasoning","name":"调味品","dimension":"general","sort":110,"icon":"🧂"},
-  {"code":"convenience","name":"方便食品","dimension":"general","sort":120,"icon":"🥡"},
-  {"code":"other","name":"其他","dimension":"general","sort":130,"icon":"📦"},
-  {"code":"staple_grain","name":"谷物类","dimension":"general","parent":"staple","sort":10},
-  {"code":"staple_grain_rice","name":"稻米类","dimension":"general","parent":"staple_grain","sort":10},
-  {"code":"staple_grain_wheat","name":"麦类","dimension":"general","parent":"staple_grain","sort":20},
-  {"code":"staple_grain_coarse","name":"杂粮类","dimension":"general","parent":"staple_grain","sort":30},
-  {"code":"staple_grain_product","name":"谷物制品","dimension":"general","parent":"staple_grain","sort":40},
-  {"code":"staple_tuber","name":"薯芋类","dimension":"general","parent":"staple","sort":20},
-  {"code":"staple_legume","name":"杂豆类","dimension":"general","parent":"staple","sort":30},
-  {"code":"vegetable_leaf","name":"叶菜类","dimension":"general","parent":"vegetable","sort":10},
-  {"code":"vegetable_root","name":"根茎类","dimension":"general","parent":"vegetable","sort":20},
-  {"code":"vegetable_gourd_solanaceae","name":"瓜茄类","dimension":"general","parent":"vegetable","sort":30},
-  {"code":"vegetable_gourd","name":"瓜类","dimension":"general","parent":"vegetable_gourd_solanaceae","sort":10},
-  {"code":"vegetable_solanaceae","name":"茄果类","dimension":"general","parent":"vegetable_gourd_solanaceae","sort":20},
-  {"code":"vegetable_fresh_bean","name":"鲜豆类","dimension":"general","parent":"vegetable","sort":40},
-  {"code":"vegetable_allium","name":"葱蒜类","dimension":"general","parent":"vegetable","sort":50},
-  {"code":"vegetable_aquatic","name":"水生蔬菜类","dimension":"general","parent":"vegetable","sort":60},
-  {"code":"vegetable_wild","name":"野菜类","dimension":"general","parent":"vegetable","sort":70},
-  {"code":"fungi","name":"食用菌类","dimension":"general","parent":"fungi_algae","sort":10},
-  {"code":"algae","name":"藻类","dimension":"general","parent":"fungi_algae","sort":20},
-  {"code":"fruit_pome","name":"仁果类","dimension":"general","parent":"fruit","sort":10},
-  {"code":"fruit_stone","name":"核果类","dimension":"general","parent":"fruit","sort":20},
-  {"code":"fruit_berry","name":"浆果类","dimension":"general","parent":"fruit","sort":30},
-  {"code":"fruit_citrus","name":"柑橘类","dimension":"general","parent":"fruit","sort":40},
-  {"code":"fruit_melon","name":"瓜果类","dimension":"general","parent":"fruit","sort":50},
-  {"code":"fruit_tropical","name":"热带水果类","dimension":"general","parent":"fruit","sort":60},
-  {"code":"fruit_dried","name":"干果蜜饯类","dimension":"general","parent":"fruit","sort":70},
-  {"code":"meat_livestock","name":"畜肉类","dimension":"general","parent":"meat","sort":10},
-  {"code":"meat_pork","name":"猪肉类","dimension":"general","parent":"meat_livestock","sort":10},
-  {"code":"meat_beef","name":"牛肉类","dimension":"general","parent":"meat_livestock","sort":20},
-  {"code":"meat_mutton","name":"羊肉类","dimension":"general","parent":"meat_livestock","sort":30},
-  {"code":"meat_livestock_other","name":"其他畜肉类","dimension":"general","parent":"meat_livestock","sort":40},
-  {"code":"meat_poultry","name":"禽肉类","dimension":"general","parent":"meat","sort":20},
-  {"code":"meat_offal","name":"动物内脏类","dimension":"general","parent":"meat","sort":30},
-  {"code":"meat_processed","name":"肉制品类","dimension":"general","parent":"meat","sort":40},
-  {"code":"aquatic_fish","name":"鱼类","dimension":"general","parent":"aquatic","sort":10},
-  {"code":"aquatic_fish_freshwater","name":"淡水鱼类","dimension":"general","parent":"aquatic_fish","sort":10},
-  {"code":"aquatic_fish_marine","name":"海水鱼类","dimension":"general","parent":"aquatic_fish","sort":20},
-  {"code":"aquatic_crustacean","name":"虾蟹类","dimension":"general","parent":"aquatic","sort":20},
-  {"code":"aquatic_bivalve","name":"贝类","dimension":"general","parent":"aquatic","sort":30},
-  {"code":"aquatic_cephalopod","name":"头足类","dimension":"general","parent":"aquatic","sort":40},
-  {"code":"aquatic_other","name":"其他水产类","dimension":"general","parent":"aquatic","sort":50},
-  {"code":"aquatic_processed","name":"水产制品类","dimension":"general","parent":"aquatic","sort":60},
-  {"code":"egg_fresh","name":"鲜蛋类","dimension":"general","parent":"egg","sort":10},
-  {"code":"egg_product","name":"蛋制品类","dimension":"general","parent":"egg","sort":20},
-  {"code":"dairy_liquid","name":"液态奶类","dimension":"general","parent":"dairy","sort":10},
-  {"code":"dairy_fermented","name":"发酵乳类","dimension":"general","parent":"dairy","sort":20},
-  {"code":"dairy_product","name":"奶制品类","dimension":"general","parent":"dairy","sort":30},
-  {"code":"soy_bean","name":"大豆类","dimension":"general","parent":"soy_nut","sort":10},
-  {"code":"soy_product","name":"豆制品类","dimension":"general","parent":"soy_nut","sort":20},
-  {"code":"nut_tree","name":"树坚果类","dimension":"general","parent":"soy_nut","sort":30},
-  {"code":"nut_seed","name":"种子类","dimension":"general","parent":"soy_nut","sort":40},
-  {"code":"oil_plant","name":"植物油类","dimension":"general","parent":"oil","sort":10},
-  {"code":"oil_animal","name":"动物油类","dimension":"general","parent":"oil","sort":20},
-  {"code":"seasoning_savory","name":"咸鲜调料类","dimension":"general","parent":"seasoning","sort":10},
-  {"code":"seasoning_sauce","name":"酱类","dimension":"general","parent":"seasoning","sort":20},
-  {"code":"seasoning_sweet_sour","name":"酸甜调料类","dimension":"general","parent":"seasoning","sort":30},
-  {"code":"seasoning_spice","name":"香辛料类","dimension":"general","parent":"seasoning","sort":40},
-  {"code":"seasoning_other","name":"其他调料类","dimension":"general","parent":"seasoning","sort":50},
-  {"code":"convenience_frozen","name":"速冻食品类","dimension":"general","parent":"convenience","sort":10},
-  {"code":"convenience_instant","name":"方便食品类","dimension":"general","parent":"convenience","sort":20},
-  {"code":"convenience_canned","name":"罐头类","dimension":"general","parent":"convenience","sort":30},
-  {"code":"convenience_prepared","name":"预制菜类","dimension":"general","parent":"convenience","sort":40},
-  {"code":"nutrition","name":"健康饮食","dimension":"nutrition","sort":70},
-  {"code":"crowd","name":"人群分类","dimension":"crowd","sort":80},
-  {"code":"seasoning_high_sodium","name":"高钠调味","dimension":"sodium","parent":"seasoning","sort":20},
-  {"code":"purine_low","name":"低嘌呤","dimension":"purine","parent":"nutrition","sort":10},
-  {"code":"purine_medium","name":"中嘌呤","dimension":"purine","parent":"nutrition","sort":20},
-  {"code":"purine_high","name":"高嘌呤","dimension":"purine","parent":"nutrition","sort":30},
-  {"code":"gi_low","name":"低 GI","dimension":"gi","parent":"nutrition","sort":40},
-  {"code":"gi_medium","name":"中 GI","dimension":"gi","parent":"nutrition","sort":50},
-  {"code":"gi_high","name":"高 GI","dimension":"gi","parent":"nutrition","sort":60},
-  {"code":"sugar_low","name":"低糖","dimension":"sugar","parent":"nutrition","sort":70},
-  {"code":"fiber_high","name":"高膳食纤维","dimension":"nutrition","parent":"nutrition","sort":80},
-  {"code":"protein_quality","name":"优质蛋白","dimension":"nutrition","parent":"nutrition","sort":90},
-  {"code":"fat_low","name":"低脂","dimension":"fat","parent":"nutrition","sort":100},
-  {"code":"fat_high","name":"高脂","dimension":"fat","parent":"nutrition","sort":110},
-  {"code":"sodium_low","name":"低钠","dimension":"sodium","parent":"nutrition","sort":120},
-  {"code":"sodium_high","name":"高钠","dimension":"sodium","parent":"nutrition","sort":130},
-  {"code":"potassium_high","name":"高钾","dimension":"nutrition","parent":"nutrition","sort":140},
-  {"code":"calcium_high","name":"高钙","dimension":"nutrition","parent":"nutrition","sort":150},
-  {"code":"whole_grain","name":"全谷物","dimension":"nutrition","parent":"nutrition","sort":160},
-  {"code":"dark_vegetable","name":"深色蔬菜","dimension":"nutrition","parent":"nutrition","sort":170},
-  {"code":"nutrition_iron","name":"补铁食物","dimension":"nutrition","parent":"nutrition","sort":180},
-  {"code":"nutrition_iron_heme","name":"血红素铁","dimension":"nutrition","parent":"nutrition_iron","sort":10},
-  {"code":"nutrition_iron_non_heme","name":"非血红素铁","dimension":"nutrition","parent":"nutrition_iron","sort":20},
-  {"code":"nutrition_calcium","name":"补钙食物","dimension":"nutrition","parent":"nutrition","sort":190},
-  {"code":"nutrition_calcium_absorbable","name":"高钙且易吸收","dimension":"nutrition","parent":"nutrition_calcium","sort":10},
-  {"code":"nutrition_calcium_plant","name":"植物性高钙","dimension":"nutrition","parent":"nutrition_calcium","sort":20},
-  {"code":"nutrition_vitamin","name":"维生素类食物","dimension":"nutrition","parent":"nutrition","sort":200},
-  {"code":"nutrition_vitamin_a","name":"维生素A","dimension":"nutrition","parent":"nutrition_vitamin","sort":10},
-  {"code":"nutrition_vitamin_b","name":"B族维生素","dimension":"nutrition","parent":"nutrition_vitamin","sort":20},
-  {"code":"nutrition_vitamin_c","name":"维生素C","dimension":"nutrition","parent":"nutrition_vitamin","sort":30},
-  {"code":"nutrition_vitamin_d","name":"维生素D","dimension":"nutrition","parent":"nutrition_vitamin","sort":40},
-  {"code":"nutrition_vitamin_e","name":"维生素E","dimension":"nutrition","parent":"nutrition_vitamin","sort":50},
-  {"code":"nutrition_zinc","name":"补锌食物","dimension":"nutrition","parent":"nutrition","sort":210},
-  {"code":"nutrition_omega3","name":"Omega-3脂肪酸食物","dimension":"nutrition","parent":"nutrition","sort":220},
-  {"code":"care_gout","name":"高尿酸血症与痛风","dimension":"crowd","parent":"crowd","sort":10},
-  {"code":"care_diabetes","name":"2型糖尿病与血糖异常","dimension":"crowd","parent":"crowd","sort":20},
-  {"code":"care_hyperlipidemia","name":"高脂血症","dimension":"crowd","parent":"crowd","sort":30},
-  {"code":"care_hypertension","name":"高血压","dimension":"crowd","parent":"crowd","sort":40},
-  {"code":"care_ckd","name":"慢性肾脏病","dimension":"crowd","parent":"crowd","sort":50},
-  {"code":"care_fatty_liver","name":"非酒精性脂肪肝","dimension":"crowd","parent":"crowd","sort":60},
-  {"code":"care_coronary","name":"冠心病与动脉粥样硬化","dimension":"crowd","parent":"crowd","sort":70},
-  {"code":"care_osteoporosis","name":"骨质疏松症","dimension":"crowd","parent":"crowd","sort":80},
-  {"code":"care_gastritis","name":"慢性胃炎与消化性溃疡","dimension":"crowd","parent":"crowd","sort":90},
-  {"code":"care_bowel","name":"慢性肠道疾病","dimension":"crowd","parent":"crowd","sort":100},
-  {"code":"care_constipation","name":"慢性便秘","dimension":"crowd","parent":"care_bowel","sort":10},
-  {"code":"care_diarrhea","name":"慢性腹泻","dimension":"crowd","parent":"care_bowel","sort":20},
-  {"code":"care_thyroid","name":"甲状腺疾病","dimension":"crowd","parent":"crowd","sort":110},
-  {"code":"care_hyperthyroidism","name":"甲状腺功能亢进","dimension":"crowd","parent":"care_thyroid","sort":10},
-  {"code":"care_hypothyroidism","name":"甲状腺功能减退/桥本甲状腺炎","dimension":"crowd","parent":"care_thyroid","sort":20},
-  {"code":"care_obesity","name":"肥胖症/减重饮食","dimension":"crowd","parent":"crowd","sort":120},
-  {"code":"care_homocysteine","name":"高同型半胱氨酸血症","dimension":"crowd","parent":"crowd","sort":130},
-  {"code":"season","name":"应季","dimension":"season","sort":300,"icon":"🗓"},
-  {"code":"season_spring","name":"春季","dimension":"season","parent":"season","sort":10,"icon":"🌱"},
-  {"code":"season_summer","name":"夏季","dimension":"season","parent":"season","sort":20,"icon":"☀️"},
-  {"code":"season_autumn","name":"秋季","dimension":"season","parent":"season","sort":30,"icon":"🍂"},
-  {"code":"season_winter","name":"冬季","dimension":"season","parent":"season","sort":40,"icon":"❄️"}
+ {
+  "code": "staple",
+  "name": "谷薯主食类",
+  "dimension": "general",
+  "sort": 10,
+  "icon": "🌾"
+ },
+ {
+  "code": "vegetable",
+  "name": "蔬菜类",
+  "dimension": "general",
+  "sort": 20,
+  "icon": "🥬"
+ },
+ {
+  "code": "fungi_algae",
+  "name": "菌藻类",
+  "dimension": "general",
+  "sort": 30,
+  "icon": "🍄"
+ },
+ {
+  "code": "fruit",
+  "name": "水果类",
+  "dimension": "general",
+  "sort": 40,
+  "icon": "🍎"
+ },
+ {
+  "code": "meat",
+  "name": "畜禽肉类",
+  "dimension": "general",
+  "sort": 50,
+  "icon": "🥩"
+ },
+ {
+  "code": "aquatic",
+  "name": "水产类",
+  "dimension": "general",
+  "sort": 60,
+  "icon": "🐟"
+ },
+ {
+  "code": "egg",
+  "name": "蛋类",
+  "dimension": "general",
+  "sort": 70,
+  "icon": "🥚"
+ },
+ {
+  "code": "dairy",
+  "name": "奶类",
+  "dimension": "general",
+  "sort": 80,
+  "icon": "🥛"
+ },
+ {
+  "code": "soy_nut",
+  "name": "大豆及坚果",
+  "dimension": "general",
+  "sort": 90,
+  "icon": "🥜"
+ },
+ {
+  "code": "oil",
+  "name": "油脂类",
+  "dimension": "general",
+  "sort": 100,
+  "icon": "🫒"
+ },
+ {
+  "code": "seasoning",
+  "name": "调味品",
+  "dimension": "general",
+  "sort": 110,
+  "icon": "🧂"
+ },
+ {
+  "code": "convenience",
+  "name": "方便食品",
+  "dimension": "general",
+  "sort": 120,
+  "icon": "🥡"
+ },
+ {
+  "code": "other",
+  "name": "其他",
+  "dimension": "general",
+  "sort": 130,
+  "icon": "📦"
+ },
+ {
+  "code": "staple_grain",
+  "name": "谷物类",
+  "dimension": "general",
+  "parent": "staple",
+  "sort": 10
+ },
+ {
+  "code": "staple_grain_rice",
+  "name": "稻米类",
+  "dimension": "general",
+  "parent": "staple_grain",
+  "sort": 10
+ },
+ {
+  "code": "staple_grain_wheat",
+  "name": "麦类",
+  "dimension": "general",
+  "parent": "staple_grain",
+  "sort": 20
+ },
+ {
+  "code": "staple_grain_coarse",
+  "name": "杂粮类",
+  "dimension": "general",
+  "parent": "staple_grain",
+  "sort": 30
+ },
+ {
+  "code": "staple_grain_product",
+  "name": "谷物制品",
+  "dimension": "general",
+  "parent": "staple_grain",
+  "sort": 40
+ },
+ {
+  "code": "staple_tuber",
+  "name": "薯芋类",
+  "dimension": "general",
+  "parent": "staple",
+  "sort": 20
+ },
+ {
+  "code": "staple_legume",
+  "name": "杂豆类",
+  "dimension": "general",
+  "parent": "staple",
+  "sort": 30
+ },
+ {
+  "code": "vegetable_leaf",
+  "name": "叶菜类",
+  "dimension": "general",
+  "parent": "vegetable",
+  "sort": 10
+ },
+ {
+  "code": "vegetable_root",
+  "name": "根茎类",
+  "dimension": "general",
+  "parent": "vegetable",
+  "sort": 20
+ },
+ {
+  "code": "vegetable_gourd_solanaceae",
+  "name": "瓜茄类",
+  "dimension": "general",
+  "parent": "vegetable",
+  "sort": 30
+ },
+ {
+  "code": "vegetable_gourd",
+  "name": "瓜类",
+  "dimension": "general",
+  "parent": "vegetable_gourd_solanaceae",
+  "sort": 10
+ },
+ {
+  "code": "vegetable_solanaceae",
+  "name": "茄果类",
+  "dimension": "general",
+  "parent": "vegetable_gourd_solanaceae",
+  "sort": 20
+ },
+ {
+  "code": "vegetable_fresh_bean",
+  "name": "鲜豆类",
+  "dimension": "general",
+  "parent": "vegetable",
+  "sort": 40
+ },
+ {
+  "code": "vegetable_allium",
+  "name": "葱蒜类",
+  "dimension": "general",
+  "parent": "vegetable",
+  "sort": 50
+ },
+ {
+  "code": "vegetable_aquatic",
+  "name": "水生蔬菜类",
+  "dimension": "general",
+  "parent": "vegetable",
+  "sort": 60
+ },
+ {
+  "code": "vegetable_wild",
+  "name": "野菜类",
+  "dimension": "general",
+  "parent": "vegetable",
+  "sort": 70
+ },
+ {
+  "code": "fungi",
+  "name": "食用菌类",
+  "dimension": "general",
+  "parent": "fungi_algae",
+  "sort": 10
+ },
+ {
+  "code": "algae",
+  "name": "藻类",
+  "dimension": "general",
+  "parent": "fungi_algae",
+  "sort": 20
+ },
+ {
+  "code": "fruit_pome",
+  "name": "仁果类",
+  "dimension": "general",
+  "parent": "fruit",
+  "sort": 10
+ },
+ {
+  "code": "fruit_stone",
+  "name": "核果类",
+  "dimension": "general",
+  "parent": "fruit",
+  "sort": 20
+ },
+ {
+  "code": "fruit_berry",
+  "name": "浆果类",
+  "dimension": "general",
+  "parent": "fruit",
+  "sort": 30
+ },
+ {
+  "code": "fruit_citrus",
+  "name": "柑橘类",
+  "dimension": "general",
+  "parent": "fruit",
+  "sort": 40
+ },
+ {
+  "code": "fruit_melon",
+  "name": "瓜果类",
+  "dimension": "general",
+  "parent": "fruit",
+  "sort": 50
+ },
+ {
+  "code": "fruit_tropical",
+  "name": "热带水果类",
+  "dimension": "general",
+  "parent": "fruit",
+  "sort": 60
+ },
+ {
+  "code": "fruit_dried",
+  "name": "干果蜜饯类",
+  "dimension": "general",
+  "parent": "fruit",
+  "sort": 70
+ },
+ {
+  "code": "meat_livestock",
+  "name": "畜肉类",
+  "dimension": "general",
+  "parent": "meat",
+  "sort": 10
+ },
+ {
+  "code": "meat_pork",
+  "name": "猪肉类",
+  "dimension": "general",
+  "parent": "meat_livestock",
+  "sort": 10
+ },
+ {
+  "code": "meat_beef",
+  "name": "牛肉类",
+  "dimension": "general",
+  "parent": "meat_livestock",
+  "sort": 20
+ },
+ {
+  "code": "meat_mutton",
+  "name": "羊肉类",
+  "dimension": "general",
+  "parent": "meat_livestock",
+  "sort": 30
+ },
+ {
+  "code": "meat_livestock_other",
+  "name": "其他畜肉类",
+  "dimension": "general",
+  "parent": "meat_livestock",
+  "sort": 40
+ },
+ {
+  "code": "meat_poultry",
+  "name": "禽肉类",
+  "dimension": "general",
+  "parent": "meat",
+  "sort": 20
+ },
+ {
+  "code": "meat_offal",
+  "name": "动物内脏类",
+  "dimension": "general",
+  "parent": "meat",
+  "sort": 30
+ },
+ {
+  "code": "meat_processed",
+  "name": "肉制品类",
+  "dimension": "general",
+  "parent": "meat",
+  "sort": 40
+ },
+ {
+  "code": "aquatic_fish",
+  "name": "鱼类",
+  "dimension": "general",
+  "parent": "aquatic",
+  "sort": 10
+ },
+ {
+  "code": "aquatic_fish_freshwater",
+  "name": "淡水鱼类",
+  "dimension": "general",
+  "parent": "aquatic_fish",
+  "sort": 10
+ },
+ {
+  "code": "aquatic_fish_marine",
+  "name": "海水鱼类",
+  "dimension": "general",
+  "parent": "aquatic_fish",
+  "sort": 20
+ },
+ {
+  "code": "aquatic_crustacean",
+  "name": "虾蟹类",
+  "dimension": "general",
+  "parent": "aquatic",
+  "sort": 20
+ },
+ {
+  "code": "aquatic_bivalve",
+  "name": "贝类",
+  "dimension": "general",
+  "parent": "aquatic",
+  "sort": 30
+ },
+ {
+  "code": "aquatic_cephalopod",
+  "name": "头足类",
+  "dimension": "general",
+  "parent": "aquatic",
+  "sort": 40
+ },
+ {
+  "code": "aquatic_other",
+  "name": "其他水产类",
+  "dimension": "general",
+  "parent": "aquatic",
+  "sort": 50
+ },
+ {
+  "code": "aquatic_processed",
+  "name": "水产制品类",
+  "dimension": "general",
+  "parent": "aquatic",
+  "sort": 60
+ },
+ {
+  "code": "egg_fresh",
+  "name": "鲜蛋类",
+  "dimension": "general",
+  "parent": "egg",
+  "sort": 10
+ },
+ {
+  "code": "egg_product",
+  "name": "蛋制品类",
+  "dimension": "general",
+  "parent": "egg",
+  "sort": 20
+ },
+ {
+  "code": "dairy_liquid",
+  "name": "液态奶类",
+  "dimension": "general",
+  "parent": "dairy",
+  "sort": 10
+ },
+ {
+  "code": "dairy_fermented",
+  "name": "发酵乳类",
+  "dimension": "general",
+  "parent": "dairy",
+  "sort": 20
+ },
+ {
+  "code": "dairy_product",
+  "name": "奶制品类",
+  "dimension": "general",
+  "parent": "dairy",
+  "sort": 30
+ },
+ {
+  "code": "soy_bean",
+  "name": "大豆类",
+  "dimension": "general",
+  "parent": "soy_nut",
+  "sort": 10
+ },
+ {
+  "code": "soy_product",
+  "name": "豆制品类",
+  "dimension": "general",
+  "parent": "soy_nut",
+  "sort": 20
+ },
+ {
+  "code": "nut_tree",
+  "name": "树坚果类",
+  "dimension": "general",
+  "parent": "soy_nut",
+  "sort": 30
+ },
+ {
+  "code": "nut_seed",
+  "name": "种子类",
+  "dimension": "general",
+  "parent": "soy_nut",
+  "sort": 40
+ },
+ {
+  "code": "oil_plant",
+  "name": "植物油类",
+  "dimension": "general",
+  "parent": "oil",
+  "sort": 10
+ },
+ {
+  "code": "oil_animal",
+  "name": "动物油类",
+  "dimension": "general",
+  "parent": "oil",
+  "sort": 20
+ },
+ {
+  "code": "seasoning_savory",
+  "name": "咸鲜调料类",
+  "dimension": "general",
+  "parent": "seasoning",
+  "sort": 10
+ },
+ {
+  "code": "seasoning_sauce",
+  "name": "酱类",
+  "dimension": "general",
+  "parent": "seasoning",
+  "sort": 20
+ },
+ {
+  "code": "seasoning_sweet_sour",
+  "name": "酸甜调料类",
+  "dimension": "general",
+  "parent": "seasoning",
+  "sort": 30
+ },
+ {
+  "code": "seasoning_spice",
+  "name": "香辛料类",
+  "dimension": "general",
+  "parent": "seasoning",
+  "sort": 40
+ },
+ {
+  "code": "seasoning_other",
+  "name": "其他调料类",
+  "dimension": "general",
+  "parent": "seasoning",
+  "sort": 50
+ },
+ {
+  "code": "convenience_frozen",
+  "name": "速冻食品类",
+  "dimension": "general",
+  "parent": "convenience",
+  "sort": 10
+ },
+ {
+  "code": "convenience_instant",
+  "name": "方便食品类",
+  "dimension": "general",
+  "parent": "convenience",
+  "sort": 20
+ },
+ {
+  "code": "convenience_canned",
+  "name": "罐头类",
+  "dimension": "general",
+  "parent": "convenience",
+  "sort": 30
+ },
+ {
+  "code": "convenience_prepared",
+  "name": "预制菜类",
+  "dimension": "general",
+  "parent": "convenience",
+  "sort": 40
+ },
+ {
+  "code": "nutrition",
+  "name": "健康饮食",
+  "dimension": "nutrition",
+  "sort": 70
+ },
+ {
+  "code": "crowd",
+  "name": "人群分类",
+  "dimension": "crowd",
+  "sort": 80
+ },
+ {
+  "code": "seasoning_high_sodium",
+  "name": "高钠调味",
+  "dimension": "sodium",
+  "parent": "seasoning",
+  "sort": 20
+ },
+ {
+  "code": "purine_low",
+  "name": "低嘌呤",
+  "dimension": "purine",
+  "parent": "nutrition",
+  "sort": 10
+ },
+ {
+  "code": "purine_medium",
+  "name": "中嘌呤",
+  "dimension": "purine",
+  "parent": "nutrition",
+  "sort": 20
+ },
+ {
+  "code": "purine_high",
+  "name": "高嘌呤",
+  "dimension": "purine",
+  "parent": "nutrition",
+  "sort": 30
+ },
+ {
+  "code": "gi_low",
+  "name": "低 GI",
+  "dimension": "gi",
+  "parent": "nutrition",
+  "sort": 40
+ },
+ {
+  "code": "gi_medium",
+  "name": "中 GI",
+  "dimension": "gi",
+  "parent": "nutrition",
+  "sort": 50
+ },
+ {
+  "code": "gi_high",
+  "name": "高 GI",
+  "dimension": "gi",
+  "parent": "nutrition",
+  "sort": 60
+ },
+ {
+  "code": "sugar_low",
+  "name": "低糖",
+  "dimension": "sugar",
+  "parent": "nutrition",
+  "sort": 70
+ },
+ {
+  "code": "fiber_high",
+  "name": "高膳食纤维",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 80
+ },
+ {
+  "code": "protein_quality",
+  "name": "优质蛋白",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 90
+ },
+ {
+  "code": "fat_low",
+  "name": "低脂",
+  "dimension": "fat",
+  "parent": "nutrition",
+  "sort": 100
+ },
+ {
+  "code": "fat_high",
+  "name": "高脂",
+  "dimension": "fat",
+  "parent": "nutrition",
+  "sort": 110
+ },
+ {
+  "code": "sodium_low",
+  "name": "低钠",
+  "dimension": "sodium",
+  "parent": "nutrition",
+  "sort": 120
+ },
+ {
+  "code": "sodium_high",
+  "name": "高钠",
+  "dimension": "sodium",
+  "parent": "nutrition",
+  "sort": 130
+ },
+ {
+  "code": "potassium_high",
+  "name": "高钾",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 140
+ },
+ {
+  "code": "calcium_high",
+  "name": "高钙",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 150
+ },
+ {
+  "code": "whole_grain",
+  "name": "全谷物",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 160
+ },
+ {
+  "code": "dark_vegetable",
+  "name": "深色蔬菜",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 170
+ },
+ {
+  "code": "nutrition_iron",
+  "name": "补铁食物",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 180
+ },
+ {
+  "code": "nutrition_iron_heme",
+  "name": "血红素铁",
+  "dimension": "nutrition",
+  "parent": "nutrition_iron",
+  "sort": 10
+ },
+ {
+  "code": "nutrition_iron_non_heme",
+  "name": "非血红素铁",
+  "dimension": "nutrition",
+  "parent": "nutrition_iron",
+  "sort": 20
+ },
+ {
+  "code": "nutrition_calcium",
+  "name": "补钙食物",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 190
+ },
+ {
+  "code": "nutrition_calcium_absorbable",
+  "name": "高钙且易吸收",
+  "dimension": "nutrition",
+  "parent": "nutrition_calcium",
+  "sort": 10
+ },
+ {
+  "code": "nutrition_calcium_plant",
+  "name": "植物性高钙",
+  "dimension": "nutrition",
+  "parent": "nutrition_calcium",
+  "sort": 20
+ },
+ {
+  "code": "nutrition_vitamin",
+  "name": "维生素类食物",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 200
+ },
+ {
+  "code": "nutrition_vitamin_a",
+  "name": "维生素A",
+  "dimension": "nutrition",
+  "parent": "nutrition_vitamin",
+  "sort": 10
+ },
+ {
+  "code": "nutrition_vitamin_b",
+  "name": "B族维生素",
+  "dimension": "nutrition",
+  "parent": "nutrition_vitamin",
+  "sort": 20
+ },
+ {
+  "code": "nutrition_vitamin_c",
+  "name": "维生素C",
+  "dimension": "nutrition",
+  "parent": "nutrition_vitamin",
+  "sort": 30
+ },
+ {
+  "code": "nutrition_vitamin_d",
+  "name": "维生素D",
+  "dimension": "nutrition",
+  "parent": "nutrition_vitamin",
+  "sort": 40
+ },
+ {
+  "code": "nutrition_vitamin_e",
+  "name": "维生素E",
+  "dimension": "nutrition",
+  "parent": "nutrition_vitamin",
+  "sort": 50
+ },
+ {
+  "code": "nutrition_zinc",
+  "name": "补锌食物",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 210
+ },
+ {
+  "code": "nutrition_omega3",
+  "name": "Omega-3脂肪酸食物",
+  "dimension": "nutrition",
+  "parent": "nutrition",
+  "sort": 220
+ },
+ {
+  "code": "care_gout",
+  "name": "高尿酸血症与痛风",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 10
+ },
+ {
+  "code": "care_diabetes",
+  "name": "2型糖尿病与血糖异常",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 20
+ },
+ {
+  "code": "care_hyperlipidemia",
+  "name": "高脂血症",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 30
+ },
+ {
+  "code": "care_hypertension",
+  "name": "高血压",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 40
+ },
+ {
+  "code": "care_ckd",
+  "name": "慢性肾脏病",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 50
+ },
+ {
+  "code": "care_fatty_liver",
+  "name": "非酒精性脂肪肝",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 60
+ },
+ {
+  "code": "care_coronary",
+  "name": "冠心病与动脉粥样硬化",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 70
+ },
+ {
+  "code": "care_osteoporosis",
+  "name": "骨质疏松症",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 80
+ },
+ {
+  "code": "care_gastritis",
+  "name": "慢性胃炎与消化性溃疡",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 90
+ },
+ {
+  "code": "care_bowel",
+  "name": "慢性肠道疾病",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 100
+ },
+ {
+  "code": "care_constipation",
+  "name": "慢性便秘",
+  "dimension": "crowd",
+  "parent": "care_bowel",
+  "sort": 10
+ },
+ {
+  "code": "care_diarrhea",
+  "name": "慢性腹泻",
+  "dimension": "crowd",
+  "parent": "care_bowel",
+  "sort": 20
+ },
+ {
+  "code": "care_thyroid",
+  "name": "甲状腺疾病",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 110
+ },
+ {
+  "code": "care_hyperthyroidism",
+  "name": "甲状腺功能亢进",
+  "dimension": "crowd",
+  "parent": "care_thyroid",
+  "sort": 10
+ },
+ {
+  "code": "care_hypothyroidism",
+  "name": "甲状腺功能减退/桥本甲状腺炎",
+  "dimension": "crowd",
+  "parent": "care_thyroid",
+  "sort": 20
+ },
+ {
+  "code": "care_obesity",
+  "name": "肥胖症/减重饮食",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 120
+ },
+ {
+  "code": "care_homocysteine",
+  "name": "高同型半胱氨酸血症",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 130
+ },
+ {
+  "code": "season",
+  "name": "应季",
+  "dimension": "season",
+  "sort": 300,
+  "icon": "🗓"
+ },
+ {
+  "code": "season_spring",
+  "name": "春季",
+  "dimension": "season",
+  "parent": "season",
+  "sort": 10,
+  "icon": "🌱"
+ },
+ {
+  "code": "season_summer",
+  "name": "夏季",
+  "dimension": "season",
+  "parent": "season",
+  "sort": 20,
+  "icon": "☀️"
+ },
+ {
+  "code": "season_autumn",
+  "name": "秋季",
+  "dimension": "season",
+  "parent": "season",
+  "sort": 30,
+  "icon": "🍂"
+ },
+ {
+  "code": "season_winter",
+  "name": "冬季",
+  "dimension": "season",
+  "parent": "season",
+  "sort": 40,
+  "icon": "❄️"
+ },
+ {
+  "code": "care_pregnancy",
+  "name": "孕期",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 110
+ },
+ {
+  "code": "care_lactation",
+  "name": "哺乳期",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 120
+ },
+ {
+  "code": "care_infant",
+  "name": "婴幼儿(0-2岁)",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 130
+ },
+ {
+  "code": "care_preschool",
+  "name": "学龄前儿童(2-6岁)",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 140
+ },
+ {
+  "code": "care_schoolage",
+  "name": "学龄儿童(6-17岁)",
+  "dimension": "crowd",
+  "parent": "crowd",
+  "sort": 150
+ }
 ]

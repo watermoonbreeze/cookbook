@@ -1,165 +1,2580 @@
 [
-  {"ingredient":"鸡蛋","category":"care_gout","level":"recommend","reason":"低嘌呤优质蛋白，适合作为高尿酸人群日常蛋白来源之一。"},
-  {"ingredient":"牛奶","category":"care_gout","level":"recommend","reason":"奶类嘌呤低，可作为高尿酸人群常见蛋白和钙来源。"},
-  {"ingredient":"猪肝","category":"care_gout","level":"avoid","reason":"动物内脏嘌呤高，痛风和高尿酸人群应尽量避免。"},
-  {"ingredient":"蛤蜊","category":"care_gout","level":"avoid","reason":"贝类嘌呤较高，痛风急性期或尿酸控制不佳时不建议食用。"},
-  {"ingredient":"燕麦","category":"care_diabetes","level":"recommend","reason":"全谷物且膳食纤维较高，有助于延缓餐后血糖波动。"},
-  {"ingredient":"白糖","category":"care_diabetes","level":"avoid","reason":"精制糖会快速升高餐后血糖，应尽量避免。"},
-  {"ingredient":"香蕉","category":"care_diabetes","level":"limit","reason":"含糖量较高，需控制份量并计入总碳水。"},
-  {"ingredient":"低脂牛奶","category":"care_hypertension","level":"recommend","reason":"低脂奶类适合日常控盐控脂饮食结构。"},
-  {"ingredient":"盐","category":"care_hypertension","level":"avoid","reason":"高钠调味品，高血压人群需严格控量。"},
-  {"ingredient":"生抽","category":"care_hypertension","level":"limit","reason":"钠含量较高，建议少量使用并减少额外加盐。"},
-  {"ingredient":"鸡胸肉","category":"care_hyperlipidemia","level":"recommend","reason":"优质蛋白且脂肪较低，适合替代高脂畜肉。"},
-  {"ingredient":"五花肉","category":"care_hyperlipidemia","level":"avoid","reason":"脂肪含量较高，高血脂人群建议避免或极少食用。"},
-  {"ingredient":"菠菜","category":"care_ckd","level":"limit","reason":"钾含量相对较高，肾病控钾阶段需结合医嘱限量。"},
-  {"ingredient":"无糖酸奶","category":"care_obesity","level":"recommend","reason":"无糖奶类可提供蛋白和钙，较适合减重期间替代甜饮。"},
-  {"ingredient":"西红柿","category":"care_gastritis","level":"limit","reason":"酸味较明显，胃酸敏感或溃疡活动期需少量尝试。"},
-  {"ingredient":"冬瓜","category":"care_gout","level":"recommend","reason":"低嘌呤高水分蔬菜，利于尿酸排出，痛风人群可放心食用。","ref":"日常食材维度整理"},
-  {"ingredient":"黄瓜","category":"care_gout","level":"recommend","reason":"低嘌呤新鲜蔬菜，适合高尿酸人群日常食用。","ref":"日常食材维度整理"},
-  {"ingredient":"海参","category":"care_gout","level":"recommend","reason":"海参嘌呤含量很低，是高尿酸人群较安全的水产蛋白来源。","ref":"日常食材维度整理"},
-  {"ingredient":"猪瘦肉","category":"care_gout","level":"limit","reason":"中嘌呤肉类，缓解期每日限量约100克以内，急性期避免。","ref":"日常食材维度整理"},
-  {"ingredient":"牛肉","category":"care_gout","level":"limit","reason":"中嘌呤肉类，缓解期限量食用，急性期禁食。","ref":"日常食材维度整理"},
-  {"ingredient":"鲈鱼","category":"care_gout","level":"limit","reason":"中嘌呤水产，缓解期可少量食用，急性期避免。","ref":"日常食材维度整理"},
-  {"ingredient":"豆腐","category":"care_gout","level":"limit","reason":"大豆加工后嘌呤降低，可适量食用，急性期仍需控制。","ref":"日常食材维度整理"},
-  {"ingredient":"沙丁鱼","category":"care_gout","level":"avoid","reason":"高嘌呤海鱼，痛风人群应尽量避免。","ref":"日常食材维度整理"},
-  {"ingredient":"生蚝","category":"care_gout","level":"avoid","reason":"贝类嘌呤高，痛风及高尿酸人群应避免食用。","ref":"日常食材维度整理"},
-  {"ingredient":"扇贝","category":"care_gout","level":"avoid","reason":"贝类嘌呤高，痛风急性期禁食，缓解期也尽量避免。","ref":"日常食材维度整理"},
-  {"ingredient":"荞麦","category":"care_diabetes","level":"recommend","reason":"低GI全谷物，膳食纤维丰富，有助平稳餐后血糖。","ref":"日常食材维度整理"},
-  {"ingredient":"苦瓜","category":"care_diabetes","level":"recommend","reason":"低糖低GI蔬菜，适合血糖管理人群日常食用。","ref":"日常食材维度整理"},
-  {"ingredient":"西兰花","category":"care_diabetes","level":"recommend","reason":"低GI高纤维蔬菜，血糖波动小且营养密度高。","ref":"日常食材维度整理"},
-  {"ingredient":"无糖酸奶","category":"care_diabetes","level":"recommend","reason":"无添加糖的发酵乳，蛋白丰富且对血糖影响较小。","ref":"日常食材维度整理"},
-  {"ingredient":"大米","category":"care_diabetes","level":"limit","reason":"精制白米GI较高，需控制份量并搭配粗粮和蛋白质。","ref":"日常食材维度整理"},
-  {"ingredient":"西瓜","category":"care_diabetes","level":"limit","reason":"GI较高的水果，每次不超过100克并计入总碳水。","ref":"日常食材维度整理"},
-  {"ingredient":"芒果","category":"care_diabetes","level":"limit","reason":"含糖量较高的热带水果，需控制份量在两餐之间食用。","ref":"日常食材维度整理"},
-  {"ingredient":"蜂蜜","category":"care_diabetes","level":"avoid","reason":"主要成分为游离糖，升糖速度快，血糖异常者应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"荔枝","category":"care_diabetes","level":"avoid","reason":"高糖水果，易引起血糖大幅波动，应尽量避免。","ref":"日常食材维度整理"},
-  {"ingredient":"糯米","category":"care_diabetes","level":"avoid","reason":"升糖指数很高的精制主食，糖尿病人群尽量不吃。","ref":"日常食材维度整理"},
-  {"ingredient":"燕麦","category":"care_hyperlipidemia","level":"recommend","reason":"富含可溶性膳食纤维β-葡聚糖，有助降低血胆固醇。","ref":"日常食材维度整理"},
-  {"ingredient":"三文鱼","category":"care_hyperlipidemia","level":"recommend","reason":"富含Omega-3脂肪酸，有助降低甘油三酯。","ref":"日常食材维度整理"},
-  {"ingredient":"豆腐","category":"care_hyperlipidemia","level":"recommend","reason":"植物蛋白替代部分红肉，有利于血脂管理。","ref":"日常食材维度整理"},
-  {"ingredient":"木耳","category":"care_hyperlipidemia","level":"recommend","reason":"富含可溶性膳食纤维，有助减少胆固醇吸收。","ref":"日常食材维度整理"},
-  {"ingredient":"猪瘦肉","category":"care_hyperlipidemia","level":"limit","reason":"脂肪中等，建议限量并优先选择更瘦部位。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡蛋","category":"care_hyperlipidemia","level":"limit","reason":"蛋黄胆固醇较高，高胆固醇血症者每日不超过1个。","ref":"日常食材维度整理"},
-  {"ingredient":"猪肝","category":"care_hyperlipidemia","level":"avoid","reason":"动物内脏胆固醇很高，高脂血症人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"猪蹄","category":"care_hyperlipidemia","level":"avoid","reason":"富含饱和脂肪，不利于血脂控制。","ref":"日常食材维度整理"},
-  {"ingredient":"猪油","category":"care_hyperlipidemia","level":"avoid","reason":"动物油饱和脂肪比例高，应以植物油替代。","ref":"日常食材维度整理"},
-  {"ingredient":"腊肉","category":"care_hyperlipidemia","level":"avoid","reason":"高脂高盐加工肉制品，不利于血脂管理。","ref":"日常食材维度整理"},
-  {"ingredient":"芹菜","category":"care_hypertension","level":"recommend","reason":"高钾蔬菜有助控压，烹调时注意少放盐。","ref":"日常食材维度整理"},
-  {"ingredient":"香蕉","category":"care_hypertension","level":"recommend","reason":"高钾水果，有助于钠钾平衡辅助控压。","ref":"日常食材维度整理"},
-  {"ingredient":"菠菜","category":"care_hypertension","level":"recommend","reason":"高钾深色叶菜，符合DASH饮食推荐。","ref":"日常食材维度整理"},
-  {"ingredient":"燕麦","category":"care_hypertension","level":"recommend","reason":"全谷物富含膳食纤维，是控压饮食推荐主食。","ref":"日常食材维度整理"},
-  {"ingredient":"蚝油","category":"care_hypertension","level":"limit","reason":"钠含量较高的调味品，使用时需计入全天盐量。","ref":"日常食材维度整理"},
-  {"ingredient":"豆瓣酱","category":"care_hypertension","level":"limit","reason":"高钠酱料，建议少量使用并减少额外加盐。","ref":"日常食材维度整理"},
-  {"ingredient":"咸鸭蛋","category":"care_hypertension","level":"avoid","reason":"腌制蛋类钠含量很高，高血压人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"火腿","category":"care_hypertension","level":"avoid","reason":"加工肉制品含大量隐形盐，应避免食用。","ref":"日常食材维度整理"},
-  {"ingredient":"腊肉","category":"care_hypertension","level":"avoid","reason":"腌腊制品高钠高脂，高血压人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"虾皮","category":"care_hypertension","level":"avoid","reason":"钠含量极高，高血压人群应避免用其提鲜。","ref":"日常食材维度整理"},
-  {"ingredient":"冬瓜","category":"care_ckd","level":"recommend","reason":"低钾低磷蔬菜，适合肾功能不全人群食用。","ref":"日常食材维度整理"},
-  {"ingredient":"黄瓜","category":"care_ckd","level":"recommend","reason":"低钾蔬菜，控钾阶段可正常食用。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡蛋","category":"care_ckd","level":"recommend","reason":"优质蛋白来源，按医嘱定量食用符合优质低蛋白原则。","ref":"日常食材维度整理"},
-  {"ingredient":"大米","category":"care_ckd","level":"recommend","reason":"低钾低磷主食，是低蛋白饮食阶段的主要能量来源。","ref":"日常食材维度整理"},
-  {"ingredient":"土豆","category":"care_ckd","level":"limit","reason":"钾含量较高，控钾阶段需切块浸泡焯水后限量食用。","ref":"日常食材维度整理"},
-  {"ingredient":"香蕉","category":"care_ckd","level":"limit","reason":"高钾水果，血钾偏高时需严格限量。","ref":"日常食材维度整理"},
-  {"ingredient":"香菇","category":"care_ckd","level":"limit","reason":"菌菇类钾磷偏高，控钾控磷阶段需限量。","ref":"日常食材维度整理"},
-  {"ingredient":"猪肝","category":"care_ckd","level":"avoid","reason":"动物内脏磷含量很高，慢性肾脏病人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"核桃","category":"care_ckd","level":"avoid","reason":"坚果高磷高钾，肾功能不全者应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"火腿","category":"care_ckd","level":"avoid","reason":"加工肉高钠且常含磷添加剂，应严格避免。","ref":"日常食材维度整理"},
-  {"ingredient":"燕麦","category":"care_fatty_liver","level":"recommend","reason":"全谷物替代精制主食，有助控制总热量和肝脏脂肪。","ref":"日常食材维度整理"},
-  {"ingredient":"西兰花","category":"care_fatty_liver","level":"recommend","reason":"十字花科蔬菜热量低纤维高，适合脂肪肝人群。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡胸肉","category":"care_fatty_liver","level":"recommend","reason":"低脂优质蛋白，有助减脂期维持肌肉量。","ref":"日常食材维度整理"},
-  {"ingredient":"豆腐","category":"care_fatty_liver","level":"recommend","reason":"植物优质蛋白，脂肪低，适合替代部分肉类。","ref":"日常食材维度整理"},
-  {"ingredient":"大米","category":"care_fatty_liver","level":"limit","reason":"精制主食建议减量并掺入粗粮。","ref":"日常食材维度整理"},
-  {"ingredient":"葡萄","category":"care_fatty_liver","level":"limit","reason":"中等甜度水果，每日控制在200克以内。","ref":"日常食材维度整理"},
-  {"ingredient":"猪瘦肉","category":"care_fatty_liver","level":"limit","reason":"可少量食用，优先选择更低脂的禽肉鱼虾。","ref":"日常食材维度整理"},
-  {"ingredient":"白糖","category":"care_fatty_liver","level":"avoid","reason":"添加糖促进肝脏脂肪合成，脂肪肝人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"蜂蜜","category":"care_fatty_liver","level":"avoid","reason":"游离糖含量高，不利于肝脏脂肪代谢。","ref":"日常食材维度整理"},
-  {"ingredient":"五花肉","category":"care_fatty_liver","level":"avoid","reason":"脂肪含量高，加重肝脏脂肪堆积。","ref":"日常食材维度整理"},
-  {"ingredient":"猪油","category":"care_fatty_liver","level":"avoid","reason":"动物油饱和脂肪高，脂肪肝人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"燕麦","category":"care_coronary","level":"recommend","reason":"可溶性纤维有助降胆固醇，保护心血管。","ref":"日常食材维度整理"},
-  {"ingredient":"三文鱼","category":"care_coronary","level":"recommend","reason":"深海鱼富含Omega-3，有助稳定斑块保护血管。","ref":"日常食材维度整理"},
-  {"ingredient":"洋葱","category":"care_coronary","level":"recommend","reason":"含硫化物等植物化学物，有益血管健康。","ref":"日常食材维度整理"},
-  {"ingredient":"橄榄油","category":"care_coronary","level":"recommend","reason":"富含单不饱和脂肪酸，替代动物油有益心血管。","ref":"日常食材维度整理"},
-  {"ingredient":"蓝莓","category":"care_coronary","level":"recommend","reason":"富含花青素等抗氧化物，有益血管健康。","ref":"日常食材维度整理"},
-  {"ingredient":"猪瘦肉","category":"care_coronary","level":"limit","reason":"红肉建议每日不超过50克，优先鱼禽替代。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡蛋","category":"care_coronary","level":"limit","reason":"蛋黄每日不超过1个，注意总胆固醇摄入。","ref":"日常食材维度整理"},
-  {"ingredient":"牛奶","category":"care_coronary","level":"limit","reason":"全脂奶限量饮用，优先选择低脂或脱脂奶。","ref":"日常食材维度整理"},
-  {"ingredient":"猪肝","category":"care_coronary","level":"avoid","reason":"内脏胆固醇很高，冠心病人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"五花肉","category":"care_coronary","level":"avoid","reason":"饱和脂肪高，不利于动脉粥样硬化控制。","ref":"日常食材维度整理"},
-  {"ingredient":"腊肉","category":"care_coronary","level":"avoid","reason":"腌制加工肉高盐高脂，增加心血管负担。","ref":"日常食材维度整理"},
-  {"ingredient":"猪油","category":"care_coronary","level":"avoid","reason":"动物油饱和脂肪高，应以植物油替代。","ref":"日常食材维度整理"},
-  {"ingredient":"牛奶","category":"care_osteoporosis","level":"recommend","reason":"高钙且易吸收，是骨质疏松人群首选补钙食物。","ref":"日常食材维度整理"},
-  {"ingredient":"奶酪","category":"care_osteoporosis","level":"recommend","reason":"钙含量高，可作为补钙来源，注意选低盐品种。","ref":"日常食材维度整理"},
-  {"ingredient":"豆腐皮","category":"care_osteoporosis","level":"recommend","reason":"高钙豆制品，是植物性补钙的良好来源。","ref":"日常食材维度整理"},
-  {"ingredient":"芥蓝","category":"care_osteoporosis","level":"recommend","reason":"高钙深绿叶菜，草酸低利于钙吸收。","ref":"日常食材维度整理"},
-  {"ingredient":"虾皮","category":"care_osteoporosis","level":"recommend","reason":"含钙量高，少量提鲜即可，注意其钠含量。","ref":"日常食材维度整理"},
-  {"ingredient":"菠菜","category":"care_osteoporosis","level":"limit","reason":"草酸影响钙吸收，建议焯水后适量食用。","ref":"日常食材维度整理"},
-  {"ingredient":"苋菜","category":"care_osteoporosis","level":"limit","reason":"草酸含量较高，焯水后食用可减少钙吸收干扰。","ref":"日常食材维度整理"},
-  {"ingredient":"盐","category":"care_osteoporosis","level":"avoid","reason":"高盐饮食增加尿钙流失，加速骨量丢失。","ref":"日常食材维度整理"},
-  {"ingredient":"火腿","category":"care_osteoporosis","level":"avoid","reason":"高盐加工食品加速钙流失，应尽量避免。","ref":"日常食材维度整理"},
-  {"ingredient":"小米","category":"care_gastritis","level":"recommend","reason":"小米粥温和易消化，适合胃黏膜修复期。","ref":"日常食材维度整理"},
-  {"ingredient":"南瓜","category":"care_gastritis","level":"recommend","reason":"质地柔软含果胶，煮软后温和护胃。","ref":"日常食材维度整理"},
-  {"ingredient":"山药","category":"care_gastritis","level":"recommend","reason":"淀粉细腻易消化，适合胃炎溃疡人群。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡蛋","category":"care_gastritis","level":"recommend","reason":"蛋羹、水煮蛋是易消化的优质蛋白。","ref":"日常食材维度整理"},
-  {"ingredient":"芹菜","category":"care_gastritis","level":"limit","reason":"粗纤维偏多，建议切碎煮软后少量食用。","ref":"日常食材维度整理"},
-  {"ingredient":"韭菜","category":"care_gastritis","level":"limit","reason":"粗纤维刺激胃肠，溃疡活动期少吃。","ref":"日常食材维度整理"},
-  {"ingredient":"橘子","category":"care_gastritis","level":"limit","reason":"酸味水果刺激胃酸分泌，需少量尝试。","ref":"日常食材维度整理"},
-  {"ingredient":"辣椒","category":"care_gastritis","level":"avoid","reason":"强烈刺激胃黏膜，胃炎溃疡人群应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"糯米","category":"care_gastritis","level":"avoid","reason":"黏滞难消化，加重胃部负担。","ref":"日常食材维度整理"},
-  {"ingredient":"腊肉","category":"care_gastritis","level":"avoid","reason":"腌制食品高盐且刺激胃黏膜，应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"燕麦","category":"care_constipation","level":"recommend","reason":"高膳食纤维促进肠道蠕动，改善便秘。","ref":"日常食材维度整理"},
-  {"ingredient":"芹菜","category":"care_constipation","level":"recommend","reason":"富含不溶性纤维，有助增加粪便体积。","ref":"日常食材维度整理"},
-  {"ingredient":"火龙果","category":"care_constipation","level":"recommend","reason":"富含膳食纤维和籽粒，有助润肠通便。","ref":"日常食材维度整理"},
-  {"ingredient":"酸奶","category":"care_constipation","level":"recommend","reason":"含益生菌，有助维持肠道菌群平衡。","ref":"日常食材维度整理"},
-  {"ingredient":"木耳","category":"care_constipation","level":"recommend","reason":"富含可溶性膳食纤维，有助软化粪便。","ref":"日常食材维度整理"},
-  {"ingredient":"大米","category":"care_constipation","level":"limit","reason":"精细主食纤维少，建议与粗粮搭配食用。","ref":"日常食材维度整理"},
-  {"ingredient":"白糖","category":"care_constipation","level":"limit","reason":"甜食过量不利肠道健康，应控制摄入。","ref":"日常食材维度整理"},
-  {"ingredient":"辣椒","category":"care_constipation","level":"avoid","reason":"辛辣刺激易加重肛肠不适，便秘期避免。","ref":"日常食材维度整理"},
-  {"ingredient":"豆瓣酱","category":"care_constipation","level":"avoid","reason":"辛辣高盐酱料刺激肠道，便秘期应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"大米","category":"care_diarrhea","level":"recommend","reason":"白米粥低渣易消化，是腹泻期首选主食。","ref":"日常食材维度整理"},
-  {"ingredient":"面条","category":"care_diarrhea","level":"recommend","reason":"烂面条低渣温和，适合腹泻期补充能量。","ref":"日常食材维度整理"},
-  {"ingredient":"山药","category":"care_diarrhea","level":"recommend","reason":"健脾易消化，适合慢性腹泻人群。","ref":"日常食材维度整理"},
-  {"ingredient":"南瓜","category":"care_diarrhea","level":"recommend","reason":"煮软后温和低渣，含果胶有助肠道恢复。","ref":"日常食材维度整理"},
-  {"ingredient":"牛奶","category":"care_diarrhea","level":"limit","reason":"乳糖不耐受者饮用会加重腹泻，可换无乳糖奶。","ref":"日常食材维度整理"},
-  {"ingredient":"燕麦","category":"care_diarrhea","level":"limit","reason":"杂粮纤维偏多，腹泻期需煮烂后少量食用。","ref":"日常食材维度整理"},
-  {"ingredient":"洋葱","category":"care_diarrhea","level":"avoid","reason":"产气食物刺激肠道，腹泻期应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"红薯","category":"care_diarrhea","level":"avoid","reason":"易产气且纤维多，腹泻期应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"辣椒","category":"care_diarrhea","level":"avoid","reason":"辛辣刺激肠道蠕动，加重腹泻。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡蛋","category":"care_hyperthyroidism","level":"recommend","reason":"甲亢高代谢需高蛋白，鸡蛋是低碘优质蛋白。","ref":"日常食材维度整理"},
-  {"ingredient":"牛奶","category":"care_hyperthyroidism","level":"recommend","reason":"补充蛋白和钙，满足甲亢高能量需求。","ref":"日常食材维度整理"},
-  {"ingredient":"草鱼","category":"care_hyperthyroidism","level":"recommend","reason":"淡水鱼碘含量低，可替代海产提供蛋白。","ref":"日常食材维度整理"},
-  {"ingredient":"豆腐","category":"care_hyperthyroidism","level":"recommend","reason":"植物优质蛋白且不含高碘，适合甲亢人群。","ref":"日常食材维度整理"},
-  {"ingredient":"西兰花","category":"care_hyperthyroidism","level":"limit","reason":"十字花科蔬菜适量食用即可，无需严格禁忌。","ref":"日常食材维度整理"},
-  {"ingredient":"核桃","category":"care_hyperthyroidism","level":"limit","reason":"坚果适量食用，补充能量但避免过量。","ref":"日常食材维度整理"},
-  {"ingredient":"海带","category":"care_hyperthyroidism","level":"avoid","reason":"碘含量极高，甲亢人群须严格忌碘。","ref":"日常食材维度整理"},
-  {"ingredient":"紫菜","category":"care_hyperthyroidism","level":"avoid","reason":"高碘藻类，甲亢人群应严格避免。","ref":"日常食材维度整理"},
-  {"ingredient":"生蚝","category":"care_hyperthyroidism","level":"avoid","reason":"海产贝类含碘较高，甲亢忌碘期应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"带鱼","category":"care_hyperthyroidism","level":"avoid","reason":"海鱼含碘较高，甲亢人群应避免食用。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡蛋","category":"care_hypothyroidism","level":"recommend","reason":"提供优质蛋白和适量碘，适合甲减人群。","ref":"日常食材维度整理"},
-  {"ingredient":"牛肉","category":"care_hypothyroidism","level":"recommend","reason":"富含硒和锌，有助甲状腺激素合成与代谢。","ref":"日常食材维度整理"},
-  {"ingredient":"香菇","category":"care_hypothyroidism","level":"recommend","reason":"菌菇含硒，是甲减人群推荐的微量元素来源。","ref":"日常食材维度整理"},
-  {"ingredient":"南瓜子","category":"care_hypothyroidism","level":"recommend","reason":"富含锌元素，有助甲状腺功能维护。","ref":"日常食材维度整理"},
-  {"ingredient":"海带","category":"care_hypothyroidism","level":"limit","reason":"高碘食物每月少量1-2次即可，避免碘过量。","ref":"日常食材维度整理"},
-  {"ingredient":"紫菜","category":"care_hypothyroidism","level":"limit","reason":"高碘藻类需限量，桥本患者遵医嘱控碘。","ref":"日常食材维度整理"},
-  {"ingredient":"卷心菜","category":"care_hypothyroidism","level":"limit","reason":"十字花科蔬菜煮熟后适量食用，避免大量生食。","ref":"日常食材维度整理"},
-  {"ingredient":"白糖","category":"care_hypothyroidism","level":"avoid","reason":"甲减代谢率低，精制糖易致体重增加。","ref":"日常食材维度整理"},
-  {"ingredient":"蜂蜜","category":"care_hypothyroidism","level":"avoid","reason":"添加糖来源，甲减人群应控糖避免。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡胸肉","category":"care_obesity","level":"recommend","reason":"高蛋白低脂肪，增强饱腹感利于减重。","ref":"日常食材维度整理"},
-  {"ingredient":"西兰花","category":"care_obesity","level":"recommend","reason":"低能量密度高纤维，减重期可放心多吃。","ref":"日常食材维度整理"},
-  {"ingredient":"黄瓜","category":"care_obesity","level":"recommend","reason":"热量极低水分足，适合减重期加餐。","ref":"日常食材维度整理"},
-  {"ingredient":"虾","category":"care_obesity","level":"recommend","reason":"高蛋白低脂水产，适合减重期蛋白来源。","ref":"日常食材维度整理"},
-  {"ingredient":"大米","category":"care_obesity","level":"limit","reason":"精制主食需控制份量，建议以粗粮部分替代。","ref":"日常食材维度整理"},
-  {"ingredient":"花生","category":"care_obesity","level":"limit","reason":"能量密度高，每日一小把以内。","ref":"日常食材维度整理"},
-  {"ingredient":"白糖","category":"care_obesity","level":"avoid","reason":"高热量低营养密度，减重期应严格避免。","ref":"日常食材维度整理"},
-  {"ingredient":"五花肉","category":"care_obesity","level":"avoid","reason":"脂肪含量高热量大，减重期应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"蜂蜜","category":"care_obesity","level":"avoid","reason":"游离糖热量高，减重期不建议食用。","ref":"日常食材维度整理"},
-  {"ingredient":"香肠","category":"care_obesity","level":"avoid","reason":"加工肉高脂高盐高热量，减重期应避免。","ref":"日常食材维度整理"},
-  {"ingredient":"菠菜","category":"care_homocysteine","level":"recommend","reason":"深绿叶菜富含叶酸，有助降低同型半胱氨酸。","ref":"日常食材维度整理"},
-  {"ingredient":"西兰花","category":"care_homocysteine","level":"recommend","reason":"富含叶酸的十字花科蔬菜，建议常吃。","ref":"日常食材维度整理"},
-  {"ingredient":"芦笋","category":"care_homocysteine","level":"recommend","reason":"叶酸含量高，有益同型半胱氨酸代谢。","ref":"日常食材维度整理"},
-  {"ingredient":"鸡蛋","category":"care_homocysteine","level":"recommend","reason":"提供维生素B12，参与同型半胱氨酸代谢。","ref":"日常食材维度整理"},
-  {"ingredient":"牛肉","category":"care_homocysteine","level":"recommend","reason":"富含维生素B12和B6，有助代谢同型半胱氨酸。","ref":"日常食材维度整理"},
-  {"ingredient":"大米","category":"care_homocysteine","level":"limit","reason":"精制米面B族维生素流失多，建议粗细搭配。","ref":"日常食材维度整理"},
-  {"ingredient":"馒头","category":"care_homocysteine","level":"limit","reason":"精制面食B族含量低，需搭配全谷物。","ref":"日常食材维度整理"},
-  {"ingredient":"白糖","category":"care_homocysteine","level":"avoid","reason":"长期高糖饮食不利于同型半胱氨酸控制。","ref":"日常食材维度整理"},
-  {"ingredient":"蜂蜜","category":"care_homocysteine","level":"avoid","reason":"添加糖来源，长期大量摄入不利指标控制。","ref":"日常食材维度整理"}
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_gout",
+  "level": "recommend",
+  "reason": "低嘌呤优质蛋白，适合作为高尿酸人群日常蛋白来源之一。"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_gout",
+  "level": "recommend",
+  "reason": "奶类嘌呤低，可作为高尿酸人群常见蛋白和钙来源。"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_gout",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤高，痛风和高尿酸人群应尽量避免。"
+ },
+ {
+  "ingredient": "蛤蜊",
+  "category": "care_gout",
+  "level": "avoid",
+  "reason": "贝类嘌呤较高，痛风急性期或尿酸控制不佳时不建议食用。"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_diabetes",
+  "level": "recommend",
+  "reason": "全谷物且膳食纤维较高，有助于延缓餐后血糖波动。"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_diabetes",
+  "level": "avoid",
+  "reason": "精制糖会快速升高餐后血糖，应尽量避免。"
+ },
+ {
+  "ingredient": "香蕉",
+  "category": "care_diabetes",
+  "level": "limit",
+  "reason": "含糖量较高，需控制份量并计入总碳水。"
+ },
+ {
+  "ingredient": "低脂牛奶",
+  "category": "care_hypertension",
+  "level": "recommend",
+  "reason": "低脂奶类适合日常控盐控脂饮食结构。"
+ },
+ {
+  "ingredient": "盐",
+  "category": "care_hypertension",
+  "level": "avoid",
+  "reason": "高钠调味品，高血压人群需严格控量。"
+ },
+ {
+  "ingredient": "生抽",
+  "category": "care_hypertension",
+  "level": "limit",
+  "reason": "钠含量较高，建议少量使用并减少额外加盐。"
+ },
+ {
+  "ingredient": "鸡胸肉",
+  "category": "care_hyperlipidemia",
+  "level": "recommend",
+  "reason": "优质蛋白且脂肪较低，适合替代高脂畜肉。"
+ },
+ {
+  "ingredient": "五花肉",
+  "category": "care_hyperlipidemia",
+  "level": "avoid",
+  "reason": "脂肪含量较高，高血脂人群建议避免或极少食用。"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_ckd",
+  "level": "limit",
+  "reason": "钾含量相对较高，肾病控钾阶段需结合医嘱限量。"
+ },
+ {
+  "ingredient": "无糖酸奶",
+  "category": "care_obesity",
+  "level": "recommend",
+  "reason": "无糖奶类可提供蛋白和钙，较适合减重期间替代甜饮。"
+ },
+ {
+  "ingredient": "西红柿",
+  "category": "care_gastritis",
+  "level": "limit",
+  "reason": "酸味较明显，胃酸敏感或溃疡活动期需少量尝试。"
+ },
+ {
+  "ingredient": "冬瓜",
+  "category": "care_gout",
+  "level": "recommend",
+  "reason": "低嘌呤高水分蔬菜，利于尿酸排出，痛风人群可放心食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "黄瓜",
+  "category": "care_gout",
+  "level": "recommend",
+  "reason": "低嘌呤新鲜蔬菜，适合高尿酸人群日常食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "海参",
+  "category": "care_gout",
+  "level": "recommend",
+  "reason": "海参嘌呤含量很低，是高尿酸人群较安全的水产蛋白来源。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_gout",
+  "level": "limit",
+  "reason": "中嘌呤肉类，缓解期每日限量约100克以内，急性期避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_gout",
+  "level": "limit",
+  "reason": "中嘌呤肉类，缓解期限量食用，急性期禁食。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鲈鱼",
+  "category": "care_gout",
+  "level": "limit",
+  "reason": "中嘌呤水产，缓解期可少量食用，急性期避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_gout",
+  "level": "limit",
+  "reason": "大豆加工后嘌呤降低，可适量食用，急性期仍需控制。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "沙丁鱼",
+  "category": "care_gout",
+  "level": "avoid",
+  "reason": "高嘌呤海鱼，痛风人群应尽量避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "生蚝",
+  "category": "care_gout",
+  "level": "avoid",
+  "reason": "贝类嘌呤高，痛风及高尿酸人群应避免食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "扇贝",
+  "category": "care_gout",
+  "level": "avoid",
+  "reason": "贝类嘌呤高，痛风急性期禁食，缓解期也尽量避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "荞麦",
+  "category": "care_diabetes",
+  "level": "recommend",
+  "reason": "低GI全谷物，膳食纤维丰富，有助平稳餐后血糖。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "苦瓜",
+  "category": "care_diabetes",
+  "level": "recommend",
+  "reason": "低糖低GI蔬菜，适合血糖管理人群日常食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_diabetes",
+  "level": "recommend",
+  "reason": "低GI高纤维蔬菜，血糖波动小且营养密度高。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "无糖酸奶",
+  "category": "care_diabetes",
+  "level": "recommend",
+  "reason": "无添加糖的发酵乳，蛋白丰富且对血糖影响较小。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "大米",
+  "category": "care_diabetes",
+  "level": "limit",
+  "reason": "精制白米GI较高，需控制份量并搭配粗粮和蛋白质。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "西瓜",
+  "category": "care_diabetes",
+  "level": "limit",
+  "reason": "GI较高的水果，每次不超过100克并计入总碳水。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "芒果",
+  "category": "care_diabetes",
+  "level": "limit",
+  "reason": "含糖量较高的热带水果，需控制份量在两餐之间食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_diabetes",
+  "level": "avoid",
+  "reason": "主要成分为游离糖，升糖速度快，血糖异常者应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "荔枝",
+  "category": "care_diabetes",
+  "level": "avoid",
+  "reason": "高糖水果，易引起血糖大幅波动，应尽量避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "糯米",
+  "category": "care_diabetes",
+  "level": "avoid",
+  "reason": "升糖指数很高的精制主食，糖尿病人群尽量不吃。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_hyperlipidemia",
+  "level": "recommend",
+  "reason": "富含可溶性膳食纤维β-葡聚糖，有助降低血胆固醇。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "三文鱼",
+  "category": "care_hyperlipidemia",
+  "level": "recommend",
+  "reason": "富含Omega-3脂肪酸，有助降低甘油三酯。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_hyperlipidemia",
+  "level": "recommend",
+  "reason": "植物蛋白替代部分红肉，有利于血脂管理。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "木耳",
+  "category": "care_hyperlipidemia",
+  "level": "recommend",
+  "reason": "富含可溶性膳食纤维，有助减少胆固醇吸收。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_hyperlipidemia",
+  "level": "limit",
+  "reason": "脂肪中等，建议限量并优先选择更瘦部位。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_hyperlipidemia",
+  "level": "limit",
+  "reason": "蛋黄胆固醇较高，高胆固醇血症者每日不超过1个。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_hyperlipidemia",
+  "level": "avoid",
+  "reason": "动物内脏胆固醇很高，高脂血症人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪蹄",
+  "category": "care_hyperlipidemia",
+  "level": "avoid",
+  "reason": "富含饱和脂肪，不利于血脂控制。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪油",
+  "category": "care_hyperlipidemia",
+  "level": "avoid",
+  "reason": "动物油饱和脂肪比例高，应以植物油替代。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_hyperlipidemia",
+  "level": "avoid",
+  "reason": "高脂高盐加工肉制品，不利于血脂管理。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "芹菜",
+  "category": "care_hypertension",
+  "level": "recommend",
+  "reason": "高钾蔬菜有助控压，烹调时注意少放盐。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "香蕉",
+  "category": "care_hypertension",
+  "level": "recommend",
+  "reason": "高钾水果，有助于钠钾平衡辅助控压。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_hypertension",
+  "level": "recommend",
+  "reason": "高钾深色叶菜，符合DASH饮食推荐。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_hypertension",
+  "level": "recommend",
+  "reason": "全谷物富含膳食纤维，是控压饮食推荐主食。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "蚝油",
+  "category": "care_hypertension",
+  "level": "limit",
+  "reason": "钠含量较高的调味品，使用时需计入全天盐量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "豆瓣酱",
+  "category": "care_hypertension",
+  "level": "limit",
+  "reason": "高钠酱料，建议少量使用并减少额外加盐。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "咸鸭蛋",
+  "category": "care_hypertension",
+  "level": "avoid",
+  "reason": "腌制蛋类钠含量很高，高血压人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "火腿",
+  "category": "care_hypertension",
+  "level": "avoid",
+  "reason": "加工肉制品含大量隐形盐，应避免食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_hypertension",
+  "level": "avoid",
+  "reason": "腌腊制品高钠高脂，高血压人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "虾皮",
+  "category": "care_hypertension",
+  "level": "avoid",
+  "reason": "钠含量极高，高血压人群应避免用其提鲜。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "冬瓜",
+  "category": "care_ckd",
+  "level": "recommend",
+  "reason": "低钾低磷蔬菜，适合肾功能不全人群食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "黄瓜",
+  "category": "care_ckd",
+  "level": "recommend",
+  "reason": "低钾蔬菜，控钾阶段可正常食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_ckd",
+  "level": "recommend",
+  "reason": "优质蛋白来源，按医嘱定量食用符合优质低蛋白原则。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "大米",
+  "category": "care_ckd",
+  "level": "recommend",
+  "reason": "低钾低磷主食，是低蛋白饮食阶段的主要能量来源。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "土豆",
+  "category": "care_ckd",
+  "level": "limit",
+  "reason": "钾含量较高，控钾阶段需切块浸泡焯水后限量食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "香蕉",
+  "category": "care_ckd",
+  "level": "limit",
+  "reason": "高钾水果，血钾偏高时需严格限量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "香菇",
+  "category": "care_ckd",
+  "level": "limit",
+  "reason": "菌菇类钾磷偏高，控钾控磷阶段需限量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_ckd",
+  "level": "avoid",
+  "reason": "动物内脏磷含量很高，慢性肾脏病人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "核桃",
+  "category": "care_ckd",
+  "level": "avoid",
+  "reason": "坚果高磷高钾，肾功能不全者应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "火腿",
+  "category": "care_ckd",
+  "level": "avoid",
+  "reason": "加工肉高钠且常含磷添加剂，应严格避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_fatty_liver",
+  "level": "recommend",
+  "reason": "全谷物替代精制主食，有助控制总热量和肝脏脂肪。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_fatty_liver",
+  "level": "recommend",
+  "reason": "十字花科蔬菜热量低纤维高，适合脂肪肝人群。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡胸肉",
+  "category": "care_fatty_liver",
+  "level": "recommend",
+  "reason": "低脂优质蛋白，有助减脂期维持肌肉量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_fatty_liver",
+  "level": "recommend",
+  "reason": "植物优质蛋白，脂肪低，适合替代部分肉类。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "大米",
+  "category": "care_fatty_liver",
+  "level": "limit",
+  "reason": "精制主食建议减量并掺入粗粮。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "葡萄",
+  "category": "care_fatty_liver",
+  "level": "limit",
+  "reason": "中等甜度水果，每日控制在200克以内。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_fatty_liver",
+  "level": "limit",
+  "reason": "可少量食用，优先选择更低脂的禽肉鱼虾。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_fatty_liver",
+  "level": "avoid",
+  "reason": "添加糖促进肝脏脂肪合成，脂肪肝人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_fatty_liver",
+  "level": "avoid",
+  "reason": "游离糖含量高，不利于肝脏脂肪代谢。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "五花肉",
+  "category": "care_fatty_liver",
+  "level": "avoid",
+  "reason": "脂肪含量高，加重肝脏脂肪堆积。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪油",
+  "category": "care_fatty_liver",
+  "level": "avoid",
+  "reason": "动物油饱和脂肪高，脂肪肝人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_coronary",
+  "level": "recommend",
+  "reason": "可溶性纤维有助降胆固醇，保护心血管。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "三文鱼",
+  "category": "care_coronary",
+  "level": "recommend",
+  "reason": "深海鱼富含Omega-3，有助稳定斑块保护血管。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "洋葱",
+  "category": "care_coronary",
+  "level": "recommend",
+  "reason": "含硫化物等植物化学物，有益血管健康。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "橄榄油",
+  "category": "care_coronary",
+  "level": "recommend",
+  "reason": "富含单不饱和脂肪酸，替代动物油有益心血管。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "蓝莓",
+  "category": "care_coronary",
+  "level": "recommend",
+  "reason": "富含花青素等抗氧化物，有益血管健康。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_coronary",
+  "level": "limit",
+  "reason": "红肉建议每日不超过50克，优先鱼禽替代。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_coronary",
+  "level": "limit",
+  "reason": "蛋黄每日不超过1个，注意总胆固醇摄入。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_coronary",
+  "level": "limit",
+  "reason": "全脂奶限量饮用，优先选择低脂或脱脂奶。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_coronary",
+  "level": "avoid",
+  "reason": "内脏胆固醇很高，冠心病人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "五花肉",
+  "category": "care_coronary",
+  "level": "avoid",
+  "reason": "饱和脂肪高，不利于动脉粥样硬化控制。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_coronary",
+  "level": "avoid",
+  "reason": "腌制加工肉高盐高脂，增加心血管负担。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "猪油",
+  "category": "care_coronary",
+  "level": "avoid",
+  "reason": "动物油饱和脂肪高，应以植物油替代。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_osteoporosis",
+  "level": "recommend",
+  "reason": "高钙且易吸收，是骨质疏松人群首选补钙食物。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "奶酪",
+  "category": "care_osteoporosis",
+  "level": "recommend",
+  "reason": "钙含量高，可作为补钙来源，注意选低盐品种。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "豆腐皮",
+  "category": "care_osteoporosis",
+  "level": "recommend",
+  "reason": "高钙豆制品，是植物性补钙的良好来源。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "芥蓝",
+  "category": "care_osteoporosis",
+  "level": "recommend",
+  "reason": "高钙深绿叶菜，草酸低利于钙吸收。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "虾皮",
+  "category": "care_osteoporosis",
+  "level": "recommend",
+  "reason": "含钙量高，少量提鲜即可，注意其钠含量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_osteoporosis",
+  "level": "limit",
+  "reason": "草酸影响钙吸收，建议焯水后适量食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "苋菜",
+  "category": "care_osteoporosis",
+  "level": "limit",
+  "reason": "草酸含量较高，焯水后食用可减少钙吸收干扰。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "盐",
+  "category": "care_osteoporosis",
+  "level": "avoid",
+  "reason": "高盐饮食增加尿钙流失，加速骨量丢失。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "火腿",
+  "category": "care_osteoporosis",
+  "level": "avoid",
+  "reason": "高盐加工食品加速钙流失，应尽量避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "小米",
+  "category": "care_gastritis",
+  "level": "recommend",
+  "reason": "小米粥温和易消化，适合胃黏膜修复期。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "南瓜",
+  "category": "care_gastritis",
+  "level": "recommend",
+  "reason": "质地柔软含果胶，煮软后温和护胃。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "山药",
+  "category": "care_gastritis",
+  "level": "recommend",
+  "reason": "淀粉细腻易消化，适合胃炎溃疡人群。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_gastritis",
+  "level": "recommend",
+  "reason": "蛋羹、水煮蛋是易消化的优质蛋白。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "芹菜",
+  "category": "care_gastritis",
+  "level": "limit",
+  "reason": "粗纤维偏多，建议切碎煮软后少量食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "韭菜",
+  "category": "care_gastritis",
+  "level": "limit",
+  "reason": "粗纤维刺激胃肠，溃疡活动期少吃。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "橘子",
+  "category": "care_gastritis",
+  "level": "limit",
+  "reason": "酸味水果刺激胃酸分泌，需少量尝试。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "辣椒",
+  "category": "care_gastritis",
+  "level": "avoid",
+  "reason": "强烈刺激胃黏膜，胃炎溃疡人群应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "糯米",
+  "category": "care_gastritis",
+  "level": "avoid",
+  "reason": "黏滞难消化，加重胃部负担。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_gastritis",
+  "level": "avoid",
+  "reason": "腌制食品高盐且刺激胃黏膜，应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_constipation",
+  "level": "recommend",
+  "reason": "高膳食纤维促进肠道蠕动，改善便秘。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "芹菜",
+  "category": "care_constipation",
+  "level": "recommend",
+  "reason": "富含不溶性纤维，有助增加粪便体积。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "火龙果",
+  "category": "care_constipation",
+  "level": "recommend",
+  "reason": "富含膳食纤维和籽粒，有助润肠通便。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "酸奶",
+  "category": "care_constipation",
+  "level": "recommend",
+  "reason": "含益生菌，有助维持肠道菌群平衡。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "木耳",
+  "category": "care_constipation",
+  "level": "recommend",
+  "reason": "富含可溶性膳食纤维，有助软化粪便。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "大米",
+  "category": "care_constipation",
+  "level": "limit",
+  "reason": "精细主食纤维少，建议与粗粮搭配食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_constipation",
+  "level": "limit",
+  "reason": "甜食过量不利肠道健康，应控制摄入。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "辣椒",
+  "category": "care_constipation",
+  "level": "avoid",
+  "reason": "辛辣刺激易加重肛肠不适，便秘期避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "豆瓣酱",
+  "category": "care_constipation",
+  "level": "avoid",
+  "reason": "辛辣高盐酱料刺激肠道，便秘期应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "大米",
+  "category": "care_diarrhea",
+  "level": "recommend",
+  "reason": "白米粥低渣易消化，是腹泻期首选主食。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "面条",
+  "category": "care_diarrhea",
+  "level": "recommend",
+  "reason": "烂面条低渣温和，适合腹泻期补充能量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "山药",
+  "category": "care_diarrhea",
+  "level": "recommend",
+  "reason": "健脾易消化，适合慢性腹泻人群。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "南瓜",
+  "category": "care_diarrhea",
+  "level": "recommend",
+  "reason": "煮软后温和低渣，含果胶有助肠道恢复。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_diarrhea",
+  "level": "limit",
+  "reason": "乳糖不耐受者饮用会加重腹泻，可换无乳糖奶。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_diarrhea",
+  "level": "limit",
+  "reason": "杂粮纤维偏多，腹泻期需煮烂后少量食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "洋葱",
+  "category": "care_diarrhea",
+  "level": "avoid",
+  "reason": "产气食物刺激肠道，腹泻期应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "红薯",
+  "category": "care_diarrhea",
+  "level": "avoid",
+  "reason": "易产气且纤维多，腹泻期应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "辣椒",
+  "category": "care_diarrhea",
+  "level": "avoid",
+  "reason": "辛辣刺激肠道蠕动，加重腹泻。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_hyperthyroidism",
+  "level": "recommend",
+  "reason": "甲亢高代谢需高蛋白，鸡蛋是低碘优质蛋白。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_hyperthyroidism",
+  "level": "recommend",
+  "reason": "补充蛋白和钙，满足甲亢高能量需求。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "草鱼",
+  "category": "care_hyperthyroidism",
+  "level": "recommend",
+  "reason": "淡水鱼碘含量低，可替代海产提供蛋白。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_hyperthyroidism",
+  "level": "recommend",
+  "reason": "植物优质蛋白且不含高碘，适合甲亢人群。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_hyperthyroidism",
+  "level": "limit",
+  "reason": "十字花科蔬菜适量食用即可，无需严格禁忌。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "核桃",
+  "category": "care_hyperthyroidism",
+  "level": "limit",
+  "reason": "坚果适量食用，补充能量但避免过量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "海带",
+  "category": "care_hyperthyroidism",
+  "level": "avoid",
+  "reason": "碘含量极高，甲亢人群须严格忌碘。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "紫菜",
+  "category": "care_hyperthyroidism",
+  "level": "avoid",
+  "reason": "高碘藻类，甲亢人群应严格避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "生蚝",
+  "category": "care_hyperthyroidism",
+  "level": "avoid",
+  "reason": "海产贝类含碘较高，甲亢忌碘期应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "带鱼",
+  "category": "care_hyperthyroidism",
+  "level": "avoid",
+  "reason": "海鱼含碘较高，甲亢人群应避免食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_hypothyroidism",
+  "level": "recommend",
+  "reason": "提供优质蛋白和适量碘，适合甲减人群。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_hypothyroidism",
+  "level": "recommend",
+  "reason": "富含硒和锌，有助甲状腺激素合成与代谢。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "香菇",
+  "category": "care_hypothyroidism",
+  "level": "recommend",
+  "reason": "菌菇含硒，是甲减人群推荐的微量元素来源。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "南瓜子",
+  "category": "care_hypothyroidism",
+  "level": "recommend",
+  "reason": "富含锌元素，有助甲状腺功能维护。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "海带",
+  "category": "care_hypothyroidism",
+  "level": "limit",
+  "reason": "高碘食物每月少量1-2次即可，避免碘过量。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "紫菜",
+  "category": "care_hypothyroidism",
+  "level": "limit",
+  "reason": "高碘藻类需限量，桥本患者遵医嘱控碘。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "卷心菜",
+  "category": "care_hypothyroidism",
+  "level": "limit",
+  "reason": "十字花科蔬菜煮熟后适量食用，避免大量生食。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_hypothyroidism",
+  "level": "avoid",
+  "reason": "甲减代谢率低，精制糖易致体重增加。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_hypothyroidism",
+  "level": "avoid",
+  "reason": "添加糖来源，甲减人群应控糖避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡胸肉",
+  "category": "care_obesity",
+  "level": "recommend",
+  "reason": "高蛋白低脂肪，增强饱腹感利于减重。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_obesity",
+  "level": "recommend",
+  "reason": "低能量密度高纤维，减重期可放心多吃。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "黄瓜",
+  "category": "care_obesity",
+  "level": "recommend",
+  "reason": "热量极低水分足，适合减重期加餐。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "虾",
+  "category": "care_obesity",
+  "level": "recommend",
+  "reason": "高蛋白低脂水产，适合减重期蛋白来源。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "大米",
+  "category": "care_obesity",
+  "level": "limit",
+  "reason": "精制主食需控制份量，建议以粗粮部分替代。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "花生",
+  "category": "care_obesity",
+  "level": "limit",
+  "reason": "能量密度高，每日一小把以内。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_obesity",
+  "level": "avoid",
+  "reason": "高热量低营养密度，减重期应严格避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "五花肉",
+  "category": "care_obesity",
+  "level": "avoid",
+  "reason": "脂肪含量高热量大，减重期应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_obesity",
+  "level": "avoid",
+  "reason": "游离糖热量高，减重期不建议食用。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "香肠",
+  "category": "care_obesity",
+  "level": "avoid",
+  "reason": "加工肉高脂高盐高热量，减重期应避免。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_homocysteine",
+  "level": "recommend",
+  "reason": "深绿叶菜富含叶酸，有助降低同型半胱氨酸。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_homocysteine",
+  "level": "recommend",
+  "reason": "富含叶酸的十字花科蔬菜，建议常吃。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "芦笋",
+  "category": "care_homocysteine",
+  "level": "recommend",
+  "reason": "叶酸含量高，有益同型半胱氨酸代谢。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_homocysteine",
+  "level": "recommend",
+  "reason": "提供维生素B12，参与同型半胱氨酸代谢。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_homocysteine",
+  "level": "recommend",
+  "reason": "富含维生素B12和B6，有助代谢同型半胱氨酸。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "大米",
+  "category": "care_homocysteine",
+  "level": "limit",
+  "reason": "精制米面B族维生素流失多，建议粗细搭配。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "馒头",
+  "category": "care_homocysteine",
+  "level": "limit",
+  "reason": "精制面食B族含量低，需搭配全谷物。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_homocysteine",
+  "level": "avoid",
+  "reason": "长期高糖饮食不利于同型半胱氨酸控制。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_homocysteine",
+  "level": "avoid",
+  "reason": "添加糖来源，长期大量摄入不利指标控制。",
+  "ref": "日常食材维度整理"
+ },
+ {
+  "ingredient": "料酒",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "含酒精，孕期不宜饮酒；入菜尽量煮透挥发，少用"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "补铁但维生素A很高，孕期不宜过量，每周少量"
+ },
+ {
+  "ingredient": "咸猪肝",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "动物肝维生素A高又腌制高盐，孕期少吃"
+ },
+ {
+  "ingredient": "普洱茶",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "含咖啡因，孕期避免浓茶，宜清淡少量"
+ },
+ {
+  "ingredient": "绿茶",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "含咖啡因，孕期避免浓茶，宜清淡少量"
+ },
+ {
+  "ingredient": "大麦茶",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "泡浓易过量饮，孕期宜清淡少量"
+ },
+ {
+  "ingredient": "可乐",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "含咖啡因且高糖，孕期宜少喝"
+ },
+ {
+  "ingredient": "皮蛋",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "传统工艺可能含铅、偏腌制，孕期少吃"
+ },
+ {
+  "ingredient": "咸鸭蛋",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌制高盐，孕期宜少盐，少吃"
+ },
+ {
+  "ingredient": "火腿",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌制加工肉、高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "香肠",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "加工肉、高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "火腿肠",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "加工肉、高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌腊高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "培根",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "加工肉、高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "午餐肉",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "加工肉、高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "咸肉",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌制高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "咸鱼",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌制高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "榨菜",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌制高盐，孕期宜少盐佐餐"
+ },
+ {
+  "ingredient": "酸菜",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌制高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "咸菜",
+  "category": "care_pregnancy",
+  "level": "limit",
+  "reason": "腌制高盐，孕期宜少吃"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深绿叶菜，方向性补叶酸和铁"
+ },
+ {
+  "ingredient": "油菜",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深绿叶菜，方向性补叶酸"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深绿叶菜，方向性补叶酸"
+ },
+ {
+  "ingredient": "小白菜",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深色蔬菜，方向性补叶酸"
+ },
+ {
+  "ingredient": "芥蓝",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深绿叶菜，方向性补叶酸"
+ },
+ {
+  "ingredient": "油麦菜",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深绿叶菜，方向性补叶酸"
+ },
+ {
+  "ingredient": "苋菜",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深色叶菜，含铁含钙"
+ },
+ {
+  "ingredient": "上海青",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深绿叶菜，方向性补叶酸"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "瘦红肉，方向性补铁和优质蛋白"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "瘦红肉，方向性补铁和优质蛋白"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "含钙优质蛋白，孕期适当增加奶类"
+ },
+ {
+  "ingredient": "低脂牛奶",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "含钙优质蛋白，孕期适当增加奶类"
+ },
+ {
+  "ingredient": "无糖酸奶",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "含钙优质蛋白，孕期适当增加奶类"
+ },
+ {
+  "ingredient": "三文鱼",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "深海鱼富含DHA，煮熟食用、别生吃"
+ },
+ {
+  "ingredient": "鲈鱼",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "优质蛋白低脂鱼，孕期每周适量吃鱼"
+ },
+ {
+  "ingredient": "鳕鱼",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "低汞优质蛋白鱼，孕期适量"
+ },
+ {
+  "ingredient": "虾",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "优质蛋白，孕期适量补钙补蛋白"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "优质蛋白，孕期每日适量、需熟透"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "豆制品，优质蛋白且含钙"
+ },
+ {
+  "ingredient": "豆浆",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "豆制品，优质蛋白"
+ },
+ {
+  "ingredient": "核桃",
+  "category": "care_pregnancy",
+  "level": "recommend",
+  "reason": "坚果含好脂肪，孕期每日一小把"
+ },
+ {
+  "ingredient": "料酒",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "含酒精可入乳，哺乳期少用、入菜煮透"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "补铁但维生素A高，哺乳期适量、不过量"
+ },
+ {
+  "ingredient": "普洱茶",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "含咖啡因，哺乳期避免过浓茶"
+ },
+ {
+  "ingredient": "绿茶",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "含咖啡因，哺乳期避免过浓茶"
+ },
+ {
+  "ingredient": "可乐",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "含咖啡因且高糖，哺乳期宜少喝"
+ },
+ {
+  "ingredient": "咸鸭蛋",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "腌制高盐，哺乳期宜清淡少盐"
+ },
+ {
+  "ingredient": "火腿",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "加工肉高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "香肠",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "加工肉高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "火腿肠",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "加工肉高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "腌腊高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "培根",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "加工肉高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "午餐肉",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "加工肉高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "咸鱼",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "腌制高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "榨菜",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "腌制高盐，哺乳期宜少盐佐餐"
+ },
+ {
+  "ingredient": "咸菜",
+  "category": "care_lactation",
+  "level": "limit",
+  "reason": "腌制高盐，哺乳期宜少吃"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "深绿叶菜，含铁含叶酸，哺乳期多吃深色蔬菜"
+ },
+ {
+  "ingredient": "油菜",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "深绿叶菜，哺乳期多吃深色蔬菜"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "深绿叶菜，哺乳期多吃深色蔬菜"
+ },
+ {
+  "ingredient": "苋菜",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "深色叶菜，含铁含钙"
+ },
+ {
+  "ingredient": "上海青",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "深绿叶菜，哺乳期多吃深色蔬菜"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "瘦红肉，方向性补铁和优质蛋白"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "瘦红肉，优质蛋白"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "含钙优质蛋白，哺乳期适当增加奶类"
+ },
+ {
+  "ingredient": "低脂牛奶",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "含钙优质蛋白，哺乳期适当增加奶类"
+ },
+ {
+  "ingredient": "无糖酸奶",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "含钙优质蛋白，哺乳期适当增加奶类"
+ },
+ {
+  "ingredient": "三文鱼",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "深海鱼富含DHA，煮熟食用"
+ },
+ {
+  "ingredient": "鲈鱼",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "优质蛋白低脂鱼，哺乳期适量"
+ },
+ {
+  "ingredient": "鲫鱼",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "炖汤补水分、优质蛋白，哺乳期常见滋补鱼"
+ },
+ {
+  "ingredient": "虾",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "优质蛋白低脂，哺乳期适量"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "优质蛋白，哺乳期每日适量"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "豆制品，优质蛋白且含钙"
+ },
+ {
+  "ingredient": "豆浆",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "豆制品且补水分，优质蛋白"
+ },
+ {
+  "ingredient": "排骨",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "排骨汤补水分、含蛋白，哺乳期宜多喝汤水（去浮油）"
+ },
+ {
+  "ingredient": "核桃",
+  "category": "care_lactation",
+  "level": "recommend",
+  "reason": "坚果含好脂肪，哺乳期每日一小把"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "1岁内禁食：可能含肉毒杆菌芽孢，肠道脆弱易中毒"
+ },
+ {
+  "ingredient": "盐",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "1岁内辅食不加盐，保护肾脏、养清淡口味"
+ },
+ {
+  "ingredient": "鸡精",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加调味品，钠高且掩盖天然味"
+ },
+ {
+  "ingredient": "生抽",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加酱油等调味品，钠含量高"
+ },
+ {
+  "ingredient": "老抽",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加酱油等调味品，钠含量高"
+ },
+ {
+  "ingredient": "蒸鱼豉油",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加酱油等调味品，钠含量高"
+ },
+ {
+  "ingredient": "蚝油",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加重味调味品，钠含量高"
+ },
+ {
+  "ingredient": "豆瓣酱",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加重味调味品，高盐且辛辣"
+ },
+ {
+  "ingredient": "黄豆酱",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加调味品，酱类高盐"
+ },
+ {
+  "ingredient": "甜面酱",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加调味品，高盐高糖"
+ },
+ {
+  "ingredient": "沙拉酱",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辅食不加调味品，高糖高脂"
+ },
+ {
+  "ingredient": "腐乳",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制发酵、极高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "料酒",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "含酒精，婴幼儿不宜"
+ },
+ {
+  "ingredient": "可乐",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "含糖碳酸饮料，含咖啡因，不宜给婴幼儿"
+ },
+ {
+  "ingredient": "核桃",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "整颗坚果易呛入气管，需磨成泥再喂"
+ },
+ {
+  "ingredient": "杏仁",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "整颗坚果易呛入气管，需磨成泥再喂"
+ },
+ {
+  "ingredient": "花生",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "整颗易呛入气管，需磨成泥再喂"
+ },
+ {
+  "ingredient": "腰果",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "整颗坚果易呛入气管，需磨成泥再喂"
+ },
+ {
+  "ingredient": "板栗",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "整颗质硬易呛噎，需煮软压泥再喂"
+ },
+ {
+  "ingredient": "松子",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "整颗坚果易呛入气管，需磨碎再喂"
+ },
+ {
+  "ingredient": "葵花籽",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "小颗粒坚果籽易呛入气管"
+ },
+ {
+  "ingredient": "南瓜子",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "小颗粒坚果籽易呛入气管"
+ },
+ {
+  "ingredient": "火腿",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制加工肉、高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "香肠",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制加工肉、高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制加工肉、高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "培根",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制加工肉、高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "午餐肉",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "加工肉、高盐高添加，不适合辅食期"
+ },
+ {
+  "ingredient": "火腿肠",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "加工肉、高盐高添加，不适合辅食期"
+ },
+ {
+  "ingredient": "大红肠",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "加工肉、高盐高添加，不适合辅食期"
+ },
+ {
+  "ingredient": "咸肉",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐肉，不适合辅食期"
+ },
+ {
+  "ingredient": "咸鱼",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "咸鸭蛋",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "皮蛋",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制加工蛋、含盐及碱，不适合辅食期"
+ },
+ {
+  "ingredient": "咸菜",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐蔬菜，不适合辅食期"
+ },
+ {
+  "ingredient": "榨菜",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐蔬菜，不适合辅食期"
+ },
+ {
+  "ingredient": "酸菜",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制发酵、高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "雪菜",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐蔬菜，不适合辅食期"
+ },
+ {
+  "ingredient": "萝卜干",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "酸豆角",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "腌制高盐，不适合辅食期"
+ },
+ {
+  "ingredient": "辣椒",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "辛辣刺激，辅食应保持淡口味"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_infant",
+  "level": "limit",
+  "reason": "辅食尽量少加糖，保持原味防偏甜"
+ },
+ {
+  "ingredient": "冰糖",
+  "category": "care_infant",
+  "level": "limit",
+  "reason": "辅食尽量少加糖，保持原味防偏甜"
+ },
+ {
+  "ingredient": "红糖",
+  "category": "care_infant",
+  "level": "limit",
+  "reason": "辅食尽量少加糖，保持原味防偏甜"
+ },
+ {
+  "ingredient": "炼乳",
+  "category": "care_infant",
+  "level": "limit",
+  "reason": "含糖量高，不宜作辅食常规甜味来源"
+ },
+ {
+  "ingredient": "方便面",
+  "category": "care_infant",
+  "level": "limit",
+  "reason": "高盐高钠的加工主食，不适合辅食期"
+ },
+ {
+  "ingredient": "螺蛳粉",
+  "category": "care_infant",
+  "level": "limit",
+  "reason": "高盐重味的加工速食，不适合辅食期"
+ },
+ {
+  "ingredient": "苏打饼干",
+  "category": "care_infant",
+  "level": "limit",
+  "reason": "加工零食含钠，非辅食优选"
+ },
+ {
+  "ingredient": "米粉",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "强化铁米粉是首选辅食，预防缺铁性贫血"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "肝泥富铁，适量补铁的好辅食"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "瘦肉泥补铁补蛋白，辅食好选择"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "红肉泥富含易吸收的铁，辅食好选择"
+ },
+ {
+  "ingredient": "鸡胸肉",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "瘦禽肉泥补蛋白，好消化的辅食"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "蛋黄富含铁与优质蛋白，辅食好选择"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "质软富蛋白与钙，适合做辅食泥"
+ },
+ {
+  "ingredient": "内酯豆腐",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "质地细嫩富蛋白，适合辅食"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "深色蔬菜富含铁和叶酸，宜做菜泥"
+ },
+ {
+  "ingredient": "油菜",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "深色蔬菜补充维生素与矿物质，宜做菜泥"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "深色蔬菜富含维C与叶酸，宜蒸软压泥"
+ },
+ {
+  "ingredient": "胡萝卜",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "富含β-胡萝卜素，蒸软压泥好辅食"
+ },
+ {
+  "ingredient": "南瓜",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "软糯易压泥、富含胡萝卜素，宜做辅食"
+ },
+ {
+  "ingredient": "红薯",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "软糯好压泥、含膳食纤维，宜做辅食"
+ },
+ {
+  "ingredient": "鲈鱼",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "刺少肉嫩富含优质蛋白，宜做鱼泥"
+ },
+ {
+  "ingredient": "鳕鱼",
+  "category": "care_infant",
+  "level": "recommend",
+  "reason": "刺少肉嫩富含优质蛋白，宜做鱼泥"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "每天喝奶，补钙助生长"
+ },
+ {
+  "ingredient": "低脂牛奶",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "每天饮奶，钙和优质蛋白"
+ },
+ {
+  "ingredient": "无糖酸奶",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "无糖奶制品，可做健康零食"
+ },
+ {
+  "ingredient": "酸奶",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "奶制品补钙，适合作零食"
+ },
+ {
+  "ingredient": "奶酪",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "奶制品含钙，可当零食"
+ },
+ {
+  "ingredient": "奶粉",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "冲调饮奶，补充钙质"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "优质蛋白，天天吃蛋"
+ },
+ {
+  "ingredient": "鸭蛋",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "蛋类优质蛋白"
+ },
+ {
+  "ingredient": "鹌鹑蛋",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "蛋类优质蛋白，个小易吃"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "瘦肉优质蛋白，常吃瘦肉"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "瘦红肉，蛋白和铁"
+ },
+ {
+  "ingredient": "鸡胸肉",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "瘦禽肉优质蛋白"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "动物肝补铁，适量食用"
+ },
+ {
+  "ingredient": "鲈鱼",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，常吃鱼"
+ },
+ {
+  "ingredient": "鲫鱼",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，肉质细"
+ },
+ {
+  "ingredient": "鳕鱼",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，刺少适合孩子"
+ },
+ {
+  "ingredient": "三文鱼",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，含益脑脂肪"
+ },
+ {
+  "ingredient": "龙利鱼",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，无刺好入口"
+ },
+ {
+  "ingredient": "虾",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "虾肉优质蛋白，补钙"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "大豆制品，补充蛋白和钙"
+ },
+ {
+  "ingredient": "豆浆",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "大豆制品，优质蛋白"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "深色蔬菜，多吃蔬菜"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "深色蔬菜，维生素丰富"
+ },
+ {
+  "ingredient": "胡萝卜",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "深色蔬菜，富含维生素A"
+ },
+ {
+  "ingredient": "西红柿",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "蔬菜多样，孩子爱吃"
+ },
+ {
+  "ingredient": "油菜",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "深色绿叶菜，补充维生素"
+ },
+ {
+  "ingredient": "南瓜",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "深色蔬菜，软糯好消化"
+ },
+ {
+  "ingredient": "苹果",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "每天吃水果，天然零食"
+ },
+ {
+  "ingredient": "香蕉",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "水果做零食，软好入口"
+ },
+ {
+  "ingredient": "橙子",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "水果补充维生素C"
+ },
+ {
+  "ingredient": "猕猴桃",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "水果富含维生素C"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "全谷物，主食多样"
+ },
+ {
+  "ingredient": "小米",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "全谷物粗粮，好消化"
+ },
+ {
+  "ingredient": "玉米",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "全谷物，主食搭配"
+ },
+ {
+  "ingredient": "红薯",
+  "category": "care_preschool",
+  "level": "recommend",
+  "reason": "薯类主食，膳食纤维"
+ },
+ {
+  "ingredient": "可乐",
+  "category": "care_preschool",
+  "level": "avoid",
+  "reason": "含糖饮料，喝白水更好"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "从小清淡口味，少吃糖"
+ },
+ {
+  "ingredient": "冰糖",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "少加糖，培养清淡口味"
+ },
+ {
+  "ingredient": "红糖",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "少加糖，避免嗜甜"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "添加糖少给，清淡为宜"
+ },
+ {
+  "ingredient": "炼乳",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "含糖高，不宜多给"
+ },
+ {
+  "ingredient": "油条",
+  "category": "care_preschool",
+  "level": "avoid",
+  "reason": "油炸食品，少给孩子吃"
+ },
+ {
+  "ingredient": "苏打饼干",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "加工零食偏咸，少选"
+ },
+ {
+  "ingredient": "火腿肠",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "加工肉高盐，少吃"
+ },
+ {
+  "ingredient": "香肠",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "加工腌制肉，含盐高"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "腌制高盐，不宜常吃"
+ },
+ {
+  "ingredient": "咸鸭蛋",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "腌制高盐，少给孩子"
+ },
+ {
+  "ingredient": "盐",
+  "category": "care_preschool",
+  "level": "limit",
+  "reason": "少放盐，从小清淡口味"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "天天喝奶，钙促进长个"
+ },
+ {
+  "ingredient": "低脂牛奶",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "保证奶量，补钙助长个"
+ },
+ {
+  "ingredient": "无糖酸奶",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "无糖奶制品，合理选择零食"
+ },
+ {
+  "ingredient": "酸奶",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "奶制品补钙，可做零食"
+ },
+ {
+  "ingredient": "奶酪",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "奶制品含钙，营养零食"
+ },
+ {
+  "ingredient": "奶粉",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "冲调饮奶，保证钙摄入"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "瘦肉补铁补蛋白"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "瘦红肉，铁助预防贫血"
+ },
+ {
+  "ingredient": "羊肉",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "瘦红肉，补铁补蛋白"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "动物肝富铁，女生尤需，适量"
+ },
+ {
+  "ingredient": "鸡胸肉",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "瘦禽肉优质蛋白"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "每天吃蛋，优质蛋白"
+ },
+ {
+  "ingredient": "鸭蛋",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "蛋类优质蛋白"
+ },
+ {
+  "ingredient": "鹌鹑蛋",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "蛋类优质蛋白"
+ },
+ {
+  "ingredient": "鲈鱼",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，常吃鱼"
+ },
+ {
+  "ingredient": "鲫鱼",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白"
+ },
+ {
+  "ingredient": "鳕鱼",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，刺少"
+ },
+ {
+  "ingredient": "三文鱼",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白，含益脑脂肪"
+ },
+ {
+  "ingredient": "带鱼",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "鱼肉优质蛋白"
+ },
+ {
+  "ingredient": "虾",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "虾肉优质蛋白，补钙"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "大豆制品，蛋白和钙"
+ },
+ {
+  "ingredient": "豆浆",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "大豆制品，优质蛋白"
+ },
+ {
+  "ingredient": "黄豆",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "大豆每天适量，优质蛋白"
+ },
+ {
+  "ingredient": "核桃",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "坚果每周适量，健康零食"
+ },
+ {
+  "ingredient": "杏仁",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "坚果适量，营养零食"
+ },
+ {
+  "ingredient": "花生",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "坚果适量，补充营养"
+ },
+ {
+  "ingredient": "腰果",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "坚果适量，健康零食"
+ },
+ {
+  "ingredient": "燕麦",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "全谷物，主食多样"
+ },
+ {
+  "ingredient": "糙米",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "全谷物粗粮，膳食纤维"
+ },
+ {
+  "ingredient": "小米",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "全谷物，主食搭配"
+ },
+ {
+  "ingredient": "玉米",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "全谷物，早餐主食"
+ },
+ {
+  "ingredient": "红薯",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "薯类主食，膳食纤维"
+ },
+ {
+  "ingredient": "馒头",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "吃好早餐，主食供能"
+ },
+ {
+  "ingredient": "面条",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "早餐主食，供给能量"
+ },
+ {
+  "ingredient": "全麦面包",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "全谷早餐，膳食纤维"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "深色蔬菜，含铁和维生素"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "深色蔬菜，多吃蔬菜"
+ },
+ {
+  "ingredient": "胡萝卜",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "深色蔬菜，富含维生素A"
+ },
+ {
+  "ingredient": "西红柿",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "蔬菜多样，补充维生素"
+ },
+ {
+  "ingredient": "苹果",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "每天水果，天然零食"
+ },
+ {
+  "ingredient": "香蕉",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "水果做零食，方便补能"
+ },
+ {
+  "ingredient": "橙子",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "水果补充维生素C"
+ },
+ {
+  "ingredient": "猕猴桃",
+  "category": "care_schoolage",
+  "level": "recommend",
+  "reason": "水果富含维生素C"
+ },
+ {
+  "ingredient": "可乐",
+  "category": "care_schoolage",
+  "level": "avoid",
+  "reason": "含糖饮料，不喝含糖饮料"
+ },
+ {
+  "ingredient": "白糖",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "控制添加糖，少吃糖"
+ },
+ {
+  "ingredient": "冰糖",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "控制添加糖，口味清淡"
+ },
+ {
+  "ingredient": "红糖",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "控制添加糖，避免嗜甜"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "添加糖适量，别过甜"
+ },
+ {
+  "ingredient": "油条",
+  "category": "care_schoolage",
+  "level": "avoid",
+  "reason": "油炸食品，少吃"
+ },
+ {
+  "ingredient": "火腿肠",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "加工肉高盐，少吃"
+ },
+ {
+  "ingredient": "香肠",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "腌制加工肉，含盐高"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "腌制高盐，不宜常吃"
+ },
+ {
+  "ingredient": "培根",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "加工腌制肉，高盐"
+ },
+ {
+  "ingredient": "咸鸭蛋",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "腌制高盐，少吃"
+ },
+ {
+  "ingredient": "方便面",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "油炸高盐，少作正餐"
+ },
+ {
+  "ingredient": "盐",
+  "category": "care_schoolage",
+  "level": "limit",
+  "reason": "少放盐，控盐清淡"
+ }
 ]
