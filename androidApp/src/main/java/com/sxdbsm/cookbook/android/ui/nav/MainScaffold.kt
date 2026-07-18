@@ -187,6 +187,7 @@ fun MainScaffold(
                     onOpenNutritionTable = { nav.navigate(Routes.NUTRITION_TABLE) }, // [AI生成] 食材营养表
                     onOpenDietReport = { nav.navigate(Routes.DIET_REPORT) }, // [AI生成] 饮食报告
                     onOpenTcmReference = { nav.navigate(Routes.TCM_REFERENCE) }, // [AI生成] 食养参考
+                    onOpenHealthConditionReference = { nav.navigate(Routes.HEALTH_CONDITION_REFERENCE) }, // [AI生成] 健康状态参考
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] 膳食参考依据
                     onOpenDataSource = { nav.navigate(Routes.DATA_SOURCE) }, // [AI生成] 数据来源
                     onOpenFeatureGuide = { nav.navigate(Routes.FEATURE_GUIDE) }, // [AI生成] 功能介绍
@@ -210,6 +211,9 @@ fun MainScaffold(
             }
             composable(Routes.TCM_REFERENCE) {
                 com.sxdbsm.cookbook.android.ui.reference.TcmReferenceScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.HEALTH_CONDITION_REFERENCE) {
+                com.sxdbsm.cookbook.android.ui.reference.HealthConditionReferenceScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.FEATURE_GUIDE) {
                 com.sxdbsm.cookbook.android.ui.guide.FeatureGuideScreen(onBack = { nav.popBackStack() })

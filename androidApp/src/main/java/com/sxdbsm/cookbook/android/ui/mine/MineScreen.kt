@@ -57,6 +57,7 @@ fun MineScreen(
     onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
     onOpenDietReport: () -> Unit = {}, // [AI生成] 饮食报告(周/月回顾)
     onOpenTcmReference: () -> Unit = {}, // [AI生成] 食养参考(药食同源科普+免责)
+    onOpenHealthConditionReference: () -> Unit = {}, // [AI生成] 健康状态参考(4病种饮食关注点+口径+免责)
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -311,6 +312,9 @@ fun MineScreen(
             SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() }
+            InsetDivider(52)
+            // [AI生成] 健康状态参考：4 病种饮食关注点 + App 怎么提示 + 口径 + 免责。
+            SettingRow(icon = Icons.Outlined.MonitorHeart, title = "健康状态参考", subtitle = "高血压/糖尿病/痛风/高血脂各自饮食关注点与提示口径，仅供参考", trailing = "▸") { onOpenHealthConditionReference() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
             InsetDivider(52)

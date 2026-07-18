@@ -37,6 +37,7 @@ object Routes {
     const val NUTRITION_TABLE = "nutrition_table" // [AI生成] 食材营养表(全量营养总览)
     const val DIET_REPORT = "diet_report" // [AI生成] 饮食报告(周/月·家庭+个人)
     const val TCM_REFERENCE = "tcm_reference" // [AI生成] 中医食养参考(药食同源+免责)
+    const val HEALTH_CONDITION_REFERENCE = "health_condition_reference" // [AI生成] 健康状态参考(4病种饮食关注点+口径+免责)
     const val DIETARY_REFERENCE = "dietary_reference" // [AI生成] 膳食参考依据(阈值分级引用的权威标准/指南透明展示)
     const val DATA_SOURCE = "data_source" // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品各自来源)
     const val FEATURE_GUIDE = "feature_guide" // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
