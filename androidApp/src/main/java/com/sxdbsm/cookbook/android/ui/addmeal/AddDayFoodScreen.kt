@@ -227,6 +227,30 @@ fun AddDayFoodScreen(
                 )
             }
             FormFieldLabel("日期", startPadding = 16.dp)
+            // [AI生成] UX深挖#9：昨天·今天·明天 快捷 chip(补记/排期最高频，免开月历)；命中当前 date 才高亮，远日走下方月历。
+            //   编辑既有餐食时日期锁定→整行不渲染(与月历按钮 disabled 一致，避免"可点却改不了"矛盾)。
+            if (!state.isEditingExisting) {
+                val todayDate = com.sxdbsm.cookbook.util.DateTime.today()
+                val quickDates = listOf(
+                    "昨天" to com.sxdbsm.cookbook.util.DateTime.plusDays(todayDate, -1),
+                    "今天" to todayDate,
+                    "明天" to com.sxdbsm.cookbook.util.DateTime.plusDays(todayDate, 1),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    quickDates.forEach { (label, date) ->
+                        FilterChip(
+                            selected = state.date == date,
+                            onClick = { vm.setDate(date) },
+                            label = { Text(label) },
+                        )
+                    }
+                }
+            }
             // [AI修改] N3：编辑既有某天的餐食时日期锁定不可改(防改日期导致数据错乱)；仅新增/复制可改。
             OutlinedButton(
                 onClick = { dateDialogOpen = true },
@@ -379,7 +403,7 @@ fun AddDayFoodScreen(
     }
 
     comboPickerBlockId?.let { blockId ->
-        FavoriteComboPickerDialog(
+        FavoriteComboPickerSheet(
             combos = state.favoriteCombos,
             onDismiss = { comboPickerBlockId = null },
             onConfirm = { combo, selectedIds ->
@@ -675,31 +699,53 @@ private fun FrequentDishChips(
 }
 
 /**
- * 收藏组合选择弹框。[AI生成]
+ * 收藏组合选择器。[AI修改] UX深挖#11：AlertDialog→ModalBottomSheet(§7)——多选空间更大、可下滑关闭；
+ * 底部常驻单 CTA(反映当前展开组合的选中数)，替代原每组内嵌多个添加按钮；空态给下一步(§9.6)。
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FavoriteComboPickerDialog(
+private fun FavoriteComboPickerSheet(
     combos: List<FavoriteCombo>,
     onDismiss: () -> Unit,
     onConfirm: (FavoriteCombo, Set<Long>) -> Unit,
 ) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     // [AI修改] 选组合时展开列出菜品，可全选/部分选后再加入(不再整组直接加)。
-    var expandedId by remember { mutableStateOf<Long?>(combos.firstOrNull()?.id) }
+    // [AI修改] 审查建议4：key 用 combos，防 combos 异步填充时 expandedId 恒 null 致 CTA 卡"展开一个组合"。
+    var expandedId by remember(combos) { mutableStateOf<Long?>(combos.firstOrNull()?.id) }
     // 各组合的已选菜品(缺省=全选)；点某菜切换。
     val selected = remember { mutableStateMapOf<Long, Set<Long>>() }
     fun selOf(combo: FavoriteCombo): Set<Long> = selected[combo.id] ?: combo.dishes.map { it.id }.toSet()
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("选择收藏组合") },
-        text = {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 24.dp),
+        ) {
+            Text(
+                "选择收藏组合",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 8.dp),
+            )
             if (combos.isEmpty()) {
-                Text("还没有收藏组合。\n先在某餐次添加好几道菜，点「保存组合」存成组合，之后就能一键整餐照搬。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                com.sxdbsm.cookbook.android.ui.component.EmptyState(
+                    text = "还没有收藏组合，先在某餐次加好几道菜、点「保存组合」，以后就能一键整餐照搬",
+                    icon = "🍱",
+                )
             } else {
+                Text(
+                    "挑一个组合，可只选其中几道加入这一餐",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 460.dp)
+                        .heightIn(max = 420.dp)
                         .verticalScroll(rememberScrollState()),
                 ) {
                     combos.forEach { combo ->
@@ -755,23 +801,23 @@ private fun FavoriteComboPickerDialog(
                                     Text(dish.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                                 }
                             }
-                            Button(
-                                onClick = { onConfirm(combo, cur) },
-                                enabled = cur.isNotEmpty(),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 6.dp, bottom = 4.dp),
-                            ) {
-                                Text("添加所选（${cur.size} 道）")
-                            }
                         }
                         InsetHairline()
                     }
                 }
+                // 底部常驻单 CTA(§9.13)：反映当前展开组合的选中数；无展开组合则提示先展开。
+                val expandedCombo = combos.firstOrNull { it.id == expandedId }
+                val curSel = expandedCombo?.let { selOf(it) } ?: emptySet()
+                Spacer(Modifier.height(16.dp))
+                com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
+                    text = if (expandedCombo == null) "展开一个组合来选菜" else "添加所选（${curSel.size} 道）",
+                    onClick = { expandedCombo?.let { onConfirm(it, curSel) } },
+                    enabled = expandedCombo != null && curSel.isNotEmpty(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
-    )
+        }
+    }
 }
 
 /** 组合项之间的细分隔。[AI生成] Material3 1.1.2 用 Divider(无 HorizontalDivider)。 */

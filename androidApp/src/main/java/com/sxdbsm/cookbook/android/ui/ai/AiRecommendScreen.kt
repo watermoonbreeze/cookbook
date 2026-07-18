@@ -253,17 +253,23 @@ private const val DIET_DISCLAIMER = "仅为饮食建议参考，忌口与用量�
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewModel) {
-    // 餐次选择：全部+早/上午/中/下午/晚/宵夜。
+    // 餐次选择：全部+早/上午/中/下午/晚/宵夜。[AI修改] UX深挖#10：FilterChip→横滚 PrimaryTabRow(§9.18)，
+    //   与下方"去重周期/推荐风格"两段同构(小标题+分段控件)、消除同屏 FilterChip 异类；7 项对均分 SegmentedControl 过多故用横滚胶囊。
     Spacer(Modifier.height(6.dp))
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        items(com.sxdbsm.cookbook.ai.MealSlot.values()) { slot ->
-            FilterChip(
-                selected = state.selectedSlot == slot,
-                onClick = { vm.setSlot(slot) },
-                label = { Text(slot.label) },
-            )
-        }
-    }
+    Text(
+        "餐次",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(4.dp))
+    val mealSlots = com.sxdbsm.cookbook.ai.MealSlot.values()
+    com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow(
+        options = mealSlots.map { it.label },
+        selectedIndex = mealSlots.indexOf(state.selectedSlot).coerceAtLeast(0),
+        onSelect = { vm.setSlot(mealSlots[it]) },
+        scrollable = true,
+        modifier = Modifier.fillMaxWidth(),
+    )
     // B2：去重周期。[AI修改] UX:说明收敛为一行小标题(去长句噪音,结果区上移)。
     Spacer(Modifier.height(6.dp))
     Text(

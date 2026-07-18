@@ -554,11 +554,15 @@ fun IngredientPickerScreen(
                                     onPick = { searchOpen = false; vm.setKeyword(""); selectedIngredient = it },
                                     onToggleSelect = { vm.toggleSelection(it) },
                                     onTogglePantry = if (pantryHookOn) { ing ->
+                                        // [AI修改] UX深挖#2/#13：与其余入口一致改可撤销(§9.12)，替代 Toast/无反馈。
                                         if (ing.id in ui.pantryIngredientIds) {
-                                            vm.removeFromPantry(ing)
+                                            vm.removeFromPantryUndoable(ing) { onUndo ->
+                                                appSnackbar?.showUndo("已把「${ing.name}」移出库存", onUndo = onUndo)
+                                            }
                                         } else {
-                                            vm.addToPantry(ing)
-                                            Toast.makeText(context, "已把「${ing.name}」入库 1 份，可在库存调整份数", Toast.LENGTH_SHORT).show()
+                                            vm.addToPantryUndoable(ing) { onUndo ->
+                                                appSnackbar?.showUndo("已把「${ing.name}」入库 1 份", onUndo = onUndo)
+                                            }
                                         }
                                     } else null,
                                 )
