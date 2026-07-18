@@ -127,7 +127,7 @@ class RecommendationOrchestrator(
             var best = remaining.first()
             var bestVal = Double.NEGATIVE_INFINITY
             for (c in remaining) {
-                val sim = selected.maxOf { mainJaccard(c, it) }
+                val sim = selected.maxOf { dishSimilarity(c, it) }
                 val mmr = lambda * rel(c) - (1 - lambda) * sim
                 if (mmr > bestVal) { bestVal = mmr; best = c }
             }
@@ -137,10 +137,21 @@ class RecommendationOrchestrator(
         return selected + tail
     }
 
-    /** 两菜主料 Jaccard 相似度[0,1]：|交|/|并|，用于 MMR 打散同主料菜。[AI生成] */
-    private fun mainJaccard(a: DishCandidate, b: DishCandidate): Double {
-        val sa = a.mainNames.toSet()
-        val sb = b.mainNames.toSet()
+    /**
+     * 两菜综合相似度[0,1]：主料 0.6 + 菜系 0.2 + 做法 0.2。[AI修改] MMR 多样性扩维
+     *
+     * 原只按主料打散→一批可能全川菜/全红烧；加菜系、做法两维，同批更丰富(不同菜系/做法交替)。
+     * 主料仍主导(最强单调信号)；菜系/做法为空则该维不贡献相似度(自然退化，无数据不误伤)。
+     */
+    private fun dishSimilarity(a: DishCandidate, b: DishCandidate): Double {
+        val main = jaccard(a.mainNames.toSet(), b.mainNames.toSet())
+        val cuisine = if (a.cuisine.isNotBlank() && a.cuisine == b.cuisine) 1.0 else 0.0
+        val method = jaccard(a.cookingMethodNames.toSet(), b.cookingMethodNames.toSet())
+        return SIM_W_MAIN * main + SIM_W_CUISINE * cuisine + SIM_W_METHOD * method
+    }
+
+    /** 集合 Jaccard 相似度[0,1]：|交|/|并|。空∩空=0。[AI生成] */
+    private fun jaccard(sa: Set<String>, sb: Set<String>): Double {
         if (sa.isEmpty() && sb.isEmpty()) return 0.0
         val inter = sa.count { it in sb }
         val union = sa.size + sb.size - inter
@@ -164,6 +175,9 @@ class RecommendationOrchestrator(
 
     companion object {
         const val DISPLAY_BATCH = 10 // [AI生成] 库存/随机推荐每批展示菜数；"换一换"取下一批不重复、全部推完循环。
+        private const val SIM_W_MAIN = 0.6 // [AI生成] MMR 相似度:主料主导(最强单调信号)
+        private const val SIM_W_CUISINE = 0.2 // [AI生成] MMR 相似度:菜系维度(避免一批全川菜)
+        private const val SIM_W_METHOD = 0.2 // [AI生成] MMR 相似度:做法维度(避免一批全红烧)
         private const val DEFAULT_MEAL_COUNT = 3
         private const val MAX_DISHES_PER_MEAL = 3
         private const val FALLBACK_DISHES_PER_MEAL = 2

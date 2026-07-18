@@ -82,6 +82,8 @@ class RecommendationDataSource(
             RuleDish(
                 id = mini.id,
                 name = mini.name,
+                cuisine = mini.cuisine, // [AI生成] MMR 菜系维度
+                cookingMethodNames = mini.cookingMethodNames, // [AI生成] MMR 做法维度
                 ingredients = ingredientsByDish[mini.id].orEmpty().map { ing ->
                     val role = when {
                         ing.ingredient_id in seasoningIds -> IngredientRole.SEASONING

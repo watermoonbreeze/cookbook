@@ -157,6 +157,22 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `MMR扩维_主料相同时不同菜系做法的更被打散优先`() = runBlocking {
+        // 3 道主料都=鸡(在手·同分)：A/B 同川菜红烧、C 粤菜清蒸。MMR 第2名应优先 C(菜系+做法都不同=更多样)。
+        val dishes = listOf(
+            RuleDish(1, "川味红烧鸡A", listOf(main(200, "鸡")), cuisine = "川菜", cookingMethodNames = listOf("红烧")),
+            RuleDish(2, "川味红烧鸡B", listOf(main(200, "鸡")), cuisine = "川菜", cookingMethodNames = listOf("红烧")),
+            RuleDish(3, "粤式清蒸鸡C", listOf(main(200, "鸡")), cuisine = "粤菜", cookingMethodNames = listOf("清蒸")),
+        )
+        val input = RecommendationInput(dishes, setOf(200L), HealthConstraints(), emptySet())
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        // 用 FRESH(λ 小、强打散)确保多样性维度显著。
+        val c = orch.recommend(input.copy(style = RecommendationStyle.FRESH), mealCount = 1, rotation = 0).candidates
+        assertEquals("川味红烧鸡A", c.first().name, "首位仍最相关(输入序A)")
+        assertEquals("粤式清蒸鸡C", c[1].name, "第2名应是菜系+做法都不同的 C(而非与A雷同的B): ${c.map { it.name }}")
+    }
+
+    @Test
     fun `候选不足一批时换一换循环回同一批`() = runBlocking {
         // ≤10 个候选只有一批，换一换循环回同批(符合"全推完再循环")。
         val few = (1L..5L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
