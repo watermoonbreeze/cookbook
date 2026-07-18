@@ -8,7 +8,7 @@
 - 记一餐编辑态日期锁定:禁用按钮→纯文本行(免误点)。`7f5e708`
 
 ## 🟢 其余小改可自主(复用现成规范·后续可做)
-- AI 推荐结果 Material `Checkbox`→§9.1 勾选圈样式(视觉统一)。`AiRecommendScreen.kt`
+- ✅ AI 推荐结果 Material Checkbox→§9.1 勾选圈(苹果Photos式·视觉统一)。已落地
 - (记一餐/复制成功 Toast→Snackbar:评估后**保留 Toast**——"已保存/已复制"是纯告知无跟进项，§9.12 允许 Toast，改 Snackbar 无撤销跟进意义不大。)
 
 ## 🟡 需 Apple-UX 出规范再做(新范式/较大布局)

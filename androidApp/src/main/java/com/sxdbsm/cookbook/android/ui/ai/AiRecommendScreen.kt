@@ -1,6 +1,12 @@
 package com.sxdbsm.cookbook.android.ui.ai
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.ui.draw.clip
 import com.sxdbsm.cookbook.android.ui.component.CapsuleButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -400,7 +406,22 @@ private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit) {
                 Text(item.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Checkbox(checked = selected, onCheckedChange = { onToggle() })
+        // [AI修改] §9.1 统一:Material Checkbox→勾选圈(与选菜品/食材同款·苹果Photos式)。
+        Box(
+            modifier = Modifier
+                .size(22.dp)
+                .clip(CircleShape)
+                .then(
+                    if (selected) Modifier.background(MaterialTheme.colorScheme.primary)
+                    else Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)).border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                )
+                .clickable { onToggle() },
+            contentAlignment = Alignment.Center,
+        ) {
+            if (selected) {
+                Icon(Icons.Outlined.Check, contentDescription = "已选", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(15.dp))
+            }
+        }
     }
 }
 
