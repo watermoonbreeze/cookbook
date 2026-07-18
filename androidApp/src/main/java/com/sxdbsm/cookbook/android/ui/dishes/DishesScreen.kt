@@ -82,6 +82,7 @@ import org.koin.androidx.compose.koinViewModel
  * 菜品列表页面。[AI修改]
  *
  * 头部固定显示“菜品 + 搜索 + 添加”，喜爱度横滑区随列表滚动，筛选 Tab 吸顶。[AI修改]
+ * [AI修改] 搜索覆盖层"有结果"末尾常驻 SearchCreateRow 新建行；"0结果"改"没找到「x」+同一新建行"（替换原 CapsuleButton）。
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -455,21 +456,38 @@ private fun DishSearchOverlay(
                     }
                 }
                 results.isEmpty() -> {
-                    // [AI修改] 有输入0结果:给"＋新建菜品「x」"直达(与食材搜索统一)。
+                    // [AI修改] 有输入0结果:统一改为"🔎 + 没找到「x」说明 + SearchCreateRow 新建行"(与有结果末尾行同一视觉，替换原居中 CapsuleButton)。
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(top = 40.dp, start = 24.dp, end = 24.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Text("🔎", style = MaterialTheme.typography.displaySmall)
-                        Text("未找到「${keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
-                        com.sxdbsm.cookbook.android.ui.component.CapsuleButton(text = "＋ 新建菜品「${keyword.trim()}」", onClick = onCreateNew)
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(top = 40.dp, start = 24.dp, end = 24.dp, bottom = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text("🔎", style = MaterialTheme.typography.displaySmall)
+                            Text("没找到「${keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
+                        }
+                        com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                            keyword = keyword,
+                            entity = "菜品",
+                            onClick = onCreateNew,
+                        )
                     }
                 }
                 else -> {
                     LazyColumn(Modifier.fillMaxSize()) {
                         items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
-                        item { Spacer(Modifier.height(80.dp)) }
+                        // [AI生成] 有结果末尾常驻"新建菜品「x」"行(结果与新建行由 SearchCreateRow 自带 Divider 分界)。
+                        item(key = "search-create-row") {
+                            com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                                keyword = keyword,
+                                entity = "菜品",
+                                onClick = onCreateNew,
+                            )
+                        }
+                        item(key = "search-bottom-spacer") { Spacer(Modifier.height(80.dp)) }
                     }
                 }
             }

@@ -302,3 +302,12 @@ fun PrimaryTabRow(
 - 别破坏现有逻辑：`sortTab`(菜品)/`mainTab`(食材)的选中判定、`savedSortTab`/`mainTabInited` 守卫、`selectMainTab(force)`、切 Tab 清 `selectedIngredient`/`savedCuisine` 全部保留，本次**只换视觉外壳不动状态机**。菜品"菜系档带左栏"的 `isCuisineTab` 分支不受影响(仍在分段栏下方)。
 - 食材页横滚态**首项左内边距**与搜索行左对齐(外层水平 16dp 起)，选中项若在滚动区外不自动滚入(可选增强：`animateScrollTo` 到选中项,非必须)。
 - **真机验证点**：①两页并排看圆角/选中滑块/配色/字重**肉眼同一套**；②食材 6 项可左右滑、滑块选中态连续无割裂；③菜品 4 项仍均分铺满无留白；④明暗两主题下轨道/滑块/文字对比正常；⑤切 Tab 不误清菜系/不重置守卫、库存挂钩关时食材仅 5 项且不崩。
+
+### 9.19 搜索就地新建：结果末尾常驻「新建」行（通讯录/备忘录式）
+> [AI生成 2026-07-18] 菜品/食材搜索，"有结果但要找的不在其中"与"0 结果"两态都要能**就地新建**。范式=iOS 通讯录/备忘录搜索：**结果列表末尾常驻一条 `新建xxx「关键词」` 行**（跟随内容、非 sticky 悬浮），0 结果时该行紧接"没找到「X」"说明。菜品与食材统一。抽共享组件 `SearchCreateRow(keyword, entity, onClick)`（48dp 行·`Icons.Outlined.Add` 20dp 主色·`bodyLarge` 主色文案`新建${entity}「${keyword}」`·上方 `Divider(outlineVariant)`·`keyword.isBlank()` 守卫）。
+
+- **文案**：一律「新建」不用「添加」——本项目"添加"=把已有项加入某餐/某菜，"新建"=从无到有造库记录，二者区分；0 结果说明用「没找到」不用「未找到」（更口语·不责备）。
+- **点击**：一律 `keyword.trim()` **回填**到新建表单名称字段（复用现有 `NewDishPrefillBus`/`IngredientCreateBus`/`createPrefillName+loadIngredientEditor`）——少一步输入；食材编辑器 `initialName` 会顺带 `guessNutrition` 预填营养大类。
+- **显隐由回调决定**（红线）：`SearchResultsPanel` 用可选参 `onCreateNew: (()->Unit)? = null` + `createKeyword`，传入才渲染末尾行（别用 `mode` 布尔硬编码）。
+- **边界**：关键词空/纯空格不显新建行；末尾行跟随列表非 sticky（不遮结果）；超长 ellipsis、回填用完整 trim 词；选择器（DishPicker）沿用其**底部常驻行**范式（有词时文案切 `新建菜品「X」`），其余搜索面用"列表末尾行"；全局混合搜索页 `SearchScreen` 暂不做（三类混合不适合每类末尾塞新建行）。
+- **落地**（2026-07-18 已实现·过双门禁）：`SearchCreateRow.kt`(新增) + `DishesScreen.DishSearchOverlay` + `DishPickerScreen`(底部行) + `IngredientPickerScreen`(SearchResultsPanel 末尾行 + selectionMode 分叉收敛为"关键词非空即显面板")。

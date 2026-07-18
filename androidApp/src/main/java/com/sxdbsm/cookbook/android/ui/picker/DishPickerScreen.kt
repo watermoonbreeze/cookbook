@@ -40,6 +40,7 @@ import org.koin.androidx.compose.koinViewModel
  * 菜品选择全屏弹窗。[AI修改]
  *
  * 可配置为单选或多选，常用于添加餐食、导入菜品等场景。
+ * [AI修改] 底部常驻新建行有搜索词时改用统一 SearchCreateRow("新建菜品「X」")，空词仍显"添加菜品"。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -253,21 +254,31 @@ fun DishPickerScreen(
                         tonalElevation = 2.dp,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        TextButton(
-                            onClick = {
-                                // [AI修改] 有搜索词则带入新建菜品名(修"选菜品搜索无结果新建时不带名称")。
-                                if (state.keyword.isNotBlank()) {
-                                    prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = state.keyword.trim()))
-                                }
-                                onAddNewDish(vm.confirmSelected()) // [AI修改] 带出当前已勾选，去新建前先保留
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                        ) {
-                            Icon(Icons.Outlined.Add, contentDescription = null)
-                            Spacer(Modifier.width(4.dp))
-                            Text("添加菜品", color = MaterialTheme.colorScheme.primary)
+                        // [AI修改] 底部常驻新建行：有搜索词用统一 SearchCreateRow("新建菜品「X」")，空词保留原"添加菜品"按钮。
+                        val onAddNew = {
+                            // [AI修改] 有搜索词则带入新建菜品名(修"选菜品搜索无结果新建时不带名称")。
+                            if (state.keyword.isNotBlank()) {
+                                prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = state.keyword.trim()))
+                            }
+                            onAddNewDish(vm.confirmSelected()) // [AI修改] 带出当前已勾选，去新建前先保留
+                        }
+                        if (state.keyword.trim().isNotBlank()) {
+                            com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                                keyword = state.keyword,
+                                entity = "菜品",
+                                onClick = onAddNew,
+                            )
+                        } else {
+                            TextButton(
+                                onClick = onAddNew,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                            ) {
+                                Icon(Icons.Outlined.Add, contentDescription = null)
+                                Spacer(Modifier.width(4.dp))
+                                Text("添加菜品", color = MaterialTheme.colorScheme.primary)
+                            }
                         }
                     }
                 }

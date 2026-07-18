@@ -44,6 +44,8 @@ import org.koin.androidx.compose.koinViewModel
  * 食材选择 - 全屏 Compose Dialog。[AI修改]
  *
  * 左侧手风琴分类树 + 右侧食材网格 + 顶部搜索 + 底部完成。
+ * [AI修改] 搜索面板 SearchResultsPanel 末尾统一常驻 SearchCreateRow"新建食材「x」"行(覆盖有结果/0结果两态)；
+ *   selectionMode 收敛 if(有结果)/else if(有词)分叉为"有词即用面板"(修有结果时新建行消失)；Tab覆盖层0结果改"没找到「x」+新建行"。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,7 +204,8 @@ fun IngredientPickerScreen(
                     )
                 }
                 // [AI修改] #4:内联搜索面板仅弹窗选择态(整行搜索)用;Tab落地态搜索走覆盖层(见下方 IngredientSearchOverlay)。
-                if (selectionMode && ui.searchResults.isNotEmpty()) {
+                // [AI修改] 收敛原 if(有结果)/else if(有词)分叉：有搜索词就用 SearchResultsPanel，面板自带末尾"新建食材「x」"行，覆盖有结果/0结果两态(不再有"有结果时新建行消失"问题)。
+                if (selectionMode && ui.keyword.trim().isNotBlank()) {
                     SearchResultsPanel(
                         results = ui.searchResults,
                         selectionMode = selectionMode,
@@ -228,35 +231,15 @@ fun IngredientPickerScreen(
                                 }
                             }
                         } else null,
+                        // [AI生成] 末尾常驻"新建食材「x」"行：搜到库里没有的直接新建(预填名称、大类按名自动预选)。
+                        onCreateNew = {
+                            createPrefillName = ui.keyword.trim()
+                            vm.clearCreateError()
+                            vm.loadIngredientEditor(null)
+                            createDialogOpen = true
+                        },
+                        createKeyword = ui.keyword,
                     )
-                } else if (selectionMode && ui.keyword.isNotBlank()) {
-                    // [AI生成] 搜到库里没有的食材=直接给"＋新建『关键词』"直达(免清空重打名字),预填名称、大类仍按名自动预选。
-                    Surface(
-                        tonalElevation = 4.dp,
-                        color = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    createPrefillName = ui.keyword.trim()
-                                    vm.clearCreateError()
-                                    vm.loadIngredientEditor(null)
-                                    createDialogOpen = true
-                                }
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(Icons.Outlined.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "未找到「${ui.keyword.trim()}」，点此新建",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                    }
                 }
                 // [AI生成] 库存挂钩关→隐藏"库存"Tab(用户已明确不用库存，留灰占位是打脸式提醒)；若正停在该 Tab 则回落。
                 androidx.compose.runtime.LaunchedEffect(pantryHookOn, ui.mainTab) {
@@ -553,6 +536,15 @@ fun IngredientPickerScreen(
                                     fillHeight = true, // [AI生成] #4:全屏覆盖层铺满,不用 320dp 限高
                                     onPick = { searchOpen = false; vm.setKeyword(""); selectedIngredient = it },
                                     onToggleSelect = { vm.toggleSelection(it) },
+                                    // [AI生成] 有结果末尾也常驻"新建食材「x」"行(与0结果同一视觉)。
+                                    onCreateNew = {
+                                        createPrefillName = ui.keyword.trim()
+                                        vm.clearCreateError()
+                                        vm.loadIngredientEditor(null)
+                                        searchOpen = false
+                                        createDialogOpen = true
+                                    },
+                                    createKeyword = ui.keyword,
                                     onTogglePantry = if (pantryHookOn) { ing ->
                                         // [AI修改] UX深挖#2/#13：与其余入口一致改可撤销(§9.12)，替代 Toast/无反馈。
                                         if (ing.id in ui.pantryIngredientIds) {
@@ -568,15 +560,22 @@ fun IngredientPickerScreen(
                                 )
                             }
                             else -> {
+                                // [AI修改] 0结果:改"🔎 + 没找到「x」说明 + SearchCreateRow 新建行"(替换原居中 CapsuleButton，与有结果末尾行同一视觉)。
                                 Column(
-                                    Modifier.fillMaxWidth().padding(top = 40.dp, start = 24.dp, end = 24.dp),
+                                    Modifier.fillMaxWidth(),
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {
-                                    Text("🔎", style = MaterialTheme.typography.displaySmall)
-                                    Text("未找到「${ui.keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
-                                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
-                                        text = "＋ 新建食材「${ui.keyword.trim()}」",
+                                    Column(
+                                        Modifier.fillMaxWidth().padding(top = 40.dp, start = 24.dp, end = 24.dp, bottom = 12.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        Text("🔎", style = MaterialTheme.typography.displaySmall)
+                                        Text("没找到「${ui.keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
+                                    }
+                                    com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                                        keyword = ui.keyword,
+                                        entity = "食材",
                                         onClick = {
                                             createPrefillName = ui.keyword.trim()
                                             vm.clearCreateError()
@@ -933,6 +932,8 @@ private fun SearchResultsPanel(
     onToggleSelect: (Ingredient) -> Unit,
     onTogglePantry: ((Ingredient) -> Unit)? = null, // [AI修改] 阻断-1:库存挂钩关时传 null→不显入库/出库按钮
     fillHeight: Boolean = false, // [AI生成] #4(Google审查🟡5):全屏搜索覆盖层里铺满高度;弹窗内联下拉仍限高 320dp。
+    onCreateNew: (() -> Unit)? = null, // [AI生成] 传入即在列表末尾显示"新建食材「x」"行(能力由回调是否传入决定，非 mode 布尔)。
+    createKeyword: String = "", // [AI生成] 新建行展示/回填的关键词(需 onCreateNew!=null 且非空白才渲染)。
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -975,6 +976,16 @@ private fun SearchResultsPanel(
                     }
                 }
                 Divider()
+            }
+            // [AI生成] 列表末尾常驻"新建食材「x」"行(覆盖有结果/0结果两态，SearchCreateRow 自带上方 Divider 分界)。
+            if (onCreateNew != null && createKeyword.isNotBlank()) {
+                item(key = "search-create-row") {
+                    com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                        keyword = createKeyword,
+                        entity = "食材",
+                        onClick = onCreateNew,
+                    )
+                }
             }
         }
     }
