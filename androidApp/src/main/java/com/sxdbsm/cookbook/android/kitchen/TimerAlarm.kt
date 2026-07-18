@@ -130,8 +130,8 @@ class TimerAlarmReceiver : BroadcastReceiver() {
             if (ringtone != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) ringtone.isLooping = true
                 ringtone.play()
-                active[id]?.stop()
-                active[id] = ringtone
+                active[id]?.ringtone?.stop()
+                active[id] = ActiveAlert(ringtone, name)
             }
         }
         // 2) 高优先级通知（带“停止”动作）。未授通知权限时静默失败，不影响铃声。
@@ -184,11 +184,16 @@ class TimerAlarmReceiver : BroadcastReceiver() {
         private const val STOP_REQUEST_OFFSET = 100000 // [AI生成] 停止 PendingIntent 的 requestCode 偏移，避开 fire 的 timerId。
         private const val CONTENT_REQUEST_OFFSET = 200000 // [AI生成] 点击进 App 的 requestCode 偏移。
         private const val FULLSCREEN_REQUEST_OFFSET = 300000 // [AI生成] 全屏提醒的 requestCode 偏移。
-        private val active = mutableMapOf<Int, Ringtone>() // [AI生成] timerId -> 正在响的铃声，支持多计时器分别停止。
+        // [AI修改] 用户提:全屏到时界面要列出所有已到时的计时器→active 带名字，供全屏一次列出+各自停止。
+        private data class ActiveAlert(val ringtone: Ringtone, val name: String)
+        private val active = mutableMapOf<Int, ActiveAlert>() // timerId -> (正在响的铃声, 名称)，支持多计时器分别停止。
+
+        /** 当前所有正在响的计时器 (id, 名称)，按 id 排序。供全屏提醒一次列出。[AI生成] */
+        fun activeList(): List<Pair<Int, String>> = active.entries.map { it.key to it.value.name }.sortedBy { it.first }
 
         /** 停止某计时器的铃声并消通知。[AI生成] */
         fun stop(context: Context, id: Int) {
-            runCatching { active.remove(id)?.stop() }
+            runCatching { active.remove(id)?.ringtone?.stop() }
             runCatching { NotificationManagerCompat.from(context).cancel(id) }
         }
     }

@@ -216,6 +216,14 @@ fun CookingTimerScreen(
         }
     }
 
+    // [AI生成] 用户提:计时中屏幕常亮不息屏，直到所有倒计时结束再放开(离开页面也放开)。
+    val screenView = androidx.compose.ui.platform.LocalView.current
+    val anyRunning = timers.any { it.status == TimerStatus.RUNNING }
+    DisposableEffect(anyRunning) {
+        screenView.keepScreenOn = anyRunning
+        onDispose { screenView.keepScreenOn = false }
+    }
+
     Scaffold(
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
