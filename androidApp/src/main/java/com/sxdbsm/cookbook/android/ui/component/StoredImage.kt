@@ -177,7 +177,8 @@ private fun imageOptions(preview: Boolean): BitmapFactory.Options =
         inSampleSize = if (preview) 1 else 2
     }
 
-private fun imageCacheKey(path: String): String = "thumb:$path"
+// [AI修改] 审查🟡1:key 混入采样级(缩略图恒 /2),防日后新增别的采样级时同 path 串味。
+private fun imageCacheKey(path: String): String = "thumb2:$path"
 
 // [AI修改] 缩略图解码分辨率提高后按**字节**限缓存(~24MB)而非固定条数，防大图占满内存。
 private val imageCache = object : LruCache<String, ImageBitmap>(24 * 1024 * 1024) {
