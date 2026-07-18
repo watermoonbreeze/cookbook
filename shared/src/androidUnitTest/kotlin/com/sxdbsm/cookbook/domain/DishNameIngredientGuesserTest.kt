@@ -73,6 +73,39 @@ class DishNameIngredientGuesserTest {
         assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("牛腩", true)), g)
     }
 
+    // ========== 打磨(用户 2026-07-18 真机反馈)：做法词/连接字不当食材 ==========
+
+    @Test
+    fun `醋溜排骨_醋溜是做法不当食材`() {
+        // 库有排骨；"醋溜"是做法(停用词)，不该被当库外食材。
+        val lib2 = lib + "排骨"
+        val g = DishNameIngredientGuesser.guessDetailed("醋溜排骨", lib2)
+        assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("排骨", true)), g)
+    }
+
+    @Test
+    fun `毛豆烧鸡_烧鸡不当库外食材`() {
+        // 库有毛豆(鸡不在库)；"烧鸡"以做法字"烧"开头=脏切分，拒绝提出，只留毛豆。
+        val lib2 = lib + "毛豆"
+        val g = DishNameIngredientGuesser.guessDetailed("毛豆烧鸡", lib2)
+        assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("毛豆", true)), g)
+    }
+
+    @Test
+    fun `猪肚包鸡_包鸡不当库外食材`() {
+        // 库有猪肚(鸡不在库)；"包鸡"以连接字"包"开头=脏切分，拒绝提出，只留猪肚。
+        val lib2 = lib + "猪肚"
+        val g = DishNameIngredientGuesser.guessDetailed("猪肚包鸡", lib2)
+        assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("猪肚", true)), g)
+    }
+
+    @Test
+    fun `叉烧仍是合法库外候选_做法字在词尾不拒`() {
+        // "叉烧"以"叉"开头(非做法字)，做法字"烧"在词尾→仍作合法库外候选(叉烧是真食材)。
+        val g = DishNameIngredientGuesser.guessDetailed("叉烧", lib)
+        assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("叉烧", false)), g)
+    }
+
     @Test
     fun `额外停用词_烹饪方式字典生效`() {
         // 传入"外婆"作额外停用词后，"外婆红烧肉"里"外婆"不再被当库外食材(肉是单字被过滤)。
