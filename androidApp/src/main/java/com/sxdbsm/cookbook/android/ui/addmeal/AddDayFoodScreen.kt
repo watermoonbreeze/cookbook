@@ -194,8 +194,8 @@ fun AddDayFoodScreen(
                 actions = {
                     com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
                         text = if (state.isPlan) "保存计划" else "保存",
-                        // [AI修改] D-07回退(用户2026-07-18):仅"保存计划"先弹预览确认;记一餐/实录高频、直接保存不加确认(守少操作·撤销优于确认)。
-                        onClick = { if (state.isPlan) previewOpen = true else vm.save() },
+                        // [AI修改] D-07(用户2026-07-18二次确认):所有保存餐食(记一餐/实录 与 计划)都先弹预览确认再存。
+                        onClick = { previewOpen = true },
                         enabled = state.canSave,
                     )
                     Spacer(Modifier.width(8.dp))

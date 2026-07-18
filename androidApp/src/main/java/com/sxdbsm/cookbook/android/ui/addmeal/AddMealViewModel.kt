@@ -114,7 +114,7 @@ class AddMealViewModel(
         ) { popular, recent ->
             val eaten = popular.filter { it.preference > 0 } // 真正被记过餐的"常吃"
             (eaten + recent).distinctBy { it.id }.take(16) // 不足则最近记录兜底(recent 亦均有餐记录)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList()) // [AI修改] 用户反馈"常吃要选了菜才出现"：改 Eagerly 在 VM 创建即预热，打开餐次块就已就绪(WhileSubscribed 有初始空窗期)。
 
     private var nextBlockId = 1L
     private var configured = false // [AI生成] 标记外部入口是否已指定，避免 init 默认日期覆盖编辑日期。
