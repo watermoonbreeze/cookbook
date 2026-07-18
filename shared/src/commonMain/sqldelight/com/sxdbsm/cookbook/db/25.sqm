@@ -1,0 +1,7 @@
+-- [AI生成] v25：高血脂评级器负向维度——给 ingredient_nutrition 加饱和脂肪/胆固醇两列。
+-- 口径(定性·非强制)：饱和脂肪供能<10%≈<20g/日、膳食胆固醇<300mg/日(中国血脂管理指南2023/膳食指南2022)，
+-- 用则标口径+免责(仅供参考·非医嘱)。评级器缺数据(NULL)不触发，天然向后兼容。
+-- ALTER ADD COLUMN 加可空列、无 DEFAULT(最安全形态)：老行值=NULL，物理追加末尾(与 CREATE TABLE 末尾列序一致)。
+-- 首次加这两列，不存在"对已存在列跑 ALTER"的崩溃场景；升级无损、不动既有数据。
+ALTER TABLE ingredient_nutrition ADD COLUMN saturated_fat_g REAL;
+ALTER TABLE ingredient_nutrition ADD COLUMN cholesterol_mg REAL;

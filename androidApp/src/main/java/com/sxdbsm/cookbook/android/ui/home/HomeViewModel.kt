@@ -173,6 +173,8 @@ class HomeViewModel(
                     energyKcal = kcal, sodiumMg = totals.sodiumMg * share,
                     potassiumMg = totals.potassiumMg * share, // [AI生成] 高血压深挖：补钾份额，供评级器钾正向提示(DASH 增钾)
                     fiberG = totals.fiberG * share, // [AI生成] 糖尿病深挖：补膳食纤维份额，供评级器纤维正向提示(高纤延缓升糖)
+                    saturatedFatG = totals.saturatedFatG * share, // [AI生成] 高血脂深挖：补饱和脂肪份额，供评级器负向提示
+                    cholesterolMg = totals.cholesterolMg * share, // [AI生成] 高血脂深挖：补胆固醇份额，供评级器负向提示
                 )
                 // [AI生成] P4 痛风：从今日主料名匹配"应避免"高嘌呤定性食物(与"健康定性按主料判定"口径一致)，命中→痛风提示。
                 //   [AI修改] 仅登记痛风才算匹配(gate 最外层省无谓匹配)。

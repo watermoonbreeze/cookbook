@@ -356,6 +356,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                 calcium_mg = nu.calcium,
                 gi = nu.gi,
                 purine_mg = nu.purine,
+                saturated_fat_g = nu.saturatedFat,
+                cholesterol_mg = nu.cholesterol,
                 piece_gram = nu.pieceGram,
                 ref = nu.ref,
                 review = if (nu.review == "pending") 1L else 0L,
@@ -533,7 +535,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // [AI生成] seed 逻辑版本：seed 处理逻辑(非JSON内容)变更时+1，混入内容指纹让已装老库跑一次修复。
         // v2(2026-07-15)=预设菜配料补齐修复(菜先于食材入库致关联缺失、0千卡)。
         // v3(2026-07-16)=补齐已关联但用量为空的预设菜配料(早期 seed 无 quantity 致排骨海带汤等 0 千卡)。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v4" // [AI修改] v4:菜系分类-存量自建菜 cuisine 空回填"家常菜"(老库需跑到)
+        // v4(2026-07-17)=菜系分类·存量自建菜 cuisine 空回填"家常菜"(老库需跑到)。
+        private const val SEED_LOGIC_VERSION = "seedlogic-v5" // [AI修改] v5:高血脂负向维度-营养表加饱和脂肪/胆固醇两列并回填(老库需跑到)
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
@@ -729,6 +732,8 @@ internal data class SeedIngredientNutrition(
     val calcium: Double? = null,
     val gi: Double? = null,
     val purine: Double? = null,
+    val saturatedFat: Double? = null, // [AI生成] 饱和脂肪(g/100g)·高血脂负向
+    val cholesterol: Double? = null,  // [AI生成] 胆固醇(mg/100g)·高血脂负向
     val pieceGram: Double? = null,
     val ref: String = "",
     val review: String = "", // "pending"=待审

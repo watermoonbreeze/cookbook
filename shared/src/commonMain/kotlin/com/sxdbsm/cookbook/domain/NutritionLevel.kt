@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
  * <p>
  * 修「营养级别只看多样性→偏咸/超量也显绿」的误导。口径与阈值见 `feature/营养级别评级方案.md`、
  * 「膳食参考依据」页(钠每日上限、热量±15% 达标带)。**缺营养数据→退回多样性级别、不下调**(向后兼容)。
- * 全部提示挂「仅供参考·非医嘱」由 UI 承接。已上：热量+钠(P1 高血压)、嘌呤定性(P4 痛风)、GI(P2 糖尿病)；饱脂/胆固醇/添加糖待扩展。
+ * 全部提示挂「仅供参考·非医嘱」由 UI 承接。已上：热量+钠(P1 高血压)、嘌呤定性(P4 痛风)、GI(P2 糖尿病)、饱和脂肪+胆固醇(P3 高血脂)；添加糖待扩展。
  * 高血压深挖(2026-07-17)：加**钾正向提示**(DASH 限钠增钾)——钾只锦上添花(接近 PI-NCD 3600mg 建议量→"钾较充足·利于钠钾平衡")，
  * **不改级别、不抵消钠罚分、不因低钾下调**(钠钾比无国标阈值、低钾扣分越免责红线)。
  * 糖尿病深挖(2026-07-17)：加**膳食纤维正向提示**(高纤延缓升糖)——同钾:接近 DRIs 25g/日→"纤维较充足·利于餐后血糖平稳"，
@@ -55,6 +55,14 @@ object NutritionLevelEvaluator {
     // 占比阈值：≥WARN→注意(下调更多)、≥MID→中(略下调)。见方案，可拍板调整。
     const val WARN_RATIO = 1.0
     const val MID_RATIO = 0.7
+
+    // [AI生成] 高血脂(HYPERLIPIDEMIA·饱和脂肪/胆固醇)负向维度：比照钠，超每日建议量占比→下调级别+提示(守免责·非医嘱)。
+    //   权威口径(定性/建议，非强制国标阈值，用则标来源)：
+    //   · 饱和脂肪 供能<10% ≈ <20g/日(2000kcal 基准)——中国血脂管理指南2023 / 膳食指南2022；
+    //   · 膳食胆固醇 <300mg/日(一般人群) / <200mg/日(高胆固醇血症)——同上指南建议值。
+    //   两者均**缺数据(NULL→合计0)不触发**(同钠>0 守卫，向后兼容)；措辞避"降脂/降胆固醇"医疗断言，只客观陈述"偏高·高血脂留意"。
+    const val SAT_FAT_DAILY_G = 20.0
+    const val CHOLESTEROL_DAILY_MG = 300.0
 
     // [AI生成] 钾/钠钾比(高血压·DASH"限钠增钾")：**钾只做正向信息、不改级别、不抵消钠罚分**。
     //   权威口径(多角色核准 2026-07-17)：中国 DRIs 钾 PI-NCD(预防慢病建议摄入量) 3600mg/日(WS/T 578.2-2018)、
@@ -179,6 +187,38 @@ object NutritionLevelEvaluator {
         if (HealthCondition.GOUT in conditions && highPurineHits.isNotEmpty()) {
             level = minOf(level, 2)
             concerns += "含${highPurineHits.take(2).joinToString("、")}等高嘌呤食物 · 痛风成员建议避免"
+        }
+
+        // 饱和脂肪/胆固醇(高血脂)：超每日建议量占比→下调(比照钠)。缺数据(合计0)→不触发，向后兼容。
+        //   饱脂/胆固醇各自独立评估、level 经 minOf 累积取更严；两者都超标时两条 concern 并存(如实告知不隐藏)。
+        //   措辞客观陈述"偏高·高血脂留意"，守免责(仅供参考·非医嘱)，避医疗断言。
+        if (HealthCondition.HYPERLIPIDEMIA in conditions) {
+            if (totals.saturatedFatG > 0.0) {
+                val ratio = totals.saturatedFatG / (SAT_FAT_DAILY_G * days)
+                when {
+                    ratio >= WARN_RATIO -> {
+                        level = minOf(level, 2)
+                        concerns += "饱和脂肪偏高（约${(ratio * 100).roundToInt()}%建议上限）· 高血脂留意 · 仅供参考"
+                    }
+                    ratio >= MID_RATIO -> {
+                        level = minOf(level, 3)
+                        concerns += "饱和脂肪略高 · 高血脂注意少油腻 · 仅供参考"
+                    }
+                }
+            }
+            if (totals.cholesterolMg > 0.0) {
+                val ratio = totals.cholesterolMg / (CHOLESTEROL_DAILY_MG * days)
+                when {
+                    ratio >= WARN_RATIO -> {
+                        level = minOf(level, 2)
+                        concerns += "胆固醇偏高（约${(ratio * 100).roundToInt()}%建议上限）· 高血脂留意 · 仅供参考"
+                    }
+                    ratio >= MID_RATIO -> {
+                        level = minOf(level, 3)
+                        concerns += "胆固醇略高 · 高血脂注意 · 仅供参考"
+                    }
+                }
+            }
         }
 
         // 热量：明显超标下调(达标带 ±15% 见 CalorieTarget)。偏低不算"不健康"，不下调。

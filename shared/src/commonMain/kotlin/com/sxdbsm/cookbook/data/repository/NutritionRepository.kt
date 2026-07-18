@@ -38,6 +38,8 @@ class NutritionRepository(private val db: CookbookDatabase) {
                 calciumMg = r.calcium_mg,
                 gi = r.gi,
                 purineMg = r.purine_mg,
+                saturatedFatG = r.saturated_fat_g,
+                cholesterolMg = r.cholesterol_mg,
                 pieceGram = r.piece_gram,
                 ref = r.ref,
                 review = r.review == 1L,
@@ -59,6 +61,8 @@ class NutritionRepository(private val db: CookbookDatabase) {
             calcium_mg = n.calciumMg,
             gi = n.gi,
             purine_mg = n.purineMg,
+            saturated_fat_g = n.saturatedFatG,
+            cholesterol_mg = n.cholesterolMg,
             piece_gram = n.pieceGram,
             ref = if (n.ref.isBlank()) "用户填写" else n.ref,
             review = 0L,
@@ -107,7 +111,8 @@ class NutritionRepository(private val db: CookbookDatabase) {
                 val nutrition = if (
                     r.energy_kcal != null || r.protein_g != null || r.fat_g != null || r.carb_g != null ||
                     r.fiber_g != null || r.sodium_mg != null || r.potassium_mg != null ||
-                    r.calcium_mg != null || r.purine_mg != null || r.piece_gram != null
+                    r.calcium_mg != null || r.purine_mg != null ||
+                    r.saturated_fat_g != null || r.cholesterol_mg != null || r.piece_gram != null
                 ) {
                     IngredientNutrition(
                         ingredientId = r.ingredient_id,
@@ -121,6 +126,8 @@ class NutritionRepository(private val db: CookbookDatabase) {
                         calciumMg = r.calcium_mg,
                         gi = r.gi,
                         purineMg = r.purine_mg,
+                        saturatedFatG = r.saturated_fat_g,
+                        cholesterolMg = r.cholesterol_mg,
                         pieceGram = r.piece_gram,
                     )
                 } else {

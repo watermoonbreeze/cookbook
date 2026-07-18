@@ -308,11 +308,65 @@ class NutritionLevelEvaluatorTest {
         assertTrue(r.concerns.any { it.contains("纤维") && it.contains("血糖") }, "纤维正向在: ${r.concerns}")
     }
 
+    // [AI生成] P3 高血脂：饱和脂肪/胆固醇负向维度(比照钠)——超建议量占比下调、缺数据不触发、守免责。
+    private fun lipidTotals(satFat: Double = 0.0, chol: Double = 0.0) =
+        NutritionTotals(energyKcal = 800.0, saturatedFatG = satFat, cholesterolMg = chol)
+
+    @Test
+    fun `P3高血脂_饱和脂肪超上限_下调到2并提示_守免责`() {
+        // 饱和脂肪 25/20=125% ≥ WARN → 级别封 2。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, lipidTotals(satFat = 25.0), CalorieStatus.ON, setOf(HealthCondition.HYPERLIPIDEMIA),
+        )
+        assertEquals(2, r.level)
+        assertTrue(r.concerns.any { it.contains("饱和脂肪偏高") && it.contains("高血脂") }, "应给饱脂提示: ${r.concerns}")
+        assertTrue(r.concerns.any { it.contains("仅供参考") }, "守免责")
+        assertTrue(r.concerns.none { it.contains("降脂") || it.contains("治疗") }, "禁医疗断言: ${r.concerns}")
+    }
+
+    @Test
+    fun `P3高血脂_饱和脂肪七成到上限_略下调到3`() {
+        // 饱和脂肪 16/20=80% ∈[0.7,1.0) → 级别封 3。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, lipidTotals(satFat = 16.0), CalorieStatus.ON, setOf(HealthCondition.HYPERLIPIDEMIA),
+        )
+        assertEquals(3, r.level)
+        assertTrue(r.concerns.any { it.contains("饱和脂肪略高") })
+    }
+
+    @Test
+    fun `P3高血脂_胆固醇超上限_下调并提示`() {
+        // 胆固醇 400/300≈133% ≥ WARN → 级别封 2。
+        val r = NutritionLevelEvaluator.evaluate(
+            4, lipidTotals(chol = 400.0), CalorieStatus.ON, setOf(HealthCondition.HYPERLIPIDEMIA),
+        )
+        assertEquals(2, r.level)
+        assertTrue(r.concerns.any { it.contains("胆固醇偏高") && it.contains("仅供参考") }, "应给胆固醇提示: ${r.concerns}")
+    }
+
+    @Test
+    fun `P3高血脂_缺数据或未登记_不触发`() {
+        // 缺饱脂/胆固醇数据(合计0)→不触发(向后兼容)。
+        val noData = NutritionLevelEvaluator.evaluate(
+            4, lipidTotals(), CalorieStatus.ON, setOf(HealthCondition.HYPERLIPIDEMIA),
+        )
+        assertEquals(4, noData.level)
+        assertTrue(noData.concerns.isEmpty(), "缺数据不触发: ${noData.concerns}")
+        // 未登记高血脂 + 高饱脂高胆固醇 → 不触发(gate)。
+        val notLipid = NutritionLevelEvaluator.evaluate(
+            4, lipidTotals(satFat = 30.0, chol = 500.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+        )
+        assertEquals(4, notLipid.level)
+        assertTrue(notLipid.concerns.none { it.contains("饱和脂肪") || it.contains("胆固醇") }, "未登记高血脂不触发: ${notLipid.concerns}")
+    }
+
     @Test
     fun `病种名映射`() {
         assertTrue(HealthCondition.HYPERTENSION in HealthCondition.fromCareName("高血压"))
         assertTrue(HealthCondition.GOUT in HealthCondition.fromCareName("痛风/高尿酸"))
+        assertTrue(HealthCondition.HYPERLIPIDEMIA in HealthCondition.fromCareName("高血脂"))
+        assertTrue(HealthCondition.HYPERLIPIDEMIA in HealthCondition.fromCareName("高胆固醇血症"))
         val sanGao = HealthCondition.fromCareName("三高")
-        assertTrue(HealthCondition.HYPERTENSION in sanGao && HealthCondition.DIABETES in sanGao)
+        assertTrue(HealthCondition.HYPERTENSION in sanGao && HealthCondition.DIABETES in sanGao && HealthCondition.HYPERLIPIDEMIA in sanGao)
     }
 }

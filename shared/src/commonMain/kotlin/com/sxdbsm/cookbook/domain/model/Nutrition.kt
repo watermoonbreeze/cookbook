@@ -25,6 +25,10 @@ data class IngredientNutrition(
     val calciumMg: Double? = null,
     val gi: Double? = null,
     val purineMg: Double? = null,
+    /** 饱和脂肪(g/100g)·高血脂负向维度，缺=null。[AI生成] */
+    val saturatedFatG: Double? = null,
+    /** 胆固醇(mg/100g)·高血脂负向维度，缺=null。[AI生成] */
+    val cholesterolMg: Double? = null,
     /** 计件单位默认克重（如 1 个鸡蛋≈50g），用于把“个/勺/片”折算成克。 */
     val pieceGram: Double? = null,
     val ref: String = "",
@@ -74,6 +78,8 @@ data class NutritionTotals(
     val potassiumMg: Double = 0.0,
     val calciumMg: Double = 0.0,
     val purineMg: Double = 0.0,
+    val saturatedFatG: Double = 0.0, // [AI生成] 高血脂负向：饱和脂肪合计(g)
+    val cholesterolMg: Double = 0.0, // [AI生成] 高血脂负向：胆固醇合计(mg)
 ) {
     operator fun plus(o: NutritionTotals) = NutritionTotals(
         energyKcal + o.energyKcal,
@@ -85,6 +91,8 @@ data class NutritionTotals(
         potassiumMg + o.potassiumMg,
         calciumMg + o.calciumMg,
         purineMg + o.purineMg,
+        saturatedFatG + o.saturatedFatG,
+        cholesterolMg + o.cholesterolMg,
     )
 
     companion object {
@@ -164,6 +172,8 @@ object NutritionCalculator {
                 potassiumMg = (n.potassiumMg ?: 0.0) * f,
                 calciumMg = (n.calciumMg ?: 0.0) * f,
                 purineMg = (n.purineMg ?: 0.0) * f,
+                saturatedFatG = (n.saturatedFatG ?: 0.0) * f,
+                cholesterolMg = (n.cholesterolMg ?: 0.0) * f,
             )
         }
         return DishNutrition(

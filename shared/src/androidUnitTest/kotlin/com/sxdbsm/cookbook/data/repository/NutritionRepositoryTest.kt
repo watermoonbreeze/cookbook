@@ -38,8 +38,17 @@ class NutritionRepositoryTest {
         val eggId = q.lastInsertId().executeAsOne()
 
         // 营养(每100g)
-        q.upsertIngredientNutrition(riceId, 346.0, 7.4, 0.8, 77.9, 0.7, 3.8, 103.0, 13.0, 83.0, 18.0, null, "ref", 1L, now)
-        q.upsertIngredientNutrition(eggId, 144.0, 13.3, 8.8, 2.8, 0.0, 131.0, 154.0, 56.0, 30.0, 3.0, 50.0, "ref", 1L, now)
+        // [AI修改] 高血脂维度加列后改命名参数(防位置错位)：新增 saturated_fat_g/cholesterol_mg。
+        q.upsertIngredientNutrition(
+            ingredient_id = riceId, energy_kcal = 346.0, protein_g = 7.4, fat_g = 0.8, carb_g = 77.9,
+            fiber_g = 0.7, sodium_mg = 3.8, potassium_mg = 103.0, calcium_mg = 13.0, gi = 83.0, purine_mg = 18.0,
+            saturated_fat_g = 0.2, cholesterol_mg = 0.0, piece_gram = null, ref = "ref", review = 1L, updated_at = now,
+        )
+        q.upsertIngredientNutrition(
+            ingredient_id = eggId, energy_kcal = 144.0, protein_g = 13.3, fat_g = 8.8, carb_g = 2.8,
+            fiber_g = 0.0, sodium_mg = 131.0, potassium_mg = 154.0, calcium_mg = 56.0, gi = 30.0, purine_mg = 3.0,
+            saturated_fat_g = 3.1, cholesterol_mg = 585.0, piece_gram = 50.0, ref = "ref", review = 1L, updated_at = now,
+        )
 
         // 菜品：蛋炒饭 = 大米100克 + 鸡蛋1个
         q.insertDish("蛋炒饭", null, "", "", "", "", "user", now, now, "")
@@ -53,6 +62,9 @@ class NutritionRepositoryTest {
         assertNotNull(d)
         // 大米100g=346 + 鸡蛋50g=72 → 418 kcal
         assertEquals(418.0, d.totals.energyKcal, 0.001)
+        // [AI生成] 高血脂维度折算直接断言(本次改动核心)：胆固醇=鸡蛋585×0.5=292.5，饱和脂肪=米0.2×1+蛋3.1×0.5=1.75。
+        assertEquals(292.5, d.totals.cholesterolMg, 0.001)
+        assertEquals(1.75, d.totals.saturatedFatG, 0.001)
         assertEquals(2, d.coveredCount)
         assertEquals(2, d.ingredientCount)
         assertTrue(d.complete, "两料都有数据且无兜底")
@@ -61,6 +73,8 @@ class NutritionRepositoryTest {
         val eggN = repo.ingredientNutrition(eggId)
         assertNotNull(eggN)
         assertEquals(50.0, eggN.pieceGram)
+        assertEquals(585.0, eggN.cholesterolMg) // [AI生成] 新列读取映射校验
+        assertEquals(3.1, eggN.saturatedFatG)
         assertTrue(eggN.review)
         Unit
     }

@@ -108,7 +108,10 @@ CREATE TABLE ingredient_nutrition (
     ref TEXT NOT NULL DEFAULT '',       -- 数据来源标注
     review INTEGER NOT NULL DEFAULT 0,  -- 1=待人工审核
     updated_at INTEGER NOT NULL DEFAULT 0,
-    status INTEGER NOT NULL DEFAULT 1
+    status INTEGER NOT NULL DEFAULT 1,
+    -- [AI生成] 高血脂负向维度(25.sqm 迁移加列，列序与 ALTER 一致=追加末尾 status 之后)。
+    saturated_fat_g REAL,   -- 饱和脂肪(g/100g)·高血脂负向，缺=NULL 不触发
+    cholesterol_mg REAL     -- 胆固醇(mg/100g)·高血脂负向，缺=NULL 不触发
 );
 
 CREATE TABLE crowd_ingredient (
@@ -534,11 +537,13 @@ UPDATE measurement_unit SET status = 0 WHERE id = ? AND source = 'user';
 upsertIngredientNutrition:
 INSERT OR REPLACE INTO ingredient_nutrition(
     ingredient_id, energy_kcal, protein_g, fat_g, carb_g, fiber_g,
-    sodium_mg, potassium_mg, calcium_mg, gi, purine_mg, piece_gram,
+    sodium_mg, potassium_mg, calcium_mg, gi, purine_mg,
+    saturated_fat_g, cholesterol_mg, piece_gram,
     ref, review, updated_at, status
 ) VALUES (
     :ingredient_id, :energy_kcal, :protein_g, :fat_g, :carb_g, :fiber_g,
-    :sodium_mg, :potassium_mg, :calcium_mg, :gi, :purine_mg, :piece_gram,
+    :sodium_mg, :potassium_mg, :calcium_mg, :gi, :purine_mg,
+    :saturated_fat_g, :cholesterol_mg, :piece_gram,
     :ref, :review, :updated_at, 1
 );
 
@@ -563,6 +568,8 @@ SELECT di.dish_id AS dish_id,
        n.calcium_mg AS calcium_mg,
        n.gi AS gi,
        n.purine_mg AS purine_mg,
+       n.saturated_fat_g AS saturated_fat_g,
+       n.cholesterol_mg AS cholesterol_mg,
        n.piece_gram AS piece_gram
 FROM dish_ingredient di
 LEFT JOIN measurement_unit mu ON mu.id = di.unit_id
