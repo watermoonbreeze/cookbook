@@ -608,7 +608,6 @@ fun IngredientPickerScreen(
     selectedIngredient?.let { ingredient ->
         IngredientDetailSheet(
             ingredient = ingredient,
-            selectionMode = selectionMode,
             selected = ingredient.id in ui.selectedIds,
             loading = ui.detailLoading && ui.detailIngredientId == ingredient.id,
             categories = ui.detailCategories,
@@ -618,10 +617,13 @@ fun IngredientPickerScreen(
             dishMatches = ui.detailDishMatches,
             enabledCareCategoryIds = ui.enabledCareCategoryIds,
             onDismiss = { selectedIngredient = null },
-            onToggleSelection = {
-                vm.toggleSelection(ingredient) // [AI修改] 详情页右侧按钮按当前状态执行选择/取消选择。
-                selectedIngredient = null // [AI修改] 选择或取消选择后立即关闭详情弹层。
-            },
+            // [AI修改] 高风险重构：仅选择场景传 onToggleSelection(非空→组件显选择按钮)，浏览场景传 null。
+            onToggleSelection = if (selectionMode) {
+                {
+                    vm.toggleSelection(ingredient) // [AI修改] 详情页右侧按钮按当前状态执行选择/取消选择。
+                    selectedIngredient = null // [AI修改] 选择或取消选择后立即关闭详情弹层。
+                }
+            } else null,
             // [AI修改] N5：选择模式下也允许编辑「自建(user)」食材(预设仍不可直接编辑)；页面模式保持可编辑。
             onEdit = if (!selectionMode || ingredient.source == "user") {
                 {

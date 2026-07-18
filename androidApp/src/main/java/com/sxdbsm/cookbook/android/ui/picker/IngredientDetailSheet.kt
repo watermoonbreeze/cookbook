@@ -37,7 +37,8 @@ import com.sxdbsm.cookbook.domain.model.IngredientDetail
 @Composable
 internal fun IngredientDetailSheet(
     ingredient: Ingredient,
-    selectionMode: Boolean,
+    // [AI修改] 高风险重构：删 selectionMode 布尔——能力显隐由回调是否传入决定(红线)。
+    //   选择按钮显隐=onToggleSelection 是否非空；库存管理区显隐=onAddServings 是否非空(调用方按场景传/不传)。
     selected: Boolean,
     loading: Boolean,
     categories: List<FoodCategory>,
@@ -47,7 +48,7 @@ internal fun IngredientDetailSheet(
     dishMatches: List<DishIngredientMatch>,
     enabledCareCategoryIds: Set<Long> = emptySet(), // [AI生成] 用户健康档案病种，忌口区置顶高亮。
     onDismiss: () -> Unit,
-    onToggleSelection: () -> Unit,
+    onToggleSelection: (() -> Unit)? = null, // [AI修改] 非空才显"选择/取消选择"按钮(选择场景传入)；浏览/管理场景传 null。
     onEdit: (() -> Unit)?,
     onDelete: (() -> Unit)?,
     inPantry: Boolean = false, // [AI生成] 当前食材是否已在库存。
@@ -90,7 +91,7 @@ internal fun IngredientDetailSheet(
                             Text("关闭")
                         }
                         Spacer(Modifier.weight(1f))
-                        if (selectionMode) {
+                        if (onToggleSelection != null) {
                             Button(
                                 onClick = onToggleSelection,
                                 colors = if (selected) {
@@ -220,7 +221,8 @@ internal fun IngredientDetailSheet(
                         Text("以上建议仅作为日常饮食记录参考。", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
                     // [AI生成] 库存份数管理区：未入库→选份数入库；已入库→显示剩余份数+加/减+出库。
-                    if (!selectionMode && onAddServings != null) {
+                    // [AI修改] 高风险重构：去 !selectionMode，能力由 onAddServings 是否传入决定(选择场景调用方传 null 即不显)。
+                    if (onAddServings != null) {
                         Divider()
                         PantryServingSection(
                             ingredientId = ingredient.id,
