@@ -44,4 +44,27 @@ class CalorieTargetTest {
         assertEquals(CalorieStatus.ON, CalorieTarget.status(1750.0, target)) // 区间内
         assertEquals(CalorieStatus.ABOVE, CalorieTarget.status(2400.0, target)) // >2300
     }
+
+    @Test
+    fun `A1_未成年不评热量目标返null`() {
+        // Mifflin-St Jeor 仅成人：<18 不评(同缺数据退化)，避免误判儿童"超标"降评级(红线)。
+        val base = BodyMetrics(heightCm = 150.0, weightKg = 40.0, activity = ActivityLevel.MODERATE.name)
+        assertNull(CalorieTarget.dailyTarget(base.copy(age = 10)), "10岁不评")
+        assertNull(CalorieTarget.dailyTarget(base.copy(age = 17)), "17岁不评")
+        assertTrue(CalorieTarget.dailyTarget(base.copy(age = 18)) != null, "18岁成人可评")
+    }
+
+    @Test
+    fun `B2_离谱身体数据返null不硬评`() {
+        // 误填(身高17/体重700/年龄200)算出荒谬目标→退化 null，不据此评级。
+        assertNull(CalorieTarget.dailyTarget(BodyMetrics(heightCm = 17.0, weightKg = 70.0, age = 30)), "身高越界")
+        assertNull(CalorieTarget.dailyTarget(BodyMetrics(heightCm = 175.0, weightKg = 700.0, age = 30)), "体重越界")
+        assertNull(CalorieTarget.dailyTarget(BodyMetrics(heightCm = 175.0, weightKg = 70.0, age = 200)), "年龄越界")
+    }
+
+    @Test
+    fun `B1_目标非正数时达标状态中性`() {
+        assertEquals(CalorieStatus.ON, CalorieTarget.status(1500.0, 0)) // 无有效目标→中性,不判达标
+        assertEquals(CalorieStatus.ON, CalorieTarget.status(1500.0, -100))
+    }
 }

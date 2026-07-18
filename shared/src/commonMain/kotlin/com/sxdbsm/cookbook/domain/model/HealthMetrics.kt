@@ -92,19 +92,31 @@ enum class CalorieStatus(val label: String) { BELOW("偏低"), ON("达标"), ABO
 object CalorieTarget {
     /** 达标区间：目标 ±TOLERANCE 视为达标。 */
     const val TOLERANCE = 0.15 // ±15%
+    // [AI生成] A1/B2 健康红线：Mifflin-St Jeor 仅适用成人(原文献样本 19–78 岁)。未成年(<18)用它会系统性误评、
+    //   把儿童正常摄入判"超标"→无依据下调其评级(越"非医嘱/不误导未成年人"红线)→未成年不评热量达标(同缺数据退化)。
+    //   并加合理域防离谱输入(误填身高17/体重700)算出荒谬目标。越界一律 null=不评、不硬评。
+    private const val ADULT_AGE_MIN = 18
+    private const val AGE_MAX = 120
+    private const val HEIGHT_MIN = 100.0
+    private const val HEIGHT_MAX = 250.0
+    private const val WEIGHT_MIN = 20.0
+    private const val WEIGHT_MAX = 300.0
 
-    /** 每日目标热量(kcal)；数据不全返回 null。 */
+    /** 每日目标热量(kcal)；数据不全 / 未成年 / 越界 返回 null(不评热量达标)。 */
     fun dailyTarget(m: BodyMetrics): Int? {
         if (!m.complete) return null
         val w = m.weightKg!!
         val h = m.heightCm!!
         val a = m.age!!
+        // 仅对合理域内的成人估算；未成年(A1)与离谱输入(B2)退化为 null，不误导。
+        if (a < ADULT_AGE_MIN || a > AGE_MAX || h < HEIGHT_MIN || h > HEIGHT_MAX || w < WEIGHT_MIN || w > WEIGHT_MAX) return null
         val bmr = 10 * w + 6.25 * h - 5 * a + if (m.genderEnum == Gender.MALE) 5 else -161
         return (bmr * m.activityEnum.factor).roundToInt()
     }
 
-    /** 判定当天摄入相对目标的达标状态。 */
+    /** 判定当天摄入相对目标的达标状态。[AI修改] B1：target≤0 中性退化(防除零/非法输入)。 */
     fun status(intakeKcal: Double, target: Int): CalorieStatus {
+        if (target <= 0) return CalorieStatus.ON // 无有效目标→不判达标(中性)
         val low = target * (1 - TOLERANCE)
         val high = target * (1 + TOLERANCE)
         return when {
