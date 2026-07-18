@@ -801,6 +801,14 @@ class IngredientPickerViewModel(
     /**
      * 加入库存（我家食材），默认加 1 份。[AI修改]
      */
+    /** 按名推演自建食材营养(智能预填)，异步回调结果。[AI生成] 食材输入智能推演 */
+    fun guessNutrition(name: String, onResult: (com.sxdbsm.cookbook.domain.NutritionGuess) -> Unit) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            runCatching { nutritionRepo.guessNutritionByName(name) }.getOrNull()?.let(onResult)
+        }
+    }
+
     fun addToPantry(ingredient: Ingredient) = addServings(ingredient.id, 1)
 
     /**

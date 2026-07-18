@@ -695,6 +695,7 @@ fun IngredientPickerScreen(
             },
             onAddUnit = vm::addUnit,
             onSave = vm::saveIngredientEditor,
+            onGuessNutrition = { n, cb -> vm.guessNutrition(n, cb) }, // [AI生成] 智能推演：新建按名预填营养
         )
     }
 

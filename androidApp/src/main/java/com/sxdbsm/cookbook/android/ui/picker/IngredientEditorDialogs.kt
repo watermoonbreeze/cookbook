@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,6 +70,8 @@ internal fun IngredientEditorDialog(
         String, // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)
         Boolean, // [AI生成] B-6：keepOpen——true=保存并继续(留页复位)，false=保存并返回。
     ) -> Unit,
+    // [AI生成] 食材智能推演：按名推演营养(回调异步返回)，UI 据结果预填。默认 no-op(编辑既有食材不推)。
+    onGuessNutrition: (String, (com.sxdbsm.cookbook.domain.NutritionGuess) -> Unit) -> Unit = { _, _ -> },
 ) {
     var name by remember(ingredient?.id) { mutableStateOf(ingredient?.name ?: initialName) } // [AI修改] 新建时可预填名称
     var alias by remember(ingredient?.id) { mutableStateOf(ingredient?.alias.orEmpty()) }
@@ -102,6 +105,55 @@ internal fun IngredientEditorDialog(
     var nGi by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.gi)) }
     var nPurine by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.purineMg)) }
     var nPiece by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.pieceGram)) }
+
+    // [AI生成] 食材智能推演：按名预填营养(不打扰·可撤·标来源)。
+    //   userEditedN=用户手动改过的营养字段(推演永远跳过它，不覆盖用户输入)；guessSource=本次预填来源(null=无预填)。
+    val userEditedN = remember(ingredient?.id) { mutableStateMapOf<String, Boolean>() }
+    var guessSource by remember(ingredient?.id) { mutableStateOf<com.sxdbsm.cookbook.domain.NutritionGuessSource?>(null) }
+    var lastGuessedName by remember(ingredient?.id) { mutableStateOf("") }
+    fun markEdited(key: String) { userEditedN[key] = true }
+    /** 该字段是否"当前显示的是系统预填值"(未被用户改过且有值且本次有预填)——用于弱化视觉。 */
+    fun guessedField(key: String, v: String): Boolean = guessSource != null && userEditedN[key] != true && v.isNotBlank()
+    /** 应用一次推演结果：只写未被用户改过的字段，缺字段留空不填 0(免责红线)。 */
+    fun applyGuess(g: com.sxdbsm.cookbook.domain.NutritionGuess) {
+        val v = g.values
+        if (g.source is com.sxdbsm.cookbook.domain.NutritionGuessSource.None || v == null) { guessSource = null; return }
+        guessSource = g.source
+        if (userEditedN["kcal"] != true) v.energyKcal?.let { nKcal = fmtNum(it) }
+        if (userEditedN["protein"] != true) v.proteinG?.let { nProtein = fmtNum(it) }
+        if (userEditedN["fat"] != true) v.fatG?.let { nFat = fmtNum(it) }
+        if (userEditedN["carb"] != true) v.carbG?.let { nCarb = fmtNum(it) }
+        if (userEditedN["fiber"] != true) v.fiberG?.let { nFiber = fmtNum(it) }
+        if (userEditedN["sodium"] != true) v.sodiumMg?.let { nSodium = fmtNum(it) }
+        if (userEditedN["potassium"] != true) v.potassiumMg?.let { nPotassium = fmtNum(it) }
+        if (userEditedN["calcium"] != true) v.calciumMg?.let { nCalcium = fmtNum(it) }
+        if (userEditedN["gi"] != true) v.gi?.let { nGi = fmtNum(it) }
+        if (userEditedN["purine"] != true) v.purineMg?.let { nPurine = fmtNum(it) }
+        moreExpanded = true // 让用户看见被预填的数字(营养素在折叠区)
+    }
+    /** 清空预填：只清未被用户改过的预填字段(可逆·不弹确认，§9.9)，保留用户已改。 */
+    fun clearGuessed() {
+        if (userEditedN["kcal"] != true) nKcal = ""
+        if (userEditedN["protein"] != true) nProtein = ""
+        if (userEditedN["fat"] != true) nFat = ""
+        if (userEditedN["carb"] != true) nCarb = ""
+        if (userEditedN["fiber"] != true) nFiber = ""
+        if (userEditedN["sodium"] != true) nSodium = ""
+        if (userEditedN["potassium"] != true) nPotassium = ""
+        if (userEditedN["calcium"] != true) nCalcium = ""
+        if (userEditedN["gi"] != true) nGi = ""
+        if (userEditedN["purine"] != true) nPurine = ""
+        guessSource = null
+    }
+    // [AI生成] 触发预填：仅新建食材；LaunchedEffect(name) 每次改名重启，delay(600) 天然去抖(打字停下才推演)。
+    LaunchedEffect(name) {
+        if (ingredient != null) return@LaunchedEffect
+        val n = name.trim()
+        if (n.isBlank() || n == lastGuessedName) return@LaunchedEffect
+        kotlinx.coroutines.delay(600)
+        lastGuessedName = n
+        onGuessNutrition(n) { g -> applyGuess(g) }
+    }
     // [AI生成] B-6：连续录入("保存并继续")支撑——聚焦名称框、记录本次意图与已存名(供 Toast)。
     val context = LocalContext.current
     val nameFocus = remember { FocusRequester() }
@@ -178,7 +230,8 @@ internal fun IngredientEditorDialog(
             commonMethods.isNotBlank() || prepTips.isNotBlank() || eatingNotes.isNotBlank() ||
             storageTips.isNotBlank() || healthNote.isNotBlank() || careRules.isNotEmpty() ||
             (groupTouched && selectedGroup != null) ||
-            listOf(nKcal, nProtein, nFat, nCarb, nFiber, nSodium, nPotassium, nCalcium, nGi, nPurine, nPiece).any { it.isNotBlank() }
+            // [AI修改] 智能推演：营养"脏"看用户是否真手改过(userEditedN)，而非有值——否则系统预填就误判未保存拦返回。
+            userEditedN.values.any { it } || nPiece.isNotBlank()
         )
     var confirmDiscard by remember { mutableStateOf(false) }
     fun attemptDismiss() { if (hasUnsavedNew && !ui.creatingIngredient) confirmDiscard = true else onDismiss() }
@@ -227,6 +280,7 @@ internal fun IngredientEditorDialog(
         careRules = emptyList()
         nKcal = ""; nProtein = ""; nFat = ""; nCarb = ""; nFiber = ""; nSodium = ""
         nPotassium = ""; nCalcium = ""; nGi = ""; nPurine = ""; nPiece = ""
+        userEditedN.clear(); guessSource = null; lastGuessedName = "" // [AI生成] 智能推演：复位后下一个食材重新推演
         confirmDiscard = false
     }
     // [AI生成] B-6：监听"保存并继续"成功计数(continueSavedNonce)——本弹层触发过才复位+提示+聚焦(首帧初值不触发)。
@@ -317,6 +371,8 @@ internal fun IngredientEditorDialog(
                     }
 
                     if (!isPreset) {
+                        // [AI生成] 智能推演：按名预填了分类/营养时顶一条善意提示条(告知"已预填·请核对"·可清空)。
+                        guessSource?.let { src -> NutritionGuessBanner(source = src, onClear = { clearGuessed() }) }
                         // [AI生成] A1：营养大类(必选)——归到主食/鱼肉蛋等分类树，并让色系/均衡按它统计。默认按名预选。
                         EditorSection("营养大类（必选）") {
                             Text(
@@ -376,24 +432,25 @@ internal fun IngredientEditorDialog(
                                 )
                                 Spacer(Modifier.height(4.dp))
                             }
+                            // [AI修改] 智能推演：预填未改的字段弱化显示(guessed)，onValueChange 打脏标记(改过=用户值，推演不再覆盖)。
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("热量kcal", nKcal, Modifier.weight(1f)) { nKcal = it }
-                                NutrientField("蛋白g", nProtein, Modifier.weight(1f)) { nProtein = it }
-                                NutrientField("脂肪g", nFat, Modifier.weight(1f)) { nFat = it }
+                                NutrientField("热量kcal", nKcal, Modifier.weight(1f), guessed = guessedField("kcal", nKcal)) { markEdited("kcal"); nKcal = it }
+                                NutrientField("蛋白g", nProtein, Modifier.weight(1f), guessed = guessedField("protein", nProtein)) { markEdited("protein"); nProtein = it }
+                                NutrientField("脂肪g", nFat, Modifier.weight(1f), guessed = guessedField("fat", nFat)) { markEdited("fat"); nFat = it }
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("碳水g", nCarb, Modifier.weight(1f)) { nCarb = it }
-                                NutrientField("纤维g", nFiber, Modifier.weight(1f)) { nFiber = it }
-                                NutrientField("钠mg", nSodium, Modifier.weight(1f)) { nSodium = it }
+                                NutrientField("碳水g", nCarb, Modifier.weight(1f), guessed = guessedField("carb", nCarb)) { markEdited("carb"); nCarb = it }
+                                NutrientField("纤维g", nFiber, Modifier.weight(1f), guessed = guessedField("fiber", nFiber)) { markEdited("fiber"); nFiber = it }
+                                NutrientField("钠mg", nSodium, Modifier.weight(1f), guessed = guessedField("sodium", nSodium)) { markEdited("sodium"); nSodium = it }
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("钾mg", nPotassium, Modifier.weight(1f)) { nPotassium = it }
-                                NutrientField("钙mg", nCalcium, Modifier.weight(1f)) { nCalcium = it }
-                                NutrientField("GI", nGi, Modifier.weight(1f)) { nGi = it }
+                                NutrientField("钾mg", nPotassium, Modifier.weight(1f), guessed = guessedField("potassium", nPotassium)) { markEdited("potassium"); nPotassium = it }
+                                NutrientField("钙mg", nCalcium, Modifier.weight(1f), guessed = guessedField("calcium", nCalcium)) { markEdited("calcium"); nCalcium = it }
+                                NutrientField("GI", nGi, Modifier.weight(1f), guessed = guessedField("gi", nGi)) { markEdited("gi"); nGi = it }
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("嘌呤mg", nPurine, Modifier.weight(1f)) { nPurine = it }
-                                NutrientField("单件克重", nPiece, Modifier.weight(1f)) { nPiece = it }
+                                NutrientField("嘌呤mg", nPurine, Modifier.weight(1f), guessed = guessedField("purine", nPurine)) { markEdited("purine"); nPurine = it }
+                                NutrientField("单件克重", nPiece, Modifier.weight(1f)) { markEdited("piece"); nPiece = it }
                                 Spacer(Modifier.weight(1f))
                             }
                             Text(
@@ -816,9 +873,10 @@ internal fun DetailTextField(label: String, value: String, onValueChange: (Strin
     )
 }
 
-/** 营养数值输入(仅数字，最多一个小数点)。[AI生成] Item4 */
+/** 营养数值输入(仅数字，最多一个小数点)。[AI生成] Item4
+ *  [AI修改] 智能推演：guessed=true(当前显示的是系统预填、用户未改)时弱化描边/文字色，暗示"估算·可改"。 */
 @Composable
-private fun NutrientField(label: String, value: String, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
+private fun NutrientField(label: String, value: String, modifier: Modifier = Modifier, guessed: Boolean = false, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = value,
         onValueChange = { s ->
@@ -830,6 +888,43 @@ private fun NutrientField(label: String, value: String, modifier: Modifier = Mod
         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
+        colors = if (guessed) {
+            OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            OutlinedTextFieldDefaults.colors()
+        },
     )
+}
+
+/**
+ * 智能预填善意提示条(§9.19)。[AI生成] 食材输入智能推演
+ *
+ * 用 primary α0.06 底色(善意，非 error/warning)，Info 图标；措辞按来源分可信度(近似命中点名参照物、大类兜底更保守)；
+ * 右侧"清空预填"可撤(§9.9)。守免责：营养预填标"估算·请核对"。
+ */
+@Composable
+private fun NutritionGuessBanner(source: com.sxdbsm.cookbook.domain.NutritionGuessSource, onClear: () -> Unit) {
+    val sub = when (source) {
+        is com.sxdbsm.cookbook.domain.NutritionGuessSource.Match -> "营养参考自「${source.refName}」· 估算值，可直接改"
+        is com.sxdbsm.cookbook.domain.NutritionGuessSource.Group -> "暂无同名食材，按「${source.groupLabel}」粗略估算，务必核对"
+        com.sxdbsm.cookbook.domain.NutritionGuessSource.None -> return
+    }
+    Surface(
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.06f),
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                Text("已按名字帮你预填，请核对", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            TextButton(onClick = onClear) { Text("清空预填") }
+        }
+    }
 }
 

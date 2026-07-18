@@ -143,4 +143,24 @@ class NutritionRepository(private val db: CookbookDatabase) {
     suspend fun totalOf(dishIds: List<Long>): NutritionTotals = withContext(ioDispatcher) {
         NutritionCalculator.sumTotals(dishNutrition(dishIds).values.map { it.totals })
     }
+
+    /**
+     * 按名推演自建食材营养（智能预填）。[AI生成] 食材输入智能推演
+     *
+     * 用已有"有营养数据"的食材做近似同名匹配，命中不了按 classify 大类均值兜底，都不确定则不预填。
+     * 纯参考估算（UI 标"请核对"），不写库、不覆盖用户；每 100g 口径。
+     */
+    suspend fun guessNutritionByName(name: String): com.sxdbsm.cookbook.domain.NutritionGuess = withContext(ioDispatcher) {
+        val candidates = allIngredientNutrition()
+            .filter { it.hasNutrition }
+            .map { row ->
+                row.name to com.sxdbsm.cookbook.domain.NutritionGuessValues(
+                    energyKcal = row.kcal, proteinG = row.protein, fatG = row.fat, carbG = row.carb, fiberG = row.fiber,
+                    sodiumMg = row.sodium, potassiumMg = row.potassium, calciumMg = row.calcium, gi = row.gi, purineMg = row.purine,
+                )
+            }
+        com.sxdbsm.cookbook.domain.NutritionGuesser.guess(
+            name, candidates, com.sxdbsm.cookbook.domain.FoodGroup.classify(name),
+        )
+    }
 }
