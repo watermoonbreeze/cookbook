@@ -56,6 +56,9 @@ class DietReportViewModel(
     private val _state = MutableStateFlow(DietReportUiState())
     val state: StateFlow<DietReportUiState> = _state.asStateFlow()
 
+    // [AI生成] 审查阻断项:单 job 串行化——快速翻页/切视角时取消上一个未完成加载，防旧期结果后到覆盖新期。
+    private var reloadJob: kotlinx.coroutines.Job? = null
+
     init { reload() }
 
     fun setPeriod(p: ReportPeriod) { if (p != _state.value.period) { _state.update { it.copy(period = p, offset = 0) }; reload() } }
@@ -67,7 +70,8 @@ class DietReportViewModel(
         val st = _state.value
         val range = rangeOf(st.period, st.offset)
         _state.update { it.copy(loading = true, periodLabel = range.label, canGoNewer = st.offset < 0) }
-        viewModelScope.launch {
+        reloadJob?.cancel() // 取消上一个未完成加载(旧期结果不再写回)
+        reloadJob = viewModelScope.launch {
             // 区间内每一天(含没记的空日)的餐卡——observeTimelineWindow 会补齐每天，供结构日历/覆盖率。
             val cards = mealRepo.observeTimelineWindow(range.start, range.end).first()
             val dishIds = cards.flatMap { c -> c.meals.flatMap { it.dishes } }.map { it.id }.distinct()

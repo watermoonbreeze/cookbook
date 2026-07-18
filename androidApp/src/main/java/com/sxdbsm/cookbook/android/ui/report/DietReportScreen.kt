@@ -104,7 +104,7 @@ fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: () -> Unit) {
             when {
                 st.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 st.report?.hasData != true -> EmptyState(
-                    text = "这段时间还没记餐\n记一餐就能生成饮食报告",
+                    text = "这段时间还没记一餐\n记一餐就能生成饮食报告",
                     icon = "🍽",
                     actionLabel = "去记一餐",
                     onAction = onGoAddMeal,
@@ -127,7 +127,7 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
         item {
             InsetGroup(title = "记录概况") {
                 Column(Modifier.padding(14.dp)) {
-                    StatRow("记餐天数", r.coverageText)
+                    StatRow("记录天数", r.coverageText)
                     LinearProgressIndicator(
                         progress = if (r.periodDays == 0) 0f else r.recordedDays.toFloat() / r.periodDays,
                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).padding(top = 4.dp, bottom = 6.dp),
@@ -144,7 +144,7 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                     StatRow("不同菜品数", "${r.distinctDishes} 道")
                     if (r.topDishes.isNotEmpty()) {
                         Spacer(Modifier.height(4.dp))
-                        Text("常吃 TOP", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("常吃菜品", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         r.topDishes.forEach { CountRow(it, "次") }
                     }
                 }
@@ -157,7 +157,7 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                     StatRow("用到食材种数", "${r.ingredientKinds} 种")
                     if (r.topIngredients.isNotEmpty()) {
                         Spacer(Modifier.height(4.dp))
-                        Text("常用 TOP", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("常用食材", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         r.topIngredients.forEach { CountRow(it, "次") }
                     }
                 }
@@ -168,7 +168,7 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
             InsetGroup(title = "膳食结构") {
                 Column(Modifier.padding(14.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("本期膳食均级", modifier = Modifier.weight(1f))
+                        Text("本期膳食均衡度", modifier = Modifier.weight(1f))
                         Text("${oneDecimal(r.avgLevel)} 级", fontWeight = FontWeight.SemiBold, color = levelColor(r.avgLevel.roundToInt()))
                         Spacer(Modifier.width(8.dp))
                         Box(Modifier.size(20.dp).clip(RoundedCornerShape(4.dp)).background(levelColor(r.avgLevel.roundToInt())))
@@ -179,7 +179,8 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                     StructureCalendar(r.perDayLevels)
                     if (r.structureGaps.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
-                        r.structureGaps.forEach { TipRow(Color(0xFFFFB300), it) }
+                        // [AI修改] 文案审校🔴1:nutritionGaps 返回纯名词(优质蛋白/主食…)，报告里补成完整句才读得懂、且鼓励非责备。
+                        r.structureGaps.forEach { TipRow(Color(0xFFFFB300), "这段时间${it}吃得偏少，可以多安排点") }
                     } else {
                         Spacer(Modifier.height(8.dp))
                         TipRow(Color(0xFF4CAF50), "五大类基本吃到，结构均衡")
@@ -193,16 +194,20 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                 InsetGroup(title = "营养摄入（${st.memberName.ifBlank { "个人" }}）") {
                     Column(Modifier.padding(14.dp)) {
                         StatRow("日均热量", if (p.targetKcal != null) "${p.avgKcal} / 目标 ${p.targetKcal} 千卡" else "${p.avgKcal} 千卡")
-                        if (p.targetKcal != null) StatRow("达标天数", "${p.onTargetDays} / ${r.recordedDays} 记餐天")
+                        if (p.targetKcal != null) {
+                            StatRow("在目标内", "${p.onTargetDays} / ${r.recordedDays} 天")
+                            Text("即当天热量落在你设定的目标范围内", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                        }
                         Spacer(Modifier.height(6.dp))
-                        Text("三大宏量供能比", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("蛋白·脂肪·碳水占比", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         MacroBar(p.proteinPct, p.fatPct, p.carbPct)
                         Spacer(Modifier.height(6.dp))
                         StatRow("日均钠", "${p.avgSodiumMg} mg")
                         StatRow("日均钾", "${p.avgPotassiumMg} mg")
                         StatRow("日均膳食纤维", "${p.avgFiberG} g")
                         Spacer(Modifier.height(6.dp))
-                        Text("· 营养按你的饭量折算，仅供参考，非医嘱", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                        // [AI修改] 文案审校🔴3:免责补"估算·来自食材参考数据"(慢病敏感数值别被当权威摄入量)。
+                        Text("· 营养按你的饭量估算，来自食材参考数据，仅供了解，非医嘱", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                     }
                 }
             }
@@ -211,7 +216,7 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
             item {
                 InsetGroup {
                     Text(
-                        "还没设置关注成员，去家庭档案添加后可看个人营养摄入",
+                        "还没选关注成员，去家庭档案选一位，就能看 TA 的营养摄入",
                         modifier = Modifier.padding(14.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -234,12 +239,12 @@ private fun OverviewCard(st: DietReportUiState, r: DietReport) {
             Row(Modifier.fillMaxWidth()) {
                 if (st.personal && p != null) {
                     StatBig(Modifier.weight(1f), "${p.avgKcal}", "日均千卡")
-                    StatBig(Modifier.weight(1f), "${p.onTargetDays}", "达标天")
+                    StatBig(Modifier.weight(1f), "${p.onTargetDays}", "在目标内")
                 } else {
-                    StatBig(Modifier.weight(1f), "${r.recordedDays}", "天记餐")
+                    StatBig(Modifier.weight(1f), "${r.recordedDays}", "记录天")
                     StatBig(Modifier.weight(1f), "${r.distinctDishes}", "不同菜")
                 }
-                StatBig(Modifier.weight(1f), oneDecimal(r.avgLevel), "膳食均级", levelColor(r.avgLevel.roundToInt()))
+                StatBig(Modifier.weight(1f), oneDecimal(r.avgLevel), "膳食均衡", levelColor(r.avgLevel.roundToInt()))
             }
         }
     }
@@ -343,7 +348,7 @@ private fun buildSummary(st: DietReportUiState, r: DietReport): String {
     val periodWord = if (st.period == ReportPeriod.WEEK) "这周" else "这月"
     val p = r.personal
     if (st.personal && p != null) {
-        val dab = if (p.targetKcal != null) "，达标 ${p.onTargetDays} 天" else ""
+        val dab = if (p.targetKcal != null) "，${p.onTargetDays} 天在目标内" else ""
         return "$periodWord 日均 ${p.avgKcal} 千卡$dab"
     }
     val struct = when {
@@ -351,7 +356,7 @@ private fun buildSummary(st: DietReportUiState, r: DietReport): String {
         r.avgLevel >= 2.5 -> "结构还不错"
         else -> "可以更均衡些"
     }
-    return "$periodWord 记了 ${r.recordedDays} 天，尝了 ${r.distinctDishes} 道菜，$struct"
+    return "$periodWord 记了 ${r.recordedDays} 天，吃到 ${r.distinctDishes} 种菜，$struct"
 }
 
 /** 从报告派生 2~3 条本期发现(鼓励非责备)。[AI生成] */
@@ -359,7 +364,7 @@ private fun buildTips(st: DietReportUiState, r: DietReport): List<Pair<Color, St
     val tips = mutableListOf<Pair<Color, String>>()
     val green = Color(0xFF4CAF50); val amber = Color(0xFFFFB300); val gray = Color(0xFF9E9E9E)
     if (r.avgLevel >= 3.5) tips += green to "膳食结构较均衡，继续保持"
-    r.structureGaps.take(2).forEach { tips += amber to it }
+    r.structureGaps.take(2).forEach { tips += amber to "${it}可以再多安排些" }
     r.topDishes.firstOrNull()?.let { if (it.count >= 2) tips += gray to "最常吃${it.name}，出现 ${it.count} 次" }
     return tips.take(4)
 }
