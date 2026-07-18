@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
@@ -106,6 +107,11 @@ fun NewDishScreen(
             state.savedDishId?.let { onSavedDish?.invoke(it) } // [AI生成] 从添加餐食页新建菜品后，把新菜品 id 回传给上一层路由。
             onBack()
         }
+    }
+    // [AI生成] 菜名自动加食材的一次性反馈(§9.12 全局 Snackbar)：序号变化触发一次，含待自建说明。
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current
+    LaunchedEffect(state.autoAddSerial) {
+        if (state.autoAddSerial > 0) state.autoAddMessage?.let { appSnackbar?.showMessage(it) }
     }
     // [AI修改] 移除面向用户的"编辑诊断 Toast"(内测排查"Toast成功但界面空白"的遗留)，正式版不打扰用户；诊断改看日志。
     LaunchedEffect(state.editingId, state.loading, state.name, state.tags.size, state.ingredients.size, state.errorMessage) {
@@ -263,34 +269,7 @@ fun NewDishScreen(
                     Text("配料组")
                 }
             }
-            // [AI生成] 菜名推食材(用户提)：从菜名(如"土豆牛腩")推出已有食材,点确认加入。仅有候选时显示。
-            if (state.nameSuggestions.isNotEmpty()) {
-                Text(
-                    "根据菜名推荐，点一下加入：",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 4.dp),
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    state.nameSuggestions.forEach { n ->
-                        Surface(
-                            shape = RoundedCornerShape(percent = 50),
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier.clickable { vm.addSuggestedIngredient(n) },
-                        ) {
-                            Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
-                                Spacer(Modifier.width(4.dp))
-                                Text(n, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                            }
-                        }
-                    }
-                    Spacer(Modifier.width(4.dp))
-                }
-            }
+            // [AI修改] 菜名推食材改为"推出即自动加入"食材清单(库外标"待自建")，旧的点确认 chips 区已移除。
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
@@ -311,9 +290,13 @@ fun NewDishScreen(
                                     .padding(horizontal = 12.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                // [AI修改] N4：展示"食材名-二级名称(别名)"。
-                                val nameText = if (ing.ingredient.alias.isBlank()) ing.ingredient.name else "${ing.ingredient.name}-${ing.ingredient.alias}"
-                                Text(nameText, modifier = Modifier.weight(1f))
+                                // [AI修改] 名字区三态：主名 + 别名(次要灰·去连字符) / 待自建(灰胶囊)。id≤0=库外占位=待自建。
+                                IngredientNameCell(
+                                    name = ing.ingredient.name,
+                                    alias = ing.ingredient.alias,
+                                    pendingCreate = ing.ingredient.id <= 0L,
+                                    modifier = Modifier.weight(1f),
+                                )
                                 // [AI修改] #55：克数剂量 −N+(±5，最小0)。
                                 val grams = ing.quantity?.toInt() ?: 100
                                 GramStepper(grams = grams, onDelta = { d -> vm.changeIngredientGrams(ing.ingredient.id, d) }, onSet = { g -> vm.setIngredientGrams(ing.ingredient.id, g) })
@@ -1105,6 +1088,51 @@ private fun LibraryPickerDialog(
  */
 private fun Ingredient.displayNameText(): String =
     if (alias.isBlank()) name else "$name($alias)"
+
+/**
+ * 食材行名字区：主名 + 别名(次要灰·退后一层) / 待自建(灰底小胶囊)。[AI生成] 菜名推食材·自动加入
+ *
+ * 三态一眼可辨：待自建=有边界灰胶囊(保存时创建)；库内有别名=纯灰字别名(去掉旧"名-别名"连字符，
+ * 防用户误把别名当新食材全名)；无别名=裸主名。别名(无边界灰字)与待自建(有边界灰胶囊)形态不同，防混淆。
+ */
+@Composable
+private fun IngredientNameCell(
+    name: String,
+    alias: String,
+    pendingCreate: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            name,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false), // 名字过长先省略，别把标注挤出去
+        )
+        if (pendingCreate) {
+            Spacer(Modifier.width(6.dp))
+            Surface(shape = RoundedCornerShape(4.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+                Text(
+                    "待自建",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                )
+            }
+        } else if (alias.isNotBlank()) {
+            Spacer(Modifier.width(6.dp))
+            Text(
+                alias,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
 
 /**
  * 简化版 FlowRow。[AI修改]

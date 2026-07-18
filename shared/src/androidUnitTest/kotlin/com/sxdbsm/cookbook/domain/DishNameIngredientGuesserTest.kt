@@ -44,4 +44,40 @@ class DishNameIngredientGuesserTest {
         // "豆浆" 中不该把库里的单字"豆"推出(≥2字过滤)。
         assertTrue(DishNameIngredientGuesser.guess("豆浆", lib).none { it == "豆" })
     }
+
+    // ========== guessDetailed：库外待自建候选 ==========
+
+    @Test
+    fun `库外食材标待自建_inLibrary为false`() {
+        // "杏鲍菇" 不在库 → 库外候选(待自建)；"香辣" 是停用词不当食材。
+        val g = DishNameIngredientGuesser.guessDetailed("香辣杏鲍菇", lib)
+        assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("杏鲍菇", false)), g)
+    }
+
+    @Test
+    fun `混合_库内土豆真_库外神仙腩待自建`() {
+        val g = DishNameIngredientGuesser.guessDetailed("土豆神仙腩", lib)
+        assertEquals(
+            listOf(
+                DishNameIngredientGuesser.GuessedIngredient("土豆", true),
+                DishNameIngredientGuesser.GuessedIngredient("神仙腩", false),
+            ),
+            g,
+        )
+    }
+
+    @Test
+    fun `停用词不被当食材`() {
+        // 红烧=停用词，只应推出库内牛腩，不推"红烧"。
+        val g = DishNameIngredientGuesser.guessDetailed("红烧牛腩", lib)
+        assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("牛腩", true)), g)
+    }
+
+    @Test
+    fun `额外停用词_烹饪方式字典生效`() {
+        // 传入"外婆"作额外停用词后，"外婆红烧肉"里"外婆"不再被当库外食材(肉是单字被过滤)。
+        val g = DishNameIngredientGuesser.guessDetailed("外婆红烧排骨", lib, extraStopWords = listOf("外婆"))
+        // 排骨不在 lib → 库外待自建；外婆(停用词)、红烧(内置停用词)均不出现。
+        assertEquals(listOf(DishNameIngredientGuesser.GuessedIngredient("排骨", false)), g)
+    }
 }

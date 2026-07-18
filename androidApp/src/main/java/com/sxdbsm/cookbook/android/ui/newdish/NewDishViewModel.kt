@@ -45,6 +45,8 @@ data class NewDishUiState(
     val errorMessage: String? = null,
     val editProbeToastMessage: String? = null,
     val editProbeToastSerial: Int = 0,
+    val autoAddMessage: String? = null, // [AI生成] 菜名自动加食材的一次性 Snackbar 文案(待自建会说明)
+    val autoAddSerial: Int = 0, // [AI生成] 配合上者:序号变化触发一次 Snackbar
     val saving: Boolean = false,
     val done: Boolean = false,
     val savedDishId: Long? = null,
@@ -100,13 +102,19 @@ class NewDishViewModel(
     @Volatile
     private var cachedIngredientNames: List<String> = emptyList()
 
+    // [AI生成] 待自建食材的占位临时负 id(递减唯一)；保存时按名 createUserIngredient 换真 id。
+    private var pendingIdSeq = -1L
+
+    // [AI生成] 菜名自动加食材的防抖 job：用户停顿后再推演，避免逐字命中弹多次。
+    private var autoAddJob: kotlinx.coroutines.Job? = null
+
     init {
         viewModelScope.launch {
             seasoningIds = runCatching { ingredientRepo.seasoningIngredientIds() }.getOrDefault(emptySet())
         }
         viewModelScope.launch {
             cachedIngredientNames = runCatching { ingredientRepo.allActiveNames() }.getOrDefault(emptyList())
-            refreshNameSuggestions() // 名字可能已预填(编辑/导入)，加载完名单后补算一次
+            autoAddFromName() // 名字可能已预填(新建带菜名/组成菜品)，加载完名单后补推一次
         }
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
@@ -273,25 +281,82 @@ class NewDishViewModel(
         }
     }
 
-    fun setName(v: String) { _state.value = _state.value.copy(name = v); refreshNameSuggestions() }
+    fun setName(v: String) { _state.value = _state.value.copy(name = v); scheduleAutoAddFromName() }
 
-    /** 按当前菜名推演候选食材（排除已加入的），更新 nameSuggestions。[AI生成] 菜名推食材 */
-    private fun refreshNameSuggestions() {
-        val addedNames = _state.value.ingredients.map { it.ingredient.name }.toSet()
-        val guessed = com.sxdbsm.cookbook.domain.DishNameIngredientGuesser
-            .guess(_state.value.name, cachedIngredientNames)
-            .filter { it !in addedNames }
-        _state.value = _state.value.copy(nameSuggestions = guessed)
+    /** 菜名变化(仅新建模式)：防抖后按菜名推演并**自动加入**食材。[AI修改] 菜名推食材·推出即加入 */
+    private fun scheduleAutoAddFromName() {
+        if (_state.value.editingId != null) return // 编辑既有菜不自动加(防把用户删掉的食材又加回来)
+        autoAddJob?.cancel()
+        autoAddJob = viewModelScope.launch {
+            kotlinx.coroutines.delay(350) // 防抖：等停顿再推演，避免逐字命中弹多次
+            autoAddFromName()
+        }
     }
 
-    /** 确认加入某个"菜名推出"的食材：按名解析为已有食材后加入。[AI生成] 菜名推食材 */
-    fun addSuggestedIngredient(name: String) {
-        viewModelScope.launch {
-            val ing = runCatching { ingredientRepo.search(name) }.getOrDefault(emptyList())
-                .firstOrNull { it.name == name } ?: return@launch
-            addIngredient(ing)
-            refreshNameSuggestions() // 加入后从候选移除
+    /**
+     * 按菜名推演并自动加入食材：库内解析真实食材、库外用占位(负 id)加入并在名后标"待自建"。[AI生成] 菜名推食材
+     *
+     * 只加不删（用户可能已调过克数）；挂起期间以最新 state 去重后一次性写回，避免竞态。
+     */
+    private suspend fun autoAddFromName() {
+        if (_state.value.editingId != null) return
+        val dishName = _state.value.name
+        if (dishName.isBlank() || cachedIngredientNames.isEmpty()) return
+        val existingNames = _state.value.ingredients.map { it.ingredient.name.trim() }.toSet()
+        val methods = _state.value.availableCookingMethods.map { it.name } // 烹饪方式字典作额外停用词
+        val cands = com.sxdbsm.cookbook.domain.DishNameIngredientGuesser
+            .guessDetailed(dishName, cachedIngredientNames, methods)
+            .filter { it.name !in existingNames }
+        if (cands.isEmpty()) return
+        val gram = gramUnit()
+        val toAdd = mutableListOf<DishIngredient>()
+        val pendingNames = mutableListOf<String>()
+        for (c in cands) {
+            if (c.inLibrary) {
+                // [AI修改] 归一匹配：guesser 候选名已去空格，库名可能含内部空格(老库/手输)，按去空格名比对防漏配→误建。
+                val ing = runCatching { ingredientRepo.search(c.name) }.getOrDefault(emptyList())
+                    .firstOrNull { it.name.replace(" ", "").trim() == c.name } ?: continue
+                toAdd += buildAutoDishIngredient(ing, gram)
+            } else {
+                // 库外候选：占位负 id + 标记待自建；保存时按名 createUserIngredient 换真 id。
+                val placeholder = Ingredient(id = pendingIdSeq--, name = c.name)
+                toAdd += buildAutoDishIngredient(placeholder, gram)
+                pendingNames += c.name
+            }
         }
+        if (toAdd.isEmpty()) return
+        _state.update { s ->
+            val curNames = s.ingredients.map { it.ingredient.name.trim() }.toSet()
+            val add = toAdd.filter { it.ingredient.name.trim() !in curNames } // 挂起期间可能已被别处加入，再去重
+            if (add.isEmpty()) return@update s
+            val addedNameSet = add.map { it.ingredient.name.trim() }.toSet()
+            val addedPending = pendingNames.filter { it in addedNameSet }
+            s.copy(
+                ingredients = s.ingredients + add,
+                autoAddMessage = autoAddSnackbar(add.size, addedPending),
+                autoAddSerial = s.autoAddSerial + 1,
+            )
+        }
+    }
+
+    /** 构造一条自动加入的食材项(默认克数按调料/普通区分)。[AI生成] */
+    private fun buildAutoDishIngredient(ing: Ingredient, gram: MeasurementUnit?): DishIngredient {
+        val defaultGram = com.sxdbsm.cookbook.domain.SeasoningDefaults
+            .defaultGramFor(ing.name, ing.id in seasoningIds).toDouble()
+        return DishIngredient(
+            ingredient = ing,
+            isMain = false,
+            quantity = defaultGram,
+            unitName = gram?.name ?: "克",
+            unitId = gram?.id ?: ing.defaultUnitId,
+        )
+    }
+
+    /** 自动加入的 Snackbar 文案(含待自建说明)。[AI生成] 守文案准则：说人话·动词开头 */
+    private fun autoAddSnackbar(count: Int, pending: List<String>): String = when {
+        pending.isEmpty() -> "已按菜名添加 $count 项食材，多余的可删掉"
+        pending.size == 1 -> "已添加 $count 项，「${pending.first()}」将在保存时加入食材库"
+        else -> "已添加 $count 项，其中「${pending.first()}」等 ${pending.size} 味将在保存时加入食材库"
     }
     fun setCookingMethodInput(v: String) {
         addCookingMethod(v)
@@ -401,7 +466,6 @@ class NewDishViewModel(
                 unitId = gram?.id ?: ingredient.defaultUnitId,
             ),
         )
-        refreshNameSuggestions() // [AI生成] 菜名推食材:加入后从候选移除该项(选择器加入也生效)
     }
 
     /** 预填新建菜品(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)：设菜名+批量加食材，并以此为"无改动基线"(返回不立即弹放弃)。[AI生成] */
@@ -631,6 +695,28 @@ class NewDishViewModel(
             // [AI修改] D10：saving 标志用最新 _state.value 写回，不用启动前捕获的 s 快照。
             _state.value = _state.value.copy(saving = true)
             runCatching {
+                // [AI生成] 待自建食材(占位负 id)：保存前按名 createUserIngredient 换真 id(自动按名关联分类+营养)；创建失败丢弃(不写坏 FK)不阻断。
+                //   [AI修改] 同 id 去重优先保留"非占位"(用户手动加/已调克数)那条：占位按名解析可能撞上清单已有真实食材，
+                //   若不去重，saveDish 的 INSERT OR REPLACE(uq_dish_ingredient)会用占位默认克数覆盖用户已调用量。
+                val byId = LinkedHashMap<Long, DishIngredient>()
+                val fromPlaceholder = HashSet<Long>()
+                s.ingredients.forEach { di ->
+                    val wasPlaceholder = di.ingredient.id <= 0
+                    val resolved = if (!wasPlaceholder) {
+                        di
+                    } else {
+                        val realId = runCatching { ingredientRepo.createUserIngredient(di.ingredient.name.trim()) }.getOrNull() ?: return@forEach
+                        di.copy(ingredient = di.ingredient.copy(id = realId))
+                    }
+                    val rid = resolved.ingredient.id
+                    val prev = byId[rid]
+                    when {
+                        prev == null -> { byId[rid] = resolved; if (wasPlaceholder) fromPlaceholder.add(rid) }
+                        // 之前存的是占位、当前是用户显式项 → 用用户项(含其克数)替换；其余保留先存的
+                        rid in fromPlaceholder && !wasPlaceholder -> { byId[rid] = resolved; fromPlaceholder.remove(rid) }
+                    }
+                }
+                val resolvedIngredients = byId.values.toList()
                 dishRepo.saveDish(
                     id = s.editingId ?: 0L,
                     name = s.name.trim(),
@@ -641,7 +727,7 @@ class NewDishViewModel(
                     imagePath = s.imagePath,
                     thumbnailPath = s.thumbnailPath,
                     tagNames = s.tags,
-                    ingredients = s.ingredients,
+                    ingredients = resolvedIngredients,
                     steps = s.steps,
                     cuisine = s.cuisine,
                 )
