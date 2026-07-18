@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.android.ui.kitchen
 
 import android.Manifest
 import android.app.Activity
+import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
@@ -13,6 +14,7 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.SystemClock
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -110,6 +112,7 @@ fun CookingTimerScreen(
     var timers by remember { mutableStateOf<List<CookingTimerItem>>(emptyList()) }
     var loaded by remember { mutableStateOf(false) }
     var pickingRingtoneTimerId by remember { mutableStateOf<Long?>(null) }
+    var fullScreenGuideDismissed by remember { mutableStateOf(false) } // [AI生成] A14 全屏提醒引导本次会话内"知道了"后不再显示。
     // [AI修改] 响铃/停铃统一由 TimerAlarmReceiver 单一管理，页面不再持有本地 Ringtone。
     val ringtonePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val timerId = pickingRingtoneTimerId
@@ -278,6 +281,34 @@ fun CookingTimerScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item { Spacer(Modifier.height(6.dp)) }
+            // [AI生成] A14+ 全屏提醒需授权：未授时引导用户去系统设置开启"全屏通知"，否则息屏到点可能只响铃不弹全屏。
+            //   A13 及以下默认允许、不显示此引导；铃声+通知本就是兜底(不开也能响)。华为/鸿蒙还需另在系统"后台弹出界面"放行。
+            val needsFullScreenGuide = !fullScreenGuideDismissed &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE &&
+                context.getSystemService(NotificationManager::class.java)?.canUseFullScreenIntent() == false
+            if (loaded && needsFullScreenGuide) {
+                item {
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    ) {
+                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text("到点全屏提醒未开启", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Android 14 起需手动允许「全屏通知」，否则息屏或锁屏时计时到点可能只响铃、不弹全屏。铃声和通知不受影响。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                TextButton(onClick = { fullScreenGuideDismissed = true }) { Text("知道了") }
+                                Spacer(Modifier.weight(1f))
+                                Button(onClick = { openFullScreenIntentSettings(context) }) { Text("去开启") }
+                            }
+                        }
+                    }
+                }
+            }
             if (!loaded) {
                 item {
                     Text(
@@ -898,6 +929,18 @@ private fun CookingTimerItem.toTemplate(): CookingTimerTemplate =
         sortOrder = sortOrder,
         segments = segments,
     )
+
+/** 打开系统"全屏通知"授权设置(A14+)；失败兜底到应用详情页。[AI生成] 华为/A14 全屏引导 */
+private fun openFullScreenIntentSettings(context: Context) {
+    val pkg = Uri.parse("package:${context.packageName}")
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, pkg)
+    } else {
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg)
+    }
+    runCatching { context.startActivity(intent) }
+        .onFailure { runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg)) } }
+}
 
 private fun createRingtonePickerIntent(currentUri: String): Intent {
     val existingUri = currentUri.takeIf { it.isNotBlank() }?.let(Uri::parse)
