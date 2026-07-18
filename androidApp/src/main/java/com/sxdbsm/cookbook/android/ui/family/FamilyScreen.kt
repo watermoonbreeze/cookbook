@@ -294,20 +294,30 @@ private fun MemberEditorDialog(
                     )
                 }
                 if (careOptions.isNotEmpty()) {
+                    // [AI修改] 分组:慢病调理 / 生命阶段(用户 Q6)。生命阶段按名匹配人群分类(备孕/孕期/哺乳/婴幼儿/学龄…)。
+                    val stageKeywords = listOf("备孕", "孕期", "哺乳", "婴幼儿", "学龄前", "学龄儿童")
+                    val stageOptions = careOptions.filter { opt -> stageKeywords.any { opt.name.contains(it) } }
+                    val diseaseOptions = careOptions.filterNot { opt -> stageKeywords.any { opt.name.contains(it) } }
                     Spacer(Modifier.height(12.dp))
-                    Text("健康状态（三高/痛风等，可多选；与忌口·调养挂钩）", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    careOptions.forEach { c ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth().clickable {
-                                careIds = if (c.id in careIds) careIds - c.id else careIds + c.id
-                            }.padding(vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Checkbox(checked = c.id in careIds, onCheckedChange = { checked ->
-                                careIds = if (checked) careIds + c.id else careIds - c.id
-                            })
-                            Spacer(Modifier.width(6.dp))
-                            Text(c.name, style = MaterialTheme.typography.bodyLarge)
+                    Text("健康状态（可多选；与忌口·调养挂钩·仅供参考·非医嘱）", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    listOf("慢病调理" to diseaseOptions, "生命阶段" to stageOptions).forEach { (groupTitle, opts) ->
+                        if (opts.isNotEmpty()) {
+                            Spacer(Modifier.height(6.dp))
+                            Text(groupTitle, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                            opts.forEach { c ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().clickable {
+                                        careIds = if (c.id in careIds) careIds - c.id else careIds + c.id
+                                    }.padding(vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Checkbox(checked = c.id in careIds, onCheckedChange = { checked ->
+                                        careIds = if (checked) careIds + c.id else careIds - c.id
+                                    })
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(c.name, style = MaterialTheme.typography.bodyLarge)
+                                }
+                            }
                         }
                     }
                 }
