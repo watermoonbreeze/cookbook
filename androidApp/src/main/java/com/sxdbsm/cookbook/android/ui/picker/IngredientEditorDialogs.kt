@@ -152,7 +152,8 @@ internal fun IngredientEditorDialog(
         if (n.isBlank() || n == lastGuessedName) return@LaunchedEffect
         kotlinx.coroutines.delay(600)
         lastGuessedName = n
-        onGuessNutrition(n) { g -> applyGuess(g) }
+        // [AI修改] 审查建议1：查询异步(不随本 effect 取消)，回来时名已变则丢弃(防慢查询回灌覆盖新名结果)。
+        onGuessNutrition(n) { g -> if (name.trim() == n) applyGuess(g) }
     }
     // [AI生成] B-6：连续录入("保存并继续")支撑——聚焦名称框、记录本次意图与已存名(供 Toast)。
     val context = LocalContext.current

@@ -97,10 +97,12 @@ object NutritionGuesser {
             for (c in candidates) {
                 val cn = c.first.trim().replace(" ", "")
                 if (cn.isEmpty()) continue
+                // 中文食材中心词在末尾，用双向 contains 兼顾"输入含候选"(冷冻五花肉→五花肉)与"候选含输入"(五花→五花肉)；
+                // 均要求较短一方≥2 字防泛匹配，按匹配名长度加权取最贴近者。
                 val score = when {
                     cn == core -> 100 + cn.length
-                    core.endsWith(cn) && cn.length >= 2 -> 50 + cn.length // 输入"冷冻五花肉"→候选"五花肉"
-                    cn.endsWith(core) && core.length >= 2 -> 40 + core.length // 输入"五花"→候选"五花肉"
+                    core.contains(cn) && cn.length >= 2 -> 50 + cn.length
+                    cn.contains(core) && core.length >= 2 -> 40 + core.length
                     else -> 0
                 }
                 if (score > bestScore) { bestScore = score; best = c }

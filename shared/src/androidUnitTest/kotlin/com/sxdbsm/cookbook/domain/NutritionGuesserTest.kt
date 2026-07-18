@@ -58,4 +58,28 @@ class NutritionGuesserTest {
         assertEquals(NutritionGuessSource.None, g.source)
         assertNull(g.values, "无同名无大类→不预填")
     }
+
+    @Test
+    fun `精确优先于后缀`() {
+        // 同时存在"五花肉"与"五花肉丸子"，输入"五花肉"应精确命中"五花肉"(而非后缀匹配丸子)。
+        val cands = listOf("五花肉丸子" to NutritionGuessValues(energyKcal = 200.0), "五花肉" to pork)
+        val g = NutritionGuesser.guess("五花肉", cands, FoodGroup.Group.RED_MEAT)
+        assertEquals("五花肉", (g.source as NutritionGuessSource.Match).refName)
+        assertEquals(pork, g.values)
+    }
+
+    @Test
+    fun `短名跳过近似命中走大类`() {
+        // 核心名 <2 字("蛋")不做近似匹配(防泛匹配)，退大类兜底。
+        val g = NutritionGuesser.guess("蛋", candidates, FoodGroup.Group.EGG)
+        assertTrue(g.source is NutritionGuessSource.Group, "短名应走大类: ${g.source}")
+    }
+
+    @Test
+    fun `同名多候选取匹配名最长`() {
+        // 输入"红烧五花肉"→"五花肉"(后缀6分+长度)胜过更短的泛候选"肉"。
+        val cands = listOf("肉" to NutritionGuessValues(energyKcal = 100.0), "五花肉" to pork)
+        val g = NutritionGuesser.guess("红烧五花肉", cands, FoodGroup.Group.RED_MEAT)
+        assertEquals("五花肉", (g.source as NutritionGuessSource.Match).refName, "应取匹配名最长者")
+    }
 }
