@@ -298,10 +298,10 @@ private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewMode
         onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
         modifier = Modifier.fillMaxWidth(),
     )
-    // [AI生成] 药膳一期·食补过滤：药食同源优先(默认关不打扰)。小标题内嵌"仅供参考"常驻轻免责；**只正向筛选展示、不接慢病评级**。
+    // [AI生成] 药膳一期·食养筛选：药食同源优先(默认关不打扰)。术语"食养"(非"食补",避进补见效义)；只正向筛选展示、不接慢病评级。
     Spacer(Modifier.height(6.dp))
     Text(
-        "食补（按传统分类筛选，仅供参考）",
+        "食养（按传统分类筛选，仅供参考）",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )

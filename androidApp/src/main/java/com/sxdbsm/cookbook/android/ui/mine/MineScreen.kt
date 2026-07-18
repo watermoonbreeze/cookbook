@@ -56,6 +56,7 @@ fun MineScreen(
     onOpenFeatureGuide: () -> Unit = {}, // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
     onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
     onOpenDietReport: () -> Unit = {}, // [AI生成] 饮食报告(周/月回顾)
+    onOpenTcmReference: () -> Unit = {}, // [AI生成] 食养参考(药食同源科普+免责)
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -312,6 +313,9 @@ fun MineScreen(
             SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
+            InsetDivider(52)
+            // [AI生成] 食养参考(名称待 copywriter 定稿)：药食同源官方目录科普 + 免责。
+            SettingRow(icon = Icons.Outlined.Spa, title = "食养参考", subtitle = "药食同源目录与传统说法，仅供了解", trailing = "▸") { onOpenTcmReference() }
         }
 
         InsetGroup(title = "AI 助手") {
