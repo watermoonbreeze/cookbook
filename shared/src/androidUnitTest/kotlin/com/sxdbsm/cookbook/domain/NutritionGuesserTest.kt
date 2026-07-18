@@ -43,6 +43,22 @@ class NutritionGuesserTest {
     }
 
     @Test
+    fun `整名以修饰字开头也精确命中_土豆`() {
+        // 用户反馈:"土豆"的"土"是修饰词→曾被剥成"豆"匹不上。原名(raw)兜底应精确命中候选"土豆"。
+        val potato = NutritionGuessValues(energyKcal = 81.0, carbG = 17.8)
+        val g = NutritionGuesser.guess("土豆", listOf("土豆" to potato, "鸡蛋" to egg), FoodGroup.Group.STAPLE)
+        assertTrue(g.source is NutritionGuessSource.Match, "土豆应精确命中而非大类兜底: ${g.source}")
+        assertEquals("土豆", (g.source as NutritionGuessSource.Match).refName)
+        assertEquals(potato, g.values)
+    }
+
+    @Test
+    fun `修饰词变体仍命中_土鸡蛋`() {
+        val g = NutritionGuesser.guess("土鸡蛋", candidates, FoodGroup.Group.EGG)
+        assertEquals("鸡蛋", (g.source as NutritionGuessSource.Match).refName, "土鸡蛋剥土→鸡蛋命中")
+    }
+
+    @Test
     fun `无同名_按大类均值兜底`() {
         val g = NutritionGuesser.guess("某新奇绿叶菜", candidates, FoodGroup.Group.VEGETABLE)
         assertTrue(g.source is NutritionGuessSource.Group, "应大类兜底: ${g.source}")

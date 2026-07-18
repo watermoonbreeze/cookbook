@@ -63,17 +63,31 @@ object NutritionGuesser {
         FoodGroup.Group.BEAN to NutritionGuessValues(energyKcal = 350.0, proteinG = 20.0, fatG = 15.0, fiberG = 6.0),
     )
 
-    /** 归一核心名：去空格 + 剥离前导修饰词。[AI生成] */
+    private fun norm(name: String): String = name.trim().replace(" ", "")
+
+    /** 归一核心名：去空格 + 剥离前导修饰词（剥后至少留 2 字，避免把"土豆"剥成"豆"）。[AI生成] */
     fun coreName(name: String): String {
-        var s = name.trim().replace(" ", "")
+        var s = norm(name)
         var changed = true
         while (changed) {
             changed = false
             for (m in MODIFIERS) {
-                if (s.length > m.length && s.startsWith(m)) { s = s.removePrefix(m); changed = true }
+                // [AI修改] 剥离后需仍≥2字，防"土豆→豆""大枣→枣"这类整名以修饰字开头的被误剥。
+                if (s.length - m.length >= 2 && s.startsWith(m)) { s = s.removePrefix(m); changed = true }
             }
         }
         return s
+    }
+
+    /** 候选名 cn 与查询名 q 的匹配分（精确>输入含候选>候选含输入；较短方≥2字防泛匹配）。[AI生成] */
+    private fun matchScore(cn: String, q: String): Int {
+        if (q.length < 2) return 0
+        return when {
+            cn == q -> 100 + cn.length
+            q.contains(cn) && cn.length >= 2 -> 50 + cn.length // 输入含候选：冷冻五花肉→五花肉
+            cn.contains(q) -> 40 + q.length // 候选含输入：五花→五花肉
+            else -> 0
+        }
     }
 
     /**
@@ -89,22 +103,18 @@ object NutritionGuesser {
         candidates: List<Pair<String, NutritionGuessValues>>,
         group: FoodGroup.Group?,
     ): NutritionGuess {
+        // [AI修改] 用户反馈"输土豆提示暂无同名"：coreName 会把"土豆"的"土"当修饰词剥成"豆"→匹配不上预设土豆。
+        //   故同时用**原名(raw，不剥修饰词)**与**剥修饰词的 core** 两把 key 匹配，取更高分——raw 兜住"土豆/山药"这类
+        //   本身以修饰字开头的完整食材名(精确命中预设)，core 兜住"冷冻五花肉→五花肉"这类变体。
+        val raw = norm(name)
         val core = coreName(name)
-        if (core.length >= 2) {
-            // 1) 近似同名命中：精确 > 一方为另一方后缀（取匹配名最长者，最贴近）。
+        run {
             var best: Pair<String, NutritionGuessValues>? = null
             var bestScore = 0
             for (c in candidates) {
-                val cn = c.first.trim().replace(" ", "")
+                val cn = norm(c.first)
                 if (cn.isEmpty()) continue
-                // 中文食材中心词在末尾，用双向 contains 兼顾"输入含候选"(冷冻五花肉→五花肉)与"候选含输入"(五花→五花肉)；
-                // 均要求较短一方≥2 字防泛匹配，按匹配名长度加权取最贴近者。
-                val score = when {
-                    cn == core -> 100 + cn.length
-                    core.contains(cn) && cn.length >= 2 -> 50 + cn.length
-                    cn.contains(core) && core.length >= 2 -> 40 + core.length
-                    else -> 0
-                }
+                val score = maxOf(matchScore(cn, raw), matchScore(cn, core))
                 if (score > bestScore) { bestScore = score; best = c }
             }
             if (best != null) return NutritionGuess(best.second, NutritionGuessSource.Match(best.first))
