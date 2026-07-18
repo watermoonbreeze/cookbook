@@ -316,6 +316,13 @@ CREATE TABLE dish_favorite (
     created_at INTEGER NOT NULL
 );
 
+-- [AI生成] 负反馈"踩"：用户显式标"不再推荐"的菜(仅用户主动标才降权，防"未选=不喜欢"误伤)。
+-- 独立表(仿 dish_favorite)不动 dish 表/不牵连 SELECT * 生成类型。推荐取数按此过滤(沉底/不再出现)，可撤销/在菜品详情恢复。
+CREATE TABLE dish_dislike (
+    dish_id INTEGER NOT NULL PRIMARY KEY REFERENCES dish(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+);
+
 -- [AI生成] B5：常用配料组(如"基础调料包"=葱姜蒜盐生抽油)，编辑菜品"配料组"一键加入食材清单，降录入成本。
 -- 存食材名(按名解析/兜底建，同步友好)；source=preset/user。
 CREATE TABLE ingredient_group (
@@ -1480,6 +1487,19 @@ DELETE FROM dish_favorite WHERE dish_id = ?;
 
 selectFavoriteDishIds:
 SELECT dish_id FROM dish_favorite;
+
+-- ===== dish_dislike（负反馈"踩"·不再推荐） =====
+insertDishDislike:
+INSERT OR REPLACE INTO dish_dislike(dish_id, created_at) VALUES (?, ?);
+
+deleteDishDislike:
+DELETE FROM dish_dislike WHERE dish_id = ?;
+
+selectDislikedDishIds:
+SELECT dish_id FROM dish_dislike;
+
+isDishDisliked:
+SELECT COUNT(*) > 0 FROM dish_dislike WHERE dish_id = ?;
 
 -- ===== ingredient_group（常用配料组）B5 =====
 

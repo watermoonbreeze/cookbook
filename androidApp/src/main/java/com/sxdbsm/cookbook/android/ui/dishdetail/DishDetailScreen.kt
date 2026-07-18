@@ -167,7 +167,24 @@ fun DishDetailScreen(
             // [AI生成] 详情洞察：库存可做/缺料/采购、健康适宜、做过次数、营养概要。
             LaunchedEffect(d) { vm.loadInsights(d) } // [AI修改] key 用整个 d：同菜编辑后(id不变)洞察/相关菜品也重算。
             LaunchedEffect(d.id) { vm.loadFavorite(d.id) } // [AI生成] B1：加载收藏态
+            LaunchedEffect(d.id) { vm.loadDisliked(d.id) } // [AI生成] §9.20：加载"不再推荐"态
             vm.insights?.let { DishInsightsSection(it) }
+
+            // [AI生成] §9.20：已标"不再推荐"→详情页给恢复入口(踩错/改主意的闭环，推荐里已过滤该菜)。
+            if (vm.isDisliked) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "已设为不再推荐，AI 推荐里不会再出现这道菜",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { vm.restoreRecommend(d.id) }) { Text("恢复推荐") }
+                }
+            }
 
             if (d.tags.isNotEmpty()) {
                 FormFieldLabel("标签", topPadding = 18.dp, bottomPadding = 8.dp)

@@ -2,10 +2,13 @@ package com.sxdbsm.cookbook.android.ui.ai
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import com.sxdbsm.cookbook.android.ui.component.CapsuleButton
 import androidx.compose.foundation.layout.Arrangement
@@ -35,7 +38,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,7 +81,9 @@ fun AiRecommendScreen(
     val planState = planVm.state
     var showPlan by remember { mutableStateOf(false) }
     var rulesOpen by remember { mutableStateOf(false) } // [AI生成] 推荐规则说明弹层(标题右上说明图标)
+    var dislikeTarget by remember { mutableStateOf<DishItemUi?>(null) } // [AI生成] §9.20 负反馈踩:长按目标菜→ActionSheet
     val snackbar = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     // [AI生成] 库存挂钩关→隐藏"库存推荐"档(名不副实的标签最迷茫)；若正处 PANTRY 模式则回落随机。
     val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
     LaunchedEffect(pantryHookOn) {
@@ -205,6 +212,7 @@ fun AiRecommendScreen(
                                     selectedIds = state.selectedIds,
                                     onToggle = { vm.toggleSelect(it) },
                                     onToggleGroup = { vm.toggleGroup(group.dishes.map { d -> d.id }) },
+                                    onDislikeRequest = { dislikeTarget = it }, // §9.20 长按→踩菜单
                                 )
                                 Spacer(Modifier.height(10.dp))
                             }
@@ -235,7 +243,12 @@ fun AiRecommendScreen(
                                 Spacer(Modifier.height(4.dp))
                             }
                             items(state.dishItems, key = { it.id }) { item ->
-                                DishRow(item = item, selected = item.id in state.selectedIds, onToggle = { vm.toggleSelect(item.id) })
+                                DishRow(
+                                    item = item,
+                                    selected = item.id in state.selectedIds,
+                                    onToggle = { vm.toggleSelect(item.id) },
+                                    onDislikeRequest = { dislikeTarget = item }, // §9.20 长按→踩菜单
+                                )
                                 Divider()
                             }
                             item {
@@ -248,6 +261,30 @@ fun AiRecommendScreen(
                 }
             }
         }
+    }
+
+    // [AI生成] §9.20 负反馈踩：长按菜卡→ActionSheet(未踩=红字"不再推荐这道菜"、已踩="恢复推荐")；标记后 Snackbar 撤销(防误标)。
+    dislikeTarget?.let { target ->
+        val marked = target.disliked
+        com.sxdbsm.cookbook.android.ui.component.ActionSheet(
+            title = target.name,
+            onDismiss = { dislikeTarget = null },
+            actions = listOf(
+                if (marked) {
+                    com.sxdbsm.cookbook.android.ui.component.SheetAction(label = "恢复推荐") {
+                        vm.setDisliked(target.id, false)
+                    }
+                } else {
+                    com.sxdbsm.cookbook.android.ui.component.SheetAction(label = "不再推荐这道菜", destructive = true) {
+                        vm.setDisliked(target.id, true)
+                        scope.launch {
+                            val res = snackbar.showSnackbar("已不再推荐「${target.name}」", actionLabel = "撤销", duration = SnackbarDuration.Long)
+                            if (res == SnackbarResult.ActionPerformed) vm.setDisliked(target.id, false)
+                        }
+                    }
+                },
+            ),
+        )
     }
 
     // [AI生成] 推荐规则说明弹层：本机规则 + 云端 AI 逻辑，仿食材营养表"数据来源"弹层(AlertDialog + 可滚正文 + 知道了)。
@@ -397,6 +434,7 @@ private fun SuggestionGroupCard(
     selectedIds: Set<Long>,
     onToggle: (Long) -> Unit,
     onToggleGroup: () -> Unit,
+    onDislikeRequest: (DishItemUi) -> Unit = {},
 ) {
     val allSelected = group.dishes.isNotEmpty() && group.dishes.all { it.id in selectedIds }
     // [AI修改] 苹果风格：无阴影填充白卡。
@@ -415,21 +453,32 @@ private fun SuggestionGroupCard(
             }
             Spacer(Modifier.height(4.dp))
             group.dishes.forEach { dish ->
-                DishRow(item = dish, selected = dish.id in selectedIds, onToggle = { onToggle(dish.id) })
+                DishRow(item = dish, selected = dish.id in selectedIds, onToggle = { onToggle(dish.id) }, onDislikeRequest = { onDislikeRequest(dish) })
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit) {
+private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit, onDislikeRequest: () -> Unit = {}) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable { onToggle() }.padding(vertical = 10.dp),
+        // [AI生成] §9.20：点击=勾选、长按=负反馈踩(上下文菜单)；踩后就地灰态(alpha 0.5·不移除不跳动)。
+        //   已踩时点击不再勾选(勾选圈也已隐藏)——避免"看不到选中反馈却被静默加入这一餐";长按仍可"恢复推荐"。
+        modifier = Modifier.fillMaxWidth()
+            .combinedClickable(onClick = { if (!item.disliked) onToggle() }, onLongClick = onDislikeRequest)
+            .then(if (item.disliked) Modifier.alpha(0.5f) else Modifier)
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                // [AI生成] §9.20：已标"不再推荐"角标(浅色)——就地告知、长按可恢复。
+                if (item.disliked) {
+                    Spacer(Modifier.width(6.dp))
+                    Text("已标记不再推荐", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 // [AI生成] B2：最近吃过标注(浅色)，紧跟菜名——该菜已排到最后，仅告知不隐藏。
                 if (item.recentText.isNotBlank()) {
                     Spacer(Modifier.width(6.dp))
@@ -446,20 +495,22 @@ private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit) {
                 Text(item.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        // [AI修改] §9.1 统一:Material Checkbox→勾选圈(与选菜品/食材同款·苹果Photos式)。
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(CircleShape)
-                .then(
-                    if (selected) Modifier.background(MaterialTheme.colorScheme.primary)
-                    else Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)).border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape),
-                )
-                .clickable { onToggle() },
-            contentAlignment = Alignment.Center,
-        ) {
-            if (selected) {
-                Icon(Icons.Outlined.Check, contentDescription = "已选", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(15.dp))
+        // [AI修改] §9.1 统一:Material Checkbox→勾选圈(与选菜品/食材同款·苹果Photos式)。§9.20:已踩隐藏勾选圈(踩的菜不该加入这一餐)。
+        if (!item.disliked) {
+            Box(
+                modifier = Modifier
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .then(
+                        if (selected) Modifier.background(MaterialTheme.colorScheme.primary)
+                        else Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)).border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                    )
+                    .clickable { onToggle() },
+                contentAlignment = Alignment.Center,
+            ) {
+                if (selected) {
+                    Icon(Icons.Outlined.Check, contentDescription = "已选", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(15.dp))
+                }
             }
         }
     }

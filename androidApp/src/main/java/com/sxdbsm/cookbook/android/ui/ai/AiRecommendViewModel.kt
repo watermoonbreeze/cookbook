@@ -145,8 +145,33 @@ class AiRecommendViewModel(
 
     /** 勾选/取消某道菜。[AI生成] */
     fun toggleSelect(id: Long) {
+        // [AI生成] §9.20 防线:已标"不再推荐"的菜不得被勾进这一餐(UI 已隐勾选圈+禁点,此处再兜一层)。
+        val disliked = state.dishItems.any { it.id == id && it.disliked } ||
+            state.suggestionGroups.any { g -> g.dishes.any { it.id == id && it.disliked } }
+        if (disliked) return
         val cur = state.selectedIds
         state = state.copy(selectedIds = if (id in cur) cur - id else cur + id)
+    }
+
+    /**
+     * 标/取消"不再推荐"(负反馈踩)。[AI生成] §9.20
+     *
+     * 写 DB(下次 gather 过滤该菜=不再出现) + 就地把该项转灰态(不移除、不跳动) + 标记时同步取消勾选。
+     * 撤销/恢复调 setDisliked(id, false)。
+     */
+    fun setDisliked(id: Long, disliked: Boolean) {
+        viewModelScope.launch {
+            // [AI修改] 与详情页一致:DB 写成功才乐观更新 UI 态(本地写极少失败,失败则不改灰态,避免态与库不一致)。
+            runCatching { dataSource.setDishDisliked(id, disliked) }.onSuccess {
+                state = state.copy(
+                    dishItems = state.dishItems.map { if (it.id == id) it.copy(disliked = disliked) else it },
+                    suggestionGroups = state.suggestionGroups.map { g ->
+                        g.copy(dishes = g.dishes.map { if (it.id == id) it.copy(disliked = disliked) else it })
+                    },
+                    selectedIds = if (disliked) state.selectedIds - id else state.selectedIds, // 踩了就不该在这一餐
+                )
+            }
+        }
     }
 
     /** 选/取消整套搭配方案(模型分餐组合)：已全选则整套取消，否则补齐整套。[AI生成] */
@@ -261,6 +286,7 @@ data class DishItemUi(
     val note: String,
     val avoidText: String = "", // [AI生成] 忌口警示(非空则在行内标红)。
     val recentText: String = "", // [AI生成] B2：最近吃过标注(非空则行内浅色显示"N天前吃过")。
+    val disliked: Boolean = false, // [AI生成] 负反馈踩：本次标记"不再推荐"→就地灰态(下次推荐由 gather 过滤不再出现)。
 )
 
 /** 模型给出的一套搭配方案(一餐组合)。[AI生成] H1：消费 orchestrator 的 MealSuggestion。 */

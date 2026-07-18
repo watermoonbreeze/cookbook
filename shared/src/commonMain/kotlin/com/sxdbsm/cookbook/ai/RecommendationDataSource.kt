@@ -67,11 +67,14 @@ class RecommendationDataSource(
         // 候选菜：与可用食材有交集的菜(预筛)，再取全食材做角色标注；按餐次适配筛选(全部不筛)。
         // [AI修改] 性能：findDishesByIngredients 已返回含 name/preference 的 DishMini，原先又对每个 id 逐个
         //   getDishById(每菜5~6条SQL)取配料，最多 100 菜≈500+查询。改为保留 DishMini + 一条批量配料查询组装 RuleDish。
+        // [AI生成] 负反馈"踩"：用户标"不再推荐"的菜从候选中过滤(沉底=不再出现)；可在菜品详情恢复。
+        val dislikedIds = q.selectDislikedDishIds().executeAsList().toSet()
         val candidateMinis = if (pantryIds.isEmpty()) {
             emptyList()
         } else {
             dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT)
                 .map { it.dish }
+                .filter { it.id !in dislikedIds } // 踩过的不再推荐
                 .filter { MealSlotMatcher.matches(mealSlot, it.name) }
         }
         val candidateIds = candidateMinis.map { it.id }
@@ -284,7 +287,9 @@ class RecommendationDataSource(
         // 全库菜品 → PlanDish
         // [AI修改] 性能：原先对全库每道菜逐个 dishRepo.getDishById(每菜 5~6 条 SQL)，516 菜≈2500+ 查询/次，
         //   月计划生成明显卡顿。改为**两条批量查询**(菜列表 + 全库配料)后内存分组组装，PlanDish 只需 id/名/配料，不用重字段。
-        val allDishRows = q.selectAllDishes().executeAsList()
+        // [AI生成] 负反馈"踩"：周期计划生成也过滤掉用户标"不再推荐"的菜(踩的负信号作用于计划生成)。
+        val dislikedIds = q.selectDislikedDishIds().executeAsList().toSet()
+        val allDishRows = q.selectAllDishes().executeAsList().filter { it.id !in dislikedIds }
         val ingredientsByDish = q.selectAllDishIngredientsForPlan().executeAsList().groupBy { it.dish_id }
         val dishes = allDishRows.map { d ->
             val ings = ingredientsByDish[d.id].orEmpty()
@@ -321,6 +326,9 @@ class RecommendationDataSource(
         in 9..11 -> "秋季"
         else -> "冬季"
     }
+
+    /** 标/取消"不再推荐"(负反馈踩)——委托 DishRepository，供推荐页 VM 复用现有数据网关。[AI生成] */
+    suspend fun setDishDisliked(dishId: Long, disliked: Boolean) = dishRepo.setDishDisliked(dishId, disliked)
 
     /** 纯规则推荐（S0 端到端产物，不依赖模型）。[AI生成] */
     suspend fun ruleCandidates(engine: HealthRuleEngine = HealthRuleEngine()) = gather().let { input ->

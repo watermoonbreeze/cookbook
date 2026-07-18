@@ -38,11 +38,26 @@ class DishDetailViewModel(
     var isFavorite by mutableStateOf(false) // [AI生成] B1：当前菜是否收藏(置顶)
         private set
 
+    var isDisliked by mutableStateOf(false) // [AI生成] §9.20：当前菜是否已标"不再推荐"(推荐里过滤)，详情页给恢复入口
+        private set
+
     fun observeDish(dishId: Long): Flow<Dish?> = dishRepo.observeDishById(dishId)
 
     /** 加载收藏态。[AI生成] B1 */
     fun loadFavorite(dishId: Long) {
         viewModelScope.launch { isFavorite = dishId in dishRepo.favoriteDishIds() }
+    }
+
+    /** 加载"不再推荐"态。[AI生成] §9.20 */
+    fun loadDisliked(dishId: Long) {
+        viewModelScope.launch { isDisliked = dishRepo.isDishDisliked(dishId) }
+    }
+
+    /** 恢复推荐(在详情页取消"不再推荐")。[AI生成] §9.20：踩错/改主意的恢复闭环。 */
+    fun restoreRecommend(dishId: Long) {
+        viewModelScope.launch {
+            runCatching { dishRepo.setDishDisliked(dishId, false) }.onSuccess { isDisliked = false }
+        }
     }
 
     /** 切换收藏(置顶)。[AI生成] B1 */

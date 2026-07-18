@@ -533,6 +533,16 @@ class DishRepository(private val db: CookbookDatabase) {
         if (favorite) q.insertDishFavorite(dishId, DateTime.nowEpochSeconds()) else q.deleteDishFavorite(dishId)
     }
 
+    /** 标记/取消"不再推荐"(负反馈踩)。[AI生成] 仅用户显式标才降权；推荐取数按此过滤。 */
+    suspend fun setDishDisliked(dishId: Long, disliked: Boolean) = withContext(ioDispatcher) {
+        if (disliked) q.insertDishDislike(dishId, DateTime.nowEpochSeconds()) else q.deleteDishDislike(dishId)
+    }
+
+    /** 某菜是否已标"不再推荐"(菜品详情恢复入口用)。[AI生成] */
+    suspend fun isDishDisliked(dishId: Long): Boolean = withContext(ioDispatcher) {
+        q.isDishDisliked(dishId).executeAsOne()
+    }
+
     /** 菜品做过(记入餐食)的次数与最近日期。[AI生成] 详情页"做过N次"。 */
     suspend fun cookStats(dishId: Long): Pair<Int, String?> = withContext(ioDispatcher) {
         val r = q.selectDishCookStats(dishId).executeAsOne()

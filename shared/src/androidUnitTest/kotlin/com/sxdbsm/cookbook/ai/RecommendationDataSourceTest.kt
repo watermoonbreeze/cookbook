@@ -64,6 +64,32 @@ class RecommendationDataSourceTest {
     }
 
     @Test
+    fun `负反馈踩_被标不再推荐的菜不再进候选_恢复后又回来`() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val ingredientRepo = IngredientRepository(db)
+        val dishRepo = DishRepository(db)
+        val pantry = PantryRepository(db)
+        val ds = RecommendationDataSource(db, pantry, dishRepo, com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)), ingredientRepo, com.sxdbsm.cookbook.data.repository.NutritionRepository(db))
+
+        val porkId = ingredientRepo.search("五花肉").first { it.name == "五花肉" }.id
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "会被踩的红烧肉", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(),
+            ingredients = listOf(DishIngredient(ingredient = Ingredient(id = porkId, name = "五花肉"), isMain = true)),
+            steps = emptyList(),
+        )
+        pantry.addToPantry(porkId)
+
+        assertTrue(ds.gather(RecommendMode.PANTRY).dishes.any { it.id == dishId }, "踩前应在候选")
+        dishRepo.setDishDisliked(dishId, true)
+        assertFalse(ds.gather(RecommendMode.PANTRY).dishes.any { it.id == dishId }, "踩后应从候选剔除(不再推荐)")
+        dishRepo.setDishDisliked(dishId, false)
+        assertTrue(ds.gather(RecommendMode.PANTRY).dishes.any { it.id == dishId }, "恢复后又进候选")
+        Unit
+    }
+
+    @Test
     fun `B2_日期窗口内吃过标记recent并带天数_窗口外不标`() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded()

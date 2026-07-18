@@ -1,0 +1,7 @@
+-- [AI生成] v27：负反馈"踩"——新增 dish_dislike 表(用户显式标"不再推荐"的菜)。
+-- 独立表(仿 dish_favorite)，不动 dish 表、不牵连 SELECT * 生成类型；老库升级只新建空表，无副作用。
+-- 与主 schema 的 CREATE TABLE dish_dislike 保持一致(全新装走 Schema.create、老库走本迁移)。
+CREATE TABLE dish_dislike (
+    dish_id INTEGER NOT NULL PRIMARY KEY REFERENCES dish(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+);
