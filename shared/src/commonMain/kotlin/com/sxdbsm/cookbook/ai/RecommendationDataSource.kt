@@ -161,6 +161,29 @@ class RecommendationDataSource(
         val style = RecommendationStyle.fromKey(
             q.selectPreference(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE).executeAsOneOrNull()?.value_,
         )
+        val styleWeights = style.weights()
+
+        // [AI生成] 口味画像(菜系/做法/主料偏好)：按较长历史窗口(默认90天)聚合频次，纯本地统计。
+        //   仅当前风格开启口味因子(tasteProfile>0)才查(省无谓聚合)；无历史→空画像→因子中性。
+        val tasteProfile = if (styleWeights.tasteProfile > 0.0) {
+            val tasteSince = DateTime.formatDate(DateTime.plusDays(today, -TASTE_WINDOW_DAYS))
+            val cuisineFreq = q.selectCookedCuisineFreqSince(tasteSince).executeAsList()
+                .filter { it.cuisine.isNotBlank() }.associate { it.cuisine to it.cnt.toInt() }
+            val methodFreq = q.selectCookedMethodFreqSince(tasteSince).executeAsList()
+                .filter { it.method.isNotBlank() }.associate { it.method to it.cnt.toInt() }
+            // 主料频次：SQL 仅按 is_main 聚合(未单独滤调料)；候选侧 matchScore 传的是 nonSeasoning 主料，
+            //   误标为主料的调料匹配不到任何候选主料故不贡献，无需在此额外过滤。
+            val mainFreq = q.selectCookedMainFreqSince(tasteSince).executeAsList()
+                .filter { it.ingredient_name.isNotBlank() }.associate { it.ingredient_name to it.cnt.toInt() }
+            TasteProfile(cuisineFreq = cuisineFreq, methodFreq = methodFreq, mainFreq = mainFreq)
+        } else TasteProfile.EMPTY
+
+        // [AI生成] 时间衰减(仅"偏新鲜"风格 decayPreferenceByStaleness)：候选菜"距上次做天数"(不限窗口)，久没做的常做菜降权。
+        val lastCookedDaysAgo = if (styleWeights.decayPreferenceByStaleness && candidateIds.isNotEmpty()) {
+            q.selectLastCookedDatesByDishIds(candidateIds).executeAsList()
+                .mapNotNull { row -> row.last_date?.let { d -> row.dish_id to DateTime.daysBetween(DateTime.parseDate(d), today).coerceAtLeast(0) } }
+                .toMap()
+        } else emptyMap()
 
         RecommendationInput(
             dishes = dishes,
@@ -180,6 +203,8 @@ class RecommendationDataSource(
             style = style,
             conditions = conditions, // [AI生成] 慢病数值软约束(仅营养风格生效)
             giByName = giByName,
+            tasteProfile = tasteProfile, // [AI生成] 口味画像(菜系/做法/主料偏好)
+            lastCookedDaysAgo = lastCookedDaysAgo, // [AI生成] 时间衰减(仅偏新鲜)
         )
     }
 
@@ -309,6 +334,8 @@ class RecommendationDataSource(
             mainRepeatCounts = input.mainRepeatCounts,
             conditions = input.conditions, // [AI生成] 慢病数值软约束透传
             giByName = input.giByName,
+            tasteProfile = input.tasteProfile, // [AI生成] 口味画像透传
+            lastCookedDaysAgo = input.lastCookedDaysAgo, // [AI生成] 时间衰减透传(仅偏新鲜)
         )
     }
 
@@ -319,6 +346,7 @@ class RecommendationDataSource(
         private val BREAKFAST_SOFT_KEYWORDS = listOf("粥", "豆浆", "豆奶", "牛奶", "燕麦", "蛋羹", "面")
         private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数(旧按条数，保留兼容)。
         const val RECENT_WINDOW_DAYS_DEFAULT = 7 // [AI生成] B2：去重窗口默认一周；UI 可切一周/二周/三周/四周。
+        private const val TASTE_WINDOW_DAYS = 90 // [AI生成] 口味画像聚合窗口：近90天历史学菜系/做法/主料偏好(较长以累积稳定信号)。
         private const val DISH_PREFILTER_LIMIT = 100L // 与在手食材有交集的候选菜上限。
         private const val PREF_SATURATION = 8.0 // [AI生成] P2：菜被记录 8 次即视为"很熟悉"(偏好画像饱和点)。
         private const val FAVORITE_BONUS = 0.3 // [AI生成] P2：收藏菜的偏好加成。

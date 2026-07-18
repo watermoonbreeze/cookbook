@@ -933,6 +933,44 @@ JOIN meal_record mr ON mr.id = mrd.meal_record_id
 WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
 GROUP BY mrd.dish_id;
 
+-- [AI生成] 算法·时间衰减：指定候选菜"距上次做的最近日期"(不限窗口)；FRESH 风格下让久没做的常做菜"常做"加分随天数衰减。
+--   与 selectEatenDishDatesSince 区别：不设日期下限、只查给定候选 id(候选数≤100)，取全历史最近一次。
+selectLastCookedDatesByDishIds:
+SELECT mrd.dish_id AS dish_id, MAX(mr.date) AS last_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+WHERE mr.status = 1 AND mrd.status = 1 AND mrd.dish_id IN ?
+GROUP BY mrd.dish_id;
+
+-- [AI生成] 算法·口味画像：某日期(含)以来吃过的菜按**菜系**统计次数(空菜系忽略在应用层)。纯本地频次聚合。
+selectCookedCuisineFreqSince:
+SELECT COALESCE(d.cuisine, '') AS cuisine, COUNT(*) AS cnt
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+JOIN dish d ON d.id = mrd.dish_id AND d.status = 1
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY d.cuisine;
+
+-- [AI生成] 算法·口味画像：某日期(含)以来吃过的菜按**做法**统计次数(经 dish_cooking_method_rel 多对多)。
+selectCookedMethodFreqSince:
+SELECT cm.name AS method, COUNT(*) AS cnt
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+JOIN dish_cooking_method_rel r ON r.dish_id = mrd.dish_id AND r.status = 1
+JOIN cooking_method cm ON cm.id = r.cooking_method_id AND cm.status = 1
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY cm.name;
+
+-- [AI生成] 算法·口味画像：某日期(含)以来吃过的菜按**主料名**统计次数(仅 is_main，调料在应用层按 seasoning 集排除)。
+selectCookedMainFreqSince:
+SELECT COALESCE(i.name, '') AS ingredient_name, COUNT(*) AS cnt
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+JOIN dish_ingredient di ON di.dish_id = mrd.dish_id AND di.status = 1 AND di.is_main = 1
+JOIN ingredient i ON i.id = di.ingredient_id AND i.status = 1
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY i.name;
+
 -- [AI生成] 调养 tab 按病种分类通过调养规则聚合食材；剂量语义由 advice_level 表达，红绿灯分组在应用层完成。
 selectIngredientsByCareCategories:
 SELECT DISTINCT i.id,

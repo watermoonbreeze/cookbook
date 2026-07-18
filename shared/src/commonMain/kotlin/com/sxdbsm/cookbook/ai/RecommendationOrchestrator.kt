@@ -42,6 +42,8 @@ class RecommendationOrchestrator(
             mainRepeatCounts = input.mainRepeatCounts,
             conditions = input.conditions, // [AI生成] 慢病数值软约束透传
             giByName = input.giByName,
+            tasteProfile = input.tasteProfile, // [AI生成] 口味画像透传
+            lastCookedDaysAgo = input.lastCookedDaysAgo, // [AI生成] 时间衰减透传(仅偏新鲜)
         )
         if (evaluated.isEmpty()) {
             return RecommendationResult(emptyList(), evaluated, RecommendationSource.EMPTY)

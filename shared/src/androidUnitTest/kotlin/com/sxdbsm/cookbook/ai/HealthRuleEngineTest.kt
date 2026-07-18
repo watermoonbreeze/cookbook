@@ -372,6 +372,84 @@ class HealthRuleEngineTest {
         assertEquals(RecommendationStyle.FRESH, RecommendationStyle.fromKey("FRESH"))
     }
 
+    // ===== 算法3项：口味画像 + 时间衰减 =====
+
+    @Test
+    fun `口味画像_合口味的菜加分靠前_空画像中性`() {
+        // 甲=川菜/爆炒/牛肉(合用户口味)，乙=粤菜/清蒸/鱼(不合)；其余条件相同。
+        val jia = RuleDish(1, "水煮牛肉", listOf(main(101, "牛肉")), cuisine = "川菜", cookingMethodNames = listOf("爆炒"))
+        val yi = RuleDish(2, "清蒸鱼", listOf(main(102, "鱼")), cuisine = "粤菜", cookingMethodNames = listOf("清蒸"))
+        val taste = TasteProfile(
+            cuisineFreq = mapOf("川菜" to 8),
+            methodFreq = mapOf("爆炒" to 8),
+            mainFreq = mapOf("牛肉" to 8),
+        )
+        // BALANCED 开口味因子 → 合口味的甲排前。
+        val ranked = engine.evaluate(
+            listOf(yi, jia), pantryIngredientIds = setOf(101, 102), HealthConstraints(),
+            weights = RecommendationStyle.BALANCED.weights(), tasteProfile = taste,
+        )
+        assertEquals(1L, ranked.first().id, "合口味的川菜牛肉排前")
+
+        // 空画像 → 口味因子不生效，两菜同分(顺序按稳定排序/输入序，不因口味改变)。
+        val neutral = engine.evaluate(
+            listOf(jia, yi), pantryIngredientIds = setOf(101, 102), HealthConstraints(),
+            weights = RecommendationStyle.BALANCED.weights(), tasteProfile = TasteProfile.EMPTY,
+        ).associate { it.id to it.score }
+        assertEquals(neutral[1], neutral[2], "空画像→口味因子中性、两菜同分")
+    }
+
+    @Test
+    fun `口味画像_权重为0的风格不生效`() {
+        // 默认 DEFAULT 权重 tasteProfile=0 → 即使传画像也不加分。
+        val jia = RuleDish(1, "水煮牛肉", listOf(main(101, "牛肉")), cuisine = "川菜")
+        val yi = RuleDish(2, "清蒸鱼", listOf(main(102, "鱼")), cuisine = "粤菜")
+        val taste = TasteProfile(cuisineFreq = mapOf("川菜" to 8))
+        val scores = engine.evaluate(
+            listOf(jia, yi), pantryIngredientIds = setOf(101, 102), HealthConstraints(),
+            weights = RecommendationWeights.DEFAULT, tasteProfile = taste,
+        ).associate { it.id to it.score }
+        assertEquals(scores[1], scores[2], "DEFAULT 权重 tasteProfile=0 → 口味不生效")
+    }
+
+    @Test
+    fun `时间衰减_偏新鲜下久没做的常做菜preference递减`() {
+        // 甲乙都是"常做"(preference=1.0)、条件相同；甲很久没做(120天前)、乙最近才做(3天前，但已在去重窗口外场景略)。
+        // 偏新鲜(decayPreferenceByStaleness) → 甲的常做加分被大幅衰减，乙几乎全额 → 乙分更高。
+        val jia = RuleDish(1, "老菜甲", listOf(main(101, "甲")))
+        val yi = RuleDish(2, "近做乙", listOf(main(102, "乙")))
+        val pref = mapOf(1L to 1.0, 2L to 1.0)
+        val fresh = RecommendationStyle.FRESH.weights()
+        val scores = engine.evaluate(
+            listOf(jia, yi), pantryIngredientIds = setOf(101, 102), HealthConstraints(),
+            weights = fresh, preferenceScores = pref,
+            lastCookedDaysAgo = mapOf(1L to 120, 2L to 3),
+        ).associate { it.id to it.score }
+        assertTrue(scores[2]!! > scores[1]!!, "偏新鲜下久没做的甲preference衰减更多→乙分高: $scores")
+    }
+
+    @Test
+    fun `时间衰减_只在偏新鲜生效_其他风格常做全额不衰减`() {
+        val jia = RuleDish(1, "老菜甲", listOf(main(101, "甲")))
+        val yi = RuleDish(2, "近做乙", listOf(main(102, "乙")))
+        val pref = mapOf(1L to 1.0, 2L to 1.0)
+        // 偏熟悉：decayPreferenceByStaleness=false → 距上次做天数不影响，两菜preference全额、同分。
+        val familiar = engine.evaluate(
+            listOf(jia, yi), pantryIngredientIds = setOf(101, 102), HealthConstraints(),
+            weights = RecommendationStyle.FAMILIAR.weights(), preferenceScores = pref,
+            lastCookedDaysAgo = mapOf(1L to 120, 2L to 3),
+        ).associate { it.id to it.score }
+        assertEquals(familiar[1], familiar[2], "偏熟悉不衰减→两常做菜同分")
+    }
+
+    @Test
+    fun `时间衰减系数_越久越小`() {
+        assertEquals(1.0, HealthRuleEngine.stalenessDecay(0), 1e-9)
+        assertEquals(0.5, HealthRuleEngine.stalenessDecay(30), 1e-6) // 半衰期30天
+        assertTrue(HealthRuleEngine.stalenessDecay(90) < HealthRuleEngine.stalenessDecay(30))
+        assertTrue(HealthRuleEngine.stalenessDecay(7) > HealthRuleEngine.stalenessDecay(30))
+    }
+
     @Test
     fun `慢病软降_营养风格下高GI高嘌呤主料菜靠后_默认风格与无病种不动`() {
         // 白米饭(高GI gi=83)、猪肝(高嘌呤关键词"肝") vs 青菜(普通)——各1味主料,除软降外打分相同。

@@ -41,6 +41,9 @@ data class RecommendationInput(
     // [AI生成] 慢病数值软约束:已登记病种(空=不触发软降)+名→GI(仅糖尿病需)。仅营养风格生效。
     val conditions: Set<com.sxdbsm.cookbook.domain.HealthCondition> = emptySet(),
     val giByName: Map<String, Double> = emptyMap(),
+    // [AI生成] 算法3项：口味画像(菜系/做法/主料偏好频次) + 每菜距上次做天数(不限窗口,仅偏新鲜时间衰减用)。
+    val tasteProfile: com.sxdbsm.cookbook.ai.TasteProfile = com.sxdbsm.cookbook.ai.TasteProfile.EMPTY,
+    val lastCookedDaysAgo: Map<Long, Int> = emptyMap(),
 )
 
 /** 规则引擎输入的菜品（已把食材按角色标好）。[AI生成] */

@@ -4,6 +4,7 @@ import com.sxdbsm.cookbook.ai.model.DishCandidate
 import com.sxdbsm.cookbook.ai.model.HealthConstraints
 import com.sxdbsm.cookbook.ai.model.IngredientRole
 import com.sxdbsm.cookbook.ai.model.RuleDish
+import kotlin.math.exp
 
 /**
  * @File : HealthRuleEngine
@@ -23,6 +24,15 @@ class HealthRuleEngine {
         private const val CHRONIC_HIT_STEP = 0.25
         private const val CHRONIC_HITS_PER_DIM_CAP = 2
         private const val CHRONIC_PENALTY_CAP = 0.7
+
+        // [AI生成] 时间衰减(仅"偏新鲜"风格)：preference(常做)加分随"距上次做天数"指数衰减，半衰期 30 天。
+        //   daysAgo=0(刚做)→1.0；7天→≈0.85；30天→0.5；60天→0.25；90天→≈0.125。久没做的老菜常做加分递减→不固化在老菜。
+        private const val FRESHNESS_HALF_LIFE_DAYS = 30.0
+        private const val LN2 = 0.6931471805599453
+
+        /** 距上次做 [daysAgo] 天的"常做"衰减系数[0,1]。[AI生成] */
+        internal fun stalenessDecay(daysAgo: Int): Double =
+            exp(-daysAgo.coerceAtLeast(0).toDouble() * LN2 / FRESHNESS_HALF_LIFE_DAYS)
     }
 
     /**
@@ -48,6 +58,10 @@ class HealthRuleEngine {
         // [AI生成] 慢病数值软约束:已登记病种(空=不触发)+名→GI(仅糖尿病需,否则空)。仅营养风格(chronicDiseaseNutrition>0)生效。
         conditions: Set<com.sxdbsm.cookbook.domain.HealthCondition> = emptySet(),
         giByName: Map<String, Double> = emptyMap(),
+        // [AI生成] 口味画像(菜系/做法/主料偏好)：仅 weights.tasteProfile>0 生效；空画像→匹配分0→中性(向后兼容)。
+        tasteProfile: TasteProfile = TasteProfile.EMPTY,
+        // [AI生成] 时间衰减:每菜距上次做天数(不限窗口)；仅 weights.decayPreferenceByStaleness=true(偏新鲜)时用于衰减 preference。
+        lastCookedDaysAgo: Map<Long, Int> = emptyMap(),
     ): List<DishCandidate> = dishes.mapNotNull { dish ->
         val nonSeasoning = dish.ingredients.filter { it.role != IngredientRole.SEASONING }
         val seasonings = dish.ingredients.filter { it.role == IngredientRole.SEASONING }
@@ -103,8 +117,19 @@ class HealthRuleEngine {
         // [AI生成] 增长型 P1 新因子(无画像数据时为 0，行为同现有)：
         //   营养搭配互补度[-1,1]、偏好画像[0,1]加分；近期同主料重复罚分。
         score += weights.nutritionBalance * (nutritionBalanceScores[dish.id] ?: 0.0)
-        score += weights.preference * (preferenceScores[dish.id] ?: 0.0)
+        // [AI修改] 时间衰减(仅"偏新鲜"风格 decayPreferenceByStaleness=true)：常做加分随"距上次做天数"衰减，
+        //   久没做的老菜 preference 贡献递减→推荐不固化在老菜；从没做过(不在 lastCookedDaysAgo)不衰减(新菜本就 preference≈0)。其余风格照常全额。
+        val prefRaw = preferenceScores[dish.id] ?: 0.0
+        val prefEffective = if (weights.decayPreferenceByStaleness) {
+            lastCookedDaysAgo[dish.id]?.let { prefRaw * stalenessDecay(it) } ?: prefRaw
+        } else prefRaw
+        score += weights.preference * prefEffective
         score -= weights.mainRepeat * (mainRepeatCounts[dish.id] ?: 0)
+        // [AI生成] 口味画像加分[0,1]：候选菜系/做法/主料与用户历史偏好的匹配度(仅 tasteProfile>0 生效、空画像→0)。
+        if (weights.tasteProfile > 0.0 && !tasteProfile.isEmpty) {
+            val tasteScore = tasteProfile.matchScore(dish.cuisine, dish.cookingMethodNames, mainIngredients.map { it.name })
+            score += weights.tasteProfile * tasteScore
+        }
         // [AI生成] 慢病数值软约束(多角色验证收敛)：登记糖尿病/痛风+高GI/高嘌呤**主料**→正常层内轻度罚(高GI/嘌呤各命中≤2味×0.25、整因子封顶0.7，
         //   显著<avoid=5.0且**不进 sortedWith 分层判据**、不改可选性)。复用 dishQualitativeHits(gate病种+去重已在 avoid∪limit 的料，防双重罚)。
         //   缺数据/无病种/非营养风格(权重0)→0，向后兼容。**钠不做**(菜级sodiumMg含调料无法拆、每道菜都放盐会误伤全部=红线)，钠靠 care limit+cookingCautions+今日卡。

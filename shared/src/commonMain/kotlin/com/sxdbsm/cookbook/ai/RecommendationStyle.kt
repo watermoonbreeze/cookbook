@@ -35,6 +35,10 @@ data class RecommendationWeights(
     // [AI生成] 慢病数值软约束(GI/嘌呤)：登记糖尿病/痛风家庭，高GI/高嘌呤主料的菜在正常层内轻度靠后(不剔除、不进忌口分层)。
     //   **默认 0=不生效**(多角色验证:软降弱可感知,静默默认开有操纵感→仅"偏营养"风格才开=用户主动知情同意)。钠不做(每道菜都放盐会误伤全部)。
     val chronicDiseaseNutrition: Double = 0.0, // 高GI/高嘌呤梯度罚(仅登记病种+营养风格生效)
+    // [AI生成] 口味画像因子(菜系/做法/主料偏好匹配[0,1])：默认 0，各风格按需开(见 weights())。无历史→匹配分0→中性。
+    val tasteProfile: Double = 0.0,
+    // [AI生成] 时间衰减开关(仅"偏新鲜"开)：为 true 时 preference(常做)加分随"距上次做天数"指数衰减，久没做的老菜常做加分递减，推荐不固化在老菜。
+    val decayPreferenceByStaleness: Boolean = false,
 ) {
     companion object {
         val DEFAULT = RecommendationWeights()
@@ -62,21 +66,28 @@ enum class RecommendationStyle {
 
     /** 该风格对应的权重（在默认权重上按风格调系数）。[AI生成] */
     fun weights(): RecommendationWeights = when (this) {
-        BALANCED -> RecommendationWeights.DEFAULT
+        // [AI修改] 综合：新增中等口味画像加成(合口味的菜靠前)，其余因子同现有；无历史时 taste 分为0→行为不变。
+        BALANCED -> RecommendationWeights.DEFAULT.copy(
+            tasteProfile = 0.4, // 中等：合口味加分与 recommend/preference 同量级，不碾压物尽其用
+        )
         FAMILIAR -> RecommendationWeights.DEFAULT.copy(
             preference = 1.2,   // ×2 更看重爱吃/常做
             recent = 0.2,       // ×0.4 弱化去重
             mainRepeat = 0.1,
+            tasteProfile = 0.6, // [AI生成] 偏熟悉=最看重合口味
         )
         FRESH -> RecommendationWeights.DEFAULT.copy(
             recent = 1.0,       // ×2 更强去重
             mainRepeat = 0.6,   // ×2 抑制同主料
             preference = 0.18,  // ×0.3 弱化熟悉偏好
+            tasteProfile = 0.2, // [AI生成] 偏新鲜=口味画像最弱(仍保菜系倾向但不过度锚定熟悉口味)
+            decayPreferenceByStaleness = true, // [AI生成] 时间衰减:久没做的常做菜preference递减→不固化在老菜(仅此风格开)
         )
         NUTRITION -> RecommendationWeights.DEFAULT.copy(
             nutritionBalance = 1.28, // ×1.6 更看重营养互补
             recommend = 0.9,         // ×1.5 更看重调养推荐
             chronicDiseaseNutrition = 0.6, // [AI生成] 偏营养=用户主动求健康→开启慢病数值软降(高GI/嘌呤菜轻度靠后);其余风格默认0不动
+            tasteProfile = 0.3, // [AI生成] 偏营养=口味让位营养,画像加成偏低
         )
     }
 
