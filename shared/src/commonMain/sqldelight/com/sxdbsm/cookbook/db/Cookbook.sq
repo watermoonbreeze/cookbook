@@ -888,6 +888,10 @@ ORDER BY i.pinyin, i.name;
 selectAllIngredientIds:
 SELECT id FROM ingredient WHERE status = 1;
 
+-- [AI生成] 全部有效食材名（供"菜名推食材"按名匹配；纯查询无需迁移）。
+selectAllIngredientNames:
+SELECT name FROM ingredient WHERE status = 1;
+
 -- [AI生成] 各食材的营养维度/应季分类（周期规划做营养均衡与应季优先）。
 selectNutritionSeasonTags:
 SELECT ic.ingredient_id, fc.name AS tag_name, fc.dimension AS dim

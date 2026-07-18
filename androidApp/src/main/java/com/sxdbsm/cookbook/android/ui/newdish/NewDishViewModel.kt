@@ -34,6 +34,7 @@ data class NewDishUiState(
     val availableCookingMethods: List<CookingMethod> = emptyList(),
     val availableTags: List<com.sxdbsm.cookbook.domain.model.DishTag> = emptyList(), // [AI生成] T3：标签库(选择+管理)
     val ingredients: List<DishIngredient> = emptyList(),
+    val nameSuggestions: List<String> = emptyList(), // [AI生成] 菜名推食材：从菜名推出、尚未加入的候选食材名(点击确认加入)
     val steps: List<DishStep> = emptyList(), // [AI生成] 菜品操作步骤草稿，保存时随菜品事务一起落库。
     val specialNote: String = "",
     val description: String = "",
@@ -95,9 +96,17 @@ class NewDishViewModel(
     @Volatile
     private var seasoningIds: Set<Long> = emptySet()
 
+    // [AI生成] 菜名推食材：缓存全部食材名(init 加载)，setName 时本地推演候选(纯函数·快)。
+    @Volatile
+    private var cachedIngredientNames: List<String> = emptyList()
+
     init {
         viewModelScope.launch {
             seasoningIds = runCatching { ingredientRepo.seasoningIngredientIds() }.getOrDefault(emptySet())
+        }
+        viewModelScope.launch {
+            cachedIngredientNames = runCatching { ingredientRepo.allActiveNames() }.getOrDefault(emptyList())
+            refreshNameSuggestions() // 名字可能已预填(编辑/导入)，加载完名单后补算一次
         }
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
@@ -264,7 +273,26 @@ class NewDishViewModel(
         }
     }
 
-    fun setName(v: String) { _state.value = _state.value.copy(name = v) }
+    fun setName(v: String) { _state.value = _state.value.copy(name = v); refreshNameSuggestions() }
+
+    /** 按当前菜名推演候选食材（排除已加入的），更新 nameSuggestions。[AI生成] 菜名推食材 */
+    private fun refreshNameSuggestions() {
+        val addedNames = _state.value.ingredients.map { it.ingredient.name }.toSet()
+        val guessed = com.sxdbsm.cookbook.domain.DishNameIngredientGuesser
+            .guess(_state.value.name, cachedIngredientNames)
+            .filter { it !in addedNames }
+        _state.value = _state.value.copy(nameSuggestions = guessed)
+    }
+
+    /** 确认加入某个"菜名推出"的食材：按名解析为已有食材后加入。[AI生成] 菜名推食材 */
+    fun addSuggestedIngredient(name: String) {
+        viewModelScope.launch {
+            val ing = runCatching { ingredientRepo.search(name) }.getOrDefault(emptyList())
+                .firstOrNull { it.name == name } ?: return@launch
+            addIngredient(ing)
+            refreshNameSuggestions() // 加入后从候选移除
+        }
+    }
     fun setCookingMethodInput(v: String) {
         addCookingMethod(v)
     }
@@ -373,6 +401,7 @@ class NewDishViewModel(
                 unitId = gram?.id ?: ingredient.defaultUnitId,
             ),
         )
+        refreshNameSuggestions() // [AI生成] 菜名推食材:加入后从候选移除该项(选择器加入也生效)
     }
 
     /** 预填新建菜品(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)：设菜名+批量加食材，并以此为"无改动基线"(返回不立即弹放弃)。[AI生成] */

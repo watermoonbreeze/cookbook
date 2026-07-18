@@ -41,6 +41,11 @@ class IngredientRepository(private val db: CookbookDatabase) {
         }
     }
 
+    /** 全部有效食材名（供"菜名推食材"匹配）。[AI生成] */
+    suspend fun allActiveNames(): List<String> = withContext(ioDispatcher) {
+        q.selectAllIngredientNames().executeAsList()
+    }
+
     /**
      * 按普通食材分类查询。[AI修改]
      */

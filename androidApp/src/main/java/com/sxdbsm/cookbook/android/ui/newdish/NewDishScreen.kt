@@ -8,6 +8,10 @@ import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -257,6 +261,34 @@ fun NewDishScreen(
                     Icon(Icons.Outlined.Category, contentDescription = null, modifier = Modifier.size(18.dp)) // [AI修改] 与"导入整菜/选择步骤"区分图标语义
                     Spacer(Modifier.width(4.dp))
                     Text("配料组")
+                }
+            }
+            // [AI生成] 菜名推食材(用户提)：从菜名(如"土豆牛腩")推出已有食材,点确认加入。仅有候选时显示。
+            if (state.nameSuggestions.isNotEmpty()) {
+                Text(
+                    "根据菜名推荐，点一下加入：",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp, bottom = 4.dp),
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    state.nameSuggestions.forEach { n ->
+                        Surface(
+                            shape = RoundedCornerShape(percent = 50),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.clickable { vm.addSuggestedIngredient(n) },
+                        ) {
+                            Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                                Spacer(Modifier.width(4.dp))
+                                Text(n, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            }
+                        }
+                    }
+                    Spacer(Modifier.width(4.dp))
                 }
             }
             OutlinedCard(
