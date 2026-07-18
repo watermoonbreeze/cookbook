@@ -1,0 +1,4 @@
+-- [AI生成] v26：连续多段倒计时——给 cooking_timer_template 加 segments_json 列（存段列表 JSON）。
+-- 空=单段(用 duration_seconds，与老数据一致)；非空=[{"name":..,"seconds":..}] 多段，一段停止后进下一段。
+-- ALTER ADD COLUMN 带 NOT NULL DEFAULT ''：老行自动补空串=仍是单段，升级无损、不动既有计时。
+ALTER TABLE cooking_timer_template ADD COLUMN segments_json TEXT NOT NULL DEFAULT '';
