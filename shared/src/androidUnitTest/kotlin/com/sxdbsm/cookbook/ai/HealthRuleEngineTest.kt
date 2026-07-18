@@ -451,6 +451,18 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `A1_isMeat与isStaple按主料名和菜名判定`() {
+        val meat = RuleDish(1, "红烧肉", listOf(main(101, "五花肉")))
+        val veg = RuleDish(2, "清炒油菜", listOf(main(102, "油菜")))
+        val staple = RuleDish(3, "米饭", listOf(main(103, "大米")))
+        val r = engine.evaluate(listOf(meat, veg, staple), setOf(101, 102, 103), HealthConstraints())
+            .associateBy { it.id }
+        assertTrue(r[1]!!.isMeat, "五花肉→荤"); assertFalse(r[1]!!.isStaple)
+        assertFalse(r[2]!!.isMeat, "油菜→非荤"); assertFalse(r[2]!!.isStaple)
+        assertTrue(r[3]!!.isStaple, "米饭→主食"); assertFalse(r[3]!!.isMeat)
+    }
+
+    @Test
     fun `慢病软降_营养风格下高GI高嘌呤主料菜靠后_默认风格与无病种不动`() {
         // 白米饭(高GI gi=83)、猪肝(高嘌呤关键词"肝") vs 青菜(普通)——各1味主料,除软降外打分相同。
         val hiGi = RuleDish(1, "米饭套餐", listOf(main(101, "白米饭")))

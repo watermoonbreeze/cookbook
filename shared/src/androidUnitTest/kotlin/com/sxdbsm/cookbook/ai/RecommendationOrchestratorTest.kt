@@ -66,6 +66,66 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `A1_兜底组合避免两荤_优先荤素搭配`() = runBlocking {
+        // 3荤 + 1素，模型空→兜底；每餐2菜；首餐应荤素搭配(含素菜4)，而非两荤。
+        val meatVegInput = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
+                RuleDish(2, "糖醋排骨", listOf(main(102, "排骨"))),
+                RuleDish(3, "宫保鸡丁", listOf(main(103, "鸡肉"))),
+                RuleDish(4, "清炒油菜", listOf(main(104, "油菜"))),
+            ),
+            pantryIngredientIds = setOf(101, 102, 103, 104),
+            constraints = HealthConstraints(),
+            recentDishIds = emptySet(),
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime()) // 空→兜底(确定性)
+        val result = orch.recommend(meatVegInput, mealCount = 1)
+        assertEquals(RecommendationSource.RULE_FALLBACK, result.source)
+        val meal = result.suggestions.first().dishIds
+        assertEquals(2, meal.size)
+        assertTrue(4L in meal, "首餐应含素菜(荤素搭配)而非两荤: $meal")
+    }
+
+    @Test
+    fun `A1_兜底组合优先补主食`() = runBlocking {
+        // 2荤 + 1主食，每餐2菜：首餐第2道应优先补主食(主食补分>荤素补分)。
+        val stapleInput = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
+                RuleDish(2, "糖醋排骨", listOf(main(102, "排骨"))),
+                RuleDish(3, "米饭", listOf(main(103, "大米"))),
+            ),
+            pantryIngredientIds = setOf(101, 102, 103),
+            constraints = HealthConstraints(),
+            recentDishIds = emptySet(),
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val result = orch.recommend(stapleInput, mealCount = 1)
+        val meal = result.suggestions.first().dishIds
+        assertTrue(3L in meal, "首餐应补主食(米饭): $meal")
+    }
+
+    @Test
+    fun `A1_全忌口或全最近时兜底仍返非空建议`() = runBlocking {
+        // 两道菜都最近吃过(正常层为空)→ fallback 的 normal.ifEmpty{candidates} 兜底应仍返建议、不空、dishIds 非空。
+        val recentInput = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
+                RuleDish(2, "清炒油菜", listOf(main(102, "油菜"))),
+            ),
+            pantryIngredientIds = setOf(101, 102),
+            constraints = HealthConstraints(),
+            recentDishIds = setOf(1, 2), // 全部最近吃过
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val result = orch.recommend(recentInput, mealCount = 1)
+        assertEquals(RecommendationSource.RULE_FALLBACK, result.source)
+        assertTrue(result.suggestions.isNotEmpty(), "全最近时兜底仍应给建议")
+        assertTrue(result.suggestions.first().dishIds.isNotEmpty(), "兜底建议 dishIds 不空")
+    }
+
+    @Test
     fun `无可做候选返回EMPTY`() = runBlocking {
         val orch = RecommendationOrchestrator(MockAiRuntime())
         // 库存为空 → 没有可做菜

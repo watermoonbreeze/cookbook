@@ -202,6 +202,11 @@ object NutritionBalance {
     private const val F_TARGET = 0.28
     private const val C_TARGET = 0.52
     private const val SCALE = 4.0 // 把"缺口×偏向"的小量放大到可用区间，再 clamp。
+    // [AI生成] A2：无基线(今日还没吃)时的"绝对均衡分"参数——候选自身三大宏量占比越接近目标越高。
+    //   仅奖励、不惩罚(偏斜单菜如清蒸鱼是合理选择，不该扣分)；封顶偏小(0.5)因单菜均衡是弱信号、只作首餐场景兜底。
+    private const val ABS_BAL_NEUTRAL_DEV = 0.5 // 三宏量占比与目标的绝对偏差和≤此值才给正分
+    private const val ABS_BAL_SCALE = 1.0
+    private const val ABS_BAL_CAP = 0.5
 
     /** 三大宏量供能占比(蛋白,脂肪,碳水)；总能量≤0 返回 null。 */
     private fun energyRatios(t: NutritionTotals): Triple<Double, Double, Double>? {
@@ -214,8 +219,8 @@ object NutritionBalance {
     }
 
     fun score(recent: NutritionTotals, candidate: NutritionTotals): Double {
-        val r = energyRatios(recent) ?: return 0.0
-        val c = energyRatios(candidate) ?: return 0.0
+        val c = energyRatios(candidate) ?: return 0.0 // 候选自身无营养数据→中性
+        val r = energyRatios(recent) ?: return absoluteBalanceScore(c) // [AI生成] A2：无基线(今日未吃)→绝对均衡分兜底(仅奖励)
         val gapP = P_TARGET - r.first // 正=近期该宏量偏低(缺)
         val gapF = F_TARGET - r.second
         val gapC = C_TARGET - r.third
@@ -224,5 +229,16 @@ object NutritionBalance {
         val devC = c.third - C_TARGET
         val raw = gapP * devP + gapF * devF + gapC * devC // 候选强调了近期缺的宏量→正
         return (raw * SCALE).coerceIn(-1.0, 1.0)
+    }
+
+    /**
+     * 绝对均衡分[0, ABS_BAL_CAP]：候选自身三大宏量供能占比越接近膳食指南目标(P20/F28/C52)越高。[AI生成] A2
+     *
+     * 用于"今日还没吃"(无缺口基线)时给营养因子一个非零信号，让"偏营养"风格首餐也能倾向均衡菜。
+     * **只奖励不惩罚**：偏斜的单菜(如清蒸鱼高蛋白)是合理选择，返回 0(中性)而非负分，避免误伤。
+     */
+    private fun absoluteBalanceScore(c: Triple<Double, Double, Double>): Double {
+        val dev = kotlin.math.abs(c.first - P_TARGET) + kotlin.math.abs(c.second - F_TARGET) + kotlin.math.abs(c.third - C_TARGET)
+        return ((ABS_BAL_NEUTRAL_DEV - dev) * ABS_BAL_SCALE).coerceIn(0.0, ABS_BAL_CAP)
     }
 }

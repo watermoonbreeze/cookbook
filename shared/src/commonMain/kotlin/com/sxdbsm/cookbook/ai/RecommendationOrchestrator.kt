@@ -149,7 +149,9 @@ class RecommendationOrchestrator(
         val main = jaccard(a.mainNames.toSet(), b.mainNames.toSet())
         val cuisine = if (a.cuisine.isNotBlank() && a.cuisine == b.cuisine) 1.0 else 0.0
         val method = jaccard(a.cookingMethodNames.toSet(), b.cookingMethodNames.toSet())
-        return SIM_W_MAIN * main + SIM_W_CUISINE * cuisine + SIM_W_METHOD * method
+        // [AI生成] D1：荤素结构维度——同为荤或同为素=相似，MMR 据此让同一批荤素交替(避免"主料不同但全是荤菜红烧"一批)。
+        val protein = if (a.isMeat == b.isMeat) 1.0 else 0.0
+        return SIM_W_MAIN * main + SIM_W_CUISINE * cuisine + SIM_W_METHOD * method + SIM_W_PROTEIN * protein
     }
 
     /** 集合 Jaccard 相似度[0,1]：|交|/|并|。空∩空=0。[AI生成] */
@@ -160,28 +162,65 @@ class RecommendationOrchestrator(
         return if (union == 0) 0.0 else inter.toDouble() / union
     }
 
-    /** 纯规则兜底：把规则 top 候选按每餐 2 菜切成 mealCount 餐。[AI生成] */
-    private fun fallback(candidates: List<DishCandidate>, mealCount: Int): List<MealSuggestion> =
-        candidates.take(mealCount * FALLBACK_DISHES_PER_MEAL)
-            .chunked(FALLBACK_DISHES_PER_MEAL)
-            .take(mealCount)
-            .map { chunk ->
+    /**
+     * 纯规则兜底：组合级贪心搭配成 mealCount 餐。[AI修改] A1
+     *
+     * 原实现按分数顺序 chunk(2)，一餐可能"两荤无素无主食"(营养最差组合)。
+     * 改为：每餐第 1 道取当前最高分，第 2 道在剩余候选里选"补荤素缺口 / 补主食 / 分数"组合分最高者，
+     * 让每餐尽量荤素搭配、尽量含主食(复用 PeriodPlanner 已验证的 BALANCE_BONUS/STAPLE_BONUS 系数)。
+     * 只在"正常层"(非忌口非最近)内组合；全是忌口/最近时兜底用全部，保证不空。
+     */
+    private fun fallback(candidates: List<DishCandidate>, mealCount: Int): List<MealSuggestion> {
+        val normal = candidates.filter { it.avoidNames.isEmpty() && !it.isRecent }
+        val pool = (normal.ifEmpty { candidates }).toMutableList() // 全忌口/最近时兜底用全部(不空)
+        val meals = ArrayList<MealSuggestion>(mealCount)
+        repeat(mealCount) {
+            if (pool.isEmpty()) return@repeat
+            val chunk = ArrayList<DishCandidate>(FALLBACK_DISHES_PER_MEAL)
+            chunk.add(pool.removeAt(0)) // 第 1 道：当前最高分(pool 已按分数序)
+            while (chunk.size < FALLBACK_DISHES_PER_MEAL && pool.isNotEmpty()) {
+                // maxByOrNull 平局取先者(pool 已按 score 降序)→确定性可测；勿改成会打乱顺序的实现。
+                val next = pool.maxByOrNull { combineScore(it, chunk) } ?: break
+                chunk.add(next)
+                pool.remove(next)
+            }
+            meals.add(
                 MealSuggestion(
                     dishIds = chunk.map { it.id },
                     reason = "用你现有食材可做：" + chunk.joinToString("、") { it.name },
                     cookingHint = chunk.firstOrNull()?.seasoningsOnHand
                         ?.takeIf { it.isNotEmpty() }
                         ?.let { "在手调料：" + it.joinToString("、") },
-                )
-            }
+                ),
+            )
+        }
+        return meals
+    }
+
+    /** A1：候选加入本餐已选 [chosen] 的组合分=基础分 + 补荤素缺口 + 补主食。[AI生成] */
+    private fun combineScore(cand: DishCandidate, chosen: List<DishCandidate>): Double {
+        var s = cand.score
+        val meat = chosen.count { it.isMeat }
+        val veg = chosen.count { !it.isMeat }
+        // 荤候选走上行、素候选走下行(cand.isMeat 互斥，同一候选只命中其一)；平衡态(meat==veg)下两类候选各自都能拿补分，倾向"补少的一方"。
+        if (cand.isMeat && meat <= veg) s += BALANCE_BONUS // 本餐荤不多于素→加荤合理
+        if (!cand.isMeat && veg <= meat) s += BALANCE_BONUS // 本餐素不多于荤→加素合理
+        if (chosen.none { it.isStaple } && cand.isStaple) s += STAPLE_BONUS // 本餐还没主食→补主食
+        return s
+    }
 
     companion object {
         const val DISPLAY_BATCH = 10 // [AI生成] 库存/随机推荐每批展示菜数；"换一换"取下一批不重复、全部推完循环。
-        private const val SIM_W_MAIN = 0.6 // [AI生成] MMR 相似度:主料主导(最强单调信号)
-        private const val SIM_W_CUISINE = 0.2 // [AI生成] MMR 相似度:菜系维度(避免一批全川菜)
+        private const val SIM_W_MAIN = 0.5 // [AI修改] MMR 相似度:主料主导(最强单调信号);为荤素维匀出0.1
+        private const val SIM_W_CUISINE = 0.15 // [AI修改] MMR 相似度:菜系维度(避免一批全川菜)
         private const val SIM_W_METHOD = 0.2 // [AI生成] MMR 相似度:做法维度(避免一批全红烧)
+        private const val SIM_W_PROTEIN = 0.15 // [AI生成] D1:MMR 荤素结构维度(避免一批全荤/全素)
         private const val DEFAULT_MEAL_COUNT = 3
         private const val MAX_DISHES_PER_MEAL = 3
         private const val FALLBACK_DISHES_PER_MEAL = 2
+        // [AI生成] A1:组合级搭配补分(复用 PeriodPlanner 已验证系数)——本餐荤素偏少一方/无主食时给对应候选加分。
+        private const val BALANCE_BONUS = 0.7 // 同餐荤素平衡补分
+        private const val STAPLE_BONUS = 0.9 // 本餐未含主食时给主食菜补分
+
     }
 }

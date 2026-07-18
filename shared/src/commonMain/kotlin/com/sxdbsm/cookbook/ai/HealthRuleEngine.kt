@@ -167,6 +167,8 @@ class HealthRuleEngine {
             complementary = (nutritionBalanceScores[dish.id] ?: 0.0) > 0.0, // [AI生成] 3b：补营养搭配
             cuisine = dish.cuisine, // [AI生成] MMR 菜系维度打散
             cookingMethodNames = dish.cookingMethodNames, // [AI生成] MMR 做法维度打散
+            isMeat = MealSlotMatcher.isMeatByMains(mainIngredients.map { it.name }), // [AI生成] A1：荤菜判定(组合级荤素平衡+MMR荤素维度)
+            isStaple = com.sxdbsm.cookbook.domain.StapleFood.isStaple(dish.name, mainIngredients.map { it.name }), // [AI生成] A1：主食菜判定(每餐尽量含主食)
         )
     }
         // [AI修改] B2：分层排序保证"最近吃过的排到最后(但在忌口之前)、忌口最末"，不依赖罚分量级、稳健：

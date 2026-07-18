@@ -95,6 +95,8 @@ data class DishCandidate(
     val complementary: Boolean = false, // [AI生成] 3b：能补近期缺的宏量(营养互补)，供"推荐理由"展示
     val cuisine: String = "", // [AI生成] 菜系：供 MMR 菜系维度打散(避免一批全川菜)。
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 做法：供 MMR 做法维度打散(避免一批全红烧)。
+    val isMeat: Boolean = false, // [AI生成] A1：荤菜(按主料判)——组合级搭配(每餐荤素平衡)+MMR 荤素维度打散。
+    val isStaple: Boolean = false, // [AI生成] A1：主食菜(按名+主料判)——组合级搭配(每餐尽量含主食)。
 )
 
 /** 模型输出：3 个下一餐组合，每餐 2~3 菜。[AI生成] */
