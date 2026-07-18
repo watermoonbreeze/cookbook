@@ -7,8 +7,8 @@ import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import com.sxdbsm.cookbook.android.kitchen.CookingTimerService
 import com.sxdbsm.cookbook.android.kitchen.TimerAlarm
+import com.sxdbsm.cookbook.android.kitchen.TimerAlarmReceiver
 import android.content.Intent
-import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
@@ -57,6 +57,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -100,8 +101,7 @@ fun CookingTimerScreen(
     var timers by remember { mutableStateOf<List<CookingTimerItem>>(emptyList()) }
     var loaded by remember { mutableStateOf(false) }
     var pickingRingtoneTimerId by remember { mutableStateOf<Long?>(null) }
-    var activeAlarmTimerId by remember { mutableStateOf<Long?>(null) }
-    var activeRingtone by remember { mutableStateOf<Ringtone?>(null) }
+    // [AI修改] 响铃/停铃统一由 TimerAlarmReceiver 单一管理，页面不再持有本地 Ringtone。
     val ringtonePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val timerId = pickingRingtoneTimerId
         pickingRingtoneTimerId = null
@@ -120,26 +120,30 @@ fun CookingTimerScreen(
     }
     val sortedTimers = remember(timers) { timers.sortedBy { it.sortOrder } }
 
-    fun stopActiveAlarm(resetTimerId: Long? = null) {
-        activeRingtone?.stop()
-        val resetTargetId = resetTimerId ?: activeAlarmTimerId
-        resetTargetId?.let { TimerAlarm.cancel(context, it) } // [AI生成] 同时停系统闹钟铃声/消通知（含背景响铃后回 App 停止）。
-        activeRingtone = null
-        activeAlarmTimerId = null
-        if (resetTargetId != null) {
-            timers = timers.map {
-                if (it.id == resetTargetId && it.status == TimerStatus.FINISHED) {
-                    it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds, endAtElapsed = null)
-                } else {
-                    it
-                }
-            } // [AI生成] 用户点击完成告警记录或停止按钮时，同时停止铃声并恢复到显示态。
+    // [AI修改] 停铃统一走 TimerAlarmReceiver（单一真相源）：撤系统闹钟调度 + 停铃 + 消通知，并把该计时器复位显示态。
+    fun stopAlarm(timerId: Long) {
+        TimerAlarm.cancel(context, timerId) // cancel = 撤调度 + TimerAlarmReceiver.stop(停铃+消通知)
+        timers = timers.map {
+            if (it.id == timerId && it.status == TimerStatus.FINISHED) {
+                it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds, endAtElapsed = null)
+            } else {
+                it
+            }
         }
     }
 
-    DisposableEffect(activeRingtone) {
-        val ringtoneToDispose = activeRingtone
-        onDispose { ringtoneToDispose?.stop() } // [AI生成] 页面退出或 Ringtone 被替换时主动停止，避免离开界面后继续响铃。
+    // [AI生成] 全屏/通知处停铃后，把已不再响铃的"完成态"计时器复位，保持页面与告警状态一致。
+    val ringingAlerts by TimerAlarmReceiver.activeAlerts.collectAsState()
+    LaunchedEffect(ringingAlerts, loaded) {
+        if (!loaded) return@LaunchedEffect
+        val ringingIds = ringingAlerts.map { it.first }.toSet()
+        timers = timers.map {
+            if (it.status == TimerStatus.FINISHED && it.id.toInt() !in ringingIds) {
+                it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds, endAtElapsed = null)
+            } else {
+                it
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -189,7 +193,8 @@ fun CookingTimerScreen(
             // [AI修改] 剩余时间按墙钟(endAtElapsed - now)计算，而非每秒 -1；
             // 息屏/后台时本循环虽被系统挂起，恢复后按真实流逝时间刷新，倒计时不再“停走”。
             val now = SystemClock.elapsedRealtime()
-            var finishedTimer: CookingTimerItem? = null
+            // [AI修改] 收集本 tick 内所有归零的计时器(可能多个同秒到点)，逐个响铃，别只处理最后一个。
+            val finishedTimers = mutableListOf<CookingTimerItem>()
             timers = timers.map { timer ->
                 if (timer.status != TimerStatus.RUNNING) {
                     timer
@@ -197,7 +202,7 @@ fun CookingTimerScreen(
                     val end = timer.endAtElapsed
                     val nextRemaining = if (end != null) remainingFrom(end, now) else (timer.remainingSeconds - 1).coerceAtLeast(0)
                     if (timer.remainingSeconds > 0 && nextRemaining == 0) {
-                        finishedTimer = timer.copy(remainingSeconds = 0, status = TimerStatus.FINISHED, endAtElapsed = null)
+                        finishedTimers += timer.copy(remainingSeconds = 0, status = TimerStatus.FINISHED, endAtElapsed = null)
                     }
                     timer.copy(
                         remainingSeconds = nextRemaining,
@@ -206,12 +211,15 @@ fun CookingTimerScreen(
                     ) // [AI生成] 倒计时归零后进入完成告警态，等待用户点击记录或停止按钮确认。
                 }
             }
-            finishedTimer?.let { timer ->
-                // [AI生成] 前台已检测到完成：取消/停系统闹钟，改由前台响铃，避免与闹钟双响。
-                TimerAlarm.cancel(context, timer.id)
-                activeRingtone?.stop()
-                activeRingtone = playTimerFinishedSound(context, timer.ringtoneUri)
-                activeAlarmTimerId = timer.id
+            finishedTimers.forEach { timer ->
+                // [AI修改] 前台到点：统一走 TimerAlarmReceiver.ring(响铃+通知+全屏意图+入 activeAlerts)，
+                //   并撤掉重复的系统闹钟调度，避免二次触发。若系统闹钟已先响(该 id 已在 activeAlerts)则不重复 ring，
+                //   避免打断正在响的铃。多计时器各自入 activeAlerts，全屏逐个显示、各自停止(修双响铃机制打架)。
+                val idInt = timer.id.toInt()
+                if (TimerAlarmReceiver.activeAlerts.value.none { it.first == idInt }) {
+                    TimerAlarm.cancelSchedule(context, timer.id)
+                    TimerAlarmReceiver.ring(context, idInt, timer.name, timer.ringtoneUri)
+                }
             }
         }
     }
@@ -318,7 +326,7 @@ fun CookingTimerScreen(
                     CookingTimerDisplayRow(
                         timer = timer,
                         onStart = {
-                            stopActiveAlarm()
+                            TimerAlarm.cancel(context, timer.id) // [AI修改] 开始前清掉该计时器可能残留的响铃/通知，再重新调度。
                             val now = SystemClock.elapsedRealtime()
                             timers = timers.map {
                                 if (it.id == timer.id) {
@@ -345,10 +353,8 @@ fun CookingTimerScreen(
                             }
                         },
                         onStop = {
-                            TimerAlarm.cancel(context, timer.id) // [AI生成] 停止取消到点闹钟并停铃。
-                            if (timer.status == TimerStatus.FINISHED) {
-                                stopActiveAlarm(resetTimerId = timer.id)
-                            }
+                            // [AI修改] 停止 = 撤调度 + 停铃 + 消通知(TimerAlarm.cancel) + 复位显示态，统一走 receiver。
+                            TimerAlarm.cancel(context, timer.id)
                             timers = timers.map {
                                 if (it.id == timer.id) it.copy(status = TimerStatus.IDLE, remainingSeconds = it.durationSeconds, endAtElapsed = null) else it
                             }
@@ -357,8 +363,7 @@ fun CookingTimerScreen(
                             timers = timers.map { if (it.id == timer.id) it.copy(editing = true) else it }
                         },
                         onDelete = {
-                            TimerAlarm.cancel(context, timer.id) // [AI生成] 删除取消到点闹钟。
-                            stopActiveAlarm()
+                            TimerAlarm.cancel(context, timer.id) // [AI修改] 删除时撤调度+停铃+消通知。
                             timers = timers.filterNot { it.id == timer.id }
                             if (timer.id > 0) {
                                 scope.launch { repo.deleteTemplate(timer.id) }
@@ -366,7 +371,7 @@ fun CookingTimerScreen(
                         },
                         onAcknowledgeAlarm = {
                             if (timer.status == TimerStatus.FINISHED) {
-                                stopActiveAlarm(resetTimerId = timer.id)
+                                stopAlarm(timer.id) // [AI修改] 点击完成告警卡：停铃+复位，统一走 receiver。
                             }
                         },
                     )
@@ -711,19 +716,4 @@ private fun getRingtoneTitle(context: Context, uri: Uri?): String {
     return runCatching {
         RingtoneManager.getRingtone(context.applicationContext, uri)?.getTitle(context.applicationContext)
     }.getOrNull().orEmpty().ifBlank { "系统默认铃声" }
-}
-
-private fun playTimerFinishedSound(context: Context, ringtoneUri: String): Ringtone? {
-    return runCatching {
-        val uri = ringtoneUri.takeIf { it.isNotBlank() }?.let(Uri::parse)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            ?: return null
-        RingtoneManager.getRingtone(context.applicationContext, uri)?.also { ringtone ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                ringtone.isLooping = true
-            }
-            ringtone.play()
-        }
-    }.getOrNull() // [AI生成] 保存 Ringtone 实例用于用户点击记录、停止按钮或退出页面时主动停止。
 }
