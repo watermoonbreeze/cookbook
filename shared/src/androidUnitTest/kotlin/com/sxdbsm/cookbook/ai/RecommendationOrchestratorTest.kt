@@ -126,6 +126,44 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `R1_模型选到忌口菜会被剔除但候选仍保留供UI标红`() = runBlocking {
+        // 候选含忌口菜(id=2,含猪肝忌口)，模型偏偏选它 → validate 用非忌口可选集 → 剔除。
+        val avoidInput = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "清炒菠菜", listOf(main(101, "菠菜"))),
+                RuleDish(2, "菠菜猪肝汤", listOf(main(101, "菠菜"), main(103, "猪肝"))),
+            ),
+            pantryIngredientIds = setOf(101, 103),
+            constraints = HealthConstraints(avoidIngredientIds = setOf(103)),
+            recentDishIds = emptySet(),
+        )
+        val json = """{"suggestions":[{"dishIds":[1,2],"reason":"x"}]}""" // 模型选了忌口菜 2
+        val orch = RecommendationOrchestrator(MockAiRuntime(json))
+        val result = orch.recommend(avoidInput, mealCount = 3)
+        assertTrue(result.suggestions.all { s -> 2L !in s.dishIds }, "忌口菜不得进模型建议")
+        assertTrue(result.candidates.any { it.id == 2L }, "忌口菜仍保留在候选供 UI 标红")
+    }
+
+    @Test
+    fun `R1_全部候选都忌口时兜底不崩且候选仍保留标红`() = runBlocking {
+        // 极端:所有可做菜主料都命中忌口 → selectable 空 → 模型不可选 → fallback 用全量(仅忌口菜)兜底不崩。
+        val allAvoidInput = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
+                RuleDish(2, "猪肝汤", listOf(main(102, "猪肝"))),
+            ),
+            pantryIngredientIds = setOf(101, 102),
+            constraints = HealthConstraints(avoidIngredientIds = setOf(101, 102)), // 两菜主料都忌口
+            recentDishIds = emptySet(),
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime()) // 空→兜底
+        val result = orch.recommend(allAvoidInput, mealCount = 2)
+        assertEquals(RecommendationSource.RULE_FALLBACK, result.source)
+        assertTrue(result.suggestions.isNotEmpty(), "全忌口时兜底仍给建议(不空、不崩)")
+        assertTrue(result.candidates.all { it.avoidNames.isNotEmpty() }, "候选全为忌口菜、仍保留供UI标红")
+    }
+
+    @Test
     fun `无可做候选返回EMPTY`() = runBlocking {
         val orch = RecommendationOrchestrator(MockAiRuntime())
         // 库存为空 → 没有可做菜

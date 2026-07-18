@@ -1,0 +1,42 @@
+package com.sxdbsm.cookbook.ai
+
+import com.sxdbsm.cookbook.ai.model.DishCandidate
+import com.sxdbsm.cookbook.ai.model.HealthConstraints
+import kotlin.test.Test
+import kotlin.test.assertTrue
+
+/**
+ * @File : RecommendationPromptTest
+ * @Time : 2026/07/18
+ * @Author : SXD-AI
+ * @Desc : 云端推荐 Prompt 构造单测（R5 免责约束 / R2 近吃标签）
+ * <p>
+ * [AI生成] 云端 AI 会诊落地：验证 prompt 含禁医疗断言约束、候选带"N天前吃过"标签。
+ **/
+class RecommendationPromptTest {
+
+    private fun cand(id: Long, name: String, recentDaysAgo: Int? = null) = DishCandidate(
+        id = id, name = name, mainNames = listOf("主料"), secondaryNames = emptyList(),
+        seasoningsOnHand = emptyList(), limitHits = emptyList(), recommendHits = emptyList(),
+        isRecent = recentDaysAgo != null, score = 1.0, recentDaysAgo = recentDaysAgo,
+    )
+
+    @Test
+    fun `R5_system含禁医疗断言与免责约束`() {
+        val req = RecommendationPrompt.build(listOf(cand(1, "番茄炒蛋")), HealthConstraints(), mealCount = 3)
+        assertTrue(req.system.contains("不承诺疗效"), "system 应含不承诺疗效")
+        assertTrue(req.system.contains("降压"), "system 应列出禁用医疗断言词")
+    }
+
+    @Test
+    fun `R2_候选带近吃标签`() {
+        val req = RecommendationPrompt.build(
+            listOf(cand(1, "红烧肉", 3), cand(2, "清蒸鱼", 0), cand(3, "凉拌黄瓜")),
+            HealthConstraints(), mealCount = 3,
+        )
+        assertTrue(req.user.contains("3天前吃过"), "近吃标签应显示天数")
+        assertTrue(req.user.contains("今天吃过"), "当天吃过应显示'今天吃过'")
+        // 没吃过的菜不带近吃标签
+        assertTrue(!req.user.substringAfter("凉拌黄瓜").substringBefore("\n").contains("吃过"))
+    }
+}

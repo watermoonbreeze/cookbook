@@ -44,6 +44,8 @@ object RecommendationPrompt {
                 append("用户有健康档案，请优先遵循《中国居民膳食指南》等权威膳食建议（如三高少盐少油、痛风低嘌呤、糖尿病低GI），")
                 append("并严格遵守候选上标注的「利调养/注意限量」——这些是硬约束，不得违背。")
             }
+            // [AI生成] R5(免责红线)：约束模型理由/做法建议不得产生医疗断言、不承诺疗效。
+            append("理由只谈食材搭配、口味、是否用到现有食材，不得出现『降压/降糖/降脂/治疗/根治/达标/包治』等医疗断言，也不承诺疗效；涉及健康只说『较清淡/少油少盐』这类做法层面的话。")
             append("严格输出 JSON，不要多余文字。")
         }
         val user = buildString {
@@ -59,6 +61,7 @@ object RecommendationPrompt {
                 if (c.recommendHits.isNotEmpty()) append("｜利调养:").append(c.recommendHits.joinToString("、"))
                 if ((preferenceScores[c.id] ?: 0.0) >= 0.5) append("｜常做") // [AI生成] 3a：偏好画像高=常做/爱吃
                 if ((nutritionBalanceScores[c.id] ?: 0.0) > 0.0) append("｜补营养") // [AI生成] 3a：能补近期缺的宏量
+                c.recentDaysAgo?.let { d -> append(if (d <= 0) "｜今天吃过" else "｜${d}天前吃过") } // [AI生成] R2：近吃标签，帮模型主动避开近期吃过的(换口味)；d≤0 归"今天"(防御非正数)
                 if (c.missingNames.isNotEmpty()) append("｜还差:").append(c.missingNames.joinToString("、")) // [AI生成] 缺的主料/辅料，供模型措辞提示
                 if (c.limitHits.isNotEmpty()) append("｜注意限量:").append(c.limitHits.joinToString("、"))
                 append("\n")

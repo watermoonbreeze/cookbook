@@ -50,9 +50,14 @@ class RecommendationOrchestrator(
         }
         // [AI生成] 算法评审#3.1：取批后做 MMR 批内多样性重排(仅"偏新鲜"默认开)，打散同主料霸屏。
         val candidates = diversify(rotate(evaluated, rotation), input.style.diversityLambda())
+        // [AI生成] R1(忌口正确性红线)：忌口菜(avoidNames 非空)保留在 candidates 供 UI 标红展示，但**剔除出喂给模型的可选集**——
+        //   否则 prompt 里忌口菜和普通候选长一样(原未标忌口)、validate 只查 id∈candidates，模型可能把"忌口五花肉"选进给三高用户的一餐。
+        //   把不变量落到代码层：模型只见非忌口候选、无从选起；忌口 UI 仍标红(fallback 也仅在全忌口时才不得已用它)。
+        // 注：selectable=可喂模型集(仅排忌口)；下方 fallback 内的 normal=兜底优选层(排忌口+最近)，两者口径不同勿混。
+        val selectable = candidates.filter { it.avoidNames.isEmpty() }
 
         val prompt = RecommendationPrompt.build(
-            candidates, input.constraints, mealCount,
+            selectable, input.constraints, mealCount,
             style = input.style,
             preferenceScores = input.preferenceScores,
             nutritionBalanceScores = input.nutritionBalanceScores,
@@ -60,7 +65,7 @@ class RecommendationOrchestrator(
         val raw = runCatching { runtime.complete(prompt) }.getOrNull()?.getOrNull()
         val modelSuggestions = raw
             ?.let { RecommendationParser.parse(it) }
-            ?.let { validate(it, candidates, mealCount) }
+            ?.let { validate(it, selectable, mealCount) } // [AI生成] R1:合法 id 用非忌口可选集
             ?.takeIf { it.isNotEmpty() }
 
         return if (modelSuggestions != null) {

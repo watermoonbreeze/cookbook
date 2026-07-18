@@ -311,3 +311,13 @@ fun PrimaryTabRow(
 - **显隐由回调决定**（红线）：`SearchResultsPanel` 用可选参 `onCreateNew: (()->Unit)? = null` + `createKeyword`，传入才渲染末尾行（别用 `mode` 布尔硬编码）。
 - **边界**：关键词空/纯空格不显新建行；末尾行跟随列表非 sticky（不遮结果）；超长 ellipsis、回填用完整 trim 词；选择器（DishPicker）沿用其**底部常驻行**范式（有词时文案切 `新建菜品「X」`），其余搜索面用"列表末尾行"；全局混合搜索页 `SearchScreen` 暂不做（三类混合不适合每类末尾塞新建行）。
 - **落地**（2026-07-18 已实现·过双门禁）：`SearchCreateRow.kt`(新增) + `DishesScreen.DishSearchOverlay` + `DishPickerScreen`(底部行) + `IngredientPickerScreen`(SearchResultsPanel 末尾行 + selectionMode 分叉收敛为"关键词非空即显面板")。
+
+### 9.20 负反馈「踩」：长按 ActionSheet + 就地灰态 + 撤销
+> [AI生成 2026-07-18] AI 推荐结果里让用户**显式**标"不再推荐这道菜"(只用户主动标才降权，不做"未选=不喜欢"隐式判断防误伤)，标了的菜后续推荐里沉底/滤除。范式=**长按菜卡 → ActionSheet(destructive「不再推荐这道菜」) → 就地淡出灰态(不移除不跳动·隐勾选圈) → Snackbar「撤销」(§9.12 防误标) → 持久化负信号由算法过滤，恢复走长按「恢复推荐」或菜品详情**。全程零新建视觉组件、不诱导、可逆。
+
+- **入口=长按**(非常驻👎图标·非右滑)：推荐菜卡整行已被"点击=勾选加入这一餐"占用，长按走上下文菜单符合苹果惯例、不占视觉不诱导否定；`DishRow` 的 `.clickable{onToggle}` 改 `.combinedClickable(onClick=onToggle, onLongClick=onDislikeRequest)`，勾选圈自身 `.clickable` 保留(点圈仍只勾选)。低频负反馈藏长按、高频勾选留右侧。
+- **反馈=就地灰态不移除**：标记瞬间该行 `alpha 0.5` + 名后浅字"已标记不再推荐" + 隐勾选圈(同步从 selectedIds 移除已勾的)；不立即删行(避免列表跳动、"东西没了")。同时 `AppSnackbar.showUndo("已不再推荐「X」", 撤销)`(时长 Long)。下次推荐/换一换时该菜由算法(gather 过滤 disliked)自然不再出现。
+- **恢复**：撤销窗口内 Snackbar「撤销」；过后该菜仍在当前灰态列表→长按「恢复推荐」；已滚出/被过滤→**菜品详情页**"已设为不再推荐 + 恢复推荐"闭环。独立"不再推荐列表"管理页=二期(过度设计,家庭场景踩得少)。
+- **文案**：统一「不再推荐」(不用"不喜欢"=情绪化/评判菜品、不用"不常吃"=频率不精确)；恢复=「恢复推荐」；状态"已标记不再推荐"。规则说明弹层可追加"你标了『不再推荐』的菜会明显靠后甚至不再出现(可在菜品详情恢复)"守诚实。
+- **边界**：忌口菜(已标红排末)仍可再踩(忌口=系统建议避免·踩=个人不想看·语义不同可叠加)；随机/库存/模型搭配卡均带长按踩(复用同一 DishRow)；周期计划编辑态**不加**踩入口(其长按语义应是"换这天的菜")，但踩的负信号**作用于计划生成**(gather/gatherForPlan 过滤)；踩正被勾选的菜→同步移除已勾、撤销不自动回勾。
+- **落地**：`dish` 加 `disliked` 列(`27.sqm` 迁移) + `setDishDisliked`/`selectDislikedDishIds` 查询 + `RecommendationDataSource.gather`/`gatherForPlan` 过滤 disliked + VM `setDisliked` + `DishRow` 长按 ActionSheet + 菜品详情恢复入口。
