@@ -110,7 +110,7 @@ class AiRecommendViewModel(
         if (on == state.medicinalFilter) return
         rotation = 0
         state = state.copy(medicinalFilter = on)
-        recommend()
+        if (!state.pendingManual) recommend() // [AI修改] 审查建议1:与 setStyle/setRecentWindow 一致,配了AI模型待手动时不擅自调云端
     }
 
     fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {

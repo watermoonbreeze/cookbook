@@ -21,6 +21,8 @@ class MedicinalFoodsTest {
         assertTrue(MedicinalFoods.isMedicinal("枸杞"), "别名枸杞→枸杞子")
         assertTrue(MedicinalFoods.isMedicinal("红枣"), "别名红枣→大枣")
         assertTrue(MedicinalFoods.isMedicinal(" 桂圆 "), "别名桂圆→龙眼肉，且容首尾空格")
+        // [AI生成] 审查建议2/3：别名去括号注释后常见食材名也命中(防"海带(近似)"式漏标回归)。
+        assertTrue(MedicinalFoods.isMedicinal("海带"), "海带→昆布(别名去注释后命中)")
     }
 
     @Test
