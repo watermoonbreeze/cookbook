@@ -881,6 +881,56 @@ class IngredientPickerViewModel(
         }
     }
 
+    /**
+     * 移出库存·可撤销(§9.12 软删+撤销)。[AI生成] UX深挖#2
+     *
+     * 先快照当前库存态(份数/入库时刻)，出库成功后经 [showUndo] 弹撤销；点撤销 activatePantry 绝对还原。
+     * 不在库存(无可撤销)→静默返回不弹。
+     */
+    fun removeFromPantryUndoable(ingredient: Ingredient, showUndo: (onUndo: () -> Unit) -> Unit) {
+        viewModelScope.launch {
+            val snap = runCatching { pantryRepo.snapshotItem(ingredient.id) }.getOrNull()
+            if (snap == null || !snap.wasActive) return@launch
+            runCatching { pantryRepo.removeFromPantry(ingredient.id) }
+                .onSuccess {
+                    refreshPantryState()
+                    if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
+                    showUndo { restorePantry(snap) }
+                }
+                .onFailure { _state.value = _state.value.copy(operationError = "移出库存失败，请稍后重试") }
+        }
+    }
+
+    /**
+     * 入库 1 份·可撤销(§9.12)。[AI生成] UX深挖#13
+     *
+     * 先快照入库前态，入库成功后经 [showUndo] 弹撤销；点撤销恢复到入库前(曾不在库→移出，曾有份数→还原)。
+     */
+    fun addToPantryUndoable(ingredient: Ingredient, showUndo: (onUndo: () -> Unit) -> Unit) {
+        viewModelScope.launch {
+            val snap = runCatching { pantryRepo.snapshotItem(ingredient.id) }.getOrNull()
+            runCatching { pantryRepo.addServings(ingredient.id, 1) }
+                .onSuccess {
+                    refreshPantryState()
+                    if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
+                    if (snap != null) showUndo { restorePantry(snap) }
+                }
+                .onFailure { _state.value = _state.value.copy(operationError = "加入库存失败，请稍后重试") }
+        }
+    }
+
+    /** 撤销出/入库：把库存恢复到快照态。[AI生成] UX深挖#2/#13 */
+    private fun restorePantry(snap: com.sxdbsm.cookbook.data.repository.PantrySnapshot) {
+        viewModelScope.launch {
+            runCatching { pantryRepo.restoreItem(snap) }
+                .onSuccess {
+                    refreshPantryState()
+                    if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
+                }
+                .onFailure { _state.value = _state.value.copy(operationError = "撤销失败，请稍后重试") }
+        }
+    }
+
     fun clearCreateError() {
         _state.value = _state.value.copy(createError = null)
     }

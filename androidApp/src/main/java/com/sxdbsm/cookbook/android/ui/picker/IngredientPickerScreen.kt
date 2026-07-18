@@ -94,6 +94,7 @@ fun IngredientPickerScreen(
     // [AI生成] #4:搜索覆盖层可见时,系统返回键=关搜索(而非退出页面)。仅 Tab 落地态。
     BackHandler(enabled = !selectionMode && searchOpen) { searchOpen = false; vm.setKeyword("") }
     val context = androidx.compose.ui.platform.LocalContext.current // [AI生成] A8：入库即时反馈 Toast
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI生成] UX深挖#2/#13：出/入库改可撤销(§9.12)
 
     /**
      * 外部排除列表变化时刷新可选食材。[AI修改]
@@ -216,12 +217,15 @@ fun IngredientPickerScreen(
                         onToggleSelect = { vm.toggleSelection(it) },
                         // [AI修改] 阻断-1:库存挂钩关→搜索面板不显入库/出库(传 null)。
                         onTogglePantry = if (pantryHookOn) { ing ->
-                            // [AI修改] A8：入库默认 1 份即时入库(免弹窗)，份数可在库存Tab/详情再调；已在库则出库。
+                            // [AI修改] UX深挖#2/#13：出/入库改可撤销(§9.12 Snackbar+撤销，替代 Toast/无反馈)。
                             if (ing.id in ui.pantryIngredientIds) {
-                                vm.removeFromPantry(ing)
+                                vm.removeFromPantryUndoable(ing) { onUndo ->
+                                    appSnackbar?.showUndo("已把「${ing.name}」移出库存", onUndo = onUndo)
+                                }
                             } else {
-                                vm.addToPantry(ing)
-                                Toast.makeText(context, "已把「${ing.name}」入库 1 份，可在库存调整份数", Toast.LENGTH_SHORT).show()
+                                vm.addToPantryUndoable(ing) { onUndo ->
+                                    appSnackbar?.showUndo("已把「${ing.name}」入库 1 份", onUndo = onUndo)
+                                }
                             }
                         } else null,
                     )
@@ -633,7 +637,10 @@ fun IngredientPickerScreen(
             inPantry = ingredient.id in ui.pantryIngredientIds,
             // [AI修改] 阻断-1:库存挂钩关→详情弹层不显入库/出库/份数(回调置 null,能力显隐由回调决定,组件不改)。
             onTogglePantry = if (!selectionMode && pantryHookOn) ({
-                vm.removeFromPantry(ingredient)
+                // [AI修改] UX深挖#2：出库改可撤销(§9.12)。
+                vm.removeFromPantryUndoable(ingredient) { onUndo ->
+                    appSnackbar?.showUndo("已把「${ingredient.name}」移出库存", onUndo = onUndo)
+                }
                 selectedIngredient = null // [AI修改] 出库后关闭详情弹层(用户反馈:点出库后详情该退出，与"存为菜品"一致)
             }) else null, // [AI修改] 仅承担出库
             pantryRemaining = ui.pantryRemaining[ingredient.id] ?: 0,

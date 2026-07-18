@@ -106,4 +106,46 @@ class PantryRepositoryTest {
         assertEquals(1, pantry.remaining()[porkId], "加1份后剩余应=1(修复前会仍为0)")
         assertEquals(2, pantry.servingCounts()[porkId], "加1份后共份数应=2")
     }
+
+    @Test
+    fun `出库撤销_还原份数与在库态`() = runBlocking {
+        // [AI生成] UX深挖#2：快照(在库3份)→出库(清零失效)→restore→还原为在库3份。
+        val db = RepositoryTestDatabase.create()
+        val ingredientRepo = IngredientRepository(db)
+        val pantry = PantryRepository(db)
+
+        val id = ingredientRepo.createUserIngredient(name = "土豆")
+        pantry.addToPantry(id)
+        pantry.setServings(id, 3)
+
+        val snap = pantry.snapshotItem(id)
+        assertTrue(snap.wasActive && snap.serving == 3, "快照应记录在库3份: $snap")
+
+        pantry.removeFromPantry(id)
+        assertEquals(0L, pantry.count(), "出库后不在在手列表")
+
+        pantry.restoreItem(snap)
+        assertEquals(1L, pantry.count(), "撤销后回到在手")
+        assertTrue(pantry.pantryIngredientIds().contains(id))
+        assertEquals(3, pantry.servingCounts()[id], "撤销后份数还原为3")
+    }
+
+    @Test
+    fun `入库撤销_还原为未入库`() = runBlocking {
+        // [AI生成] UX深挖#13：从未入库→快照(wasActive=false)→入库1份→restore→回到未入库。
+        val db = RepositoryTestDatabase.create()
+        val ingredientRepo = IngredientRepository(db)
+        val pantry = PantryRepository(db)
+
+        val id = ingredientRepo.createUserIngredient(name = "洋葱")
+        val snap = pantry.snapshotItem(id)
+        assertFalse(snap.wasActive, "入库前快照应为未入库")
+
+        pantry.addServings(id, 1)
+        assertEquals(1L, pantry.count(), "入库后在在手列表")
+
+        pantry.restoreItem(snap)
+        assertEquals(0L, pantry.count(), "撤销后回到未入库")
+        assertFalse(pantry.pantryIngredientIds().contains(id))
+    }
 }

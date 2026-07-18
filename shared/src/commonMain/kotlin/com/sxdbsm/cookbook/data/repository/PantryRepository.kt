@@ -123,6 +123,31 @@ class PantryRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 快照某食材当前库存态（份数/入库时刻/是否在库），供出/入库撤销恢复。[AI生成] UX深挖#2/#13(§9.12)
+     *
+     * 行不存在（从未入库）→ wasActive=false、serving=0，撤销时恢复为"移出"态。
+     */
+    suspend fun snapshotItem(ingredientId: Long): PantrySnapshot = withContext(ioDispatcher) {
+        q.selectPantryItem(ingredientId).executeAsOneOrNull()?.let {
+            PantrySnapshot(ingredientId, it.serving_count.toInt(), it.added_at, it.status == 1L)
+        } ?: PantrySnapshot(ingredientId, 0, 0L, false)
+    }
+
+    /**
+     * 恢复库存到快照态（撤销）。[AI生成] UX深挖#2/#13(§9.12)
+     *
+     * 曾在库→绝对还原份数与入库时刻（activatePantry 是绝对赋值，精确反向出/入库）；曾不在库→移出。
+     */
+    suspend fun restoreItem(s: PantrySnapshot) = withContext(ioDispatcher) {
+        if (s.wasActive) {
+            q.insertPantryIfAbsent(ingredient_id = s.ingredientId, added_at = s.addedAt)
+            q.activatePantry(serving_count = s.serving.toLong(), added_at = s.addedAt, ingredient_id = s.ingredientId)
+        } else {
+            q.removeFromPantry(s.ingredientId)
+        }
+    }
+
+    /**
      * 在手食材 id 集合，供详情/做法区标记「家里有」。[AI生成]
      */
     suspend fun pantryIngredientIds(): Set<Long> = withContext(ioDispatcher) {
@@ -159,3 +184,12 @@ class PantryRepository(private val db: CookbookDatabase) {
         source = source,
     )
 }
+
+/** 库存条目快照，供出/入库撤销恢复(§9.12)。[AI生成] UX深挖#2/#13 */
+data class PantrySnapshot(
+    val ingredientId: Long,
+    val serving: Int,
+    val addedAt: Long,
+    /** 快照时是否在库(status=1)：撤销时曾在库则还原份数、曾不在库则移出。 */
+    val wasActive: Boolean,
+)

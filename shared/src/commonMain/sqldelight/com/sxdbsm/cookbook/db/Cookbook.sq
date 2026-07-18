@@ -1698,6 +1698,10 @@ WHERE p.status = 1 AND i.status = 1;
 removeFromPantry:
 UPDATE pantry SET status = 0, serving_count = 0 WHERE ingredient_id = :ingredient_id;
 
+-- [AI生成] 单食材库存快照(份数/入库时刻/是否在库)，供出/入库撤销恢复(§9.12)。纯查询·无需迁移。
+selectPantryItem:
+SELECT serving_count, added_at, status FROM pantry WHERE ingredient_id = :ingredient_id;
+
 countPantry:
 SELECT COUNT(*) FROM pantry WHERE status = 1;
 
