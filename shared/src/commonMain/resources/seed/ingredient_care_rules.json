@@ -2576,5 +2576,245 @@
   "category": "care_schoolage",
   "level": "limit",
   "reason": "少放盐，控盐清淡"
+ },
+ {
+  "ingredient": "菠菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，孕前方向性补叶酸"
+ },
+ {
+  "ingredient": "油菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，孕前方向性补叶酸"
+ },
+ {
+  "ingredient": "西兰花",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "苋菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "小白菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "芥蓝",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "油麦菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "茼蒿",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "荠菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "空心菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "上海青",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "深绿叶菜，含叶酸"
+ },
+ {
+  "ingredient": "芦笋",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "含叶酸的蔬菜"
+ },
+ {
+  "ingredient": "猪瘦肉",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "瘦红肉，方向性补铁"
+ },
+ {
+  "ingredient": "牛肉",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "瘦红肉，含铁丰富"
+ },
+ {
+  "ingredient": "羊肉",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "瘦红肉，含铁"
+ },
+ {
+  "ingredient": "彩椒",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "维C足，促进铁吸收"
+ },
+ {
+  "ingredient": "青椒",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "维C足，促进铁吸收"
+ },
+ {
+  "ingredient": "西红柿",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "含维C，促进铁吸收"
+ },
+ {
+  "ingredient": "猕猴桃",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "维C丰富，促进铁吸收"
+ },
+ {
+  "ingredient": "橙子",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "维C足，促进铁吸收"
+ },
+ {
+  "ingredient": "草莓",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "含维C，促进铁吸收"
+ },
+ {
+  "ingredient": "海带",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "含碘海产，方向性补碘"
+ },
+ {
+  "ingredient": "紫菜",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "含碘海产，方向性补碘"
+ },
+ {
+  "ingredient": "虾",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "含碘海产，优质蛋白"
+ },
+ {
+  "ingredient": "牛奶",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "奶制品，优质蛋白"
+ },
+ {
+  "ingredient": "无糖酸奶",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "奶制品，优质蛋白"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "优质蛋白"
+ },
+ {
+  "ingredient": "豆腐",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "豆制品，优质蛋白"
+ },
+ {
+  "ingredient": "豆浆",
+  "category": "care_preconception",
+  "level": "recommend",
+  "reason": "豆制品，优质蛋白"
+ },
+ {
+  "ingredient": "猪肝",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "动物肝含铁但维A高，适量别过量"
+ },
+ {
+  "ingredient": "火腿",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "高盐腌制加工肉，少吃"
+ },
+ {
+  "ingredient": "香肠",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "高盐腌制加工肉，少吃"
+ },
+ {
+  "ingredient": "腊肉",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "高盐腌制加工肉，少吃"
+ },
+ {
+  "ingredient": "培根",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "高盐腌制加工肉，少吃"
+ },
+ {
+  "ingredient": "午餐肉",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "高盐加工肉，少吃"
+ },
+ {
+  "ingredient": "火腿肠",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "高盐加工肉，少吃"
+ },
+ {
+  "ingredient": "咸肉",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "高盐腌制肉，少吃"
+ },
+ {
+  "ingredient": "普洱茶",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "浓茶限咖啡因，少喝"
+ },
+ {
+  "ingredient": "绿茶",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "浓茶限咖啡因，少喝"
+ },
+ {
+  "ingredient": "可乐",
+  "category": "care_preconception",
+  "level": "limit",
+  "reason": "含咖啡因，方向性限量"
  }
 ]
