@@ -130,8 +130,7 @@ class TimerAlarmReceiver : BroadcastReceiver() {
             if (ringtone != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) ringtone.isLooping = true
                 ringtone.play()
-                active[id]?.ringtone?.stop()
-                active[id] = ActiveAlert(ringtone, name)
+                putActive(id, ringtone, name) // [AI修改] 入 active + emit StateFlow(全屏实时增)
             }
         }
         // 2) 高优先级通知（带“停止”动作）。未授通知权限时静默失败，不影响铃声。
@@ -184,17 +183,31 @@ class TimerAlarmReceiver : BroadcastReceiver() {
         private const val STOP_REQUEST_OFFSET = 100000 // [AI生成] 停止 PendingIntent 的 requestCode 偏移，避开 fire 的 timerId。
         private const val CONTENT_REQUEST_OFFSET = 200000 // [AI生成] 点击进 App 的 requestCode 偏移。
         private const val FULLSCREEN_REQUEST_OFFSET = 300000 // [AI生成] 全屏提醒的 requestCode 偏移。
-        // [AI修改] 用户提:全屏到时界面要列出所有已到时的计时器→active 带名字，供全屏一次列出+各自停止。
+        // [AI修改] 用户提:全屏要列出所有已到时计时器+各自停止。active 带名字；
+        //   [AI修改] 修"第2个到点没加进全屏、停不掉":全屏 Activity 已在前台时后来的 fullScreenIntent 不再 onNewIntent，
+        //   故改用 **StateFlow 实时驱动**——fire/stop 变更 active 即 emit，Activity collect 自动增删，不依赖 intent 刷新。
         private data class ActiveAlert(val ringtone: Ringtone, val name: String)
-        private val active = mutableMapOf<Int, ActiveAlert>() // timerId -> (正在响的铃声, 名称)，支持多计时器分别停止。
+        private val active = mutableMapOf<Int, ActiveAlert>() // timerId -> (正在响的铃声, 名称)
+        private val _activeAlerts = kotlinx.coroutines.flow.MutableStateFlow<List<Pair<Int, String>>>(emptyList())
 
-        /** 当前所有正在响的计时器 (id, 名称)，按 id 排序。供全屏提醒一次列出。[AI生成] */
-        fun activeList(): List<Pair<Int, String>> = active.entries.map { it.key to it.value.name }.sortedBy { it.first }
+        /** 当前所有正在响的计时器 (id, 名称)，实时。全屏提醒 collect 它自动增删。[AI生成] */
+        val activeAlerts: kotlinx.coroutines.flow.StateFlow<List<Pair<Int, String>>> = _activeAlerts
+
+        private fun emitActive() {
+            _activeAlerts.value = active.entries.map { it.key to it.value.name }.sortedBy { it.first }
+        }
+
+        internal fun putActive(id: Int, ringtone: Ringtone, name: String) {
+            active[id]?.ringtone?.stop()
+            active[id] = ActiveAlert(ringtone, name)
+            emitActive()
+        }
 
         /** 停止某计时器的铃声并消通知。[AI生成] */
         fun stop(context: Context, id: Int) {
             runCatching { active.remove(id)?.ringtone?.stop() }
             runCatching { NotificationManagerCompat.from(context).cancel(id) }
+            emitActive()
         }
     }
 }

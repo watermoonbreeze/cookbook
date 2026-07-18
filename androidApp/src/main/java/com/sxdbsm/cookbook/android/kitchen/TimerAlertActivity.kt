@@ -21,7 +21,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -43,9 +52,6 @@ import com.sxdbsm.cookbook.domain.model.ThemeMode
  **/
 class TimerAlertActivity : ComponentActivity() {
 
-    // [AI生成] 当前全屏里列出的"已到点"计时器 (id, 名称)；新计时器到点(onNewIntent)会追加进来。
-    private val alerts = mutableStateListOf<Pair<Int, String>>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // [AI生成] 锁屏上方显示 + 点亮屏幕 + 常亮(响铃期间不息屏)。
@@ -62,40 +68,40 @@ class TimerAlertActivity : ComponentActivity() {
             )
         }
 
-        refreshAlerts(intent)
-
         setContent {
             CookbookTheme(themeMode = ThemeMode.SYSTEM) {
+                // [AI修改] 修"第2个到点没进全屏、停不掉"：直接 collect 接收器的实时 activeAlerts，
+                //   新到点自动加、停止后自动移除；不再依赖 onNewIntent(前台时后来的 fullScreenIntent 不触发它)。
+                val liveAlerts by TimerAlarmReceiver.activeAlerts.collectAsState()
+                // 首次进入时接收器可能还没 emit(极少数竞态)，用 intent 的单个兜底。
+                val fallback = remember {
+                    val id = intent.getLongExtra(TimerAlarm.EXTRA_TIMER_ID, -1L).toInt()
+                    val name = intent.getStringExtra(TimerAlarm.EXTRA_NAME).orEmpty()
+                    if (id >= 0) listOf(id to name) else emptyList()
+                }
+                val alerts = liveAlerts.ifEmpty { fallback }
+                // 全部停完(实时集合空且兜底也空)→退出全屏。
+                LaunchedEffect(liveAlerts) {
+                    if (liveAlerts.isEmpty() && fallbackStopped) finish()
+                }
                 AlertContent(
                     alerts = alerts,
                     onStop = { id ->
-                        stopRing(id) // 直接停对应门铃(广播 ACTION_STOP → 停铃+消通知)。
-                        alerts.removeAll { it.first == id }
-                        if (alerts.isEmpty()) finish() // 全停完退出全屏。
+                        stopRing(id) // 广播 ACTION_STOP → 接收器停铃+消通知+emit(集合自动移除该项)。
+                        fallbackStopped = true
+                        if (TimerAlarmReceiver.activeAlerts.value.isEmpty()) finish()
                     },
                 )
             }
         }
     }
 
+    // [AI生成] 兜底项(intent 单个)被点过停止后置真，避免实时集合本就空时首帧误退。
+    private var fallbackStopped = false
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        refreshAlerts(intent) // 又有计时器到点：合并进当前全屏列表。
-    }
-
-    /** 从接收器的"正在响"集合刷新列表；集合空则退回本次 intent 的单个，仍空则关闭。[AI生成] */
-    private fun refreshAlerts(intent: Intent) {
-        val live = TimerAlarmReceiver.activeList()
-        alerts.clear()
-        if (live.isNotEmpty()) {
-            alerts.addAll(live)
-        } else {
-            val id = intent.getLongExtra(TimerAlarm.EXTRA_TIMER_ID, -1L).toInt()
-            val name = intent.getStringExtra(TimerAlarm.EXTRA_NAME).orEmpty()
-            if (id >= 0) alerts.add(id to name)
-        }
-        if (alerts.isEmpty()) finish()
     }
 
     private fun stopRing(timerId: Int) {
@@ -110,9 +116,10 @@ class TimerAlertActivity : ComponentActivity() {
 
 @Composable
 private fun AlertContent(alerts: List<Pair<Int, String>>, onStop: (Int) -> Unit) {
+    val capsule = RoundedCornerShape(percent = 50)
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(PaddingValues(32.dp)),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -124,26 +131,58 @@ private fun AlertContent(alerts: List<Pair<Int, String>>, onStop: (Int) -> Unit)
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.error,
             )
-            Spacer(Modifier.height(24.dp))
-            // 逐个列出到点的计时器：名称 + 各自"停止"。
-            alerts.forEach { (id, name) ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+            if (alerts.size <= 1) {
+                // [AI修改] 单条聚焦式(Apple-UX)：名称大字居中 + 全宽 64dp 大停止按钮。
+                val (id, name) = alerts.firstOrNull() ?: return@Column
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    if (name.isBlank()) "烹饪计时" else name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+                Spacer(Modifier.height(40.dp))
+                Button(
+                    onClick = { onStop(id) },
+                    shape = capsule,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
                 ) {
-                    Text(
-                        if (name.isBlank()) "烹饪计时" else name,
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Start,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.padding(end = 16.dp),
-                    )
-                    Button(
-                        onClick = { onStop(id) },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    ) {
-                        Text("停止", style = MaterialTheme.typography.titleMedium)
+                    Text("停 止", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                }
+            } else {
+                // [AI修改] 多条卡片列表(Apple-UX)：名称 weight(1f)+单行省略，停止按钮固定宽不参与压缩→根治挤压。
+                Spacer(Modifier.height(24.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth().weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    alerts.forEach { (id, name) ->
+                        Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(start = 20.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    if (name.isBlank()) "烹饪计时" else name,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f).padding(end = 12.dp),
+                                )
+                                Button(
+                                    onClick = { onStop(id) },
+                                    shape = capsule,
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
+                                    modifier = Modifier.widthIn(min = 88.dp).heightIn(min = 48.dp),
+                                ) {
+                                    Text("停止", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                }
+                            }
+                        }
                     }
                 }
             }
