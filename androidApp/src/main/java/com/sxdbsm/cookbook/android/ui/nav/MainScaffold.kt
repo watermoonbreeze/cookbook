@@ -185,6 +185,7 @@ fun MainScaffold(
                     onOpenShoppingList = { nav.navigate(Routes.SHOPPING_LIST) },
                     onOpenFreePairing = { nav.navigate(Routes.FREE_PAIRING) },
                     onOpenNutritionTable = { nav.navigate(Routes.NUTRITION_TABLE) }, // [AI生成] 食材营养表
+                    onOpenDietReport = { nav.navigate(Routes.DIET_REPORT) }, // [AI生成] 饮食报告
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] 膳食参考依据
                     onOpenDataSource = { nav.navigate(Routes.DATA_SOURCE) }, // [AI生成] 数据来源
                     onOpenFeatureGuide = { nav.navigate(Routes.FEATURE_GUIDE) }, // [AI生成] 功能介绍
@@ -193,6 +194,12 @@ fun MainScaffold(
             }
             composable(Routes.NUTRITION_TABLE) {
                 com.sxdbsm.cookbook.android.ui.nutrition.NutritionTableScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.DIET_REPORT) {
+                com.sxdbsm.cookbook.android.ui.report.DietReportScreen(
+                    onBack = { nav.popBackStack() },
+                    onGoAddMeal = { nav.navigate(Routes.addMeal()) },
+                )
             }
             composable(Routes.DIETARY_REFERENCE) {
                 com.sxdbsm.cookbook.android.ui.reference.DietaryReferenceScreen(onBack = { nav.popBackStack() })

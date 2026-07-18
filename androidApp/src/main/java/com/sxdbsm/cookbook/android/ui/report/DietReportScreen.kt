@@ -1,0 +1,365 @@
+package com.sxdbsm.cookbook.android.ui.report
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronLeft
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.AppTopBar
+import com.sxdbsm.cookbook.android.ui.component.EmptyState
+import com.sxdbsm.cookbook.android.ui.component.InsetGroup
+import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
+import com.sxdbsm.cookbook.domain.model.CountItem
+import com.sxdbsm.cookbook.domain.model.DietReport
+import org.koin.androidx.compose.koinViewModel
+import kotlin.math.roundToInt
+
+/**
+ * @File : DietReportScreen
+ * @Time : 2026/07/18
+ * @Author : SXD-AI
+ * @Desc : 饮食报告页（周/月 · 家庭/个人 · 回顾非考核 · 守免责）
+ * <p>
+ * 顶部周期/视角/期次切换；主体概览卡→要点卡→各维度卡；自绘轻量图(进度条/分段条/结构日历色块)，零三方库。
+ * 营养维度守"仅供参考·非医嘱"。空态给"去记一餐"。
+ * <p>
+ * [AI生成] 报告模块 MVP（用户 2026-07-18 拍板）。
+ **/
+@Composable
+fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: () -> Unit) {
+    val vm: DietReportViewModel = koinViewModel()
+    val st by vm.state.collectAsStateWithLifecycle()
+
+    Scaffold(topBar = { AppTopBar(title = "饮食报告", onBack = onBack) }) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            // 控制区：周期分段 + 视角切换。
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SegmentedControl(
+                    options = listOf("周", "月"),
+                    selectedIndex = if (st.period == ReportPeriod.WEEK) 0 else 1,
+                    onSelect = { vm.setPeriod(if (it == 0) ReportPeriod.WEEK else ReportPeriod.MONTH) },
+                    modifier = Modifier.width(140.dp),
+                )
+                Spacer(Modifier.weight(1f))
+                SegmentedControl(
+                    options = listOf("家庭", "个人"),
+                    selectedIndex = if (st.personal) 1 else 0,
+                    onSelect = { vm.setPersonal(it == 1) },
+                    modifier = Modifier.width(140.dp),
+                )
+            }
+            // 期次翻页。
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                IconButton(onClick = { vm.prevPeriod() }) {
+                    Icon(Icons.Outlined.ChevronLeft, contentDescription = "上一期", tint = MaterialTheme.colorScheme.primary)
+                }
+                Text(st.periodLabel, style = MaterialTheme.typography.bodyMedium)
+                IconButton(onClick = { vm.nextPeriod() }, enabled = st.canGoNewer) {
+                    Icon(
+                        Icons.Outlined.ChevronRight, contentDescription = "下一期",
+                        tint = if (st.canGoNewer) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                    )
+                }
+            }
+            Divider()
+
+            when {
+                st.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                st.report?.hasData != true -> EmptyState(
+                    text = "这段时间还没记餐\n记一餐就能生成饮食报告",
+                    icon = "🍽",
+                    actionLabel = "去记一餐",
+                    onAction = onGoAddMeal,
+                )
+                else -> ReportBody(st, st.report!!)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReportBody(st: DietReportUiState, r: DietReport) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)) {
+        // 概览卡。
+        item { OverviewCard(st, r) }
+        // 要点卡。
+        val tips = buildTips(st, r)
+        if (tips.isNotEmpty()) item { TipsCard(tips) }
+        // 记录概况。
+        item {
+            InsetGroup(title = "记录概况") {
+                Column(Modifier.padding(14.dp)) {
+                    StatRow("记餐天数", r.coverageText)
+                    LinearProgressIndicator(
+                        progress = if (r.periodDays == 0) 0f else r.recordedDays.toFloat() / r.periodDays,
+                        modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).padding(top = 4.dp, bottom = 6.dp),
+                    )
+                    StatRow("总餐次数", "${r.mealCount} 餐")
+                    StatRow("平均每天菜数", "${oneDecimal(r.avgDishesPerDay)} 道")
+                }
+            }
+        }
+        // 菜品。
+        item {
+            InsetGroup(title = "菜品") {
+                Column(Modifier.padding(14.dp)) {
+                    StatRow("不同菜品数", "${r.distinctDishes} 道")
+                    if (r.topDishes.isNotEmpty()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text("常吃 TOP", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        r.topDishes.forEach { CountRow(it, "次") }
+                    }
+                }
+            }
+        }
+        // 食材。
+        item {
+            InsetGroup(title = "食材") {
+                Column(Modifier.padding(14.dp)) {
+                    StatRow("用到食材种数", "${r.ingredientKinds} 种")
+                    if (r.topIngredients.isNotEmpty()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text("常用 TOP", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        r.topIngredients.forEach { CountRow(it, "次") }
+                    }
+                }
+            }
+        }
+        // 膳食结构。
+        item {
+            InsetGroup(title = "膳食结构") {
+                Column(Modifier.padding(14.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("本期膳食均级", modifier = Modifier.weight(1f))
+                        Text("${oneDecimal(r.avgLevel)} 级", fontWeight = FontWeight.SemiBold, color = levelColor(r.avgLevel.roundToInt()))
+                        Spacer(Modifier.width(8.dp))
+                        Box(Modifier.size(20.dp).clip(RoundedCornerShape(4.dp)).background(levelColor(r.avgLevel.roundToInt())))
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text("结构日历", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(4.dp))
+                    StructureCalendar(r.perDayLevels)
+                    if (r.structureGaps.isNotEmpty()) {
+                        Spacer(Modifier.height(8.dp))
+                        r.structureGaps.forEach { TipRow(Color(0xFFFFB300), it) }
+                    } else {
+                        Spacer(Modifier.height(8.dp))
+                        TipRow(Color(0xFF4CAF50), "五大类基本吃到，结构均衡")
+                    }
+                }
+            }
+        }
+        // 营养摄入(仅个人视角且有数据)。
+        r.personal?.let { p ->
+            item {
+                InsetGroup(title = "营养摄入（${st.memberName.ifBlank { "个人" }}）") {
+                    Column(Modifier.padding(14.dp)) {
+                        StatRow("日均热量", if (p.targetKcal != null) "${p.avgKcal} / 目标 ${p.targetKcal} 千卡" else "${p.avgKcal} 千卡")
+                        if (p.targetKcal != null) StatRow("达标天数", "${p.onTargetDays} / ${r.recordedDays} 记餐天")
+                        Spacer(Modifier.height(6.dp))
+                        Text("三大宏量供能比", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        MacroBar(p.proteinPct, p.fatPct, p.carbPct)
+                        Spacer(Modifier.height(6.dp))
+                        StatRow("日均钠", "${p.avgSodiumMg} mg")
+                        StatRow("日均钾", "${p.avgPotassiumMg} mg")
+                        StatRow("日均膳食纤维", "${p.avgFiberG} g")
+                        Spacer(Modifier.height(6.dp))
+                        Text("· 营养按你的饭量折算，仅供参考，非医嘱", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                    }
+                }
+            }
+        }
+        if (st.personal && !st.hasFocusMember) {
+            item {
+                InsetGroup {
+                    Text(
+                        "还没设置关注成员，去家庭档案添加后可看个人营养摄入",
+                        modifier = Modifier.padding(14.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        item { Spacer(Modifier.height(24.dp)) }
+    }
+}
+
+@Composable
+private fun OverviewCard(st: DietReportUiState, r: DietReport) {
+    val p = r.personal
+    val summary = buildSummary(st, r)
+    InsetGroup {
+        Column(Modifier.padding(16.dp)) {
+            Text(summary, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(12.dp))
+            Row(Modifier.fillMaxWidth()) {
+                if (st.personal && p != null) {
+                    StatBig(Modifier.weight(1f), "${p.avgKcal}", "日均千卡")
+                    StatBig(Modifier.weight(1f), "${p.onTargetDays}", "达标天")
+                } else {
+                    StatBig(Modifier.weight(1f), "${r.recordedDays}", "天记餐")
+                    StatBig(Modifier.weight(1f), "${r.distinctDishes}", "不同菜")
+                }
+                StatBig(Modifier.weight(1f), oneDecimal(r.avgLevel), "膳食均级", levelColor(r.avgLevel.roundToInt()))
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatBig(modifier: Modifier, value: String, label: String, color: Color = MaterialTheme.colorScheme.onSurface) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = color)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun TipsCard(tips: List<Pair<Color, String>>) {
+    InsetGroup(title = "本期发现") {
+        Column(Modifier.padding(14.dp)) { tips.forEach { TipRow(it.first, it.second) } }
+    }
+}
+
+@Composable
+private fun TipRow(dot: Color, text: String) {
+    Row(Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(7.dp).clip(CircleShape).background(dot))
+        Spacer(Modifier.width(8.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun StatRow(label: String, value: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+private fun CountRow(item: CountItem, unit: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+        Text(item.name, modifier = Modifier.weight(1f))
+        Text("${item.count} $unit", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** 结构日历：每天一个色块(级别色，没记=浅灰)。[AI生成] */
+@Composable
+private fun StructureCalendar(levels: List<Int>) {
+    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+        levels.forEach { lv ->
+            Box(
+                Modifier.size(14.dp).clip(RoundedCornerShape(3.dp))
+                    .background(if (lv < 0) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f) else levelColor(lv)),
+            )
+        }
+    }
+}
+
+/** 三大宏量供能比分段条。[AI生成] */
+@Composable
+private fun MacroBar(p: Int, f: Int, c: Int) {
+    Spacer(Modifier.height(4.dp))
+    Row(Modifier.fillMaxWidth().height(14.dp).clip(RoundedCornerShape(7.dp))) {
+        if (p > 0) Box(Modifier.weight(p.toFloat()).fillMaxSize().background(Color(0xFF66BB6A)))
+        if (f > 0) Box(Modifier.weight(f.toFloat()).fillMaxSize().background(Color(0xFFFFB300)))
+        if (c > 0) Box(Modifier.weight(c.toFloat()).fillMaxSize().background(Color(0xFF42A5F5)))
+    }
+    Spacer(Modifier.height(4.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        LegendDot(Color(0xFF66BB6A), "蛋白 $p%")
+        LegendDot(Color(0xFFFFB300), "脂肪 $f%")
+        LegendDot(Color(0xFF42A5F5), "碳水 $c%")
+    }
+}
+
+@Composable
+private fun LegendDot(color: Color, text: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+        Spacer(Modifier.width(4.dp))
+        Text(text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/** 膳食均级(0~4)→色：红→橙→琥珀→浅绿→绿；没记=灰(调用方另处理)。[AI生成] */
+private fun levelColor(level: Int): Color = when (level.coerceIn(0, 4)) {
+    4 -> Color(0xFF4CAF50)
+    3 -> Color(0xFF8BC34A)
+    2 -> Color(0xFFFFB300)
+    1 -> Color(0xFFFF9800)
+    else -> Color(0xFFE57373)
+}
+
+private fun oneDecimal(v: Double): String {
+    val r = (v * 10).roundToInt()
+    return "${r / 10}.${r % 10}"
+}
+
+/** 概览一句话总结(鼓励基调，copywriter 后续可审)。[AI生成] */
+private fun buildSummary(st: DietReportUiState, r: DietReport): String {
+    val periodWord = if (st.period == ReportPeriod.WEEK) "这周" else "这月"
+    val p = r.personal
+    if (st.personal && p != null) {
+        val dab = if (p.targetKcal != null) "，达标 ${p.onTargetDays} 天" else ""
+        return "$periodWord 日均 ${p.avgKcal} 千卡$dab"
+    }
+    val struct = when {
+        r.avgLevel >= 3.5 -> "结构挺均衡 👍"
+        r.avgLevel >= 2.5 -> "结构还不错"
+        else -> "可以更均衡些"
+    }
+    return "$periodWord 记了 ${r.recordedDays} 天，尝了 ${r.distinctDishes} 道菜，$struct"
+}
+
+/** 从报告派生 2~3 条本期发现(鼓励非责备)。[AI生成] */
+private fun buildTips(st: DietReportUiState, r: DietReport): List<Pair<Color, String>> {
+    val tips = mutableListOf<Pair<Color, String>>()
+    val green = Color(0xFF4CAF50); val amber = Color(0xFFFFB300); val gray = Color(0xFF9E9E9E)
+    if (r.avgLevel >= 3.5) tips += green to "膳食结构较均衡，继续保持"
+    r.structureGaps.take(2).forEach { tips += amber to it }
+    r.topDishes.firstOrNull()?.let { if (it.count >= 2) tips += gray to "最常吃${it.name}，出现 ${it.count} 次" }
+    return tips.take(4)
+}

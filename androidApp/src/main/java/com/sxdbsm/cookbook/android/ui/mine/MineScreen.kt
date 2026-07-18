@@ -55,6 +55,7 @@ fun MineScreen(
     onOpenDataSource: () -> Unit = {}, // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品来源)
     onOpenFeatureGuide: () -> Unit = {}, // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
     onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
+    onOpenDietReport: () -> Unit = {}, // [AI生成] 饮食报告(周/月回顾)
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
@@ -213,6 +214,16 @@ fun MineScreen(
                     }
                 }
             }
+        }
+
+        // [AI生成] 报告模块：回顾入口(周/月看吃得怎么样)，独立"回顾"组靠上(个人化高价值)。
+        InsetGroup(title = "回顾") {
+            SettingRow(
+                icon = Icons.Outlined.Assessment,
+                title = "饮食报告",
+                subtitle = "看这周/这月吃得怎么样",
+                trailing = "▸",
+            ) { onOpenDietReport() }
         }
 
         // [AI修改] 档案整合：取消独立"个人健康档案"，统一到"家庭档案"(含"我"个人档案)；家庭档案从功能设置提到这里。
