@@ -193,6 +193,22 @@ internal fun IngredientDetailSheet(
                             }
                         }
 
+                        // ② -b 食养：药食同源（国家卫健委法定白名单·纯事实标签，独立于上方忌口/宜忌，绝不接入慢病评级）。
+                        // [AI生成] 药膳一期。仅命中官方白名单才显示；措辞守"仅供参考·非医嘱、非疗效背书"。
+                        val isMedicinal = remember(ingredient.name) { com.sxdbsm.cookbook.domain.MedicinalFoods.isMedicinal(ingredient.name) }
+                        if (isMedicinal) {
+                            SectionTitle("食养")
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                com.sxdbsm.cookbook.android.ui.component.TagChip("药食同源")
+                                Text("据国家卫健委公告", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Text(
+                                "属国家卫健委公布的“既是食品又是中药材”的物质。传统食养分类参考·仅供参考·非医嘱；药食同源指食品安全管理认定，非疗效背书。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+
                         // ③ 🥗 属性：品类 / 营养 / 应季（按维度分组，统一走 groupByDimension/DimensionRows）
                         val dimensionGroups = categories.groupByDimension()
                         if (!dimensionGroups.isEmpty) {

@@ -298,6 +298,31 @@ private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewMode
         onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
         modifier = Modifier.fillMaxWidth(),
     )
+    // [AI生成] 药膳一期·食补过滤：药食同源优先(默认关不打扰)。小标题内嵌"仅供参考"常驻轻免责；**只正向筛选展示、不接慢病评级**。
+    Spacer(Modifier.height(6.dp))
+    Text(
+        "食补（按传统分类筛选，仅供参考）",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(4.dp))
+    com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+        options = listOf("不限", "药食同源"),
+        selectedIndex = if (state.medicinalFilter) 1 else 0,
+        onSelect = { idx -> vm.setMedicinalFilter(idx == 1) },
+        modifier = Modifier.fillMaxWidth(),
+    )
+    if (state.medicinalFilter) {
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "仅按传统食养分类筛选展示，不构成健康建议；忌口与用量请以你的医嘱为准。",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (state.medicinalNote.isNotBlank()) {
+            Text(state.medicinalNote, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
 }
 
 /** 结果区顶部行：左说明 + 右"换一换"。[AI生成] A5：换一换常驻顶部，随手可点。 */

@@ -105,6 +105,14 @@ class AiRecommendViewModel(
     }
 
     /** 选餐次(全部/早餐/…/宵夜)：从第一批开始重新推荐。[AI生成] */
+    /** 食补过滤：药食同源优先(默认关)。[AI生成] 药膳一期·只正向排序、不接慢病评级 */
+    fun setMedicinalFilter(on: Boolean) {
+        if (on == state.medicinalFilter) return
+        rotation = 0
+        state = state.copy(medicinalFilter = on)
+        recommend()
+    }
+
     fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {
         if (slot == state.selectedSlot) return
         rotation = 0 // 换餐次从第一批开始
@@ -120,6 +128,7 @@ class AiRecommendViewModel(
         val slot = state.selectedSlot
         val window = state.recentWindowDays
         val style = state.recommendStyle
+        val medicinal = state.medicinalFilter
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
             runCatching {
@@ -127,11 +136,12 @@ class AiRecommendViewModel(
                 orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { result ->
                 val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
-                state = mapResult(result, mode, modelReady = state.modelReady).copy(
+                state = mapResult(result, mode, modelReady = state.modelReady, medicinal = medicinal).copy(
                     engineLabel = label,
                     selectedSlot = slot,
                     recentWindowDays = window,
                     recommendStyle = style,
+                    medicinalFilter = medicinal,
                 )
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
@@ -152,7 +162,7 @@ class AiRecommendViewModel(
         state = state.copy(selectedIds = if (idSet.all { it in cur }) cur - idSet else cur + idSet)
     }
 
-    private fun mapResult(result: RecommendationResult, mode: RecommendMode, modelReady: Boolean): AiRecommendUiState {
+    private fun mapResult(result: RecommendationResult, mode: RecommendMode, modelReady: Boolean, medicinal: Boolean = false): AiRecommendUiState {
         if (result.source == RecommendationSource.EMPTY || result.candidates.isEmpty()) {
             val hint = when {
                 mode == RecommendMode.RANDOM -> "菜品库里还没有可推荐的菜，先去添加些菜品吧"
@@ -163,6 +173,17 @@ class AiRecommendViewModel(
         // [AI修改] H1：模型返回了分餐组合(suggestions)时按"搭配方案"分组展示，让云端调用真正被消费；
         // 规则兜底/离线则回退到扁平勾选列表。两条路都汇入 selectedIds、走同一个 onPickMeal 契约。
         val byId = result.candidates.associateBy { it.id }
+        // [AI生成] 药膳一期·食补过滤(仅扁平列表)：**只把含药食同源食材的菜稳定排前**(正向排序偏好，非硬过滤/非罚分/不接慢病评级)。
+        //   命中不足不给死胡同：仍展示全部、按含量降序，并如实告知(降级排序)。分组(模型建议)路径不重排，保持搭配完整。
+        var medicinalNote = ""
+        val orderedCandidates = if (medicinal) {
+            val withCount = result.candidates.map { it to com.sxdbsm.cookbook.domain.MedicinalFoods.countIn(it.mainNames) }
+            if (withCount.none { it.second > 0 }) medicinalNote = "符合“药食同源”的菜不多，已为你按含量排序展示"
+            else if (withCount.any { it.second == 0 }) medicinalNote = "已把含药食同源食材的菜排在前面 · 传统分类·仅供参考"
+            withCount.sortedByDescending { it.second }.map { it.first }
+        } else {
+            result.candidates
+        }
         val groups = if (result.source == RecommendationSource.MODEL && result.suggestions.isNotEmpty()) {
             result.suggestions.mapNotNull { s ->
                 val dishes = s.dishIds.mapNotNull { byId[it] }.map { toItem(it, mode) }
@@ -170,10 +191,10 @@ class AiRecommendViewModel(
                 else SuggestionGroupUi(reason = s.reason, cookingHint = s.cookingHint, dishes = dishes)
             }
         } else emptyList()
-        val items = result.candidates.take(MAX_ITEMS).map { toItem(it, mode) }
+        val items = orderedCandidates.take(MAX_ITEMS).map { toItem(it, mode) }
         return AiRecommendUiState(
             loading = false, dishItems = items, suggestionGroups = groups,
-            source = result.source, mode = mode, modelReady = modelReady,
+            source = result.source, mode = mode, modelReady = modelReady, medicinalNote = medicinalNote,
         )
     }
 
@@ -235,6 +256,8 @@ data class AiRecommendUiState(
     val selectedSlot: com.sxdbsm.cookbook.ai.MealSlot = com.sxdbsm.cookbook.ai.MealSlot.ALL, // [AI生成] 当前餐次(全部/早餐/…)
     val recentWindowDays: Int = com.sxdbsm.cookbook.ai.RecommendationDataSource.RECENT_WINDOW_DAYS_DEFAULT, // [AI生成] B2：去重周期(天)，默认一周
     val recommendStyle: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // [AI生成] P3：推荐风格(轻干预权重)
+    val medicinalFilter: Boolean = false, // [AI生成] 药膳一期：食补过滤(药食同源优先)，默认关；**只正向排序展示，不接慢病评级**
+    val medicinalNote: String = "", // [AI生成] 食补过滤开且药食同源菜不多时的如实告知(降级排序，不给死胡同)
 )
 
 /** 单道推荐菜的展示模型。[AI生成] */
