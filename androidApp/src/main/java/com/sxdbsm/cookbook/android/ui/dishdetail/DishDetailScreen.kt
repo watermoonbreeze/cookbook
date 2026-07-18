@@ -6,8 +6,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -66,9 +68,13 @@ fun DishDetailScreen(
                 onBack = onBack,
                 actions = {
                     dish?.let { d ->
-                        // [AI生成] B1：收藏(置顶)——⭐/☆ 一键切换，家庭"看家菜"钉到菜品列表最前。
+                        // [AI修改] B1：收藏(置顶)——矢量 Star 图标(替 Emoji ⭐/☆·随主题/深色适配·与全App图标风格统一)，金橘 tint。
                         IconButton(onClick = { vm.toggleFavorite(d.id) }) {
-                            Text(if (vm.isFavorite) "⭐" else "☆", style = MaterialTheme.typography.titleLarge)
+                            Icon(
+                                imageVector = if (vm.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                                contentDescription = if (vm.isFavorite) "取消收藏" else "收藏",
+                                tint = if (vm.isFavorite) androidx.compose.ui.graphics.Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                         // [AI修改] 自建菜正常编辑；预设菜给"另存为我的菜"(复制后可改)，不再让用户猜怎么改。
                         if (d.source != "preset") {

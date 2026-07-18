@@ -251,20 +251,28 @@ fun AddDayFoodScreen(
                     }
                 }
             }
-            // [AI修改] N3：编辑既有某天的餐食时日期锁定不可改(防改日期导致数据错乱)；仅新增/复制可改。
-            OutlinedButton(
-                onClick = { dateDialogOpen = true },
-                enabled = !state.isEditingExisting,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
-            ) {
-                Icon(Icons.Outlined.Event, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(state.date.toString(), modifier = Modifier.weight(1f))
-                if (state.isEditingExisting) {
+            // [AI修改] N3：编辑既有某天餐食时日期锁定不可改；[UX打磨]编辑态改**纯文本行**(不做成禁用按钮外观·免用户反复误点)，仅新增/复制可点改。
+            if (state.isEditingExisting) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Outlined.Event, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(8.dp))
+                    Text(state.date.toString(), modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("编辑中不可改", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            } else {
+                OutlinedButton(
+                    onClick = { dateDialogOpen = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
+                ) {
+                    Icon(Icons.Outlined.Event, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(state.date.toString(), modifier = Modifier.weight(1f))
                 }
             }
 
