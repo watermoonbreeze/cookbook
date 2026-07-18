@@ -23,7 +23,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -72,6 +75,7 @@ fun AiRecommendScreen(
     val state = vm.state
     val planState = planVm.state
     var showPlan by remember { mutableStateOf(false) }
+    var rulesOpen by remember { mutableStateOf(false) } // [AI生成] 推荐规则说明弹层(标题右上说明图标)
     val snackbar = remember { SnackbarHostState() }
     // [AI生成] 库存挂钩关→隐藏"库存推荐"档(名不副实的标签最迷茫)；若正处 PANTRY 模式则回落随机。
     val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
@@ -97,6 +101,12 @@ fun AiRecommendScreen(
                 title = "AI 推荐",
                 onBack = onBack,
                 subtitle = state.engineLabel.takeIf { it.isNotBlank() }?.let { "推荐来源：$it" },
+                // [AI生成] 标题右上"说明"图标(仿食材营养表)：点开列出本机规则+云端 AI 的推荐逻辑，让用户知道菜是怎么推的。
+                actions = {
+                    IconButton(onClick = { rulesOpen = true }) {
+                        Icon(Icons.Outlined.Info, contentDescription = "推荐规则说明")
+                    }
+                },
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -239,11 +249,47 @@ fun AiRecommendScreen(
             }
         }
     }
+
+    // [AI生成] 推荐规则说明弹层：本机规则 + 云端 AI 逻辑，仿食材营养表"数据来源"弹层(AlertDialog + 可滚正文 + 知道了)。
+    if (rulesOpen) {
+        AlertDialog(
+            onDismissRequest = { rulesOpen = false },
+            title = { Text("推荐是怎么来的") },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text(RECOMMEND_RULES_TEXT, style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = { TextButton(onClick = { rulesOpen = false }) { Text("知道了") } },
+        )
+    }
 }
 
 
 // [AI生成] UX:健康免责单一真相源(原两处重复文案),守免责红线·仅供参考非医嘱。
 private const val DIET_DISCLAIMER = "仅为饮食建议参考，忌口与用量请以你的医嘱为准。"
+
+// [AI生成] 推荐规则说明文案(用户 2026-07-18 要求)：列出本机规则+云端 AI 的推荐逻辑，让用户知道菜是怎么推的。
+//   守健康免责红线：仅供参考·非医嘱；忌口"列出不隐藏"的家庭 App 取向也在此说明。经 copywriter 审校口径。
+private const val RECOMMEND_RULES_TEXT =
+    "推荐先由本机规则筛出可选菜品；如果你配置了 AI 模型，再交给模型搭配组合。不管哪种，忌口都由规则把关。\n\n" +
+        "本机规则（离线也能用）\n" +
+        "· 能不能做：一道菜只要用到你库存里的一味食材（调料默认常备，不算），就会推荐；缺的食材会列出来，让你知道还差什么。\n" +
+        "· 往前排的：用到你在手主要食材越多的、贴合你健康档案偏好的、在手调料越全的，更靠前。\n" +
+        "· 往后排的：你最近吃过的（隔多少天算\"最近\"可自己设）、库存不足或缺辅料的、近期主要食材重复的。\n" +
+        "· 忌口最特殊：设了健康档案时，含忌口食材的菜不会替你藏起来（家人也可能要吃），而是排到最后并标红，由你自己判断。\n" +
+        "· 还会参考：能补今天所缺营养的、你常做或收藏的、合你口味的（会记住你爱做的菜系 / 做法 / 主要食材）。\n" +
+        "· 同一批会打散主要食材、菜系、做法，避免满屏都是同类菜。\n\n" +
+        "推荐风格（你可随时切换）\n" +
+        "· 综合：各方面均衡。\n" +
+        "· 偏熟悉：多推你常做 / 收藏的。\n" +
+        "· 偏新鲜：多推久没做的换口味（很久没做的常做菜会慢慢让位）。\n" +
+        "· 偏营养：更冲着营养均衡来搭（这个风格下，升糖快的、嘌呤偏高的菜会稍微靠后；口径为惯例参考，非国标）。\n\n" +
+        "云端 AI（配置了模型才用）\n" +
+        "· 规则先筛出可选菜品（忌口在这一步就被排除，模型不会碰到它们）。\n" +
+        "· 模型只在这些候选里挑 2~3 道搭成一餐，并给一句理由和做法建议。\n" +
+        "· 模型若选了候选之外的菜会被拦下；任何环节出问题，都自动退回本机规则推荐。\n\n" +
+        "推荐结果仅供参考，非医嘱。健康相关问题请以医生建议为准。"
 
 /**
  * 库存/随机推荐的控件区：餐次 + 去重周期 + 推荐风格。[AI生成]
