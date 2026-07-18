@@ -124,7 +124,7 @@ fun StoredImage(
  * 读取 URI 或文件路径为 Compose 可展示的 ImageBitmap。[AI生成]
  */
 @Composable
-private fun rememberImageBitmap(path: String?, preview: Boolean): ImageBitmap? {
+internal fun rememberImageBitmap(path: String?, preview: Boolean): ImageBitmap? {
     val context = LocalContext.current
     val cacheKey = remember(path, preview) { if (preview) null else path?.let { imageCacheKey(it) } }
     val image by produceState<ImageBitmap?>(initialValue = cacheKey?.let { imageCache.get(it) }, key1 = cacheKey) {
@@ -172,11 +172,14 @@ private fun resolveImageFile(context: android.content.Context, path: String): Fi
 
 private fun imageOptions(preview: Boolean): BitmapFactory.Options =
     BitmapFactory.Options().apply {
-        // [AI修改] 列表/卡片只需要缩略图；点击预览时再读取更清晰版本。
-        inSampleSize = if (preview) 1 else 4
+        // [AI修改] 用户反馈"缩略图太模糊"：缩略图本已是 ~800px 小图，再 /4 解码(→~200px)显示才糊；
+        //   改 /2(→~400px)显示清晰得多；预览大图仍 /1 原清晰度。
+        inSampleSize = if (preview) 1 else 2
     }
 
 private fun imageCacheKey(path: String): String = "thumb:$path"
 
-// [AI修改] 进程内轻量图片缓存，按图片数量限制，避免滚动列表重复 IO/解码同时防止无限占用内存。
-private val imageCache = object : LruCache<String, ImageBitmap>(80) {}
+// [AI修改] 缩略图解码分辨率提高后按**字节**限缓存(~24MB)而非固定条数，防大图占满内存。
+private val imageCache = object : LruCache<String, ImageBitmap>(24 * 1024 * 1024) {
+    override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
+}

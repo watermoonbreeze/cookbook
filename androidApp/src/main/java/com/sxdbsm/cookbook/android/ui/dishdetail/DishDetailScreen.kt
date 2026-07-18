@@ -13,7 +13,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -121,15 +123,24 @@ fun DishDetailScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
         ) {
+            // [AI修改] 用户要求：菜品自身照片只在名称前一处展示——一张=一张，多张=层叠+点开全屏左右滑。
+            val dishImagePaths = decodeImagePaths(d.imagePath)
+            val dishThumbPaths = decodeImagePaths(d.thumbnailPath)
+            var viewerPage by remember(d.id) { mutableStateOf<Int?>(null) }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                StoredImage(
-                    imagePath = d.imagePath,
-                    thumbnailPath = d.thumbnailPath,
-                    fallbackText = d.name.take(2),
-                    fallbackEmoji = "🍱",
-                    seedId = d.id,
-                    size = 88.dp,
-                )
+                if (dishImagePaths.isEmpty()) {
+                    StoredImage(imagePath = "", thumbnailPath = "", fallbackText = d.name.take(2), fallbackEmoji = "🍱", seedId = d.id, size = 88.dp, allowPreview = false)
+                } else {
+                    com.sxdbsm.cookbook.android.ui.component.StackedThumbnail(
+                        imagePaths = dishImagePaths,
+                        thumbnailPaths = dishThumbPaths,
+                        fallbackText = d.name.take(2),
+                        fallbackEmoji = "🍱",
+                        seedId = d.id,
+                        size = 88.dp,
+                        onClick = { page -> viewerPage = page },
+                    )
+                }
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
                     Text(d.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
@@ -159,27 +170,17 @@ fun DishDetailScreen(
                 }
             }
 
-            val imagePaths = decodeImagePaths(d.imagePath)
-            val thumbnailPaths = decodeImagePaths(d.thumbnailPath)
-            if (imagePaths.isNotEmpty()) {
-                FormFieldLabel("图片", topPadding = 18.dp, bottomPadding = 8.dp)
-                val detailImagePairs = imagePaths
-                    .mapIndexed { index, path -> path to thumbnailPaths.getOrNull(index).orEmpty() }
-                    .drop(1)
-                    .ifEmpty { imagePaths.mapIndexed { index, path -> path to thumbnailPaths.getOrNull(index).orEmpty() } } // [AI修改] 顶部已展示首图，多图区域优先展示剩余图片，单图时保留可预览入口。
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    items(detailImagePairs, key = { it.first }) { (path, thumbnailPath) ->
-                        StoredImage(
-                            imagePath = path,
-                            thumbnailPath = thumbnailPath,
-                            fallbackText = d.name.take(2),
-                            fallbackEmoji = "🍱",
-                            seedId = d.id,
-                            size = 96.dp,
-                            corner = 12.dp,
-                        )
-                    }
-                }
+            // [AI删除] 用户要求：删掉散落的第二处多图区，菜品照片全部收敛到顶部层叠缩略图(点开全屏看全部)。
+
+            // [AI生成] 全屏图片查看器：点顶部层叠缩略图打开，左右滑看全部。
+            viewerPage?.let { page ->
+                com.sxdbsm.cookbook.android.ui.component.FullScreenImageViewer(
+                    imagePaths = dishImagePaths,
+                    thumbnailPaths = dishThumbPaths,
+                    initialPage = page,
+                    contentDescription = d.name,
+                    onDismiss = { viewerPage = null },
+                )
             }
 
             FormFieldLabel("食材", topPadding = 18.dp, bottomPadding = 8.dp)

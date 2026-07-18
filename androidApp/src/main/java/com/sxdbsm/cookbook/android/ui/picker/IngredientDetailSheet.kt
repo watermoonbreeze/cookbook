@@ -115,16 +115,24 @@ internal fun IngredientDetailSheet(
                         if (loading) {
                             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                         }
+                        // [AI修改] 用户要求：食材照片顶部一处——一张=一张，多张=层叠+点开全屏左右滑。
+                        val ingImagePaths = com.sxdbsm.cookbook.android.ui.component.decodeImagePaths(ingredient.imagePath)
+                        val ingThumbPaths = com.sxdbsm.cookbook.android.ui.component.decodeImagePaths(ingredient.thumbnailPath)
+                        var ingViewerPage by remember(ingredient.id) { mutableStateOf<Int?>(null) }
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            StoredImage(
-                                imagePath = ingredient.imagePath,
-                                thumbnailPath = ingredient.thumbnailPath,
-                                fallbackText = ingredient.name.take(1),
-                                fallbackEmoji = ingredient.emoji.ifBlank { "🥗" },
-                                seedId = ingredient.id,
-                                size = 64.dp,
-                                corner = 12.dp,
-                            ) // [AI修改] 图片预览入口统一放在详情弹层内。
+                            if (ingImagePaths.isEmpty()) {
+                                StoredImage(imagePath = "", thumbnailPath = "", fallbackText = ingredient.name.take(1), fallbackEmoji = ingredient.emoji.ifBlank { "🥗" }, seedId = ingredient.id, size = 64.dp, corner = 12.dp, allowPreview = false)
+                            } else {
+                                com.sxdbsm.cookbook.android.ui.component.StackedThumbnail(
+                                    imagePaths = ingImagePaths,
+                                    thumbnailPaths = ingThumbPaths,
+                                    fallbackText = ingredient.name.take(1),
+                                    fallbackEmoji = ingredient.emoji.ifBlank { "🥗" },
+                                    seedId = ingredient.id,
+                                    size = 64.dp,
+                                    onClick = { page -> ingViewerPage = page },
+                                )
+                            }
                             Spacer(Modifier.width(12.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(
@@ -149,6 +157,16 @@ internal fun IngredientDetailSheet(
                                     )
                                 }
                             }
+                        }
+                        // [AI生成] 全屏图片查看器：点顶部层叠缩略图打开，左右滑看全部（叠在食材详情 Dialog 之上）。
+                        ingViewerPage?.let { page ->
+                            com.sxdbsm.cookbook.android.ui.component.FullScreenImageViewer(
+                                imagePaths = ingImagePaths,
+                                thumbnailPaths = ingThumbPaths,
+                                initialPage = page,
+                                contentDescription = ingredient.name,
+                                onDismiss = { ingViewerPage = null },
+                            )
                         }
 
                         // ① 🍳 做法：常见做法 + 相关菜品（按烹饪方式分组）

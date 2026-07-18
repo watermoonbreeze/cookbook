@@ -398,6 +398,8 @@ fun decodeImagePaths(text: String): List<String> =
 
 private const val ORIGINAL_MAX_SIDE = 1600
 private const val ORIGINAL_QUALITY = 88
-private const val THUMB_MAX_SIDE = 360
-private const val THUMB_TARGET_BYTES = 5 * 1024
-private const val THUMB_MAX_BYTES = 10 * 1024
+// [AI修改] 用户反馈"预览缩略图太模糊"：缩略图分辨率 360→800(约 800×600)，显示清晰得多；
+//   字节控制在 ~8~12K(用户要 5~10K，略放宽以在 800px 下保清晰，"你看情况定")。存量图需重存才更新。
+private const val THUMB_MAX_SIDE = 800
+private const val THUMB_TARGET_BYTES = 8 * 1024
+private const val THUMB_MAX_BYTES = 12 * 1024
