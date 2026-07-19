@@ -36,6 +36,8 @@ class AiRecommendViewModel(
 
     private var rotation = 0 // [AI生成] 库存模式换一换轮次。
     private var started = false // [AI生成] 进页面只判定一次，避免重复。
+    // [AI生成] R6第一批:缓存上次推荐结果——药膳过滤只是本地重排(mapResult),不该全量 gather+云端。踩菜时失效(见 setDisliked)。
+    private var cachedResult: RecommendationResult? = null
 
     /**
      * 进入页面时调用（仅一次）。[AI生成]
@@ -102,9 +104,24 @@ class AiRecommendViewModel(
     /** 食补过滤：药食同源优先(默认关)。[AI生成] 药膳一期·只正向排序、不接慢病评级 */
     fun setMedicinalFilter(on: Boolean) {
         if (on == state.medicinalFilter) return
-        rotation = 0
-        state = state.copy(medicinalFilter = on)
-        if (!state.pendingManual) recommend() // [AI修改] 审查建议1:与 setStyle/setRecentWindow 一致,配了AI模型待手动时不擅自调云端
+        // [AI修改] R6第一批(零风险纯赚):药膳只是 mapResult 里的本地重排——有缓存结果就**只本地重排**,
+        //   不 gather(省18-22 SQL)、不云端(省1往返)、瞬时响应。无缓存(还没推过)才退回全量推荐。
+        val cached = cachedResult
+        if (cached == null || state.loading) {
+            state = state.copy(medicinalFilter = on)
+            if (!state.pendingManual) recommend()
+            return
+        }
+        val prev = state
+        state = mapResult(cached, prev.mode, modelReady = prev.modelReady, medicinal = on).copy(
+            engineLabel = prev.engineLabel,       // 保留粘性字段(mapResult 重建 state 会丢·红线)
+            selectedSlot = prev.selectedSlot,
+            recentWindowDays = prev.recentWindowDays,
+            recommendStyle = prev.recommendStyle,
+            medicinalFilter = on,
+            selectedIds = prev.selectedIds,       // 纯重排保留用户已勾选(不清空)
+            pendingManual = prev.pendingManual,   // [AI修改] 审查建议1:显式保留(不靠"有缓存⇒pendingManual必false"的隐式不变量),防未来改动踩雷
+        )
     }
 
     fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {
@@ -129,6 +146,7 @@ class AiRecommendViewModel(
                 val input = dataSource.gather(mode, mealSlot = slot, recentWindowDays = window)
                 orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { result ->
+                cachedResult = result // [AI生成] R6:缓存供药膳本地重排复用(免全量 gather+云端)
                 val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
                 state = mapResult(result, mode, modelReady = state.modelReady, medicinal = medicinal).copy(
                     engineLabel = label,
@@ -163,6 +181,7 @@ class AiRecommendViewModel(
         viewModelScope.launch {
             // [AI修改] 与详情页一致:DB 写成功才乐观更新 UI 态(本地写极少失败,失败则不改灰态,避免态与库不一致)。
             runCatching { dataSource.setDishDisliked(id, disliked) }.onSuccess {
+                cachedResult = null // [AI生成] R6失效守卫:踩菜是唯一需即时反映的写路径→缓存失效,下次药膳过滤走全量 gather(已过滤踩菜)避免脏读
                 state = state.copy(
                     dishItems = state.dishItems.map { if (it.id == id) it.copy(disliked = disliked) else it },
                     suggestionGroups = state.suggestionGroups.map { g ->
