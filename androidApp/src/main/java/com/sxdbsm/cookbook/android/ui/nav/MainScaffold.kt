@@ -142,8 +142,7 @@ fun MainScaffold(
                     onOpenTimelineAt = { date -> nav.navigate(Routes.timelineAt(DateTime.formatDate(date))) }, // [AI生成] 营养色系墙点色块→食历定位该日
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
                     onOpenWeekPlan = { nav.navigate(Routes.WEEK_PLAN) }, // [AI生成] B3
-                    onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
-                    onRecordDish = { id -> nav.navigate(Routes.addMealWithDishes(listOf(id))) }, // [AI生成] 阶段2:首页"下一餐"卡"记"某菜→带该菜进记一餐
+                    onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) }, // [AI修改] 首页卡 v2：整卡点击进 AI 推荐全页(引流·全页看整桌+批量记)
                 )
             }
             composable(Routes.TIMELINE) {

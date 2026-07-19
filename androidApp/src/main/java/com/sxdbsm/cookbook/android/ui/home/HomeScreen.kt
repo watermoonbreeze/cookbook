@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,7 +52,6 @@ fun HomeScreen(
     onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] A1：首页计划卡"复制"入口(与食历页一致，家庭高频"照着某天再吃一次")
     onOpenWeekPlan: () -> Unit = {}, // [AI生成] B3：一周计划入口
     onOpenAiRecommend: () -> Unit = {},
-    onRecordDish: (Long) -> Unit = {}, // [AI生成] 阶段2：首页"下一餐"卡点某菜"记"→带该菜进记一餐(addMealWithDishes)。
     vm: HomeViewModel = koinViewModel(),
 ) {
     // [AI修改] collectAsStateWithLifecycle 会按 Android 生命周期订阅 StateFlow，避免后台页面继续无意义刷新。
@@ -122,14 +122,13 @@ fun HomeScreen(
             .padding(padding)
             .fillMaxSize(),
     ) {
-        // [AI生成] 阶段2：首页"下一餐"推荐卡(把原"AI推荐入口卡"升级为直接展示3道具体菜·打开即见·纯规则不调云端)。
+        // [AI修改] 首页卡 v2：轻量单菜引流卡——只推一道+一句人话·整卡点击进 AI 全页看整桌搭配(纯规则不调云端·打开即见)。
         item {
             NextMealCard(
                 state = nextMeal,
-                onOpenDish = onOpenDish,
-                onRecordDish = onRecordDish,
+                onOpenRecommend = onOpenAiRecommend, // 整卡点击→AI 推荐全页(全页按钟点自判餐次+批量记)
                 onShuffle = { vm.shuffleNextMeal() },
-                onOpenMore = onOpenAiRecommend,
+                onAddDishes = onOpenDishes, // 空态"去添加菜品"
             )
         }
 
@@ -291,85 +290,100 @@ fun HomeScreen(
 }
 
 /**
- * 首页"下一餐"推荐卡。[AI生成] 阶段2
+ * 首页"下一餐"引流卡（v2·轻量单菜）。[AI修改]
  *
- * 打开首页即见"下一餐建议吃这几道具体菜"(纯规则·不调云端·快)：整行点=看详情，行尾「记」=带该菜进记一餐，
- * "换一批"本地轮播，"看更多推荐"进 AI 推荐全页。新用户/无库存标"示例"(诚实告知)。守免责红线。
+ * 定位=**引流入口**：打开首页即见"给你挑的一道菜 + 一句人话理由"(纯规则·不调云端·快)，**整卡点击进 AI 推荐全页**
+ * (看整桌搭配 + 批量记)。首页不做记/详情(那是全页/详情页的活)，只保留一个本地"换一道"。标题用疑问式("晚餐吃点什么")
+ * 去掉"下一餐·明天·早餐"的排班硬承诺(与已有周期计划歧义)。新用户/无库存标"示例"(诚实告知)。守免责红线、忌口菜不进卡。
  */
 @Composable
 private fun NextMealCard(
     state: NextMealUi,
-    onOpenDish: (Long) -> Unit,
-    onRecordDish: (Long) -> Unit,
-    onShuffle: () -> Unit,
-    onOpenMore: () -> Unit,
+    onOpenRecommend: () -> Unit, // 整卡点击→AI 推荐全页
+    onShuffle: () -> Unit, // 换一道(本地轮播)
+    onAddDishes: () -> Unit, // 空态"去添加菜品"
 ) {
+    // 疑问式标题：示例态"今天可以吃什么"；否则"X吃点什么"(X=早餐/中餐/晚餐/明早)。
+    val title = when {
+        state.isSample -> "今天可以吃什么"
+        state.slotLabel.isBlank() -> "吃点什么"
+        else -> "${state.slotLabel}吃点什么"
+    }
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shape = MaterialTheme.shapes.medium,
         tonalElevation = 0.dp,
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
-        Column(Modifier.padding(vertical = 12.dp)) {
-            // 卡头：下一餐·餐次 + (示例) + 换一批
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+        when {
+            // 空态：菜品库没有可推的菜——只给"下一步"，不挂整卡点击(避免点进空全页)。
+            !state.loading && state.dish == null -> EmptyState(
+                text = "先添几道你家常做的菜，我就能帮你挑了",
+                icon = "🍽",
+                actionLabel = "去添加菜品",
+                onAction = onAddDishes,
+            )
+            // 有菜/加载中：整卡可点进全页。
+            else -> Column(
+                modifier = Modifier
+                    .then(if (state.dish != null) Modifier.clickable { onOpenRecommend() } else Modifier)
+                    .padding(vertical = 12.dp),
             ) {
-                Column(Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            if (state.slotLabel.isBlank()) "下一餐" else "下一餐 · ${state.slotLabel}",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        if (state.isSample) {
-                            Spacer(Modifier.width(6.dp))
-                            Surface(color = MaterialTheme.colorScheme.tertiaryContainer, shape = MaterialTheme.shapes.small) {
-                                Text(
-                                    "示例",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
-                                )
-                            }
+                // 卡头：疑问式标题 + (示例) + 换一道
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    if (state.isSample) {
+                        Spacer(Modifier.width(6.dp))
+                        Surface(color = MaterialTheme.colorScheme.tertiaryContainer, shape = MaterialTheme.shapes.small) {
+                            Text(
+                                "示例",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                            )
                         }
                     }
+                    Spacer(Modifier.weight(1f))
+                    if (state.canShuffle) {
+                        TextButton(onClick = onShuffle) { Text("换一道") } // 子按钮点击不冒泡到整卡
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                if (state.loading) {
+                    // 加载态：极快(纯规则)，单行轻提示即可，避免骨架闪烁。
                     Text(
-                        if (state.isSample) "先看看今天可以吃什么，记一顿后会更懂你" else "下面几道，挑顺手的记一下",
-                        style = MaterialTheme.typography.bodySmall,
+                        "正在为你挑一道",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     )
-                }
-                if (state.canShuffle) {
-                    TextButton(onClick = onShuffle) { Text("换一批") }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            when {
-                state.loading -> Text(
-                    "正在为你搭配…",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
-                state.dishes.isEmpty() -> Text(
-                    "菜品库里还没有可推荐的菜，先去添加些菜品吧",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
-                else -> state.dishes.forEachIndexed { i, d ->
-                    if (i > 0) Divider(modifier = Modifier.padding(start = 16.dp))
+                } else {
+                    val d = state.dish!!
+                    // 单菜主体：emoji 锚点框 + 菜名 + 一句人话理由。
                     Row(
-                        modifier = Modifier.fillMaxWidth()
-                            .clickable { onOpenDish(d.id) }
-                            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(d.emoji, style = MaterialTheme.typography.headlineSmall)
+                        }
+                        Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(d.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+                            Text(d.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 1)
                             if (d.note.isNotBlank()) {
+                                Spacer(Modifier.height(2.dp))
                                 Text(
                                     d.note,
                                     style = MaterialTheme.typography.bodySmall,
@@ -378,29 +392,32 @@ private fun NextMealCard(
                                 )
                             }
                         }
-                        FilledTonalButton(
-                            onClick = { onRecordDish(d.id) },
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                        ) { Text("记") }
                     }
+                    Spacer(Modifier.height(8.dp))
+                    Divider(modifier = Modifier.padding(start = 16.dp))
+                    // 下钻 CTA：整卡即入口，此行是明示锚点(利益驱动文案)。
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "AI 帮我搭一桌",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                    // 免责(守健康红线)
+                    Text(
+                        if (state.isSample) "示例推荐 · 仅供参考" else "仅供参考 · 非医嘱",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp),
+                    )
                 }
             }
-            // 底部：看更多推荐 → AI 推荐全页
-            Divider(modifier = Modifier.padding(start = 16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { onOpenMore() }.padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("看更多推荐", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
-                Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
-            }
-            // 免责(守健康红线)
-            Text(
-                "按你的记录与健康档案生成 · 仅供参考",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp),
-            )
         }
     }
 }

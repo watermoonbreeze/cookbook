@@ -26,7 +26,7 @@ import kotlinx.datetime.isoDayNumber
 import kotlin.math.roundToInt
 
 /** 首页"下一餐"卡展示菜数(一餐一荤一素一汤/主食的家庭直觉)。[AI生成] 阶段2 */
-private const val HOME_DISH_COUNT = 3
+private const val HOME_DISH_COUNT = 1 // [AI修改] 首页卡 v2：轻量单菜引流(原3道)——只推一道+一句人话·点击进AI全页看整桌
 
 /**
  * 首页 UI 状态。[AI修改]
@@ -47,17 +47,17 @@ data class FocusSwitcher(
     val viewingId: Long? = null,
 )
 
-/** 首页"下一餐"推荐卡状态。[AI生成] 阶段2 */
+/** 首页"下一餐"推荐卡状态。[AI修改] v2：轻量单菜引流(单菜 dish?·非列表) */
 data class NextMealUi(
     val slotLabel: String = "", // 下一餐餐次(早餐/中餐/晚餐/明天·早餐)
-    val dishes: List<NextDishUi> = emptyList(),
+    val dish: NextDishUi? = null, // [AI修改] v2：单菜引流——只推一道(空/加载/空库时 null)
     val isSample: Boolean = false, // 无库存/新用户→随机兜底,标"示例·记录后更懂你"(诚实告知)
-    val canShuffle: Boolean = false, // 候选>展示数才可"换一批"
+    val canShuffle: Boolean = false, // 候选>1 才可"换一道"
     val loading: Boolean = false,
 )
 
-/** 首页推荐卡单菜。[AI生成] 阶段2 */
-data class NextDishUi(val id: Long, val name: String, val note: String)
+/** 首页推荐卡单菜。[AI修改] v2：加 emoji 视觉锚点(荤/主食/素·VM 按 isMeat/isStaple 映射·无新数据) */
+data class NextDishUi(val id: Long, val name: String, val note: String, val emoji: String = "🥗")
 
 /**
  * 首页 ViewModel。[AI修改]
@@ -79,8 +79,9 @@ class HomeViewModel(
     private val _nextMeal = kotlinx.coroutines.flow.MutableStateFlow(NextMealUi(loading = true))
     /** 首页"下一餐"卡状态。[AI生成] 阶段2 */
     val nextMeal: StateFlow<NextMealUi> = _nextMeal
-    private var homeRotation = 0 // 首页"换一批"轮次(本地轮播已算好的候选)。
-    // [AI生成] 阶段2:缓存已算好的候选——"换一批"纯本地轮播(不重 gather);loadNextMeal 才重取(忌口/钟点实时)。
+    private var homeRotation = 0 // 首页"换一道"轮次(本地轮播已算好的候选)。
+    // [AI生成] 阶段2:缓存已算好的候选——"换一道"纯本地轮播(不重 gather);loadNextMeal 才重取(忌口/钟点实时)。
+    // [AI修改] 审查建议:以下缓存字段依赖 viewModelScope 主线程(Main.immediate)串行读写(init/ON_RESUME/换一道都在主线程)——勿把相关段挪到 Dispatchers.IO,否则这几个非 volatile 字段会踩竞态。
     private var cachedCandidates: List<com.sxdbsm.cookbook.ai.model.DishCandidate> = emptyList()
     private var cachedSlotLabel = ""
     private var cachedSample = false
@@ -117,41 +118,62 @@ class HomeViewModel(
         }
     }
 
-    /** 首页"换一批"：**纯本地轮播已算好的候选(不重 gather)**。[AI生成] 阶段2 */
+    /** 首页"换一道"：**纯本地轮播已算好的候选(不重 gather)**。[AI修改] v2：单菜·候选>1 才可换 */
     fun shuffleNextMeal() {
-        if (cachedCandidates.size <= HOME_DISH_COUNT) return // 不足一批·换不动(canShuffle=false 时不该触发)
+        if (cachedCandidates.size <= HOME_DISH_COUNT) return // 只有一道·换不动(canShuffle=false 时不该触发)
         homeRotation++
         publishNextMeal()
     }
 
-    /** 用当前 rotation 从缓存候选取一批发布到 UI(不重取)。[AI生成] 阶段2 */
+    /** 用当前 rotation 从缓存候选取一道发布到 UI(不重取)。[AI修改] v2：单菜引流 */
     private fun publishNextMeal() {
-        val picks = rotateSlice(cachedCandidates, homeRotation, HOME_DISH_COUNT)
+        val pick = rotateSlice(cachedCandidates, homeRotation, HOME_DISH_COUNT).firstOrNull()
         _nextMeal.value = NextMealUi(
             slotLabel = cachedSlotLabel,
-            dishes = picks.map { NextDishUi(id = it.id, name = it.name, note = homeNote(it)) },
+            dish = pick?.let { NextDishUi(id = it.id, name = it.name, note = homeNote(it, cachedSample), emoji = emojiFor(it)) },
             isSample = cachedSample,
-            canShuffle = cachedCandidates.size > HOME_DISH_COUNT,
+            canShuffle = cachedCandidates.size > HOME_DISH_COUNT, // >1 才可换一道
             loading = false,
         )
     }
 
-    /** 按当前钟点判"下一餐"餐次(早/中/晚·20点后→明日早餐)。[AI生成] 阶段2 */
-    private fun currentSlot(): Pair<com.sxdbsm.cookbook.ai.MealSlot, String> = when (DateTime.currentHour()) {
-        in 4..9 -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST to "早餐"
-        in 10..13 -> com.sxdbsm.cookbook.ai.MealSlot.LUNCH to "中餐"
-        in 14..19 -> com.sxdbsm.cookbook.ai.MealSlot.DINNER to "晚餐"
-        else -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST to "明天 · 早餐" // 20:00–03:59
+    /** 单菜视觉锚点 emoji(荤/主食/素·纯按现有判定映射·无新数据)。[AI生成] v2 */
+    private fun emojiFor(c: com.sxdbsm.cookbook.ai.model.DishCandidate): String = when {
+        c.isStaple -> "🍚"
+        c.isMeat -> "🍖"
+        else -> "🥗"
     }
 
-    /** 首页轻量理由(取最多2条·常做/补今日营养/宜吃)。[AI生成] 阶段2 复用 buildNote 精简版 */
-    private fun homeNote(c: com.sxdbsm.cookbook.ai.model.DishCandidate): String {
-        val parts = mutableListOf<String>()
-        if (c.frequent) parts += "⭐你常做"
-        if (c.complementary) parts += "🥗补今日营养"
-        if (c.recommendHits.isNotEmpty()) parts += "✓宜吃：${c.recommendHits.take(2).joinToString("、")}"
-        if (parts.isEmpty() && c.mainNames.isNotEmpty()) parts += "主料：${c.mainNames.take(2).joinToString("、")}"
-        return parts.take(2).joinToString("　·　")
+    /**
+     * 按当前钟点判餐次 + 疑问式标题用的餐次词。[AI修改] v2
+     *
+     * 标签改口语餐次词(卡片拼"X吃点什么")：去掉"下一餐·明天·早餐"的排班硬承诺(与已有周期计划歧义)。
+     * 20 点后→"明早"(比"明天·早餐"更短更口语)。
+     */
+    private fun currentSlot(): Pair<com.sxdbsm.cookbook.ai.MealSlot, String> = when (DateTime.currentHour()) {
+        in 4..9 -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST to "早餐"
+        in 10..13 -> com.sxdbsm.cookbook.ai.MealSlot.LUNCH to "午餐" // [AI修改] 术语统一(早/午/晚/加餐)·去"中餐vs西餐"歧义
+        in 14..19 -> com.sxdbsm.cookbook.ai.MealSlot.DINNER to "晚餐"
+        else -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST to "明早" // 20:00–03:59
+    }
+
+    /**
+     * 首页单菜"一句人话理由"。[AI修改] v2：只讲一件事·无 emoji·像家里人开口。
+     *
+     * 优先级(命中即返回·据 apple_ux_designer 规范 §B)：在手食材 > 补今日缺口 > 你常做 > 宜吃 > 主料兜底。
+     * 示例态(无库存/新用户随机兜底)改邀请式、不套上表(诚实告知这是示例)。
+     * 健康红线：recommendHits 分支只说"对身体友好"，禁"降/治/达标"等医疗断言。
+     */
+    private fun homeNote(c: com.sxdbsm.cookbook.ai.model.DishCandidate, sample: Boolean): String {
+        if (sample) return "记一顿后，会更懂你想吃什么" // 示例态：诚实告知、邀请式
+        return when {
+            c.onHandNames.isNotEmpty() -> "用你手头的${c.onHandNames.first()}，顺手就能做"
+            c.complementary -> "今天正好缺这口，补得上"
+            c.frequent -> "你家常做的，顺手一顿"
+            c.recommendHits.isNotEmpty() -> "有${c.recommendHits.first()}，家里人都合适" // [AI修改] 守健康红线：宜吃食材是"人群适配"、不替整道菜下健康断言(原"对身体友好"偏背书)
+            c.mainNames.isNotEmpty() -> "主料是${c.mainNames.first()}，清爽好搭"
+            else -> ""
+        }
     }
 
     /** 轮播取 n 个(不足 n 全给·超过按 rotation 滚动窗口·环绕)。[AI生成] 阶段2 */
