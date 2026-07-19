@@ -30,7 +30,7 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
         if (key.isBlank()) {
             return@withContext Result.failure(IllegalStateException("${model.vendorName} API Key 未配置"))
         }
-        val body = GlmProtocol.buildRequestBody(model.model, request.system, request.user, request.temperature)
+        val body = GlmProtocol.buildRequestBody(model.model, request.system, request.user, request.temperature, jsonMode = model.supportsJsonMode)
         AppLogger.d("CloudAi", "req[${model.id}] endpoint=${model.endpoint} body=$body") // [AI生成] 请求日志(prompt只含食材/约束标签/候选菜名,无敏感健康档案)。
         var lastError: Throwable? = null
         repeat(MAX_ATTEMPTS) { attempt ->

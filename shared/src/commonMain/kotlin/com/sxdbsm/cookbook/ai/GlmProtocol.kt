@@ -17,14 +17,15 @@ object GlmProtocol {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    /** 组装 chat/completions 请求体 JSON。[AI生成] */
-    fun buildRequestBody(model: String, system: String, user: String, temperature: Double): String =
+    /** 组装 chat/completions 请求体 JSON。[AI生成] R3:jsonMode=true 时加 response_format 强约束 JSON 输出(仅支持的模型开)。 */
+    fun buildRequestBody(model: String, system: String, user: String, temperature: Double, jsonMode: Boolean = false): String =
         json.encodeToString(
             ChatRequest.serializer(),
             ChatRequest(
                 model = model,
                 temperature = temperature,
                 messages = listOf(ChatMessage("system", system), ChatMessage("user", user)),
+                response_format = if (jsonMode) ResponseFormat("json_object") else null, // null→encodeDefaults=false 不序列化(老模型不带此字段)
             ),
         )
 
@@ -35,7 +36,15 @@ object GlmProtocol {
     }.getOrNull()
 
     @Serializable
-    private data class ChatRequest(val model: String, val messages: List<ChatMessage>, val temperature: Double)
+    private data class ChatRequest(
+        val model: String,
+        val messages: List<ChatMessage>,
+        val temperature: Double,
+        val response_format: ResponseFormat? = null, // [AI生成] R3:JSON 强约束(仅支持的模型带);null 不序列化。
+    )
+
+    @Serializable
+    private data class ResponseFormat(val type: String)
 
     @Serializable
     private data class ChatMessage(val role: String, val content: String)

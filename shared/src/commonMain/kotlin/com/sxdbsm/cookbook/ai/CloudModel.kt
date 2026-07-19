@@ -21,10 +21,24 @@ data class CloudModel(
     val model: String, // API 模型名
     val free: Boolean = false, // 是否免费
     val applyUrl: String = "", // [AI生成] 该厂商 API Key 申请入口官网(配置指南"打开官网"跳转用；同厂共用)
+    val supportsJsonMode: Boolean = false, // [AI生成] R3:是否支持 response_format:json_object(强约束 JSON 输出→解析成功率↑)。老型号 glm-4-flash 不支持。
 )
 
 object CloudModels {
     val ALL: List<CloudModel> = listOf(
+        // [AI生成] R3(用户2026-07-19拍板):默认换 glm-4.5-flash——同免费档、更强、支持 JSON 强约束输出(解析更稳)。
+        //   与 glm-4-flash 同厂(zhipu)API Key 通用,已设 glm-4-flash key 的用户切到此模型无需重设 key。
+        CloudModel(
+            id = "zhipu_glm45_flash",
+            displayName = "智谱 GLM-4.5-Flash（免费·推荐）",
+            vendor = "zhipu",
+            vendorName = "智谱",
+            endpoint = "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+            model = "glm-4.5-flash",
+            free = true,
+            applyUrl = "https://open.bigmodel.cn/usercenter/apikeys",
+            supportsJsonMode = true,
+        ),
         CloudModel(
             id = "zhipu_glm4_flash",
             displayName = "智谱 GLM-4-Flash（免费）",
