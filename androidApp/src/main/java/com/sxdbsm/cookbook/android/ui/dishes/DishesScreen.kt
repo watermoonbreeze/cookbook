@@ -67,7 +67,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.sxdbsm.cookbook.ai.MealSlot
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.DishRow
 import com.sxdbsm.cookbook.android.ui.component.LetterIndexBar
@@ -226,9 +225,10 @@ fun DishesScreen(
                 )
                 // [AI生成] v28：二级餐次筛选栏(§9.18 横滚胶囊·常驻不隐)——作用所有档，"全部"=高亮首项即不筛。
                 //   放固定层(不进 LazyColumn)：与一级 Tab 行为一致(吸顶不随列表滚)，且不打乱字母跳转 letterHeaderCount 偏移。
-                val mealSlotTabs = remember { listOf<MealSlot?>(null) + MealSlot.values().filter { it != MealSlot.ALL } }
+                // [AI修改] 2026-07-19:餐次栏改统称版(DishSlotFilter:全部/早餐/中餐/加餐/晚餐/宵夜·"加餐"=上午/下午合并·仅菜品页用)。
+                val mealSlotTabs = remember { DishSlotFilter.values().toList() }
                 PrimaryTabRow(
-                    options = mealSlotTabs.map { it?.label ?: "全部" },
+                    options = mealSlotTabs.map { it.label },
                     selectedIndex = mealSlotTabs.indexOf(ui.selectedMealSlot).coerceAtLeast(0),
                     onSelect = { idx -> vm.selectMealSlot(mealSlotTabs[idx]) },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
@@ -421,7 +421,7 @@ private fun LazyListScope.dishHeaderItems(
 private fun DishSearchOverlay(
     results: List<DishMini>,
     keyword: String,
-    mealSlot: MealSlot? = null, // [AI生成] v28：非空=按餐次筛模式(搜"早餐")，头部提示"适合早餐的菜品"、不显新建行
+    mealSlot: DishSlotFilter? = null, // [AI修改] v28→2026-07-19:非空=按餐次筛模式(搜"早餐/加餐")，头部提示"适合X的菜品"、不显新建行(统称版·.label 通用)
     onKeywordChange: (String) -> Unit, // [AI生成] B-7：覆盖层自带搜索框改词(列表内搜索行被本层盖住)
     onOpen: (DishMini) -> Unit,
     onCreateNew: () -> Unit,

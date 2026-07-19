@@ -22,13 +22,48 @@ import kotlinx.coroutines.launch
  */
 enum class DishesSortTab { RECENT, FAVORITE, ALL, HOME }
 
+/**
+ * 菜品页专属"餐次筛选"分类。[AI生成] 2026-07-19
+ *
+ * 用户诉求：菜品分类里把 上午餐/下午餐/加餐 用一个**统称「加餐」**代替，点它=显示所有属于上午/下午/加餐的菜。
+ * **只在菜品页筛选/搜索这一处用**——不改 MealSlot 枚举、不改 meal_type、不动记一餐(记一餐仍保持上午餐/下午餐)。
+ * 每个筛选项映射到底层 MealSlot 集合，"加餐"= {上午餐,下午餐}(命中任一即算)。ALL(全部)=空集=不筛。
+ */
+enum class DishSlotFilter(val label: String, val slots: Set<MealSlot>) {
+    ALL("全部", emptySet()),
+    BREAKFAST("早餐", setOf(MealSlot.BREAKFAST)),
+    LUNCH("中餐", setOf(MealSlot.LUNCH)),
+    SNACK("加餐", setOf(MealSlot.MORNING_SNACK, MealSlot.AFTERNOON_SNACK)), // 统称:上午/下午合并
+    DINNER("晚餐", setOf(MealSlot.DINNER)),
+    NIGHT("宵夜", setOf(MealSlot.NIGHT_SNACK)),
+    ;
+
+    /** 该筛选项是否匹配某菜的餐次集(全部=不筛恒 true；否则命中任一底层餐次即算)。[AI生成] */
+    fun matches(dishSlots: List<MealSlot>): Boolean = slots.isEmpty() || dishSlots.any { it in slots }
+
+    companion object {
+        // [AI生成] 纯餐次搜索词→菜品餐次筛(整词命中)。含统称"加餐"及其子词(上午餐/下午餐等都归"加餐")。
+        private val KEYWORDS: Map<String, DishSlotFilter> = mapOf(
+            "早餐" to BREAKFAST, "早饭" to BREAKFAST,
+            "午餐" to LUNCH, "中餐" to LUNCH, "午饭" to LUNCH,
+            "加餐" to SNACK, "上午餐" to SNACK, "上午加餐" to SNACK,
+            "下午餐" to SNACK, "下午茶" to SNACK, "下午加餐" to SNACK, // "点心"不列:更可能是真实菜名/菜系(广式点心)易误判餐次筛(Google审查建议)
+            "晚餐" to DINNER, "晚饭" to DINNER,
+            "宵夜" to NIGHT, "夜宵" to NIGHT,
+        )
+
+        /** 整词命中纯餐次词→对应筛选项；否则 null(走普通菜名/菜系搜索)。[AI生成] */
+        fun fromKeyword(kw: String): DishSlotFilter? = KEYWORDS[kw.trim()]
+    }
+}
+
 /** 列表排序 + 筛选合并载体(供 combine 一路传递)。[AI生成] */
 private data class ViewOpts(
     val sortTab: DishesSortTab,
     val method: String?,
     val tag: String?,
     val cuisine: String?,
-    val mealSlot: MealSlot?, // [AI生成] v28：餐次筛选(null=全部/不筛，作用所有档)
+    val mealSlot: DishSlotFilter, // [AI修改] v28→2026-07-19:餐次筛选改统称版(上午/下午合并"加餐")，作用所有档；ALL=不筛
 )
 
 /**
@@ -53,8 +88,8 @@ data class DishesUiState(
     val homeCount: Int = 0, // [AI生成] 家庭 Tab 菜品数(自建 source=user)
     val searchResults: List<DishMini> = emptyList(), // [AI生成] 搜索关键字的原始结果(不受 Tab/菜系筛选)，供搜索弹框展示
     val favoriteIds: Set<Long> = emptySet(), // [AI生成] B1：收藏菜品 id(列表置顶+★标记)
-    val selectedMealSlot: MealSlot? = null, // [AI生成] v28：二级餐次筛选栏当前选中(null=全部)
-    val searchMealSlot: MealSlot? = null, // [AI生成] v28：搜索命中纯餐次词时的餐次(搜"早餐"→按餐次筛模式，头部提示"适合早餐的菜品")
+    val selectedMealSlot: DishSlotFilter = DishSlotFilter.ALL, // [AI修改] v28→2026-07-19:二级餐次筛选栏当前选中(统称版,ALL=全部)
+    val searchMealSlot: DishSlotFilter? = null, // [AI修改] v28→2026-07-19:搜索命中纯餐次词时的餐次筛(搜"早餐/加餐"→按餐次筛模式，头部提示"适合X的菜品")
 )
 
 /**
@@ -87,25 +122,15 @@ class DishesViewModel(
     private val _methodFilter = MutableStateFlow<String?>(null) // [AI生成] 烹饪方式筛选
     private val _tagFilter = MutableStateFlow<String?>(null) // [AI生成] 标签筛选
     private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] 菜系筛选
-    private val _mealSlotFilter = MutableStateFlow<MealSlot?>(null) // [AI生成] v28：二级餐次筛选
-    private val _searchMealSlot = MutableStateFlow<MealSlot?>(null) // [AI生成] v28：搜索命中的纯餐次词(按餐次筛模式)
+    private val _mealSlotFilter = MutableStateFlow(DishSlotFilter.ALL) // [AI修改] v28→2026-07-19:二级餐次筛选(统称版,ALL=不筛)
+    private val _searchMealSlot = MutableStateFlow<DishSlotFilter?>(null) // [AI修改] v28→2026-07-19:搜索命中的纯餐次词(按餐次筛模式)
     private val _favoriteIds = MutableStateFlow<Set<Long>>(emptySet()) // [AI生成] B1：收藏菜品 id
     private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
 
     private companion object {
         private const val TAG = "DishActions" // [AI生成] 菜品列表操作统一日志 Tag，便于排查长按编辑/删除。
         private const val LIST_LIMIT = 30 // [AI生成] "最近"(updated_at DESC)与"喜爱"(preference DESC) Tab 各只展示前 30 个；"全部"才展示所有。
-
-        // [AI生成] v28：纯餐次搜索关键词→餐次(搜"早餐"出按餐次筛的菜)。仅整词命中(trim 后 ==)，"早餐饼"等菜名不误判。
-        private val MEAL_SLOT_KEYWORDS: Map<String, MealSlot> = mapOf(
-            "早餐" to MealSlot.BREAKFAST, "早饭" to MealSlot.BREAKFAST,
-            "上午餐" to MealSlot.MORNING_SNACK, "上午加餐" to MealSlot.MORNING_SNACK,
-            "午餐" to MealSlot.LUNCH, "中餐" to MealSlot.LUNCH, "午饭" to MealSlot.LUNCH,
-            "下午餐" to MealSlot.AFTERNOON_SNACK, "下午茶" to MealSlot.AFTERNOON_SNACK, "下午加餐" to MealSlot.AFTERNOON_SNACK,
-            "晚餐" to MealSlot.DINNER, "晚饭" to MealSlot.DINNER,
-            "宵夜" to MealSlot.NIGHT_SNACK, "夜宵" to MealSlot.NIGHT_SNACK,
-        )
-        fun matchMealSlotKeyword(kw: String): MealSlot? = MEAL_SLOT_KEYWORDS[kw.trim()]
+        // [AI修改] 2026-07-19:纯餐次搜索词映射迁到 DishSlotFilter.fromKeyword(统称"加餐"含上午/下午)。
     }
 
     /**
@@ -141,8 +166,8 @@ class DishesViewModel(
                 (tag == null || tag in d.tags) &&
                 // [AI修改] 菜系筛选只在"菜系"Tab(ALL)生效；最近/喜爱不受菜系影响。
                 (tab != DishesSortTab.ALL || effectiveCuisine == null || effectiveCuisine == d.cuisine) &&
-                // [AI生成] v28：二级餐次筛选作用所有档(DishMini.mealSlots 已含 Matcher 兜底，恒非空)。
-                (mealSlot == null || mealSlot in d.mealSlots)
+                // [AI修改] v28→2026-07-19:二级餐次筛选(统称版)作用所有档;"加餐"统称命中上午/下午任一(DishMini.mealSlots 恒非空)。
+                mealSlot.matches(d.mealSlots)
         }
         // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部/家庭展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
@@ -213,15 +238,15 @@ class DishesViewModel(
     /** 直接选择菜系(左侧菜系栏)：null=全部(不筛)。[AI生成] */
     fun selectCuisine(cuisine: String?) { _cuisineFilter.value = cuisine }
 
-    /** 选择二级餐次筛选(null=全部/不筛，作用所有档)。[AI生成] v28 */
-    fun selectMealSlot(slot: MealSlot?) { _mealSlotFilter.value = slot?.takeIf { it != MealSlot.ALL } }
+    /** 选择二级餐次筛选(ALL=全部/不筛，作用所有档；"加餐"统称含上午/下午)。[AI修改] v28→2026-07-19 */
+    fun selectMealSlot(filter: DishSlotFilter) { _mealSlotFilter.value = filter }
 
     /** 一键清除所有筛选(烹饪方式/标签/菜系/餐次/关键词)。[AI生成] 叠了多个筛选后回到全量免逐个再点。 */
     fun clearFilters() {
         _methodFilter.value = null
         _tagFilter.value = null
         _cuisineFilter.value = null
-        _mealSlotFilter.value = null
+        _mealSlotFilter.value = DishSlotFilter.ALL
         setKeyword("")
     }
 
@@ -314,12 +339,12 @@ class DishesViewModel(
                 _searchMealSlot.value = null // [AI生成] v28：清空搜索退出按餐次筛模式
                 if (force) delay(120) // [AI生成] 空关键词列表来自 Flow，保留一个短刷新反馈。
             } else {
-                // [AI生成] v28：整词命中纯餐次词(早餐/午餐…)→按餐次筛(查 DishMini.mealSlots)，头部提示"适合X的菜品"；否则普通菜名搜索。
-                val slot = matchMealSlotKeyword(keyword)
+                // [AI修改] v28→2026-07-19:整词命中纯餐次词(早餐/中餐/加餐…含统称"加餐"=上午/下午)→按餐次筛(查 DishMini.mealSlots)，头部提示"适合X的菜品"；否则普通菜名搜索。
+                val slot = DishSlotFilter.fromKeyword(keyword)
                 if (slot != null) {
                     _searchMealSlot.value = slot
                     // [AI修改] 用一次性实时查询(非 allObserved.value)：stateIn(WhileSubscribed) 无订阅时 .value 冻结在初值会静默返回空(红线)。
-                    _list.value = dishRepo.observeAllDishes().first().filter { slot in it.mealSlots }
+                    _list.value = dishRepo.observeAllDishes().first().filter { slot.matches(it.mealSlots) }
                 } else {
                     _searchMealSlot.value = null
                     _list.value = dishRepo.searchDishes(keyword)
