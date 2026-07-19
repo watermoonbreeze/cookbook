@@ -211,6 +211,7 @@ fun IngredientPickerScreen(
                         selectionMode = selectionMode,
                         selectedIds = ui.selectedIds,
                         pantryIds = ui.pantryIngredientIds,
+                        categoryName = ui.searchCategoryName, // [AI生成] 2026-07-19:搜"蔬菜类"→按类目筛模式头部+不显新建行
                         onPick = {
                             // [AI修改] 搜索结果点击直接开详情(顶部显分类路径)——不再靠 jumpToIngredient 定位网格,
                             // 修"食材还没加载到当前页时点击没反应"。收起搜索下拉,详情弹层浮在上层。
@@ -533,6 +534,7 @@ fun IngredientPickerScreen(
                                     selectionMode = false,
                                     selectedIds = ui.selectedIds,
                                     pantryIds = ui.pantryIngredientIds,
+                                    categoryName = ui.searchCategoryName, // [AI生成] 2026-07-19:搜"蔬菜类"→按类目筛模式头部+不显新建行
                                     fillHeight = true, // [AI生成] #4:全屏覆盖层铺满,不用 320dp 限高
                                     onPick = { searchOpen = false; vm.setKeyword(""); selectedIngredient = it },
                                     onToggleSelect = { vm.toggleSelection(it) },
@@ -571,19 +573,26 @@ fun IngredientPickerScreen(
                                         verticalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         Text("🔎", style = MaterialTheme.typography.displaySmall)
-                                        Text("没找到「${ui.keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
+                                        // [AI修改] 2026-07-19:类目筛模式(搜"蔬菜类")用类目口径文案,非"没找到「」"。
+                                        Text(
+                                            if (ui.searchCategoryName != null) "「${ui.searchCategoryName}」类目下还没有食材" else "没找到「${ui.keyword.trim()}」",
+                                            style = MaterialTheme.typography.titleSmall,
+                                        )
                                     }
-                                    com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
-                                        keyword = ui.keyword,
-                                        entity = "食材",
-                                        onClick = {
-                                            createPrefillName = ui.keyword.trim()
-                                            vm.clearCreateError()
-                                            vm.loadIngredientEditor(null)
-                                            searchOpen = false
-                                            createDialogOpen = true
-                                        },
-                                    )
+                                    // [AI修改] 2026-07-19:类目筛模式不显"新建食材"(搜类目名不是要新建叫这名的食材)；普通搜索保留。
+                                    if (ui.searchCategoryName == null) {
+                                        com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                                            keyword = ui.keyword,
+                                            entity = "食材",
+                                            onClick = {
+                                                createPrefillName = ui.keyword.trim()
+                                                vm.clearCreateError()
+                                                vm.loadIngredientEditor(null)
+                                                searchOpen = false
+                                                createDialogOpen = true
+                                            },
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -934,6 +943,7 @@ private fun SearchResultsPanel(
     fillHeight: Boolean = false, // [AI生成] #4(Google审查🟡5):全屏搜索覆盖层里铺满高度;弹窗内联下拉仍限高 320dp。
     onCreateNew: (() -> Unit)? = null, // [AI生成] 传入即在列表末尾显示"新建食材「x」"行(能力由回调是否传入决定，非 mode 布尔)。
     createKeyword: String = "", // [AI生成] 新建行展示/回填的关键词(需 onCreateNew!=null 且非空白才渲染)。
+    categoryName: String? = null, // [AI生成] 2026-07-19:非空=按类目筛模式(搜"蔬菜类")，顶部提示"「X」的食材 · N 种"、不显新建行。
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -941,6 +951,29 @@ private fun SearchResultsPanel(
         modifier = Modifier.fillMaxWidth(),
     ) {
         LazyColumn(modifier = if (fillHeight) Modifier.fillMaxSize() else Modifier.heightIn(max = 320.dp)) {
+            // [AI生成] 2026-07-19:按类目筛模式头部——淡主色条+"「蔬菜类」的食材 · N 种"，一眼区别普通名搜。
+            if (categoryName != null) {
+                item(key = "cat-header") {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "「$categoryName」的食材",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            " · ${results.size} 种",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Divider()
+                }
+            }
             items(results, key = { it.id }) { ing ->
                 Row(
                     modifier = Modifier
@@ -977,8 +1010,8 @@ private fun SearchResultsPanel(
                 }
                 Divider()
             }
-            // [AI生成] 列表末尾常驻"新建食材「x」"行(覆盖有结果/0结果两态，SearchCreateRow 自带上方 Divider 分界)。
-            if (onCreateNew != null && createKeyword.isNotBlank()) {
+            // [AI修改] 2026-07-19:列表末尾常驻"新建食材「x」"行(覆盖有结果/0结果两态)。**类目筛模式不显**(搜"蔬菜类"不是要新建叫这名的食材)。
+            if (onCreateNew != null && createKeyword.isNotBlank() && categoryName == null) {
                 item(key = "search-create-row") {
                     com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
                         keyword = createKeyword,

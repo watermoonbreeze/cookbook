@@ -85,6 +85,7 @@ data class IngredientPickerUiState(
     val pantryRemaining: Map<Long, Int> = emptyMap(), // [AI生成] 库存剩余份数(份数-今天及过去占用)，库存Tab展示；0=已用尽仍在库。
     val pantryServings: Map<Long, Int> = emptyMap(), // [AI生成] 库存原始份数(用户提供总量)，用于减份数。
     val searchResults: List<Ingredient> = emptyList(), // [AI生成] 全局搜索下拉结果（跨全库，不限当前 Tab）。
+    val searchCategoryName: String? = null, // [AI生成] 2026-07-19：搜索整词命中类目名时的类目(搜"蔬菜类"→出该类目全部食材·按类目筛模式·头部提示·不显新建行)。
     val highlightIngredientId: Long? = null, // [AI生成] 搜索跳转后在网格中高亮定位的食材。
     val enabledCareCategoryIds: Set<Long> = emptySet(), // [AI生成] 用户已启用的健康档案病种(care 分类 id)，详情忌口区置顶高亮。
 )
@@ -191,6 +192,7 @@ class IngredientPickerViewModel(
                 allCategories = allCategories,
                 tree = buildTreeForTab(tab, tops, allCategories),
                 searchResults = emptyList(),
+                searchCategoryName = null, // [AI修改] Google审查建议3:清搜索结果时同步清类目筛态(与 searchResults 成对,去隐性耦合)。
                 highlightIngredientId = null, // [AI生成] 切 Tab 清掉搜索下拉与高亮。
             )
             applyIngredientResult(ingredients.withoutExcluded(), resetPage = true)
@@ -213,13 +215,23 @@ class IngredientPickerViewModel(
         _state.value = _state.value.copy(keyword = kw, highlightIngredientId = null)
         searchJob?.cancel()
         if (kw.isBlank()) {
-            _state.value = _state.value.copy(searchResults = emptyList())
+            _state.value = _state.value.copy(searchResults = emptyList(), searchCategoryName = null)
             return
         }
         searchJob = viewModelScope.launch {
             delay(com.sxdbsm.cookbook.android.util.SearchDefaults.DEBOUNCE_MS) // [AI修改] 连续输入时只保留最后一次搜索，降低卡顿。
-            val results = ingredientRepo.search(kw).filterNot { it.id in _state.value.excludeIngredientIds }
-            _state.value = _state.value.copy(searchResults = results)
+            val trimmed = kw.trim()
+            val exclude = _state.value.excludeIngredientIds
+            // [AI生成] 2026-07-19:整词命中类目名(品类/营养/应季·非care可查ingredient_category)→按类目筛,出该类目及子类目全部食材;否则普通名/别名/拼音搜。
+            val matchedCats = _state.value.allCategories.filter { it.name == trimmed && it.dimension != "care" }
+            if (matchedCats.isNotEmpty()) {
+                val ids = expandCategoryIds(matchedCats.map { it.id })
+                val results = ingredientRepo.listByCategories(ids).filterNot { it.id in exclude }
+                _state.value = _state.value.copy(searchResults = results, searchCategoryName = trimmed)
+            } else {
+                val results = ingredientRepo.search(kw).filterNot { it.id in exclude }
+                _state.value = _state.value.copy(searchResults = results, searchCategoryName = null)
+            }
         }
     }
 
@@ -247,6 +259,7 @@ class IngredientPickerViewModel(
                     mainTab = IngredientMainTab.GENERAL,
                     keyword = "",
                     searchResults = emptyList(),
+                    searchCategoryName = null, // [AI修改] Google审查建议3:与 searchResults 成对清。
                     selectedCategoryId = ALL_CATEGORY_ID,
                     allCategories = all,
                     tree = buildTreeForTab(IngredientMainTab.GENERAL, all.filter { it.parentId == null }, all),
@@ -260,6 +273,7 @@ class IngredientPickerViewModel(
                 mainTab = IngredientMainTab.GENERAL,
                 keyword = "",
                 searchResults = emptyList(),
+                searchCategoryName = null, // [AI修改] Google审查建议3:与 searchResults 成对清。
                 selectedCategoryId = target.id,
                 allCategories = all,
                 tree = buildGeneralTreeExpandedTo(target.id, all),

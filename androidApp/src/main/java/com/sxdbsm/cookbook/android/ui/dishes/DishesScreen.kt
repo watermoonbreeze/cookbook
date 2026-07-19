@@ -299,6 +299,7 @@ fun DishesScreen(
             results = ui.searchResults,
             keyword = ui.keyword,
             mealSlot = ui.searchMealSlot, // [AI生成] v28：搜"早餐"等纯餐次词→按餐次筛模式
+            cuisine = ui.searchCuisine, // [AI生成] 2026-07-19：搜"家常菜"等纯菜系词→按菜系筛模式
             onKeywordChange = vm::setKeyword,
             onOpen = { dish ->
                 searchOpen = false
@@ -422,6 +423,7 @@ private fun DishSearchOverlay(
     results: List<DishMini>,
     keyword: String,
     mealSlot: DishSlotFilter? = null, // [AI修改] v28→2026-07-19:非空=按餐次筛模式(搜"早餐/加餐")，头部提示"适合X的菜品"、不显新建行(统称版·.label 通用)
+    cuisine: String? = null, // [AI生成] 2026-07-19:非空=按菜系筛模式(搜"家常菜")，头部提示"X的菜品"、不显新建行
     onKeywordChange: (String) -> Unit, // [AI生成] B-7：覆盖层自带搜索框改词(列表内搜索行被本层盖住)
     onOpen: (DishMini) -> Unit,
     onCreateNew: () -> Unit,
@@ -447,10 +449,16 @@ private fun DishSearchOverlay(
                 Spacer(Modifier.width(8.dp))
                 TextButton(onClick = onClose) { Text("取消") }
             }
+            // [AI修改] 2026-07-19:按分类筛模式(餐次/菜系)统一头部标题;普通菜名搜索显"搜索结果 N"。classifyTitle 非空=分类筛模式(不显新建行)。
+            val classifyTitle: String? = when {
+                mealSlot != null -> "适合${mealSlot.label}的菜品"
+                cuisine != null -> "${cuisine}的菜品"
+                else -> null
+            }
             // [AI修改] #4:图标触发的覆盖层,空查询时只给提示(不显"搜索结果0"/"未找到「」")。
             if (keyword.isNotBlank()) {
-                if (mealSlot != null) {
-                    // [AI生成] v28：按餐次筛模式头部——淡主色条+餐具图标+"适合早餐的菜品 · N 道"，一眼区别于普通菜名搜索。
+                if (classifyTitle != null) {
+                    // [AI修改] v28→2026-07-19：按分类筛模式头部(餐次/菜系)——淡主色条+图标+"X的菜品 · N 道"，一眼区别于普通菜名搜索。
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
@@ -465,7 +473,7 @@ private fun DishSearchOverlay(
                         )
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            "适合${mealSlot.label}的菜品",
+                            classifyTitle,
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -509,14 +517,14 @@ private fun DishSearchOverlay(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text("🔎", style = MaterialTheme.typography.displaySmall)
-                            // [AI生成] v28：餐次模式用餐次口径文案(非"没找到「早餐」"——那是菜名搜索口径)。
+                            // [AI修改] v28→2026-07-19：分类筛模式(餐次/菜系)用分类口径文案(非"没找到「早餐」"——那是菜名搜索口径)。
                             Text(
-                                if (mealSlot != null) "还没有适合${mealSlot.label}的菜品" else "没找到「${keyword.trim()}」",
+                                if (classifyTitle != null) "还没有${classifyTitle}" else "没找到「${keyword.trim()}」",
                                 style = MaterialTheme.typography.titleSmall,
                             )
                         }
-                        // [AI生成] v28：餐次模式不显"新建菜品「早餐」"(语义怪)；普通搜索保留末尾新建行(§9.19)。
-                        if (mealSlot == null) {
+                        // [AI修改] v28→2026-07-19：分类筛模式(餐次/菜系)不显"新建菜品「早餐」"(语义怪)；普通搜索保留末尾新建行(§9.19)。
+                        if (classifyTitle == null) {
                             com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
                                 keyword = keyword,
                                 entity = "菜品",
@@ -528,8 +536,8 @@ private fun DishSearchOverlay(
                 else -> {
                     LazyColumn(Modifier.fillMaxSize()) {
                         items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
-                        // [AI生成] 有结果末尾常驻"新建菜品「x」"行(结果与新建行由 SearchCreateRow 自带 Divider 分界)。餐次模式不显(§9.19 显隐由回调决定)。
-                        if (mealSlot == null) {
+                        // [AI修改] v28→2026-07-19：有结果末尾常驻"新建菜品「x」"行。分类筛模式(餐次/菜系)不显(§9.19 显隐由回调决定)。
+                        if (classifyTitle == null) {
                             item(key = "search-create-row") {
                                 com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
                                     keyword = keyword,

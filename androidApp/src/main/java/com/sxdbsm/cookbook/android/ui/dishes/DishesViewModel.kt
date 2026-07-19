@@ -90,6 +90,7 @@ data class DishesUiState(
     val favoriteIds: Set<Long> = emptySet(), // [AI生成] B1：收藏菜品 id(列表置顶+★标记)
     val selectedMealSlot: DishSlotFilter = DishSlotFilter.ALL, // [AI修改] v28→2026-07-19:二级餐次筛选栏当前选中(统称版,ALL=全部)
     val searchMealSlot: DishSlotFilter? = null, // [AI修改] v28→2026-07-19:搜索命中纯餐次词时的餐次筛(搜"早餐/加餐"→按餐次筛模式，头部提示"适合X的菜品")
+    val searchCuisine: String? = null, // [AI生成] 2026-07-19:搜索命中纯菜系词时的菜系(搜"家常菜"→按菜系筛模式，头部提示"X 菜品")
 )
 
 /**
@@ -124,6 +125,7 @@ class DishesViewModel(
     private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] 菜系筛选
     private val _mealSlotFilter = MutableStateFlow(DishSlotFilter.ALL) // [AI修改] v28→2026-07-19:二级餐次筛选(统称版,ALL=不筛)
     private val _searchMealSlot = MutableStateFlow<DishSlotFilter?>(null) // [AI修改] v28→2026-07-19:搜索命中的纯餐次词(按餐次筛模式)
+    private val _searchCuisine = MutableStateFlow<String?>(null) // [AI生成] 2026-07-19:搜索命中的纯菜系词(搜"家常菜"出该菜系全部菜·按菜系筛模式)
     private val _favoriteIds = MutableStateFlow<Set<Long>>(emptySet()) // [AI生成] B1：收藏菜品 id
     private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
 
@@ -191,14 +193,19 @@ class DishesViewModel(
         )
     }
 
+    // [AI生成] 2026-07-19:两个搜索分类态(餐次/菜系)合一路，避免 uiState combine 超 5 路 typed 重载。
+    private val searchClassify = kotlinx.coroutines.flow.combine(_searchMealSlot, _searchCuisine) { slot, cuisine -> slot to cuisine }
+
     val uiState: StateFlow<DishesUiState> = kotlinx.coroutines.flow.combine(
-        baseState, _refreshing, _deleteState, _favoriteIds, _searchMealSlot,
-    ) { state, refreshing, deleteState, favIds, searchSlot ->
+        baseState, _refreshing, _deleteState, _favoriteIds, searchClassify,
+    ) { state, refreshing, deleteState, favIds, searchClass ->
+        val (searchSlot, searchCuisine) = searchClass
         state.copy(
             refreshing = refreshing,
             deleteState = deleteState,
             favoriteIds = favIds,
             searchMealSlot = searchSlot,
+            searchCuisine = searchCuisine, // [AI生成] 2026-07-19:菜系搜索模式
             // [AI生成] B1：收藏置顶——稳定排序把收藏的菜提到最前，保留各 Tab 原有次序。
             all = state.all.sortedByDescending { it.id in favIds },
         )
@@ -337,17 +344,30 @@ class DishesViewModel(
             _refreshing.value = true
             if (keyword.isBlank()) {
                 _searchMealSlot.value = null // [AI生成] v28：清空搜索退出按餐次筛模式
+                _searchCuisine.value = null // [AI生成] 2026-07-19:清空退出按菜系筛模式
                 if (force) delay(120) // [AI生成] 空关键词列表来自 Flow，保留一个短刷新反馈。
             } else {
-                // [AI修改] v28→2026-07-19:整词命中纯餐次词(早餐/中餐/加餐…含统称"加餐"=上午/下午)→按餐次筛(查 DishMini.mealSlots)，头部提示"适合X的菜品"；否则普通菜名搜索。
+                // [AI修改] v28→2026-07-19:整词命中分类词→按分类筛(不是菜名搜索)：①纯餐次词(早餐/中餐/加餐…统称"加餐"=上午/下午)→查 mealSlots ②纯菜系词(家常菜/川菜…)→查 cuisine，出该分类全部菜、头部提示；否则普通菜名搜索。
                 val slot = DishSlotFilter.fromKeyword(keyword)
-                if (slot != null) {
-                    _searchMealSlot.value = slot
-                    // [AI修改] 用一次性实时查询(非 allObserved.value)：stateIn(WhileSubscribed) 无订阅时 .value 冻结在初值会静默返回空(红线)。
-                    _list.value = dishRepo.observeAllDishes().first().filter { slot.matches(it.mealSlots) }
-                } else {
-                    _searchMealSlot.value = null
-                    _list.value = dishRepo.searchDishes(keyword)
+                // [AI修改] Google审查建议1:泛词"其他"作菜系值语义弱、会遮蔽名字含"其他"的菜名搜索→不纳入菜系整词命中。
+                val cuisine = keyword.trim().takeIf { it in com.sxdbsm.cookbook.domain.model.Cuisines.ALL && it != "其他" }
+                when {
+                    slot != null -> {
+                        _searchMealSlot.value = slot
+                        _searchCuisine.value = null
+                        // [AI修改] 用一次性实时查询(非 allObserved.value)：stateIn(WhileSubscribed) 无订阅时 .value 冻结在初值会静默返回空(红线)。
+                        _list.value = dishRepo.observeAllDishes().first().filter { slot.matches(it.mealSlots) }
+                    }
+                    cuisine != null -> {
+                        _searchCuisine.value = cuisine
+                        _searchMealSlot.value = null
+                        _list.value = dishRepo.observeAllDishes().first().filter { it.cuisine == cuisine }
+                    }
+                    else -> {
+                        _searchMealSlot.value = null
+                        _searchCuisine.value = null
+                        _list.value = dishRepo.searchDishes(keyword)
+                    }
                 }
             }
             _refreshing.value = false
