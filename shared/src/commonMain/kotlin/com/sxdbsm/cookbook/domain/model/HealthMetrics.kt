@@ -54,6 +54,17 @@ data class BodyMetrics(
  * 饭量系数(portionCoefficient)：把一餐的全家总热量按各成员系数占比分到人(个人摄入估算)。
  * isSelf=默认「我」(不可删)；isFocus=主要关注成员(达标/色系墙默认围绕他)。careCategoryIds=该成员病种(忌口取全家并集)。
  */
+/**
+ * 个人忌口可选分类项（成员编辑弹层 chip）。[AI生成] v29
+ *
+ * label=chip 短标签(比分类库 name 更口语)，group=分组小标题(荤食/素食与口味)，categoryId=food_category id。
+ */
+data class AvoidCategoryOption(
+    val categoryId: Long,
+    val label: String,
+    val group: String,
+)
+
 data class FamilyMember(
     val id: Long,
     val name: String,

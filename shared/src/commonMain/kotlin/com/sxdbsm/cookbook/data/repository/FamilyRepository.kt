@@ -225,6 +225,41 @@ class FamilyRepository(
         q.selectAllPersonalAvoidCategoryIds().executeAsList()
     }
 
+    /**
+     * 个人忌口可选分类项（成员编辑弹层 chip 白名单·按 §9.22）。[AI生成] v29
+     *
+     * food_category 表无 code 列→按**分类名**映射到 id(缺失静默跳过防崩)。只列日常真会"整类不吃"的分类，
+     * 荤类给具体子类(避免与"肉类"父级并列困惑)，其余给大类。label 用口语短标签(非分类库 name)。
+     */
+    suspend fun listAvoidCategoryOptions(): List<com.sxdbsm.cookbook.domain.model.AvoidCategoryOption> = withContext(ioDispatcher) {
+        val idByName = q.selectAllFoodCategories().executeAsList()
+            .filter { it.dimension == "general" }.associate { it.name to it.id }
+        AVOID_CATEGORY_WHITELIST.mapNotNull { (catName, labelGroup) ->
+            idByName[catName]?.let { com.sxdbsm.cookbook.domain.model.AvoidCategoryOption(it, labelGroup.first, labelGroup.second) }
+        }
+    }
+
+    private companion object {
+        // [AI生成] v29:忌口 chip 白名单 分类名→(chip短标签, 分组)。荤类只给子类,素食口味给大类。code 见 §9.22。
+        val AVOID_CATEGORY_WHITELIST: List<Pair<String, Pair<String, String>>> = listOf(
+            "猪肉类" to ("猪肉" to "荤食"),
+            "牛肉类" to ("牛肉" to "荤食"),
+            "羊肉类" to ("羊肉" to "荤食"),
+            "禽肉类" to ("鸡鸭禽肉" to "荤食"),
+            "动物内脏类" to ("动物内脏" to "荤食"),
+            "鱼类" to ("鱼" to "荤食"),
+            "虾蟹类" to ("虾蟹" to "荤食"),
+            "贝类" to ("贝类" to "荤食"),
+            "蛋类" to ("蛋" to "荤食"),
+            "奶类" to ("奶类" to "素食与口味"),
+            "大豆及坚果" to ("大豆坚果" to "素食与口味"),
+            "食用菌类" to ("菌菇" to "素食与口味"),
+            "藻类" to ("藻类海带" to "素食与口味"),
+            "葱蒜类" to ("葱蒜" to "素食与口味"),
+            "香辛料类" to ("香辛料" to "素食与口味"),
+        )
+    }
+
     private fun toModel(
         id: Long, name: String, gender: String, height: Double?, weight: Double?, age: Long?,
         activity: String, coeff: Double, isSelf: Long, isFocus: Long,
