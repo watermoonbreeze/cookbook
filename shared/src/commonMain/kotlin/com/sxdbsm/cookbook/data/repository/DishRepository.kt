@@ -3,6 +3,8 @@ package com.sxdbsm.cookbook.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import com.sxdbsm.cookbook.ai.MealSlot
+import com.sxdbsm.cookbook.ai.MealSlotMatcher
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.db.SelectDishForEditById
 import com.sxdbsm.cookbook.domain.model.Dish
@@ -258,10 +260,17 @@ class DishRepository(private val db: CookbookDatabase) {
         val mainNamesByDish = q.selectMainIngredientNamesByDishIds(dishIds)
             .executeAsList()
             .groupBy({ it.dish_id }, { it.ingredient_name })
+        // [AI生成] v28：批量取菜的存储餐次(dish_meal_slot)；未打标(老库/新自建未 seed)回退 MealSlotMatcher 推断，恒非空。
+        val mealSlotsByDish = q.selectMealSlotCodesByDishIds(dishIds)
+            .executeAsList()
+            .groupBy({ it.dish_id }, { MealSlot.fromCode(it.code) })
         return sources.map { source ->
             val relMethods = relMethodsByDish[source.id].orEmpty()
             val fallbackName = source.cookingMethodId?.let { cookingMethodNames[it] }
             val methodNames = relMethods.map { it.name }.ifEmpty { fallbackName?.let(::listOf).orEmpty() }
+            // [AI生成] v28：存储餐次优先(滤掉未知 code 落到的 ALL)；未打标回退 Matcher 推断兜底(恒非空)。
+            val storedSlots = mealSlotsByDish[source.id].orEmpty().filter { it != MealSlot.ALL }
+            val mealSlots = storedSlots.ifEmpty { MealSlotMatcher.defaultSlotsFor(source.name) }
             DishMini(
                 id = source.id,
                 name = source.name,
@@ -274,6 +283,7 @@ class DishRepository(private val db: CookbookDatabase) {
                 cookingMethodNames = methodNames,
                 source = source.source,
                 cuisine = source.cuisine,
+                mealSlots = mealSlots,
             )
         }
     }
@@ -387,6 +397,9 @@ class DishRepository(private val db: CookbookDatabase) {
                 thumbnailPath = step.thumbnail_path,
             )
         } // [AI生成] 编辑/详情统一读取菜品操作步骤，按 sort_order 保持用户录入顺序。
+        // [AI生成] v28：读存储餐次(单列 code SELECT 返回 List<String>)；编辑回显真实存储值，空=老库未打标(由编辑页 Matcher 预选补齐)。
+        val mealSlots = q.selectMealSlotCodesByDish(id).executeAsList()
+            .map { MealSlot.fromCode(it) }.filter { it != MealSlot.ALL }
         return Dish(
             id = row.id,
             name = row.name,
@@ -405,6 +418,7 @@ class DishRepository(private val db: CookbookDatabase) {
             tags = tags,
             ingredients = ingredients,
             steps = steps,
+            mealSlots = mealSlots,
         )
     }
 
@@ -429,6 +443,7 @@ class DishRepository(private val db: CookbookDatabase) {
         ingredients: List<DishIngredient>,
         steps: List<DishStep> = emptyList(),
         cuisine: String = "", // [AI生成] 菜系(可空)
+        mealSlotCodes: List<String> = emptyList(), // [AI生成] v28：适合餐次 code(空则按菜名 Matcher 推断兜底)
     ): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
         var dishId = id
@@ -468,6 +483,15 @@ class DishRepository(private val db: CookbookDatabase) {
             q.unlinkCookingMethodsOfDish(dishId)
             cookingMethodIds.forEach { methodId ->
                 q.linkDishCookingMethod(dishId, methodId)
+            }
+
+            // [AI生成] v28：同步菜品适合餐次(全量替换)；空则按菜名 Matcher 推断兜底，保证"永不出现无餐次菜"。
+            q.unlinkMealSlotsOfDish(dishId)
+            val slotCodes = mealSlotCodes.filter { it.isNotBlank() }.distinct()
+                .ifEmpty { MealSlotMatcher.defaultSlotsFor(name).map { it.code } }
+            slotCodes.forEach { code ->
+                val mealTypeId = q.selectMealTypeIdByCode(code).executeAsOneOrNull() ?: return@forEach
+                q.linkDishMealSlot(dishId, mealTypeId)
             }
 
             // [AI修改] 同步标签：先清空关联再重建，避免编辑时残留旧标签。

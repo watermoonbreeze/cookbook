@@ -131,6 +131,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             seedIngredientCareRules(categoryIdsByCode) // [AI生成] 通用调养规则补齐式 seed。
             seedIngredientNutrition(now) // [AI生成] L2 食材营养素补齐式 seed（专用文件 ingredient_nutrition.json）。
             seedDishes(now) // [AI生成] 预设经典做法菜品补齐式 seed（关联主料/烹饪方式/配料/步骤）。
+            seedDishMealSlots() // [AI生成] v28：预设菜「适合餐次」补齐式 seed(回填只补空，显式 mealSlots 优先、否则 Matcher 推断)。
         }
         q.upsertPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT, fingerprint, now)
         return true
@@ -536,7 +537,9 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // v2(2026-07-15)=预设菜配料补齐修复(菜先于食材入库致关联缺失、0千卡)。
         // v3(2026-07-16)=补齐已关联但用量为空的预设菜配料(早期 seed 无 quantity 致排骨海带汤等 0 千卡)。
         // v4(2026-07-17)=菜系分类·存量自建菜 cuisine 空回填"家常菜"(老库需跑到)。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v5" // [AI修改] v5:高血脂负向维度-营养表加饱和脂肪/胆固醇两列并回填(老库需跑到)
+        // v5(2026-07-17)=高血脂负向维度·营养表加饱和脂肪/胆固醇两列并回填(老库需跑到)。
+        // v6(2026-07-19)=菜品餐次分类·seedDishMealSlots 给预设菜补齐 dish_meal_slot(老库需跑一次拿到餐次标)。
+        private const val SEED_LOGIC_VERSION = "seedlogic-v6" // [AI修改] v6:餐次分类补齐式 seed(老库需跑到)
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
@@ -665,6 +668,29 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         }
     }
 
+    /**
+     * 预设菜「适合餐次」补齐式 seed。[AI生成] v28
+     *
+     * 回填只补空：仅当该菜尚无任何 dish_meal_slot 关联时才写(不覆盖用户手动改过的餐次/已打标菜)。
+     * seed 显式给了 mealSlots(code)则用之，否则按菜名 MealSlotMatcher 推断；恒非空(推不出兜底正餐)，
+     * 保证"永不出现无餐次菜"。只作用预设菜(按名反查预设菜 id)；用户自建菜的餐次在保存时兜底/编辑时预选。
+     */
+    private fun seedDishMealSlots() {
+        val q = db.cookbookQueries
+        val mealTypeIdByCode = q.selectAllMealTypes().executeAsList().associate { it.code to it.id }
+        val alreadyTagged = q.selectDishIdsWithMealSlot().executeAsList().toSet()
+        loadDishes().forEach dish@{ seed ->
+            val dishId = q.selectPresetDishIdByName(seed.name).executeAsOneOrNull() ?: return@dish
+            if (dishId in alreadyTagged) return@dish // 回填只补空，不覆盖已打标
+            val codes = seed.mealSlots.map { it.trim() }.filter { it.isNotBlank() }
+                .ifEmpty { com.sxdbsm.cookbook.ai.MealSlotMatcher.defaultSlotsFor(seed.name).map { it.code } }
+            codes.distinct().forEach codeLoop@{ code ->
+                val mealTypeId = mealTypeIdByCode[code] ?: return@codeLoop
+                q.linkDishMealSlot(dishId, mealTypeId)
+            }
+        }
+    }
+
     private fun loadDishes(): List<SeedDish> =
         SeedResourceLoader.readText("seed/dishes.json")
             ?.let { json.decodeFromString(it) }
@@ -680,6 +706,8 @@ private data class SeedDish(
     val cuisine: String = "", // [AI生成] 菜系(家常菜/川菜等)
     val ingredients: List<SeedDishIngredient> = emptyList(),
     val steps: List<String> = emptyList(),
+    // [AI生成] v28：适合餐次 code(BREAKFAST/MORNING_SNACK/LUNCH/AFTERNOON_SNACK/DINNER/NIGHT_SNACK)。空则按菜名 Matcher 推断。
+    val mealSlots: List<String> = emptyList(),
 )
 
 @Serializable

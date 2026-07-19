@@ -1,5 +1,7 @@
 package com.sxdbsm.cookbook.domain.model
 
+import com.sxdbsm.cookbook.ai.MealSlot
+
 /**
  * 菜品的完整领域模型。[AI修改]
  *
@@ -25,6 +27,8 @@ data class Dish(
     val tags: List<String> = emptyList(), // [AI修改] 只读 List；修改时用 copy(tags = 新列表)。
     val ingredients: List<DishIngredient> = emptyList(), // [AI修改] 菜品关联的食材明细。
     val steps: List<DishStep> = emptyList(), // [AI生成] 菜品操作步骤，支持每一步记录文字和多张过程图。
+    /** [AI生成] v28：适合餐次(早/上午/中/下午/晚/宵夜，可多值)。编辑回显存储值(空=老库未打标)。 */
+    val mealSlots: List<MealSlot> = emptyList(),
 ) {
     /** 喜爱度星级（0-5） */
     val popularityStars: Float get() = (preference / 200.0).toFloat().coerceIn(0f, 5f)
@@ -77,6 +81,8 @@ data class DishMini(
     val cuisine: String = "", // [AI生成] 菜系(家常菜/川菜等)，空=未分类；用于列表按菜系筛选。
     val shortageIngredients: List<String> = emptyList(), // [AI生成] 该菜在此餐次缺料的库存食材名(份数用尽)；非空则灰显"缺"
     val purchaseIngredients: List<String> = emptyList(), // [AI生成] 该菜主料不在库存的食材名(需采购)；非空则灰显"采购"
+    /** [AI生成] v28：适合餐次(列表/推荐/记一餐按餐次筛)。buildDishMinis 已填(存储值优先、未打标回退 MealSlotMatcher 兜底，恒非空)。 */
+    val mealSlots: List<MealSlot> = emptyList(),
 )
 
 /**

@@ -256,6 +256,33 @@ fun NewDishScreen(
                 )
             }
 
+            // [AI生成] v28：适合餐次(可见非必填·智能预选可增减)——固定 6 项 toggle 多选 chip(实心=选中)，
+            // 刻意区别于上方"增删型"AssistChip(带×)，语义分层。空则保存时按菜名 Matcher 兜底(永不无餐次菜)。
+            FormFieldLabel("适合餐次")
+            if (state.mealSlotPrefilled && !state.mealSlotTouched) {
+                Text(
+                    "已按菜名智能预选，可增减",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+            }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                com.sxdbsm.cookbook.ai.MealSlot.values()
+                    .filter { it != com.sxdbsm.cookbook.ai.MealSlot.ALL }
+                    .forEach { slot ->
+                        MealSlotChip(
+                            label = slot.label,
+                            selected = slot in state.mealSlots,
+                            onClick = { vm.toggleMealSlot(slot) },
+                        )
+                    }
+            }
+
             // [AI修改] #3：自建/编辑菜品不再提供菜系选择——菜系是预设菜的分类维度，用户自建菜不纳入。
             // DB 的 cuisine 列与预设菜的菜系保留不变；编辑预设菜时其原菜系原样带回保存(state.cuisine 不动)。
 
@@ -1153,4 +1180,27 @@ private fun FlowRow(
         verticalArrangement = verticalArrangement,
         content = { content() },
     )
+}
+
+/**
+ * 「适合餐次」固定多选 toggle chip。[AI生成] v28
+ *
+ * 实心(primary)=选中 / 描边灰(surfaceVariant)=未选，无 ×、无 ✓ ——刻意区别于增删型 AssistChip(带 ×)，
+ * 让"这排是勾选"与"那排是增删"一眼可分(苹果式克制)。整枚可点=toggle。
+ */
+@Composable
+private fun MealSlotChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    androidx.compose.material3.Surface(
+        onClick = onClick,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.SemiBold else androidx.compose.ui.text.font.FontWeight.Normal,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+        )
+    }
 }

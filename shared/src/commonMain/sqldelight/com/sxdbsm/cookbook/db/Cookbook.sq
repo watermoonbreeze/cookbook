@@ -241,6 +241,18 @@ CREATE TABLE meal_type (
     status INTEGER NOT NULL DEFAULT 1
 );
 
+-- [AI生成] v28：菜品「适合餐次」多对多(菜品↔餐次)。仿 dish_cooking_method_rel；指向 meal_type(含加餐)保 FK。
+-- 一道菜可属多餐次(鸡蛋羹=早餐+加餐)；预设菜由 seeder 按 MealSlotMatcher 推断补齐、自建菜保存时按推断兜底。
+CREATE TABLE dish_meal_slot (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    meal_type_id INTEGER NOT NULL REFERENCES meal_type(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (dish_id, meal_type_id)
+);
+
+-- [AI生成] v28：按餐次反查菜(PK 前导 dish_id，餐次筛选需单独索引)。
+CREATE INDEX idx_dish_meal_slot_meal_type ON dish_meal_slot(meal_type_id);
+
 -- ========== 每餐记录 ==========
 
 CREATE TABLE meal_record (
@@ -611,6 +623,36 @@ SELECT * FROM meal_type WHERE id = ? AND status = 1;
 
 selectFixedMealTypes:
 SELECT * FROM meal_type WHERE is_fixed = 1 AND status = 1 ORDER BY default_time;
+
+-- [AI修改] v28：按 code 取餐次 id 复用既有 selectMealTypeIdByCode(见下方 meal_record 区)，此处不重复定义(SQLDelight 同 label 冲突)。
+
+-- ===== dish_meal_slot（菜品适合餐次·多对多） =====
+
+-- [AI生成] v28：挂/清菜品餐次(全量替换：先 unlink 再逐个 link)。
+linkDishMealSlot:
+INSERT OR REPLACE INTO dish_meal_slot(dish_id, meal_type_id, status) VALUES (?, ?, 1);
+
+unlinkMealSlotsOfDish:
+UPDATE dish_meal_slot SET status = 0 WHERE dish_id = ?;
+
+-- [AI生成] v28：单菜查关联餐次 code(编辑回显)。
+selectMealSlotCodesByDish:
+SELECT mt.code
+FROM dish_meal_slot dms
+JOIN meal_type mt ON dms.meal_type_id = mt.id
+WHERE dms.dish_id = ? AND dms.status = 1 AND mt.status = 1;
+
+-- [AI生成] v28：批量查多菜的餐次 code(列表 DishMini/推荐/记一餐预筛)。
+selectMealSlotCodesByDishIds:
+SELECT dms.dish_id, mt.code
+FROM dish_meal_slot dms
+JOIN meal_type mt ON dms.meal_type_id = mt.id
+WHERE dms.dish_id IN ? AND dms.status = 1 AND mt.status = 1
+ORDER BY dms.dish_id;
+
+-- [AI生成] v28：已打过餐次标的菜 id 集合(seeder 回填只补空、判老库是否已打标)。
+selectDishIdsWithMealSlot:
+SELECT DISTINCT dish_id FROM dish_meal_slot WHERE status = 1;
 
 -- ===== food_category =====
 
@@ -1693,9 +1735,9 @@ SELECT d.name AS name FROM meal_record_dish mrd
 JOIN dish d ON d.id = mrd.dish_id AND d.status = 1
 WHERE mrd.meal_record_id = ? AND mrd.status = 1 ORDER BY mrd.sort_order;
 
--- [AI生成] 按 code 取餐次 id(导入解析餐食)。
+-- [AI生成] 按 code 取餐次 id(导入解析餐食)。[AI修改] v28：加 AND status=1 只解析启用餐次(saveDish 挂餐次也复用此查询，不挂到软删餐次)。
 selectMealTypeIdByCode:
-SELECT id FROM meal_type WHERE code = ? LIMIT 1;
+SELECT id FROM meal_type WHERE code = ? AND status = 1 LIMIT 1;
 
 -- [AI生成] 按(日期,餐次)取餐记录 id(导入合并键)。
 selectMealRecordIdByDateType:

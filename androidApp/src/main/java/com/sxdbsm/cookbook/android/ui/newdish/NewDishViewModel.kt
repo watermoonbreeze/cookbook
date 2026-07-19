@@ -3,6 +3,8 @@ package com.sxdbsm.cookbook.android.ui.newdish
 import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.ai.MealSlot
+import com.sxdbsm.cookbook.ai.MealSlotMatcher
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
@@ -39,6 +41,9 @@ data class NewDishUiState(
     val specialNote: String = "",
     val description: String = "",
     val cuisine: String = com.sxdbsm.cookbook.domain.model.Cuisines.HOME, // [AI修改] 菜系分类:自建菜默认"家常菜"(零操作·家庭菜天然家常，解决自建菜在菜系Tab看不到)；编辑既有菜时按 d.cuisine 覆盖
+    val mealSlots: List<MealSlot> = emptyList(), // [AI生成] v28：适合餐次(多选)，新建按菜名智能预选、编辑回显存储值
+    val mealSlotTouched: Boolean = false, // [AI生成] v28：用户是否手动碰过餐次chip(碰过则不再自动预选覆盖)
+    val mealSlotPrefilled: Boolean = false, // [AI生成] v28：当前餐次是否为Matcher智能预选(用于显"已按菜名智能预选"提示行)
     val imagePath: String = "",
     val thumbnailPath: String = "",
     val loading: Boolean = false,
@@ -78,7 +83,7 @@ class NewDishViewModel(
     /** 表单可编辑内容的签名(只含用户内容，排除字典/瞬态标志)。[AI生成] */
     private fun NewDishUiState.contentSig(): String = listOf(
         name.trim(), tags.sorted().toString(), cookingMethodId, cookingMethodNames.sorted().toString(),
-        cookingMethodInput.trim(), cuisine, specialNote.trim(), description.trim(), imagePath, thumbnailPath,
+        cookingMethodInput.trim(), cuisine, mealSlots.map { it.code }.sorted().toString(), specialNote.trim(), description.trim(), imagePath, thumbnailPath,
         ingredients.map { it.ingredient.id to it.quantity }.toString(),
         steps.map { it.text.trim() to it.imagePath }.toString(),
     ).toString()
@@ -115,6 +120,7 @@ class NewDishViewModel(
         viewModelScope.launch {
             cachedIngredientNames = runCatching { ingredientRepo.allActiveNames() }.getOrDefault(emptyList())
             autoAddFromName() // 名字可能已预填(新建带菜名/组成菜品)，加载完名单后补推一次
+            updateMealSlotPreselect() // [AI生成] v28：预填菜名的智能预选餐次
         }
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
@@ -202,6 +208,10 @@ class NewDishViewModel(
                             cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() },
                             ingredients = d.ingredients,
                             steps = d.steps,
+                            // [AI生成] v28：编辑回显存储餐次；老库未打标(空)则按菜名 Matcher 智能预选并显提示行，保存即补齐。
+                            mealSlots = d.mealSlots.ifEmpty { MealSlotMatcher.defaultSlotsFor(d.name) },
+                            mealSlotTouched = false,
+                            mealSlotPrefilled = d.mealSlots.isEmpty(),
                             specialNote = d.specialNote,
                             description = d.description,
                             imagePath = d.imagePath,
@@ -251,6 +261,10 @@ class NewDishViewModel(
             cookingMethodNames = d.cookingMethods.map { it.name }.ifEmpty { d.cookingMethodName?.let(::listOf).orEmpty() },
             ingredients = d.ingredients,
             steps = d.steps,
+            // [AI生成] v28：复制带上源菜餐次(源为空则按菜名预选)，作为新菜的初始餐次。
+            mealSlots = d.mealSlots.ifEmpty { MealSlotMatcher.defaultSlotsFor(d.name) },
+            mealSlotTouched = false,
+            mealSlotPrefilled = d.mealSlots.isEmpty(),
             specialNote = d.specialNote,
             description = d.description,
             imagePath = d.imagePath,
@@ -290,6 +304,24 @@ class NewDishViewModel(
         autoAddJob = viewModelScope.launch {
             kotlinx.coroutines.delay(350) // 防抖：等停顿再推演，避免逐字命中弹多次
             autoAddFromName()
+            updateMealSlotPreselect() // [AI生成] v28：菜名稳定后按名智能预选餐次(未手动碰过才覆盖)
+        }
+    }
+
+    /** 新建模式下按菜名智能预选餐次(未手动碰过才覆盖)。[AI生成] v28 */
+    private fun updateMealSlotPreselect() {
+        if (_state.value.editingId != null) return // 编辑既有菜不自动改
+        if (_state.value.mealSlotTouched) return   // 用户手动碰过则锁定
+        val name = _state.value.name
+        val slots = if (name.isBlank()) emptyList() else MealSlotMatcher.defaultSlotsFor(name)
+        _state.update { it.copy(mealSlots = slots, mealSlotPrefilled = slots.isNotEmpty()) }
+    }
+
+    /** 切换某餐次选中(手动碰过则锁定，不再自动预选)。[AI生成] v28 */
+    fun toggleMealSlot(slot: MealSlot) {
+        _state.update {
+            val next = if (slot in it.mealSlots) it.mealSlots - slot else it.mealSlots + slot
+            it.copy(mealSlots = next, mealSlotTouched = true, mealSlotPrefilled = false)
         }
     }
 
@@ -474,6 +506,7 @@ class NewDishViewModel(
         ingredients.forEach { addIngredient(it) }
         // [AI生成] 自由搭配"存为菜品"：预填做法(空则不填)。放 markBaseline 前，让预填态成为基线(不误判未保存)。
         if (cookingMethodName.isNotBlank()) addCookingMethod(cookingMethodName)
+        updateMealSlotPreselect() // [AI生成] v28：预填菜名后按名预选餐次
         markBaseline()
     }
 
@@ -730,6 +763,7 @@ class NewDishViewModel(
                     ingredients = resolvedIngredients,
                     steps = s.steps,
                     cuisine = s.cuisine,
+                    mealSlotCodes = s.mealSlots.map { it.code }, // [AI生成] v28：适合餐次(空则 repo 按名 Matcher 兜底)
                 )
             }.onSuccess { savedId ->
                 AppLogger.event(

@@ -35,6 +35,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Search
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.AlertDialog
@@ -66,6 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.sxdbsm.cookbook.ai.MealSlot
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.DishRow
 import com.sxdbsm.cookbook.android.ui.component.LetterIndexBar
@@ -222,6 +224,16 @@ fun DishesScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                     scrollable = false,
                 )
+                // [AI生成] v28：二级餐次筛选栏(§9.18 横滚胶囊·常驻不隐)——作用所有档，"全部"=高亮首项即不筛。
+                //   放固定层(不进 LazyColumn)：与一级 Tab 行为一致(吸顶不随列表滚)，且不打乱字母跳转 letterHeaderCount 偏移。
+                val mealSlotTabs = remember { listOf<MealSlot?>(null) + MealSlot.values().filter { it != MealSlot.ALL } }
+                PrimaryTabRow(
+                    options = mealSlotTabs.map { it?.label ?: "全部" },
+                    selectedIndex = mealSlotTabs.indexOf(ui.selectedMealSlot).coerceAtLeast(0),
+                    onSelect = { idx -> vm.selectMealSlot(mealSlotTabs[idx]) },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    scrollable = true,
+                )
                 if (isCuisineTab) {
                     // 菜系档：左侧二级菜系栏 | 右侧列表(搜索/计数/筛选/字母段在右列表内,滚动驱动折叠)。一级已固定在上方,切Tab不跳。
                     Row(Modifier.fillMaxSize()) {
@@ -286,6 +298,7 @@ fun DishesScreen(
         DishSearchOverlay(
             results = ui.searchResults,
             keyword = ui.keyword,
+            mealSlot = ui.searchMealSlot, // [AI生成] v28：搜"早餐"等纯餐次词→按餐次筛模式
             onKeywordChange = vm::setKeyword,
             onOpen = { dish ->
                 searchOpen = false
@@ -408,6 +421,7 @@ private fun LazyListScope.dishHeaderItems(
 private fun DishSearchOverlay(
     results: List<DishMini>,
     keyword: String,
+    mealSlot: MealSlot? = null, // [AI生成] v28：非空=按餐次筛模式(搜"早餐")，头部提示"适合早餐的菜品"、不显新建行
     onKeywordChange: (String) -> Unit, // [AI生成] B-7：覆盖层自带搜索框改词(列表内搜索行被本层盖住)
     onOpen: (DishMini) -> Unit,
     onCreateNew: () -> Unit,
@@ -435,12 +449,40 @@ private fun DishSearchOverlay(
             }
             // [AI修改] #4:图标触发的覆盖层,空查询时只给提示(不显"搜索结果0"/"未找到「」")。
             if (keyword.isNotBlank()) {
-                Text(
-                    "搜索结果 ${results.size}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                )
+                if (mealSlot != null) {
+                    // [AI生成] v28：按餐次筛模式头部——淡主色条+餐具图标+"适合早餐的菜品 · N 道"，一眼区别于普通菜名搜索。
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.Outlined.Restaurant,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            "适合${mealSlot.label}的菜品",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            " · ${results.size} 道",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else {
+                    Text(
+                        "搜索结果 ${results.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                }
             }
             Divider()
             when {
@@ -467,25 +509,34 @@ private fun DishSearchOverlay(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text("🔎", style = MaterialTheme.typography.displaySmall)
-                            Text("没找到「${keyword.trim()}」", style = MaterialTheme.typography.titleSmall)
+                            // [AI生成] v28：餐次模式用餐次口径文案(非"没找到「早餐」"——那是菜名搜索口径)。
+                            Text(
+                                if (mealSlot != null) "还没有适合${mealSlot.label}的菜品" else "没找到「${keyword.trim()}」",
+                                style = MaterialTheme.typography.titleSmall,
+                            )
                         }
-                        com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
-                            keyword = keyword,
-                            entity = "菜品",
-                            onClick = onCreateNew,
-                        )
-                    }
-                }
-                else -> {
-                    LazyColumn(Modifier.fillMaxSize()) {
-                        items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
-                        // [AI生成] 有结果末尾常驻"新建菜品「x」"行(结果与新建行由 SearchCreateRow 自带 Divider 分界)。
-                        item(key = "search-create-row") {
+                        // [AI生成] v28：餐次模式不显"新建菜品「早餐」"(语义怪)；普通搜索保留末尾新建行(§9.19)。
+                        if (mealSlot == null) {
                             com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
                                 keyword = keyword,
                                 entity = "菜品",
                                 onClick = onCreateNew,
                             )
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(Modifier.fillMaxSize()) {
+                        items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
+                        // [AI生成] 有结果末尾常驻"新建菜品「x」"行(结果与新建行由 SearchCreateRow 自带 Divider 分界)。餐次模式不显(§9.19 显隐由回调决定)。
+                        if (mealSlot == null) {
+                            item(key = "search-create-row") {
+                                com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                                    keyword = keyword,
+                                    entity = "菜品",
+                                    onClick = onCreateNew,
+                                )
+                            }
                         }
                         item(key = "search-bottom-spacer") { Spacer(Modifier.height(80.dp)) }
                     }

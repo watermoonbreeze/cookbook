@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.android.ui.dishes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.ai.MealSlot
 import com.sxdbsm.cookbook.android.util.AppLogger
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -9,6 +10,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -20,12 +22,13 @@ import kotlinx.coroutines.launch
  */
 enum class DishesSortTab { RECENT, FAVORITE, ALL, HOME }
 
-/** 列表排序 + 三种筛选合并载体(供 combine 一路传递)。[AI生成] */
+/** 列表排序 + 筛选合并载体(供 combine 一路传递)。[AI生成] */
 private data class ViewOpts(
     val sortTab: DishesSortTab,
     val method: String?,
     val tag: String?,
     val cuisine: String?,
+    val mealSlot: MealSlot?, // [AI生成] v28：餐次筛选(null=全部/不筛，作用所有档)
 )
 
 /**
@@ -50,6 +53,8 @@ data class DishesUiState(
     val homeCount: Int = 0, // [AI生成] 家庭 Tab 菜品数(自建 source=user)
     val searchResults: List<DishMini> = emptyList(), // [AI生成] 搜索关键字的原始结果(不受 Tab/菜系筛选)，供搜索弹框展示
     val favoriteIds: Set<Long> = emptySet(), // [AI生成] B1：收藏菜品 id(列表置顶+★标记)
+    val selectedMealSlot: MealSlot? = null, // [AI生成] v28：二级餐次筛选栏当前选中(null=全部)
+    val searchMealSlot: MealSlot? = null, // [AI生成] v28：搜索命中纯餐次词时的餐次(搜"早餐"→按餐次筛模式，头部提示"适合早餐的菜品")
 )
 
 /**
@@ -82,12 +87,25 @@ class DishesViewModel(
     private val _methodFilter = MutableStateFlow<String?>(null) // [AI生成] 烹饪方式筛选
     private val _tagFilter = MutableStateFlow<String?>(null) // [AI生成] 标签筛选
     private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] 菜系筛选
+    private val _mealSlotFilter = MutableStateFlow<MealSlot?>(null) // [AI生成] v28：二级餐次筛选
+    private val _searchMealSlot = MutableStateFlow<MealSlot?>(null) // [AI生成] v28：搜索命中的纯餐次词(按餐次筛模式)
     private val _favoriteIds = MutableStateFlow<Set<Long>>(emptySet()) // [AI生成] B1：收藏菜品 id
     private var searchJob: Job? = null // [AI修改] 连续输入时取消上一次搜索，避免每个字符都触发数据库查询。
 
     private companion object {
         private const val TAG = "DishActions" // [AI生成] 菜品列表操作统一日志 Tag，便于排查长按编辑/删除。
         private const val LIST_LIMIT = 30 // [AI生成] "最近"(updated_at DESC)与"喜爱"(preference DESC) Tab 各只展示前 30 个；"全部"才展示所有。
+
+        // [AI生成] v28：纯餐次搜索关键词→餐次(搜"早餐"出按餐次筛的菜)。仅整词命中(trim 后 ==)，"早餐饼"等菜名不误判。
+        private val MEAL_SLOT_KEYWORDS: Map<String, MealSlot> = mapOf(
+            "早餐" to MealSlot.BREAKFAST, "早饭" to MealSlot.BREAKFAST,
+            "上午餐" to MealSlot.MORNING_SNACK, "上午加餐" to MealSlot.MORNING_SNACK,
+            "午餐" to MealSlot.LUNCH, "中餐" to MealSlot.LUNCH, "午饭" to MealSlot.LUNCH,
+            "下午餐" to MealSlot.AFTERNOON_SNACK, "下午茶" to MealSlot.AFTERNOON_SNACK, "下午加餐" to MealSlot.AFTERNOON_SNACK,
+            "晚餐" to MealSlot.DINNER, "晚饭" to MealSlot.DINNER,
+            "宵夜" to MealSlot.NIGHT_SNACK, "夜宵" to MealSlot.NIGHT_SNACK,
+        )
+        fun matchMealSlotKeyword(kw: String): MealSlot? = MEAL_SLOT_KEYWORDS[kw.trim()]
     }
 
     /**
@@ -99,15 +117,15 @@ class DishesViewModel(
     private val allObserved: StateFlow<List<DishMini>> = dishRepo.observeAllDishes()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // [AI生成] 排序+筛选合并为一路(combine 最多 5 路)。
+    // [AI生成] 排序+筛选合并为一路(combine 5 路)。
     private val viewOpts = kotlinx.coroutines.flow.combine(
-        _sortTab, _methodFilter, _tagFilter, _cuisineFilter,
-    ) { s, m, t, c -> ViewOpts(s, m, t, c) }
+        _sortTab, _methodFilter, _tagFilter, _cuisineFilter, _mealSlotFilter,
+    ) { s, m, t, c, ms -> ViewOpts(s, m, t, c, ms) }
 
     private val baseState = kotlinx.coroutines.flow.combine(
         popular, allObserved, _list, _keyword, viewOpts,
     ) { popular, observed, searched, kw, opts ->
-        val (tab, method, tag, cuisine) = opts
+        val (tab, method, tag, cuisine, mealSlot) = opts
         val raw = if (kw.isBlank()) observed else searched
         // 可选筛选项从筛选前列表派生，避免选中后选项消失。
         val methods = raw.flatMap { it.cookingMethodNames }.filter { it.isNotBlank() }.distinct().sorted()
@@ -122,7 +140,9 @@ class DishesViewModel(
             (method == null || method in d.cookingMethodNames) &&
                 (tag == null || tag in d.tags) &&
                 // [AI修改] 菜系筛选只在"菜系"Tab(ALL)生效；最近/喜爱不受菜系影响。
-                (tab != DishesSortTab.ALL || effectiveCuisine == null || effectiveCuisine == d.cuisine)
+                (tab != DishesSortTab.ALL || effectiveCuisine == null || effectiveCuisine == d.cuisine) &&
+                // [AI生成] v28：二级餐次筛选作用所有档(DishMini.mealSlots 已含 Matcher 兜底，恒非空)。
+                (mealSlot == null || mealSlot in d.mealSlots)
         }
         // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部/家庭展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
@@ -142,16 +162,18 @@ class DishesViewModel(
             homeCount = userDishes.size,
             // [AI生成] 搜索弹框用原始搜索结果(不叠加 Tab/菜系筛选)：搜索是全局的。
             searchResults = if (kw.isBlank()) emptyList() else searched,
+            selectedMealSlot = mealSlot,
         )
     }
 
     val uiState: StateFlow<DishesUiState> = kotlinx.coroutines.flow.combine(
-        baseState, _refreshing, _deleteState, _favoriteIds,
-    ) { state, refreshing, deleteState, favIds ->
+        baseState, _refreshing, _deleteState, _favoriteIds, _searchMealSlot,
+    ) { state, refreshing, deleteState, favIds, searchSlot ->
         state.copy(
             refreshing = refreshing,
             deleteState = deleteState,
             favoriteIds = favIds,
+            searchMealSlot = searchSlot,
             // [AI生成] B1：收藏置顶——稳定排序把收藏的菜提到最前，保留各 Tab 原有次序。
             all = state.all.sortedByDescending { it.id in favIds },
         )
@@ -191,11 +213,15 @@ class DishesViewModel(
     /** 直接选择菜系(左侧菜系栏)：null=全部(不筛)。[AI生成] */
     fun selectCuisine(cuisine: String?) { _cuisineFilter.value = cuisine }
 
-    /** 一键清除所有筛选(烹饪方式/标签/菜系/关键词)。[AI生成] 叠了多个筛选后回到全量免逐个再点。 */
+    /** 选择二级餐次筛选(null=全部/不筛，作用所有档)。[AI生成] v28 */
+    fun selectMealSlot(slot: MealSlot?) { _mealSlotFilter.value = slot?.takeIf { it != MealSlot.ALL } }
+
+    /** 一键清除所有筛选(烹饪方式/标签/菜系/餐次/关键词)。[AI生成] 叠了多个筛选后回到全量免逐个再点。 */
     fun clearFilters() {
         _methodFilter.value = null
         _tagFilter.value = null
         _cuisineFilter.value = null
+        _mealSlotFilter.value = null
         setKeyword("")
     }
 
@@ -285,9 +311,19 @@ class DishesViewModel(
             if (debounce) delay(com.sxdbsm.cookbook.android.util.SearchDefaults.DEBOUNCE_MS)
             _refreshing.value = true
             if (keyword.isBlank()) {
+                _searchMealSlot.value = null // [AI生成] v28：清空搜索退出按餐次筛模式
                 if (force) delay(120) // [AI生成] 空关键词列表来自 Flow，保留一个短刷新反馈。
             } else {
-                _list.value = dishRepo.searchDishes(keyword)
+                // [AI生成] v28：整词命中纯餐次词(早餐/午餐…)→按餐次筛(查 DishMini.mealSlots)，头部提示"适合X的菜品"；否则普通菜名搜索。
+                val slot = matchMealSlotKeyword(keyword)
+                if (slot != null) {
+                    _searchMealSlot.value = slot
+                    // [AI修改] 用一次性实时查询(非 allObserved.value)：stateIn(WhileSubscribed) 无订阅时 .value 冻结在初值会静默返回空(红线)。
+                    _list.value = dishRepo.observeAllDishes().first().filter { slot in it.mealSlots }
+                } else {
+                    _searchMealSlot.value = null
+                    _list.value = dishRepo.searchDishes(keyword)
+                }
             }
             _refreshing.value = false
         }

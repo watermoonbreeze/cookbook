@@ -75,7 +75,8 @@ class RecommendationDataSource(
             dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT)
                 .map { it.dish }
                 .filter { it.id !in dislikedIds } // 踩过的不再推荐
-                .filter { MealSlotMatcher.matches(mealSlot, it.name) }
+                // [AI修改] v28：按存储的 dish_meal_slot 精准筛餐次(DishMini.mealSlots 已含兜底)，替代菜名启发式 matches。
+                .filter { mealSlot == MealSlot.ALL || mealSlot in it.mealSlots }
         }
         val candidateIds = candidateMinis.map { it.id }
         // 批量取候选菜配料并按 dish_id 分组，替代逐菜 getDishById。角色: 调料=SEASONING，其余按 is_main 分主/辅。

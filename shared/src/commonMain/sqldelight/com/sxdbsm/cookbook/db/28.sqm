@@ -1,0 +1,12 @@
+-- [AI生成] v28：菜品「餐次分类」——新增 dish_meal_slot 多对多关联表(菜品↔餐次)。
+-- 仿 dish_cooking_method_rel；meal_type_id 指向 meal_type 保 FK(含加餐)。
+-- 老库升级只新建空表，无副作用；预设菜的餐次由 seeder 按 MealSlotMatcher 推断补齐(SEED_LOGIC_VERSION+1)。
+-- 与主 schema 的 CREATE TABLE dish_meal_slot 保持一致(全新装走 Schema.create、老库走本迁移)。
+CREATE TABLE dish_meal_slot (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    meal_type_id INTEGER NOT NULL REFERENCES meal_type(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (dish_id, meal_type_id)
+);
+
+CREATE INDEX idx_dish_meal_slot_meal_type ON dish_meal_slot(meal_type_id);

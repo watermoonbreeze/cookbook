@@ -56,4 +56,21 @@ object MealSlotMatcher {
         MealSlot.MORNING_SNACK, MealSlot.AFTERNOON_SNACK, MealSlot.NIGHT_SNACK -> LIGHT.any { dishName.contains(it) }
         MealSlot.LUNCH, MealSlot.DINNER -> DRINK_ONLY.none { dishName == it } // 正餐排除纯饮品，其余(炒/炖/红烧等)都算
     }
+
+    // [AI生成] v28：所有可打标的具体餐次(不含 ALL)，供"默认推断器"遍历。
+    private val REAL_SLOTS = listOf(
+        MealSlot.BREAKFAST, MealSlot.MORNING_SNACK, MealSlot.LUNCH,
+        MealSlot.AFTERNOON_SNACK, MealSlot.DINNER, MealSlot.NIGHT_SNACK,
+    )
+
+    /**
+     * 按菜名推断"默认适合餐次"(生成初始值/兜底用，恒非空)。[AI生成]
+     *
+     * v28 起 Matcher 从"实时筛选器"降级为"生成默认值的推断器"：新建/回填菜品时推断初始餐次，
+     * 之后以存储的 dish_meal_slot 为准。推不出任何餐次时兜底正餐(中/晚)，保证"永不出现无餐次菜"。
+     */
+    fun defaultSlotsFor(dishName: String): List<MealSlot> {
+        val hit = REAL_SLOTS.filter { matches(it, dishName) }
+        return hit.ifEmpty { listOf(MealSlot.LUNCH, MealSlot.DINNER) }
+    }
 }
