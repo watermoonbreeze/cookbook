@@ -367,3 +367,15 @@ fun PrimaryTabRow(
 - **段永远在→段内空态**：全屏分段后段恒存在（徽标要占位），故原"整块 if 不显"改为**段内空态**：健康段无选项显 `EmptyState`（无下一步，属数据侧）；忌口段分类为空仍留"搜索添加具体食材"入口（不是死段）。忌口段把"已加食材/搜索入口"提到"按分类"之前（高频精准）。
 - **动效克制**：段切换不加横滑过渡（`SegmentedControl` 滑块内置动效已足），overlay 进入与现有 picker 一致，徽标数字不跳动。
 - **落地**：`FamilyScreen.kt` `MemberEditorScreen`（原 `MemberEditorDialog`）；复用 `AppTopBar`/`SegmentedControl`/`InsetGroup`/`FormBottomBar`/`rememberUnsavedGuard`/`EmptyState`/`ToggleChip`，**零新组件**。`onSave`/`onDismiss` 签名不变、调用点仅改名。
+
+### 9.25 成员化适宜度红绿灯（"适合谁吃"·同一道菜对不同家人的差异）
+> [AI生成 2026-07-20] 商业#1 护城河。菜品详情页新增"适合谁吃"区块：同一道菜**逐位家人**显红/黄/绿适宜度（"对张三绿灯、对痛风的李四黄灯、对忌口的奶奶红灯"），把慢病家庭"每人忌口/慢病不同"的隐性差异摊到台面。可复用范式：**把原本"全家并集"的健康判定拆成"逐成员"并用色点+温和词呈现**。
+
+- **显隐门槛**：**家庭成员 ≥2 才显**（1 人=全家并集健康卡的重复、无差异价值→维持原健康卡不变，零回归）。全绿也显（见下·安心信息非噪音）。
+- **等级映射(与详情页现有单菜评估同口径)**：RED=含该成员忌口食材(病种忌口非调料·主+辅 ∪ 个人忌口含调料·含即命中) / YELLOW=限量主料 或 留意(高GI仅糖尿病·高嘌呤仅痛风) / GREEN=其余。**逐成员各构造一套约束**(`gatherConstraintsForMember` 镜像全家版 `gatherConstraints`·只换数据源为该成员 care/avoid)，纯函数 `MemberDishVerdict.of` 映射。
+- **布局**：`InsetGroup(title="适合谁吃")` 逐行——**10dp 语义色小圆点**(`ExtendedColorsHolder` success/warning/danger)+成员名(定宽 64dp 对齐)+温和等级词+一句原因。行间 `InsetDivider(startIndent=44)`。**排序红→黄→绿**把需注意的顶上来。
+- **措辞温和(弃"红/黄/绿灯"字面·守免责)**：等级词用 **适合/留意/不宜**(不用"红/禁/不能吃"医疗禁令感)；红绿灯语义只由**色点**承载(视觉隐喻)。原因句 ≤12 字、动因优先、**不写病名**("含五花肉·TA忌口"/"腊肉·建议少量"/"嘌呤偏高·留意")；多触发取首个+"等"。免责"仅供参考·非医嘱"由下方健康卡承接、**同屏只出一次**。
+- **与全家并集健康卡关系=条件替代**：红绿灯显示时，隐藏健康卡里"全家并集适宜性行"(`DishInsightsSection` 加 `suppressGlobalVerdict`)；GI/嘌呤定性/库存/记录/营养/免责等**正交维度保留**。红绿灯区块放健康卡**之上**(用户最关心"对谁合适")。
+- **视觉克制防焦虑**：只用小色点承载颜色、**不铺整行底色**(避免警报墙)；全绿收敛为一行"这道菜，家里人都适合"正向反馈(明确"无雷"·安心复用)。色点必配文字等级词(不靠颜色单独表意·无障碍)。
+- **红线**：**物理隔离**——不接色系墙营养级别(那是结构多样性)；评估**只读**不改数据；无健康约束成员一律绿。**记菜/选菜列表逐项徽章为 Phase 2 后续**(列表大批量评估需缓存化)。
+- **落地**：shared `MemberDishVerdict`(model+纯 of)+`MemberDishHealthUseCase`+`RecommendationDataSource.gatherConstraintsForMember`(单测 8 例)；androidApp `DishDetailViewModel`(产 verdicts)+`DishDetailScreen`(`FamilyVerdictSection`/`MemberVerdictRow`/`Dot`)。复用 `InsetGroup`/`InsetDivider`/`ExtendedColors`，零新组件。

@@ -30,6 +30,7 @@ class DishDetailViewModel(
     private val ingredientRepo: IngredientRepository,
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 营养估算
     private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] 库存挂钩开关(关则详情不显库存洞察)
+    private val memberHealth: com.sxdbsm.cookbook.ai.MemberDishHealthUseCase, // [AI生成] 成员化红绿灯:逐成员评估本菜适宜度(商业#1)
 ) : ViewModel() {
 
     var insights by mutableStateOf<DishInsights?>(null)
@@ -137,6 +138,10 @@ class DishDetailViewModel(
             alreadyFlagged = (avoidNames + limitNames).toSet(),
         )
 
+        // [AI生成] 成员化红绿灯(商业#1):逐位家庭成员评估本菜适宜度(红/黄/绿+归因)。UI 在成员≥2 时显、替代全家并集适宜性行。
+        //   守物理隔离(不接色系墙)、免责(仅供参考·非医嘱由 UI 承接)。评估只读。
+        val verdicts = memberHealth.evaluateAllMembers(dish)
+
         return DishInsights(
             usingPantry = usingPantry,
             purchaseNames = purchase.distinct(),
@@ -152,6 +157,7 @@ class DishDetailViewModel(
             related = related, // [AI修改] 修复：此前漏传导致"相关菜品"永不显示。
             highGiNames = highGiNames, // [AI生成] 高GI主料(仅糖尿病·已去重 care 覆盖的)
             highPurineNames = highPurineNames, // [AI生成] 高嘌呤主料(仅痛风·已去重 care 覆盖的)
+            verdicts = verdicts, // [AI生成] 成员化红绿灯:每位家庭成员一条(商业#1)
         )
     }
 }
@@ -172,6 +178,7 @@ data class DishInsights(
     val related: List<com.sxdbsm.cookbook.domain.model.DishMini> = emptyList(),
     val highGiNames: List<String> = emptyList(), // [AI生成] P2 高GI主料(仅登记糖尿病·已去重 care 覆盖，GI≥70 FAO/WHO)
     val highPurineNames: List<String> = emptyList(), // [AI生成] P4 高嘌呤主料(仅登记痛风·已去重 care 覆盖，WS/T560 定性)
+    val verdicts: List<com.sxdbsm.cookbook.domain.model.MemberDishVerdict> = emptyList(), // [AI生成] 成员化红绿灯:每位家庭成员对本菜的适宜度(商业#1)
 ) {
     /** 当前库存能否直接做（在用库存且无采购无缺料）。 */
     val canCook: Boolean get() = usingPantry && purchaseNames.isEmpty() && shortageNames.isEmpty()

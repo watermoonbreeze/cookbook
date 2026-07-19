@@ -57,7 +57,7 @@ val androidModule = module {
     viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 HealthProfileRepository(A-1) + RecommendationDataSource(阶段2 首页下一餐推荐卡)。
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
-    viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)
+    viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)+MemberDishHealthUseCase(成员化红绿灯)
     viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用 + 阶段3-b Analytics(meal_logged)。
     viewModel { TimelineViewModel(get()) }

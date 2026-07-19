@@ -236,6 +236,44 @@ class RecommendationDataSource(
     }
 
     /**
+     * 只取"**某一位成员**健康档案派生的忌口/限量/推荐 + 慢病病种/GI"约束。[AI生成] 成员化红绿灯(商业#1)
+     *
+     * 与 [gatherConstraints]（全家并集）**同口径**，仅把数据源从"全家"换成"该成员自己"的
+     * careCategoryIds / avoidCategoryIds / avoidIngredientIds——用于逐成员评估同一道菜的红绿灯差异。
+     * 取数很轻(几条 SQL·成员数少)，Additive 不影响原全家路径。
+     */
+    suspend fun gatherConstraintsForMember(
+        member: com.sxdbsm.cookbook.domain.model.FamilyMember,
+        skipGi: Boolean = false, // [AI生成] 批量逐成员评估时,GI 全表由调用方只查一次共用→此处跳过(避免每个糖尿病成员各查一次全表)。
+    ): RecoConstraints = withContext(ioDispatcher) {
+        val careCategoryIds = member.careCategoryIds
+        val careIngredients = if (careCategoryIds.isEmpty()) emptyList() else ingredientRepo.listByCareCategories(careCategoryIds)
+        val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
+        val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
+        val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
+        // 个人忌口:分类展开为食材 id（空守卫:listByCategories 传空会返全部）+ 具体食材 id。含调料·任意角色。
+        val personalAvoidCatIds = member.avoidCategoryIds
+        val personalAvoidFromCat = if (personalAvoidCatIds.isEmpty()) emptySet()
+            else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
+        val personalAvoidIds = personalAvoidFromCat + member.avoidIngredientIds.toSet()
+        val careCategoryNames = if (careCategoryIds.isEmpty()) emptyList() else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList()
+        val labels = careCategoryNames.map { "关注:$it" }
+        val conditions = careCategoryNames.flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }.toSet()
+        val giByName = if (!skipGi && com.sxdbsm.cookbook.domain.HealthCondition.DIABETES in conditions) nutritionRepo.giByName() else emptyMap()
+        RecoConstraints(
+            constraints = HealthConstraints(
+                avoidIngredientIds = avoidIds,
+                limitIngredientIds = limitIds,
+                recommendIngredientIds = recommendIds,
+                labels = labels,
+                personalAvoidIngredientIds = personalAvoidIds,
+            ),
+            conditions = conditions,
+            giByName = giByName,
+        )
+    }
+
+    /**
      * 食材自由搭配（离线规则轻搭配）。[AI生成]
      *
      * 取在手食材，按大类(荤/素/蛋/豆/主食/调味)分类后交给 FreePairingEngine 拼搭配建议。

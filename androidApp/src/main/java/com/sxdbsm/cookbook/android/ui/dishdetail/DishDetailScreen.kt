@@ -26,10 +26,18 @@ import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
+import com.sxdbsm.cookbook.android.ui.component.InsetDivider
+import com.sxdbsm.cookbook.android.ui.component.InsetGroup
 import com.sxdbsm.cookbook.android.ui.component.StarRating
 import com.sxdbsm.cookbook.android.ui.component.StoredImage
 import com.sxdbsm.cookbook.android.ui.component.TagChip
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
+import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import com.sxdbsm.cookbook.domain.model.MemberDishVerdict
+import com.sxdbsm.cookbook.domain.model.TrafficLight
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -175,7 +183,12 @@ fun DishDetailScreen(
             LaunchedEffect(d) { vm.loadInsights(d) } // [AI修改] key 用整个 d：同菜编辑后(id不变)洞察/相关菜品也重算。
             LaunchedEffect(d.id) { vm.loadFavorite(d.id) } // [AI生成] B1：加载收藏态
             LaunchedEffect(d.id) { vm.loadDisliked(d.id) } // [AI生成] §9.20：加载"不再推荐"态
-            vm.insights?.let { DishInsightsSection(it) }
+            // [AI生成] 成员化红绿灯(商业#1)：家庭成员≥2 时显"适合谁吃"逐人卡，并替代下方全家并集适宜性行(避免重复)。
+            vm.insights?.let {
+                val showVerdicts = it.verdicts.size >= 2
+                if (showVerdicts) FamilyVerdictSection(it.verdicts)
+                DishInsightsSection(it, suppressGlobalVerdict = showVerdicts)
+            }
 
             // [AI生成] §9.20：已标"不再推荐"→详情页给恢复入口(踩错/改主意的闭环，推荐里已过滤该菜)。
             if (vm.isDisliked) {
@@ -341,9 +354,111 @@ fun DishDetailScreen(
     }
 }
 
-/** 菜品详情"状态"卡：库存可做/缺料/采购、健康适宜、做过次数、营养概要。[AI生成] */
+/**
+ * 成员化红绿灯"适合谁吃"区块（商业#1 护城河）。[AI生成 §9.25]
+ *
+ * 逐位家庭成员一行：色点(绿/黄/红) + 名 + 温和等级词(适合/留意/不宜) + 一句原因。排序红→黄→绿把需注意的顶上来。
+ * 全绿收敛为一行"家里人都适合"正向反馈。守免责(仅供参考·非医嘱由下方健康卡承接)、物理隔离(不接色系墙)。
+ * 视觉克制：只用 10dp 小色点承载红绿灯语义，文字温和不吓人，不铺整行底色。
+ */
 @Composable
-private fun DishInsightsSection(insights: DishInsights) {
+private fun FamilyVerdictSection(verdicts: List<MemberDishVerdict>) {
+    val ext = ExtendedColorsHolder.current
+    fun colorOf(l: TrafficLight) = when (l) {
+        TrafficLight.RED -> ext.danger
+        TrafficLight.YELLOW -> ext.warning
+        TrafficLight.GREEN -> ext.success
+    }
+    // 排序：红→黄→绿(需注意的顶上来)，同级稳定保持原顺序。
+    val ordered = verdicts.sortedBy { when (it.light) { TrafficLight.RED -> 0; TrafficLight.YELLOW -> 1; TrafficLight.GREEN -> 2 } }
+    val allGreen = verdicts.all { it.light == TrafficLight.GREEN }
+
+    FormFieldLabel("适合谁吃", topPadding = 18.dp, bottomPadding = 8.dp)
+    InsetGroup {
+        if (allGreen) {
+            // 全绿：不逐人列"适合/适合"，收敛为一行正向卡(明确告知"无雷"、让用户安心复用)。
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Dot(ext.success)
+                Spacer(Modifier.width(14.dp))
+                Text("这道菜，家里人都适合", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else {
+            ordered.forEachIndexed { i, v ->
+                if (i > 0) InsetDivider(startIndent = 44)
+                MemberVerdictRow(v, colorOf(v.light))
+            }
+        }
+    }
+}
+
+/** 红绿灯单行：色点 + 名(定宽对齐) + 等级词(语义色) + 原因(灰字·省略号)。[AI生成] */
+@Composable
+private fun MemberVerdictRow(v: MemberDishVerdict, color: androidx.compose.ui.graphics.Color) {
+    val levelWord = when (v.light) {
+        TrafficLight.RED -> "不宜"
+        TrafficLight.YELLOW -> "留意"
+        TrafficLight.GREEN -> "适合"
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Dot(color)
+        Spacer(Modifier.width(14.dp))
+        Text(
+            v.memberName,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            modifier = Modifier.width(64.dp),
+        )
+        Text(levelWord, style = MaterialTheme.typography.bodyMedium, color = color)
+        val reason = verdictReason(v)
+        if (reason.isNotEmpty()) {
+            Spacer(Modifier.width(8.dp))
+            Text(
+                reason,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            Spacer(Modifier.weight(1f))
+        }
+    }
+}
+
+/** 红绿灯一句原因(≤12字·动因优先·不写病名·守免责)。[AI生成] 多个触发取首个+"等"，完整清单靠下方健康卡/食材区查。 */
+private fun verdictReason(v: MemberDishVerdict): String {
+    fun head(list: List<String>) = list.firstOrNull()?.let { if (list.size > 1) "$it 等" else it } ?: ""
+    return when {
+        v.avoidNames.isNotEmpty() -> "含${head(v.avoidNames)}·TA忌口"
+        v.limitNames.isNotEmpty() -> "${head(v.limitNames)}·建议少量"
+        v.cautionNames.isNotEmpty() -> "${head(v.cautionNames)}·留意"
+        else -> ""
+    }
+}
+
+/** 10dp 语义色小圆点(红绿灯视觉隐喻·必配文字等级词·不靠颜色单独表意)。[AI生成] */
+@Composable
+private fun Dot(color: androidx.compose.ui.graphics.Color) {
+    Box(Modifier.size(10.dp).clip(CircleShape).background(color))
+}
+
+/**
+ * 菜品详情"状态"卡：库存可做/缺料/采购、健康适宜、做过次数、营养概要。[AI生成]
+ * [AI修改] 成员化红绿灯:suppressGlobalVerdict=true 时隐藏"全家并集适宜性行"(已由上方逐人红绿灯更精确表达)，
+ *   GI/嘌呤定性行/库存/记录/营养/免责仍保留(正交维度)。
+ */
+@Composable
+private fun DishInsightsSection(insights: DishInsights, suppressGlobalVerdict: Boolean = false) {
     FormFieldLabel("状态", topPadding = 18.dp, bottomPadding = 8.dp)
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -360,7 +475,8 @@ private fun DishInsightsSection(insights: DishInsights) {
                 }
             }
             if (insights.hasHealthProfile) {
-                when {
+                // [AI修改] 成员化红绿灯显示时,这条"全家并集适宜性"隐藏(逐人红绿灯已更精确);GI/嘌呤维度仍显。
+                if (!suppressGlobalVerdict) when {
                     insights.avoidNames.isNotEmpty() -> InsightLine("🚫 不适合", "含忌口：${insights.avoidNames.joinToString("、")}", MaterialTheme.colorScheme.error)
                     insights.limitNames.isNotEmpty() -> InsightLine("⚠ 慎吃", "限量：${insights.limitNames.joinToString("、")}", MaterialTheme.colorScheme.primary)
                     insights.recommendNames.isNotEmpty() -> InsightLine("✅ 推荐", "含推荐食材：${insights.recommendNames.joinToString("、")}", MaterialTheme.colorScheme.primary) // [AI修改] 文案:去"有益"健康断言,只陈述含推荐食材(守免责)
