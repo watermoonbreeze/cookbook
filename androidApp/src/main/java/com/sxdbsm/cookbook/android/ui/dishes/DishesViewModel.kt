@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
  *
  * 当前 MVP 只保存选择状态，后续可让不同 Tab 对应不同查询或排序。
  */
-enum class DishesSortTab { RECENT, FAVORITE, ALL, HOME }
+enum class DishesSortTab { RECENT, FAVORITE, ALL, SLOT, HOME } // [AI修改] 2026-07-19:SLOT=餐次,升为与最近/喜爱/菜系/家庭同级的一级分类Tab(选中左侧列餐次分堆)
 
 /**
  * 菜品页专属"餐次筛选"分类。[AI生成] 2026-07-19
@@ -85,6 +85,7 @@ data class DishesUiState(
     val recentCount: Int = 0, // [AI生成] 最近 Tab 菜品数(前30, 与该 Tab 实际展示一致)
     val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
+    val slotCount: Int = 0, // [AI生成] 2026-07-19:餐次 Tab 菜品数(当前餐次分堆筛后)
     val homeCount: Int = 0, // [AI生成] 家庭 Tab 菜品数(自建 source=user)
     val searchResults: List<DishMini> = emptyList(), // [AI生成] 搜索关键字的原始结果(不受 Tab/菜系筛选)，供搜索弹框展示
     val favoriteIds: Set<Long> = emptySet(), // [AI生成] B1：收藏菜品 id(列表置顶+★标记)
@@ -168,8 +169,8 @@ class DishesViewModel(
                 (tag == null || tag in d.tags) &&
                 // [AI修改] 菜系筛选只在"菜系"Tab(ALL)生效；最近/喜爱不受菜系影响。
                 (tab != DishesSortTab.ALL || effectiveCuisine == null || effectiveCuisine == d.cuisine) &&
-                // [AI修改] v28→2026-07-19:二级餐次筛选(统称版)作用所有档;"加餐"统称命中上午/下午任一(DishMini.mealSlots 恒非空)。
-                mealSlot.matches(d.mealSlots)
+                // [AI修改] 2026-07-19:餐次升为一级Tab后,餐次筛选只在"餐次"(SLOT)档生效(与菜系筛只在菜系档一致);"加餐"统称命中上午/下午任一。
+                (tab != DishesSortTab.SLOT || mealSlot.matches(d.mealSlots))
         }
         // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部/家庭展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
@@ -179,6 +180,7 @@ class DishesViewModel(
             DishesSortTab.RECENT -> recentList
             DishesSortTab.FAVORITE -> favorites
             DishesSortTab.ALL -> filtered
+            DishesSortTab.SLOT -> filtered // [AI生成] 2026-07-19:餐次档=按左侧餐次分堆筛后的全部(拼音分组·同菜系档)
             DishesSortTab.HOME -> userDishes
         }
         DishesUiState(
@@ -186,6 +188,7 @@ class DishesViewModel(
             selectedMethod = method, selectedTag = tag, selectedCuisine = effectiveCuisine,
             availableMethods = methods, availableTags = tags, availableCuisines = cuisines,
             recentCount = recentList.size, favoriteCount = favorites.size, allCount = filtered.size,
+            slotCount = filtered.size, // [AI生成] 2026-07-19:餐次档计数(当前餐次分堆筛后)
             homeCount = userDishes.size,
             // [AI生成] 搜索弹框用原始搜索结果(不叠加 Tab/菜系筛选)：搜索是全局的。
             searchResults = if (kw.isBlank()) emptyList() else searched,
@@ -327,8 +330,8 @@ class DishesViewModel(
         when (tab) {
             DishesSortTab.RECENT -> list
             DishesSortTab.FAVORITE -> list.sortedByDescending { it.preference }
-            // 全部/家庭都按拼音首字母分组排序(家庭也用字母检索)。
-            DishesSortTab.ALL, DishesSortTab.HOME -> list.sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
+            // 全部/餐次/家庭都按拼音首字母分组排序(字母检索)。[AI修改] 2026-07-19:餐次档同菜系档走字母分组。
+            DishesSortTab.ALL, DishesSortTab.SLOT, DishesSortTab.HOME -> list.sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
         }
 
 

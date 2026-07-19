@@ -126,6 +126,7 @@ fun DishesScreen(
     }
     val hasFilterRow = ui.availableMethods.isNotEmpty() || ui.availableTags.isNotEmpty()
     val isCuisineTab = ui.sortTab == DishesSortTab.ALL // [AI修改] 第三档=菜系(左二级栏+右菜品)
+    val isSlotTab = ui.sortTab == DishesSortTab.SLOT // [AI生成] 2026-07-19:餐次档(左侧餐次二级栏+右菜品·同菜系档形态)
     // [AI修改] #4:搜索移到右上角图标(不再进列表)后,菜系档列表头部为 2 个 item(计数/筛选)在字母 section 之前,字母跳转索引从 2 起算。
     // 红线：新增/条件插入 item 必须同步偏移量并纳入 remember key，否则跳转偏位。
     val letterHeaderCount = 2
@@ -182,7 +183,8 @@ fun DishesScreen(
     ) { padding ->
         // [AI修改] 空态文案按原因：筛选无果 / 喜爱页无评分 / 真无菜(引导添加)。
         val filtersActive = ui.selectedMethod != null || ui.selectedTag != null ||
-            (isCuisineTab && ui.selectedCuisine != null) || ui.keyword.isNotBlank()
+            (isCuisineTab && ui.selectedCuisine != null) ||
+            (isSlotTab && ui.selectedMealSlot != DishSlotFilter.ALL) || ui.keyword.isNotBlank()
         val emptyText = when {
             filtersActive -> "没有符合筛选的菜品"
             ui.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜品\n给菜品评分后会出现在这里"
@@ -193,12 +195,14 @@ fun DishesScreen(
             DishesSortTab.RECENT to "最近",
             DishesSortTab.FAVORITE to "喜爱",
             DishesSortTab.ALL to "菜系",
+            DishesSortTab.SLOT to "餐次", // [AI生成] 2026-07-19:餐次升为与菜系同级的一级Tab
             DishesSortTab.HOME to "家庭",
         )
         val tabCount = when (ui.sortTab) {
             DishesSortTab.RECENT -> ui.recentCount
             DishesSortTab.FAVORITE -> ui.favoriteCount
             DishesSortTab.ALL -> ui.allCount
+            DishesSortTab.SLOT -> ui.slotCount
             DishesSortTab.HOME -> ui.homeCount
         }
         Box(
@@ -223,21 +227,23 @@ fun DishesScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                     scrollable = false,
                 )
-                // [AI生成] v28：二级餐次筛选栏(§9.18 横滚胶囊·常驻不隐)——作用所有档，"全部"=高亮首项即不筛。
-                //   放固定层(不进 LazyColumn)：与一级 Tab 行为一致(吸顶不随列表滚)，且不打乱字母跳转 letterHeaderCount 偏移。
-                // [AI修改] 2026-07-19:餐次栏改统称版(DishSlotFilter:全部/早餐/中餐/加餐/晚餐/宵夜·"加餐"=上午/下午合并·仅菜品页用)。
-                val mealSlotTabs = remember { DishSlotFilter.values().toList() }
-                PrimaryTabRow(
-                    options = mealSlotTabs.map { it.label },
-                    selectedIndex = mealSlotTabs.indexOf(ui.selectedMealSlot).coerceAtLeast(0),
-                    onSelect = { idx -> vm.selectMealSlot(mealSlotTabs[idx]) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                    scrollable = true,
-                )
-                if (isCuisineTab) {
-                    // 菜系档：左侧二级菜系栏 | 右侧列表(搜索/计数/筛选/字母段在右列表内,滚动驱动折叠)。一级已固定在上方,切Tab不跳。
+                // [AI修改] 2026-07-19:餐次升为一级Tab后,移除原全局二级餐次横条;餐次筛选改由"餐次"Tab 的左侧栏承载(与菜系档同形态)。
+                if (isCuisineTab || isSlotTab) {
+                    // 菜系/餐次档：左侧二级分类栏 | 右侧列表(搜索/计数/筛选/字母段在右列表内,滚动驱动折叠)。一级已固定在上方,切Tab不跳。
                     Row(Modifier.fillMaxSize()) {
-                        CuisineRail(cuisines = ui.availableCuisines, selected = ui.selectedCuisine, onSelect = { c -> vm.selectCuisine(c); savedCuisine = c }) // [AI修改] 修#3:记住用户选的菜系
+                        if (isCuisineTab) {
+                            CuisineRail(cuisines = ui.availableCuisines, selected = ui.selectedCuisine, onSelect = { c -> vm.selectCuisine(c); savedCuisine = c }) // [AI修改] 修#3:记住用户选的菜系
+                        } else {
+                            // [AI生成] 2026-07-19:餐次左栏(复用 CuisineRail 竖栏样式)：全部/早餐/中餐/加餐/晚餐/宵夜(统称"加餐"=上午/下午)。label↔DishSlotFilter 映射。
+                            val slotItems = remember { DishSlotFilter.values().filter { it != DishSlotFilter.ALL }.map { it.label } }
+                            CuisineRail(
+                                cuisines = slotItems,
+                                selected = ui.selectedMealSlot.takeIf { it != DishSlotFilter.ALL }?.label,
+                                onSelect = { label ->
+                                    vm.selectMealSlot(label?.let { l -> DishSlotFilter.values().firstOrNull { it.label == l } } ?: DishSlotFilter.ALL)
+                                },
+                            )
+                        }
                         Box(Modifier.weight(1f).fillMaxSize()) {
                             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                                 dishHeaderItems(ui, vm, tabCount)
@@ -597,8 +603,8 @@ private fun DishFilterChips(ui: DishesUiState, vm: DishesViewModel) {
         items(ui.availableTags, key = { "t-$it" }) { t ->
             FilterChip(selected = ui.selectedTag == t, onClick = { vm.toggleTagFilter(t) }, label = { Text("#$t") })
         }
-        // [AI生成] 叠了筛选时给"清除"一键回全量,免逐个再点取消。
-        if (ui.selectedMethod != null || ui.selectedTag != null || ui.selectedCuisine != null || ui.keyword.isNotBlank()) {
+        // [AI生成] 叠了筛选时给"清除"一键回全量,免逐个再点取消。[AI修改] 2026-07-19:纳入餐次筛(餐次档选了餐次也显清除·审查一致性建议)。
+        if (ui.selectedMethod != null || ui.selectedTag != null || ui.selectedCuisine != null || ui.selectedMealSlot != DishSlotFilter.ALL || ui.keyword.isNotBlank()) {
             item(key = "clear-filters") {
                 FilterChip(
                     selected = false,
