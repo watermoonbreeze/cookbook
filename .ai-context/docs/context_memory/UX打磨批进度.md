@@ -12,7 +12,7 @@
 1. ✅ **菜品页餐次统称"加餐"**（`aecfe8c`）：菜品页餐次筛选把上午/下午合并成统称"加餐"chip·**只菜品页筛选/搜索用**·不改 MealSlot/meal_type/记一餐。androidApp `DishSlotFilter` enum(SNACK={上午,下午})。餐次栏=全部/早餐/中餐/加餐/晚餐/宵夜。
 2. ✅ **搜索按分类**（待提交·构建绿+审查无阻断）：菜品搜"家常菜"(菜系)出该菜系全部菜、搜"早餐/加餐"(餐次)出该餐次菜;食材搜"蔬菜类"(类目)出该类目及子类目全部食材。整词命中分类→按分类筛模式(头部提示+不显新建行)。菜品:DishesViewModel `_searchCuisine`+searchNow菜系整词命中(排"其他"泛词)·DishSearchOverlay 泛化 classifyTitle。食材:IngredientPickerVM setKeyword 命中类目名(dimension≠care)→expandCategoryIds+listByCategories·SearchResultsPanel 加 categoryName 头部。Google审查无阻断(采纳:排"其他"泛词+清searchResults同步清searchCategoryName)。
 3. ✅ **AI 推荐页界面精简（方案A）**（待提交·构建绿+审查中）：RecommendControls 精简为只留"餐次"横滚 PrimaryTabRow(与一级模式实心 SegmentedControl 天然视觉区分)+右侧「筛选」入口(有非默认筛选显"筛选 ●");去重周期/风格/食养(药膳)三段搬进新 `RecommendFilterSheet`(ModalBottomSheet·复用同样即时回调·底部"重置为默认")。默认屏控件 ~264dp→~70dp、功能零丢失。VM 逻辑零改。落 `AiRecommendScreen.kt`。（**三模式统一**:库存/随机共用同一 RecommendControls+筛选壳;周期计划本就是独立 AiPlanBody·不塞餐次/筛选。）
-4. ⬜ **菜品页餐次升为主分类**：餐次要和菜系并列成主分类(现餐次是全局二级栏、但菜系Tab有左侧栏让它看着像嵌套)·需 Apple-UX 出布局。
+4. 📄 **菜品页餐次升为主分类**（设计完成·**待用户过目方向后实现**）：Apple-UX 出方案 `feature/菜品页餐次升主分类方案.md`，推荐**方案A**(维度切换器"按菜系/按餐次"+共用 Rail+把"最近/喜爱/家庭"降为排序器)。**关键**：方案A 是菜品页**导航级重构**、且**把熟悉的"最近/喜爱/家庭"Tab挪进排序器·超出"餐次并列"窄诉求**——比 #1/#2/#3 大且风险高(字母索引/粘性/搜索联动回归)。故未盲目实现，等用户确认方向(D1 选A/B/C·D2 是否挪排序Tab 等)。备选 B(最小改·双横条·丢左Rail竖排)、C(极简·去叠加)。
 
 ## 主线路线图（打磨批清完接着跑·`feature/一期收官路线图与决策清单.md`）
 阶段1 换一换第二批(会诊已修正·忌口红线/关思考已提前做) → 阶段2 首页推荐下一餐 → 阶段3 账号匿名统计(**友盟**·用户定) → 阶段4 成员化红绿灯+病种切换视角 → 阶段5 中式库/营养补全+药膳一期+热量国标DRIs对照 → 阶段6 AI框架(放开限制+AI对话·默认关供测试·放开限制先会诊出方案) → 阶段7 其余P1。
