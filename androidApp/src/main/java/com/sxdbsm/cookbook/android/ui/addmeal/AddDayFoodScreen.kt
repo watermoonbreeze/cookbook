@@ -385,7 +385,11 @@ fun AddDayFoodScreen(
     if (pickerOpen) {
         val blockId = pickingBlockId ?: state.activeBlockId
         val block = state.mealBlocks.firstOrNull { it.id == blockId }
-        val mealName = state.mealTypes.firstOrNull { it.id == block?.mealTypeId }?.name.orEmpty()
+        val mealType = state.mealTypes.firstOrNull { it.id == block?.mealTypeId }
+        val mealName = mealType?.name.orEmpty()
+        // [AI生成] v28:按当前餐次预筛选菜(默认只看适合该餐次,可切全部)。加餐(SNACK)/未知→ALL→不预筛。
+        val pickerMealSlot = mealType?.code?.let { com.sxdbsm.cookbook.ai.MealSlot.fromCode(it) }
+            ?.takeIf { it != com.sxdbsm.cookbook.ai.MealSlot.ALL }
         AppLogger.d("MealFlow", "compose dish picker: blockId=$blockId mealName=$mealName selected=${block?.dishes?.map { it.id }} pickerOpen=$pickerOpen") // [AI生成] 记录弹框组合时传入的已选菜品，排查勾选状态。
         DishPickerScreen(
             title = if (mealName.isBlank()) "添加菜品" else "添加到$mealName",
@@ -394,6 +398,7 @@ fun AddDayFoodScreen(
             excludeDishIds = emptySet(), // [AI修改] 当前餐次已有菜品在弹框内以勾选态展示，避免新建菜品回填后被排除导致看不到。
             showRecentChips = true,
             showAddNewButton = true,
+            mealSlot = pickerMealSlot, // [AI生成] v28:记一餐按餐次预筛
             onDismiss = { pickerOpen = false },
             onAddNewDish = { currentSelected ->
                 // [AI修改] #51：去新建自定义菜品前，先把当前已勾选的菜提交到该餐次(合并)，

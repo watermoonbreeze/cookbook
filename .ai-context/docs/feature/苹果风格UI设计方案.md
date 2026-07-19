@@ -321,3 +321,13 @@ fun PrimaryTabRow(
 - **文案**：统一「不再推荐」(不用"不喜欢"=情绪化/评判菜品、不用"不常吃"=频率不精确)；恢复=「恢复推荐」；状态"已标记不再推荐"。规则说明弹层可追加"你标了『不再推荐』的菜会明显靠后甚至不再出现(可在菜品详情恢复)"守诚实。
 - **边界**：忌口菜(已标红排末)仍可再踩(忌口=系统建议避免·踩=个人不想看·语义不同可叠加)；随机/库存/模型搭配卡均带长按踩(复用同一 DishRow)；周期计划编辑态**不加**踩入口(其长按语义应是"换这天的菜")，但踩的负信号**作用于计划生成**(gather/gatherForPlan 过滤)；踩正被勾选的菜→同步移除已勾、撤销不自动回勾。
 - **落地**：`dish` 加 `disliked` 列(`27.sqm` 迁移) + `setDishDisliked`/`selectDislikedDishIds` 查询 + `RecommendationDataSource.gather`/`gatherForPlan` 过滤 disliked + VM `setDisliked` + `DishRow` 长按 ActionSheet + 菜品详情恢复入口。
+
+### 9.21 餐次分类：固定多选 toggle chip · 二级横滚栏 · 搜索按餐次 · 记一餐预筛
+> [AI生成 2026-07-19] 菜品加"可存储多值餐次属性"(dish_meal_slot)。四处交互范式(过 Apple-UX 门禁)：
+
+- **编辑页"适合餐次"= 固定多选 toggle chip**(`MealSlotChip`)：6 餐次固定项，**实心(primary)=选中 / 描边灰(surfaceVariant)=未选，无 ×、无 ✓**——刻意区别于"增删型"AssistChip(菜系/烹饪方式带 ×/+添加)，让"这排是勾选"和"那排是增删"一眼可分。位置=折叠区**上方**、可见非必填(让用户一眼确认智能预选对不对)。chip 高 ~32dp、圆角 16dp(全胶囊)、水平内距 14dp、间距 8dp、选中 SemiBold。
+- **智能预选 + 手动锁定(减法反馈)**：新建按菜名 `MealSlotMatcher.defaultSlotsFor` 预选并显一行浅灰"已按菜名智能预选，可增减"；**用户手动碰任一 chip → `mealSlotTouched=true` → 提示行消失**(用"提示消失"这一个减法反馈传达"现在你说了算"，不加锁图标=苹果式克制)。编辑既有菜回显存储值;老库未打标则同样 Matcher 预选(编辑即预填、保存即应用)。空选保存时 Matcher 兜底(永不无餐次菜)。
+- **菜品页二级餐次栏 = §9.18 横滚胶囊分段·常驻不隐**：一级 Tab 正下方加二级 `PrimaryTabRow(scrollable=true)`(全部+6餐次)，作用**所有档**，"全部"=高亮首项即不筛。**推翻方案原文"全部时隐栏"→改常驻**(核心横切维度藏起来降发现性;栏仅 ~46dp)。放 Column **固定层不进 LazyColumn**(与一级 Tab 行为一致吸顶不随列表滚、且不打乱字母跳转 `letterHeaderCount` 偏移)。
+- **搜索按餐次**：搜索框整词命中纯餐次词(早餐/午餐/晚餐/加餐/宵夜…)→切"按餐次筛"模式查 `mealSlots`，头部换**淡主色条 + 餐具图标 + "适合早餐的菜品 · N 道"**(区别于普通"搜索结果 N")；**餐次模式不显末尾"新建菜品「早餐」"行**(§9.19 显隐由回调决定，避免"新建叫早餐的菜")；0 结果文案用餐次口径"还没有适合早餐的菜品"。
+- **记一餐按餐次预筛(告知不替决定)**：选菜弹窗按当前餐块餐次默认"只看适合早餐(N)"一枚可切 chip，**点一下切"显示全部"**(不硬隐藏、把决定权留用户)。加餐(SNACK)/未知餐次→不预筛。搜索时不预筛(搜索全局)。
+- **落地**：`28.sqm`+`dish_meal_slot` 表 · `MealSlotMatcher.defaultSlotsFor`(降默认推断器·恒非空) · `Dish/DishMini.mealSlots` · `DishRepository`(批量载+兜底/存储/全量替换) · `seedDishMealSlots`(补齐式打标+`SEED_LOGIC_VERSION`v6) · `RecommendationDataSource` 改查 `DishMini.mealSlots` · `NewDishScreen`/`DishesScreen`/`DishPickerScreen`。

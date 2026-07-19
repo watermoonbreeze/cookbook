@@ -25,6 +25,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.sxdbsm.cookbook.ai.MealSlot // [AI生成] v28:记一餐按餐次预筛
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
 import com.sxdbsm.cookbook.android.ui.component.SegmentedControl // [AI生成] C深度:分类Tab
 import com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab // [AI生成] C深度:复用分类Tab枚举
@@ -51,6 +52,7 @@ fun DishPickerScreen(
     excludeDishIds: Set<Long>,
     showRecentChips: Boolean,
     showAddNewButton: Boolean,
+    mealSlot: MealSlot? = null, // [AI生成] v28:记一餐传入当前餐次→按餐次预筛(默认只看适合,可切全部);其他入口 null 不预筛
     onDismiss: () -> Unit,
     onAddNewDish: (List<DishMini>) -> Unit = {}, // [AI修改] 带出当前已勾选，供上层先保留再去新建
     onConfirm: (List<DishMini>) -> Unit,
@@ -65,8 +67,8 @@ fun DishPickerScreen(
     /**
      * 外部参数变化时重新配置选择器。[AI修改]
      */
-    LaunchedEffect(excludeDishIds, initialSelected) {
-        vm.configure(excludeDishIds, initialSelected)
+    LaunchedEffect(excludeDishIds, initialSelected, mealSlot) {
+        vm.configure(excludeDishIds, initialSelected, mealSlot)
     }
 
     /**
@@ -135,6 +137,26 @@ fun DishPickerScreen(
                 // [AI修改] N6：原搜索框位置改为展示"已选菜品"(第一行菜名、第二行标签，横向滚动)。
                 if (multiSelect && state.selected.isNotEmpty()) {
                     SelectedDishesBar(selected = state.selected, onRemove = { vm.toggle(it, true) })
+                }
+
+                // [AI生成] v28:记一餐按当前餐次预筛入口——一枚可切 chip "只看适合早餐 (N) / 全部"(告知不替决定,不硬隐藏)。仅传入餐次且无搜索时显。
+                if (state.mealSlot != null && state.keyword.isBlank()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        FilterChip(
+                            selected = state.mealSlotOnly,
+                            onClick = { vm.toggleMealSlotOnly() },
+                            label = { Text("只看适合${state.mealSlot!!.label} (${state.mealSlotMatchCount})") },
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            if (state.mealSlotOnly) "点一下看全部" else "已显示全部",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
 
                 // [AI生成] C深度:选择菜品加分类导航(与菜品页/选择食材统一操作逻辑)。搜索时隐藏(搜索是全局的);菜系用横向chip(弹窗宽度受限,不用左竖栏)。

@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.android.ui.picker
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sxdbsm.cookbook.ai.MealSlot // [AI生成] v28:记一餐按当前餐次预筛
 import com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab // [AI生成] C深度:复用菜品页分类Tab枚举(最近/喜爱/菜系ALL/家庭)
 import com.sxdbsm.cookbook.android.ui.dishes.dishInitial // [AI生成] C深度:菜系/家庭档按拼音首字母排序
 import com.sxdbsm.cookbook.data.repository.DishRepository
@@ -32,6 +33,10 @@ data class DishPickerUiState(
     val sortTab: com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab = com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab.RECENT,
     val selectedCuisine: String? = null,
     val availableCuisines: List<String> = emptyList(),
+    // [AI生成] v28:记一餐按当前餐次预筛(null=无预筛/其他入口)。mealSlotOnly=true只看适合该餐次,可切"全部"(告知不替决定)。
+    val mealSlot: MealSlot? = null,
+    val mealSlotOnly: Boolean = false,
+    val mealSlotMatchCount: Int = 0, // 当前档下适合该餐次的菜数(toggle 标签显数)
 )
 
 /**
@@ -49,6 +54,8 @@ class DishPickerViewModel(
     private val _excludeDishIds = MutableStateFlow<Set<Long>>(emptySet()) // [AI修改] 外部传入的不可选菜品 id。
     private val _sortTab = MutableStateFlow(DishesSortTab.RECENT) // [AI生成] C深度:分类Tab(最近/喜爱/菜系/家庭)
     private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] C深度:菜系筛选(仅菜系Tab生效)
+    private val _pickerMealSlot = MutableStateFlow<MealSlot?>(null) // [AI生成] v28:当前餐次(记一餐传入,其他入口 null)
+    private val _mealSlotOnly = MutableStateFlow(false) // [AI生成] v28:是否只看适合该餐次(可切"全部")
     private var lastRefreshKeyword: String? = null
     private var searchJob: Job? = null // [AI修改] 搜索输入防抖任务；force 刷新不走延迟。
 
@@ -66,11 +73,13 @@ class DishPickerViewModel(
         ListState(base.first, base.second, base.third, recent, selected)
     }
 
-    // [AI生成] C深度:分类Tab+菜系筛选合一路(combine 最多 5 路)。
-    private val viewOpts = combine(_sortTab, _cuisineFilter) { t, c -> t to c }
+    // [AI生成] C深度:分类Tab+菜系筛选+餐次预筛合一路。
+    private val viewOpts = combine(_sortTab, _cuisineFilter, _pickerMealSlot, _mealSlotOnly) { t, c, ms, only ->
+        PickerOpts(t, c, ms, only)
+    }
 
     val state: StateFlow<DishPickerUiState> = combine(listState, _excludeDishIds, viewOpts) { list, exclude, opts ->
-        val (tab, cuisine) = opts
+        val (tab, cuisine, mealSlot, mealSlotOnly) = opts
         val visible = list.dishes.filterNot { it.id in exclude }
         // [AI生成] C深度:菜系可选项从可见菜派生(去无菜的菜系),按 Cuisines.ALL 固定序;选中菜系若已无菜视为未选(自愈)。
         val cuisineSet = visible.mapTo(HashSet()) { it.cuisine }
@@ -90,9 +99,14 @@ class DishPickerViewModel(
             DishesSortTab.HOME -> visible.filter { it.source == "user" }
                 .sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
         }
+        // [AI生成] v28:记一餐按当前餐次预筛(DishMini.mealSlots 已含兜底)。只在传入餐次且开"只看"时收窄;可切"全部"。
+        //   搜索时(keyword非空)不预筛(搜索是全局的,与Tab同口径)。matchCount 供 toggle 标签显数。
+        val slotActive = mealSlot != null && list.keyword.isBlank()
+        val matchCount = if (slotActive) tabDishes.count { mealSlot in it.mealSlots } else 0
+        val shownDishes = if (slotActive && mealSlotOnly) tabDishes.filter { mealSlot in it.mealSlots } else tabDishes
         DishPickerUiState(
             keyword = list.keyword,
-            dishes = tabDishes,
+            dishes = shownDishes,
             popular = list.popular.filterNot { it.id in exclude },
             recent = list.recent.filterNot { it.id in exclude },
             selected = list.selected.filterNot { it.id in exclude },
@@ -100,6 +114,9 @@ class DishPickerViewModel(
             sortTab = tab,
             selectedCuisine = effCuisine,
             availableCuisines = cuisines,
+            mealSlot = if (slotActive) mealSlot else null,
+            mealSlotOnly = mealSlotOnly,
+            mealSlotMatchCount = matchCount,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishPickerUiState())
 
@@ -107,11 +124,21 @@ class DishPickerViewModel(
 
     /**
      * 配置选择器的排除项和初始选中项。[AI修改]
+     *
+     * @param mealSlot [AI生成] v28:记一餐传入当前餐次→按餐次预筛(默认只看适合该餐次,可切"全部");其他入口传 null 不预筛。
      */
-    fun configure(excludeDishIds: Set<Long>, initialSelected: List<DishMini>) {
+    fun configure(excludeDishIds: Set<Long>, initialSelected: List<DishMini>, mealSlot: MealSlot? = null) {
         _excludeDishIds.value = excludeDishIds
         _selected.value = initialSelected.filterNot { it.id in excludeDishIds }.distinctBy { it.id }
+        // [AI修改] 只在餐次真正变化时重置"只看/全部"默认——避免勾选菜品触发的重配(excludeDishIds/initialSelected 变)把用户切的"全部"拉回"只看适合"(Google审查建议1)。
+        if (_pickerMealSlot.value != mealSlot) {
+            _pickerMealSlot.value = mealSlot
+            _mealSlotOnly.value = mealSlot != null // 传入餐次默认"只看适合"，用户可切全部
+        }
     }
+
+    /** 切换"只看适合该餐次 / 全部"。[AI生成] v28 记一餐不硬隐藏,告知不替用户决定。 */
+    fun toggleMealSlotOnly() { _mealSlotOnly.value = !_mealSlotOnly.value }
 
     fun setKeyword(value: String) {
         _keyword.value = value
@@ -175,4 +202,12 @@ private data class ListState(
     val popular: List<DishMini>,
     val recent: List<DishMini>,
     val selected: List<DishMini>,
+)
+
+/** 分类Tab+菜系+餐次预筛合并载体。[AI生成] v28 */
+private data class PickerOpts(
+    val tab: DishesSortTab,
+    val cuisine: String?,
+    val mealSlot: MealSlot?,
+    val only: Boolean,
 )
