@@ -953,6 +953,10 @@ WHERE ic.category_id IN ?
   AND ic.status = 1
 ORDER BY i.pinyin, i.name;
 
+-- [AI生成] 阶段4:按 id 批量取食材(id+name)——个人忌口具体食材编辑回显 chip 名。
+selectIngredientNamesByIds:
+SELECT id, COALESCE(name, '') AS name FROM ingredient WHERE id IN ? AND status = 1;
+
 -- [AI生成] 全部有效食材 id（AI"随机推荐"从整个食材库取，而非仅库存）。
 selectAllIngredientIds:
 SELECT id FROM ingredient WHERE status = 1;

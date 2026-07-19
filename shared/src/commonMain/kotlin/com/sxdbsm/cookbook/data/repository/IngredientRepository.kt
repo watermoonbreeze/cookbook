@@ -173,6 +173,12 @@ class IngredientRepository(private val db: CookbookDatabase) {
         q.selectIngredientsByCategoryIds(categoryIds, ::mapIngredientRow).executeAsList()
     }
 
+    /** 按 id 批量取"食材名"（个人忌口具体食材编辑回显 chip 名）。空→空 map。[AI生成] 阶段4 */
+    suspend fun namesByIds(ids: List<Long>): Map<Long, String> = withContext(ioDispatcher) {
+        if (ids.isEmpty()) return@withContext emptyMap()
+        q.selectIngredientNamesByIds(ids) { id, name -> id to name }.executeAsList().toMap()
+    }
+
     /**
      * 调养 tab：按病种分类通过调养规则聚合食材。[AI生成]
      *

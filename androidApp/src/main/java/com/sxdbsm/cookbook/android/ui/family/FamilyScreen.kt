@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.StarBorder
@@ -30,6 +33,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -228,7 +232,7 @@ private fun TagChip(text: String) {
 }
 
 /** 成员新增/编辑弹层。[AI生成] */
-@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class) // [AI生成] 阶段4-b:InputChip 实验API。
 @Composable
 private fun MemberEditorDialog(
     member: FamilyMember?,
@@ -250,6 +254,13 @@ private fun MemberEditorDialog(
     var coeff by remember { mutableStateOf(member?.portionCoefficient?.let { fmt(it) } ?: "1.2") }
     var careIds by remember { mutableStateOf(member?.careCategoryIds?.toSet() ?: emptySet()) }
     var avoidCatIds by remember { mutableStateOf(member?.avoidCategoryIds?.toSet() ?: emptySet<Long>()) } // [AI生成] v29:个人忌口分类
+    // [AI生成] 阶段4-b:个人忌口"具体食材"(id→名·名用于 chip 展示)。编辑进入时按 id 批量查名；搜索添加的自带名。
+    val ingredientRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.IngredientRepository>()
+    var avoidIngMap by remember { mutableStateOf<Map<Long, String>>(emptyMap()) }
+    var showAvoidPicker by remember { mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(member?.id) {
+        avoidIngMap = ingredientRepo.namesByIds(member?.avoidIngredientIds ?: emptyList())
+    }
 
     // 系数自动预选（未手动改过时，随性别/年龄更新）——放 LaunchedEffect 避免组合期写 state。
     androidx.compose.runtime.LaunchedEffect(gender, age) {
@@ -336,6 +347,26 @@ private fun MemberEditorDialog(
                     Text("不吃的食材", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(4.dp))
                     Text("选了就不给这个人推荐，调味也一起避开", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    // [AI生成] 阶段4-b:已添加的"具体食材"忌口(可 ✕ 删)——仅非空才显。
+                    if (avoidIngMap.isNotEmpty()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text("已添加（${avoidIngMap.size}）", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.height(6.dp))
+                        androidx.compose.foundation.layout.FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            avoidIngMap.entries.sortedBy { it.value }.forEach { (id, nm) -> // 按名稳定排序·删后重加不跳位
+                                InputChip(
+                                    selected = true,
+                                    onClick = { avoidIngMap = avoidIngMap - id },
+                                    label = { Text(nm) },
+                                    trailingIcon = { Icon(Icons.Outlined.Close, contentDescription = "移除", modifier = Modifier.size(16.dp)) },
+                                )
+                            }
+                        }
+                    }
                     listOf("荤食", "素食与口味").forEach { group ->
                         val opts = avoidCategoryOptions.filter { it.group == group }
                         if (opts.isNotEmpty()) {
@@ -359,6 +390,18 @@ private fun MemberEditorDialog(
                             }
                         }
                     }
+                    // [AI生成] 阶段4-b:搜索添加"具体食材"忌口(复用 IngredientPicker·就地 overlay)——找不到上面分类时按名加。
+                    Spacer(Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { showAvoidPicker = true }.padding(vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Outlined.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("搜索添加不吃的食材", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
+                        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                    }
+                    Text("找不到上面的分类？按名字搜具体食材加进来", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         },
@@ -377,6 +420,7 @@ private fun MemberEditorDialog(
                             portionCoefficient = (coeff.toDoubleOrNull() ?: 1.0).coerceAtLeast(0.1), // 防 0/空导致该成员摄入恒 0
                             careCategoryIds = careIds.toList(),
                             avoidCategoryIds = avoidCatIds.toList(), // [AI生成] v29:个人忌口分类
+                            avoidIngredientIds = avoidIngMap.keys.toList(), // [AI生成] 阶段4-b:个人忌口具体食材
                         ),
                     )
                 },
@@ -384,6 +428,20 @@ private fun MemberEditorDialog(
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } },
     )
+
+    // [AI生成] 阶段4-b:忌口"搜索添加具体食材"——复用 IngredientPicker(多选·就地 overlay·onConfirm 直接回调)。
+    if (showAvoidPicker) {
+        com.sxdbsm.cookbook.android.ui.picker.IngredientPickerScreen(
+            excludeIngredientIds = avoidIngMap.keys, // 已加的排除,避免重复
+            asDialog = true,
+            selectionMode = true,
+            onConfirm = { picked ->
+                avoidIngMap = avoidIngMap + picked.associate { it.id to it.name }
+                showAvoidPicker = false
+            },
+            onDismiss = { showAvoidPicker = false },
+        )
+    }
 }
 
 @Composable
