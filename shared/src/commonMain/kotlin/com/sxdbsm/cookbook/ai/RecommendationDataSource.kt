@@ -212,9 +212,11 @@ class RecommendationDataSource(
         val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
         // [AI生成] v29:个人忌口(全家并集分类→食材ids·含调料·含即命中·与健康忌口正交)。空守卫:listByCategories 传空会返全部,须先判空。
+        // [AI修改] 阶段4:再并入"具体食材"忌口(直接存 ingredient id·无需展开)。
         val personalAvoidCatIds = familyRepo.allPersonalAvoidCategoryIds()
-        val personalAvoidIds = if (personalAvoidCatIds.isEmpty()) emptySet()
+        val personalAvoidFromCat = if (personalAvoidCatIds.isEmpty()) emptySet()
             else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
+        val personalAvoidIds = personalAvoidFromCat + familyRepo.allPersonalAvoidIngredientIds().toSet()
         val careCategoryNames = if (careCategoryIds.isEmpty()) emptyList() else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList()
         val labels = careCategoryNames.map { "关注:$it" } // 粗标签给模型(不含敏感明细)
         // [AI生成] 慢病数值软约束:care 分类名→病种集(与今日卡/详情页同口径 fromCareName)；giByName 仅登记糖尿病才查(GI 只对糖尿病;gate 省无谓全表查)。
@@ -303,8 +305,9 @@ class RecommendationDataSource(
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
         // [AI生成] v29:个人忌口(全家并集分类→食材ids·含调料·含即命中)。空守卫防 listByCategories 空列表返全部。
         val personalAvoidCatIds = familyRepo.allPersonalAvoidCategoryIds()
-        val personalAvoidIds = if (personalAvoidCatIds.isEmpty()) emptySet()
+        val personalAvoidFromCat = if (personalAvoidCatIds.isEmpty()) emptySet()
             else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
+        val personalAvoidIds = personalAvoidFromCat + familyRepo.allPersonalAvoidIngredientIds().toSet() // [AI修改] 阶段4:并入具体食材忌口
         val healthAware = careCategoryIds.isNotEmpty()
         // 营养/应季标签(按食材)
         val tagRows = q.selectNutritionSeasonTags().executeAsList()

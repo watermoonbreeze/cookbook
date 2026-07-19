@@ -1,0 +1,8 @@
+-- [AI生成] 阶段4：个人忌口(按**具体食材**)——新增 member_avoid_ingredient(仿 member_avoid_category)。
+-- 在分类快捷忌口之外，可搜索添加具体食材(如菠菜/青椒/苦瓜)；推荐时与分类展开的食材 id 取并集进 avoid。
+-- 加法·纯新表·老库升级零风险(与主 schema CREATE 一致·无 ALTER 无回填)。
+CREATE TABLE member_avoid_ingredient (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    PRIMARY KEY (member_id, ingredient_id)
+);

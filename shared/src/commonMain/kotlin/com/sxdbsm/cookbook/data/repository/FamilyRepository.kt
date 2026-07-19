@@ -206,6 +206,7 @@ class FamilyRepository(
             newId = q.lastInsertRowId().executeAsOne()
             m.careCategoryIds.forEach { q.insertMemberCare(member_id = newId, care_category_id = it) }
             m.avoidCategoryIds.forEach { q.insertMemberAvoidCategory(member_id = newId, category_id = it) } // [AI生成] v29:个人忌口分类
+            m.avoidIngredientIds.forEach { q.insertMemberAvoidIngredient(member_id = newId, ingredient_id = it) } // [AI生成] 阶段4:个人忌口具体食材
         }
         newId
     }
@@ -228,6 +229,9 @@ class FamilyRepository(
             // [AI生成] v29:个人忌口分类全量替换(仿 member_care)。
             q.deleteAllMemberAvoidCategories(m.id)
             m.avoidCategoryIds.forEach { q.insertMemberAvoidCategory(member_id = m.id, category_id = it) }
+            // [AI生成] 阶段4:个人忌口具体食材全量替换。
+            q.deleteAllMemberAvoidIngredients(m.id)
+            m.avoidIngredientIds.forEach { q.insertMemberAvoidIngredient(member_id = m.id, ingredient_id = it) }
         }
     }
 
@@ -262,6 +266,11 @@ class FamilyRepository(
     /** 全家个人忌口分类并集(推荐展开为食材 id)。[AI生成] v29 */
     suspend fun allPersonalAvoidCategoryIds(): List<Long> = withContext(ioDispatcher) {
         q.selectAllPersonalAvoidCategoryIds().executeAsList()
+    }
+
+    /** 全家个人忌口的具体食材 id 并集(推荐直接进 avoid·无需展开)。[AI生成] 阶段4 */
+    suspend fun allPersonalAvoidIngredientIds(): List<Long> = withContext(ioDispatcher) {
+        q.selectAllPersonalAvoidIngredientIds().executeAsList()
     }
 
     /**
@@ -307,5 +316,6 @@ class FamilyRepository(
         activity = activity, portionCoefficient = coeff, isSelf = isSelf == 1L, isFocus = isFocus == 1L,
         careCategoryIds = q.selectMemberCareIds(id).executeAsList(),
         avoidCategoryIds = q.selectMemberAvoidCategoryIds(id).executeAsList(), // [AI生成] v29:个人忌口分类回显
+        avoidIngredientIds = q.selectMemberAvoidIngredientIds(id).executeAsList(), // [AI生成] 阶段4:个人忌口具体食材回显
     )
 }

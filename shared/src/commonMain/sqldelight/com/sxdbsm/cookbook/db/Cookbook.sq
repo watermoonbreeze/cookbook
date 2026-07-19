@@ -412,6 +412,14 @@ CREATE TABLE member_avoid_category (
     PRIMARY KEY (member_id, category_id)
 );
 
+-- [AI生成] 阶段4：个人忌口(按**具体食材**)：在分类快捷忌口之外，可搜索添加具体食材(如菠菜/青椒)。
+-- 与 member_avoid_category 并行·加法不破坏；推荐时与分类展开的食材 id 取并集进 personalAvoidIngredientIds(引擎已支持·对调料也真避开)。
+CREATE TABLE member_avoid_ingredient (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    PRIMARY KEY (member_id, ingredient_id)
+);
+
 -- [AI生成] 缺席微调：某天某成员没在家吃(按天粒度)。个人摄入份额按天排除缺席者，达标更准。
 CREATE TABLE day_absentee (
     date TEXT NOT NULL,
@@ -1901,6 +1909,24 @@ WHERE fm.status = 1;
 -- [AI生成] 按 id 批量取分类名(忌口并集标签用)。
 selectFoodCategoryNamesByIds:
 SELECT name FROM food_category WHERE id IN ? AND status = 1;
+
+-- ===== member_avoid_ingredient（个人忌口·按具体食材·全家并集·阶段4加法） =====
+
+insertMemberAvoidIngredient:
+INSERT OR IGNORE INTO member_avoid_ingredient(member_id, ingredient_id) VALUES (?, ?);
+
+deleteAllMemberAvoidIngredients:
+DELETE FROM member_avoid_ingredient WHERE member_id = ?;
+
+-- [AI生成] 阶段4：单成员忌口的具体食材 id(编辑回显)。
+selectMemberAvoidIngredientIds:
+SELECT ingredient_id FROM member_avoid_ingredient WHERE member_id = ?;
+
+-- [AI生成] 阶段4：全家启用成员忌口的具体食材 id 并集(推荐直接进 avoid·无需再展开)。
+selectAllPersonalAvoidIngredientIds:
+SELECT DISTINCT mai.ingredient_id FROM member_avoid_ingredient mai
+JOIN family_member fm ON mai.member_id = fm.id
+WHERE fm.status = 1;
 
 -- ===== day_absentee（缺席微调，按天） =====
 

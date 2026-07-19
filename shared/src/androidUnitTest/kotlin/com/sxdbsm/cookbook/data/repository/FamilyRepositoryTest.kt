@@ -76,6 +76,37 @@ class FamilyRepositoryTest {
     }
 
     @Test
+    fun `个人忌口具体食材_读写回显与全家并集与全量替换`() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val fam = FamilyRepository(db, PreferenceRepository(db))
+        fam.ensureInitialized()
+        // 取两个真实食材 id
+        val ingIds = db.cookbookQueries.selectAllIngredients().executeAsList().take(2).map { it.id }
+        assertEquals(2, ingIds.size, "种子应有≥2食材")
+        val a = ingIds[0]
+        val b = ingIds[1]
+
+        val me = fam.listMembers().first { it.isSelf }
+        fam.updateMember(me.copy(avoidIngredientIds = listOf(a)))
+        val dadId = fam.createMember(FamilyMember(id = 0, name = "爸", avoidIngredientIds = listOf(b)))
+        assertTrue(dadId > 0)
+
+        // 回显
+        val meReloaded = fam.listMembers().first { it.isSelf }
+        assertTrue(a in meReloaded.avoidIngredientIds, "我的具体食材忌口应回显")
+        // 全家并集
+        val union0 = fam.allPersonalAvoidIngredientIds().toSet()
+        assertTrue(a in union0 && b in union0, "全家具体食材忌口取并集")
+        // 全量替换：清掉我的、不影响爸的
+        fam.updateMember(meReloaded.copy(avoidIngredientIds = emptyList()))
+        val union1 = fam.allPersonalAvoidIngredientIds().toSet()
+        assertTrue(a !in union1, "更新为空应移除我的")
+        assertTrue(b in union1, "爸的具体食材忌口仍在")
+        Unit
+    }
+
+    @Test
     fun `缺席微调_按天持久化且份额排除缺席者`() = runBlocking {
         val (fam, _, _) = setup()
         fam.ensureInitialized()
