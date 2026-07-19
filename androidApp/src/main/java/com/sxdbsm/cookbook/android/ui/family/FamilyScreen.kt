@@ -77,6 +77,9 @@ fun FamilyScreen(
     val members by vm.members.collectAsStateWithLifecycle()
     val careOptions by vm.careOptions.collectAsStateWithLifecycle()
     val avoidCategoryOptions by vm.avoidCategoryOptions.collectAsStateWithLifecycle() // [AI生成] v29:个人忌口分类chip
+    // [AI生成] 多人关注:收集"至少关注一位"等一次性提示进全局 AppSnackbar。
+    val snackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current
+    androidx.compose.runtime.LaunchedEffect(vm) { vm.messages.collect { snackbar?.showMessage(it) } }
     var editing by remember { mutableStateOf<FamilyMember?>(null) }
     var creating by remember { mutableStateOf(false) }
     var deleteTarget by remember { mutableStateOf<FamilyMember?>(null) }
@@ -101,7 +104,7 @@ fun FamilyScreen(
         ) {
             item {
                 Text(
-                    "家庭记菜：为每位家人建档。忌口按全家合并提示；每日热量目标与摄入按「主要关注成员」看，可点⭐切换。非医嘱，仅供参考。",
+                    "家庭记菜：为每位家人建档。⭐关注的家人会出现在今日营养卡和报告里，可关注多位、看时一键切换。忌口按全家合并，非医嘱，仅供参考。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -110,7 +113,7 @@ fun FamilyScreen(
                 MemberCard(
                     member = m,
                     careOptions = careOptions,
-                    onSetFocus = { vm.setFocus(m.id) },
+                    onSetFocus = { vm.toggleFocus(m.id) }, // [AI修改] 多人关注:星标改多选 toggle
                     onEdit = { editing = m },
                     onDelete = { deleteTarget = m },
                 )
@@ -173,11 +176,11 @@ private fun MemberCard(
     ) {
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // 关注星标（点击切换）
+                // 关注星标（多选·点击加入/移出我关注的人）[AI修改] 多人关注
                 IconButton(onClick = onSetFocus) {
                     Icon(
                         if (member.isFocus) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                        contentDescription = if (member.isFocus) "主要关注成员" else "设为主要关注",
+                        contentDescription = if (member.isFocus) "已关注，点按取消关注" else "关注 TA",
                         tint = if (member.isFocus) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }

@@ -34,6 +34,15 @@ data class HomeUiState(
     val plans: List<DayMealCardData> = emptyList(),
 )
 
+/** 今日卡成员切换 chip 一项。[AI生成] 多人关注 */
+data class FocusChip(val id: Long, val name: String)
+
+/** 今日卡成员切换器状态：关注集合 + 当前查看人。members.size<2 时今日卡不显切换器(1人零变化)。[AI生成] 多人关注 */
+data class FocusSwitcher(
+    val members: List<FocusChip> = emptyList(),
+    val viewingId: Long? = null,
+)
+
 /**
  * 首页 ViewModel。[AI修改]
  *
@@ -137,14 +146,28 @@ class HomeViewModel(
      */
     // [AI生成] A-1：关注成员的慢病(病种名→HealthCondition)，供今日卡慢病提示(如"偏咸·高血压留意")。
     private val focusConditions: StateFlow<Set<com.sxdbsm.cookbook.domain.HealthCondition>> =
-        combine(family.observeMembers(), kotlinx.coroutines.flow.flow { emit(health.listAllCrowdTypes()) }) { members, crowds ->
+        combine(family.observeViewingMember(), kotlinx.coroutines.flow.flow { emit(health.listAllCrowdTypes()) }) { viewing, crowds ->
+            // [AI修改] 多人关注:今日卡慢病提示按"当前查看成员"(指针·非本地firstOrNull),与今日卡数据同一人。
             val nameById = crowds.associate { it.id to it.name }
-            val focus = members.firstOrNull { it.isFocus } ?: members.firstOrNull { it.isSelf } ?: members.firstOrNull()
-            focus?.careCategoryIds.orEmpty()
+            viewing?.careCategoryIds.orEmpty()
                 .mapNotNull { nameById[it] }
                 .flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }
                 .toSet()
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+
+    // [AI生成] 多人关注:今日卡顶部成员切换 chip(≥2 关注人才显·1人零变化)。viewingId=当前查看人。
+    val focusSwitcher: StateFlow<FocusSwitcher> =
+        combine(family.observeMembers(), family.observeViewingMember()) { ms, viewing ->
+            FocusSwitcher(
+                members = ms.filter { it.isFocus }.map { FocusChip(it.id, it.name) },
+                viewingId = viewing?.id,
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FocusSwitcher())
+
+    /** 切"当前查看"成员(今日卡切换 chip·与报告共用指针)。[AI生成] 多人关注 */
+    fun setViewing(id: Long) {
+        viewModelScope.launch { family.setViewingMember(id) }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayNutrition: StateFlow<TodayNutrition?> =

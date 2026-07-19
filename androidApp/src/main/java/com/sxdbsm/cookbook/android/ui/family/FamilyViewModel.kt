@@ -55,7 +55,14 @@ class FamilyViewModel(
         viewModelScope.launch { family.deleteMember(id) }
     }
 
-    fun setFocus(id: Long) {
-        viewModelScope.launch { family.setFocus(id) }
+    // [AI生成] 多人关注:一次性提示(如取消最后一个关注被拒)→FamilyScreen 收集进 AppSnackbar。
+    private val _messages = kotlinx.coroutines.flow.MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val messages: kotlinx.coroutines.flow.SharedFlow<String> = _messages
+
+    /** 加入/移出关注集合(多选·至少留1)。取消最后一个→提示拒绝。[AI修改] 多人关注 */
+    fun toggleFocus(id: Long) {
+        viewModelScope.launch {
+            if (!family.toggleFocus(id)) _messages.tryEmit("至少关注一位家人")
+        }
     }
 }

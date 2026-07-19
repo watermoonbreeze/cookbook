@@ -64,6 +64,7 @@ fun HomeScreen(
     val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
     val yearAverages by vm.yearAverages.collectAsStateWithLifecycle()
     val todayNutrition by vm.todayNutrition.collectAsStateWithLifecycle()
+    val focusSwitcher by vm.focusSwitcher.collectAsStateWithLifecycle() // [AI生成] 多人关注:今日卡成员切换器
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     var wallExpanded by rememberSaveable { mutableStateOf(true) } // [AI生成] 营养色系墙折叠态：默认展开(整墙显示)，收起后标题右侧显示昨/今/明三色块。
     val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI生成] B-5：删整天撤销 Snackbar
@@ -182,7 +183,12 @@ fun HomeScreen(
             // [AI生成] 3c：今日营养分配卡(有当天营养数据 且 开启"热量数值显示"才显示)。
             todayNutrition?.takeIf { calorieNumberEnabled }?.let { tn ->
                 item {
-                    NutritionTodayCard(tn, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+                    NutritionTodayCard(
+                        tn,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        switcher = focusSwitcher, // [AI生成] 多人关注:成员切换器
+                        onSelectViewing = vm::setViewing,
+                    )
                 }
             }
             item { Spacer(Modifier.height(28.dp)) }

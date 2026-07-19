@@ -55,7 +55,12 @@ private val MINI_TODAY = 22.dp // 折叠态今天块(居中、带日期)
  * 今日营养分配卡：热量(/目标·达标) + 三大宏量占比条。[AI生成] 3c
  */
 @Composable
-fun NutritionTodayCard(data: TodayNutrition, modifier: Modifier = Modifier) {
+fun NutritionTodayCard(
+    data: TodayNutrition,
+    modifier: Modifier = Modifier,
+    switcher: FocusSwitcher = FocusSwitcher(), // [AI生成] 多人关注:成员切换器(≥2关注人才显·1人零变化)
+    onSelectViewing: (Long) -> Unit = {},
+) {
     val statusColor = when (data.status) {
         com.sxdbsm.cookbook.domain.model.CalorieStatus.ON -> MaterialTheme.colorScheme.primary
         com.sxdbsm.cookbook.domain.model.CalorieStatus.ABOVE -> MaterialTheme.colorScheme.error
@@ -68,6 +73,17 @@ fun NutritionTodayCard(data: TodayNutrition, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
+            // [AI生成] 多人关注(§9.23):≥2 关注人时顶部成员切换 chip(单选指针·非聚合)；1人整块不渲染=零变化。
+            if (switcher.members.size >= 2) {
+                com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow(
+                    options = switcher.members.map { it.name },
+                    selectedIndex = switcher.members.indexOfFirst { it.id == switcher.viewingId }.coerceAtLeast(0),
+                    onSelect = { onSelectViewing(switcher.members[it].id) },
+                    scrollable = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(10.dp))
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("今日营养", style = MaterialTheme.typography.titleSmall, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
                 Spacer(Modifier.weight(1f))

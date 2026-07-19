@@ -107,6 +107,10 @@ class FamilyRepository(
         return ms.firstOrNull { it.isSelf } ?: ms.firstOrNull()
     }
 
+    /** 监听"当前查看成员"完整模型(含病种·今日卡慢病提示等消费点用·随指针切换)。[AI生成] 多人关注 */
+    fun observeViewingMember(): Flow<FamilyMember?> =
+        combine(observeMembers(), prefs.observeFocusViewingMemberId()) { ms, vid -> resolveViewing(ms, vid) }
+
     // ===== 缺席微调（按天持久化） =====
 
     /** 监听某天缺席成员 id。[AI生成] */
