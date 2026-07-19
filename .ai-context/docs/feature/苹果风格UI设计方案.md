@@ -342,3 +342,14 @@ fun PrimaryTabRow(
 - **说明句**"选了就不给这个人推荐，调味也一起避开"兼作引导 + 调料真避开提示(个人忌口对调料真避开·含即命中·区别于健康忌口"少放")。无独立空态(chip 全灰即引导)。
 - **数据**：`food_category` **无 code 列**→按**分类名**白名单映射 id(缺失静默跳过);chip 用口语短标签(非分类库 name);`FamilyRepository.listAvoidCategoryOptions()` 一次取。
 - **落地**：`29.sqm`+`member_avoid_category` 表 · `FamilyMember.avoidCategoryIds` · `HealthConstraints.personalAvoidIngredientIds`(单独字段·含所有角色) · `HealthRuleEngine` 合并进 avoidNames · `RecommendationDataSource` gather/gatherForPlan 全家并集分类→食材ids · `FamilyViewModel`/`FamilyScreen.MemberEditorDialog`。
+
+### 9.23 同时关注多人：三处切换器 + 星标多选（多选关注·当前查看指针·非聚合）
+> [AI生成 2026-07-19] 单关注→多关注。**零 schema 迁移**(`is_focus` 改可多选·当前查看指针存偏好JSON)。核心=**多选关注 + 一个"当前查看"指针**(不做聚合合并·热量/份额是个人概念不可加总)。**最高优先级:1人时逐像素零变化**。
+
+- **显隐门禁(三处切换器共用)**：`focusMembers = members.filter{isFocus}`(约束 size≥1)；**size==2 才显切换器**·size==1(含全部老用户)整块不渲染(无空行/无控件/无逻辑分叉)=零变化。
+- **今日卡成员切换 chip 行**：≥2 关注人时卡内顶部(标题上方)加 §9.18 `PrimaryTabRow(scrollable=true)`——**单选指针**(白滑块=当前查看人·非 ToggleChip 多选)·点即切指针整卡换该人视角(热量/宏量/达标/concerns)·**不轮播不聚合**·间距 chip↔标题 10dp。当前查看人今日缺席仍显 chip·卡走空态。
+- **报告个人视角切换器**：`personal && focusMembers.size≥2` 时"家庭/个人"控制区下方加成员切换——**2~4人 `SegmentedControl`(均分) / >4人 `PrimaryTabRow(scrollable)`**(token 同源·临界无割裂)·与今日卡**共用同一指针**(一处切两处同步)。切"家庭"视角整行消失。
+- **家庭页星标单选→多选**：`Icons.Filled.Star`(实心 primary)=已关注 / `Icons.Outlined.StarBorder`(描边)=未关注·**可多个同时实心**(去 clearAll·`toggleFocus`)·即点即切无二次确认。**取消最后一个**→repo 拒绝+`AppSnackbar`"至少关注一位家人"(星保持实心)。说明句"⭐关注的家人会出现在今日营养卡和报告里，可关注多位、看时一键切换"。
+- **职责划分**：家庭页**只管"关注谁"**·"当前看谁"交今日卡/报告切换器(天天用)——两处都能切会困惑·苹果"一个动作一个地方"。
+- **迁移零风险**：老库唯一 `is_focus=1` 那人=关注集合 size=1·指针空→`resolveViewing` 回退关注集合首位=旧 `pickFocus` 行为·100%无感。
+- **落地**：`FamilyRepository.resolveViewing`(收口)/`toggleFocus`/`setViewingMember`/`observeViewingMember`·`PreferenceRepository.observe/setFocusViewingMemberId`(偏好指针)·`updateMemberFocus` 查询·`FamilyScreen`星标多选·`HomeViewModel.focusSwitcher`+`NutritionTodayCard` chip 行·`DietReportViewModel`+`DietReportScreen` 成员切换器。零 `.sqm`。

@@ -82,6 +82,21 @@ fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: () -> Unit) {
                     modifier = Modifier.width(140.dp),
                 )
             }
+            // [AI生成] 多人关注(§9.23):个人视角 ≥2 关注人时成员切换器(与今日卡共用指针·一处切两处同步)。≤4 均分 / >4 横滚。
+            if (st.personal && st.focusMembers.size >= 2) {
+                val names = st.focusMembers.map { it.name }
+                val selIdx = st.focusMembers.indexOfFirst { it.id == st.viewingId }.coerceAtLeast(0)
+                val onSel: (Int) -> Unit = { vm.setViewing(st.focusMembers[it].id) }
+                Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    if (st.focusMembers.size <= 4) {
+                        SegmentedControl(options = names, selectedIndex = selIdx, onSelect = onSel, modifier = Modifier.fillMaxWidth())
+                    } else {
+                        com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow(
+                            options = names, selectedIndex = selIdx, onSelect = onSel, scrollable = true, modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+            }
             // 期次翻页。
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
@@ -216,7 +231,7 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
             item {
                 InsetGroup {
                     Text(
-                        "还没选关注成员，去家庭档案选一位，就能看 TA 的营养摄入",
+                        "还没关注家人，去家庭档案关注一位，就能看 TA 的营养摄入",
                         modifier = Modifier.padding(14.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -45,6 +45,9 @@ data class DietReportUiState(
     val memberName: String = "",
     val hasFocusMember: Boolean = true,
     val report: DietReport? = null,
+    // [AI生成] 多人关注:个人视角 ≥2 关注人时的成员切换器(§9.23·与今日卡共用指针)。
+    val focusMembers: List<com.sxdbsm.cookbook.domain.model.FamilyMember> = emptyList(),
+    val viewingId: Long? = null,
 )
 
 class DietReportViewModel(
@@ -83,12 +86,17 @@ class DietReportViewModel(
             var target: Int? = null
             var memberName = ""
             var hasFocus = true
+            // [AI生成] 多人关注:个人视角加载关注成员+当前查看指针,供成员切换器(≥2才显)。
+            var focusMembers = emptyList<com.sxdbsm.cookbook.domain.model.FamilyMember>()
+            var viewingId: Long? = null
             if (st.personal) {
                 share = family.observeFocusShare().first().takeIf { it > 0.0 }
                 val body = family.observeFocusBody().first()
                 target = CalorieTarget.dailyTarget(body)
                 memberName = family.observeFocusName().first()
                 hasFocus = memberName.isNotBlank()
+                focusMembers = family.listMembers().filter { it.isFocus }
+                viewingId = family.focusMember()?.id
             }
 
             val report = DietReportAggregator.aggregate(
@@ -99,8 +107,14 @@ class DietReportViewModel(
                 target = target,
             )
             // 用最新态写回(防并发翻页覆盖)。
-            _state.update { it.copy(loading = false, report = report, memberName = memberName, hasFocusMember = hasFocus, periodLabel = range.label, canGoNewer = it.offset < 0) }
+            _state.update { it.copy(loading = false, report = report, memberName = memberName, hasFocusMember = hasFocus, periodLabel = range.label, canGoNewer = it.offset < 0, focusMembers = focusMembers, viewingId = viewingId) }
         }
+    }
+
+    /** 切"当前查看"成员(报告个人视角·与今日卡共用指针·切后重算)。[AI生成] 多人关注 */
+    fun setViewing(id: Long) {
+        if (id == _state.value.viewingId) return
+        viewModelScope.launch { family.setViewingMember(id); reload() }
     }
 
     private data class Range(val start: LocalDate, val end: LocalDate, val days: Int, val label: String)
