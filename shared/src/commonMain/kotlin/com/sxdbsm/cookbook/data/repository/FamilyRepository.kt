@@ -168,14 +168,17 @@ class FamilyRepository(
      * @return false=拒绝(取消最后一个关注人)，UI 提示"至少关注一位家人"；true=已切换。
      */
     suspend fun toggleFocus(id: Long): Boolean = withContext(ioDispatcher) {
-        val focusIds = q.selectAllFamilyMembers().executeAsList().filter { it.is_focus == 1L }.map { it.id }.toSet()
-        if (id in focusIds) {
-            if (focusIds.size <= 1) return@withContext false // 至少关注一位家人(约束下限 1)
-            q.updateMemberFocus(0L, id)
-        } else {
-            q.updateMemberFocus(1L, id)
+        // [AI修改] 审查建议1:计数+写入收进 db.transaction 保原子(并发点星标下守住下限1·防 TOCTOU 穿透)。
+        var ok = true
+        db.transaction {
+            val focusIds = q.selectAllFamilyMembers().executeAsList().filter { it.is_focus == 1L }.map { it.id }.toSet()
+            when {
+                id !in focusIds -> q.updateMemberFocus(1L, id)      // 加入关注
+                focusIds.size <= 1 -> ok = false                    // 取消最后一个→拒绝(至少关注一位)
+                else -> q.updateMemberFocus(0L, id)                 // 移出关注
+            }
         }
-        true
+        ok
     }
 
     /** 设置"当前查看"成员指针(今日卡/报告切换器共用·一处切两处同步)。[AI生成] 多人关注 */
