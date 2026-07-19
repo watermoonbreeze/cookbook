@@ -76,6 +76,7 @@ fun FamilyScreen(
 ) {
     val members by vm.members.collectAsStateWithLifecycle()
     val careOptions by vm.careOptions.collectAsStateWithLifecycle()
+    val avoidCategoryOptions by vm.avoidCategoryOptions.collectAsStateWithLifecycle() // [AI生成] v29:个人忌口分类chip
     var editing by remember { mutableStateOf<FamilyMember?>(null) }
     var creating by remember { mutableStateOf(false) }
     var deleteTarget by remember { mutableStateOf<FamilyMember?>(null) }
@@ -125,6 +126,7 @@ fun FamilyScreen(
         MemberEditorDialog(
             member = null,
             careOptions = careOptions,
+            avoidCategoryOptions = avoidCategoryOptions,
             onDismiss = { creating = false },
             onSave = { vm.save(it); creating = false },
         )
@@ -133,6 +135,7 @@ fun FamilyScreen(
         MemberEditorDialog(
             member = m,
             careOptions = careOptions,
+            avoidCategoryOptions = avoidCategoryOptions,
             onDismiss = { editing = null },
             onSave = { vm.save(it); editing = null },
         )
@@ -222,10 +225,12 @@ private fun TagChip(text: String) {
 }
 
 /** 成员新增/编辑弹层。[AI生成] */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun MemberEditorDialog(
     member: FamilyMember?,
     careOptions: List<CrowdType>,
+    avoidCategoryOptions: List<com.sxdbsm.cookbook.domain.model.AvoidCategoryOption>, // [AI生成] v29:个人忌口分类chip
     onDismiss: () -> Unit,
     onSave: (FamilyMember) -> Unit,
 ) {
@@ -241,6 +246,7 @@ private fun MemberEditorDialog(
     var coeffEdited by remember { mutableStateOf(member != null) }
     var coeff by remember { mutableStateOf(member?.portionCoefficient?.let { fmt(it) } ?: "1.2") }
     var careIds by remember { mutableStateOf(member?.careCategoryIds?.toSet() ?: emptySet()) }
+    var avoidCatIds by remember { mutableStateOf(member?.avoidCategoryIds?.toSet() ?: emptySet<Long>()) } // [AI生成] v29:个人忌口分类
 
     // 系数自动预选（未手动改过时，随性别/年龄更新）——放 LaunchedEffect 避免组合期写 state。
     androidx.compose.runtime.LaunchedEffect(gender, age) {
@@ -321,6 +327,36 @@ private fun MemberEditorDialog(
                         }
                     }
                 }
+                // [AI生成] v29:个人忌口(按分类·§9.22)——健康状态之后独立分区。分类 chip 多选(复用 ToggleChip)。
+                if (avoidCategoryOptions.isNotEmpty()) {
+                    Spacer(Modifier.height(12.dp))
+                    Text("不吃的食材", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(4.dp))
+                    Text("选了就不给这个人推荐，调味也一起避开", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    listOf("荤食", "素食与口味").forEach { group ->
+                        val opts = avoidCategoryOptions.filter { it.group == group }
+                        if (opts.isNotEmpty()) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(group, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.height(6.dp))
+                            androidx.compose.foundation.layout.FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                opts.forEach { o ->
+                                    com.sxdbsm.cookbook.android.ui.component.ToggleChip(
+                                        label = o.label,
+                                        selected = o.categoryId in avoidCatIds,
+                                        onClick = {
+                                            avoidCatIds = if (o.categoryId in avoidCatIds) avoidCatIds - o.categoryId else avoidCatIds + o.categoryId
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
@@ -337,6 +373,7 @@ private fun MemberEditorDialog(
                             activity = activity,
                             portionCoefficient = (coeff.toDoubleOrNull() ?: 1.0).coerceAtLeast(0.1), // 防 0/空导致该成员摄入恒 0
                             careCategoryIds = careIds.toList(),
+                            avoidCategoryIds = avoidCatIds.toList(), // [AI生成] v29:个人忌口分类
                         ),
                     )
                 },

@@ -8,6 +8,7 @@ import com.sxdbsm.cookbook.domain.model.PreferenceKeys
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 
@@ -211,5 +212,27 @@ class PresetDataSeederTest {
             ingredientRepo.search("我的自建食材").isEmpty(),
             "用户自建食材应仍然可查",
         )
+    }
+
+    @Test
+    fun `v29个人忌口白名单分类都能展开出食材_防seed漂移致忌口静默失效`() = runBlocking {
+        // [AI生成] v29 引用完整性守卫(Google审查建议)：个人忌口 chip 白名单的 15 个 general 分类，
+        //   每个都必须能 listByCategories 展开出≥1食材——否则用户选它=静默无效(seed 漂移/漏绑该子分类 code)。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val idByName = db.cookbookQueries.selectAllFoodCategories().executeAsList()
+            .filter { it.dimension == "general" }.associate { it.name to it.id }
+        val repo = IngredientRepository(db)
+        // 与 FamilyRepository.AVOID_CATEGORY_WHITELIST 分类名一致。
+        val whitelist = listOf(
+            "猪肉类", "牛肉类", "羊肉类", "禽肉类", "动物内脏类", "鱼类", "虾蟹类", "贝类", "蛋类",
+            "奶类", "大豆及坚果", "食用菌类", "藻类", "葱蒜类", "香辛料类",
+        )
+        whitelist.forEach { name ->
+            val id = idByName[name]
+            assertNotNull(id, "个人忌口白名单分类「$name」在 seed 中缺失(chip 会消失)")
+            assertTrue(repo.listByCategories(listOf(id)).isNotEmpty(), "分类「$name」展开为空→选它忌口将静默无效(seed 漂移?)")
+        }
+        Unit
     }
 }

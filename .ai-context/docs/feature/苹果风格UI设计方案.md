@@ -331,3 +331,14 @@ fun PrimaryTabRow(
 - **搜索按餐次**：搜索框整词命中纯餐次词(早餐/午餐/晚餐/加餐/宵夜…)→切"按餐次筛"模式查 `mealSlots`，头部换**淡主色条 + 餐具图标 + "适合早餐的菜品 · N 道"**(区别于普通"搜索结果 N")；**餐次模式不显末尾"新建菜品「早餐」"行**(§9.19 显隐由回调决定，避免"新建叫早餐的菜")；0 结果文案用餐次口径"还没有适合早餐的菜品"。
 - **记一餐按餐次预筛(告知不替决定)**：选菜弹窗按当前餐块餐次默认"只看适合早餐(N)"一枚可切 chip，**点一下切"显示全部"**(不硬隐藏、把决定权留用户)。加餐(SNACK)/未知餐次→不预筛。搜索时不预筛(搜索全局)。
 - **落地**：`28.sqm`+`dish_meal_slot` 表 · `MealSlotMatcher.defaultSlotsFor`(降默认推断器·恒非空) · `Dish/DishMini.mealSlots` · `DishRepository`(批量载+兜底/存储/全量替换) · `seedDishMealSlots`(补齐式打标+`SEED_LOGIC_VERSION`v6) · `RecommendationDataSource` 改查 `DishMini.mealSlots` · `NewDishScreen`/`DishesScreen`/`DishPickerScreen`。
+
+### 9.22 个人忌口设置：按分类固定多选 toggle chip（复用共享 ToggleChip）
+> [AI生成 2026-07-19] 家庭成员各自的"口味忌口"(不吃羊肉/奶/葱蒜)，与健康调养忌口正交取并集。放**成员编辑弹层**「不吃的食材」分区(健康状态之后)。
+
+- **chip = 共享 `ui/component/ToggleChip`**(§9.21 提取的实心/描边 toggle 胶囊)——忌口分类 chip 与餐次 chip 同类多选，**单一源共享**(MealSlotChip 已提为 ToggleChip·防内联复制漂移)。
+- **15 个分类 chip 两组分层**：荤食(猪肉/牛肉/羊肉/鸡鸭禽肉/动物内脏/鱼/虾蟹/贝类/蛋) + 素食与口味(奶类/大豆坚果/菌菇/藻类海带/葱蒜/香辛料)。`FlowRow` spacedBy 8dp,组间小标题 `labelMedium+primary`。
+- **信息层级**：荤类**只给具体子类**(羊肉/鱼…)不给"肉类"父级 chip(避免大类与子类并列困惑·"不吃所有肉"几乎不存在);仅"可能整类不吃"的类(奶/豆/菌/葱蒜)给大类 chip。
+- **无智能预选**(纯人为声明·默认空·不猜测防误加)、**无锁定提示行**、点亮即选再点取消、无二次确认。
+- **说明句**"选了就不给这个人推荐，调味也一起避开"兼作引导 + 调料真避开提示(个人忌口对调料真避开·含即命中·区别于健康忌口"少放")。无独立空态(chip 全灰即引导)。
+- **数据**：`food_category` **无 code 列**→按**分类名**白名单映射 id(缺失静默跳过);chip 用口语短标签(非分类库 name);`FamilyRepository.listAvoidCategoryOptions()` 一次取。
+- **落地**：`29.sqm`+`member_avoid_category` 表 · `FamilyMember.avoidCategoryIds` · `HealthConstraints.personalAvoidIngredientIds`(单独字段·含所有角色) · `HealthRuleEngine` 合并进 avoidNames · `RecommendationDataSource` gather/gatherForPlan 全家并集分类→食材ids · `FamilyViewModel`/`FamilyScreen.MemberEditorDialog`。

@@ -139,6 +139,8 @@ class HealthRuleEngine {
         //   显著<avoid=5.0且**不进 sortedWith 分层判据**、不改可选性)。复用 dishQualitativeHits(gate病种+去重已在 avoid∪limit 的料，防双重罚)。
         //   缺数据/无病种/非营养风格(权重0)→0，向后兼容。**钠不做**(菜级sodiumMg含调料无法拆、每道菜都放盐会误伤全部=红线)，钠靠 care limit+cookingCautions+今日卡。
         if (weights.chronicDiseaseNutrition > 0.0 && conditions.isNotEmpty()) {
+            // [AI生成] v29:avoidNames 已含个人忌口料(见上),故个人忌口料也并入 flagged 去重集——是**预期**:
+            //   这些料已 -avoid 大幅降权,无需再叠加慢病 GI/嘌呤罚(只少罚不误伤·方向安全)。
             val flagged = (avoidNames + limitHits.map { it.name }).toSet()
             val (highGi, highPurine) = com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.dishQualitativeHits(
                 mainNames = mainIngredients.map { it.name }, conditions = conditions, giByName = giByName, alreadyFlagged = flagged,

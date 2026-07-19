@@ -275,7 +275,7 @@ fun NewDishScreen(
                 com.sxdbsm.cookbook.ai.MealSlot.values()
                     .filter { it != com.sxdbsm.cookbook.ai.MealSlot.ALL }
                     .forEach { slot ->
-                        MealSlotChip(
+                        com.sxdbsm.cookbook.android.ui.component.ToggleChip(
                             label = slot.label,
                             selected = slot in state.mealSlots,
                             onClick = { vm.toggleMealSlot(slot) },
@@ -1182,25 +1182,4 @@ private fun FlowRow(
     )
 }
 
-/**
- * 「适合餐次」固定多选 toggle chip。[AI生成] v28
- *
- * 实心(primary)=选中 / 描边灰(surfaceVariant)=未选，无 ×、无 ✓ ——刻意区别于增删型 AssistChip(带 ×)，
- * 让"这排是勾选"与"那排是增删"一眼可分(苹果式克制)。整枚可点=toggle。
- */
-@Composable
-private fun MealSlotChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    androidx.compose.material3.Surface(
-        onClick = onClick,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.SemiBold else androidx.compose.ui.text.font.FontWeight.Normal,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-        )
-    }
-}
+// [AI修改] v29:MealSlotChip 已提升为共享 `ui/component/ToggleChip`(供餐次+个人忌口分类共用·防内联复制漂移)。

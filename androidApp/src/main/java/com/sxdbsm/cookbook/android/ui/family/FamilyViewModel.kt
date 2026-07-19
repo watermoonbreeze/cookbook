@@ -34,9 +34,14 @@ class FamilyViewModel(
     private val _careOptions = MutableStateFlow<List<CrowdType>>(emptyList())
     val careOptions: StateFlow<List<CrowdType>> = _careOptions.asStateFlow()
 
+    // [AI生成] v29:个人忌口可选分类项(chip 白名单·§9.22)。
+    private val _avoidCategoryOptions = MutableStateFlow<List<com.sxdbsm.cookbook.domain.model.AvoidCategoryOption>>(emptyList())
+    val avoidCategoryOptions: StateFlow<List<com.sxdbsm.cookbook.domain.model.AvoidCategoryOption>> = _avoidCategoryOptions.asStateFlow()
+
     init {
         viewModelScope.launch { family.ensureInitialized() }
         viewModelScope.launch { _careOptions.value = health.listAllCrowdTypes() }
+        viewModelScope.launch { _avoidCategoryOptions.value = family.listAvoidCategoryOptions() }
     }
 
     /** 保存成员：id==0 新建、否则更新。[AI生成] */
