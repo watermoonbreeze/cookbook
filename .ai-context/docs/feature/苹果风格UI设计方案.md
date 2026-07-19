@@ -353,3 +353,17 @@ fun PrimaryTabRow(
 - **职责划分**：家庭页**只管"关注谁"**·"当前看谁"交今日卡/报告切换器(天天用)——两处都能切会困惑·苹果"一个动作一个地方"。
 - **迁移零风险**：老库唯一 `is_focus=1` 那人=关注集合 size=1·指针空→`resolveViewing` 回退关注集合首位=旧 `pickFocus` 行为·100%无感。
 - **落地**：`FamilyRepository.resolveViewing`(收口)/`toggleFocus`/`setViewingMember`/`observeViewingMember`·`PreferenceRepository.observe/setFocusViewingMemberId`(偏好指针)·`updateMemberFocus` 查询·`FamilyScreen`星标多选·`HomeViewModel.focusSwitcher`+`NutritionTodayCard` chip 行·`DietReportViewModel`+`DietReportScreen` 成员切换器。零 `.sqm`。
+
+### 9.24 长表单编辑页：全屏 + 顶部三段 SegmentedControl（治"竖排太长·发现性差"）
+> [AI生成 2026-07-20] 家庭成员编辑页由 `AlertDialog`（资料/健康/忌口三块竖排堆叠、要翻到底才知道有忌口块）改为**全屏 overlay + 顶部三段分段**。可复用范式：**内容分属 ≥3 个语义组、竖排会很长的编辑表单**，改分段而非一条滚动列。（待办/交接旧引用"§9.26"即本节。）
+
+- **形态**：页内**全屏 overlay**用 `Dialog(properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false))` 包 `Surface(fillMaxSize)` + `Scaffold`（同 `IngredientPickerScreen(asDialog=true)` 范式，不进 NavHost，由父页局部 `creating`/`editing` 态驱动）。`Scaffold(contentWindowInsets = WindowInsets(0,0,0,0))`，`topBar=AppTopBar(onBack=requestBack)`、`bottomBar=FormBottomBar`。
+- **分段**：顶栏下 `SegmentedControl`（水平16dp/竖10dp）。**每段内容 `Box(weight1f)` 内 `when(seg)` 切换，各段 `Column(fillMaxSize).verticalScroll(该段独立 rememberScrollState)`**。
+- **状态全部上提到页级 `remember`**（含 3 个 ScrollState）——`when` 切段会销毁离屏分支，state 放父级才不丢输入、保活滚动位置。段内容可内联在 `when` 分支（state 在父级，闭包读写安全）。
+- **分段徽标**：`SegmentedControl` 只接 `List<String>`、不支持角标 Composable → 徽标在 **label 文案拼"·N"**（"忌口·3"/"健康·2"，0 时不带数字），随计数重组刷新。**不给 SegmentedControl 加数字角标参数**（3 项均分胶囊里点角标排版拥挤、污染共享契约；"·N"内联更稳、合 iOS 惯例）。忌口计数口径=**分类忌口数 + 具体食材忌口数合计**（用户心智:都是"一条不吃")。必填基底段(资料)不加计数。
+- **保存 CTA**：底部 `FormBottomBar` 常驻胶囊"保存"（§9.13），**不放顶栏右上**——保存作用于整对象、与当前在哪段无关，底部常驻始终可达+合拇指热区。昵称空 `primaryEnabled=false` 置灰（最轻反馈，不弹错不加红字）。
+- **未保存守卫**：`rememberUnsavedGuard(isDirty, onConfirmLeave=onDismiss)`（§9.17 非包裹式）接顶栏返回+系统返回+点外部。`isDirty` 基线：编辑态逐字段比对原值；新建态"填过有意义内容/手动调过系数"即脏；**异步查名填充的字段（如忌口食材 id→名）加 `ingLoaded` gate**——填充完成前空集会误判脏，须等加载完再纳入比对；**自动预选值（系数随性别年龄预填）不算脏**（只 `coeffEdited` 手动改才脏）。
+- **分组卡**：内容较满的段用 `InsetGroup` 白卡分小组（如资料段"基本"+"活动与饭量"）。**InsetGroup 自带水平16dp 内距**，内部内容再包 `Column(padding(16dp))` 给输入控件呼吸即可，段容器别再叠 horizontal padding（防双重）。
+- **段永远在→段内空态**：全屏分段后段恒存在（徽标要占位），故原"整块 if 不显"改为**段内空态**：健康段无选项显 `EmptyState`（无下一步，属数据侧）；忌口段分类为空仍留"搜索添加具体食材"入口（不是死段）。忌口段把"已加食材/搜索入口"提到"按分类"之前（高频精准）。
+- **动效克制**：段切换不加横滑过渡（`SegmentedControl` 滑块内置动效已足），overlay 进入与现有 picker 一致，徽标数字不跳动。
+- **落地**：`FamilyScreen.kt` `MemberEditorScreen`（原 `MemberEditorDialog`）；复用 `AppTopBar`/`SegmentedControl`/`InsetGroup`/`FormBottomBar`/`rememberUnsavedGuard`/`EmptyState`/`ToggleChip`，**零新组件**。`onSave`/`onDismiss` 签名不变、调用点仅改名。
