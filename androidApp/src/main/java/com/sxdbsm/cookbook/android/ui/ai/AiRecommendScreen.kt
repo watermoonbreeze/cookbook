@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -81,6 +82,7 @@ fun AiRecommendScreen(
     val planState = planVm.state
     var showPlan by remember { mutableStateOf(false) }
     var rulesOpen by remember { mutableStateOf(false) } // [AI生成] 推荐规则说明弹层(标题右上说明图标)
+    var filterSheetOpen by remember { mutableStateOf(false) } // [AI生成] 2026-07-19:「筛选」弹层(风格/去重周期/食养收纳,方案A)
     var dislikeTarget by remember { mutableStateOf<DishItemUi?>(null) } // [AI生成] §9.20 负反馈踩:长按目标菜→ActionSheet
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -179,7 +181,7 @@ fun AiRecommendScreen(
                     !state.pendingManual && (state.suggestionGroups.isNotEmpty() || state.dishItems.isNotEmpty())
                 when {
                     !hasResults -> {
-                        RecommendControls(state, vm)
+                        RecommendControls(state, vm, onOpenFilter = { filterSheetOpen = true })
                         Spacer(Modifier.height(4.dp))
                         when {
                             state.loading -> LoadingBlock()
@@ -197,7 +199,7 @@ fun AiRecommendScreen(
                     state.suggestionGroups.isNotEmpty() -> {
                         LazyColumn(modifier = Modifier.weight(1f)) {
                             item {
-                                RecommendControls(state, vm)
+                                RecommendControls(state, vm, onOpenFilter = { filterSheetOpen = true })
                                 Spacer(Modifier.height(4.dp))
                                 ResultHeader(
                                     hint = "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。",
@@ -225,7 +227,7 @@ fun AiRecommendScreen(
                     else -> {
                         LazyColumn(modifier = Modifier.weight(1f)) {
                             item {
-                                RecommendControls(state, vm)
+                                RecommendControls(state, vm, onOpenFilter = { filterSheetOpen = true })
                                 Spacer(Modifier.height(4.dp))
                                 ResultHeader(
                                     hint = "勾选想做的菜，点下方「确定」加入这一餐。",
@@ -300,6 +302,11 @@ fun AiRecommendScreen(
             confirmButton = { TextButton(onClick = { rulesOpen = false }) { Text("知道了") } },
         )
     }
+
+    // [AI生成] 2026-07-19 方案A:「筛选」弹层(风格/去重周期/食养收纳)。
+    if (filterSheetOpen) {
+        RecommendFilterSheet(state = state, vm = vm, onDismiss = { filterSheetOpen = false })
+    }
 }
 
 
@@ -329,21 +336,32 @@ private const val RECOMMEND_RULES_TEXT =
         "推荐结果仅供参考，非医嘱。健康相关问题请以医生建议为准。"
 
 /**
- * 库存/随机推荐的控件区：餐次 + 去重周期 + 推荐风格。[AI生成]
+ * 库存/随机推荐的控件区：餐次横滚栏 + 「筛选」入口。[AI修改] 2026-07-19 精简(方案A)
  *
- * 有推荐结果时作为结果 LazyColumn 的首 item(随结果上滑)；无结果态固定在上方。
+ * 只留高频"餐次"(横滚 PrimaryTabRow·与一级模式实心分段控件视觉区分)；低频 去重周期/推荐风格/食养
+ * 三项收进「筛选」弹层(RecommendFilterSheet)。有推荐结果时作为结果 LazyColumn 的首 item(随结果上滑)；无结果态固定在上方。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewModel) {
-    // 餐次选择：全部+早/上午/中/下午/晚/宵夜。[AI修改] UX深挖#10：FilterChip→横滚 PrimaryTabRow(§9.18)，
-    //   与下方"去重周期/推荐风格"两段同构(小标题+分段控件)、消除同屏 FilterChip 异类；7 项对均分 SegmentedControl 过多故用横滚胶囊。
+private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewModel, onOpenFilter: () -> Unit) {
+    // [AI修改] 2026-07-19 界面精简(方案A·用户选)：默认屏只留高频"餐次"横滚栏(§9.18·与一级"库存/随机/周期计划"实心分段控件天然视觉区分)，
+    //   低频"去重周期/推荐风格/食养"三项收进「筛选」弹层(RecommendFilterSheet)，不再同屏堆五段控件(原~264dp→~70dp)。功能零丢失。
     Spacer(Modifier.height(6.dp))
-    Text(
-        "餐次",
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text(
+            "餐次",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        // [AI生成] 筛选入口：收纳风格/去重周期/食养；有任一非默认筛选生效时名称后加圆点提示(防"收纳后忘了设过")。
+        val filterActive = state.recommendStyle != com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT ||
+            state.recentWindowDays != com.sxdbsm.cookbook.ai.RecommendationDataSource.RECENT_WINDOW_DAYS_DEFAULT ||
+            state.medicinalFilter
+        TextButton(onClick = onOpenFilter) {
+            Text(if (filterActive) "筛选 ●" else "筛选") // ● = 有非默认筛选生效
+        }
+    }
     Spacer(Modifier.height(4.dp))
     val mealSlots = com.sxdbsm.cookbook.ai.MealSlot.values()
     com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow(
@@ -353,57 +371,80 @@ private fun RecommendControls(state: AiRecommendUiState, vm: AiRecommendViewMode
         scrollable = true,
         modifier = Modifier.fillMaxWidth(),
     )
-    // B2：去重周期。[AI修改] UX:说明收敛为一行小标题(去长句噪音,结果区上移)。
-    Spacer(Modifier.height(6.dp))
-    Text(
-        "去重周期（近期吃过的排最后）",
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(Modifier.height(4.dp))
-    com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-        options = RECENT_WINDOW_OPTIONS.map { it.first },
-        selectedIndex = RECENT_WINDOW_OPTIONS.indexOfFirst { it.second == state.recentWindowDays }.coerceAtLeast(0),
-        onSelect = { idx -> vm.setRecentWindow(RECENT_WINDOW_OPTIONS[idx].second) },
-        modifier = Modifier.fillMaxWidth(),
-    )
-    // P3：推荐风格(轻干预)——切换综合/偏熟悉/偏新鲜/偏营养，调整各因子权重。
-    Spacer(Modifier.height(6.dp))
-    Text(
-        RECOMMEND_STYLE_OPTIONS[RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0)].third,
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(Modifier.height(4.dp))
-    com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-        options = RECOMMEND_STYLE_OPTIONS.map { it.first },
-        selectedIndex = RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0),
-        onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
-        modifier = Modifier.fillMaxWidth(),
-    )
-    // [AI生成] 药膳一期·食养筛选：药食同源优先(默认关不打扰)。术语"食养"(非"食补",避进补见效义)；只正向筛选展示、不接慢病评级。
-    Spacer(Modifier.height(6.dp))
-    Text(
-        "食养（按传统分类筛选，仅供参考）",
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(Modifier.height(4.dp))
-    com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-        options = listOf("不限", "药食同源"),
-        selectedIndex = if (state.medicinalFilter) 1 else 0,
-        onSelect = { idx -> vm.setMedicinalFilter(idx == 1) },
-        modifier = Modifier.fillMaxWidth(),
-    )
-    if (state.medicinalFilter) {
-        Spacer(Modifier.height(4.dp))
-        Text(
-            "仅按传统食养分类筛选展示，不构成健康建议；忌口与用量请以你的医嘱为准。",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        if (state.medicinalNote.isNotBlank()) {
-            Text(state.medicinalNote, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+/**
+ * 「筛选」弹层：收纳 推荐风格 + 去重周期 + 食养(药膳) 三个低频控件。[AI生成] 2026-07-19 方案A
+ *
+ * 切换即时生效(复用现 setStyle/setRecentWindow/setMedicinalFilter)、无"确定"；底部"重置为默认"一键回中庸默认。
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RecommendFilterSheet(state: AiRecommendUiState, vm: AiRecommendViewModel, onDismiss: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).navigationBarsPadding()) {
+            Text("筛选", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(12.dp))
+            // 推荐风格(轻干预)——切换综合/偏熟悉/偏新鲜/偏营养，调整各因子权重。
+            val styleIdx = RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0)
+            Text("推荐风格", style = MaterialTheme.typography.labelLarge)
+            Spacer(Modifier.height(4.dp))
+            com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                options = RECOMMEND_STYLE_OPTIONS.map { it.first },
+                selectedIndex = styleIdx,
+                onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(RECOMMEND_STYLE_OPTIONS[styleIdx].third, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(16.dp))
+            Divider()
+            Spacer(Modifier.height(12.dp))
+            // 去重周期。
+            Text("去重周期", style = MaterialTheme.typography.labelLarge)
+            Text("近期吃过的排最后", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(4.dp))
+            com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                options = RECENT_WINDOW_OPTIONS.map { it.first },
+                selectedIndex = RECENT_WINDOW_OPTIONS.indexOfFirst { it.second == state.recentWindowDays }.coerceAtLeast(0),
+                onSelect = { idx -> vm.setRecentWindow(RECENT_WINDOW_OPTIONS[idx].second) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(16.dp))
+            Divider()
+            Spacer(Modifier.height(12.dp))
+            // 食养(药膳一期)：药食同源优先(默认关)。术语"食养"、只正向筛选展示、不接慢病评级。
+            Text("食养", style = MaterialTheme.typography.labelLarge)
+            Text("药食同源优先 · 传统分类·仅供参考", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(4.dp))
+            com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                options = listOf("不限", "药食同源"),
+                selectedIndex = if (state.medicinalFilter) 1 else 0,
+                onSelect = { idx -> vm.setMedicinalFilter(idx == 1) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (state.medicinalFilter) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "仅按传统食养分类筛选展示，不构成健康建议；忌口与用量请以你的医嘱为准。",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (state.medicinalNote.isNotBlank()) {
+                    Text(state.medicinalNote, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            // 一键回中庸默认(综合/一周/不限)。
+            TextButton(
+                onClick = {
+                    vm.setStyle(com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT)
+                    vm.setRecentWindow(com.sxdbsm.cookbook.ai.RecommendationDataSource.RECENT_WINDOW_DAYS_DEFAULT)
+                    vm.setMedicinalFilter(false)
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            ) { Text("重置为默认") }
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
