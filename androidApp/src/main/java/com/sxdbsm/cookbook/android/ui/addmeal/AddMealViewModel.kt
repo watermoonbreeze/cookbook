@@ -194,7 +194,13 @@ class AddMealViewModel(
      * 若目标日期已有餐食 → 提示且不切换(去食历编辑那天或另选空日期)；空日期则直接切换、保留当前内容。
      */
     fun setDate(date: LocalDate) {
-        if (date == _state.value.date) return
+        // [AI修改] 修"提示不随日期更新"(用户2026-07-19)：原 `if (date==当前) return` 会在**重选当前(已生效的空)日期**时
+        //   直接返回、不清掉残留的旧冲突提示——警告后重开日历不改直接确认(日历默认选中即当前日期)就会命中此路径，
+        //   导致"X 已有餐食"一直挂在顶上。原则=落到无餐食的日期(含重选当前日期)一律隐藏提示，只有落到有餐食的日期才提示。
+        if (date == _state.value.date) {
+            if (_state.value.dateWarning != null) _state.value = _state.value.copy(dateWarning = null)
+            return
+        }
         configured = true
         // [AI修改] #2：复制场景有下限(最新餐食+1)，早于下限直接提示不切换。
         val minDate = _state.value.minSelectableDate
