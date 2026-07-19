@@ -51,4 +51,8 @@ val sharedModule: Module = module {
     single { RecommendationOrchestrator(get()) }
     // [AI生成] 选择性同步：导出/合并导入 菜品/食材/库存/健康/收藏/餐食。
     single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    // [AI生成] 阶段3 匿名统计埋点抽象层：Sink=后端(当前本地 Log·友盟就绪后在 androidModule 用 UmengAnalyticsSink 覆盖此绑定)，
+    //   Analytics=同意闸门(默认关·App 启动读偏好 setEnabled、设置开关驱动)。调用点只依赖 Analytics 接口。
+    single<com.sxdbsm.cookbook.analytics.AnalyticsSink> { com.sxdbsm.cookbook.analytics.LogSink() }
+    single<com.sxdbsm.cookbook.analytics.Analytics> { com.sxdbsm.cookbook.analytics.DefaultAnalytics(get()) }
 }

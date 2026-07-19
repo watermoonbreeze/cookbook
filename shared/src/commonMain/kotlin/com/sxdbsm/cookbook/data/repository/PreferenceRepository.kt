@@ -111,4 +111,32 @@ class PreferenceRepository(private val db: CookbookDatabase) {
     suspend fun set(key: String, value: String) = withContext(ioDispatcher) {
         q.upsertPreference(key, value, DateTime.nowEpochSeconds())
     }
+
+    // ============ 阶段3 匿名统计（默认关·首启询问式·守隐私红线） ============
+
+    /** 监听"匿名使用统计"开关（默认关）。[AI生成] 阶段3 */
+    fun observeAnalyticsEnabled(): Flow<Boolean> =
+        observeFlag(PreferenceKeys.ANALYTICS_ENABLED, default = false)
+
+    /** 一次性读"匿名使用统计"是否开启（App 启动初始化埋点闸门用）。[AI生成] 阶段3 */
+    suspend fun isAnalyticsEnabled(): Boolean = withContext(ioDispatcher) {
+        q.selectPreference(PreferenceKeys.ANALYTICS_ENABLED).executeAsOneOrNull()?.value_ == "1"
+    }
+
+    /** 设置"匿名使用统计"开关。[AI生成] 阶段3 */
+    suspend fun setAnalyticsEnabled(enabled: Boolean) = setFlag(PreferenceKeys.ANALYTICS_ENABLED, enabled)
+
+    /**
+     * 取匿名标识（不存在则首次生成随机 UUID 并持久化）。[AI生成] 阶段3
+     *
+     * 不用任何设备硬标识；卸载重装即换新 UUID（略微低估长周期留存，换取"绝不可复原到个人"）。
+     * 注：读→写非原子——极低概率的首启并发调用可能生成两个 UUID、后写覆盖先写；匿名标识"换一个"无业务损害(不涉去重计费)，可接受、不加事务。
+     */
+    suspend fun getOrCreateAnalyticsUuid(): String = withContext(ioDispatcher) {
+        val existing = q.selectPreference(PreferenceKeys.ANALYTICS_UUID).executeAsOneOrNull()?.value_
+        if (!existing.isNullOrBlank()) return@withContext existing
+        val uuid = com.sxdbsm.cookbook.platform.randomUuid()
+        q.upsertPreference(PreferenceKeys.ANALYTICS_UUID, uuid, DateTime.nowEpochSeconds())
+        uuid
+    }
 }
