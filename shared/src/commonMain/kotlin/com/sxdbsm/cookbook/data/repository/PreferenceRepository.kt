@@ -126,6 +126,17 @@ class PreferenceRepository(private val db: CookbookDatabase) {
     /** 设置"匿名使用统计"开关。[AI生成] 阶段3 */
     suspend fun setAnalyticsEnabled(enabled: Boolean) = setFlag(PreferenceKeys.ANALYTICS_ENABLED, enabled)
 
+    /** 监听"是否已同意用户协议+隐私政策"(首启合规 gate)。[AI生成] 阶段3-c */
+    fun observePrivacyAgreed(): Flow<Boolean> = observeFlag(PreferenceKeys.PRIVACY_AGREED, default = false)
+
+    /** 一次性读"是否已同意"(首启判定用)。[AI生成] 阶段3-c */
+    suspend fun isPrivacyAgreed(): Boolean = withContext(ioDispatcher) {
+        q.selectPreference(PreferenceKeys.PRIVACY_AGREED).executeAsOneOrNull()?.value_ == "1"
+    }
+
+    /** 记录用户已同意用户协议+隐私政策。[AI生成] 阶段3-c */
+    suspend fun setPrivacyAgreed(agreed: Boolean) = setFlag(PreferenceKeys.PRIVACY_AGREED, agreed)
+
     /**
      * 取匿名标识（不存在则首次生成随机 UUID 并持久化）。[AI生成] 阶段3
      *

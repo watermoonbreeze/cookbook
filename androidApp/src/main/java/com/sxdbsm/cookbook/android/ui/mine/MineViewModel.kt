@@ -58,7 +58,20 @@ class MineViewModel(
     private val logFileManager: LogFileManager,
     private val seeder: PresetDataSeeder, // [AI生成] 供“更新基础数据”手动刷新预设内容。
     private val family: FamilyRepository, // [AI生成] 档案整合：用户卡健康状态改取家庭成员"我"。
+    private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-c：匿名统计开关驱动埋点闸门。
 ) : ViewModel() {
+
+    /** 匿名使用统计开关(默认关)。[AI生成] 阶段3-c */
+    val analyticsEnabled: StateFlow<Boolean> = prefs.observeAnalyticsEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    /** 切换匿名统计：写偏好 + 即时驱动埋点闸门(关闭立即拦截后续所有事件)。[AI生成] 阶段3-c */
+    fun setAnalyticsEnabled(on: Boolean) {
+        viewModelScope.launch {
+            prefs.setAnalyticsEnabled(on)
+            analytics.setEnabled(on)
+        }
+    }
 
     /**
      * 我的用户卡健康信息(档案整合后)：显示"我"(is_self)的健康状态；关注成员≠我时提示当前关注谁。[AI生成]

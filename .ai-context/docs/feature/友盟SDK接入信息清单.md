@@ -58,6 +58,10 @@
 
 ## 四、合规前置（中国 App 强要求·**申请/上架前需备好**）
 
+> ⚠️ **友盟官方合规提醒（用户 2026-07-19 转达·近期监管严·已通报处罚近千款、下架逾期不整改 App）**：使用 SDK 必须①升级至**最新版 SDK**②在《隐私政策》告知用户使用友盟+SDK（标准模板见下）③做好**延迟初始化**（用户同意《隐私政策》后再 init 采数）。合规配置文档：https://developer.umeng.com/docs/147377/detail/213789 。
+> - 隐私政策标准披露模板（已写入 `隐私政策与用户协议.md` §3）：SDK 名称=友盟+SDK；服务类型=数据统计分析；收集个人信息类型=设备信息(IMEI/Mac/Android ID/IDFA/OPENUDID/GUID/SIM卡IMSI/地理位置)；隐私链接=https://www.umeng.com/page/policy 。
+> - 延迟初始化=本项目 `UmengAnalyticsSink` 占位 + `CookbookApplication` 已按"同意后才 setEnabled/init"设计，接入时 `UMConfigure.preInit` 可调、`UMConfigure.init` 必须在同意后。
+
 友盟属第三方 SDK，按《个人信息保护法》与应用商店要求，**必须**做到：
 
 1. **隐私政策**：App 需有一份隐私政策，其中**明确披露**：集成了"友盟+ SDK"、SDK 提供方（友盟同欣（上海）网络科技有限公司）、采集的信息类型（设备信息等）、用途（统计分析）、以及友盟隐私政策链接（https://www.umeng.com/page/policy ）。
@@ -100,7 +104,17 @@
 
 ## 七、我拿到 AppKey 后的接入步骤（你无需关心细节·列出让你有数）
 
-1. androidApp/build.gradle.kts 加友盟依赖（阿里云 public 仓已含）：`com.umeng.umsdk:common` + `com.umeng.umsdk:asms`。
+> AppKey 用户已提供（存本地免提交处，不入 git）。以下为接入 checklist。
+>
+> **官方 maven 集成说明（用户 2026-07-19 提供·已核对）**：
+> - **仓库**：官方示例的 `jcenter()` 已停服无需加；`repo1.maven.org`(Maven Central) 本项目已通过**阿里云镜像 + mavenCentral** 覆盖（`settings.gradle.kts` 已配），**无需改仓库**。
+> - **依赖**（`androidApp/build.gradle.kts` 的 dependencies）：
+>   - `com.umeng.umsdk:common`（必选·基础组件）
+>   - `com.umeng.umsdk:asms`（必选）
+>   - ~~`com.umeng.umsdk:uyumao`~~（可选·卸载分析/反作弊）→ **本期不加**：会增加采集、需额外更新隐私声明，与"最小采集"原则冲突；MVP 统计 common+asms 足够。
+>   - 版本：官方给 `+`(最新)，接入时**钉具体版本号**(可复现构建·避免 `+` 漂移)。
+
+1. androidApp/build.gradle.kts 加友盟依赖：`com.umeng.umsdk:common` + `com.umeng.umsdk:asms`（钉版本；仓库已就绪）。
 2. 填充 `UmengAnalyticsSink`（现为占位）：`UMConfigure.preInit` → **同意后** `UMConfigure.init(AppKey)` + 关非必要采集 → `emit` 改为 `MobclickAgent.onEventObject(context, event.name, event.params)`。
 3. Koin 绑定从 `LogSink` 切到 `UmengAnalyticsSink`（一行）。
 4. 隐私政策补友盟披露段落（我起草）。

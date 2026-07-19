@@ -59,7 +59,7 @@ val androidModule = module {
     viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用 + 阶段3-b Analytics(meal_logged)。
     viewModel { TimelineViewModel(get()) }
-    viewModel { MineViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 FamilyRepository(档案整合:用户卡取家庭成员"我")。
+    viewModel { MineViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 FamilyRepository + 阶段3-c Analytics(匿名统计开关)。
     viewModel { com.sxdbsm.cookbook.android.ui.report.DietReportViewModel(get(), get(), get()) } // [AI生成] 报告模块:MealRecord+Nutrition+Family
     viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get(), get()) } // [AI修改] 家庭成员管理 + 阶段3-b Analytics(health_profile_set)
     viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyStatsViewModel(get(), get(), get()) } // [AI生成] 膳食统计

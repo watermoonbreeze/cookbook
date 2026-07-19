@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android.ui.nav
 import android.app.Activity
 import com.sxdbsm.cookbook.android.util.AppLogger
 import android.widget.Toast
+import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -69,14 +70,39 @@ fun MainScaffold(
         }
     }
 
-    // [AI生成] 首次启动自动弹「功能介绍」(一期基础打磨)：仅第一次进 App 弹一次；之后仍可从"我的·功能介绍"手动看。
-    //   先置标记再导航，避免因导航引发的重组重复触发；已看过则不打扰。
+    // [AI生成] 阶段3-c 合规门：首启先弹「隐私政策/用户协议同意」(不可绕过·同意后才 init 采数)，通过后才轮到功能介绍。
+    var showPrivacyGate by remember { mutableStateOf(false) }
+    // [AI生成] 首次启动：①未同意隐私→弹合规门 ②已同意→按需弹「功能介绍」(仅第一次·之后可从"我的"手动看)。
     LaunchedEffect(Unit) {
+        if (!prefs.isPrivacyAgreed()) {
+            showPrivacyGate = true // 未同意→弹门,先不判功能介绍(同意回调里再顺跑)
+            return@LaunchedEffect
+        }
         if (!prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, false).first()) {
-            analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.FirstLaunch) // [AI生成] 阶段3-b：首启(新增·留存队列起点)。
             prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, true)
             nav.navigate(Routes.FEATURE_GUIDE)
         }
+    }
+    // [AI生成] 阶段3-c 合规门弹窗：同意→写 PRIVACY_AGREED + 按复选框设匿名统计同意 + 顺跑功能介绍；不同意→退出。
+    val gateScope = androidx.compose.runtime.rememberCoroutineScope()
+    if (showPrivacyGate) {
+        com.sxdbsm.cookbook.android.ui.onboarding.PrivacyConsentDialog(
+            onAgree = { analyticsChecked ->
+                gateScope.launch {
+                    prefs.setPrivacyAgreed(true)
+                    prefs.setAnalyticsEnabled(analyticsChecked)
+                    analytics.setEnabled(analyticsChecked) // 同意后闸门即时放行(未勾则维持关)
+                    showPrivacyGate = false
+                    // 同意后才轮到功能介绍(首次)——FirstLaunch 埋点也挪到同意之后才有意义。
+                    if (!prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, false).first()) {
+                        analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.FirstLaunch)
+                        prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, true)
+                        nav.navigate(Routes.FEATURE_GUIDE)
+                    }
+                }
+            },
+            onDisagreeExit = { (context as? Activity)?.finishAffinity() },
+        )
     }
 
     val showBottomBar = currentRoute in bottomTabs.map { it.route } // [AI修改] 详情/编辑页隐藏底部栏。
@@ -204,6 +230,8 @@ fun MainScaffold(
                     onOpenDataSource = { nav.navigate(Routes.DATA_SOURCE) }, // [AI生成] 数据来源
                     onOpenFeatureGuide = { nav.navigate(Routes.FEATURE_GUIDE) }, // [AI生成] 功能介绍
                     onOpenFamily = { nav.navigate(Routes.FAMILY) }, // [AI生成] 档案整合:家庭档案统一入口
+                    onOpenUserAgreement = { nav.navigate(Routes.USER_AGREEMENT) }, // [AI生成] 阶段3-c 用户协议
+                    onOpenPrivacyPolicy = { nav.navigate(Routes.PRIVACY_POLICY) }, // [AI生成] 阶段3-c 隐私政策
                 )
             }
             composable(Routes.NUTRITION_TABLE) {
@@ -223,6 +251,20 @@ fun MainScaffold(
             }
             composable(Routes.TCM_REFERENCE) {
                 com.sxdbsm.cookbook.android.ui.reference.TcmReferenceScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.USER_AGREEMENT) {
+                com.sxdbsm.cookbook.android.ui.policy.PolicyScreen(
+                    title = "用户协议",
+                    sections = com.sxdbsm.cookbook.android.ui.policy.USER_AGREEMENT_SECTIONS,
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable(Routes.PRIVACY_POLICY) {
+                com.sxdbsm.cookbook.android.ui.policy.PolicyScreen(
+                    title = "隐私政策",
+                    sections = com.sxdbsm.cookbook.android.ui.policy.PRIVACY_POLICY_SECTIONS,
+                    onBack = { nav.popBackStack() },
+                )
             }
             composable(Routes.HEALTH_CONDITION_REFERENCE) {
                 com.sxdbsm.cookbook.android.ui.reference.HealthConditionReferenceScreen(onBack = { nav.popBackStack() })

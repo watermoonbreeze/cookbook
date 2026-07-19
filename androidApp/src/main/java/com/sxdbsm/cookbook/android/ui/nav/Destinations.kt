@@ -41,6 +41,8 @@ object Routes {
     const val DIETARY_REFERENCE = "dietary_reference" // [AI生成] 膳食参考依据(阈值分级引用的权威标准/指南透明展示)
     const val DATA_SOURCE = "data_source" // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品各自来源)
     const val FEATURE_GUIDE = "feature_guide" // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
+    const val USER_AGREEMENT = "user_agreement" // [AI生成] 阶段3-c 用户协议
+    const val PRIVACY_POLICY = "privacy_policy" // [AI生成] 阶段3-c 隐私政策
 
     fun addMeal(date: String? = null) = "addmeal?date=${date.orEmpty()}&dishIds=&copyFrom="
 

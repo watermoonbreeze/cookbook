@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.sxdbsm.cookbook.android.ui.component.InsetGroup
 import com.sxdbsm.cookbook.android.ui.component.InsetDivider
+import com.sxdbsm.cookbook.android.ui.component.SettingSwitchRow
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.AppPalette
@@ -58,10 +59,13 @@ fun MineScreen(
     onOpenDietReport: () -> Unit = {}, // [AI生成] 饮食报告(周/月回顾)
     onOpenTcmReference: () -> Unit = {}, // [AI生成] 食养参考(药食同源科普+免责)
     onOpenHealthConditionReference: () -> Unit = {}, // [AI生成] 健康状态参考(4病种饮食关注点+口径+免责)
+    onOpenUserAgreement: () -> Unit = {}, // [AI生成] 阶段3-c 用户协议
+    onOpenPrivacyPolicy: () -> Unit = {}, // [AI生成] 阶段3-c 隐私政策
     vm: MineViewModel = koinViewModel(),
 ) {
     val mode by vm.themeMode.collectAsStateWithLifecycle()
     val palette by vm.palette.collectAsStateWithLifecycle() // [AI生成] 当前配色主题
+    val analyticsEnabled by vm.analyticsEnabled.collectAsStateWithLifecycle() // [AI生成] 阶段3-c 匿名统计开关
     val healthCard by vm.healthCard.collectAsStateWithLifecycle() // [AI生成] 档案整合:用户卡取"我"的健康状态
     val backups by vm.backups.collectAsStateWithLifecycle()
     val updatingBaseData by vm.updatingBaseData.collectAsStateWithLifecycle()
@@ -327,6 +331,21 @@ fun MineScreen(
 
         InsetGroup(title = "通用") {
             SettingRow(icon = Icons.Outlined.Tune, title = "功能设置", subtitle = "分步执行、库存等功能开关", trailing = "▸") { onOpenFeatureSettings() }
+        }
+
+        // [AI生成] 阶段3-c 隐私与协议：用户协议/隐私政策查看 + 匿名使用统计开关(默认关·随时可关)。
+        InsetGroup(title = "隐私与协议") {
+            SettingRow(icon = Icons.Outlined.Description, title = "用户协议", subtitle = "使用规范与健康免责说明", trailing = "▸") { onOpenUserAgreement() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.Lock, title = "隐私政策", subtitle = "数据只存本机·匿名统计可关", trailing = "▸") { onOpenPrivacyPolicy() }
+            InsetDivider(52)
+            SettingSwitchRow(
+                icon = Icons.Outlined.QueryStats,
+                title = "匿名使用统计",
+                subtitle = "帮助我们改进产品，不上报你的饭菜和健康信息",
+                checked = analyticsEnabled,
+                onCheckedChange = { vm.setAnalyticsEnabled(it) },
+            )
         }
 
         InsetGroup(title = "关于") {

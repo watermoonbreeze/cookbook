@@ -81,8 +81,9 @@ object PreferenceKeys {
 
     // [AI生成] 阶段3 匿名统计：是否已同意匿名使用统计。**默认关**(首启询问式·最强隐私姿态)。关闭时埋点抽象层统一拦截、绝不上报。
     const val ANALYTICS_ENABLED = "analytics_enabled"
-    // [AI生成] 阶段3 匿名统计：首启是否已展示过"匿名统计同意"告知(展示过即不再自动弹·仍可设置里改)。
-    const val ANALYTICS_CONSENT_SHOWN = "analytics_consent_shown_v1"
     // [AI生成] 阶段3 匿名统计：匿名标识(首启本地随机 UUID·不用任何设备硬标识·卸载重装即换新·绝不可复原到个人)。
     const val ANALYTICS_UUID = "analytics_uuid"
+
+    // [AI生成] 阶段3-c 合规：是否已同意《用户协议》《隐私政策》(首启弹窗·未同意不放行·合规 gate)。默认未同意。
+    const val PRIVACY_AGREED = "privacy_agreed_v1"
 }
