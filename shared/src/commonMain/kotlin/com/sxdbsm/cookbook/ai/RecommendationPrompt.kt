@@ -24,6 +24,8 @@ object RecommendationPrompt {
         style: RecommendationStyle = RecommendationStyle.DEFAULT,
         preferenceScores: Map<Long, Double> = emptyMap(),
         nutritionBalanceScores: Map<Long, Double> = emptyMap(),
+        // [AI生成] R2:用户常吃菜系(口味汇总·top-N)。喂给云端做口味对齐;空则不喂(向后兼容)。
+        tasteCuisines: List<String> = emptyList(),
     ): LlmRequest {
         val system = buildString {
             append("你是家庭饮食助手，帮慢性病用户用现有食材决定下一餐吃什么。")
@@ -40,6 +42,10 @@ object RecommendationPrompt {
                     RecommendationStyle.BALANCED -> "综合权衡口味、营养与多样性。"
                 },
             )
+            // [AI生成] R2:口味汇总——把用户常吃菜系轻度告知模型对齐;偏『新鲜』风格用户想换口味故不喂(避免矛盾)。
+            if (tasteCuisines.isNotEmpty() && style != RecommendationStyle.FRESH) {
+                append("用户平时爱吃").append(tasteCuisines.joinToString("、")).append("口味，同等条件下可适当多推这类，但仍要保证营养和多样、别都堆同一个菜系。")
+            }
             if (constraints.labels.isNotEmpty()) {
                 append("用户有健康档案，请优先遵循《中国居民膳食指南》等权威膳食建议（如三高少盐少油、痛风低嘌呤、糖尿病低GI），")
                 append("并严格遵守候选上标注的「利调养/注意限量」——这些是硬约束，不得违背。")

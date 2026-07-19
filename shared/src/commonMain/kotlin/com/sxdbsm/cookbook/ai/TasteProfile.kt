@@ -25,6 +25,10 @@ data class TasteProfile(
     /** 无任何历史信号 → 画像为空：matchScore 恒 0，口味因子中性（向后兼容）。[AI生成] */
     val isEmpty: Boolean get() = maxCuisine == 0 && maxMethod == 0 && maxMain == 0
 
+    /** 最常吃的前 N 个菜系(按频次降序·空则空列表)。[AI生成] R2:喂云端 prompt 做口味汇总。 */
+    fun topCuisines(limit: Int = 1): List<String> =
+        cuisineFreq.entries.sortedByDescending { it.value }.take(limit.coerceAtLeast(0)).map { it.key }
+
     /**
      * 候选菜与口味画像的匹配度 [0,1]。[AI生成]
      *

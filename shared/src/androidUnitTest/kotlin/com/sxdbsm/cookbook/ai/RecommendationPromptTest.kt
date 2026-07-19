@@ -39,4 +39,23 @@ class RecommendationPromptTest {
         // 没吃过的菜不带近吃标签
         assertTrue(!req.user.substringAfter("凉拌黄瓜").substringBefore("\n").contains("吃过"))
     }
+
+    @Test
+    fun `R2_口味汇总常吃菜系喂system_偏新鲜不喂空不喂`() {
+        // 有口味 + 非新鲜风格 → system 含"爱吃川菜"
+        val withTaste = RecommendationPrompt.build(
+            listOf(cand(1, "回锅肉")), HealthConstraints(), mealCount = 3,
+            tasteCuisines = listOf("川菜", "粤菜"),
+        )
+        assertTrue(withTaste.system.contains("川菜"), "口味汇总应把常吃菜系喂给 system")
+        // 偏『新鲜』风格 → 不喂口味(避免与"换口味"矛盾)
+        val fresh = RecommendationPrompt.build(
+            listOf(cand(1, "回锅肉")), HealthConstraints(), mealCount = 3,
+            style = RecommendationStyle.FRESH, tasteCuisines = listOf("川菜"),
+        )
+        assertTrue(!fresh.system.contains("平时爱吃"), "偏新鲜不喂口味汇总")
+        // 空口味 → 不喂(向后兼容)
+        val empty = RecommendationPrompt.build(listOf(cand(1, "回锅肉")), HealthConstraints(), mealCount = 3)
+        assertTrue(!empty.system.contains("平时爱吃"), "无口味历史不喂")
+    }
 }

@@ -61,6 +61,7 @@ class RecommendationOrchestrator(
             style = input.style,
             preferenceScores = input.preferenceScores,
             nutritionBalanceScores = input.nutritionBalanceScores,
+            tasteCuisines = input.tasteProfile.topCuisines(2), // [AI生成] R2:口味汇总喂云端(常吃前2菜系·空则不喂)
         )
         val raw = runCatching { runtime.complete(prompt) }.getOrNull()?.getOrNull()
         val modelSuggestions = raw
