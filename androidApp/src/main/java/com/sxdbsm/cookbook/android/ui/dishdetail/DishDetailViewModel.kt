@@ -107,6 +107,7 @@ class DishDetailViewModel(
         val avoid = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limit = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommend = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
+        val seasoningIds = ingredientRepo.seasoningIngredientIds() // [AI生成] B1 忌口从严:详情页忌口也放宽到非调料(主料+辅料)，需排除调料
 
         val stats = dishRepo.cookStats(dish.id)
         val nutrition = ingredientRepo.nutritionTagsOf(ingIds)
@@ -117,9 +118,9 @@ class DishDetailViewModel(
         val related = if (mainIds.isEmpty()) emptyList()
         else dishRepo.findDishesByIngredients(mainIds, limit = 12).map { it.dish }.filter { it.id != dish.id }.take(8)
 
-        // [AI修改] 剂量占比门槛：忌口/限量/调养只按**主料(isMain)**判定(与 HealthRuleEngine/gatherForPlan 一致)。
-        //   提为 val 以便 GI/嘌呤定性提示去重复用(避免同一食材两处重复)。
-        val avoidNames = dish.ingredients.filter { it.isMain && it.ingredient.id in avoid }.map { it.ingredient.name }.distinct()
+        // [AI修改] B1 忌口从严(2026-07-19)：忌口(avoid)放宽到全部非调料(主料+辅料·含即命中)，与 HealthRuleEngine/gatherForPlan 一致；
+        //   限量/调养仍守主料门槛(剂量占比·避免辅料误伤)。提为 val 以便 GI/嘌呤定性提示去重复用。
+        val avoidNames = dish.ingredients.filter { it.ingredient.id in avoid && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }.distinct()
         val limitNames = dish.ingredients.filter { it.isMain && it.ingredient.id in limit }.map { it.ingredient.name }.distinct()
         val recommendNames = dish.ingredients.filter { it.isMain && it.ingredient.id in recommend }.map { it.ingredient.name }.distinct()
 

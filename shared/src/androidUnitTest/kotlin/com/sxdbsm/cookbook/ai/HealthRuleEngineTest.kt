@@ -97,8 +97,8 @@ class HealthRuleEngineTest {
     }
 
     @Test
-    fun `剂量占比门槛_忌口限量调养只按主料_辅料命中不判定`() {
-        // [AI生成] 用户 2026-07-16：克数极少的配料不该主导忌口/调养定性。
+    fun `B1_忌口从严含辅料_限量调养仍只按主料`() {
+        // [AI修改] 用户 2026-07-19 B1 忌口从严：忌口放宽到全部非调料(主料+辅料),漏判代价高;限量/调养仍守主料(剂量·辅料误伤代价高)。
         // 「咸肉炒木耳娃娃菜」：咸肉(主料)、木耳(辅料 50g)、娃娃菜(主料)。
         val dish = RuleDish(
             1, "咸肉炒木耳娃娃菜",
@@ -106,20 +106,20 @@ class HealthRuleEngineTest {
         )
         val pantry = setOf(101L, 201L, 102L)
 
-        // 咸肉(主料)+木耳(辅料)都在忌口集：只按主料判 → 只标咸肉，木耳(辅料)不计。
+        // 咸肉(主料)+木耳(辅料)都在忌口集：忌口从严 → 两个都标(辅料木耳也算,该避的别漏)。
         val avoid = engine.evaluate(
             listOf(dish), pantry,
             HealthConstraints(avoidIngredientIds = setOf(101, 201)),
         ).first()
-        assertEquals(listOf("咸肉"), avoid.avoidNames, "只按主料判忌口，辅料木耳不计入")
+        assertEquals(setOf("咸肉", "木耳"), avoid.avoidNames.toSet(), "忌口从严:辅料木耳也计入")
 
-        // 木耳(辅料)命中限量/调养 → 均不计入。
+        // 木耳(辅料)命中限量/调养 → 仍均不计入(限量/调养守主料门槛,防辅料误伤)。
         val secHit = engine.evaluate(
             listOf(dish), pantry,
             HealthConstraints(limitIngredientIds = setOf(201), recommendIngredientIds = setOf(201)),
         ).first()
-        assertTrue(secHit.limitHits.isEmpty(), "辅料木耳限量不计入")
-        assertTrue(secHit.recommendHits.isEmpty(), "辅料木耳调养不计入")
+        assertTrue(secHit.limitHits.isEmpty(), "辅料木耳限量不计入(守主料)")
+        assertTrue(secHit.recommendHits.isEmpty(), "辅料木耳调养不计入(守主料)")
 
         // 主料娃娃菜命中调养 → 计入。
         val mainHit = engine.evaluate(
