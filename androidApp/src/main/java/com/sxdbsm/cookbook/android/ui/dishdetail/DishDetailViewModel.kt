@@ -142,6 +142,15 @@ class DishDetailViewModel(
         //   守物理隔离(不接色系墙)、免责(仅供参考·非医嘱由 UI 承接)。评估只读。
         val verdicts = memberHealth.evaluateAllMembers(dish)
 
+        // [AI生成] 病种切换解读视角(商业#3):按登记病种把本菜关键营养指标解读成数值+占比+分级/定性。
+        //   复用 conditions/nutritionEstimate/highGi/highPurine(已算好)+NutritionLevelEvaluator 阈值常量;吸收并替代下方散落的 GI/嘌呤行。
+        val conditionInsights = com.sxdbsm.cookbook.domain.NutritionInterpreter.forConditions(
+            conditions = conditions,
+            nutrition = nutritionEstimate,
+            highGiNames = highGiNames,
+            highPurineNames = highPurineNames,
+        )
+
         return DishInsights(
             usingPantry = usingPantry,
             purchaseNames = purchase.distinct(),
@@ -158,6 +167,7 @@ class DishDetailViewModel(
             highGiNames = highGiNames, // [AI生成] 高GI主料(仅糖尿病·已去重 care 覆盖的)
             highPurineNames = highPurineNames, // [AI生成] 高嘌呤主料(仅痛风·已去重 care 覆盖的)
             verdicts = verdicts, // [AI生成] 成员化红绿灯:每位家庭成员一条(商业#1)
+            conditionInsights = conditionInsights, // [AI生成] 病种切换解读视角:每登记病种一个指标块(商业#3)
         )
     }
 }
@@ -176,9 +186,11 @@ data class DishInsights(
     val nutritionTags: List<String>,
     val nutritionEstimate: com.sxdbsm.cookbook.domain.model.DishNutrition? = null, // [AI生成] 营养估算(热量+宏量+覆盖率)
     val related: List<com.sxdbsm.cookbook.domain.model.DishMini> = emptyList(),
+    // [AI修改] 商业#3后:UI 不再直接展示这两个字段(已被"关注指标"病种块吸收·见 conditionInsights);保留供调试/Phase2 列表徽章复用。
     val highGiNames: List<String> = emptyList(), // [AI生成] P2 高GI主料(仅登记糖尿病·已去重 care 覆盖，GI≥70 FAO/WHO)
     val highPurineNames: List<String> = emptyList(), // [AI生成] P4 高嘌呤主料(仅登记痛风·已去重 care 覆盖，WS/T560 定性)
     val verdicts: List<com.sxdbsm.cookbook.domain.model.MemberDishVerdict> = emptyList(), // [AI生成] 成员化红绿灯:每位家庭成员对本菜的适宜度(商业#1)
+    val conditionInsights: List<com.sxdbsm.cookbook.domain.ConditionInsight> = emptyList(), // [AI生成] 病种切换解读视角:每登记病种一个关键指标块(商业#3)
 ) {
     /** 当前库存能否直接做（在用库存且无采购无缺料）。 */
     val canCook: Boolean get() = usingPantry && purchaseNames.isEmpty() && shortageNames.isEmpty()

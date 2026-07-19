@@ -17,7 +17,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
+import com.sxdbsm.cookbook.domain.ConditionInsight
+import com.sxdbsm.cookbook.domain.MetricTone
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -183,10 +187,11 @@ fun DishDetailScreen(
             LaunchedEffect(d) { vm.loadInsights(d) } // [AI修改] key 用整个 d：同菜编辑后(id不变)洞察/相关菜品也重算。
             LaunchedEffect(d.id) { vm.loadFavorite(d.id) } // [AI生成] B1：加载收藏态
             LaunchedEffect(d.id) { vm.loadDisliked(d.id) } // [AI生成] §9.20：加载"不再推荐"态
-            // [AI生成] 成员化红绿灯(商业#1)：家庭成员≥2 时显"适合谁吃"逐人卡，并替代下方全家并集适宜性行(避免重复)。
+            // [AI生成] 详情页健康信息按维度分工递进：对谁(红绿灯#1)→关键指标量(病种视角#3)→状态(库存/记录)。
             vm.insights?.let {
                 val showVerdicts = it.verdicts.size >= 2
-                if (showVerdicts) FamilyVerdictSection(it.verdicts)
+                if (showVerdicts) FamilyVerdictSection(it.verdicts) // 成员化红绿灯#1:对谁宜/不宜
+                ConditionInsightsSection(it.conditionInsights) // 病种切换解读视角#3:整菜关键指标数值/定性
                 DishInsightsSection(it, suppressGlobalVerdict = showVerdicts)
             }
 
@@ -453,6 +458,90 @@ private fun Dot(color: androidx.compose.ui.graphics.Color) {
 }
 
 /**
+ * 病种切换解读视角"关注指标"区块（商业#3）。[AI生成 §9.26]
+ *
+ * 按登记病种显该菜关键营养指标：钠/饱脂/胆固醇给数值+占每日%+分级，GI/嘌呤守定性(不给占比·红线)，钾/纤维正向克制。
+ * 1-2 病种纵向平铺(带小标题)、≥3 病种上 `SegmentedControl` 切换(省版面)。缺数据显"暂无数据"不显 0。
+ * 吸收并替代原状态卡里散落的 GI/嘌呤定性行(去重)。守物理隔离(不接色系墙)+免责(下方状态卡承接·同屏一次)。
+ */
+@Composable
+private fun ConditionInsightsSection(insights: List<ConditionInsight>) {
+    if (insights.isEmpty()) return
+    val ext = ExtendedColorsHolder.current
+    FormFieldLabel("关注指标", topPadding = 18.dp, bottomPadding = 8.dp)
+    InsetGroup {
+        Column(Modifier.padding(vertical = 4.dp)) {
+            if (insights.size >= 3) {
+                // ≥3 病种(三高等)平铺过长→切换器;粘性记住上次选的病种。
+                var selected by rememberSaveable { mutableStateOf(0) }
+                val idx = selected.coerceIn(0, insights.size - 1)
+                SegmentedControl(
+                    options = insights.map { it.title.substringBefore(" · ") },
+                    selectedIndex = idx,
+                    onSelect = { selected = it },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                )
+                ConditionBlock(insights[idx], ext, showTitle = false)
+            } else {
+                insights.forEachIndexed { i, ci ->
+                    if (i > 0) InsetDivider(startIndent = 16)
+                    ConditionBlock(ci, ext, showTitle = true)
+                }
+            }
+            // [AI生成] copywriter:区块级免责锚点(确保每病种块页面上有免责·尤其钠/纤维正向指标)。
+            Text(
+                "关键指标为估算参考，仅供参考 · 非医嘱",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+        }
+    }
+}
+
+/** 单个病种指标块：小标题 + 指标行(色点+名+数值/分级) + 定性命中注脚 + 覆盖率/口径脚注。[AI生成] */
+@Composable
+private fun ConditionBlock(
+    ci: ConditionInsight,
+    ext: com.sxdbsm.cookbook.android.ui.theme.ExtendedColors,
+    showTitle: Boolean,
+) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+        if (showTitle) {
+            Text(ci.title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(6.dp))
+        }
+        ci.metrics.forEach { m ->
+            // 负向 HIGH/MID 用 danger/warning 强调,正向/中性用灰(不用绿点·防"绿=健康"误导)。
+            val emphasize = m.tone == MetricTone.HIGH || m.tone == MetricTone.MID
+            val dotColor = when (m.tone) {
+                MetricTone.HIGH -> ext.danger
+                MetricTone.MID -> ext.warning
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 3.dp)) {
+                Dot(dotColor)
+                Spacer(Modifier.width(10.dp))
+                Text(m.label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.width(56.dp))
+                Text(
+                    m.text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (emphasize) dotColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+        if (ci.hitNote.isNotEmpty()) {
+            Text(ci.hitNote, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
+        }
+        val footer = listOf(ci.coverageNote, ci.caveat).filter { it.isNotEmpty() }.joinToString(" · ")
+        if (footer.isNotEmpty()) {
+            Text(footer, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
+        }
+    }
+}
+
+/**
  * 菜品详情"状态"卡：库存可做/缺料/采购、健康适宜、做过次数、营养概要。[AI生成]
  * [AI修改] 成员化红绿灯:suppressGlobalVerdict=true 时隐藏"全家并集适宜性行"(已由上方逐人红绿灯更精确表达)，
  *   GI/嘌呤定性行/库存/记录/营养/免责仍保留(正交维度)。
@@ -482,14 +571,7 @@ private fun DishInsightsSection(insights: DishInsights, suppressGlobalVerdict: B
                     insights.recommendNames.isNotEmpty() -> InsightLine("✅ 推荐", "含推荐食材：${insights.recommendNames.joinToString("、")}", MaterialTheme.colorScheme.primary) // [AI修改] 文案:去"有益"健康断言,只陈述含推荐食材(守免责)
                     else -> InsightLine("💚 健康", "无忌口 / 限量", MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 文案:去"适合"个人适宜性断言(守免责·非医嘱)
                 }
-                // [AI生成] P4/P2：GI/嘌呤定性补充(care 忌口的 data-driven 补漏，独立维度可与忌口并存；已去重 care 覆盖的食材)。
-                //   仅登记对应病种才非空(VM 纯函数已 gate)；成分陈述非整菜定性(规避 GL 陷阱)，个人视角非医嘱。
-                if (insights.highPurineNames.isNotEmpty()) {
-                    InsightLine("🍖 嘌呤", "偏高：${insights.highPurineNames.joinToString("、")} · 痛风建议避免", MaterialTheme.colorScheme.error)
-                }
-                if (insights.highGiNames.isNotEmpty()) {
-                    InsightLine("📈 升糖", "高GI：${insights.highGiNames.joinToString("、")} · 糖尿病可换低GI或控量", MaterialTheme.colorScheme.primary)
-                }
+                // [AI修改] 商业#3:原散落的"🍖嘌呤/📈升糖"定性行已被上方"关注指标"病种块吸收(数值+占比+定性统一呈现·去重),此处不再单列。
             }
             val cookText = if (insights.cookedCount <= 0) "还没做过" else buildString {
                 append("做过 ${insights.cookedCount} 次")

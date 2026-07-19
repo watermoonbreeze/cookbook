@@ -379,3 +379,14 @@ fun PrimaryTabRow(
 - **视觉克制防焦虑**：只用小色点承载颜色、**不铺整行底色**(避免警报墙)；全绿收敛为一行"这道菜，家里人都适合"正向反馈(明确"无雷"·安心复用)。色点必配文字等级词(不靠颜色单独表意·无障碍)。
 - **红线**：**物理隔离**——不接色系墙营养级别(那是结构多样性)；评估**只读**不改数据；无健康约束成员一律绿。**记菜/选菜列表逐项徽章为 Phase 2 后续**(列表大批量评估需缓存化)。
 - **落地**：shared `MemberDishVerdict`(model+纯 of)+`MemberDishHealthUseCase`+`RecommendationDataSource.gatherConstraintsForMember`(单测 8 例)；androidApp `DishDetailViewModel`(产 verdicts)+`DishDetailScreen`(`FamilyVerdictSection`/`MemberVerdictRow`/`Dot`)。复用 `InsetGroup`/`InsetDivider`/`ExtendedColors`，零新组件。
+
+### 9.26 病种切换解读视角"关注指标"块（同一道菜按病种看关键指标·与 §9.25 分维度去重）
+> [AI生成 2026-07-20] 商业#3 护城河。菜品详情页"关注指标"块：按**登记病种**显该菜关键营养**数值/定性**（糖尿病看 GI / 痛风看嘌呤 / 高血压看钠+钾 / 高血脂看饱脂+胆固醇）。与 §9.25 红绿灯分工——**红绿灯=对谁(人)宜否、忌口行=哪个食材、病种块=整菜关键指标的量**，三处各答一问、不重复。
+
+- **详情页健康信息按维度分工递进**：`FamilyVerdictSection`(#1 对谁)→`ConditionInsightsSection`(#3 关键指标量)→`DishInsightsSection`(库存/记录)。**删掉原状态卡里散落的 🍖嘌呤/📈升糖定性行**(被病种块吸收=去重核心动作)。
+- **切换器按病种数自适应**：登记 0→整块不显；**1-2 病种纵向平铺**(各带小标题"高血压 · 钠")；**≥3(三高)才上 `SegmentedControl`**(平铺过长)+`rememberSaveable` 记选中。**只显自家登记病种、不列全四种**(列没得的病=噪音+暗示患病·违免责)。
+- **数值 vs 定性因指标而异·守红线**：钠/饱脂/胆固醇有可加数值→给"约 X · **占每日上限** Y% · 偏高/略高"(分级 `WARN_RATIO`≥1偏高/`MID_RATIO`≥0.7略高)；**嘌呤/GI 坚持定性、绝不给占比**(嘌呤三级无国标·GI 是浓度不可加·给占比=自造标准=红线)——只陈述"含高 GI 主料 X"/"含高嘌呤食材 X"。**阈值全复用 `NutritionLevelEvaluator` 常量**(2400/20g/300mg/3600/25g)不新造。
+- **缺数据留白·不显 0**：某指标合计≤0 显"暂无数据"(0 会被误读"不含=好")。**正向钾/纤维克制**：仅达建议量八成才显、**灰点非绿点**(防"绿=健康"误导)、排负向之下、缺则不显。
+- **口径标注齐全**：嘌呤"非国标 · 惯例口径"、饱脂胆固醇"建议值 · 非强制"、GI"GI 为 FAO/WHO 口径"(块级 caveat)；**块底一句"关键指标为估算参考·仅供参考·非医嘱"**(确保每病种块有免责锚点·尤其钠/纤维正向指标)。措辞中性"偏高/略高/较充足"、命中给温和建议("建议换低 GI 或减量"/"痛风建议少吃"不用"避免/超标/危险")。西文缩写两侧留空格(高 GI)。
+- **视觉**：`InsetGroup("关注指标")`+每指标行 10dp 语义色点(danger/warning/灰)+名(56dp)+数值文本，复用 §9.25 `Dot`/`ExtendedColors`，零新组件。位置在红绿灯之后、状态卡之前(健康信息聚成一区)。
+- **落地**：shared `NutritionInterpreter`(纯 `forConditions`·`ConditionInsight`/`ConditionMetric`/`MetricTone`·单测 7 例)；`DishDetailViewModel`(派生 conditionInsights)+`DishDetailScreen`(`ConditionInsightsSection`/`ConditionBlock`·删 🍖📈 行)。无 DB/迁移。**Phase2**：列表逐项病种徽章(需缓存化·与 §9.25 Phase2 同批)。
