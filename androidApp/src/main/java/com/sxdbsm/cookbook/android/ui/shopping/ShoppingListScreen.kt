@@ -144,6 +144,7 @@ fun ShoppingListScreen(
                                     checked = k in state.checked,
                                     servings = state.servings[k] ?: 1,
                                     stocked = k in state.stocked,
+                                    avoidedByNames = state.avoidedBy[k] ?: emptyList(),
                                     onToggle = { vm.toggleChecked(k) },
                                     onServingDelta = { d -> vm.changeServing(k, d) },
                                 )
@@ -166,6 +167,7 @@ fun ShoppingListScreen(
                                     checked = k in state.checked,
                                     servings = state.servings[k] ?: 1,
                                     stocked = k in state.stocked,
+                                    avoidedByNames = state.avoidedBy[k] ?: emptyList(),
                                     onToggle = { vm.toggleChecked(k) },
                                     onServingDelta = { d -> vm.changeServing(k, d) },
                                 )
@@ -213,6 +215,7 @@ private fun ShoppingRow(
     checked: Boolean,
     servings: Int,
     stocked: Boolean,
+    avoidedByNames: List<String> = emptyList(), // [AI生成] #4:忌口该食材的家人名(非空则显提醒)
     onToggle: () -> Unit,
     onServingDelta: (Int) -> Unit,
 ) {
@@ -240,6 +243,14 @@ private fun ShoppingRow(
                 if (item.dates.isNotEmpty()) append(" · 最近 ${item.dates.first()}")
             }
             Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            // [AI生成] #4:家人忌口提醒——某家人不吃这个(为其他家人采购),温和告知不劝阻。
+            if (avoidedByNames.isNotEmpty()) {
+                Text(
+                    "${avoidedByNames.joinToString("、")} 忌口 · 为其他家人采购",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder.current.warning,
+                )
+            }
         }
         // [AI生成] 份数 −N+：默认1，入库按此份数。已入库则隐藏。
         if (!stocked) {

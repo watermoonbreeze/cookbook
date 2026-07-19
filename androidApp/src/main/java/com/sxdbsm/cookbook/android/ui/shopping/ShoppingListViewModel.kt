@@ -25,6 +25,8 @@ import kotlinx.coroutines.launch
 class ShoppingListViewModel(
     private val repo: ShoppingListRepository,
     private val pantryRepo: PantryRepository, // [AI生成] 采购勾选 → 按份数入库。
+    private val familyRepo: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI生成] #4:按家人忌口标注(哪些采购食材是某家人不吃的)。
+    private val recoDataSource: com.sxdbsm.cookbook.ai.RecommendationDataSource, // [AI生成] #4:复用逐成员个人忌口聚合。
 ) : ViewModel() {
 
     data class UiState(
@@ -33,6 +35,7 @@ class ShoppingListViewModel(
         val checked: Set<String> = emptySet(), // [AI修改] 已勾选项的 key(按 keyOf:有 id 用 id、否则名)，防同名多 id 串。
         val servings: Map<String, Int> = emptyMap(), // [AI修改] 各项计划采购份数(key→份数)，缺省视为1
         val stocked: Set<String> = emptySet(), // [AI修改] 本次已入库项的 key(划掉灰显)
+        val avoidedBy: Map<String, List<String>> = emptyMap(), // [AI生成] #4:项key→忌口该食材的家人名(个人忌口·购买提醒"给其他家人采购")
         val toast: String? = null, // [AI生成] 一次性提示(入库结果/请先勾选)
     )
 
@@ -53,7 +56,17 @@ class ShoppingListViewModel(
             // [AI修改] N1：份数默认按该食材在未来餐食中的实际所需(mealCount)预填，用户可再调，而非都默认1。
             // 刷新=重新拉取并重置所有临时态(勾选/已入库/提示)。
             val servings = items.associate { keyOf(it) to it.mealCount.coerceAtLeast(1) }
-            _state.value = UiState(loading = false, items = items, servings = servings)
+            // [AI生成] #4:按家人"个人忌口"标注——逐成员取个人忌口食材 id(skipGi 省 GI 全表),交叉采购项 id。
+            //   只用个人忌口(明确"不吃")、不含病种"不宜"(避免痛风等一标一大片噪音);null-id 项无法按 id 匹配→跳过。
+            val avoidSets = familyRepo.listMembers().map { m ->
+                m.name to recoDataSource.gatherConstraintsForMember(m, skipGi = true).constraints.personalAvoidIngredientIds
+            }
+            val avoidedBy = items.mapNotNull { item ->
+                val id = item.ingredientId ?: return@mapNotNull null
+                val who = avoidSets.filter { id in it.second }.map { it.first }
+                if (who.isEmpty()) null else keyOf(item) to who
+            }.toMap()
+            _state.value = UiState(loading = false, items = items, servings = servings, avoidedBy = avoidedBy)
         }
     }
 

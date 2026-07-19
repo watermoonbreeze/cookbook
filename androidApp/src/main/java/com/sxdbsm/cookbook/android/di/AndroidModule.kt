@@ -72,7 +72,7 @@ val androidModule = module {
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
     viewModel { com.sxdbsm.cookbook.android.ui.nutrition.NutritionTableViewModel(get()) } // [AI生成] 食材营养表(全量营养总览)。
     viewModel { com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsViewModel(get()) } // [AI修改] 身体数据编辑移入家庭档案，不再需要 FamilyRepository。
-    viewModel { com.sxdbsm.cookbook.android.ui.shopping.ShoppingListViewModel(get(), get()) } // [AI生成] 采购清单聚合 + 按份数入库。
+    viewModel { com.sxdbsm.cookbook.android.ui.shopping.ShoppingListViewModel(get(), get(), get(), get()) } // [AI生成] 采购清单聚合 + 按份数入库 + 按家人忌口标注(#4)。
     viewModel { com.sxdbsm.cookbook.android.ui.pairing.FreePairingViewModel(get(), get()) } // [AI生成] 食材自由搭配(离线规则)+存为菜品(get()=IngredientRepository)。
     single { com.sxdbsm.cookbook.android.sync.SelectiveSyncBundler(get()) } // [AI生成] 选择性同步打包/合并。
     viewModel { com.sxdbsm.cookbook.android.ui.sync.DeviceSyncViewModel(get(), get()) } // [AI修改] 双设备同传(整库替换/选择性合并)。
