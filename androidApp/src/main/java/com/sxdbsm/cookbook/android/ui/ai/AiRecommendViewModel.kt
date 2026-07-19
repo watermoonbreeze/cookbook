@@ -38,6 +38,18 @@ class AiRecommendViewModel(
     private var started = false // [AI生成] 进页面只判定一次，避免重复。
     // [AI生成] R6第一批:缓存上次推荐结果——药膳过滤只是本地重排(mapResult),不该全量 gather+云端。踩菜时失效(见 setDisliked)。
     private var cachedResult: RecommendationResult? = null
+    // [AI生成] 换一换缓存(阶段1):缓存上次 gather 的候选输入。同(mode/餐次/窗口/风格)时换一换复用(省18-22 SQL),
+    //   但**忌口约束每次重取覆盖**(gatherConstraints·健康档案别页可改·红线);key 不同或踩菜(setDisliked)失效。
+    private var cachedInput: com.sxdbsm.cookbook.ai.model.RecommendationInput? = null
+    private var cachedInputKey: GatherKey? = null
+
+    /** gather 候选缓存的失效键：只有这四项变了才需重新 gather(忌口不在内·每次重取)。[AI生成] */
+    private data class GatherKey(
+        val mode: RecommendMode,
+        val slot: com.sxdbsm.cookbook.ai.MealSlot,
+        val window: Int,
+        val style: com.sxdbsm.cookbook.ai.RecommendationStyle,
+    )
 
     /**
      * 进入页面时调用（仅一次）。[AI生成]
@@ -143,7 +155,20 @@ class AiRecommendViewModel(
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
             runCatching {
-                val input = dataSource.gather(mode, mealSlot = slot, recentWindowDays = window)
+                // [AI生成] 换一换缓存(阶段1)：同(mode/餐次/窗口/风格)时复用上次 gather 的候选(换一换只变 rotation,不改候选),
+                //   省 18-22 SQL;但**忌口/病种约束每次用 gatherConstraints() 重取覆盖**(健康档案别页可改·红线:不能用旧忌口)。
+                //   key 不同(切餐次/窗口/风格/mode)或踩菜(cachedInput 置空)则重新全量 gather。
+                val key = GatherKey(mode, slot, window, style)
+                val cached = cachedInput
+                val input = if (cached != null && cachedInputKey == key) {
+                    val fresh = dataSource.gatherConstraints()
+                    cached.copy(constraints = fresh.constraints, conditions = fresh.conditions, giByName = fresh.giByName)
+                } else {
+                    dataSource.gather(mode, mealSlot = slot, recentWindowDays = window).also {
+                        cachedInput = it
+                        cachedInputKey = key
+                    }
+                }
                 orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
             }.onSuccess { result ->
                 cachedResult = result // [AI生成] R6:缓存供药膳本地重排复用(免全量 gather+云端)
@@ -182,6 +207,7 @@ class AiRecommendViewModel(
             // [AI修改] 与详情页一致:DB 写成功才乐观更新 UI 态(本地写极少失败,失败则不改灰态,避免态与库不一致)。
             runCatching { dataSource.setDishDisliked(id, disliked) }.onSuccess {
                 cachedResult = null // [AI生成] R6失效守卫:踩菜是唯一需即时反映的写路径→缓存失效,下次药膳过滤走全量 gather(已过滤踩菜)避免脏读
+                cachedInput = null // [AI生成] 换一换缓存(阶段1)失效:踩菜改候选集(gather 的 dislikedIds 过滤),缓存候选须作废重 gather
                 state = state.copy(
                     dishItems = state.dishItems.map { if (it.id == id) it.copy(disliked = disliked) else it },
                     suggestionGroups = state.suggestionGroups.map { g ->

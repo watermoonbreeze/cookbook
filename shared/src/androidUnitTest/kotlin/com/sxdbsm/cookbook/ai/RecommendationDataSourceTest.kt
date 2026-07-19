@@ -248,4 +248,46 @@ class RecommendationDataSourceTest {
         )
         Unit
     }
+
+    @Test
+    fun `换一换缓存红线_gatherConstraints实时反映健康档案忌口_且与gather一致`() = runBlocking {
+        // [AI生成] 换一换缓存(阶段1)红线守护：换一换复用缓存候选时,忌口约束改由 gatherConstraints() **每次重取覆盖**。
+        //   本测证明 gatherConstraints() **实时反映别页(健康档案)新设的忌口**——否则缓存的旧忌口会让新设的忌口菜被推进一餐(红线)。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val ds = RecommendationDataSource(
+            db, PantryRepository(db), DishRepository(db),
+            com.sxdbsm.cookbook.data.repository.FamilyRepository(db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db)),
+            IngredientRepository(db), com.sxdbsm.cookbook.data.repository.NutritionRepository(db),
+        )
+        val healthRepo = HealthProfileRepository(db)
+
+        // 未设健康档案：无关注标签；gather 与 gatherConstraints 忌口一致(抽取行为等价)。
+        val before = ds.gatherConstraints()
+        assertTrue(before.constraints.labels.isEmpty(), "未设健康档案时无关注标签")
+        assertEquals(
+            before.constraints.avoidIngredientIds,
+            ds.gather(RecommendMode.PANTRY).constraints.avoidIngredientIds,
+            "gather 与 gatherConstraints 忌口一致(未设档案)",
+        )
+
+        // 启用一个健康档案(痛风/高尿酸·含忌口食材)。
+        val crowd = healthRepo.listAllCrowdTypes().first { it.name.contains("痛风") || it.name.contains("尿酸") }
+        healthRepo.add(crowd.id)
+
+        // 红线:再取 constraints 立即反映新设忌口(=换一换缓存复用候选时重取忌口能拦住新设的忌口菜)。
+        val after = ds.gatherConstraints()
+        assertTrue(after.constraints.labels.isNotEmpty(), "启用健康档案后关注标签应非空(gatherConstraints 实时反映别页改的健康档案·红线)")
+        assertTrue(
+            after.constraints.avoidIngredientIds.isNotEmpty() || after.constraints.limitIngredientIds.isNotEmpty(),
+            "痛风档案应带忌口/限量食材(care 规则实时生效)",
+        )
+        // 缓存复用时"覆盖 constraints"等价于全量 gather 的 constraints。
+        assertEquals(
+            after.constraints.avoidIngredientIds,
+            ds.gather(RecommendMode.PANTRY).constraints.avoidIngredientIds,
+            "gather 与 gatherConstraints 忌口一致(启用档案后)——缓存复用覆盖等价全量",
+        )
+        Unit
+    }
 }

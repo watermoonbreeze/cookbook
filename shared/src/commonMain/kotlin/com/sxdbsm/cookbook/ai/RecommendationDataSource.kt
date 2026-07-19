@@ -99,21 +99,9 @@ class RecommendationDataSource(
             )
         }
 
-        // 忌口约束：启用的健康档案 → care 分类 → 调养规则。
-        val careCategoryIds = familyRepo.allEnabledCareIds()
-        val careIngredients = if (careCategoryIds.isEmpty()) emptyList() else ingredientRepo.listByCareCategories(careCategoryIds)
-        val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
-        val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
-        val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
-        // [AI生成] v29:个人忌口(全家并集分类→食材ids·含调料·含即命中·与健康忌口正交)。空守卫:listByCategories 传空会返全部,须先判空。
-        val personalAvoidCatIds = familyRepo.allPersonalAvoidCategoryIds()
-        val personalAvoidIds = if (personalAvoidCatIds.isEmpty()) emptySet()
-            else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
-        val careCategoryNames = if (careCategoryIds.isEmpty()) emptyList() else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList()
-        val labels = careCategoryNames.map { "关注:$it" } // 粗标签给模型(不含敏感明细)
-        // [AI生成] 慢病数值软约束:care 分类名→病种集(与今日卡/详情页同口径 fromCareName)；giByName 仅登记糖尿病才查(GI 只对糖尿病;gate 省无谓全表查)。
-        val conditions = careCategoryNames.flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }.toSet()
-        val giByName = if (com.sxdbsm.cookbook.domain.HealthCondition.DIABETES in conditions) nutritionRepo.giByName() else emptyMap()
+        // [AI修改] 换一换缓存(阶段1)：忌口/病种约束抽为 gatherConstraints()——健康档案在**别页可改**，
+        //   换一换复用缓存候选时 constraints 须**每次重取覆盖**(红线：不能用缓存的旧忌口，否则新设的忌口菜会被推进一餐)。
+        val reco = gatherConstraints()
 
         // [AI修改] B2：改为**日期窗口**去重(默认一周)——取窗口内吃过的菜及其距今天数，用于排最后+标注"N天前吃过"。
         val sinceDate = DateTime.formatDate(DateTime.plusDays(today, -recentWindowDays.coerceAtLeast(1)))
@@ -196,13 +184,7 @@ class RecommendationDataSource(
         RecommendationInput(
             dishes = dishes,
             pantryIngredientIds = pantryIds,
-            constraints = HealthConstraints(
-                avoidIngredientIds = avoidIds,
-                limitIngredientIds = limitIds,
-                recommendIngredientIds = recommendIds,
-                labels = labels,
-                personalAvoidIngredientIds = personalAvoidIds, // [AI生成] v29:个人忌口(含调料·含即命中)
-            ),
+            constraints = reco.constraints, // [AI修改] 换一换缓存:忌口约束来自 gatherConstraints()(每次重取·红线)
             recentDishIds = recentDishIds,
             shortageIngredientIds = shortageIds,
             recentDishDaysAgo = recentDishDaysAgo,
@@ -210,10 +192,44 @@ class RecommendationDataSource(
             nutritionBalanceScores = nutritionBalanceScores,
             mainRepeatCounts = mainRepeatCounts,
             style = style,
-            conditions = conditions, // [AI生成] 慢病数值软约束(仅营养风格生效)
-            giByName = giByName,
+            conditions = reco.conditions, // [AI修改] 慢病数值软约束(每次重取)
+            giByName = reco.giByName,
             tasteProfile = tasteProfile, // [AI生成] 口味画像(菜系/做法/主料偏好)
             lastCookedDaysAgo = lastCookedDaysAgo, // [AI生成] 时间衰减(仅偏新鲜)
+        )
+    }
+
+    /**
+     * 只取"健康档案派生的忌口/限量/推荐 + 慢病病种/GI"约束。[AI生成] 换一换缓存(阶段1)
+     *
+     * 抽出供**换一换复用缓存候选时每次重取覆盖**：健康档案(忌口/病种)在别页可改，缓存的旧忌口不能用
+     * (红线：否则新设的忌口菜会被推进一餐)。取数很轻(care/个人忌口几条 SQL)，远小于全量 gather。
+     */
+    suspend fun gatherConstraints(): RecoConstraints = withContext(ioDispatcher) {
+        val careCategoryIds = familyRepo.allEnabledCareIds()
+        val careIngredients = if (careCategoryIds.isEmpty()) emptyList() else ingredientRepo.listByCareCategories(careCategoryIds)
+        val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
+        val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
+        val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
+        // [AI生成] v29:个人忌口(全家并集分类→食材ids·含调料·含即命中·与健康忌口正交)。空守卫:listByCategories 传空会返全部,须先判空。
+        val personalAvoidCatIds = familyRepo.allPersonalAvoidCategoryIds()
+        val personalAvoidIds = if (personalAvoidCatIds.isEmpty()) emptySet()
+            else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
+        val careCategoryNames = if (careCategoryIds.isEmpty()) emptyList() else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList()
+        val labels = careCategoryNames.map { "关注:$it" } // 粗标签给模型(不含敏感明细)
+        // [AI生成] 慢病数值软约束:care 分类名→病种集(与今日卡/详情页同口径 fromCareName)；giByName 仅登记糖尿病才查(GI 只对糖尿病;gate 省无谓全表查)。
+        val conditions = careCategoryNames.flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }.toSet()
+        val giByName = if (com.sxdbsm.cookbook.domain.HealthCondition.DIABETES in conditions) nutritionRepo.giByName() else emptyMap()
+        RecoConstraints(
+            constraints = HealthConstraints(
+                avoidIngredientIds = avoidIds,
+                limitIngredientIds = limitIds,
+                recommendIngredientIds = recommendIds,
+                labels = labels,
+                personalAvoidIngredientIds = personalAvoidIds,
+            ),
+            conditions = conditions,
+            giByName = giByName,
         )
     }
 
@@ -372,3 +388,15 @@ class RecommendationDataSource(
         private const val FAVORITE_BONUS = 0.3 // [AI生成] P2：收藏菜的偏好加成。
     }
 }
+
+/**
+ * 健康档案派生的忌口/病种约束束。[AI生成] 换一换缓存(阶段1)
+ *
+ * 供换一换复用缓存候选时**每次重取覆盖**进 RecommendationInput(constraints/conditions/giByName)——
+ * 健康档案在别页可改，缓存的旧忌口不能用(红线)。gatherConstraints() 产出本束。
+ */
+data class RecoConstraints(
+    val constraints: com.sxdbsm.cookbook.ai.model.HealthConstraints,
+    val conditions: Set<com.sxdbsm.cookbook.domain.HealthCondition>,
+    val giByName: Map<String, Double>,
+)
