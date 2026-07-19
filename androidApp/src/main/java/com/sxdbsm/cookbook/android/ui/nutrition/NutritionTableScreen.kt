@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,8 +36,17 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.ScreenRotation
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import com.sxdbsm.cookbook.android.ui.component.CapsuleButton
+import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
+import com.sxdbsm.cookbook.domain.FilterMetric
+import com.sxdbsm.cookbook.domain.NutrientBands
+import com.sxdbsm.cookbook.domain.NutrientLevel
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -119,6 +129,11 @@ fun NutritionTableScreen(
     val sortDesc by vm.sortDesc.collectAsStateWithLifecycle()
     val selectedName by vm.selectedName.collectAsStateWithLifecycle()
     var sourceOpen by remember { mutableStateOf(false) }
+    // [AI生成] 商业#7:指标分级筛选态。
+    val metric by vm.metricFilter.collectAsStateWithLifecycle()
+    val levels by vm.levelFilter.collectAsStateWithLifecycle()
+    val excludedNoData by vm.excludedNoDataCount.collectAsStateWithLifecycle()
+    var filterOpen by remember { mutableStateOf(false) }
 
     // [AI生成] 横竖屏切换：悬浮可拖动旋转按钮，点它锁横屏(表更宽、少滑动)再点回竖屏；离开页面还原竖屏。
     // Manifest 已给 MainActivity 加 configChanges，旋转不重建 Activity(Compose 重组保状态)。
@@ -192,7 +207,25 @@ fun NutritionTableScreen(
                         colors = OutlinedTextFieldDefaults.colors(),
                     )
                 },
-                actions = { IconButton(onClick = { sourceOpen = true }) { Icon(Icons.Outlined.Info, contentDescription = "数据来源") } },
+                actions = {
+                    // [AI生成] #7:指标分级筛选入口——生效时图标染 primary + 贴角小圆点(§9.4)。
+                    IconButton(onClick = { filterOpen = true }) {
+                        Box {
+                            Icon(
+                                Icons.Outlined.Tune,
+                                contentDescription = "指标分级筛选",
+                                tint = if (levels.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            if (levels.isNotEmpty()) {
+                                Box(
+                                    Modifier.align(Alignment.TopEnd).size(6.dp).clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary),
+                                )
+                            }
+                        }
+                    }
+                    IconButton(onClick = { sourceOpen = true }) { Icon(Icons.Outlined.Info, contentDescription = "数据来源") }
+                },
             )
         },
     ) { padding ->
@@ -209,8 +242,25 @@ fun NutritionTableScreen(
                             FilterChip(selected = group == g.name, onClick = { vm.setGroup(g.name) }, label = { Text(g.label) })
                         }
                     }
+                    // [AI生成] #7:分级筛选生效→显可清除摘要 chip(点✕清筛)+"另有 N 项无数据未列出"透明交代。
+                    if (levels.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            FilterChip(
+                                selected = true,
+                                onClick = { vm.clearLevelFilter() },
+                                label = { Text("${metricLabel(metric)} ${levels.sortedBy { it.ordinal }.joinToString("·") { levelLabel(it) }}") },
+                                trailingIcon = { Icon(Icons.Outlined.Close, contentDescription = "清除分级筛选", modifier = Modifier.size(16.dp)) },
+                            )
+                        }
+                    }
                     Text(
-                        "共 ${rows.size} 项 · 每100g可食部 · 点表头排序 · 横向可滑",
+                        buildString {
+                            append("共 ${rows.size} 项 · 每100g可食部 · 点表头排序 · 横向可滑")
+                            if (levels.isNotEmpty() && excludedNoData > 0) append(" · 另有 $excludedNoData 项无${metricLabel(metric)}数据")
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
@@ -305,6 +355,47 @@ fun NutritionTableScreen(
       }
     }
 
+    // [AI生成] #7:指标分级筛选弹层——SegmentedControl 选指标 + FilterChip 多选级别 + 惯例口径注脚(守红线)。
+    if (filterOpen) {
+        ModalBottomSheet(onDismissRequest = { filterOpen = false }) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 24.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("按指标筛选", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                    if (levels.isNotEmpty()) {
+                        TextButton(onClick = { vm.clearLevelFilter() }) { Text("清除") }
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                SegmentedControl(
+                    options = FilterMetric.values().map { metricLabel(it) },
+                    selectedIndex = FilterMetric.values().indexOf(metric),
+                    onSelect = { vm.setMetric(FilterMetric.values()[it]) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    NutrientLevel.values().forEach { lv ->
+                        FilterChip(
+                            selected = lv in levels,
+                            onClick = { vm.toggleLevel(lv) },
+                            label = { Text(levelLabel(lv)) },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(metricThresholdText(metric), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(metricCaveatText(metric), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(16.dp))
+                // [AI修改] copywriter:N=0 兜空态,避免"查看 0 项"点了扑空。
+                CapsuleButton(
+                    text = if (levels.isNotEmpty() && rows.isEmpty()) "换个级别试试" else "查看 ${rows.size} 项",
+                    onClick = { filterOpen = false },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+
     if (sourceOpen) {
         AlertDialog(
             onDismissRequest = { sourceOpen = false },
@@ -317,6 +408,36 @@ fun NutritionTableScreen(
             confirmButton = { TextButton(onClick = { sourceOpen = false }) { Text("知道了") } },
         )
     }
+}
+
+// [AI生成] #7:指标分级筛选 文案(阈值+口径注脚·守健康红线:钠/嘌呤标"非国标·惯例"、GI 标 FAO/WHO)。
+private fun metricLabel(m: FilterMetric): String = when (m) {
+    FilterMetric.GI -> "GI"
+    FilterMetric.SODIUM -> "钠"
+    FilterMetric.PURINE -> "嘌呤"
+}
+
+private fun levelLabel(l: NutrientLevel): String = when (l) {
+    NutrientLevel.LOW -> "低"
+    NutrientLevel.MID -> "中"
+    NutrientLevel.HIGH -> "高"
+}
+
+/** 当前指标的三级阈值说明。[AI修改] copywriter:补全"中"段区间;单位提句首(每100g);数值从 NutrientBands 常量插值(Google:防三处漂移)。 */
+private fun metricThresholdText(m: FilterMetric): String {
+    fun i(v: Double) = v.toInt()
+    return when (m) {
+        FilterMetric.GI -> "低 ≤${i(NutrientBands.GI_LOW)} / 中 ${i(NutrientBands.GI_LOW) + 1}–${i(NutrientBands.GI_HIGH) - 1} / 高 ≥${i(NutrientBands.GI_HIGH)}"
+        FilterMetric.SODIUM -> "每100g：低 ≤${i(NutrientBands.SODIUM_LOW)} / 中 ${i(NutrientBands.SODIUM_LOW) + 1}–${i(NutrientBands.SODIUM_HIGH) - 1} / 高 ≥${i(NutrientBands.SODIUM_HIGH)} mg"
+        FilterMetric.PURINE -> "每100g：低 ≤${i(NutrientBands.PURINE_LOW)} / 中 ${i(NutrientBands.PURINE_LOW) + 1}–${i(NutrientBands.PURINE_HIGH) - 1} / 高 ≥${i(NutrientBands.PURINE_HIGH)} mg"
+    }
+}
+
+/** 当前指标的口径注脚(区分国标 vs 惯例·守免责红线)。[AI修改] copywriter:措辞对齐病种视角§9.26"惯例口径·非国标";"定性"翻成人话。 */
+private fun metricCaveatText(m: FilterMetric): String = when (m) {
+    FilterMetric.GI -> "GI 为 FAO/WHO 口径 · 仅供参考"
+    FilterMetric.SODIUM -> "低钠依 GB 28050 声称；中·高为惯例口径 · 非国标 · 仅供参考"
+    FilterMetric.PURINE -> "嘌呤三级为惯例口径 · 非国标（WS/T 560 只分「宜/慎/忌」不设数值）· 仅供参考"
 }
 
 private const val SOURCE_TEXT =

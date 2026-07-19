@@ -390,3 +390,14 @@ fun PrimaryTabRow(
 - **口径标注齐全**：嘌呤"非国标 · 惯例口径"、饱脂胆固醇"建议值 · 非强制"、GI"GI 为 FAO/WHO 口径"(块级 caveat)；**块底一句"关键指标为估算参考·仅供参考·非医嘱"**(确保每病种块有免责锚点·尤其钠/纤维正向指标)。措辞中性"偏高/略高/较充足"、命中给温和建议("建议换低 GI 或减量"/"痛风建议少吃"不用"避免/超标/危险")。西文缩写两侧留空格(高 GI)。
 - **视觉**：`InsetGroup("关注指标")`+每指标行 10dp 语义色点(danger/warning/灰)+名(56dp)+数值文本，复用 §9.25 `Dot`/`ExtendedColors`，零新组件。位置在红绿灯之后、状态卡之前(健康信息聚成一区)。
 - **落地**：shared `NutritionInterpreter`(纯 `forConditions`·`ConditionInsight`/`ConditionMetric`/`MetricTone`·单测 7 例)；`DishDetailViewModel`(派生 conditionInsights)+`DishDetailScreen`(`ConditionInsightsSection`/`ConditionBlock`·删 🍖📈 行)。无 DB/迁移。**Phase2**：列表逐项病种徽章(需缓存化·与 §9.25 Phase2 同批)。
+
+### 9.27 指标分级筛选：营养表按 GI/钠/嘌呤 低中高筛（弹层选指标+多选级别）
+> [AI生成 2026-07-20] 商业#7。食材营养表加"按指标筛选"——慢病家庭按低GI/低钠/低嘌呤找"能吃的"食材。可复用范式：**多组合筛选(N指标×3级)收进弹层分层，不平铺 chip 挤正文**。
+
+- **入口+可发现性**：顶栏加 `Tune` 图标(非藏长按·§9.1)；生效时图标染 primary + 贴角 6dp 小圆点(§9.4)。点开 `ModalBottomSheet`。
+- **弹层分层**：`SegmentedControl` 选指标(GI/钠/嘌呤 单选)→ 3 枚 `FilterChip` 选级别(低/中/高 **多选**·空=不筛)→ 阈值说明 + 口径注脚 → `CapsuleButton` "查看 N 项"(选级即预览量·N=0 显"换个级别试试"兜空态)。切指标保留级别集(按新指标重筛)。
+- **正交叠加**：分级筛 ∩ 大类筛 ∩ 搜索 全 AND(低GI ∩ 谷物)；与点表头排序正交。**单指标筛**(不做跨指标交叉·低频且弹层会复杂)。
+- **摘要行**：生效时表格上方显可清除 `FilterChip`("GI 低·中" + ✕ 清筛)；"共 N 项 … · 另有 M 项无GI数据"(无数据**排除+透明计数**·不误以为筛漏)。
+- **健康红线(阈值口径)**：GI 低≤55/高≥70(FAO/WHO·有据)；钠 120/600、嘌呤 25/150 每100g **惯例·非国标**。注脚**必标**"低钠依 GB28050;中·高为惯例口径·非国标"、"嘌呤三级为惯例口径·非国标(WS/T560 只分宜/慎/忌不设数值)"、GI"FAO/WHO 口径"，均"仅供参考"。**措辞与 §9.26 病种视角逐字对齐**("惯例口径·非国标")。
+- **工程要点**：VM `combine` 超 5 源→**拆 `filterState`(query/group/metric/levels)+`sortState` 两层再合**(踩坑:重建别丢字段·用命名参数 data class)。**阈值文案从 `NutrientBands` 常量插值**(防常量/阈值文案/caveat 三处漂移)。GI_HIGH 转发 `NutritionLevelEvaluator` 单一真相源。缺数据(null 级)判 `matches` 返 false 排除。
+- **落地**：shared `NutrientLevelFilter`(`FilterMetric`/`NutrientLevel`/`NutrientBands`·纯 levelOf/matches·单测 7 例)；`NutritionTableViewModel`(metricFilter/levelFilter/combine 拆层/excludedNoDataCount)+`NutritionTableScreen`(Tune 图标/ModalBottomSheet/摘要 chip)。复用 `SegmentedControl`/`FilterChip`/`CapsuleButton`/`ModalBottomSheet`，零新组件。无 DB/迁移。
