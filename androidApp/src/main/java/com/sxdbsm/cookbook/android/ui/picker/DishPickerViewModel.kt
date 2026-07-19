@@ -98,6 +98,8 @@ class DishPickerViewModel(
                 .sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
             DishesSortTab.HOME -> visible.filter { it.source == "user" }
                 .sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
+            // [AI生成] 2026-07-19:DishesSortTab 加了 SLOT(菜品页餐次档);选菜器无餐次Tab、SLOT 不可达,按拼音全量兜底保穷尽。
+            DishesSortTab.SLOT -> visible.sortedWith(compareBy({ dishInitial(it.name) }, { it.name }))
         }
         // [AI生成] v28:记一餐按当前餐次预筛(DishMini.mealSlots 已含兜底)。只在传入餐次且开"只看"时收窄;可切"全部"。
         //   搜索时(keyword非空)不预筛(搜索是全局的,与Tab同口径)。matchCount 供 toggle 标签显数。

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -23,6 +24,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.isoDayNumber
 import kotlin.math.roundToInt
+
+/** 首页"下一餐"卡展示菜数(一餐一荤一素一汤/主食的家庭直觉)。[AI生成] 阶段2 */
+private const val HOME_DISH_COUNT = 3
 
 /**
  * 首页 UI 状态。[AI修改]
@@ -43,6 +47,18 @@ data class FocusSwitcher(
     val viewingId: Long? = null,
 )
 
+/** 首页"下一餐"推荐卡状态。[AI生成] 阶段2 */
+data class NextMealUi(
+    val slotLabel: String = "", // 下一餐餐次(早餐/中餐/晚餐/明天·早餐)
+    val dishes: List<NextDishUi> = emptyList(),
+    val isSample: Boolean = false, // 无库存/新用户→随机兜底,标"示例·记录后更懂你"(诚实告知)
+    val canShuffle: Boolean = false, // 候选>展示数才可"换一批"
+    val loading: Boolean = false,
+)
+
+/** 首页推荐卡单菜。[AI生成] 阶段2 */
+data class NextDishUi(val id: Long, val name: String, val note: String)
+
 /**
  * 首页 ViewModel。[AI修改]
  *
@@ -56,7 +72,94 @@ class HomeViewModel(
     private val family: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI生成] 达标/摄入按主要关注成员(身体数据+饭量系数份额)。
     private val ingredientRepo: com.sxdbsm.cookbook.data.repository.IngredientRepository, // [AI生成] A1：食材显式营养大类(food_group)覆盖色系/均衡判定。
     private val health: com.sxdbsm.cookbook.data.repository.HealthProfileRepository, // [AI生成] A-1：解析关注成员病种→慢病提示(今日卡"偏咸·高血压留意")。
+    private val recoDataSource: com.sxdbsm.cookbook.ai.RecommendationDataSource, // [AI生成] 阶段2：首页"下一餐"推荐卡(纯规则·不调云端·打开即见)。
 ) : ViewModel() {
+
+    // ============ 首页"下一餐"推荐卡(阶段2·纯规则不调云端·复用推荐引擎 ruleCandidatesFor) ============
+    private val _nextMeal = kotlinx.coroutines.flow.MutableStateFlow(NextMealUi(loading = true))
+    /** 首页"下一餐"卡状态。[AI生成] 阶段2 */
+    val nextMeal: StateFlow<NextMealUi> = _nextMeal
+    private var homeRotation = 0 // 首页"换一批"轮次(本地轮播已算好的候选)。
+    // [AI生成] 阶段2:缓存已算好的候选——"换一批"纯本地轮播(不重 gather);loadNextMeal 才重取(忌口/钟点实时)。
+    private var cachedCandidates: List<com.sxdbsm.cookbook.ai.model.DishCandidate> = emptyList()
+    private var cachedSlotLabel = ""
+    private var cachedSample = false
+
+    init { loadNextMeal() } // 首页创建即加载"下一餐"卡(打开即见·纯规则快)。
+
+    /**
+     * 加载/刷新首页"下一餐"推荐(按当前钟点判餐次·**纯规则不调云端**)。[AI生成] 阶段2
+     *
+     * 每次调用**重取候选**(忌口/钟点/库存/今日缺口实时·纯规则很轻);返回首页(ON_RESUME)会调它保证忌口即时(健康档案别页可改)。
+     * "换一批"不调它(走本地轮播 shuffleNextMeal)。
+     */
+    fun loadNextMeal() {
+        viewModelScope.launch {
+            val (slot, slotLabel) = currentSlot()
+            // 库存挂钩开→优先库存推荐;关或库存空→随机(全库·保证新用户/无库存也有"今天可以吃什么")。
+            val pantryOn = prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.PANTRY_HOOK_ENABLED, default = true).first()
+            var mode = if (pantryOn) com.sxdbsm.cookbook.ai.model.RecommendMode.PANTRY else com.sxdbsm.cookbook.ai.model.RecommendMode.RANDOM
+            var acceptable = runCatching { recoDataSource.ruleCandidatesFor(mode, slot) }.getOrDefault(emptyList())
+                .filter { it.avoidNames.isEmpty() } // 首页"建议吃"不列忌口菜(忌口标红教育职能在 AI 推荐全页)
+            var sample = false
+            if (acceptable.isEmpty() && mode == com.sxdbsm.cookbook.ai.model.RecommendMode.PANTRY) {
+                // 库存空/无可做 → 随机全库兜底,标"示例"(诚实告知:记录后会更懂你)。
+                mode = com.sxdbsm.cookbook.ai.model.RecommendMode.RANDOM
+                acceptable = runCatching { recoDataSource.ruleCandidatesFor(mode, slot) }.getOrDefault(emptyList())
+                    .filter { it.avoidNames.isEmpty() }
+                sample = true
+            }
+            cachedCandidates = acceptable
+            cachedSlotLabel = slotLabel
+            cachedSample = sample
+            homeRotation = 0 // 重取后从第一批展示
+            publishNextMeal()
+        }
+    }
+
+    /** 首页"换一批"：**纯本地轮播已算好的候选(不重 gather)**。[AI生成] 阶段2 */
+    fun shuffleNextMeal() {
+        if (cachedCandidates.size <= HOME_DISH_COUNT) return // 不足一批·换不动(canShuffle=false 时不该触发)
+        homeRotation++
+        publishNextMeal()
+    }
+
+    /** 用当前 rotation 从缓存候选取一批发布到 UI(不重取)。[AI生成] 阶段2 */
+    private fun publishNextMeal() {
+        val picks = rotateSlice(cachedCandidates, homeRotation, HOME_DISH_COUNT)
+        _nextMeal.value = NextMealUi(
+            slotLabel = cachedSlotLabel,
+            dishes = picks.map { NextDishUi(id = it.id, name = it.name, note = homeNote(it)) },
+            isSample = cachedSample,
+            canShuffle = cachedCandidates.size > HOME_DISH_COUNT,
+            loading = false,
+        )
+    }
+
+    /** 按当前钟点判"下一餐"餐次(早/中/晚·20点后→明日早餐)。[AI生成] 阶段2 */
+    private fun currentSlot(): Pair<com.sxdbsm.cookbook.ai.MealSlot, String> = when (DateTime.currentHour()) {
+        in 4..9 -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST to "早餐"
+        in 10..13 -> com.sxdbsm.cookbook.ai.MealSlot.LUNCH to "中餐"
+        in 14..19 -> com.sxdbsm.cookbook.ai.MealSlot.DINNER to "晚餐"
+        else -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST to "明天 · 早餐" // 20:00–03:59
+    }
+
+    /** 首页轻量理由(取最多2条·常做/补今日营养/宜吃)。[AI生成] 阶段2 复用 buildNote 精简版 */
+    private fun homeNote(c: com.sxdbsm.cookbook.ai.model.DishCandidate): String {
+        val parts = mutableListOf<String>()
+        if (c.frequent) parts += "⭐你常做"
+        if (c.complementary) parts += "🥗补今日营养"
+        if (c.recommendHits.isNotEmpty()) parts += "✓宜吃：${c.recommendHits.take(2).joinToString("、")}"
+        if (parts.isEmpty() && c.mainNames.isNotEmpty()) parts += "主料：${c.mainNames.take(2).joinToString("、")}"
+        return parts.take(2).joinToString("　·　")
+    }
+
+    /** 轮播取 n 个(不足 n 全给·超过按 rotation 滚动窗口·环绕)。[AI生成] 阶段2 */
+    private fun rotateSlice(list: List<com.sxdbsm.cookbook.ai.model.DishCandidate>, rot: Int, n: Int): List<com.sxdbsm.cookbook.ai.model.DishCandidate> {
+        if (list.size <= n) return list
+        val start = (rot * n) % list.size
+        return (list + list).drop(start).take(n)
+    }
 
     /**
      * 首页可观察状态。[AI修改]

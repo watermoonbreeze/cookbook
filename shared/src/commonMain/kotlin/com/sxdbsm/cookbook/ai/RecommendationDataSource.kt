@@ -375,6 +375,32 @@ class RecommendationDataSource(
         )
     }
 
+    /**
+     * 首页"下一餐"卡用：按 mode/餐次的**纯规则候选**(gather+evaluate·**不调云端**·快·打开即见)。[AI生成] 阶段2
+     *
+     * 与 ruleCandidates 同透传全部信号,只是带上 mode/餐次/窗口参数(首页按当前钟点判餐次)。忌口菜仍在(avoidNames 非空·排末)，
+     * 首页卡展示时由调用方过滤忌口(家庭 app 首页"建议吃"不列忌口菜)。已按规则打分降序。
+     */
+    suspend fun ruleCandidatesFor(
+        mode: RecommendMode,
+        mealSlot: MealSlot = MealSlot.ALL,
+        recentWindowDays: Int = RECENT_WINDOW_DAYS_DEFAULT,
+        engine: HealthRuleEngine = HealthRuleEngine(),
+    ): List<com.sxdbsm.cookbook.ai.model.DishCandidate> = gather(mode, mealSlot = mealSlot, recentWindowDays = recentWindowDays).let { input ->
+        engine.evaluate(
+            input.dishes, input.pantryIngredientIds, input.constraints, input.recentDishIds,
+            input.shortageIngredientIds, input.recentDishDaysAgo,
+            weights = input.style.weights(),
+            preferenceScores = input.preferenceScores,
+            nutritionBalanceScores = input.nutritionBalanceScores,
+            mainRepeatCounts = input.mainRepeatCounts,
+            conditions = input.conditions,
+            giByName = input.giByName,
+            tasteProfile = input.tasteProfile,
+            lastCookedDaysAgo = input.lastCookedDaysAgo,
+        )
+    }
+
     companion object {
         // [AI生成] 早餐菜关键词(菜名含则视为早餐菜)。
         private val BREAKFAST_KEYWORDS = listOf("粥", "蛋羹", "豆浆", "豆奶", "牛奶", "燕麦", "面", "馒头", "包子", "水煮蛋", "薯", "南瓜", "玉米")

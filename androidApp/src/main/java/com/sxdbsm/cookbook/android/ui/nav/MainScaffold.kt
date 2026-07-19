@@ -143,6 +143,7 @@ fun MainScaffold(
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
                     onOpenWeekPlan = { nav.navigate(Routes.WEEK_PLAN) }, // [AI生成] B3
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
+                    onRecordDish = { id -> nav.navigate(Routes.addMealWithDishes(listOf(id))) }, // [AI生成] 阶段2:首页"下一餐"卡"记"某菜→带该菜进记一餐
                 )
             }
             composable(Routes.TIMELINE) {
