@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
 }
+
+// [AI生成] 阶段3-d：从 local.properties 读友盟 AppKey(不进 git)，注入 BuildConfig 供 UMConfigure.init 使用。
+val umengAppKey: String = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}.getProperty("UMENG_APP_KEY", "")
 
 android {
     namespace = "com.sxdbsm.cookbook.android"
@@ -12,9 +20,12 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
+        // [AI生成] 阶段3-d：友盟 AppKey(空串=未配置·UmengAnalyticsSink 会跳过 init)。
+        buildConfigField("String", "UMENG_APP_KEY", "\"$umengAppKey\"")
     }
     buildFeatures {
         compose = true
+        buildConfig = true // [AI生成] 阶段3-d：启用 BuildConfig(承载友盟 AppKey)。
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
@@ -87,4 +98,10 @@ dependencies {
 
     // 二维码（双设备同传：发送端生成、接收端扫描）
     implementation(libs.zxing.android.embedded)
+
+    // [AI生成] 阶段3-d 友盟 U-App 匿名统计(common+asms·不加 uyumao 避免多采集)。
+    //   版本用 latest.release 保证可解析(headless 无法核对确切版本号)；发布前建议钉具体版本(可复现构建)。
+    //   合规:UMConfigure.init 延迟到用户同意后(见 UmengAnalyticsSink)。
+    implementation("com.umeng.umsdk:common:latest.release")
+    implementation("com.umeng.umsdk:asms:latest.release")
 }

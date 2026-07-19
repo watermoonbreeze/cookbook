@@ -32,6 +32,8 @@ import org.koin.dsl.module
  */
 val androidModule = module {
     single { DatabaseDriverFactory(androidContext()) }
+    // [AI生成] 阶段3-d 匿名统计后端=友盟(AppKey 从 BuildConfig/local.properties·同意后才 init·空 key 则仅日志)。
+    single<com.sxdbsm.cookbook.analytics.AnalyticsSink> { com.sxdbsm.cookbook.android.analytics.UmengAnalyticsSink(androidContext()) }
     single { BackupManager(context = androidContext(), driverProvider = { get() }) }
     single { LogFileManager() } // [AI生成] 我的页日志查看读取 /sdcard/cookbook/log/。
     single { com.sxdbsm.cookbook.android.ui.ingredients.IngredientJumpBus() } // [AI生成] 跨屏跳到具体食材总线。
