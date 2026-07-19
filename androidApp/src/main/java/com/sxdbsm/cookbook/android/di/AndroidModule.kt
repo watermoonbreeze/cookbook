@@ -57,16 +57,16 @@ val androidModule = module {
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
     viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)
     viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get()) }
-    viewModel { AddMealViewModel(get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用。
+    viewModel { AddMealViewModel(get(), get(), get(), get()) } // [AI修改] 添加餐食页还需要收藏组合仓库支持组合复用 + 阶段3-b Analytics(meal_logged)。
     viewModel { TimelineViewModel(get()) }
     viewModel { MineViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 FamilyRepository(档案整合:用户卡取家庭成员"我")。
     viewModel { com.sxdbsm.cookbook.android.ui.report.DietReportViewModel(get(), get(), get()) } // [AI生成] 报告模块:MealRecord+Nutrition+Family
-    viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get()) } // [AI生成] 家庭成员管理
+    viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get(), get()) } // [AI修改] 家庭成员管理 + 阶段3-b Analytics(health_profile_set)
     viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyStatsViewModel(get(), get(), get()) } // [AI生成] 膳食统计
     viewModel { IngredientPickerViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 Pantry/HealthProfile/Nutrition 支持库存 Tab、忌口高亮、自定义营养录入。
     viewModel { DishPickerViewModel(get()) }
     viewModel { SearchViewModel(get(), get(), get()) }
-    viewModel { AiRecommendViewModel(get(), get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置+偏好; 配置了模型不自动推荐)。
+    viewModel { AiRecommendViewModel(get(), get(), get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置+偏好+阶段3-b Analytics recommend_requested)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
     viewModel { com.sxdbsm.cookbook.android.ui.nutrition.NutritionTableViewModel(get()) } // [AI生成] 食材营养表(全量营养总览)。
     viewModel { com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsViewModel(get()) } // [AI修改] 身体数据编辑移入家庭档案，不再需要 FamilyRepository。

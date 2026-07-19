@@ -58,6 +58,7 @@ fun MainScaffold(
     val context = LocalContext.current
     val ingredientJumpBus: IngredientJumpBus = koinInject() // [AI生成] 搜索点食材→跳到该食材总线。
     val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository = koinInject() // [AI生成] 首启引导标记读写。
+    val analytics: com.sxdbsm.cookbook.analytics.Analytics = koinInject() // [AI生成] 阶段3-b：first_launch/feature_used 埋点(未同意时闸门拦截)。
     var lastBackAt by remember { mutableStateOf(0L) }
 
     // [AI生成] 点击计时通知 → 进入烹饪计时页（非首页）。
@@ -72,6 +73,7 @@ fun MainScaffold(
     //   先置标记再导航，避免因导航引发的重组重复触发；已看过则不打扰。
     LaunchedEffect(Unit) {
         if (!prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, false).first()) {
+            analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.FirstLaunch) // [AI生成] 阶段3-b：首启(新增·留存队列起点)。
             prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.HAS_SEEN_GUIDE, true)
             nav.navigate(Routes.FEATURE_GUIDE)
         }
@@ -79,9 +81,19 @@ fun MainScaffold(
 
     val showBottomBar = currentRoute in bottomTabs.map { it.route } // [AI修改] 详情/编辑页隐藏底部栏。
 
+    // [AI生成] 阶段3-b：feature_used 去抖到"功能区切换"粒度——记上次上报的功能区,只有换了功能区才报(审查建议2)。
+    //   否则 A→详情→返回A 会让 A 重复计数、漏斗失真;二级页(fromRoute→null)不改变 lastFeature、返回后同功能区不重报。
+    var lastFeature by remember { mutableStateOf<com.sxdbsm.cookbook.analytics.FeatureTag?>(null) }
     LaunchedEffect(currentRoute) {
         currentRoute?.let { route ->
             AppLogger.event("screen_enter", mapOf("route" to route, "showBottomBar" to showBottomBar)) // [AI生成] 内测埋点：记录页面流转，便于分析异常跳转和常用路径。
+            // [AI生成] 阶段3-b 匿名统计：用了某功能区(功能频次/发现漏斗)。**只上报白名单枚举**·未知路由不上报(fromRoute→null)、绝不回传原始路由串。
+            com.sxdbsm.cookbook.analytics.FeatureTag.fromRoute(route)?.let { feature ->
+                if (feature != lastFeature) {
+                    lastFeature = feature
+                    analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.FeatureUsed(feature))
+                }
+            }
         }
     }
 

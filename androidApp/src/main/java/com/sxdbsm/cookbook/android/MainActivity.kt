@@ -48,12 +48,15 @@ import org.koin.android.ext.android.inject
 class MainActivity : ComponentActivity() {
 
     private val prefs: PreferenceRepository by inject() // [AI修改] 从 Koin 获取 shared 层偏好仓库。
+    private val analytics: com.sxdbsm.cookbook.analytics.Analytics by inject() // [AI生成] 阶段3-b：app_open 埋点(仅时间戳·未同意时闸门拦截)。
     private val seeder: PresetDataSeeder by inject() // [AI修改] 授权并创建公共目录后再初始化预置数据。
     private val familyRepo: com.sxdbsm.cookbook.data.repository.FamilyRepository by inject() // [AI生成] 家庭档案：首启建默认成员「我」并迁旧数据。
     private val openTimerRequested = mutableStateOf(false) // [AI生成] 通知点击请求打开烹饪计时页。
+    private var lastPausedElapsed = 0L // [AI生成] 阶段3-b：上次离开前台的 elapsedRealtime，用于 app_open 去抖。
 
     companion object {
         const val EXTRA_OPEN_TIMER = "open_cooking_timer" // [AI生成] 计时通知点击打开计时页的 intent extra key。
+        private const val APP_OPEN_MIN_GAP_MS = 30_000L // [AI生成] 阶段3-b：后台超此间隔再回前台才算一次新"打开"(会话去抖)。
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +74,21 @@ class MainActivity : ComponentActivity() {
             CookbookTheme(themeMode = ThemeMode.SYSTEM) {
                 CookbookAppContent()
             }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        lastPausedElapsed = android.os.SystemClock.elapsedRealtime() // [AI生成] 阶段3-b：记离开前台时刻,用于 app_open 去抖。
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // [AI生成] 阶段3-b：app_open 去抖(审查建议1)——首次或"后台超30s再回前台"才算一次打开,
+        //   避免权限弹窗/系统对话框/通知栏返回等短暂 onResume 虚增会话数(本 App 有相机/全屏提醒/通知跳转)。未同意时闸门拦截。
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (lastPausedElapsed == 0L || now - lastPausedElapsed > APP_OPEN_MIN_GAP_MS) {
+            analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.AppOpen)
         }
     }
 

@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 class FamilyViewModel(
     private val family: FamilyRepository,
     private val health: HealthProfileRepository,
+    private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：健康档案设置埋点(health_profile_set·仅布尔"设了")
 ) : ViewModel() {
 
     val members: StateFlow<List<FamilyMember>> =
@@ -48,6 +49,8 @@ class FamilyViewModel(
     fun save(member: FamilyMember) {
         viewModelScope.launch {
             if (member.id == 0L) family.createMember(member) else family.updateMember(member)
+            // [AI生成] 阶段3-b 匿名统计：设了健康档案(渗透率)。**仅布尔"设了"**·绝不带病种/忌口/身体数据。
+            analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.HealthProfileSet)
         }
     }
 

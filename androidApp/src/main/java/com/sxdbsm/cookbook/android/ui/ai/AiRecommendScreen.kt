@@ -86,6 +86,7 @@ fun AiRecommendScreen(
     var dislikeTarget by remember { mutableStateOf<DishItemUi?>(null) } // [AI生成] §9.20 负反馈踩:长按目标菜→ActionSheet
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val analytics = org.koin.compose.koinInject<com.sxdbsm.cookbook.analytics.Analytics>() // [AI生成] 阶段3-b：recommend_adopted 埋点(仅来源枚举)
     // [AI生成] 库存挂钩关→隐藏"库存推荐"档(名不副实的标签最迷茫)；若正处 PANTRY 模式则回落随机。
     val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
     LaunchedEffect(pantryHookOn) {
@@ -140,7 +141,14 @@ fun AiRecommendScreen(
                     // [AI修改] UX:胶囊主CTA + 文案动词开头(说人话:点了会把菜记进这一餐)。
                     CapsuleButton(
                         text = "加入这一餐（已选 ${state.selectedIds.size} 道）",
-                        onClick = { onPickMeal(state.selectedIds.toList()) },
+                        onClick = {
+                            // [AI生成] 阶段3-b 匿名统计：采纳了推荐(采纳率·核心KPI)。**仅上报来源枚举**·不带菜。
+                            analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.RecommendAdopted(
+                                if (state.mode == RecommendMode.PANTRY) com.sxdbsm.cookbook.analytics.RecommendSourceTag.PANTRY
+                                else com.sxdbsm.cookbook.analytics.RecommendSourceTag.RANDOM,
+                            ))
+                            onPickMeal(state.selectedIds.toList())
+                        },
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                     )
                 }

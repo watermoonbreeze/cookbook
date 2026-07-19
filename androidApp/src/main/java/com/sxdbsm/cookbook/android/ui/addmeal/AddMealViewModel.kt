@@ -76,6 +76,7 @@ class AddMealViewModel(
     private val mealRepo: MealRecordRepository,
     private val dishRepo: DishRepository,
     private val comboRepo: FavoriteComboRepository,
+    private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：记一餐埋点(meal_logged·仅餐次枚举)
 ) : ViewModel() {
     companion object {
         private const val TAG = "MealFlow" // [AI生成] 添加/编辑餐食链路统一日志 Tag。
@@ -365,6 +366,19 @@ class AddMealViewModel(
     /**
      * 批量保存当天所有有效餐食模块。[AI修改]
      */
+    /**
+     * 餐次 code → 匿名统计餐次枚举(四值粗粒度·去标识化)。[AI生成] 阶段3-b
+     *
+     * 项目餐次 code=BREAKFAST/MORNING_SNACK/LUNCH/AFTERNOON_SNACK/DINNER/NIGHT_SNACK。
+     * **上午餐/下午餐/夜宵在本项目语义上都是"加餐"**(与首页 DishSlotFilter SNACK={上午,下午} 一致)，故非三餐一律归 SNACK——这是刻意的项目语义、非疏漏。
+     */
+    private fun slotTagOf(code: String?): com.sxdbsm.cookbook.analytics.MealSlotTag = when (code) {
+        "BREAKFAST" -> com.sxdbsm.cookbook.analytics.MealSlotTag.BREAKFAST
+        "LUNCH" -> com.sxdbsm.cookbook.analytics.MealSlotTag.LUNCH
+        "DINNER" -> com.sxdbsm.cookbook.analytics.MealSlotTag.DINNER
+        else -> com.sxdbsm.cookbook.analytics.MealSlotTag.SNACK // MORNING_SNACK/AFTERNOON_SNACK/NIGHT_SNACK/加餐 均=加餐
+    }
+
     fun save() {
         val s = _state.value
         val drafts = s.mealBlocks
@@ -405,6 +419,9 @@ class AddMealViewModel(
                         "success" to true,
                     ),
                 ) // [AI生成] 内测埋点：记录餐食保存成功摘要。
+                // [AI生成] 阶段3-b 匿名统计：记了一餐(核心KPI周频次)。**仅上报餐次枚举**·不带菜名/日期/给谁。
+                //   口径:一次save(可含多餐次块)=一次"记一餐"动作、只报一次(不逐块虚增)·slot取首块餐次(审查建议3)。
+                analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.MealLogged(slotTagOf(s.mealTypes.firstOrNull { mt -> mt.id == drafts.first().mealTypeId }?.code)))
                 _state.value = _state.value.copy(saving = false, done = true, errorMessage = null)
             }.onFailure {
                 AppLogger.e(TAG, "save meals failed: date=${s.date}", it) // [AI生成] 记录保存失败异常。

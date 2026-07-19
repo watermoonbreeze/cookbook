@@ -58,6 +58,13 @@ fun DishDetailScreen(
     val stepMode by remember(prefs) {
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
     }.collectAsStateWithLifecycle(false)
+    // [AI生成] 阶段3-b 匿名统计：本菜详情出现过"忌口标注"(忌口命中真实场景比例·核心KPI)。
+    //   **仅布尔存在性**·不带病种/菜/食材;LaunchedEffect 按(dishId,是否忌口)去重·防重组重复上报;未同意时闸门拦截。
+    val analytics = org.koin.compose.koinInject<com.sxdbsm.cookbook.analytics.Analytics>()
+    val avoidShown = vm.insights?.avoidNames?.isNotEmpty() == true
+    LaunchedEffect(dishId, avoidShown) {
+        if (avoidShown) analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.AvoidHitShown)
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。

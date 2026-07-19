@@ -29,6 +29,7 @@ class AiRecommendViewModel(
     private val orchestrator: RecommendationOrchestrator,
     private val aiConfig: AiRuntimeConfig,
     private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] P3：读写推荐风格偏好
+    private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：推荐请求埋点(recommend_requested·仅来源枚举)
 ) : ViewModel() {
 
     var state by mutableStateOf(AiRecommendUiState())
@@ -145,6 +146,11 @@ class AiRecommendViewModel(
 
     /** 触发推荐（首次 / 换一换 / 切模式）。[AI生成] */
     fun recommend(mode: RecommendMode = state.mode) {
+        // [AI生成] 阶段3-b 匿名统计：请求了一次推荐(推荐使用率)。**仅上报来源枚举**·不带任何推荐内容。
+        analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.RecommendRequested(
+            if (mode == RecommendMode.PANTRY) com.sxdbsm.cookbook.analytics.RecommendSourceTag.PANTRY
+            else com.sxdbsm.cookbook.analytics.RecommendSourceTag.RANDOM,
+        ))
         val rot = if (mode == RecommendMode.RANDOM) Random.nextInt(RANDOM_ROTATION_BOUND) else rotation++
         // [AI修改] 保留用户在页面上的粘性选择(餐次/去重周期/推荐风格)——mapResult 会重建 state，
         // 不带这些会在每次推荐后被重置(此前"点偏新鲜等又跳回综合"的 bug)。
