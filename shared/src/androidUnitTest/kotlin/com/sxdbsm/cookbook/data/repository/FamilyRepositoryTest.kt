@@ -112,4 +112,25 @@ class FamilyRepositoryTest {
         assertEquals(me.id, focus!!.id, "关注应转移给剩余的我")
         assertTrue(fam.listMembers().first { it.id == me.id }.isFocus, "我应被标为关注")
     }
+
+    @Test
+    fun `多人关注_toggleFocus保下限1且observe按当前查看指针自愈`() = runBlocking {
+        val (fam, _, prefs) = setup()
+        fam.ensureInitialized()
+        val me = fam.listMembers().first { it.isSelf } // 默认 is_focus=1
+        val dadId = fam.createMember(FamilyMember(id = 0, name = "爸"))
+        // 多选关注:关注爸 → 我+爸都关注(不再单选清空)
+        assertTrue(fam.toggleFocus(dadId))
+        assertEquals(2, fam.listMembers().count { it.isFocus }, "多选:我+爸都关注")
+        // 当前查看指针→爸,observeFocusName 跟随
+        prefs.setFocusViewingMemberId(dadId)
+        assertEquals("爸", fam.observeFocusName().first())
+        // 取消关注爸 → 剩我;指针仍指爸(已不在关注集合)→自愈回退关注集合首位(我)
+        assertTrue(fam.toggleFocus(dadId))
+        assertEquals(me.name, fam.observeFocusName().first(), "指针失效自愈回退关注集合首位")
+        // 取消最后一个关注(我) → 拒绝,至少留1
+        assertTrue(!fam.toggleFocus(me.id), "取消最后一个关注人应被拒绝")
+        assertEquals(1, fam.listMembers().count { it.isFocus })
+        Unit
+    }
 }

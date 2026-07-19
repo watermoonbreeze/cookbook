@@ -91,6 +91,20 @@ class PreferenceRepository(private val db: CookbookDatabase) {
         q.upsertPreference(PreferenceKeys.BODY_METRICS, bodyJson.encodeToString(m), DateTime.nowEpochSeconds())
     }
 
+    /** 监听"当前查看成员"指针(多人关注·今日卡+报告共用)。空/非数字→null(由 resolveViewing 自愈回退)。[AI生成] */
+    fun observeFocusViewingMemberId(): Flow<Long?> =
+        q.selectPreference(PreferenceKeys.FOCUS_VIEWING_MEMBER_ID).asFlow().mapToOneOrNull(ioDispatcher).map { it?.value_?.toLongOrNull() }
+
+    /** 一次性读"当前查看成员"指针(suspend·focusMember 用)。[AI生成] */
+    suspend fun focusViewingMemberId(): Long? = withContext(ioDispatcher) {
+        q.selectPreference(PreferenceKeys.FOCUS_VIEWING_MEMBER_ID).executeAsOneOrNull()?.value_?.toLongOrNull()
+    }
+
+    /** 设置"当前查看成员"指针。[AI生成] */
+    suspend fun setFocusViewingMemberId(id: Long) = withContext(ioDispatcher) {
+        q.upsertPreference(PreferenceKeys.FOCUS_VIEWING_MEMBER_ID, id.toString(), DateTime.nowEpochSeconds())
+    }
+
     /**
      * 写入任意偏好 key。[AI修改]
      */

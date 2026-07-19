@@ -1857,6 +1857,10 @@ UPDATE family_member SET is_focus = 0;
 setFocusMember:
 UPDATE family_member SET is_focus = 1 WHERE id = ?;
 
+-- [AI生成] 多人关注：单成员 is_focus 翻转(多选·加/移出关注集合·不再 clearAll)。
+updateMemberFocus:
+UPDATE family_member SET is_focus = ? WHERE id = ?;
+
 -- ===== member_care（成员病种，忌口取全家并集） =====
 
 insertMemberCare:

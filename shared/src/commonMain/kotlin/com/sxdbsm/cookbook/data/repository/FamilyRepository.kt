@@ -75,24 +75,37 @@ class FamilyRepository(
         }
     }
 
-    /** 监听主要关注成员的身体数据(每日目标用)：无关注则回退「我」/第一个。[AI生成] */
+    /** 监听当前查看成员的身体数据(每日目标用)：按"当前查看"指针,自愈回退。[AI修改] 多人关注 */
     fun observeFocusBody(): Flow<BodyMetrics> =
-        observeMembers().map { ms -> (pickFocus(ms)?.toBodyMetrics()) ?: BodyMetrics() }
+        combine(observeMembers(), prefs.observeFocusViewingMemberId()) { ms, vid ->
+            resolveViewing(ms, vid)?.toBodyMetrics() ?: BodyMetrics()
+        }
 
-    /** 监听关注成员的餐食份额占比(饭量系数 / 全家系数和)：把全家餐热量估算到关注成员。[AI生成] */
+    /** 监听当前查看成员的餐食份额占比(饭量系数 / 全家系数和)。[AI修改] 多人关注 */
     fun observeFocusShare(): Flow<Double> =
-        observeMembers().map { ms ->
-            val f = pickFocus(ms) ?: return@map 1.0
+        combine(observeMembers(), prefs.observeFocusViewingMemberId()) { ms, vid ->
+            val f = resolveViewing(ms, vid) ?: return@combine 1.0
             val sum = ms.sumOf { it.portionCoefficient }
             if (sum > 0.0) (f.portionCoefficient / sum) else 1.0
         }
 
-    /** 监听关注成员昵称(展示用；单人或无则空)。[AI生成] */
+    /** 监听当前查看成员昵称(展示用；单人或无则空)。[AI修改] 多人关注 */
     fun observeFocusName(): Flow<String> =
-        observeMembers().map { ms -> if (ms.size <= 1) "" else (pickFocus(ms)?.name ?: "") }
+        combine(observeMembers(), prefs.observeFocusViewingMemberId()) { ms, vid ->
+            if (ms.size <= 1) "" else (resolveViewing(ms, vid)?.name ?: "")
+        }
 
-    private fun pickFocus(ms: List<FamilyMember>): FamilyMember? =
-        ms.firstOrNull { it.isFocus } ?: ms.firstOrNull { it.isSelf } ?: ms.firstOrNull()
+    /**
+     * 当前查看成员。[AI生成] 多人关注
+     *
+     * 指针∈关注集合→用它;否则关注集合首位(selectAllFamilyMembers 已按 is_self DESC,sort 排);
+     * 关注集合空→isSelf/first。指针失效(指向已删/未关注成员)自愈回退。
+     */
+    private fun resolveViewing(ms: List<FamilyMember>, viewingId: Long?): FamilyMember? {
+        val focus = ms.filter { it.isFocus }
+        if (focus.isNotEmpty()) return focus.firstOrNull { it.id == viewingId } ?: focus.first()
+        return ms.firstOrNull { it.isSelf } ?: ms.firstOrNull()
+    }
 
     // ===== 缺席微调（按天持久化） =====
 
@@ -122,8 +135,8 @@ class FamilyRepository(
      * 关注成员当天自己缺席 → 返回 0（其当天摄入=0，UI 显"未在家吃"不判偏低）。
      */
     fun observeFocusShareForDate(date: String): Flow<Double> =
-        combine(observeMembers(), observeAbsenteeIds(date)) { ms, absent ->
-            val f = pickFocus(ms) ?: return@combine 1.0
+        combine(observeMembers(), observeAbsenteeIds(date), prefs.observeFocusViewingMemberId()) { ms, absent, vid ->
+            val f = resolveViewing(ms, vid) ?: return@combine 1.0
             if (f.id in absent) return@combine 0.0
             val presentSum = ms.filter { it.id !in absent }.sumOf { it.portionCoefficient }
             if (presentSum > 0.0) f.portionCoefficient / presentSum else 1.0
@@ -139,11 +152,31 @@ class FamilyRepository(
         )
     }
 
-    /** 主要关注成员(无则回退「我」，再无则第一个)。[AI生成] 达标/色系墙默认围绕他。 */
+    /** 当前查看成员(按指针·自愈回退)。[AI修改] 多人关注:达标/色系墙默认围绕他。 */
     suspend fun focusMember(): FamilyMember? = withContext(ioDispatcher) {
-        val focus = q.selectFocusMember().executeAsOneOrNull()
-        val row = focus ?: q.selectAllFamilyMembers().executeAsList().firstOrNull() ?: return@withContext null
-        toModel(row.id, row.name, row.gender, row.height_cm, row.weight_kg, row.age, row.activity, row.portion_coefficient, row.is_self, row.is_focus)
+        val ms = listMembers()
+        resolveViewing(ms, prefs.focusViewingMemberId())
+    }
+
+    /**
+     * 加入/移出关注集合(多选·至少留 1)。[AI生成] 多人关注
+     *
+     * @return false=拒绝(取消最后一个关注人)，UI 提示"至少关注一位家人"；true=已切换。
+     */
+    suspend fun toggleFocus(id: Long): Boolean = withContext(ioDispatcher) {
+        val focusIds = q.selectAllFamilyMembers().executeAsList().filter { it.is_focus == 1L }.map { it.id }.toSet()
+        if (id in focusIds) {
+            if (focusIds.size <= 1) return@withContext false // 至少关注一位家人(约束下限 1)
+            q.updateMemberFocus(0L, id)
+        } else {
+            q.updateMemberFocus(1L, id)
+        }
+        true
+    }
+
+    /** 设置"当前查看"成员指针(今日卡/报告切换器共用·一处切两处同步)。[AI生成] 多人关注 */
+    suspend fun setViewingMember(id: Long) = withContext(ioDispatcher) {
+        prefs.setFocusViewingMemberId(id)
     }
 
     /** 新建成员，返回 id。[AI生成] */
@@ -191,14 +224,13 @@ class FamilyRepository(
         }
     }
 
-    /** 删除成员(仅非「我」)；若删的是关注成员，把关注转移给剩余第一个(通常「我」)。[AI修改] */
+    /** 删除成员(仅非「我」)。[AI修改] 多人关注:删后若关注集合空,补关注剩余首位(保下限≥1·不 clearAll 免误清其他关注人)。 */
     suspend fun deleteMember(id: Long) = withContext(ioDispatcher) {
         db.transaction {
-            val wasFocus = q.selectFamilyMemberById(id).executeAsOneOrNull()?.is_focus == 1L
             q.softDeleteFamilyMember(id)
-            if (wasFocus) {
-                val next = q.selectAllFamilyMembers().executeAsList().firstOrNull() // status=1，已排除刚删的
-                if (next != null) { q.clearAllFocus(); q.setFocusMember(next.id) }
+            val remaining = q.selectAllFamilyMembers().executeAsList() // status=1，已排除刚删的
+            if (remaining.none { it.is_focus == 1L }) {
+                remaining.firstOrNull()?.let { q.setFocusMember(it.id) } // 删掉了唯一关注人→补关注剩余首位
             }
         }
     }

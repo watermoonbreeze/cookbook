@@ -75,4 +75,7 @@ object PreferenceKeys {
     // [AI生成] 库存挂钩开关：开=App 记住家里有哪些食材并提示"现在可做/需采购/缺料"；关=纯菜谱/记菜,全 App 不再出现
     //   库存与采购标注(去噪)。**默认开**(既有行为的可选关闭,老用户升级不丢功能)——与营养色系/热量(新增可选,默认关)相反。
     const val PANTRY_HOOK_ENABLED = "pantry_hook_enabled"
+
+    // [AI生成] v多人关注：当前查看的家庭成员 id(今日卡+报告共用指针)。免迁移存偏好;空/失效自愈回退关注集合首位。
+    const val FOCUS_VIEWING_MEMBER_ID = "focus_viewing_member_id"
 }
