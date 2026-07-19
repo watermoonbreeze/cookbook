@@ -105,6 +105,10 @@ class RecommendationDataSource(
         val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
+        // [AI生成] v29:个人忌口(全家并集分类→食材ids·含调料·含即命中·与健康忌口正交)。空守卫:listByCategories 传空会返全部,须先判空。
+        val personalAvoidCatIds = familyRepo.allPersonalAvoidCategoryIds()
+        val personalAvoidIds = if (personalAvoidCatIds.isEmpty()) emptySet()
+            else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
         val careCategoryNames = if (careCategoryIds.isEmpty()) emptyList() else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList()
         val labels = careCategoryNames.map { "关注:$it" } // 粗标签给模型(不含敏感明细)
         // [AI生成] 慢病数值软约束:care 分类名→病种集(与今日卡/详情页同口径 fromCareName)；giByName 仅登记糖尿病才查(GI 只对糖尿病;gate 省无谓全表查)。
@@ -197,6 +201,7 @@ class RecommendationDataSource(
                 limitIngredientIds = limitIds,
                 recommendIngredientIds = recommendIds,
                 labels = labels,
+                personalAvoidIngredientIds = personalAvoidIds, // [AI生成] v29:个人忌口(含调料·含即命中)
             ),
             recentDishIds = recentDishIds,
             shortageIngredientIds = shortageIds,
@@ -280,6 +285,10 @@ class RecommendationDataSource(
         val avoidIds = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limitIds = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommendIds = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
+        // [AI生成] v29:个人忌口(全家并集分类→食材ids·含调料·含即命中)。空守卫防 listByCategories 空列表返全部。
+        val personalAvoidCatIds = familyRepo.allPersonalAvoidCategoryIds()
+        val personalAvoidIds = if (personalAvoidCatIds.isEmpty()) emptySet()
+            else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
         val healthAware = careCategoryIds.isNotEmpty()
         // 营养/应季标签(按食材)
         val tagRows = q.selectNutritionSeasonTags().executeAsList()
@@ -299,7 +308,8 @@ class RecommendationDataSource(
             // [AI修改] 剂量占比门槛(用户 2026-07-16)：进一步只按**主料(isMain)**判定，与 HealthRuleEngine 一致——
             //   克数极少的辅料/点缀不改变菜的健康定性(如木耳50g配料不该让菜显"忌木耳")。
             // [AI修改] B1 忌口从严(用户 2026-07-19)：忌口放宽到全部非调料(主料+辅料)，与 HealthRuleEngine 一致；限量/调养仍守主料。
-            val avoidHits = ings.filter { it.ingredient_id in avoidIds && it.ingredient_id !in seasoningIds }
+            // [AI生成] v29:个人忌口并入(含调料·含即命中·不套用 !in seasoningIds/主料门槛);健康忌口仍守非调料。
+            val avoidHits = ings.filter { (it.ingredient_id in avoidIds && it.ingredient_id !in seasoningIds) || it.ingredient_id in personalAvoidIds }
             val limitHits = ings.filter { it.is_main == 1L && it.ingredient_id in limitIds && it.ingredient_id !in seasoningIds }
             val recommendHits = ings.filter { it.is_main == 1L && it.ingredient_id in recommendIds && it.ingredient_id !in seasoningIds }
             val planMainNames = ings.filter { it.is_main == 1L && it.ingredient_id !in seasoningIds }.map { it.ingredient_name }

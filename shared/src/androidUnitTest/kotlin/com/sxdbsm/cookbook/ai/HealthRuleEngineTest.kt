@@ -78,6 +78,23 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `v29个人忌口对调料真避开且含即命中_区别于健康忌口`() {
+        // 葱=调料(SEASONING)、木耳=辅料(SECONDARY)、白菜=主料。
+        val dish = RuleDish(1, "葱爆木耳白菜", listOf(main(101, "白菜"), sec(202, "木耳"), sea(903, "葱")))
+        val pantry = setOf(101L, 202L, 903L)
+        // 健康忌口命中调料葱 → 不进 avoidNames(转"少放"提示)，菜不判忌口。
+        val careSea = engine.evaluate(listOf(dish), pantry, HealthConstraints(avoidIngredientIds = setOf(903)))
+        assertTrue(careSea.first().avoidNames.isEmpty(), "健康忌口命中调料不判菜忌口")
+        // 个人忌口命中调料葱 → 真避开:进 avoidNames、菜标忌口。
+        val personalSea = engine.evaluate(listOf(dish), pantry, HealthConstraints(personalAvoidIngredientIds = setOf(903)))
+        assertTrue("葱" in personalSea.first().avoidNames, "个人忌口对调料真避开(进 avoidNames)")
+        // 个人忌口命中辅料木耳(含即命中·非主料也算)。
+        val personalSec = engine.evaluate(listOf(dish), pantry, HealthConstraints(personalAvoidIngredientIds = setOf(202)))
+        assertTrue("木耳" in personalSec.first().avoidNames, "个人忌口含即命中(辅料也算)")
+        Unit
+    }
+
+    @Test
     fun `限量limit主料保留但降分`() {
         // [AI修改] 剂量占比门槛后：限量只按主料判定，故限量目标取主料(腊肉)。辅料限量的场景见下方专门测试。
         val plain = RuleDish(1, "清炒时蔬", listOf(main(101, "青菜")))

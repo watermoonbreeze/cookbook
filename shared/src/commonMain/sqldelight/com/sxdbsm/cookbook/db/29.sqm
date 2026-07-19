@@ -1,0 +1,8 @@
+-- [AI生成] v29：个人忌口(按分类)——新增 member_avoid_category(仿 member_care)。
+-- 成员各自声明"不吃的分类"(肉/蔬/菌/豆/奶/口味调味 或 鸡/羊/牛等子类)；推荐时全家并集展开为食材 id 进 avoid。
+-- 与个人口味无关健康、与 care 忌口正交取并集。纯新表老库升级零风险(与主 schema CREATE 一致)。
+CREATE TABLE member_avoid_category (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    PRIMARY KEY (member_id, category_id)
+);

@@ -404,6 +404,14 @@ CREATE TABLE member_care (
     PRIMARY KEY (member_id, care_category_id)
 );
 
+-- [AI生成] v29：个人忌口(按分类)：每成员声明"不吃的分类"(肉/蔬/菌/豆/奶/口味调味 或 鸡/羊/牛子类)。
+-- 与 member_care 平行、与健康忌口正交取并集；推荐时全家并集展开为食材 id 进 avoid(个人忌口对调料也真避开·含即命中)。
+CREATE TABLE member_avoid_category (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    PRIMARY KEY (member_id, category_id)
+);
+
 -- [AI生成] 缺席微调：某天某成员没在家吃(按天粒度)。个人摄入份额按天排除缺席者，达标更准。
 CREATE TABLE day_absentee (
     date TEXT NOT NULL,
@@ -1866,6 +1874,24 @@ SELECT care_category_id FROM member_care WHERE member_id = ?;
 selectAllEnabledCareIds:
 SELECT DISTINCT mc.care_category_id FROM member_care mc
 JOIN family_member fm ON mc.member_id = fm.id
+WHERE fm.status = 1;
+
+-- ===== member_avoid_category（个人忌口·按分类·全家并集） =====
+
+insertMemberAvoidCategory:
+INSERT OR IGNORE INTO member_avoid_category(member_id, category_id) VALUES (?, ?);
+
+deleteAllMemberAvoidCategories:
+DELETE FROM member_avoid_category WHERE member_id = ?;
+
+-- [AI生成] v29：单成员忌口分类(编辑回显)。
+selectMemberAvoidCategoryIds:
+SELECT category_id FROM member_avoid_category WHERE member_id = ?;
+
+-- [AI生成] v29：全家启用成员的忌口分类并集(推荐展开为食材 id)。
+selectAllPersonalAvoidCategoryIds:
+SELECT DISTINCT mac.category_id FROM member_avoid_category mac
+JOIN family_member fm ON mac.member_id = fm.id
 WHERE fm.status = 1;
 
 -- [AI生成] 按 id 批量取分类名(忌口并集标签用)。

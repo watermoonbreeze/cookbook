@@ -165,6 +165,7 @@ class FamilyRepository(
             )
             newId = q.lastInsertRowId().executeAsOne()
             m.careCategoryIds.forEach { q.insertMemberCare(member_id = newId, care_category_id = it) }
+            m.avoidCategoryIds.forEach { q.insertMemberAvoidCategory(member_id = newId, category_id = it) } // [AI生成] v29:个人忌口分类
         }
         newId
     }
@@ -184,6 +185,9 @@ class FamilyRepository(
             )
             q.deleteAllMemberCare(m.id)
             m.careCategoryIds.forEach { q.insertMemberCare(member_id = m.id, care_category_id = it) }
+            // [AI生成] v29:个人忌口分类全量替换(仿 member_care)。
+            q.deleteAllMemberAvoidCategories(m.id)
+            m.avoidCategoryIds.forEach { q.insertMemberAvoidCategory(member_id = m.id, category_id = it) }
         }
     }
 
@@ -216,6 +220,11 @@ class FamilyRepository(
         (fromMembers + fromLegacy).distinct()
     }
 
+    /** 全家个人忌口分类并集(推荐展开为食材 id)。[AI生成] v29 */
+    suspend fun allPersonalAvoidCategoryIds(): List<Long> = withContext(ioDispatcher) {
+        q.selectAllPersonalAvoidCategoryIds().executeAsList()
+    }
+
     private fun toModel(
         id: Long, name: String, gender: String, height: Double?, weight: Double?, age: Long?,
         activity: String, coeff: Double, isSelf: Long, isFocus: Long,
@@ -223,5 +232,6 @@ class FamilyRepository(
         id = id, name = name, gender = gender, heightCm = height, weightKg = weight, age = age?.toInt(),
         activity = activity, portionCoefficient = coeff, isSelf = isSelf == 1L, isFocus = isFocus == 1L,
         careCategoryIds = q.selectMemberCareIds(id).executeAsList(),
+        avoidCategoryIds = q.selectMemberAvoidCategoryIds(id).executeAsList(), // [AI生成] v29:个人忌口分类回显
     )
 }

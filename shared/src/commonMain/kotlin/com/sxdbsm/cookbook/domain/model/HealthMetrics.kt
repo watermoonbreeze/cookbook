@@ -66,6 +66,8 @@ data class FamilyMember(
     val isSelf: Boolean = false,
     val isFocus: Boolean = false,
     val careCategoryIds: List<Long> = emptyList(),
+    // [AI生成] v29:个人忌口(按分类·与健康忌口正交取并集)。存 food_category id;推荐时展开为食材 id 进 avoid(含调料·含即命中)。
+    val avoidCategoryIds: List<Long> = emptyList(),
 ) {
     /** 该成员的身体数据(算每日目标热量用)。[AI生成] */
     fun toBodyMetrics(): BodyMetrics = BodyMetrics(gender = gender, heightCm = heightCm, weightKg = weightKg, age = age, activity = activity)

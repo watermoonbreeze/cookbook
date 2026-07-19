@@ -84,7 +84,10 @@ class HealthRuleEngine {
         //   忌口漏判代价高(该避的没提示)、误报代价低(本就列出+标红由用户判断不隐藏)，故从严;限量/调养仍守主料门槛(误伤代价高)。
         //   剂量占比(正向按主料筛宜吃) 与 忌口从严(负向含辅料筛避免) 是**组合**:先按主料筛推荐、再按忌口(含辅料)筛避开。
         //   调料忌口仍走下方 cookingCautions("少放"提示·健康忌口是剂量问题);个人忌口对调料真避开是另一路(见个人忌口设置方案)。
-        val avoidNames = nonSeasoning.filter { it.ingredientId in constraints.avoidIngredientIds }.map { it.name }.distinct()
+        // [AI生成] v29:个人忌口(口味排斥)对**所有食材角色**生效(含调料·含即命中)——不套用健康忌口的 nonSeasoning 限制。
+        //   与健康忌口合并进 avoidNames(下游同一路:排后+标红+不隐藏)；命中调料也算(不吃葱=一点不要,非"少放")。
+        val personalAvoidNames = dish.ingredients.filter { it.ingredientId in constraints.personalAvoidIngredientIds }.map { it.name }
+        val avoidNames = (nonSeasoning.filter { it.ingredientId in constraints.avoidIngredientIds }.map { it.name } + personalAvoidNames).distinct()
 
         val limitHits = mainIngredients.filter { it.ingredientId in constraints.limitIngredientIds }
         val recommendHits = mainIngredients.filter { it.ingredientId in constraints.recommendIngredientIds }

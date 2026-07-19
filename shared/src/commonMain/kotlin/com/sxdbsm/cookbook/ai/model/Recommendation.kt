@@ -67,6 +67,9 @@ data class HealthConstraints(
     val limitIngredientIds: Set<Long> = emptySet(), // 限量：保留但降权+提示
     val recommendIngredientIds: Set<Long> = emptySet(), // [AI生成] 调养推荐：含则加分(利于健康档案的菜靠前)
     val labels: List<String> = emptyList(), // 粗约束标签，喂给模型(如 "忌高嘌呤","低钠")
+    // [AI生成] v29:个人忌口(口味排斥·与健康调养正交)——**对所有食材角色生效(含调料·含即命中)**，
+    //   与 avoidIngredientIds(健康忌口·只非调料)语义不同，故单独字段。命中即排后+标红。
+    val personalAvoidIngredientIds: Set<Long> = emptySet(),
 )
 
 /**
