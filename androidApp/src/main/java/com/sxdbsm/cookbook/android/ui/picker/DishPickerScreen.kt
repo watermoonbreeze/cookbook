@@ -193,53 +193,7 @@ fun DishPickerScreen(
                     }
                 }
 
-                // [AI修改] C深度:"最近常吃/喜爱"快捷入口收进"最近"Tab(不再全局常驻挤占其它Tab),仅无搜索时显。
-                if (showRecentChips && state.recent.isNotEmpty() && state.keyword.isBlank() && state.sortTab == DishesSortTab.RECENT) {
-                    SectionHeader(title = "最近常吃", compact = true)
-                    Row(
-                        modifier = Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        state.recent.take(8).forEach { dish ->
-                            FilterChip(
-                                selected = state.selected.any { it.id == dish.id },
-                                onClick = {
-                                    vm.toggle(dish, multiSelect)
-                                    if (!multiSelect) {
-                                        onConfirm(vm.confirmSelected())
-                                        onDismiss()
-                                    }
-                                },
-                                label = { Text(dish.name) },
-                            )
-                        }
-                    }
-                }
-
-                if (state.popular.isNotEmpty() && state.keyword.isBlank() && state.sortTab == DishesSortTab.RECENT) {
-                    SectionHeader(title = "喜爱", compact = true)
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(state.popular, key = { it.id }) { dish ->
-                            DishMiniCard(
-                                dish = dish,
-                                onClick = {
-                                    vm.toggle(dish, multiSelect)
-                                    if (!multiSelect) {
-                                        onConfirm(vm.confirmSelected())
-                                        onDismiss()
-                                    }
-                                },
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                }
-
+                // [AI修改] 2026-07-19(用户反馈):移除"最近"Tab 下的"最近常吃"+"喜爱"两个快捷区——主分类 Tab 已有"最近"和"喜爱",此处重复冗余。
                 if (state.dishes.isEmpty()) {
                     // [AI修改] C深度审查🟡:空态按 Tab/搜索给具体引导(苹果式空态给下一步),而非泛化"没有找到菜品"。
                     val emptyText = when {
