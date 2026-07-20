@@ -260,6 +260,47 @@ fun MineScreen(
             SettingRow(icon = Icons.Outlined.Settings, title = "AI 设置", subtitle = "模型来源与 API Key", trailing = "▸") { onOpenAiSettings() }
         }
 
+        // [AI修改] 我的页排序(用户2026-07-20真机#4):核心常用置顶(档案/回顾/实用工具/AI/参考资料)→设置(功能设置/外观)→数据管理→合规/关于。
+        //   参考资料(常查营养表)提到设置之上;功能设置从原第8位(埋在外观/参考下)提上来;数据(备份/同传偶用)下沉。
+        // [AI生成] 参考资料组：营养表(数据查阅)/膳食参考依据(标准)/数据来源(出处)——常查·收纳在此。
+        InsetGroup(title = "参考资料") {
+            SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() }
+            InsetDivider(52)
+            // [AI生成] 健康状态参考：病种+生命阶段饮食关注点 + App 怎么提示 + 口径 + 免责。
+            SettingRow(icon = Icons.Outlined.MonitorHeart, title = "健康状态参考", subtitle = "慢病与孕期/婴幼儿等各自饮食关注点与提示口径，仅供参考", trailing = "▸") { onOpenHealthConditionReference() }
+            InsetDivider(52)
+            SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
+            InsetDivider(52)
+            // [AI生成] 食养参考(名称待 copywriter 定稿)：药食同源官方目录科普 + 免责。
+            SettingRow(icon = Icons.Outlined.Spa, title = "食养参考", subtitle = "药食同源目录与传统说法，仅供了解", trailing = "▸") { onOpenTcmReference() }
+        }
+
+        InsetGroup(title = "通用") {
+            SettingRow(icon = Icons.Outlined.Tune, title = "功能设置", subtitle = "分步执行、库存等功能开关", trailing = "▸") { onOpenFeatureSettings() }
+        }
+
+        InsetGroup(title = "外观") {
+            SettingRow(
+                icon = Icons.Outlined.LightMode,
+                title = "主题切换",
+                subtitle = when (mode) {
+                    ThemeMode.SYSTEM -> "跟随系统"
+                    ThemeMode.LIGHT -> "浅色"
+                    ThemeMode.DARK -> "深色"
+                },
+                trailing = "▸",
+            ) { themeDialogOpen = true }
+            InsetDivider(52)
+            SettingRow(
+                icon = Icons.Outlined.Palette,
+                title = "配色",
+                subtitle = palette.displayName,
+                trailing = "▸",
+            ) { paletteDialogOpen = true } // [AI生成] 配色主题切换
+        }
+
         InsetGroup(title = "数据") {
             SettingRow(icon = Icons.Outlined.Save, title = "备份与恢复", subtitle = "创建、导出、导入完整备份（含菜品照片）", trailing = "▸") { backupDialogOpen = true }
             InsetDivider(52)
@@ -292,45 +333,6 @@ fun MineScreen(
                 subtitle = "清理临时文件、释放空间，不影响你的记录和照片",
                 trailing = "▸",
             ) { clearCacheConfirm = true }
-        }
-
-        InsetGroup(title = "外观") {
-            SettingRow(
-                icon = Icons.Outlined.LightMode,
-                title = "主题切换",
-                subtitle = when (mode) {
-                    ThemeMode.SYSTEM -> "跟随系统"
-                    ThemeMode.LIGHT -> "浅色"
-                    ThemeMode.DARK -> "深色"
-                },
-                trailing = "▸",
-            ) { themeDialogOpen = true }
-            InsetDivider(52)
-            SettingRow(
-                icon = Icons.Outlined.Palette,
-                title = "配色",
-                subtitle = palette.displayName,
-                trailing = "▸",
-            ) { paletteDialogOpen = true } // [AI生成] 配色主题切换
-        }
-
-        // [AI生成] 参考资料组：营养表(数据查阅)/膳食参考依据(标准)/数据来源(出处)——参考·依据类统一收纳，后续可扩展。
-        InsetGroup(title = "参考资料") {
-            SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() }
-            InsetDivider(52)
-            SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() }
-            InsetDivider(52)
-            // [AI生成] 健康状态参考：病种+生命阶段饮食关注点 + App 怎么提示 + 口径 + 免责。
-            SettingRow(icon = Icons.Outlined.MonitorHeart, title = "健康状态参考", subtitle = "慢病与孕期/婴幼儿等各自饮食关注点与提示口径，仅供参考", trailing = "▸") { onOpenHealthConditionReference() }
-            InsetDivider(52)
-            SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
-            InsetDivider(52)
-            // [AI生成] 食养参考(名称待 copywriter 定稿)：药食同源官方目录科普 + 免责。
-            SettingRow(icon = Icons.Outlined.Spa, title = "食养参考", subtitle = "药食同源目录与传统说法，仅供了解", trailing = "▸") { onOpenTcmReference() }
-        }
-
-        InsetGroup(title = "通用") {
-            SettingRow(icon = Icons.Outlined.Tune, title = "功能设置", subtitle = "分步执行、库存等功能开关", trailing = "▸") { onOpenFeatureSettings() }
         }
 
         // [AI生成] 阶段3-c 隐私与协议：用户协议/隐私政策查看 + 匿名使用统计开关(默认关·随时可关)。

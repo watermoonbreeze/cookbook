@@ -452,14 +452,14 @@ fun IngredientPickerScreen(
                             }
                         }
                     }
-                    // [AI生成] ②b 库存字母定位条(拖动/点击滚到该首字母首个食材)。仅库存 Tab、超一屏(>12)且多字母才显。
-                    if (ui.mainTab == IngredientMainTab.PANTRY) {
-                        val pantryLetters = remember(ui.ingredients) {
+                    // [AI修改] ②b 拼音字母定位条(拖动/点击滚到该首字母首个食材)。用户2026-07-20真机#1:放开到**所有食材Tab/分类**(原仅库存)，超一屏(>12)且多首字母即显，方便任意分类下按拼音快速定位。
+                    run {
+                        val gridLetters = remember(ui.ingredients) {
                             ui.ingredients.map { com.sxdbsm.cookbook.android.ui.component.pinyinInitial(it.name) }.distinct()
                         }
-                        if (pantryLetters.size > 1 && ui.ingredients.size > 12) {
+                        if (gridLetters.size > 1 && ui.ingredients.size > 12) {
                             com.sxdbsm.cookbook.android.ui.component.LetterIndexBar(
-                                letters = pantryLetters,
+                                letters = gridLetters,
                                 modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp),
                                 onLetterSelected = { letter ->
                                     val idx = ui.ingredients.indexOfFirst {
