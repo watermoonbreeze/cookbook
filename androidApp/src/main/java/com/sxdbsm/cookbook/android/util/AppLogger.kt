@@ -55,10 +55,37 @@ object AppLogger {
                 message = "uncaught exception: thread=${thread.name}",
                 throwable = throwable,
             )
-            previous?.uncaughtException(thread, throwable)
+            // [AI修改] 崩溃不再直接闪退:拉起友好崩溃界面(独立 :crash 进程·可上报),再结束当前崩溃进程。
+            //   拉起失败(极早期崩溃/无 context 等)则回退系统原处理器,保证不因兜底逻辑再崩。
+            val ctx = appContext
+            val launched = if (ctx != null) runCatching {
+                val info = com.sxdbsm.cookbook.android.util.CrashInfo(
+                    time = timeFormat.format(Date()),
+                    threadName = thread.name,
+                    exceptionType = throwable.javaClass.name,
+                    message = throwable.message.orEmpty(),
+                    stackTrace = throwable.stackTraceToString(),
+                    deviceInfo = com.sxdbsm.cookbook.android.util.CrashInfo.deviceInfo(),
+                    appVersion = appVersionOf(ctx),
+                )
+                ctx.startActivity(com.sxdbsm.cookbook.android.ui.crash.CrashActivity.intent(ctx, info))
+                true
+            }.getOrDefault(false) else false
+            if (launched) {
+                android.os.Process.killProcess(android.os.Process.myPid())
+                kotlin.system.exitProcess(10)
+            } else {
+                previous?.uncaughtException(thread, throwable)
+            }
         }
         d("AppLogger", "crash handler installed")
     }
+
+    /** 取应用版本名(用于崩溃报告)。[AI生成] 失败退空，不因此再崩。 */
+    private fun appVersionOf(context: Context): String = runCatching {
+        val pi = context.packageManager.getPackageInfo(context.packageName, 0)
+        "${pi.versionName}(${@Suppress("DEPRECATION") pi.versionCode})"
+    }.getOrDefault("")
 
     fun d(tag: String, message: String) {
         Log.d(tag, message)

@@ -114,6 +114,7 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 声明 `CAMERA` 后拍照(`TakePicture`/`ACTION_IMAGE_CAPTURE`)也需**运行时授予 CAMERA**，否则失败——加 in-app 扫码/相机(引 zxing 会并入 CAMERA)时须在拍照前也申请该权限。
 - 拍照存图必须**应用 EXIF 方向**：部分设备(小米/华为)方向只写 EXIF、像素不转，`BitmapFactory` 解码不读 EXIF → 存的图偏 90/180/270°。用 `androidx.exifinterface`(全 API 支持 InputStream，minSdk21 首选，非 `android.media.ExifInterface`)读 `TAG_ORIENTATION` → `Matrix` 摆正后再存。
 - 注释/KDoc 内禁写 `/*`（如 `img/*`）：Kotlin 块注释可嵌套，`/*` 未配 `*/` → 编译 `Unclosed comment`（报在 EOF），改文字表述。
+- **Compose inline 布局 composable（`Column`/`Row`/`Box`）内容 lambda 禁「提前 return」**（`return@Column`/`return@Row`/`return@Box`）：致组 Start/End 失衡→**重组时**崩 `ArrayIndexOutOfBoundsException length=0 index=-N @ SlotTableKt.key`（栈常无自己代码帧·常伴 Scaffold/SubcomposeLayout 子合成·**"某场景才崩"极迷惑**，如"仅编辑态崩=封面空→出图重组时炸"）。变体组件（封面/普通两态）用 `if/else` 平衡分支，别"先渲一种再 return"。真机无栈时看 App 崩溃处理器落的 `files/cookbook/log` 或 `adb logcat -b crash -d`。详见全局经验 `~/.claude/memory/android_compose_slottable_early_return.md`（issuetracker 248513437）。别被"Scaffold 无界高度/嵌套 bottomBar"表象带偏（那是测量崩·另一类）。
 - DB 存文件引用（图片等）一律存**相对文件名**、读时按当前目录解析；存绝对路径遇目录迁移/跨设备即失效。
 - 存储合规：数据放 **app 专属目录**（`getExternalFilesDir`，零权限、免 `MANAGE_EXTERNAL_STORAGE`）；用户要拿数据走 **SAF**（`CreateDocument`/`OpenDocument`）。完整备份须打包 **db+图片**（zip），只备 `.db` 丢照片。
 - shared 若用 `android.util.Log`（如经 expect/actual 的 `CookbookLog`）：`shared/build.gradle.kts` 必加 `android{testOptions{unitTests.isReturnDefaultValues=true}}`，否则一旦被测路径触达日志，`:shared` 单测因 Log 桩抛 `RuntimeException` 全红。

@@ -59,6 +59,15 @@
             android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:theme="@style/AppTheme" />
+        <!-- [AI生成] 崩溃兜底友好界面：独立 :crash 进程(原进程已崩)，全局未捕获异常时拉起替代系统闪退，可上报。 -->
+        <activity
+            android:name=".ui.crash.CrashActivity"
+            android:exported="false"
+            android:process=":crash"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme" />
         <!-- [AI生成] 双设备同传扫码页：固定竖屏，避免 zxing 默认横屏。 -->
         <activity
             android:name=".ui.sync.PortraitCaptureActivity"
