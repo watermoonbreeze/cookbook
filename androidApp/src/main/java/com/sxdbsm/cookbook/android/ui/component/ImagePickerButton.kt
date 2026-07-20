@@ -31,6 +31,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,11 +75,15 @@ fun ImagePickerButton(
     maxCount: Int = 3,
     thumbnailPaths: List<String> = emptyList(),
     coverStyle: Boolean = false, // [AI生成] F#2/基调:封面卡变体——无图=虚线引导卡、有图=通栏封面(复用同一图片管线),用于菜品编辑页顶部前移引导拍照。
+    // [AI生成] §五阻断⑤:压缩/保存图片处理中对外露出 processing 态——编辑器据此在压缩期禁用保存,防空图路径存库。默认 no-op(不关心的调用方无感)。
+    onProcessingChange: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var chooserOpen by remember { mutableStateOf(false) }
     var processing by remember { mutableStateOf(false) }
+    // [AI生成] §五阻断⑤:processing 变化即上报调用方(压缩开始→true、结束→false)。
+    LaunchedEffect(processing) { onProcessingChange(processing) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 

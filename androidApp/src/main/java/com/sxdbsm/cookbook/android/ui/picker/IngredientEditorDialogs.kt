@@ -9,12 +9,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,11 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.sxdbsm.cookbook.android.ui.component.AppTopBar
 import com.sxdbsm.cookbook.android.ui.component.FormBottomBar
 import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
-import com.sxdbsm.cookbook.android.ui.component.MoreOptionsHeader
+import com.sxdbsm.cookbook.android.ui.component.InsetGroup
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
+import com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.FoodCategory
 import com.sxdbsm.cookbook.domain.model.Ingredient
@@ -40,6 +43,58 @@ import com.sxdbsm.cookbook.domain.model.MeasurementUnit
 
 // [AI生成] 食材新增/编辑表单弹层及其子控件（分类选择器/调养规则/单位下拉等）
 // 由 IngredientPickerScreen.kt 拆分而来（阶段1界面重构），保持同包同行为，不改逻辑。
+
+// [AI生成] §五阻断③:草稿持久化(rememberSaveable)用的自定义 Saver——集合/枚举/富对象序列化为 Bundle 可存的字符串。
+//   进程被杀/旋转恢复后据此还原表单,避免长表单已填内容丢失。CareRule 用 |#|(字段)、|##|(记录)分隔(草稿兜底,极少见冲突不致命)。
+// [AI生成] §四:重量/体积单位名集(有克当量,无需单件克重);其余(个/根/片…及用户自建)视为计件单位→显单件克重。
+//   与 shared PresetDataSeeder.PRESET_MEASUREMENT_UNITS 中 grams != null 的一致。
+private val WEIGHT_VOLUME_UNIT_NAMES = setOf("g", "kg", "两", "斤", "ml", "L", "勺")
+
+private val StringListSaver = Saver<List<String>, String>(
+    save = { encodeImagePaths(it) },
+    restore = { decodeImagePaths(it) },
+)
+private val LongSetSaver = Saver<Set<Long>, String>(
+    save = { it.joinToString(",") },
+    restore = { s -> if (s.isBlank()) emptySet() else s.split(",").mapNotNull(String::toLongOrNull).toSet() },
+)
+private val StringSetSaver = Saver<Set<String>, String>(
+    save = { it.joinToString(",") },
+    restore = { s -> if (s.isBlank()) emptySet() else s.split(",").filter { it.isNotBlank() }.toSet() },
+)
+private val GroupSaver = Saver<com.sxdbsm.cookbook.domain.FoodGroup.Group?, String>(
+    save = { it?.name ?: "" },
+    restore = { s -> if (s.isBlank()) null else runCatching { com.sxdbsm.cookbook.domain.FoodGroup.Group.valueOf(s) }.getOrNull() },
+)
+private val CareRulesSaver = Saver<List<IngredientCareRule>, String>(
+    save = { list ->
+        list.joinToString("|##|") { r ->
+            listOf(r.categoryId.toString(), r.categoryName, r.adviceLevel.name, r.reason, r.source).joinToString("|#|")
+        }
+    },
+    restore = { s ->
+        if (s.isEmpty()) {
+            emptyList()
+        } else {
+            s.split("|##|").mapNotNull { rec ->
+                val p = rec.split("|#|")
+                val catId = p.getOrNull(0)?.toLongOrNull()
+                if (p.size < 5 || catId == null) {
+                    null
+                } else {
+                    IngredientCareRule(
+                        ingredientId = 0L,
+                        categoryId = catId,
+                        categoryName = p[1],
+                        adviceLevel = runCatching { AdviceLevel.valueOf(p[2]) }.getOrElse { AdviceLevel.RECOMMEND },
+                        reason = p[3],
+                        source = p[4],
+                    )
+                }
+            }
+        }
+    },
+)
 
 /**
  * 完整食材新增/编辑弹层。[AI生成]
@@ -74,84 +129,91 @@ internal fun IngredientEditorDialog(
     // [AI生成] 食材智能推演：按名推演营养(回调异步返回)，UI 据结果预填。默认 no-op(编辑既有食材不推)。
     onGuessNutrition: (String, (com.sxdbsm.cookbook.domain.NutritionGuess) -> Unit) -> Unit = { _, _ -> },
 ) {
-    var name by remember(ingredient?.id) { mutableStateOf(ingredient?.name ?: initialName) } // [AI修改] 新建时可预填名称
-    var alias by remember(ingredient?.id) { mutableStateOf(ingredient?.alias.orEmpty()) }
-    var images by remember(ingredient?.id) { mutableStateOf(decodeImagePaths(ingredient?.imagePath.orEmpty())) }
-    var thumbnails by remember(ingredient?.id) { mutableStateOf(decodeImagePaths(ingredient?.thumbnailPath.orEmpty())) }
-    var defaultUnitId by remember(ingredient?.id) { mutableStateOf(ingredient?.defaultUnitId) }
-    var categoryIds by remember(ingredient?.id) { mutableStateOf<Set<Long>>(emptySet()) }
+    // [AI修改] §五阻断③:全字段草稿持久化(rememberSaveable+文件级 Saver)——进程被杀/旋转不丢已填。
+    //   inputs=ingredient?.id:切换编辑对象时重置;集合/枚举/careRules 用 Saver 序列化为字符串。
+    var name by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient?.name ?: initialName) } // [AI修改] 新建时可预填名称
+    var alias by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient?.alias.orEmpty()) }
+    var images by rememberSaveable(ingredient?.id, stateSaver = StringListSaver) { mutableStateOf(decodeImagePaths(ingredient?.imagePath.orEmpty())) }
+    var thumbnails by rememberSaveable(ingredient?.id, stateSaver = StringListSaver) { mutableStateOf(decodeImagePaths(ingredient?.thumbnailPath.orEmpty())) }
+    var defaultUnitId by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient?.defaultUnitId) }
+    var categoryIds by rememberSaveable(ingredient?.id, stateSaver = LongSetSaver) { mutableStateOf<Set<Long>>(emptySet()) }
     // [AI生成] A1：营养大类(必选，默认按名/已有分类预选)——决定归到主食/鱼肉蛋等分类树 + 色系/均衡统计。
-    var selectedGroup by remember(ingredient?.id) { mutableStateOf<com.sxdbsm.cookbook.domain.FoodGroup.Group?>(null) }
-    var groupTouched by remember(ingredient?.id) { mutableStateOf(false) }
-    var unitTouched by remember(ingredient?.id) { mutableStateOf(false) } // [AI生成] 用户是否手动选过单位(选过则不再自动预选)
-    var commonMethods by remember(ingredient?.id) { mutableStateOf("") }
-    var prepTips by remember(ingredient?.id) { mutableStateOf("") }
-    var eatingNotes by remember(ingredient?.id) { mutableStateOf("") }
-    var storageTips by remember(ingredient?.id) { mutableStateOf("") }
-    var healthNote by remember(ingredient?.id) { mutableStateOf("") }
-    var careRules by remember(ingredient?.id) { mutableStateOf<List<IngredientCareRule>>(emptyList()) }
-    var categoryPickerOpen by remember { mutableStateOf(false) } // [AI生成] 自定义食材分类选择器开关。
+    var selectedGroup by rememberSaveable(ingredient?.id, stateSaver = GroupSaver) { mutableStateOf<com.sxdbsm.cookbook.domain.FoodGroup.Group?>(null) }
+    var groupTouched by rememberSaveable(ingredient?.id) { mutableStateOf(false) }
+    var unitTouched by rememberSaveable(ingredient?.id) { mutableStateOf(false) } // [AI生成] 用户是否手动选过单位(选过则不再自动预选)
+    var commonMethods by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var prepTips by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var eatingNotes by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var storageTips by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var healthNote by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var careRules by rememberSaveable(ingredient?.id, stateSaver = CareRulesSaver) { mutableStateOf<List<IngredientCareRule>>(emptyList()) }
+    var categoryPickerOpen by remember { mutableStateOf(false) } // [AI生成] 自定义食材分类选择器开关(瞬态,不持久)。
+    var imageProcessing by remember { mutableStateOf(false) } // [AI生成] §五阻断⑤:图片压缩中(ImagePickerButton 上报)→禁保存。
     // [AI修改] §四:低频区拆 4 个独立折叠段(营养数值/更多信息/做法说明/调养建议·各自开合)。新建默认收起(填名+大类即可快速建材)、编辑默认展开(便于看全已填内容)。
-    var expandNutrition by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
-    var expandMore by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
-    var expandDetail by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
-    var expandCare by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
-    // [AI生成] Item4：自定义食材营养素(每100g)录入，预填已有；营养色系开时给"影响哪些统计"提示。
+    var expandNutrition by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
+    var expandMore by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
+    var expandDetail by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
+    var expandCare by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
+    // [AI生成] Item4：自定义食材营养素(每100g)录入。[AI修改] §五阻断③:改 rememberSaveable(仅按 id 键)持久草稿,预填改由下方 hydrate 块"只填空"完成(不覆盖草稿)。
     fun fmtNum(v: Double?): String = v?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
-    var nKcal by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.energyKcal)) }
-    var nProtein by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.proteinG)) }
-    var nFat by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.fatG)) }
-    var nCarb by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.carbG)) }
-    var nFiber by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.fiberG)) }
-    var nSodium by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.sodiumMg)) }
-    var nPotassium by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.potassiumMg)) }
-    var nCalcium by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.calciumMg)) }
-    var nGi by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.gi)) }
-    var nPurine by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.purineMg)) }
-    var nPiece by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.pieceGram)) }
+    var nKcal by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nProtein by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nFat by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nCarb by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nFiber by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nSodium by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nPotassium by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nCalcium by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nGi by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nPurine by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    var nPiece by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    // [AI生成] §五阻断③:DB→表单只水合一次的守卫(rememberSaveable→进程被杀后为 true,跳过重灌以保草稿)。
+    var hydrated by rememberSaveable(ingredient?.id) { mutableStateOf(false) }
 
     // [AI生成] 食材智能推演：按名预填营养(不打扰·可撤·标来源)。
-    //   userEditedN=用户手动改过的营养字段(推演永远跳过它，不覆盖用户输入)；guessSource=本次预填来源(null=无预填)。
-    val userEditedN = remember(ingredient?.id) { mutableStateMapOf<String, Boolean>() }
+    //   editedN=用户手动改过的营养字段集合(推演永远跳过它，不覆盖用户输入)；guessSource=本次预填来源(null=无预填,瞬态)。
+    // [AI修改] §五阻断③:editedN、lastGuessedName 持久化——进程被杀恢复后推演不再覆盖用户已填草稿,且不重复推演。
+    var editedN by rememberSaveable(ingredient?.id, stateSaver = StringSetSaver) { mutableStateOf<Set<String>>(emptySet()) }
     var guessSource by remember(ingredient?.id) { mutableStateOf<com.sxdbsm.cookbook.domain.NutritionGuessSource?>(null) }
-    var lastGuessedName by remember(ingredient?.id) { mutableStateOf("") }
-    fun markEdited(key: String) { userEditedN[key] = true }
+    var lastGuessedName by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    fun markEdited(key: String) { editedN = editedN + key }
     /** 该字段是否"当前显示的是系统预填值"(未被用户改过且有值且本次有预填)——用于弱化视觉。 */
-    fun guessedField(key: String, v: String): Boolean = guessSource != null && userEditedN[key] != true && v.isNotBlank()
+    fun guessedField(key: String, v: String): Boolean = guessSource != null && key !in editedN && v.isNotBlank()
     /** 应用一次推演结果：只写未被用户改过的字段，缺字段留空不填 0(免责红线)。 */
     fun applyGuess(g: com.sxdbsm.cookbook.domain.NutritionGuess) {
         val v = g.values
         if (g.source is com.sxdbsm.cookbook.domain.NutritionGuessSource.None || v == null) { guessSource = null; return }
         guessSource = g.source
-        if (userEditedN["kcal"] != true) v.energyKcal?.let { nKcal = fmtNum(it) }
-        if (userEditedN["protein"] != true) v.proteinG?.let { nProtein = fmtNum(it) }
-        if (userEditedN["fat"] != true) v.fatG?.let { nFat = fmtNum(it) }
-        if (userEditedN["carb"] != true) v.carbG?.let { nCarb = fmtNum(it) }
-        if (userEditedN["fiber"] != true) v.fiberG?.let { nFiber = fmtNum(it) }
-        if (userEditedN["sodium"] != true) v.sodiumMg?.let { nSodium = fmtNum(it) }
-        if (userEditedN["potassium"] != true) v.potassiumMg?.let { nPotassium = fmtNum(it) }
-        if (userEditedN["calcium"] != true) v.calciumMg?.let { nCalcium = fmtNum(it) }
-        if (userEditedN["gi"] != true) v.gi?.let { nGi = fmtNum(it) }
-        if (userEditedN["purine"] != true) v.purineMg?.let { nPurine = fmtNum(it) }
+        if ("kcal" !in editedN) v.energyKcal?.let { nKcal = fmtNum(it) }
+        if ("protein" !in editedN) v.proteinG?.let { nProtein = fmtNum(it) }
+        if ("fat" !in editedN) v.fatG?.let { nFat = fmtNum(it) }
+        if ("carb" !in editedN) v.carbG?.let { nCarb = fmtNum(it) }
+        if ("fiber" !in editedN) v.fiberG?.let { nFiber = fmtNum(it) }
+        if ("sodium" !in editedN) v.sodiumMg?.let { nSodium = fmtNum(it) }
+        if ("potassium" !in editedN) v.potassiumMg?.let { nPotassium = fmtNum(it) }
+        if ("calcium" !in editedN) v.calciumMg?.let { nCalcium = fmtNum(it) }
+        if ("gi" !in editedN) v.gi?.let { nGi = fmtNum(it) }
+        if ("purine" !in editedN) v.purineMg?.let { nPurine = fmtNum(it) }
         expandNutrition = true // 让用户看见被预填的数字(营养数值在折叠区)
     }
     /** 清空预填：只清未被用户改过的预填字段(可逆·不弹确认，§9.9)，保留用户已改。 */
     fun clearGuessed() {
-        if (userEditedN["kcal"] != true) nKcal = ""
-        if (userEditedN["protein"] != true) nProtein = ""
-        if (userEditedN["fat"] != true) nFat = ""
-        if (userEditedN["carb"] != true) nCarb = ""
-        if (userEditedN["fiber"] != true) nFiber = ""
-        if (userEditedN["sodium"] != true) nSodium = ""
-        if (userEditedN["potassium"] != true) nPotassium = ""
-        if (userEditedN["calcium"] != true) nCalcium = ""
-        if (userEditedN["gi"] != true) nGi = ""
-        if (userEditedN["purine"] != true) nPurine = ""
+        if ("kcal" !in editedN) nKcal = ""
+        if ("protein" !in editedN) nProtein = ""
+        if ("fat" !in editedN) nFat = ""
+        if ("carb" !in editedN) nCarb = ""
+        if ("fiber" !in editedN) nFiber = ""
+        if ("sodium" !in editedN) nSodium = ""
+        if ("potassium" !in editedN) nPotassium = ""
+        if ("calcium" !in editedN) nCalcium = ""
+        if ("gi" !in editedN) nGi = ""
+        if ("purine" !in editedN) nPurine = ""
         guessSource = null
     }
     // [AI生成] 触发预填：仅新建食材；LaunchedEffect(name) 每次改名重启，delay(600) 天然去抖(打字停下才推演)。
-    LaunchedEffect(name) {
-        if (ingredient != null) return@LaunchedEffect
+    // [AI修改] 质量审#8:显式等水合再推演(别只靠 delay(600) 晚于水合的隐式时序)——防将来去抖调小/水合加等待后推演覆盖恢复草稿。
+    LaunchedEffect(name, hydrated) {
+        if (ingredient != null || !hydrated) return@LaunchedEffect
         val n = name.trim()
         if (n.isBlank() || n == lastGuessedName) return@LaunchedEffect
         kotlinx.coroutines.delay(600)
@@ -213,20 +275,37 @@ internal fun IngredientEditorDialog(
     val selectedCategoryNames = editableCustomCategories
         .filter { it.id in categoryIds }
         .joinToString("，") { it.name }
+    // [AI生成] §四:单件克重仅对"计件单位(个/根/片…)"或已有值显示——重量/体积单位(g/kg/两/斤/ml/L/勺)有克当量不需要。
+    //   MeasurementUnit 不带克当量,按名判定(重量/体积集见 PresetDataSeeder.PRESET_MEASUREMENT_UNITS)。
+    val selectedUnitName = ui.availableUnits.firstOrNull { it.id == defaultUnitId }?.name
+    val isPieceUnit = selectedUnitName != null && selectedUnitName !in WEIGHT_VOLUME_UNIT_NAMES
+    val showPieceGram = isPieceUnit || nPiece.isNotBlank()
 
-    LaunchedEffect(ingredient?.id, ui.editorLoading, ui.editorCategoryIds, ui.editorDetail, ui.editorCareRules) {
-        if (ingredient == null || !ui.editorLoading) {
-            categoryIds = if (ingredient?.source == "preset") emptySet() else ui.editorCategoryIds.filter { id ->
-                ui.allCategories.firstOrNull { it.id == id }?.isEditableUserGeneralCategory() == true
-            }.toSet()
-            val detail = ui.editorDetail
-            commonMethods = detail?.commonMethods.orEmpty()
-            prepTips = detail?.prepTips.orEmpty()
-            eatingNotes = detail?.eatingNotes.orEmpty()
-            storageTips = detail?.storageTips.orEmpty()
-            healthNote = detail?.healthNote.orEmpty()
-            careRules = ui.editorCareRules
-        }
+    // [AI修改] §五阻断③:DB→表单只水合一次(hydrated 守卫·rememberSaveable)——首次打开从 DB 灌入;
+    //   进程被杀恢复后 hydrated=true→跳过,保留 rememberSaveable 草稿不被 DB 值覆盖。营养同此(仅水合时填,之后由用户/推演维护)。
+    // [AI修改] 质量审#1竞态修:编辑态首帧 editorLoading 可能仍是上一轮 false(loadIngredientEditor 在 launch 内才置 true)→
+    //   会用上个食材的残留 editorNutrition 空灌并锁死 hydrated=true→新数据永灌不进(偶发空表单不自愈)。
+    //   守卫改「必须 editorIngredientId==本食材 id 且 !editorLoading」才水合(id 匹配=确认拿到的是本食材数据),把 editorIngredientId 纳入 key。
+    LaunchedEffect(ingredient?.id, ui.editorLoading, ui.editorIngredientId, ui.editorCategoryIds, ui.editorDetail, ui.editorCareRules, ui.editorNutrition) {
+        if (hydrated) return@LaunchedEffect
+        if (ingredient == null) { hydrated = true; return@LaunchedEffect } // 新建态无 DB 值,字段留空由推演/用户填(不灌残留)
+        if (ui.editorLoading || ui.editorIngredientId != ingredient.id) return@LaunchedEffect // 编辑态等本食材 DB 载完再水合
+        categoryIds = if (ingredient.source == "preset") emptySet() else ui.editorCategoryIds.filter { id ->
+            ui.allCategories.firstOrNull { it.id == id }?.isEditableUserGeneralCategory() == true
+        }.toSet()
+        val detail = ui.editorDetail
+        commonMethods = detail?.commonMethods.orEmpty()
+        prepTips = detail?.prepTips.orEmpty()
+        eatingNotes = detail?.eatingNotes.orEmpty()
+        storageTips = detail?.storageTips.orEmpty()
+        healthNote = detail?.healthNote.orEmpty()
+        careRules = ui.editorCareRules
+        val nu = ui.editorNutrition
+        nKcal = fmtNum(nu?.energyKcal); nProtein = fmtNum(nu?.proteinG); nFat = fmtNum(nu?.fatG)
+        nCarb = fmtNum(nu?.carbG); nFiber = fmtNum(nu?.fiberG); nSodium = fmtNum(nu?.sodiumMg)
+        nPotassium = fmtNum(nu?.potassiumMg); nCalcium = fmtNum(nu?.calciumMg); nGi = fmtNum(nu?.gi)
+        nPurine = fmtNum(nu?.purineMg); nPiece = fmtNum(nu?.pieceGram)
+        hydrated = true
     }
 
     // [AI生成] UX：新建食材未保存返回守卫——填过内容时返回先确认，避免误触丢失长表单。
@@ -236,11 +315,16 @@ internal fun IngredientEditorDialog(
             commonMethods.isNotBlank() || prepTips.isNotBlank() || eatingNotes.isNotBlank() ||
             storageTips.isNotBlank() || healthNote.isNotBlank() || careRules.isNotEmpty() ||
             (groupTouched && selectedGroup != null) ||
-            // [AI修改] 智能推演：营养"脏"看用户是否真手改过(userEditedN)，而非有值——否则系统预填就误判未保存拦返回。
-            userEditedN.values.any { it } || nPiece.isNotBlank()
+            // [AI修改] 智能推演：营养"脏"看用户是否真手改过(editedN)，而非有值——否则系统预填就误判未保存拦返回。
+            editedN.isNotEmpty() || nPiece.isNotBlank()
         )
-    var confirmDiscard by remember { mutableStateOf(false) }
-    fun attemptDismiss() { if (hasUnsavedNew && !ui.creatingIngredient) confirmDiscard = true else onDismiss() }
+    // [AI修改] §9.17/基调:自绘 confirmDiscard 换统一 rememberUnsavedGuard(非包裹式返回 requestBack)——顶栏返回+系统 Back 统一走。
+    //   isDirty 含 !creatingIngredient;onConfirmLeave 再挡一次 creating,防保存中被返回打断。
+    val requestBack = rememberUnsavedGuard(
+        isDirty = { hasUnsavedNew && !ui.creatingIngredient },
+        onConfirmLeave = { if (!ui.creatingIngredient) onDismiss() },
+        dialogText = "已填写的内容尚未保存，返回将不保留。",
+    )
 
     // [AI生成] B-6：统一提交(keepOpen=true 保存并继续/false 保存并返回)——两路复用同一组表单值。
     val submit: (Boolean) -> Unit = { keepOpen ->
@@ -286,8 +370,7 @@ internal fun IngredientEditorDialog(
         careRules = emptyList()
         nKcal = ""; nProtein = ""; nFat = ""; nCarb = ""; nFiber = ""; nSodium = ""
         nPotassium = ""; nCalcium = ""; nGi = ""; nPurine = ""; nPiece = ""
-        userEditedN.clear(); guessSource = null; lastGuessedName = "" // [AI生成] 智能推演：复位后下一个食材重新推演
-        confirmDiscard = false
+        editedN = emptySet(); guessSource = null; lastGuessedName = "" // [AI生成] 智能推演：复位后下一个食材重新推演
     }
     // [AI生成] B-6：监听"保存并继续"成功计数(continueSavedNonce)——本弹层触发过才复位+提示+聚焦(首帧初值不触发)。
     // 用 Toast 而非统一 Snackbar：全屏 Dialog 会遮住 MainScaffold 的共享 Snackbar 宿主(不可见)；此提示纯告知无跟进项(§9.12 允许)。
@@ -300,187 +383,244 @@ internal fun IngredientEditorDialog(
             runCatching { nameFocus.requestFocus() }
         }
     }
+    // [AI修改] 质量审#3:保存并继续失败(createError 出现·nonce 不增)→复位 savingContinuation,别让残留态在下次 keepOpen 成功时误触发复位。
+    LaunchedEffect(ui.createError) {
+        if (ui.createError != null) savingContinuation = false
+    }
 
     Dialog(
-        onDismissRequest = { if (!ui.creatingIngredient) attemptDismiss() },
+        onDismissRequest = { requestBack() },
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
     ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface,
+            // [AI修改] 基调§一.7:页面底灰(background)、分区卡白(InsetGroup surface),层次分明。
+            color = MaterialTheme.colorScheme.background,
         ) {
             Column(Modifier.fillMaxSize()) {
-                TopAppBar(
-                    title = { Text(if (ingredient == null) "添加食材" else "编辑食材", fontWeight = FontWeight.SemiBold) },
-                    navigationIcon = {
-                        IconButton(onClick = { attemptDismiss() }, enabled = !ui.creatingIngredient) {
-                            Icon(Icons.Outlined.ArrowBack, contentDescription = "返回")
-                        }
-                    },
-                    // [AI修改] B-6：主 CTA 从顶栏右上下移到底部常驻 FormBottomBar(§9.13)，顶栏只留返回。
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    ),
+                // [AI修改] §9.30/基调:内联 TopAppBar 换统一 AppTopBar(返回图标 primary、色跟随背景);保存中禁返回。
+                AppTopBar(
+                    title = if (ingredient == null) "添加食材" else "编辑食材",
+                    onBack = { if (!ui.creatingIngredient) requestBack() },
                 )
 
                 if (ui.editorLoading) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
 
+                // [AI修改] §五阻断①:保存失败错误条从长表单底部上移到"顶栏下固定不滚动"位——长表单也一眼可见,不误以为已存。
+                ui.createError?.let { error ->
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    ) {
+                        Text(
+                            error,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(12.dp),
+                        )
+                    }
+                }
+
                 Column(
                     modifier = Modifier
-                        // [AI修改] B-6：改 weight(1f) 占满剩余高度并可滚，让底部 FormBottomBar 常驻不被推走。
+                        // [AI修改] B-6：weight(1f) 占满剩余高度并可滚,底部 FormBottomBar 常驻不被推走。
                         .weight(1f)
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                        .imePadding() // [AI修改] §五建议:键盘弹起内容上抬,防遮挡底部字段。
+                        // InsetGroup 自带横向 16dp 屏边距,故此 Column 不再叠加 horizontal padding(防双重坑)。
+                        .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    EditorSection("基础信息") {
-                        OutlinedTextField(
-                            value = name,
-                            onValueChange = { if (!isPreset) name = it },
-                            label = { Text("食材名称 *") },
-                            singleLine = true,
-                            enabled = !isPreset,
-                            // [AI修改] B-6：挂 FocusRequester，"保存并继续"复位后聚焦此框直接可打字。
-                            modifier = Modifier.fillMaxWidth().focusRequester(nameFocus),
-                            shape = MaterialTheme.shapes.medium,
-                        )
-                        OutlinedTextField(
-                            value = alias,
-                            onValueChange = { alias = it },
-                            label = { Text("二级名称") }, // [AI修改] 食材展示规则调整为“食材名称(二级名称)”。
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.medium,
-                        )
-                        if (!isPreset) {
-                            UnitDropdown(
-                                units = ui.availableUnits,
-                                selectedUnitId = defaultUnitId,
-                                onSelect = { defaultUnitId = it; unitTouched = true },
-                                onAddUnit = { newName -> onAddUnit(newName) { id -> if (id != null) { defaultUnitId = id; unitTouched = true } } },
+                    // [AI修改] §四/基调§一.7:基础信息 InsetGroup 白卡——名称*+(非预设)营养大类+单位+单件克重[仅计件条件显];别名/图片下沉"更多信息"段。
+                    InsetGroup(title = "基础信息") {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            OutlinedTextField(
+                                value = name,
+                                onValueChange = { if (!isPreset) name = it },
+                                label = { Text("食材名称 *") },
+                                singleLine = true,
+                                enabled = !isPreset,
+                                // [AI修改] B-6：挂 FocusRequester，"保存并继续"复位后聚焦此框直接可打字。
+                                modifier = Modifier.fillMaxWidth().focusRequester(nameFocus),
+                                shape = MaterialTheme.shapes.medium,
                             )
-                        }
-                        ImagePickerButton(
-                            imagePaths = images,
-                            thumbnailPaths = thumbnails,
-                            onImagesChanged = { nextImages, nextThumbnails ->
-                                images = nextImages
-                                thumbnails = nextThumbnails
-                            },
-                            maxCount = 3,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-
-                    if (!isPreset) {
-                        // [AI生成] 智能推演：按名预填了分类/营养时顶一条善意提示条(告知"已预填·请核对"·可清空)。
-                        guessSource?.let { src -> NutritionGuessBanner(source = src, onClear = { clearGuessed() }) }
-                        // [AI修改] §四:去"营养大类（必选）"红字唠叨(唯一真必填=名称·已智能预选几乎不空)——保留必填校验(formValid)但不红字施压。
-                        EditorSection("营养大类") {
-                            Text(
-                                "决定这个食材归到「主食/蔬菜/鱼肉蛋…」哪一类——用于分类浏览和营养均衡统计。已按名字自动选好，可改。",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Spacer(Modifier.height(6.dp))
-                            androidx.compose.foundation.layout.FlowRow(
-                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
-                            ) {
-                                groupOptions.forEach { (group, catName, _) ->
-                                    val sel = selectedGroup?.let { com.sxdbsm.cookbook.domain.FoodGroup.CATEGORY_NAME[it] } == catName
-                                    androidx.compose.material3.FilterChip(
-                                        selected = sel,
-                                        onClick = { selectedGroup = group; groupTouched = true },
-                                        label = { Text(catName) },
+                            if (isPreset) {
+                                // 预设食材无折叠段,别名/图片留基础卡内可编辑(用 if/else 平衡分支,禁提前 return·守崩溃红线)。
+                                OutlinedTextField(
+                                    value = alias,
+                                    onValueChange = { alias = it },
+                                    label = { Text("二级名称") },
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = MaterialTheme.shapes.medium,
+                                )
+                                ImagePickerButton(
+                                    imagePaths = images,
+                                    thumbnailPaths = thumbnails,
+                                    onImagesChanged = { i, t -> images = i; thumbnails = t },
+                                    onProcessingChange = { imageProcessing = it },
+                                    maxCount = 3,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            } else {
+                                // [AI修改] §四:营养大类 chip 上移基础卡(去"必选"红字唠叨·唯一真必填=名称)。
+                                Text("营养大类", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    "决定归到「主食/蔬菜/鱼肉蛋…」哪一类——用于分类浏览和营养均衡统计。已按名字自动选好，可改。",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                androidx.compose.foundation.layout.FlowRow(
+                                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+                                ) {
+                                    groupOptions.forEach { (group, catName, _) ->
+                                        val sel = selectedGroup?.let { com.sxdbsm.cookbook.domain.FoodGroup.CATEGORY_NAME[it] } == catName
+                                        androidx.compose.material3.FilterChip(
+                                            selected = sel,
+                                            onClick = { selectedGroup = group; groupTouched = true },
+                                            label = { Text(catName) },
+                                        )
+                                    }
+                                }
+                                UnitDropdown(
+                                    units = ui.availableUnits,
+                                    selectedUnitId = defaultUnitId,
+                                    onSelect = { defaultUnitId = it; unitTouched = true },
+                                    onAddUnit = { newName -> onAddUnit(newName) { id -> if (id != null) { defaultUnitId = id; unitTouched = true } } },
+                                )
+                                // [AI修改] §四:单件克重上移基础区,仅计件单位(个/根/片…)或已有值时显——重量/体积单位(g/ml…)不需要。
+                                if (showPieceGram) {
+                                    OutlinedTextField(
+                                        value = nPiece,
+                                        onValueChange = { s ->
+                                            val f = s.filter { it.isDigit() || it == '.' }
+                                            val next = if (f.count { it == '.' } <= 1) f else nPiece
+                                            markEdited("piece"); nPiece = next
+                                        },
+                                        label = { Text("单件克重（克）") },
+                                        singleLine = true,
+                                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = MaterialTheme.shapes.medium,
+                                    )
+                                    Text(
+                                        "按「个/根/片」等计件单位买时，一件约多少克（如 1 个鸡蛋≈50），用于把用量折算成克。",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
                             }
                         }
+                    }
 
-                        // [AI修改] §四:低频区由单 moreExpanded 拆成 4 个独立折叠段(按频率排序·各自开合),新建默认收起、编辑默认展开。
-                        FoldSection("营养数值（每100g，选填）", expandNutrition, { expandNutrition = !expandNutrition }) {
-                            if (nutritionColorOn) {
+                    if (!isPreset) {
+                        // [AI生成] 智能推演：按名预填了分类/营养时顶一条善意提示条(告知"已预填·请核对"·可清空)。
+                        guessSource?.let { src ->
+                            Box(Modifier.padding(horizontal = 16.dp)) {
+                                NutritionGuessBanner(source = src, onClear = { clearGuessed() })
+                            }
+                        }
+                        // [AI修改] §四/基调§一.7:低频区 4 个独立折叠段,各包 InsetGroup 白卡(与基础卡视觉一致·按频率排序·各自开合)。
+                        InsetGroup {
+                            FoldSection("营养数值（每100g，选填）", expandNutrition, { expandNutrition = !expandNutrition }) {
+                                if (nutritionColorOn) {
+                                    Text(
+                                        "填了这些值，这个食材就会计入统计：热量→每日千卡与达标；蛋白/脂肪/碳水→宏量均衡；" +
+                                            "选好上方分类→搭配多样性；钠/GI/嘌呤→高血压/糖尿病/痛风指标。不填也能用，随时可补。",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                }
+                                // [AI修改] 智能推演：预填未改的字段弱化显示(guessed)，onValueChange 打脏标记(改过=用户值，推演不再覆盖)。单件克重已上移基础区。
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    NutrientField("热量kcal", nKcal, Modifier.weight(1f), guessed = guessedField("kcal", nKcal)) { markEdited("kcal"); nKcal = it }
+                                    NutrientField("蛋白g", nProtein, Modifier.weight(1f), guessed = guessedField("protein", nProtein)) { markEdited("protein"); nProtein = it }
+                                    NutrientField("脂肪g", nFat, Modifier.weight(1f), guessed = guessedField("fat", nFat)) { markEdited("fat"); nFat = it }
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    NutrientField("碳水g", nCarb, Modifier.weight(1f), guessed = guessedField("carb", nCarb)) { markEdited("carb"); nCarb = it }
+                                    NutrientField("纤维g", nFiber, Modifier.weight(1f), guessed = guessedField("fiber", nFiber)) { markEdited("fiber"); nFiber = it }
+                                    NutrientField("钠mg", nSodium, Modifier.weight(1f), guessed = guessedField("sodium", nSodium)) { markEdited("sodium"); nSodium = it }
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    NutrientField("钾mg", nPotassium, Modifier.weight(1f), guessed = guessedField("potassium", nPotassium)) { markEdited("potassium"); nPotassium = it }
+                                    NutrientField("钙mg", nCalcium, Modifier.weight(1f), guessed = guessedField("calcium", nCalcium)) { markEdited("calcium"); nCalcium = it }
+                                    NutrientField("GI", nGi, Modifier.weight(1f), guessed = guessedField("gi", nGi)) { markEdited("gi"); nGi = it }
+                                }
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    NutrientField("嘌呤mg", nPurine, Modifier.weight(1f), guessed = guessedField("purine", nPurine)) { markEdited("purine"); nPurine = it }
+                                    Spacer(Modifier.weight(1f))
+                                    Spacer(Modifier.weight(1f))
+                                }
+                            }
+                        }
+                        InsetGroup {
+                            FoldSection("更多信息（别名 / 图片 / 其它分类）", expandMore, { expandMore = !expandMore }) {
+                                // [AI修改] §四:别名/图片从基础卡下沉至此(基础卡只留高频必填);此段收低频装饰信息。
+                                OutlinedTextField(
+                                    value = alias,
+                                    onValueChange = { alias = it },
+                                    label = { Text("二级名称") }, // [AI修改] 食材展示规则为“食材名称(二级名称)”。
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = MaterialTheme.shapes.medium,
+                                )
+                                ImagePickerButton(
+                                    imagePaths = images,
+                                    thumbnailPaths = thumbnails,
+                                    onImagesChanged = { i, t -> images = i; thumbnails = t },
+                                    onProcessingChange = { imageProcessing = it }, // [AI生成] §五阻断⑤:压缩中禁保存
+                                    maxCount = 3,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
                                 Text(
-                                    "填了这些值，这个食材就会计入统计：热量→每日千卡与达标；蛋白/脂肪/碳水→宏量均衡；" +
-                                        "选好上方分类→搭配多样性；钠/GI/嘌呤→高血压/糖尿病/痛风指标。不填也能用，随时可补。",
-                                    style = MaterialTheme.typography.labelSmall,
+                                    // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
+                                    selectedCategoryNames.ifBlank { "未选择其它分类（营养维度/自建分类等，可不选）" },
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
-                                Spacer(Modifier.height(4.dp))
-                            }
-                            // [AI修改] 智能推演：预填未改的字段弱化显示(guessed)，onValueChange 打脏标记(改过=用户值，推演不再覆盖)。
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("热量kcal", nKcal, Modifier.weight(1f), guessed = guessedField("kcal", nKcal)) { markEdited("kcal"); nKcal = it }
-                                NutrientField("蛋白g", nProtein, Modifier.weight(1f), guessed = guessedField("protein", nProtein)) { markEdited("protein"); nProtein = it }
-                                NutrientField("脂肪g", nFat, Modifier.weight(1f), guessed = guessedField("fat", nFat)) { markEdited("fat"); nFat = it }
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("碳水g", nCarb, Modifier.weight(1f), guessed = guessedField("carb", nCarb)) { markEdited("carb"); nCarb = it }
-                                NutrientField("纤维g", nFiber, Modifier.weight(1f), guessed = guessedField("fiber", nFiber)) { markEdited("fiber"); nFiber = it }
-                                NutrientField("钠mg", nSodium, Modifier.weight(1f), guessed = guessedField("sodium", nSodium)) { markEdited("sodium"); nSodium = it }
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("钾mg", nPotassium, Modifier.weight(1f), guessed = guessedField("potassium", nPotassium)) { markEdited("potassium"); nPotassium = it }
-                                NutrientField("钙mg", nCalcium, Modifier.weight(1f), guessed = guessedField("calcium", nCalcium)) { markEdited("calcium"); nCalcium = it }
-                                NutrientField("GI", nGi, Modifier.weight(1f), guessed = guessedField("gi", nGi)) { markEdited("gi"); nGi = it }
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                NutrientField("嘌呤mg", nPurine, Modifier.weight(1f), guessed = guessedField("purine", nPurine)) { markEdited("purine"); nPurine = it }
-                                NutrientField("单件克重", nPiece, Modifier.weight(1f)) { markEdited("piece"); nPiece = it }
-                                Spacer(Modifier.weight(1f))
-                            }
-                            Text(
-                                "单件克重：按「个/根/片」等计件单位买时，一件约多少克(如1个鸡蛋≈50)，用于把用量折算成克。",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-
-                        FoldSection("更多信息（其它分类）", expandMore, { expandMore = !expandMore }) {
-                            Text(
-                                // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
-                                selectedCategoryNames.ifBlank { "未选择其它分类（营养维度/自建分类等，可不选）" },
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            OutlinedButton(onClick = { categoryPickerOpen = true }, modifier = Modifier.fillMaxWidth()) {
-                                Text("选择分类")
+                                OutlinedButton(onClick = { categoryPickerOpen = true }, modifier = Modifier.fillMaxWidth()) {
+                                    Text("选择分类")
+                                }
                             }
                         }
-                        FoldSection("做法说明", expandDetail, { expandDetail = !expandDetail }) {
-                            DetailTextField("常见做法", commonMethods) { commonMethods = it }
-                            DetailTextField("处理建议", prepTips) { prepTips = it }
-                            DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
-                            DetailTextField("保存建议", storageTips) { storageTips = it }
-                            DetailTextField("健康说明", healthNote) { healthNote = it }
+                        InsetGroup {
+                            FoldSection("做法说明", expandDetail, { expandDetail = !expandDetail }) {
+                                DetailTextField("常见做法", commonMethods) { commonMethods = it }
+                                DetailTextField("处理建议", prepTips) { prepTips = it }
+                                DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
+                                DetailTextField("保存建议", storageTips) { storageTips = it }
+                                DetailTextField("健康说明", healthNote) { healthNote = it }
+                            }
                         }
                         // [AI修改] 调养建议独立折叠段(§四·自定义食材可编辑含调养规则)；标题由 FoldSection 承载,CareRuleEditor 内不再重复标题。
-                        FoldSection("调养建议", expandCare, { expandCare = !expandCare }) {
-                            CareRuleEditor(
-                                categories = ui.allCategories.filter { (it.dimension == "crowd" || it.crowdTypeId != null) && !it.isCareGroupRoot() },
-                                rules = careRules,
-                                onRulesChange = { careRules = it },
-                            )
+                        InsetGroup {
+                            FoldSection("调养建议", expandCare, { expandCare = !expandCare }) {
+                                CareRuleEditor(
+                                    categories = ui.allCategories.filter { (it.dimension == "crowd" || it.crowdTypeId != null) && !it.isCareGroupRoot() },
+                                    rules = careRules,
+                                    onRulesChange = { careRules = it },
+                                )
+                            }
                         }
                     }
 
-                    ui.createError?.let { error ->
-                        Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
-                    }
                     Spacer(Modifier.height(8.dp))
                 }
 
-                // [AI生成] B-6：保存可用条件(单一真相)——[AI修改] A1：营养大类必选(预设无此要求,预设不显该区)。
+                // [AI生成] B-6：保存可用条件(单一真相)——[AI修改] A1：营养大类必选(预设无此要求);§五阻断⑤:图片压缩中禁保存。
                 val formValid = name.isNotBlank() && (isPreset || selectedGroup != null) &&
-                    !ui.creatingIngredient && !ui.editorLoading
+                    !ui.creatingIngredient && !ui.editorLoading && !imageProcessing
                 // [AI生成] B-6：底部常驻 CTA(§9.13)——主"保存/完成"胶囊；新建态左侧加"再记一个"连续录入。
                 FormBottomBar(
                     primaryText = when {
                         ui.creatingIngredient -> "保存中…"
+                        imageProcessing -> "图片处理中…"
                         isPreset -> "完成"
                         else -> "保存"
                     },
@@ -497,20 +637,6 @@ internal fun IngredientEditorDialog(
                 )
             }
         }
-    }
-
-    if (confirmDiscard) {
-        AlertDialog(
-            onDismissRequest = { confirmDiscard = false },
-            title = { Text("放弃新建？") },
-            text = { Text("已填写的内容尚未保存，返回将不保留。") },
-            confirmButton = {
-                TextButton(onClick = { confirmDiscard = false; onDismiss() }) {
-                    Text("放弃", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text("继续编辑") } },
-        )
     }
 
     if (categoryPickerOpen) {
@@ -534,16 +660,7 @@ internal fun IngredientEditorDialog(
 // [AI修改] §9.30:MoreOptionsHeader 抽到 ui/component/MoreOptionsHeader.kt 作共享件(供编辑菜品复用)。
 //   本文件调用处(食材编辑器)不传 hint→用默认食材口径"分类/详情/营养素/调养，均选填"，行为不变。
 
-/**
- * 编辑器分组容器。[AI生成]
- */
-@Composable
-internal fun EditorSection(title: String, content: @Composable ColumnScope.() -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        content()
-    }
-}
+// [AI修改] 质量审#7:EditorSection 已被 InsetGroup 全量替换→删除死代码。
 
 /**
  * 可折叠分组容器（§四·低频区独立折叠段）。[AI生成]
@@ -556,16 +673,16 @@ internal fun FoldSection(
     onToggle: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    // [AI修改] §四:整段包在 InsetGroup 白卡内使用→自带横向 16dp 内距(卡内),标题行 v12 触达≥48;展开内容底部 16 内距。
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
                 .clickable { onToggle() }
-                .padding(vertical = 6.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
             Icon(
                 Icons.Outlined.ExpandMore,
                 contentDescription = if (expanded) "收起" else "展开",
@@ -574,8 +691,11 @@ internal fun FoldSection(
             )
         }
         if (expanded) {
-            Spacer(Modifier.height(6.dp))
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth(), content = content)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                content = content,
+            )
         }
     }
 }

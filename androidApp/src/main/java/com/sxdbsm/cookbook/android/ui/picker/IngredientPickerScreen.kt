@@ -734,10 +734,26 @@ fun IngredientPickerScreen(
         )
     }
 
+    // [AI修改] §五阻断②:食材保存成功统一反馈(对齐菜品页)。编辑器关闭后由本页发提示——
+    //   Tab 落地态(!asDialog)走统一 Snackbar;选择态(asDialog)本页在全屏 Dialog 内、遮住 MainScaffold Snackbar 宿主→降级 Toast(§9.12 纯告知允许)。
+    //   handledSavedId 记已提示的 id、null→重置(VM 每次打开编辑器会把 lastSavedIngredientId 置 null),保证同一食材再次编辑仍会反馈。
+    var handledSavedId by remember { mutableStateOf<Long?>(null) }
     LaunchedEffect(ui.lastSavedIngredientId) {
-        if (ui.lastSavedIngredientId != null) {
-            createDialogOpen = false
-            editingIngredient = null
+        val id = ui.lastSavedIngredientId
+        if (id == null) {
+            handledSavedId = null
+            return@LaunchedEffect
+        }
+        if (id == handledSavedId) return@LaunchedEffect
+        handledSavedId = id
+        val wasCreate = createDialogOpen // 关弹层前捕获是新建还是编辑,决定文案
+        createDialogOpen = false
+        editingIngredient = null
+        val msg = if (wasCreate) "已添加食材" else "已保存修改"
+        if (asDialog) {
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+        } else {
+            appSnackbar?.showMessage(msg)
         }
     }
 
