@@ -1,8 +1,10 @@
 package com.sxdbsm.cookbook.android.ui.picker
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -14,11 +16,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.sxdbsm.cookbook.android.ui.component.InsetDivider
+import com.sxdbsm.cookbook.android.ui.component.InsetGroup
 import com.sxdbsm.cookbook.android.ui.component.StoredImage
+import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
+import com.sxdbsm.cookbook.domain.CrowdCareVerdict
+import com.sxdbsm.cookbook.domain.CrowdFit
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.DishIngredientMatch
 import com.sxdbsm.cookbook.domain.model.FoodCategory
@@ -45,6 +55,7 @@ internal fun IngredientDetailSheet(
     categoryPath: String = "", // [AI生成] 分类路径(常规›蔬菜类›叶菜)，搜索点进来时标明食材所在分类
     detail: IngredientDetail?,
     careRules: List<IngredientCareRule>,
+    crowdVerdicts: List<CrowdCareVerdict> = emptyList(), // [AI生成] #6 人群适配红绿灯：四慢病人群宜/留意/慎选(数据驱动)。
     dishMatches: List<DishIngredientMatch>,
     enabledCareCategoryIds: Set<Long> = emptySet(), // [AI生成] 用户健康档案病种，忌口区置顶高亮。
     onDismiss: () -> Unit,
@@ -210,6 +221,10 @@ internal fun IngredientDetailSheet(
                                 CareRuleLine(rule, mine = rule.categoryId in enabledCareCategoryIds)
                             }
                         }
+
+                        // ②-a 不同人群参考：按每 100g 营养对四类慢病人群的宜/留意/慎选(数据驱动·§9.28)。
+                        // [AI生成] 紧跟忌口/宜忌(人工策展)之后，副标题点明"以人工建议为准"防矛盾；全空则不显。
+                        CrowdCareSection(crowdVerdicts)
 
                         // ② -b 食养：药食同源（国家卫健委法定白名单·纯事实标签，独立于上方忌口/宜忌，绝不接入慢病评级）。
                         // [AI生成] 药膳一期。仅命中官方白名单才显示；措辞守"仅供参考·非医嘱、非疗效背书"。
@@ -438,5 +453,98 @@ private fun CareRuleLine(rule: IngredientCareRule, mine: Boolean) {
     } else {
         Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
     }
+}
+
+/**
+ * 不同人群参考区块——食材·人群适配红绿灯（商业#6·§9.28）。[AI生成]
+ *
+ * 四类慢病人群固定顺序(高血压/糖尿病/高血脂/痛风)逐行：色点 + 人群名(定宽) + 等级词(宜/留意/慎选/暂无数据) + 一句原因。
+ * 数据驱动(每 100g 营养判级)，紧跟"忌口/宜忌"(人工策展)之后，副标题点明"以人工建议为准"防矛盾。
+ * 全部"暂无数据"→整块不显(纯噪音)。守免责(块底标口径·非医嘱)、物理隔离(色点走 ExtendedColors 固定三色·不接色系墙)。
+ * 措辞比菜品级更克制(食材是原料·用量未定)：用"慎选"不用"不宜"。行范式复用菜品级 FamilyVerdictSection。
+ */
+@Composable
+private fun CrowdCareSection(verdicts: List<CrowdCareVerdict>) {
+    if (verdicts.isEmpty() || verdicts.all { it.fit == CrowdFit.NO_DATA }) return
+    SectionTitle("不同人群参考")
+    Text(
+        "按每 100g 营养估算 · 与上方忌口 / 宜忌有出入时，以上方为准",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    InsetGroup {
+        verdicts.forEachIndexed { i, v ->
+            if (i > 0) InsetDivider(startIndent = 44)
+            CrowdCareRow(v)
+        }
+    }
+    Text(
+        "仅供参考 · 非医嘱。嘌呤 / 钠为惯例口径 · 非国标，GI 为 FAO/WHO 口径。",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 6.dp),
+    )
+}
+
+/** 人群适配单行：色点 + 人群名(定宽64) + 等级词(语义色) + 原因(灰字·省略号)。[AI生成] */
+@Composable
+private fun CrowdCareRow(v: CrowdCareVerdict) {
+    val ext = ExtendedColorsHolder.current
+    val color = when (v.fit) {
+        CrowdFit.FIT -> ext.success
+        CrowdFit.MIND -> ext.warning
+        CrowdFit.CAUTION -> ext.danger
+        CrowdFit.NO_DATA -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val word = when (v.fit) {
+        CrowdFit.FIT -> "适宜"
+        CrowdFit.MIND -> "留意"
+        CrowdFit.CAUTION -> "慎选"
+        CrowdFit.NO_DATA -> "暂无数据"
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Dot(color)
+        Spacer(Modifier.width(14.dp))
+        Text(
+            conditionName(v.condition),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.width(64.dp),
+        )
+        Text(word, style = MaterialTheme.typography.bodyMedium, color = color)
+        if (v.reason.isNotEmpty()) {
+            Spacer(Modifier.width(8.dp))
+            Text(
+                v.reason,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            Spacer(Modifier.weight(1f))
+        }
+    }
+}
+
+/** 慢病人群名（食材详情人群适配用）。[AI生成] */
+private fun conditionName(c: com.sxdbsm.cookbook.domain.HealthCondition): String = when (c) {
+    com.sxdbsm.cookbook.domain.HealthCondition.HYPERTENSION -> "高血压"
+    com.sxdbsm.cookbook.domain.HealthCondition.DIABETES -> "糖尿病"
+    com.sxdbsm.cookbook.domain.HealthCondition.HYPERLIPIDEMIA -> "高血脂"
+    com.sxdbsm.cookbook.domain.HealthCondition.GOUT -> "痛风"
+}
+
+/** 10dp 语义色小圆点(红绿灯视觉隐喻·必配文字等级词·不靠颜色单独表意)。[AI生成] */
+@Composable
+private fun Dot(color: Color) {
+    Box(Modifier.size(10.dp).clip(CircleShape).background(color))
 }
 

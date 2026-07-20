@@ -622,6 +622,7 @@ fun IngredientPickerScreen(
             categoryPath = buildGeneralCategoryPath(ui.detailCategories, ui.allCategories), // [AI生成] 顶部分类路径
             detail = ui.detailInfo,
             careRules = ui.detailCareRules,
+            crowdVerdicts = ui.detailCrowdVerdicts,
             dishMatches = ui.detailDishMatches,
             enabledCareCategoryIds = ui.enabledCareCategoryIds,
             onDismiss = { selectedIngredient = null },

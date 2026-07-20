@@ -77,6 +77,7 @@ data class IngredientPickerUiState(
     val detailCategories: List<FoodCategory> = emptyList(),
     val detailInfo: IngredientDetail? = null,
     val detailCareRules: List<IngredientCareRule> = emptyList(),
+    val detailCrowdVerdicts: List<com.sxdbsm.cookbook.domain.CrowdCareVerdict> = emptyList(), // [AI生成] #6 人群适配红绿灯：食材对四慢病人群的宜/留意/慎选(数据驱动+人工建议单向压制)。
     val detailDishMatches: List<DishIngredientMatch> = emptyList(),
     val filterDishMatches: List<DishIngredientMatch> = emptyList(),
     val canLoadMoreIngredients: Boolean = false, // [AI生成] 分类筛选结果按 30 条一页展示，避免一次渲染过多食材。
@@ -453,6 +454,7 @@ class IngredientPickerViewModel(
                 detailCategories = emptyList(),
                 detailInfo = null,
                 detailCareRules = emptyList(),
+                detailCrowdVerdicts = emptyList(),
                 detailDishMatches = emptyList(),
             )
             runCatching {
@@ -460,7 +462,10 @@ class IngredientPickerViewModel(
                 val detail = ingredientRepo.getIngredientDetail(ingredient.id)
                 val careRules = ingredientRepo.listCareRules(ingredient.id)
                 val matches = dishRepo.findDishesByIngredients(listOf(ingredient.id), limit = 8)
-                IngredientDetailPayload(categories, detail, careRules, matches)
+                // [AI生成] #6 人群适配红绿灯：按食材每100g营养 + 人工care规则派生四人群评级(纯函数)。
+                val nutrition = nutritionRepo.ingredientNutrition(ingredient.id)
+                val crowdVerdicts = com.sxdbsm.cookbook.domain.IngredientCrowdCare.evaluate(ingredient.name, nutrition, careRules)
+                IngredientDetailPayload(categories, detail, careRules, matches, crowdVerdicts)
             }.onSuccess { payload ->
                 _state.value = _state.value.copy(
                     detailLoading = false,
@@ -468,6 +473,7 @@ class IngredientPickerViewModel(
                     detailCategories = payload.categories,
                     detailInfo = payload.detail,
                     detailCareRules = payload.careRules,
+                    detailCrowdVerdicts = payload.crowdVerdicts,
                     detailDishMatches = payload.matches,
                 )
             }.onFailure { error ->
@@ -1165,6 +1171,7 @@ private data class IngredientDetailPayload(
     val detail: IngredientDetail?,
     val careRules: List<IngredientCareRule>,
     val matches: List<DishIngredientMatch>,
+    val crowdVerdicts: List<com.sxdbsm.cookbook.domain.CrowdCareVerdict>, // [AI生成] #6 人群适配红绿灯
 )
 
 // [AI修改] 扩展函数：在指定位置插入多个元素，等价于给 MutableList 增加一个小工具方法。
