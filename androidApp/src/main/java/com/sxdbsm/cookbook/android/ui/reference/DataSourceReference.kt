@@ -76,6 +76,35 @@ object DataSourceReference {
             ),
         ),
         DietaryRefCategory(
+            title = "慢病忌口 · 宜忌建议",
+            intro = "食材/酒类对慢病人群（痛风/高血压/高血脂/糖尿病/脂肪肝）的宜忌建议来源。忌口按临床指南定性，不按食物嘌呤 mg 数。",
+            items = listOf(
+                DietaryRefItem(
+                    indicator = "酒类忌口（慢病人群）",
+                    levels = listOf(
+                        DietaryRefLevel("痛风/高尿酸", "《中国高尿酸血症与痛风诊疗指南(2019/2024)》《成人高尿酸血症与痛风食养指南(2024·卫健委)》——应避免饮酒、啤酒风险最高"),
+                        DietaryRefLevel("高血压", "《中国高血压防治指南(2024年修订版)》——限酒 / 不饮酒"),
+                        DietaryRefLevel("高血脂", "《中国血脂管理指南(2023年)》——限酒"),
+                        DietaryRefLevel("糖尿病", "《中国2型糖尿病防治指南》——不推荐饮酒（含低血糖风险，甜米酒/酒酿含糖）"),
+                        DietaryRefLevel("脂肪肝", "《非酒精性 / 酒精性脂肪性肝病防治指南》——应避免饮酒"),
+                    ),
+                    caliber = "临床指南生活方式建议，仅供参考·非医嘱；酒类忌口按指南定性（应避免/限制），不按食物嘌呤 mg 数（酒精升尿酸是代谢机制）",
+                    appliesTo = emptyList(),
+                    source = "各慢病临床指南（见下方来源清单）",
+                ),
+                DietaryRefItem(
+                    indicator = "食材忌口 / 宜忌（慢病人群）",
+                    levels = listOf(
+                        DietaryRefLevel("整理方式", "AI 依据慢病膳食指南与常识整理该食材对各病种的宜 / 忌 / 限"),
+                        DietaryRefLevel("阈值口径", "钠 / GI / 嘌呤分级见「膳食参考依据」；嘌呤三级临界非国标·惯例口径"),
+                    ),
+                    caliber = "仅供参考·非医嘱；人工指南建议优先于数值判定（避免因数值低而误判可食，如低嘌呤啤酒对痛风仍应避免）",
+                    appliesTo = emptyList(),
+                    source = "慢病膳食指南整理",
+                ),
+            ),
+        ),
+        DietaryRefCategory(
             title = "预设菜品与菜系",
             intro = "内置菜品的做法/步骤与菜系归类来源。",
             items = listOf(
@@ -124,6 +153,11 @@ object DataSourceReference {
         DietaryRefSource("USDA FoodData Central (fdc.nal.usda.gov)", "", "美国农业部", ""),
         DietaryRefSource("悉尼大学 GI 数据库 / 国际血糖指数表", "", "University of Sydney", "2008"),
         DietaryRefSource("《成人高尿酸血症与痛风食养指南(2024年版)》", "", "国家卫生健康委员会", "2024"),
+        DietaryRefSource("《中国高尿酸血症与痛风诊疗指南(2019/2024)》", "", "中华医学会内分泌学分会等", ""),
+        DietaryRefSource("《中国高血压防治指南(2024年修订版)》", "", "国家心血管病中心 / 中国高血压联盟等", "2024"),
+        DietaryRefSource("《中国血脂管理指南(2023年)》", "", "中国血脂管理指南修订联合专家委员会", "2023"),
+        DietaryRefSource("《中国2型糖尿病防治指南(2020年版)》", "", "中华医学会糖尿病学分会", "2020"),
+        DietaryRefSource("《非酒精性 / 酒精性脂肪性肝病防治指南》", "", "中华医学会肝病学分会", ""),
         DietaryRefSource("八大菜系 + 家常菜整理", "", "公认餐饮常识", ""),
     )
 }

@@ -103,13 +103,18 @@ class IngredientCrowdCareTest {
     }
 
     @Test
-    fun 人工建议AVOID单向压制数据判宜升为留意() {
-        // 数据：低钠(本应 FIT)，但人工 care 对高血压标 AVOID → 压成 MIND
-        val care = listOf(IngredientCareRule(ingredientId = 1L, categoryId = 9L, categoryName = "高血压", adviceLevel = AdviceLevel.AVOID))
-        val r = IngredientCrowdCare.evaluate("低钠腌菜", nut(sodium = 5.0), care)
-        val v = fitOf(r, HealthCondition.HYPERTENSION)
-        assertEquals(CrowdFit.MIND, v.fit)
-        assertEquals("见上方宜忌", v.reason)
+    fun 人工建议AVOID单向压制数据判宜升为慎选_LIMIT升为留意() {
+        // [AI修改] AVOID→慎选(CAUTION红)、LIMIT→留意(MIND黄)：数据低值(本应FIT)但临床应避免须显红。
+        //   如痛风忌啤酒(数据低嘌呤绿·care avoid)→应显慎选而非留意。
+        val avoid = listOf(IngredientCareRule(ingredientId = 1L, categoryId = 9L, categoryName = "高血压", adviceLevel = AdviceLevel.AVOID))
+        val rA = IngredientCrowdCare.evaluate("低钠腌菜", nut(sodium = 5.0), avoid)
+        val vA = fitOf(rA, HealthCondition.HYPERTENSION)
+        assertEquals(CrowdFit.CAUTION, vA.fit) // AVOID → 慎选(红)
+        assertEquals("见上方宜忌", vA.reason)
+        // LIMIT 仍压成留意(黄)
+        val limit = listOf(IngredientCareRule(ingredientId = 1L, categoryId = 9L, categoryName = "高血压", adviceLevel = AdviceLevel.LIMIT))
+        val rL = IngredientCrowdCare.evaluate("低钠腌菜", nut(sodium = 5.0), limit)
+        assertEquals(CrowdFit.MIND, fitOf(rL, HealthCondition.HYPERTENSION).fit) // LIMIT → 留意(黄)
     }
 
     @Test

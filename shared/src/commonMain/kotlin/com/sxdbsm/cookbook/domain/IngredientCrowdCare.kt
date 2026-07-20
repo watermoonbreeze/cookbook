@@ -70,19 +70,22 @@ object IngredientCrowdCare {
         n: IngredientNutrition?,
         careRules: List<IngredientCareRule> = emptyList(),
     ): List<CrowdCareVerdict> {
-        // 人工建议单向压制集：care 规则里被标 AVOID/LIMIT 的病种（RECOMMEND 不压制）。
-        val suppressed: Set<HealthCondition> = careRules
+        // 人工建议单向压制表：care 规则里被标 AVOID/LIMIT 的病种→取该病种最强等级（RECOMMEND 不压制）。
+        // [AI修改] 由 Set 改 Map(病种→最强等级)：AVOID 压成"慎选"(红)、LIMIT 压成"留意"(黄)，
+        //   否则酒类这种"数据低嘌呤(绿)但临床应避免"的食材只会显留意、欠严谨（用户反馈:痛风忌啤酒须显避免）。
+        val suppressed: Map<HealthCondition, AdviceLevel> = careRules
             .filter { it.adviceLevel == AdviceLevel.AVOID || it.adviceLevel == AdviceLevel.LIMIT }
-            .flatMap { HealthCondition.fromCareName(it.categoryName) }
-            .toSet()
-        return ORDER.map { c -> verdictFor(c, name, n, c in suppressed) }
+            .flatMap { r -> HealthCondition.fromCareName(r.categoryName).map { it to r.adviceLevel } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, levels) -> if (AdviceLevel.AVOID in levels) AdviceLevel.AVOID else AdviceLevel.LIMIT }
+        return ORDER.map { c -> verdictFor(c, name, n, suppressed[c]) }
     }
 
     private fun verdictFor(
         condition: HealthCondition,
         name: String,
         n: IngredientNutrition?,
-        suppressed: Boolean,
+        suppressLevel: AdviceLevel?,
     ): CrowdCareVerdict {
         // level: LOW/MID/HIGH 或 null(无数据)；reasons 为该指标低/中/高对应措辞。
         val (level, reasons) = when (condition) {
@@ -108,10 +111,11 @@ object IngredientCrowdCare {
             NutrientLevel.HIGH -> reasons.third
             null -> ""
         }
-        // 单向压制：有同病种人工 AVOID/LIMIT 时，数据判"宜"(绿)压成"留意"(黄)，指明去看上方人工建议。
-        //   仅抬升 FIT→MIND（不动 NO_DATA：无数据不臆断，人工建议已在上方"忌口/宜忌"区如实呈现）。
-        if (suppressed && fit == CrowdFit.FIT) {
-            fit = CrowdFit.MIND
+        // 单向压制：有同病种人工建议时，数据判"宜"(绿)按人工等级压制，指明去看上方宜忌。
+        //   AVOID→"慎选"(红)、LIMIT→"留意"(黄)；仅压制 FIT（不动 NO_DATA：无数据不臆断，人工建议已在上方如实呈现）。
+        //   [AI修改] 酒类"数据低嘌呤(绿)但临床应避免"须显红——如痛风忌啤酒(care avoid)显慎选而非留意。
+        if (fit == CrowdFit.FIT && suppressLevel != null) {
+            fit = if (suppressLevel == AdviceLevel.AVOID) CrowdFit.CAUTION else CrowdFit.MIND
             reason = "见上方宜忌"
         }
         return CrowdCareVerdict(condition, fit, reason)
