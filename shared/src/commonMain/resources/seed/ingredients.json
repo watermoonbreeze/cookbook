@@ -5168,5 +5168,708 @@
       "staple_grain_product",
       "convenience"
     ]
+  },
+  {
+    "code": "mozzarella",
+    "name": "马苏里拉芝士",
+    "alias": "马苏里拉奶酪",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "protein_quality",
+      "calcium_high",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "parmesan",
+    "name": "帕玛森芝士",
+    "alias": "帕尔马干酪",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "protein_quality",
+      "calcium_high",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "cheddar",
+    "name": "车达芝士",
+    "alias": "切达奶酪",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "protein_quality",
+      "calcium_high",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "cream_cheese",
+    "name": "奶油奶酪",
+    "alias": "忌廉芝士",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "fat_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "greek_yogurt",
+    "name": "希腊酸奶",
+    "alias": "希腊式酸奶",
+    "unit": "g",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_fermented",
+      "protein_quality",
+      "calcium_high"
+    ]
+  },
+  {
+    "code": "basil",
+    "name": "罗勒",
+    "alias": "九层塔",
+    "unit": "g",
+    "emoji": "🌿",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "oregano_dried",
+    "name": "干牛至",
+    "alias": "俄勒冈叶",
+    "unit": "g",
+    "emoji": "🌿",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "thyme_dried",
+    "name": "干百里香",
+    "alias": "百里香",
+    "unit": "g",
+    "emoji": "🌿",
+    "categories": [
+      "seasoning",
+      "seasoning_spice"
+    ]
+  },
+  {
+    "code": "tomato_paste",
+    "name": "番茄膏",
+    "alias": "浓缩番茄酱",
+    "unit": "g",
+    "emoji": "🍅",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce",
+      "potassium_high"
+    ]
+  },
+  {
+    "code": "black_olive",
+    "name": "黑橄榄",
+    "alias": "油橄榄",
+    "unit": "g",
+    "emoji": "🫒",
+    "categories": [
+      "fruit",
+      "fat_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "sweet_corn_canned",
+    "name": "甜玉米粒",
+    "alias": "罐装玉米粒",
+    "unit": "g",
+    "emoji": "🌽",
+    "categories": [
+      "vegetable",
+      "convenience",
+      "convenience_canned"
+    ]
+  },
+  {
+    "code": "romaine",
+    "name": "罗马生菜",
+    "alias": "罗蔓",
+    "unit": "g",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "fat_low",
+      "sugar_low"
+    ]
+  },
+  {
+    "code": "arugula",
+    "name": "芝麻菜",
+    "alias": "火箭菜",
+    "unit": "g",
+    "emoji": "🥬",
+    "categories": [
+      "vegetable",
+      "vegetable_leaf",
+      "dark_vegetable",
+      "fat_low",
+      "sugar_low"
+    ]
+  },
+  {
+    "code": "spaghetti_dry",
+    "name": "意面",
+    "alias": "干意大利面",
+    "unit": "g",
+    "emoji": "🍝",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_wheat",
+      "staple_grain_product",
+      "gi_medium"
+    ]
+  },
+  {
+    "code": "whole_wheat_pasta",
+    "name": "全麦意面",
+    "alias": "全麦意大利面",
+    "unit": "g",
+    "emoji": "🍝",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_wheat",
+      "staple_grain_product",
+      "whole_grain",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "salami",
+    "name": "萨拉米香肠",
+    "alias": "意式萨拉米",
+    "unit": "g",
+    "emoji": "🥓",
+    "categories": [
+      "meat",
+      "meat_processed",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "prosciutto",
+    "name": "帕尔马火腿",
+    "alias": "生火腿",
+    "unit": "g",
+    "emoji": "🥓",
+    "categories": [
+      "meat",
+      "meat_processed",
+      "protein_quality",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "dried_cranberry",
+    "name": "蔓越莓干",
+    "alias": "干蔓越莓",
+    "unit": "g",
+    "emoji": "🫐",
+    "categories": [
+      "fruit",
+      "fruit_dried",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "frozen_xiaolongbao",
+    "name": "速冻小笼包",
+    "unit": "g",
+    "emoji": "🥟",
+    "categories": [
+      "convenience",
+      "convenience_frozen"
+    ]
+  },
+  {
+    "code": "frozen_mantou",
+    "name": "速冻馒头",
+    "unit": "个",
+    "emoji": "🍞",
+    "categories": [
+      "convenience",
+      "convenience_frozen",
+      "staple",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "frozen_baozi",
+    "name": "速冻包子",
+    "unit": "个",
+    "emoji": "🥟",
+    "categories": [
+      "convenience",
+      "convenience_frozen"
+    ]
+  },
+  {
+    "code": "cantonese_sausage",
+    "name": "广式腊肠",
+    "unit": "g",
+    "emoji": "🌭",
+    "categories": [
+      "meat",
+      "meat_processed",
+      "sodium_high",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "canned_tuna",
+    "name": "金枪鱼罐头",
+    "alias": "吞拿鱼罐头",
+    "unit": "g",
+    "emoji": "🐟",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "aquatic",
+      "aquatic_processed",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "canned_congee_babao",
+    "name": "八宝粥",
+    "alias": "八宝粥罐头",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "staple"
+    ]
+  },
+  {
+    "code": "instant_oatmeal",
+    "name": "即食燕麦片",
+    "alias": "冲泡燕麦片",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "convenience",
+      "convenience_instant",
+      "staple",
+      "staple_grain_coarse",
+      "whole_grain",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "ready_chicken_breast",
+    "name": "即食鸡胸肉",
+    "alias": "开袋即食鸡胸",
+    "unit": "g",
+    "emoji": "🍗",
+    "categories": [
+      "convenience",
+      "convenience_instant",
+      "meat",
+      "meat_processed",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "frozen_beef_ball",
+    "name": "速冻牛肉丸",
+    "unit": "个",
+    "emoji": "🧆",
+    "categories": [
+      "convenience",
+      "convenience_frozen",
+      "meat",
+      "meat_processed"
+    ]
+  },
+  {
+    "code": "canned_baked_beans",
+    "name": "茄汁黄豆",
+    "alias": "焗豆罐头",
+    "unit": "g",
+    "emoji": "🫘",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "soy_nut",
+      "soy_product",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "frozen_shrimp",
+    "name": "速冻虾仁",
+    "unit": "g",
+    "emoji": "🦐",
+    "categories": [
+      "convenience",
+      "convenience_frozen",
+      "aquatic",
+      "aquatic_crustacean",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "canned_sardine",
+    "name": "沙丁鱼罐头",
+    "unit": "g",
+    "emoji": "🐟",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "aquatic",
+      "aquatic_processed",
+      "protein_quality",
+      "purine_high"
+    ]
+  },
+  {
+    "code": "dried_noodle",
+    "name": "挂面",
+    "alias": "龙须面",
+    "unit": "g",
+    "emoji": "🍜",
+    "categories": [
+      "staple",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "granola",
+    "name": "坚果麦片",
+    "alias": "格兰诺拉麦片",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "convenience",
+      "convenience_instant",
+      "staple",
+      "staple_grain_coarse"
+    ]
+  },
+  {
+    "code": "pickled_chicken_feet",
+    "name": "泡椒凤爪",
+    "unit": "g",
+    "emoji": "🍗",
+    "categories": [
+      "convenience",
+      "convenience_instant",
+      "meat",
+      "meat_processed",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "frozen_wonton",
+    "name": "速冻馄饨",
+    "unit": "个",
+    "emoji": "🥟",
+    "categories": [
+      "convenience",
+      "convenience_frozen"
+    ]
+  },
+  {
+    "code": "instant_plain_congee",
+    "name": "速食白粥",
+    "alias": "即食白粥",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "convenience",
+      "convenience_instant",
+      "staple"
+    ]
+  },
+  {
+    "code": "frozen_mixed_veg",
+    "name": "玉米什锦",
+    "alias": "速冻杂蔬",
+    "unit": "g",
+    "emoji": "🌽",
+    "categories": [
+      "convenience",
+      "convenience_frozen",
+      "vegetable"
+    ]
+  },
+  {
+    "code": "canned_braised_pork",
+    "name": "红烧肉罐头",
+    "unit": "g",
+    "emoji": "🥫",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "meat",
+      "meat_processed",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "canned_ham",
+    "name": "火腿罐头",
+    "unit": "g",
+    "emoji": "🥫",
+    "categories": [
+      "convenience",
+      "convenience_canned",
+      "meat",
+      "meat_processed",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "whole_milk",
+    "name": "全脂牛奶",
+    "alias": "全脂鲜奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high"
+    ]
+  },
+  {
+    "code": "skim_milk",
+    "name": "脱脂牛奶",
+    "alias": "脱脂鲜奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "lactose_free_milk",
+    "name": "舒化奶",
+    "alias": "无乳糖牛奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high"
+    ]
+  },
+  {
+    "code": "greek_yogurt_nonfat",
+    "name": "脱脂希腊酸奶",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "dairy",
+      "dairy_fermented",
+      "protein_quality",
+      "fat_low",
+      "sugar_low"
+    ]
+  },
+  {
+    "code": "cheddar_cheese",
+    "name": "切达奶酪",
+    "alias": "车打芝士",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "protein_quality",
+      "calcium_high",
+      "fat_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "white_toast",
+    "name": "白吐司",
+    "alias": "白方包",
+    "unit": "g",
+    "emoji": "🍞",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "bagel",
+    "name": "贝果",
+    "alias": "百吉饼",
+    "unit": "个",
+    "emoji": "🥯",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "sourdough_bread",
+    "name": "欧包",
+    "alias": "欧式面包",
+    "unit": "g",
+    "emoji": "🍞",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "hand_grabbed_pancake",
+    "name": "手抓饼",
+    "unit": "片",
+    "emoji": "🫓",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "fat_high",
+      "convenience",
+      "convenience_frozen"
+    ]
+  },
+  {
+    "code": "cornflakes",
+    "name": "玉米片",
+    "alias": "早餐玉米脆片",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "peanut_butter",
+    "name": "花生酱",
+    "unit": "g",
+    "emoji": "🥜",
+    "categories": [
+      "soy_nut",
+      "nut_tree",
+      "fat_high",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "black_coffee",
+    "name": "黑咖啡",
+    "alias": "美式咖啡",
+    "unit": "ml",
+    "emoji": "☕",
+    "categories": [
+      "other"
+    ]
+  },
+  {
+    "code": "oat_milk",
+    "name": "燕麦奶",
+    "alias": "燕麦植物奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "other",
+      "staple_grain"
+    ]
+  },
+  {
+    "code": "tofu_pudding",
+    "name": "豆腐脑",
+    "alias": "豆花",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "quick_frozen_bun",
+    "name": "花卷",
+    "unit": "个",
+    "emoji": "🍥",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "rice_flour_sticky",
+    "name": "粘米粉",
+    "alias": "籼米粉",
+    "unit": "g",
+    "emoji": "🍚",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "satay_sauce",
+    "name": "沙茶酱",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce",
+      "seasoning_high_sodium"
+    ]
   }
 ]
