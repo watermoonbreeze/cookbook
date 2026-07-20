@@ -58,9 +58,14 @@ class AiRecommendViewModel(
      * 配置了 AI 模型 → 库存推荐会走云端，不自动触发，展示「开始推荐」等用户点击；
      * 纯规则（未配置模型）→ 本地即时，自动推荐。
      */
-    fun start() {
+    fun start(initialSlot: com.sxdbsm.cookbook.ai.MealSlot? = null) {
         if (started) return
         started = true
+        // [AI生成] F#7:餐次块带入预选餐次——**静默**设入 state(不单独触发 recommend·避免双推/在配了模型时误自动调云端)，
+        //   让下方规则模式 recommend / 模型模式待手动 都按此餐次。空/全部→不改(默认全部)。
+        if (initialSlot != null && initialSlot != com.sxdbsm.cookbook.ai.MealSlot.ALL && initialSlot != state.selectedSlot) {
+            state = state.copy(selectedSlot = initialSlot)
+        }
         viewModelScope.launch {
             // [AI生成] P3：载入已存的推荐风格(轻干预)，驱动打分权重。
             state = state.copy(recommendStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.fromKey(prefs.get(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE)))

@@ -24,9 +24,11 @@ object Routes {
     const val SEARCH = "search"
     const val MINE = "mine"
     const val COOKING_TIMER = "cooking_timer"
-    const val AI_RECOMMEND = "ai_recommend?returnResult={returnResult}" // [AI生成] AI 推荐下一餐
-    fun aiRecommend() = "ai_recommend?returnResult=false" // 从首页/我的进入：选它开新加餐页
-    fun aiRecommendForMeal() = "ai_recommend?returnResult=true" // 从餐次块进入：选它回传该餐次
+    // [AI修改] F#7:加可选 slot 参数(ai.MealSlot.code)——从餐次块进入时带该餐次预选推荐；空/缺省=全部(默认值,不改原行为)。
+    const val AI_RECOMMEND = "ai_recommend?returnResult={returnResult}&slot={slot}" // [AI生成] AI 推荐下一餐
+    fun aiRecommend() = "ai_recommend?returnResult=false" // 从首页/我的进入：选它开新加餐页(不带 slot→默认全部)
+    // [AI修改] F#7:从餐次块进入带该餐次 slot(code)预选；slot 为空则同原行为(全部)。
+    fun aiRecommendForMeal(slot: String = "") = "ai_recommend?returnResult=true&slot=$slot" // 从餐次块进入：选它回传该餐次
     const val AI_SETTINGS = "ai_settings" // [AI生成] AI 设置(Key/运行时)
     const val FAMILY = "family"
     const val FAMILY_STATS = "family_stats" // [AI生成] 膳食统计 // [AI生成] 家庭成员管理

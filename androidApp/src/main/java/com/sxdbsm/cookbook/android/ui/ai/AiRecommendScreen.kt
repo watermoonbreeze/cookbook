@@ -75,6 +75,7 @@ internal val RECOMMEND_STYLE_OPTIONS: List<Triple<String, com.sxdbsm.cookbook.ai
 fun AiRecommendScreen(
     onBack: () -> Unit,
     onPickMeal: (List<Long>) -> Unit = {},
+    initialSlotCode: String = "", // [AI生成] F#7:餐次块带入的 ai.MealSlot.code(空=全部·默认原行为)
     vm: AiRecommendViewModel = koinViewModel(),
     planVm: AiPlanViewModel = koinViewModel(),
 ) {
@@ -95,7 +96,8 @@ fun AiRecommendScreen(
 
     LaunchedEffect(Unit) {
         // [AI修改] 进页面由 VM 判定：规则模式自动推荐；配置了 AI 模型则等用户点击「开始推荐」，不自动调云端。
-        vm.start()
+        // [AI修改] F#7:餐次块带入 slot→预选该餐次(空/无匹配 code→全部·不改原行为)，用户仍可在页内切餐次。
+        vm.start(com.sxdbsm.cookbook.ai.MealSlot.fromCode(initialSlotCode).takeIf { it != com.sxdbsm.cookbook.ai.MealSlot.ALL })
     }
     // [AI修改] 移除 ON_RESUME 自动重取(用户 2026-07-18)：已出推荐后，跳去记一餐再返回、或 App 切后台回前台
     //   都不应自动重新推荐(会打断当前结果、且体感"页面又刷一遍")。推荐刷新一律走用户手动("换一换"/切模式/开始推荐)。

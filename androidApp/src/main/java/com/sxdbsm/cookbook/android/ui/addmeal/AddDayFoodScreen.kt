@@ -99,6 +99,23 @@ import org.koin.androidx.compose.koinViewModel
  *
  * 支持一次创建某一天的多个餐食模块，每个模块对应一条餐食记录。
  */
+/**
+ * [AI生成] F#7:餐次名(MealType.name)→ ai.MealSlot.code。按 label 精确匹配 + 少量常见别名；
+ * 无匹配/无餐次→空串(=全部·不预选·不误推)。放 UI 层做展示态映射，不污染 shared ai.MealSlot。
+ */
+private fun aiSlotCodeForMealType(name: String?): String {
+    val n = name?.trim().orEmpty()
+    if (n.isEmpty()) return ""
+    com.sxdbsm.cookbook.ai.MealSlot.values().firstOrNull { it != com.sxdbsm.cookbook.ai.MealSlot.ALL && it.label == n }?.let { return it.code }
+    return when (n) {
+        "午餐", "中饭", "午饭" -> com.sxdbsm.cookbook.ai.MealSlot.LUNCH.code
+        "早饭" -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST.code
+        "晚饭" -> com.sxdbsm.cookbook.ai.MealSlot.DINNER.code
+        "夜宵" -> com.sxdbsm.cookbook.ai.MealSlot.NIGHT_SNACK.code
+        else -> "" // 加餐等无精确对应→全部(不误推特定餐次)
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddDayFoodScreen(
@@ -110,7 +127,7 @@ fun AddDayFoodScreen(
     createdDishId: Long? = null,
     presetDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐"选它"带入的菜品(从首页进入时新建整餐)。
     onCreatedDishConsumed: () -> Unit = {},
-    onOpenAiForBlock: () -> Unit = {}, // [AI生成] 从某餐次块进入 AI 推荐。
+    onOpenAiForBlock: (String) -> Unit = {}, // [AI生成] 从某餐次块进入 AI 推荐。[AI修改] F#7:带该块餐次的 ai.MealSlot.code(空=全部)。
     aiPickedDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐回传给餐次块的菜品 id。
     onAiPickedConsumed: () -> Unit = {},
     vm: AddMealViewModel = koinViewModel(),
@@ -324,7 +341,8 @@ fun AddDayFoodScreen(
                     onAiRecommend = { // [AI生成] 从该餐次块进入 AI 推荐，回传后加入本块。
                         vm.setActiveBlock(block.id)
                         aiTargetBlockId = block.id
-                        onOpenAiForBlock()
+                        // [AI生成] F#7:把本块餐次映射成 ai.MealSlot.code 带给 AI 推荐(按餐次名精确/别名匹配·无匹配→空=全部,不误推)。
+                        onOpenAiForBlock(aiSlotCodeForMealType(state.mealTypes.firstOrNull { it.id == block.mealTypeId }?.name))
                     },
                     onOpenCombos = { comboPickerBlockId = block.id },
                     onSaveCombo = {

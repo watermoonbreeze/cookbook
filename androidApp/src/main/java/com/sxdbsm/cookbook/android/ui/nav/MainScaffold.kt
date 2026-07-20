@@ -314,10 +314,14 @@ fun MainScaffold(
             }
             composable(
                 route = Routes.AI_RECOMMEND,
-                arguments = listOf(navArgument("returnResult") { type = NavType.BoolType; defaultValue = false }),
+                arguments = listOf(
+                    navArgument("returnResult") { type = NavType.BoolType; defaultValue = false },
+                    navArgument("slot") { type = NavType.StringType; defaultValue = "" }, // [AI生成] F#7:餐次块带入的 ai.MealSlot.code(空=全部)
+                ),
             ) { entry ->
                 val returnResult = entry.arguments?.getBoolean("returnResult") ?: false
                 AiRecommendScreen(
+                    initialSlotCode = entry.arguments?.getString("slot").orEmpty(), // [AI生成] F#7:预选该餐次
                     onBack = { nav.popBackStack() },
                     onPickMeal = { dishIds ->
                         if (returnResult) {
@@ -369,7 +373,7 @@ fun MainScaffold(
                     copyFromDate = copyFrom, // [AI生成] F8：复制来源→预填新建草稿
                     editDate = date,
                     presetDishIds = presetDishIds,
-                    onOpenAiForBlock = { nav.navigate(Routes.aiRecommendForMeal()) }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。
+                    onOpenAiForBlock = { slotCode -> nav.navigate(Routes.aiRecommendForMeal(slotCode)) }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。[AI修改] F#7:带该餐次 slot 预选。
                     aiPickedDishIds = aiPicked.toList(),
                     onAiPickedConsumed = { it.savedStateHandle[KEY_AI_PICKED_DISHES] = LongArray(0) },
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
