@@ -95,6 +95,7 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - seed **处理逻辑**变更（非 JSON 内容）要让已装老库跑一次：把 `SEED_LOGIC_VERSION` 盐混入内容指纹（`fingerprintOf(SEED_LOGIC_VERSION, …)`）+1，否则指纹不变、老库跳过 seed 拿不到修复；用户侧"更新基础数据"(force) 也可即时修复。
 - seedDishes 补齐**只补"缺失关联"不够**：早期 seed 无 quantity 时**已关联但 `quantity/unit_id=NULL`** 的行按克算营养恒 0（"排骨海带汤 0 千卡"），`if(id in linked) return@ing` 会跳过它永不修——补齐分支须再跑 `fillDishIngredientQuantityIfNull`（`UPDATE...WHERE quantity IS NULL`，只回填空值不覆盖用户）+ `SEED_LOGIC_VERSION`+1。软删菜(status=0)reseed 会当新菜重插带新数据、未删的走补齐分支——解释"删掉再更新就好、没删的一直 0"。
 - 健康数据（食材/营养/详情）为 AI 参考整理、非权威核对：涉及数据来源必须如实标注 + 免责，禁编造权威出处。
+- **凡联网数据校验/核准（营养/GI/嘌呤/忌口/care 规则等），收尾必须把权威来源加进「我的·数据来源」页**（`androidApp/.../ui/reference/DataSourceReference.kt` 的 `categories.levels/source` + 底部 `sources` 清单），与 seed 数据一起交付（用户多次强调·透明可溯源）。来源具体到 标准/指南名+机构+年份。**加食材/菜品不能只填营养——必须同时走健康忌口系统核对**（`ingredient_care_rules.json` + `IngredientCrowdCare`），否则数值判绿会误显"可食"（如低嘌呤啤酒对痛风应避免）。
 - 营养阈值/分级用**国标口径**：钠(膳食指南 5g/2000mg、高血压 2400mg)、GB 28050-2011 NRV 与低/高含量声称、GI 低≤55/中/高≥70(**FAO/WHO 口径，非 WS/T 652-2019——该标准只规定测定方法**)有据可依；**嘌呤"低/中/高"三级(25/150 mg/100g)无国标**(WS/T 560-2017 只给"应避免/限制/可选择"定性食物清单、附录嘌呤单位 mg/kg 不设临界值)——用则必标"非国标·惯例口径"，别当权威阈值。参考页/评级见 `feature/膳食参考依据`、`营养级别评级方案.md`。
 - 每个新文件用 Write 写（bash heredoc 遇引号/emoji 易挂）；git 提交多行信息用 `-F 文件`（Git Bash 无 PowerShell here-string）。
 - 食材 `name` 全新库有 **UNIQUE 约束**（`CREATE TABLE ingredient ... name TEXT NOT NULL UNIQUE`），老库经迁移升级可能没有、仍存同名多 id。`createUserIngredient` 必须**按去空格名先查复用已有 id**（全新库防 UNIQUE 崩、老库防同名多 id）；库存推荐按名扩展(`selectIngredientIdsByNames`)兼容老库同名多 id。
