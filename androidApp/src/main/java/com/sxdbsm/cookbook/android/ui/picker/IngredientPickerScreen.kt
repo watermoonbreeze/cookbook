@@ -457,7 +457,8 @@ fun IngredientPickerScreen(
                         val gridLetters = remember(ui.ingredients) {
                             ui.ingredients.map { com.sxdbsm.cookbook.android.ui.component.pinyinInitial(it.name) }.distinct()
                         }
-                        if (gridLetters.size > 1 && ui.ingredients.size > 12) {
+                        // [AI修改] 用户2026-07-20#2:"最近"Tab 按时间序(非拼音排、且最多30条)，字母条跳转会误导→不显；其余Tab/分类照常。
+                        if (gridLetters.size > 1 && ui.ingredients.size > 12 && ui.mainTab != IngredientMainTab.RECENT) {
                             com.sxdbsm.cookbook.android.ui.component.LetterIndexBar(
                                 letters = gridLetters,
                                 modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp),
