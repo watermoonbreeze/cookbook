@@ -18,12 +18,13 @@
 5. 健康数据红线、透明准则、联网核准必列数据来源 等（见 CLAUDE.md）。
 
 ## 三、本会话交付（均已 push·master 绿）
-- `a461b8d` 🔧 **修菜品编辑闪退**：回退 NewDishScreen 到良好版 fef91fd（保留 ImagePickerButton.coverStyle 参数）。
-- `be653a3`/`cec8cc5` 📝 记录崩溃处置 + 家族化决策/载体阻断/P2要点 + **据实更正**根因结论。
+- `a461b8d` 🔧 **修菜品编辑闪退**：回退 NewDishScreen→良好版；**用户真机确认回退后不崩→崩因锁定 P1(`0d0f6dd`)**。
 - `c63bd28` ✅ **修首页推荐图片不符**：NextMealCard 有图优先显该菜真图(StoredImage)、无图回退 emoji；新查询 selectDishImagesByIds + DishRepository.dishImagesByIds + HomeViewModel cachedThumbs + NextDishUi 加图字段。构建绿+单测绿。
+- `6193d14` 🔁 **P1菜品编辑页家族化·稳健重做**：崩因判定=保存下移到内层 Scaffold.bottomBar(NavHost内嵌套Scaffold bottomBar+verticalScroll测量崩)。重做:去 Scaffold.bottomBar→`Column(fillMaxSize){滚动区.weight(1f).verticalScroll(); FormBottomBar(navBarPadding=false)}`+FormBottomBar加navBarPadding开关(防双下边距);封面前移/保存下移/折叠全保留。构建绿。**真机待验:编辑既有菜(原崩点)不崩+四链路+保存在底部。若仍崩=非bottomBar(查封面/折叠)需真机栈。**
+- `be653a3`/`cec8cc5`/`5ca11dd` 📝 崩溃处置/据实根因/家族化决策/载体阻断/交接。
 
 ## 四、⏭ 下一步（家族化专项·无人值守推进）
-1. 🔴 **菜品编辑闪退根因待真机栈**（H节·`a461b8d` 已回退恢复功能）：静态遍查 UI(P1改动) + 数据层(loadFullDish/MealSlot.fromCode 均安全) 未见确定崩点；google_quality_engineer"无界高度"推断经 git 核对**不成立**(P1版有 contentWindowInsets=0+bottomBar 属标准写法)。**用户拉包后若仍崩=数据/环境相关→请其 `adb logcat -b crash -d` 抓 FATAL 栈**。**P1 家族化改造(封面前移/保存下移/步骤折叠)转家族化专项第一页·须先拿真机栈确认崩因再重做(不盲 redo 防 recrash)。**
+1. 🔁 **P1 菜品编辑页已稳健重做(`6193d14`)·等用户真机验**：验编辑既有菜不崩 + 新建/导入/回传四链路 + 保存在底部。若仍崩=崩因非 bottomBar(查封面 coverStyle / 折叠)→请用户 `adb logcat -b crash -d` 抓栈。**验过=P1 家族化参考页确立,据此铺 P2+。**
 2. 🔴 **家族化 P2 食材编辑页**（可推进·崩因不在共享件：现有食材编辑器本就用 ImagePickerButton+moreExpanded 折叠且未报崩）。按 `家族化专项_决策与进度.md §四` + `App操作基调 §四/§五`：
    - 现状 `picker/IngredientEditorDialogs.kt` 的 `IngredientEditorDialog`(全屏 Dialog·单 moreExpanded)；调用点在 `IngredientPickerScreen.kt`(create/edit 两处 + 多入口 line 91/152/242/551/596/647)。
    - 目标：基础卡(名称*+营养大类chip+单位+单件克重[仅计件条件显·从营养区上移]) → 4 独立折叠段(营养数值/更多信息[别名/图片/其它分类]/做法说明/调养建议) → InsetGroup 白卡 → 完整 rememberSaveable 草稿(含 careRules 自定义 Saver) → rememberUnsavedGuard → 底部 FormBottomBar。
