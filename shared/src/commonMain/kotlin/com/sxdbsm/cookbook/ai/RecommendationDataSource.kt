@@ -375,6 +375,8 @@ class RecommendationDataSource(
                 name = d.name,
                 mainNames = planMainNames,
                 isMeat = MealSlotMatcher.isMeatByMains(planMainNames), // [AI生成] 荤/素(同餐荤素搭配用)
+                cuisine = d.cuisine, // [AI生成] 用户#2:菜系(同餐不混搭)
+
                 nutritionTags = ingIds.flatMap { nutritionByIng[it].orEmpty() }.toSet(),
                 seasonTags = ingIds.flatMap { seasonByIng[it].orEmpty() }.toSet(),
                 isHealthy = healthAware && recommendHits.isNotEmpty() && limitHits.isEmpty() && avoidHits.isEmpty(),

@@ -183,10 +183,14 @@ class RecommendationOrchestrator(
         repeat(mealCount) {
             if (pool.isEmpty()) return@repeat
             val chunk = ArrayList<DishCandidate>(FALLBACK_DISHES_PER_MEAL)
-            chunk.add(pool.removeAt(0)) // 第 1 道：当前最高分(pool 已按分数序)
+            chunk.add(pool.removeAt(0)) // 第 1 道：当前最高分(pool 已按分数序)；菜系族由首道定(中式优先已使首道多为中式)。
+            val mealWestern = isWesternCuisine(chunk.first().cuisine)
             while (chunk.size < FALLBACK_DISHES_PER_MEAL && pool.isNotEmpty()) {
+                // [AI生成] 用户#2:一餐同菜系不混搭——只在同族候选内补;同族耗尽→**宁可少一道也不混中西**(2道连贯>3道混搭)。
+                val sameFamily = pool.filter { isWesternCuisine(it.cuisine) == mealWestern }
+                if (sameFamily.isEmpty()) break
                 // maxByOrNull 平局取先者(pool 已按 score 降序)→确定性可测；勿改成会打乱顺序的实现。
-                val next = pool.maxByOrNull { combineScore(it, chunk) } ?: break
+                val next = sameFamily.maxByOrNull { combineScore(it, chunk) } ?: break
                 chunk.add(next)
                 pool.remove(next)
             }
@@ -212,7 +216,7 @@ class RecommendationOrchestrator(
         if (cand.isMeat && meat <= veg) s += BALANCE_BONUS // 本餐荤不多于素→加荤合理
         if (!cand.isMeat && veg <= meat) s += BALANCE_BONUS // 本餐素不多于荤→加素合理
         if (chosen.none { it.isStaple } && cand.isStaple) s += STAPLE_BONUS // 本餐还没主食→补主食
-        return s
+        return s // [AI修改] 用户#2:一餐同菜系由 fallback 的同族过滤保证(不在此软罚,结构性硬保证不混搭)
     }
 
     companion object {

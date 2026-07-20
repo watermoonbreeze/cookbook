@@ -107,6 +107,29 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `用户2_兜底一餐不混搭中西_同菜系优先`() = runBlocking {
+        // 2中式+2西式,mealCount=1,FALLBACK每餐3道;西式降权→首道中式,combineScore罚混搭→整餐同菜系不出"排骨汤+帕尼尼"。
+        val mixInput = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "米饭", listOf(main(101, "大米")), cuisine = "家常菜"),
+                RuleDish(2, "青椒炒肉", listOf(main(102, "青椒"), main(103, "猪肉")), cuisine = "家常菜"),
+                RuleDish(3, "帕尼尼", listOf(main(104, "面包")), cuisine = "西餐"),
+                RuleDish(4, "凯撒沙拉", listOf(main(105, "生菜")), cuisine = "西餐"),
+            ),
+            pantryIngredientIds = setOf(101, 102, 103, 104, 105),
+            constraints = HealthConstraints(),
+            recentDishIds = emptySet(),
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val result = orch.recommend(mixInput, mealCount = 1)
+        val mealIds = result.suggestions.first().dishIds.toSet()
+        val mealDishes = result.candidates.filter { it.id in mealIds }
+        val families = mealDishes.map { isWesternCuisine(it.cuisine) }.distinct()
+        assertEquals(1, families.size, "一餐不应混搭中西: ${mealDishes.map { it.name to it.cuisine }}")
+        assertTrue(mealDishes.none { isWesternCuisine(it.cuisine) }, "中式优先→首餐应为中式: ${mealDishes.map { it.name }}")
+    }
+
+    @Test
     fun `A1_全忌口或全最近时兜底仍返非空建议`() = runBlocking {
         // 两道菜都最近吃过(正常层为空)→ fallback 的 normal.ifEmpty{candidates} 兜底应仍返建议、不空、dishIds 非空。
         val recentInput = RecommendationInput(

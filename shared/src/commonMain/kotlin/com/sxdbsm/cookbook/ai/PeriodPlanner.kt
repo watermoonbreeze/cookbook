@@ -144,6 +144,9 @@ class PeriodPlanner {
         }
         // [AI生成] #54：主食搭配——本餐还没有主食时，主食菜强力加分，让每餐尽量含一道主食。
         if (mealChosen.none { isStaple(it) } && isStaple(dish)) s += STAPLE_BONUS
+        // [AI生成] 用户#2:一餐同菜系不混搭(周计划)——与本餐已选任一道不同族(中西)→强罚;整体西式轻降权(中式优先)。
+        if (mealChosen.any { !sameCuisineFamily(dish.cuisine, it.cuisine) }) s -= CUISINE_MIX_PENALTY
+        if (isWesternCuisine(dish.cuisine)) s -= CUISINE_WESTERN_DEMOTE
         // 去重：同菜、同主料降权(风格调节：偏新鲜↑去重、偏熟悉↓去重)
         s -= f.repeat * REPEAT_DISH_PENALTY * (usedDishIds[dish.id] ?: 0)
         s -= f.repeat * REPEAT_MAIN_PENALTY * dish.mainNames.sumOf { usedMainCounts[it] ?: 0 }
@@ -177,6 +180,8 @@ class PeriodPlanner {
         private const val HEALTH_BONUS = 0.6
         private const val BALANCE_BONUS = 0.7 // [AI生成] 同餐荤素平衡补分(介于应季0.8与健康0.6之间, 影响但不压倒健康)
         private const val STAPLE_BONUS = 0.9 // [AI生成] #54 本餐未含主食时给主食菜的补分(略高于应季，让每餐尽量有主食)
+        private const val CUISINE_MIX_PENALTY = 1.2 // [AI生成] 用户#2:一餐中西混搭强罚(>BALANCE/STAPLE,同菜系优先)
+        private const val CUISINE_WESTERN_DEMOTE = 0.3 // [AI生成] 用户#2:西式轻降权(中式优先·国内为主)
         private const val REPEAT_DISH_PENALTY = 2.0
         private const val REPEAT_MAIN_PENALTY = 0.5
         private const val LIMIT_PENALTY = 0.4

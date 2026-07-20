@@ -25,6 +25,9 @@ class HealthRuleEngine {
         private const val CHRONIC_HITS_PER_DIM_CAP = 2
         private const val CHRONIC_PENALTY_CAP = 0.7
 
+        // [AI生成] 中式优先·西式排后(用户2026-07-20#2)：西式菜轻度降权,同分中式靠前;轻(<recommend0.6)不排除西式。
+        private const val CUISINE_WESTERN_DEMOTE = 0.3
+
         // [AI生成] 时间衰减(仅"偏新鲜"风格)：preference(常做)加分随"距上次做天数"指数衰减，半衰期 30 天。
         //   daysAgo=0(刚做)→1.0；7天→≈0.85；30天→0.5；60天→0.25；90天→≈0.125。久没做的老菜常做加分递减→不固化在老菜。
         private const val FRESHNESS_HALF_LIFE_DAYS = 30.0
@@ -153,6 +156,9 @@ class HealthRuleEngine {
         }
         // [AI修改] 忌口菜大幅降权排到所有正常菜之后(仍保留、带 avoidNames 让 UI 标红警示)，让用户看得到但明确知道该避免。
         if (avoidNames.isNotEmpty()) score -= weights.avoid
+        // [AI生成] 中式优先·西式排后(用户2026-07-20#2:国内为主)：西式菜轻度降权,同等条件中式靠前;
+        //   轻(0.3·<recommend0.6)不排除西式(仍可推·尤其早餐面包牛奶),只是"同分中式优先"。忌口/健康不受影响。
+        if (isWesternCuisine(dish.cuisine)) score -= CUISINE_WESTERN_DEMOTE
 
         DishCandidate(
             id = dish.id,
