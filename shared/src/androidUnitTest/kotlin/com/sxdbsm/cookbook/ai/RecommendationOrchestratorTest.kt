@@ -311,6 +311,31 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `fallback已含主食时不再堆第二道主食`() = runBlocking {
+        // 证伪"主食补分方向"(Google审查抓到的阻断:chosenHasStaple 传反会致"已有主食反而堆主食")。
+        // 1荤+2主食+1素,每餐3道;preferenceScores 定序 红烧肉>米饭>油菜>馒头(差<主食补分0.9)。
+        // 正确:首荤→补米饭(首个主食,合理)→第3道应补素菜油菜(已有主食不再堆馒头)。传反则第3道错堆馒头(两主食)。
+        val dishes = listOf(
+            RuleDish(1, "红烧肉", listOf(main(301, "五花肉"))),
+            RuleDish(2, "米饭", listOf(main(302, "大米"))),
+            RuleDish(3, "馒头", listOf(main(303, "面粉"))),
+            RuleDish(4, "清炒油菜", listOf(main(304, "油菜"))),
+        )
+        val input = RecommendationInput(
+            dishes = dishes,
+            pantryIngredientIds = setOf(301L, 302, 303, 304),
+            constraints = HealthConstraints(),
+            recentDishIds = emptySet(),
+            preferenceScores = mapOf(1L to 1.0, 2L to 0.8, 4L to 0.6, 3L to 0.4),
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime()) // 空→兜底(确定性)
+        val meal = orch.recommend(input, mealCount = 1).suggestions.first().dishIds.toSet()
+        assertEquals(3, meal.size)
+        assertTrue(!(2L in meal && 3L in meal), "一餐不应堆两道主食(米饭+馒头): $meal")
+        assertTrue(4L in meal, "已含主食后第3道应补素菜(油菜)而非第二主食: $meal")
+    }
+
+    @Test
     fun `fallback一餐不选两道同主料菜`() = runBlocking {
         // 两道五花肉菜 + 油菜 + 米饭，每餐3道：主料不重复轻罚应让一餐不出现两道五花肉(改推油菜),更贴近真实吃法。
         val dishes = listOf(

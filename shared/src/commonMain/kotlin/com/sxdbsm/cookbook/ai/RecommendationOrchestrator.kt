@@ -219,7 +219,7 @@ class RecommendationOrchestrator(
         // [AI修改] 荤素/主食补分抽到 MealCompositionScorer(与 PeriodPlanner 共用同一常量/逻辑,防调参漂移);combineScore 调用时 chosen 恒非空,行为不变。
         val composition = MealCompositionScorer.compositionBonus(
             candMeat = cand.isMeat, candStaple = cand.isStaple,
-            chosenMeat = meat, chosenVeg = veg, chosenHasStaple = chosen.none { it.isStaple },
+            chosenMeat = meat, chosenVeg = veg, chosenHasStaple = chosen.any { it.isStaple }, // [AI修改] 阻断修复:参数是"已含主食"(any),原误传 none 致主食补分方向反转(与 PeriodPlanner:any 对齐)
         )
         // [AI生成] 一餐内主料不重复：候选主料与本餐已选任一道有重叠→轻罚(防"一餐两道五花肉";真实吃法一餐主料尽量不同)。轻于 BALANCE,不压倒荤素/主食补齐。
         val candMains = cand.mainNames.toSet()
