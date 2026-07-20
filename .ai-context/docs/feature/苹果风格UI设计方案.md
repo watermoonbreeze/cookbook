@@ -412,3 +412,11 @@ fun PrimaryTabRow(
 - **判级口径(单一真相源·不新造)**：钠/GI/嘌呤复用 `NutrientBands`(120/600·55/70·25/150)；高血脂饱脂/胆固醇用 `IngredientCrowdCare` 食材级**惯例 bands**(饱脂 1.5/5.0 g、胆固醇 50/150 mg·每100g·标注惯例·建议值)、取两指标较重者；痛风缺嘌呤值→按高嘌呤关键词兜底(有实测更准·无实测从严)。
 - **免责就近**：块底一行灰字"仅供参考·非医嘱。嘌呤/钠为惯例口径·非国标，GI 为 FAO/WHO 口径。"(嘌呤/钠非国标必就近标)。**物理隔离**(色点走 `ExtendedColors` 固定三色·不接色系墙)。
 - **落地**：shared `IngredientCrowdCare`(`CrowdFit`/`CrowdCareVerdict`·纯 evaluate·14 单测)；VM `loadIngredientDetail` 加载 `nutritionRepo.ingredientNutrition(id)` 派生 verdicts；`IngredientDetailSheet` 加 `CrowdCareSection`/`CrowdCareRow`。复用 `ExtendedColors`/`InsetGroup`/`InsetDivider`/`SectionTitle`，零新组件、无 DB/迁移。
+
+### 9.29 来源徽标(预设/自建)显隐：只在混合来源列表+详情，纯来源浏览Tab去噪
+> [AI生成 2026-07-20] 用户提。来源徽标的价值=帮用户判"能不能改/删"，只在**用户可能疑惑来源**的场合才有信息量。
+
+- **单一规则**：**纯来源浏览 Tab 隐、其余一律显**——纯来源 Tab(食材 常规/营养/调养/家庭、菜品 菜系/家庭)分类已隐含来源(家庭=全自建·常规等=预设)→徽标冗余噪声；混合来源(最近/喜爱/库存/餐次/搜索/选菜 Picker)预设自建混排无规律→徽标有信息量。
+- **详情页保留一处来源**：卡片列表隐藏后，详情补一处轻量来源标识(不恢复此前减负删掉的整行"来源行"重块)——**食材详情**并入名称下方"分类路径"元信息行末尾("常规›蔬菜类›叶菜 · 预设/自建"·空路径时单显来源)；**菜品详情**喜爱度行末尾加一枚 `SourceBadge`(复用组件)。来源属"这是什么"元信息、非"处理建议"。
+- **实现**：组件加 `showSourceBadge: Boolean = true` 参数**由调用方按 Tab 传**(组件不认识 Tab 枚举·保持纯展示·同 §9 "能力显隐由参数决定"原则)。默认 true→搜索/Picker 页不传即显；纯来源 Tab 显式传 false(`SOURCE_BADGE_HIDDEN_TABS` 集 / `sortTab != ALL && != HOME`)。`DishRow` 徽标+标签都无时整行省略免空隙。
+- **无障碍**：来源另由"能否编辑/删除"(自建有长按菜单·详情编辑vs另存)传达，隐徽标不丢可操作性信息。
