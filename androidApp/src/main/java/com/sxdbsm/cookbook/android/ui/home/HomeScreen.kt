@@ -366,18 +366,32 @@ private fun NextMealCard(
                     )
                 } else {
                     val d = state.dish!!
-                    // 单菜主体：emoji 锚点框 + 菜名 + 一句人话理由。
+                    // 单菜主体：该菜真实图(有图优先·修"推荐图片与菜不符") / 无图回退 emoji 锚点框 + 菜名 + 一句人话理由。
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(d.emoji, style = MaterialTheme.typography.headlineSmall)
+                        // [AI修改] 修 Bug"首页推荐图片与菜不符":推什么菜显什么菜的图(dish.imagePath),无图才回退分类 emoji。
+                        if (d.imagePath.isNotBlank() || d.thumbnailPath.isNotBlank()) {
+                            com.sxdbsm.cookbook.android.ui.component.StoredImage(
+                                imagePath = d.imagePath,
+                                thumbnailPath = d.thumbnailPath,
+                                fallbackText = d.name,
+                                fallbackEmoji = d.emoji,
+                                seedId = d.id,
+                                size = 48.dp,
+                                corner = 8.dp,
+                                allowPreview = false, // 首页卡整卡可点进推荐页,图不单独抢点击
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(d.emoji, style = MaterialTheme.typography.headlineSmall)
+                            }
                         }
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {

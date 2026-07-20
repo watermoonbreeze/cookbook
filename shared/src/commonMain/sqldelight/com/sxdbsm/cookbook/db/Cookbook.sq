@@ -1144,6 +1144,11 @@ SELECT * FROM dish WHERE status = 1 ORDER BY updated_at DESC;
 selectDishById:
 SELECT * FROM dish WHERE id = ? AND status = 1;
 
+-- [AI生成] 首页"下一餐"推荐卡取真实菜图:按 id 批量取封面/缩略图,让推荐卡显该菜自己的图片(修"推荐图片与菜不符"·分类emoji与具体菜不对应)。纯新查询无需迁移。
+selectDishImagesByIds:
+SELECT id, COALESCE(image_path, '') AS image_path, COALESCE(thumbnail_path, '') AS thumbnail_path
+FROM dish WHERE id IN ?;
+
 -- [AI生成] 编辑/详情页专用安全读取：旧库可能残留 NULL 文本字段，统一兜底为空字符串，避免表单加载被 SQLDelight 非空映射中断。
 selectDishForEditById:
 SELECT id,

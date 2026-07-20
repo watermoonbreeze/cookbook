@@ -56,8 +56,16 @@ data class NextMealUi(
     val loading: Boolean = false,
 )
 
-/** 首页推荐卡单菜。[AI修改] v2：加 emoji 视觉锚点(荤/主食/素·VM 按 isMeat/isStaple 映射·无新数据) */
-data class NextDishUi(val id: Long, val name: String, val note: String, val emoji: String = "🥗")
+/** 首页推荐卡单菜。[AI修改] v2：加 emoji 视觉锚点(荤/主食/素·VM 按 isMeat/isStaple 映射·无新数据)
+ * [AI修改] 修"推荐图片与菜不符":带该菜真实封面/缩略图,有图优先显真图、无图才回退 emoji 锚点。 */
+data class NextDishUi(
+    val id: Long,
+    val name: String,
+    val note: String,
+    val emoji: String = "🥗",
+    val imagePath: String = "", // [AI生成] 该菜封面(空=无图,回退 emoji)
+    val thumbnailPath: String = "", // [AI生成] 该菜缩略图(优先显,免解码大图)
+)
 
 /**
  * 首页 ViewModel。[AI修改]
@@ -85,6 +93,8 @@ class HomeViewModel(
     private var cachedCandidates: List<com.sxdbsm.cookbook.ai.model.DishCandidate> = emptyList()
     private var cachedSlotLabel = ""
     private var cachedSample = false
+    // [AI生成] 候选菜 id→(封面,缩略图)：随候选一并预取,"换一道"本地轮播时直接取(不再查库)。修"推荐图片与菜不符"。
+    private var cachedThumbs: Map<Long, Pair<String, String>> = emptyMap()
 
     init { loadNextMeal() } // 首页创建即加载"下一餐"卡(打开即见·纯规则快)。
 
@@ -113,6 +123,8 @@ class HomeViewModel(
             cachedCandidates = acceptable
             cachedSlotLabel = slotLabel
             cachedSample = sample
+            // [AI生成] 预取候选菜真实图(修"推荐图片与菜不符")：候选集小,一次批量查;失败退空(回退 emoji)。
+            cachedThumbs = runCatching { dishRepo.dishImagesByIds(acceptable.map { it.id }) }.getOrDefault(emptyMap())
             homeRotation = 0 // 重取后从第一批展示
             publishNextMeal()
         }
@@ -130,7 +142,13 @@ class HomeViewModel(
         val pick = rotateSlice(cachedCandidates, homeRotation, HOME_DISH_COUNT).firstOrNull()
         _nextMeal.value = NextMealUi(
             slotLabel = cachedSlotLabel,
-            dish = pick?.let { NextDishUi(id = it.id, name = it.name, note = homeNote(it, cachedSample), emoji = emojiFor(it)) },
+            dish = pick?.let {
+                val img = cachedThumbs[it.id]
+                NextDishUi(
+                    id = it.id, name = it.name, note = homeNote(it, cachedSample), emoji = emojiFor(it),
+                    imagePath = img?.first.orEmpty(), thumbnailPath = img?.second.orEmpty(),
+                )
+            },
             isSample = cachedSample,
             canShuffle = cachedCandidates.size > HOME_DISH_COUNT, // >1 才可换一道
             loading = false,

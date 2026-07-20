@@ -68,6 +68,15 @@ class DishRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 按 id 批量取菜的封面/缩略图。[AI生成] 首页"下一餐"推荐卡显该菜真实图片(修"推荐图片与菜不符":原只显分类 emoji 常与具体菜不对应)。
+     * 返回 id→(imagePath, thumbnailPath)；首页候选集很小,IN 展开安全(远低于 SQLite 999 变量上限)。
+     */
+    suspend fun dishImagesByIds(ids: List<Long>): Map<Long, Pair<String, String>> = withContext(ioDispatcher) {
+        if (ids.isEmpty()) return@withContext emptyMap()
+        q.selectDishImagesByIds(ids).executeAsList().associate { it.id to (it.image_path to it.thumbnail_path) }
+    }
+
+    /**
      * 按名称获取或创建烹饪方式。[AI修改]
      *
      * 新建/编辑菜品页支持多个烹饪方式；每个手动输入项都会先落到字典表，再写入关联表。
