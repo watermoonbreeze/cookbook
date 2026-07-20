@@ -15,10 +15,11 @@ import kotlin.test.assertTrue
  **/
 class RecommendationPromptTest {
 
-    private fun cand(id: Long, name: String, recentDaysAgo: Int? = null) = DishCandidate(
+    private fun cand(id: Long, name: String, recentDaysAgo: Int? = null, isMeat: Boolean = false, isStaple: Boolean = false) = DishCandidate(
         id = id, name = name, mainNames = listOf("主料"), secondaryNames = emptyList(),
         seasoningsOnHand = emptyList(), limitHits = emptyList(), recommendHits = emptyList(),
         isRecent = recentDaysAgo != null, score = 1.0, recentDaysAgo = recentDaysAgo,
+        isMeat = isMeat, isStaple = isStaple,
     )
 
     @Test
@@ -38,6 +39,19 @@ class RecommendationPromptTest {
         assertTrue(req.user.contains("今天吃过"), "当天吃过应显示'今天吃过'")
         // 没吃过的菜不带近吃标签
         assertTrue(!req.user.substringAfter("凉拌黄瓜").substringBefore("\n").contains("吃过"))
+    }
+
+    @Test
+    fun `组合完整性_system含荤素主食引导_候选带荤素主食标注`() {
+        val req = RecommendationPrompt.build(
+            listOf(cand(1, "红烧肉", isMeat = true), cand(2, "米饭", isStaple = true), cand(3, "清炒油菜")),
+            HealthConstraints(), mealCount = 3,
+        )
+        assertTrue(req.system.contains("荤素搭配") && req.system.contains("主食"), "system 应含每餐荤素+主食软引导")
+        // 荤菜标"荤"、主食标"主食"、素菜标"素"
+        assertTrue(req.user.substringAfter("红烧肉").substringBefore("\n").contains("荤"), "荤菜候选应标『荤』")
+        assertTrue(req.user.substringAfter("米饭").substringBefore("\n").contains("主食"), "主食候选应标『主食』")
+        assertTrue(req.user.substringAfter("清炒油菜").substringBefore("\n").contains("素"), "素菜候选应标『素』")
     }
 
     @Test

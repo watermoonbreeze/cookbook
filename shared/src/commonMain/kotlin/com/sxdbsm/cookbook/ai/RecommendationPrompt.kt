@@ -31,6 +31,8 @@ object RecommendationPrompt {
             append("你是家庭饮食助手，帮慢性病用户用现有食材决定下一餐吃什么。")
             append("只能从给定候选菜里挑选，不能编造候选之外的菜。")
             append("每一餐搭配 2~3 个菜，共给 $mealCount 个不同的餐。")
+            // [AI生成] 组合完整性:把"每餐荤素+主食"作为软引导喂模型(候选已标 荤/素/主食),让模型路径也像纯规则兜底那样避免"一餐两荤无素无主食";候选不足时不强求。
+            append("每一餐尽量荤素搭配、包含一道主食（候选已标『荤/素/主食』），避免一餐全是荤菜或没有主食；若候选里合适的菜不够则以现有为准，不必硬凑。")
             append("根据每个菜在手的调料，给一句简短做法建议（有葱姜蒜酱→红烧/爆炒，只有盐油→清蒸/白灼）。")
             append("优先选择标注「利调养」的菜、尽量少选标注「注意限量」的菜（候选已按利于健康排序，靠前更优）。")
             // [AI生成] 3a：推荐风格(用户轻干预)。
@@ -61,6 +63,8 @@ object RecommendationPrompt {
             append("候选菜（只能用这些 id）：\n")
             candidates.forEach { c ->
                 append("- id=").append(c.id).append(" ").append(c.name)
+                append(if (c.isMeat) "｜荤" else "｜素") // [AI生成] 组合完整性:荤素结构标注(供模型每餐荤素搭配)
+                if (c.isStaple) append("｜主食") // [AI生成] 组合完整性:主食标注(供模型每餐含一道主食)
                 append("｜主料:").append(c.mainNames.joinToString("、").ifEmpty { "-" })
                 if (c.onHandNames.isNotEmpty()) append("｜在手:").append(c.onHandNames.joinToString("、")) // [AI生成] 用到你库存的食材(物尽其用)
                 if (c.seasoningsOnHand.isNotEmpty()) append("｜在手调料:").append(c.seasoningsOnHand.joinToString("、"))
