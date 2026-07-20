@@ -129,31 +129,27 @@ fun NewDishScreen(
                 title = if (editingDishId != null || state.editingId != null) "编辑菜品" else "新建菜品",
                 onBack = { requestBack() },
                 actions = {
-                    // [AI修改] 苹果风格：导入降为纯文字次操作，避免与主 CTA 争视觉；保存为胶囊主按钮。
+                    // [AI修改] 基调:保存下移到底部 FormBottomBar(§9.13/§9.30);顶栏只留"导入"纯文字次操作。
                     TextButton(onClick = { importPickerOpen = true }) {
                         Icon(Icons.Outlined.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(2.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text("导入")
                     }
                     Spacer(Modifier.width(4.dp))
-                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
-                        text = "保存",
-                        // [AI修改] 无食材时先提示(添加食材利于统计健康膳食指标)，让用户选"继续保存/添加食材"。
-                        onClick = { if (state.ingredients.isEmpty()) noIngredientPromptOpen = true else vm.save() },
-                        enabled = state.name.isNotBlank() && !state.saving && !state.loading && state.errorMessage == null,
-                    )
-                    Spacer(Modifier.width(8.dp))
                 },
             )
         },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-        ) {
+        // [AI修改] 基调修复(菜品编辑闪退根因):去内层 Scaffold.bottomBar,改"weight(1f)滚动区 + FormBottomBar 兄弟节点"——
+        //   weight 给滚动区有界高度,根治"NavHost 内嵌套 Scaffold bottomBar + verticalScroll"的测量崩溃;§9.30。
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+            ) {
             if (state.loading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
@@ -171,6 +167,21 @@ fun NewDishScreen(
                     modifier = Modifier.padding(vertical = 8.dp),
                 )
             }
+            // [AI修改] 基调:封面卡前移到顶部主区(引导用户主动拍照·选填不施压)——无图=虚线引导卡/有图=通栏封面,
+            //   复用 ImagePickerButton coverStyle 同一图片管线(EXIF摆正/缩略图)。封面从旧折叠区上移,发现性从≈0到显眼。
+            Spacer(Modifier.height(8.dp))
+            ImagePickerButton(
+                imagePaths = decodeImagePaths(state.imagePath),
+                thumbnailPaths = decodeImagePaths(state.thumbnailPath),
+                onImagesChanged = { images, thumbnails ->
+                    vm.setImages(encodeImagePaths(images), encodeImagePaths(thumbnails))
+                },
+                maxCount = 1,
+                coverStyle = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(16.dp))
+
             FormFieldLabel("菜名 *")
             OutlinedTextField(
                 value = state.name,
@@ -180,113 +191,7 @@ fun NewDishScreen(
                 shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
             )
 
-            FormFieldLabel("标签")
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                state.tags.forEach { tag ->
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = tag,
-                                textAlign = TextAlign.Center,
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { vm.removeTag(tag) },
-                                modifier = Modifier.size(20.dp),
-                            ) {
-                                Icon(Icons.Outlined.Close, contentDescription = "删除标签", modifier = Modifier.size(14.dp))
-                            }
-                        },
-                        modifier = Modifier.height(32.dp), // [AI修改] 标签项高度与“+ 添加”按钮保持一致。
-                    )
-                }
-                AssistChip(
-                    onClick = { tagInputOpen = true },
-                    label = {
-                        Text(
-                            "+ 添加",
-                            textAlign = TextAlign.Center,
-                        )
-                    },
-                    modifier = Modifier.height(32.dp),
-                )
-            }
-
-            FormFieldLabel("烹饪方式")
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                state.cookingMethodNames.forEach { method ->
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = method,
-                                textAlign = TextAlign.Center,
-                            )
-                        },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = { vm.removeCookingMethod(method) },
-                                modifier = Modifier.size(20.dp),
-                            ) {
-                                Icon(Icons.Outlined.Close, contentDescription = "删除烹饪方式", modifier = Modifier.size(14.dp))
-                            }
-                        },
-                        modifier = Modifier.height(32.dp), // [AI修改] 已添加项高度与“+ 添加”按钮保持一致。
-                    )
-                }
-                AssistChip(
-                    onClick = { cookingMethodDialogOpen = true },
-                    label = {
-                        Text(
-                            "+ 添加",
-                            textAlign = TextAlign.Center,
-                        )
-                    },
-                    modifier = Modifier.height(32.dp),
-                )
-            }
-
-            // [AI生成] v28：适合餐次(可见非必填·智能预选可增减)——固定 6 项 toggle 多选 chip(实心=选中)，
-            // 刻意区别于上方"增删型"AssistChip(带×)，语义分层。空则保存时按菜名 Matcher 兜底(永不无餐次菜)。
-            FormFieldLabel("适合餐次")
-            if (state.mealSlotPrefilled && !state.mealSlotTouched) {
-                Text(
-                    "已按菜名智能预选，可增减",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 6.dp),
-                )
-            }
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                com.sxdbsm.cookbook.ai.MealSlot.values()
-                    .filter { it != com.sxdbsm.cookbook.ai.MealSlot.ALL }
-                    .forEach { slot ->
-                        com.sxdbsm.cookbook.android.ui.component.ToggleChip(
-                            label = slot.label,
-                            selected = slot in state.mealSlots,
-                            onClick = { vm.toggleMealSlot(slot) },
-                        )
-                    }
-            }
-
-            // [AI修改] #3：自建/编辑菜品不再提供菜系选择——菜系是预设菜的分类维度，用户自建菜不纳入。
-            // DB 的 cuisine 列与预设菜的菜系保留不变；编辑预设菜时其原菜系原样带回保存(state.cuisine 不动)。
-
-            // [AI修改] B5：食材清单标题右侧加"配料组"入口——套用常用配料组(如基础调料包)一键加入。
+            // [AI修改] 基调:食材=高频核心资产(营养/热量/推荐全靠它)·前移到菜名之后。标题右侧"配料组"入口(B5)。
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 FormFieldLabel("食材清单")
                 Spacer(Modifier.weight(1f))
@@ -345,35 +250,111 @@ fun NewDishScreen(
                 Text("添加食材", color = MaterialTheme.colorScheme.primary)
             }
 
-            OperationStepsEditor(
-                steps = state.steps,
-                onAddStep = vm::addStep,
-                onUpdateStepText = vm::updateStepText,
-                onUpdateStepImages = { index, images, thumbnails ->
-                    vm.updateStepImages(index, encodeImagePaths(images), encodeImagePaths(thumbnails))
-                },
-                // [AI修改] A-1 修复：删除/移动步骤后步骤索引会错位，复位 focusedStepIndex，
-                // 让模板套用回退到"末步"语义，避免并入错误步骤 + Toast 报错步号。
-                onRemoveStep = { vm.removeStep(it); focusedStepIndex = null },
-                onMoveStep = { i, toStart -> vm.moveStep(i, toStart); focusedStepIndex = null },
-                showStepNumber = stepModeEnabled,
-                onPickTemplate = { vm.loadStepTemplates(); stepTemplateSheetOpen = true },
-                onStepFocused = { focusedStepIndex = it },
-            )
+            // [AI生成] v28：适合餐次(可见非必填·智能预选可增减)·基调:高频·食材后。固定 6 项 toggle 多选(实心=选中)，
+            // 刻意区别于折叠区"增删型"AssistChip(带×)语义分层。空则保存时按菜名 Matcher 兜底(永不无餐次菜)。
+            FormFieldLabel("适合餐次")
+            if (state.mealSlotPrefilled && !state.mealSlotTouched) {
+                Text(
+                    "已按菜名智能预选，可增减",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+            }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                com.sxdbsm.cookbook.ai.MealSlot.values()
+                    .filter { it != com.sxdbsm.cookbook.ai.MealSlot.ALL }
+                    .forEach { slot ->
+                        com.sxdbsm.cookbook.android.ui.component.ToggleChip(
+                            label = slot.label,
+                            selected = slot in state.mealSlots,
+                            onClick = { vm.toggleMealSlot(slot) },
+                        )
+                    }
+            }
+            // [AI修改] #3：自建/编辑菜品不提供菜系选择(菜系是预设菜维度)；DB cuisine 列保留，编辑预设菜原样带回。
 
-            // [AI修改] A7：把可选的"特殊说明/描述/图片"收进"更多信息(可选)"，默认折叠，降低录入压迫感；
-            // 有内容时自动展开(编辑既有菜品/已填过不至于藏起来)。快速记一道菜只需菜名+食材即可。
-            val hasMore = state.specialNote.isNotBlank() || state.description.isNotBlank() ||
-                state.imagePath.isNotBlank() || state.thumbnailPath.isNotBlank()
+            // [AI修改] 基调§9.31:低频区下沉——步骤/烹饪方式/标签/特殊说明/描述收进折叠(默认收起·有内容自动展开)，
+            //   第一屏只留封面+菜名+食材+餐次核心四件事(一屏一焦点)。封面已移出到顶部,故 hasMore 不再含 imagePath。
+            val hasMore = state.steps.isNotEmpty() || state.cookingMethodNames.isNotEmpty() ||
+                state.tags.isNotEmpty() || state.specialNote.isNotBlank() || state.description.isNotBlank()
             var moreExpanded by rememberSaveable { mutableStateOf(false) }
             LaunchedEffect(hasMore) { if (hasMore) moreExpanded = true }
-            // [AI修改] §9.30:统一用共享 MoreOptionsHeader 折叠头(与编辑食材一致),菜品低频区=特殊说明/描述/图片。
             com.sxdbsm.cookbook.android.ui.component.MoreOptionsHeader(
                 expanded = moreExpanded,
                 onToggle = { moreExpanded = !moreExpanded },
-                hint = "特殊说明 / 描述 / 图片，均选填",
+                hint = "步骤 / 烹饪方式 / 标签 / 说明，均选填",
             )
             if (moreExpanded) {
+                OperationStepsEditor(
+                    steps = state.steps,
+                    onAddStep = vm::addStep,
+                    onUpdateStepText = vm::updateStepText,
+                    onUpdateStepImages = { index, images, thumbnails ->
+                        vm.updateStepImages(index, encodeImagePaths(images), encodeImagePaths(thumbnails))
+                    },
+                    // [AI修改] A-1 修复：删除/移动步骤后索引错位，复位 focusedStepIndex 让模板套用回退"末步"语义。
+                    onRemoveStep = { vm.removeStep(it); focusedStepIndex = null },
+                    onMoveStep = { i, toStart -> vm.moveStep(i, toStart); focusedStepIndex = null },
+                    showStepNumber = stepModeEnabled,
+                    onPickTemplate = { vm.loadStepTemplates(); stepTemplateSheetOpen = true },
+                    onStepFocused = { focusedStepIndex = it },
+                )
+
+                FormFieldLabel("烹饪方式")
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    state.cookingMethodNames.forEach { method ->
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(text = method, textAlign = TextAlign.Center) },
+                            trailingIcon = {
+                                IconButton(onClick = { vm.removeCookingMethod(method) }, modifier = Modifier.size(20.dp)) {
+                                    Icon(Icons.Outlined.Close, contentDescription = "删除烹饪方式", modifier = Modifier.size(16.dp))
+                                }
+                            },
+                            modifier = Modifier.height(32.dp),
+                        )
+                    }
+                    AssistChip(
+                        onClick = { cookingMethodDialogOpen = true },
+                        label = { Text("+ 添加", textAlign = TextAlign.Center) },
+                        modifier = Modifier.height(32.dp),
+                    )
+                }
+
+                FormFieldLabel("标签")
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    state.tags.forEach { tag ->
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(text = tag, textAlign = TextAlign.Center) },
+                            trailingIcon = {
+                                IconButton(onClick = { vm.removeTag(tag) }, modifier = Modifier.size(20.dp)) {
+                                    Icon(Icons.Outlined.Close, contentDescription = "删除标签", modifier = Modifier.size(16.dp))
+                                }
+                            },
+                            modifier = Modifier.height(32.dp),
+                        )
+                    }
+                    AssistChip(
+                        onClick = { tagInputOpen = true },
+                        label = { Text("+ 添加", textAlign = TextAlign.Center) },
+                        modifier = Modifier.height(32.dp),
+                    )
+                }
+
                 FormFieldLabel("特殊说明")
                 OutlinedTextField(
                     value = state.specialNote,
@@ -393,19 +374,17 @@ fun NewDishScreen(
                     minLines = 2,
                     shape = MaterialTheme.shapes.medium,
                 )
-
-                FormFieldLabel("图片")
-                ImagePickerButton(
-                    imagePaths = decodeImagePaths(state.imagePath),
-                    thumbnailPaths = decodeImagePaths(state.thumbnailPath),
-                    onImagesChanged = { images, thumbnails ->
-                        vm.setImages(encodeImagePaths(images), encodeImagePaths(thumbnails))
-                    },
-                    maxCount = 3,
-                    modifier = Modifier.fillMaxWidth(),
-                )
             }
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(16.dp))
+            }
+            // [AI修改] 基调:主 CTA 底部常驻胶囊(§9.13 合拇指·一屏一个),作滚动区兄弟常驻底部;无食材先提示(利健康统计)。
+            //   navBarPadding=false:本页在 MainScaffold NavHost 已被 navigationBarsPadding 避让,不重复避让(防双下边距·§9.30)。
+            com.sxdbsm.cookbook.android.ui.component.FormBottomBar(
+                primaryText = if (state.saving) "保存中…" else "保存",
+                onPrimary = { if (state.ingredients.isEmpty()) noIngredientPromptOpen = true else vm.save() },
+                primaryEnabled = state.name.isNotBlank() && !state.saving && !state.loading && state.errorMessage == null,
+                navBarPadding = false,
+            )
         }
     }
 

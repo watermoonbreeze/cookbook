@@ -39,6 +39,8 @@ fun FormBottomBar(
     secondaryText: String? = null,
     onSecondary: (() -> Unit)? = null,
     secondaryEnabled: Boolean = true,
+    // [AI生成] 是否自消费导航栏 inset。全屏 Dialog 场景=true(自己避让);已在 NavHost 层被 navigationBarsPadding 避让的路由页=false(防双重下边距·§9.30 红线)。
+    navBarPadding: Boolean = true,
 ) {
     Surface(modifier = modifier, color = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
         Column {
@@ -46,7 +48,7 @@ fun FormBottomBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding() // [AI生成] 只在底栏消费导航栏 inset，防与滚动内容双下边距
+                    .then(if (navBarPadding) Modifier.navigationBarsPadding() else Modifier) // [AI修改] 只在需要处消费导航栏 inset，防与外层 navigationBarsPadding 双下边距
                     .padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.End,
