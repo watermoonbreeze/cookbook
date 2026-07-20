@@ -91,8 +91,11 @@ internal fun IngredientEditorDialog(
     var healthNote by remember(ingredient?.id) { mutableStateOf("") }
     var careRules by remember(ingredient?.id) { mutableStateOf<List<IngredientCareRule>>(emptyList()) }
     var categoryPickerOpen by remember { mutableStateOf(false) } // [AI生成] 自定义食材分类选择器开关。
-    // [AI生成] UX：低频区折叠(苹果式高频少露、低频收纳)。新建默认收起(填名+大类即可快速建材)，编辑默认展开(便于看全已填内容)。
-    var moreExpanded by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
+    // [AI修改] §四:低频区拆 4 个独立折叠段(营养数值/更多信息/做法说明/调养建议·各自开合)。新建默认收起(填名+大类即可快速建材)、编辑默认展开(便于看全已填内容)。
+    var expandNutrition by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
+    var expandMore by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
+    var expandDetail by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
+    var expandCare by remember(ingredient?.id) { mutableStateOf(ingredient != null) }
     // [AI生成] Item4：自定义食材营养素(每100g)录入，预填已有；营养色系开时给"影响哪些统计"提示。
     fun fmtNum(v: Double?): String = v?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
     var nKcal by remember(ingredient?.id, ui.editorNutrition) { mutableStateOf(fmtNum(ui.editorNutrition?.energyKcal)) }
@@ -130,7 +133,7 @@ internal fun IngredientEditorDialog(
         if (userEditedN["calcium"] != true) v.calciumMg?.let { nCalcium = fmtNum(it) }
         if (userEditedN["gi"] != true) v.gi?.let { nGi = fmtNum(it) }
         if (userEditedN["purine"] != true) v.purineMg?.let { nPurine = fmtNum(it) }
-        moreExpanded = true // 让用户看见被预填的数字(营养素在折叠区)
+        expandNutrition = true // 让用户看见被预填的数字(营养数值在折叠区)
     }
     /** 清空预填：只清未被用户改过的预填字段(可逆·不弹确认，§9.9)，保留用户已改。 */
     fun clearGuessed() {
@@ -274,7 +277,7 @@ internal fun IngredientEditorDialog(
         categoryIds = emptySet()
         selectedGroup = null
         groupTouched = false // 恢复"按名预选营养大类"
-        moreExpanded = false // 折叠低频区回到快速建材态
+        expandNutrition = false; expandMore = false; expandDetail = false; expandCare = false // 折叠低频区回到快速建材态
         commonMethods = ""
         prepTips = ""
         eatingNotes = ""
@@ -376,8 +379,8 @@ internal fun IngredientEditorDialog(
                     if (!isPreset) {
                         // [AI生成] 智能推演：按名预填了分类/营养时顶一条善意提示条(告知"已预填·请核对"·可清空)。
                         guessSource?.let { src -> NutritionGuessBanner(source = src, onClear = { clearGuessed() }) }
-                        // [AI生成] A1：营养大类(必选)——归到主食/鱼肉蛋等分类树，并让色系/均衡按它统计。默认按名预选。
-                        EditorSection("营养大类（必选）") {
+                        // [AI修改] §四:去"营养大类（必选）"红字唠叨(唯一真必填=名称·已智能预选几乎不空)——保留必填校验(formValid)但不红字施压。
+                        EditorSection("营养大类") {
                             Text(
                                 "决定这个食材归到「主食/蔬菜/鱼肉蛋…」哪一类——用于分类浏览和营养均衡统计。已按名字自动选好，可改。",
                                 style = MaterialTheme.typography.bodySmall,
@@ -396,36 +399,10 @@ internal fun IngredientEditorDialog(
                                     )
                                 }
                             }
-                            if (selectedGroup == null) {
-                                Text("请选择一个营养大类", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
-                            }
                         }
 
-                        // [AI生成] UX：以下均为选填低频项(分类/详情/营养素/调养)，折叠收纳，减少新建时的表单负担。
-                        MoreOptionsHeader(expanded = moreExpanded) { moreExpanded = !moreExpanded }
-                        if (moreExpanded) {
-                        EditorSection("其它分类（可选）") {
-                            Text(
-                                // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
-                                selectedCategoryNames.ifBlank { "未选择其它分类（营养维度/自建分类等，可不选）" },
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            OutlinedButton(onClick = { categoryPickerOpen = true }, modifier = Modifier.fillMaxWidth()) {
-                                Text("选择分类")
-                            }
-                        }
-
-                        EditorSection("详情说明") {
-                            DetailTextField("常见做法", commonMethods) { commonMethods = it }
-                            DetailTextField("处理建议", prepTips) { prepTips = it }
-                            DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
-                            DetailTextField("保存建议", storageTips) { storageTips = it }
-                            DetailTextField("健康说明", healthNote) { healthNote = it }
-                        }
-
-                        // [AI生成] Item4：营养素录入(每100g，选填)——填了这些，自定义食材就能像预设一样进营养/热量统计。
-                        EditorSection("营养素（每100g，选填）") {
+                        // [AI修改] §四:低频区由单 moreExpanded 拆成 4 个独立折叠段(按频率排序·各自开合),新建默认收起、编辑默认展开。
+                        FoldSection("营养数值（每100g，选填）", expandNutrition, { expandNutrition = !expandNutrition }) {
                             if (nutritionColorOn) {
                                 Text(
                                     "填了这些值，这个食材就会计入统计：热量→每日千卡与达标；蛋白/脂肪/碳水→宏量均衡；" +
@@ -463,13 +440,32 @@ internal fun IngredientEditorDialog(
                             )
                         }
 
-                        // [AI修改] 恢复"食材界面改造2"重构时丢失的调养建议编辑区：自定义食材可编辑所有内容（含调养规则）。
-                        CareRuleEditor(
-                            categories = ui.allCategories.filter { (it.dimension == "crowd" || it.crowdTypeId != null) && !it.isCareGroupRoot() },
-                            rules = careRules,
-                            onRulesChange = { careRules = it },
-                        )
-                        } // if (moreExpanded)
+                        FoldSection("更多信息（其它分类）", expandMore, { expandMore = !expandMore }) {
+                            Text(
+                                // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
+                                selectedCategoryNames.ifBlank { "未选择其它分类（营养维度/自建分类等，可不选）" },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            OutlinedButton(onClick = { categoryPickerOpen = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text("选择分类")
+                            }
+                        }
+                        FoldSection("做法说明", expandDetail, { expandDetail = !expandDetail }) {
+                            DetailTextField("常见做法", commonMethods) { commonMethods = it }
+                            DetailTextField("处理建议", prepTips) { prepTips = it }
+                            DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
+                            DetailTextField("保存建议", storageTips) { storageTips = it }
+                            DetailTextField("健康说明", healthNote) { healthNote = it }
+                        }
+                        // [AI修改] 调养建议独立折叠段(§四·自定义食材可编辑含调养规则)；标题由 FoldSection 承载,CareRuleEditor 内不再重复标题。
+                        FoldSection("调养建议", expandCare, { expandCare = !expandCare }) {
+                            CareRuleEditor(
+                                categories = ui.allCategories.filter { (it.dimension == "crowd" || it.crowdTypeId != null) && !it.isCareGroupRoot() },
+                                rules = careRules,
+                                onRulesChange = { careRules = it },
+                            )
+                        }
                     }
 
                     ui.createError?.let { error ->
@@ -546,6 +542,41 @@ internal fun EditorSection(title: String, content: @Composable ColumnScope.() ->
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         content()
+    }
+}
+
+/**
+ * 可折叠分组容器（§四·低频区独立折叠段）。[AI生成]
+ * 标题整行可点开合 + 右侧 chevron；仅展开时渲染内容。**禁在 content 里提前 return**（Compose inline 布局内提前 return 致组失衡崩溃·见踩坑红线）。
+ */
+@Composable
+internal fun FoldSection(
+    title: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onToggle() }
+                .padding(vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Icon(
+                Icons.Outlined.ExpandMore,
+                contentDescription = if (expanded) "收起" else "展开",
+                modifier = Modifier.rotate(if (expanded) 180f else 0f),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (expanded) {
+            Spacer(Modifier.height(6.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth(), content = content)
+        }
     }
 }
 
@@ -733,7 +764,8 @@ internal fun CareRuleEditor(
     var level by remember { mutableStateOf(AdviceLevel.RECOMMEND) }
     var reason by remember { mutableStateOf("") }
 
-    EditorSection("调养建议") {
+    // [AI修改] §四:标题由外层 FoldSection("调养建议") 承载,这里去掉重复标题,只留内容容器。
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         CareCategoryDropdown(categories, selectedCategoryId) { selectedCategoryId = it }
         AdviceLevelDropdown(level) { level = it }
         OutlinedTextField(
@@ -866,7 +898,7 @@ private fun NutrientField(label: String, value: String, modifier: Modifier = Mod
         },
         label = { Text(label, style = MaterialTheme.typography.labelSmall) },
         singleLine = true,
-        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal), // [AI修改] §五质量:Number 键盘无小数点→Decimal(营养值多为小数)
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
         colors = if (guessed) {
