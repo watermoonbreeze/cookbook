@@ -922,6 +922,12 @@ UPDATE ingredient_category
 SET status = 0
 WHERE ingredient_id = ?;
 
+-- [AI生成] 软删单条食材-分类关联(预设 reseed 对齐 JSON：删 general 维度里 JSON 已无的旧 browse 关联，如可乐 other→beverage 后遗留的 other)。纯新查询无需迁移。
+unlinkIngredientCategory:
+UPDATE ingredient_category
+SET status = 0
+WHERE ingredient_id = ? AND category_id = ?;
+
 selectCategoryIdsByIngredient:
 SELECT category_id
 FROM ingredient_category

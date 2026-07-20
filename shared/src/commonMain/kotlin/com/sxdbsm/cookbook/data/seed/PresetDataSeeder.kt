@@ -300,6 +300,13 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     private fun seedFoundationIngredients(now: Long, categoryIdsByCode: Map<String, Long>) {
         val q = db.cookbookQueries
         val units = q.selectAllMeasurementUnits().executeAsList().associateBy { it.name }
+        // [AI生成] general(browse层级)维度分类 id 集：预设食材 browse 归属以 JSON 为准，reseed 时删掉
+        //   "当前挂着、但 JSON 已不含"的 general 关联(如可乐从 other 移到 beverage 后遗留的 other → 两分类都显)。
+        //   只动 general 维度；营养(nutrition/gi/purine…)/调养(crowd)/季节(season)标签一律不碰。
+        val generalCategoryIds = loadFoodCategories()
+            .filter { it.dimension == "general" }
+            .mapNotNull { categoryIdsByCode[it.code] }
+            .toSet()
 
         loadIngredients().forEach { seed ->
             val unitId = units[seed.unit]?.id
@@ -326,6 +333,14 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             // [AI修改] 预设食材的有效/失效完全跟随后台数据包：JSON status=0 即下架（携带 reason），=1 即上架/恢复。
             q.updatePresetIngredientStatus(status = seed.status.toLong(), reason = seed.reason, id = ingredientId)
 
+            // [AI生成] reseed 对齐：先删 general 维度里"当前有、JSON 已无"的旧 browse 关联(修可乐 other→beverage 遗留在两分类)。
+            //   只删 general 维度且不在本次 JSON 期望集里的；营养/调养/季节标签及 JSON 现含的分类都保留。
+            val desiredIds = seed.categories.mapNotNull { categoryIdsByCode[it] }.toSet()
+            q.selectCategoryIdsByIngredient(ingredientId).executeAsList().forEach { curId ->
+                if (curId in generalCategoryIds && curId !in desiredIds) {
+                    q.unlinkIngredientCategory(ingredientId, curId)
+                }
+            }
             seed.categories.forEach { categoryCode ->
                 categoryIdsByCode[categoryCode]?.let { categoryId ->
                     q.linkIngredientCategory(ingredientId, categoryId) // [AI修改] 已存在食材也补齐新 JSON 分类。
@@ -539,7 +554,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // v4(2026-07-17)=菜系分类·存量自建菜 cuisine 空回填"家常菜"(老库需跑到)。
         // v5(2026-07-17)=高血脂负向维度·营养表加饱和脂肪/胆固醇两列并回填(老库需跑到)。
         // v6(2026-07-19)=菜品餐次分类·seedDishMealSlots 给预设菜补齐 dish_meal_slot(老库需跑一次拿到餐次标)。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v7" // [AI修改] v7:自动推断餐次重推替换纠存量误标(QW-3去玉米/南瓜/薯误入早餐·老库需跑到)
+        private const val SEED_LOGIC_VERSION = "seedlogic-v8" // [AI修改] v8:预设食材 general 分类 reseed 对齐 JSON(删 JSON 已无的旧 browse 关联,如可乐 other→beverage 遗留·老库需跑到修"两分类都有")
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
