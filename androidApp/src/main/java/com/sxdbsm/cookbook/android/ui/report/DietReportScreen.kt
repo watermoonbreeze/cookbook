@@ -57,7 +57,7 @@ import kotlin.math.roundToInt
  * [AI生成] 报告模块 MVP（用户 2026-07-18 拍板）。
  **/
 @Composable
-fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: () -> Unit) {
+fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: (kotlinx.datetime.LocalDate) -> Unit) {
     val vm: DietReportViewModel = koinViewModel()
     val st by vm.state.collectAsStateWithLifecycle()
 
@@ -122,7 +122,7 @@ fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: () -> Unit) {
                     text = "这段时间还没记一餐\n记一餐就能生成饮食报告",
                     icon = "🍽",
                     actionLabel = "去记一餐",
-                    onAction = onGoAddMeal,
+                    onAction = { onGoAddMeal(st.addMealDate) }, // [AI生成] F#6：带当前周期目标日期跳转(有餐=编辑/无=新增)
                 )
                 else -> ReportBody(st, st.report!!)
             }

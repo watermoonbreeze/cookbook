@@ -48,6 +48,10 @@ data class DietReportUiState(
     // [AI生成] 多人关注:个人视角 ≥2 关注人时的成员切换器(§9.23·与今日卡共用指针)。
     val focusMembers: List<com.sxdbsm.cookbook.domain.model.FamilyMember> = emptyList(),
     val viewingId: Long? = null,
+    // [AI生成] F#6：当前周期"记一餐"的目标日期——周期含今天用今天、否则用周期首日；
+    //   点"去记一餐"带此日期跳转(AddDayFood 按日期 configure：该日有餐=编辑、无=新增)，
+    //   修"报告某周无餐点记一餐没带日期、开成最后一餐往后"的问题。
+    val addMealDate: LocalDate = DateTime.today(),
 )
 
 class DietReportViewModel(
@@ -106,8 +110,11 @@ class DietReportViewModel(
                 dishNutrition = dishNutrition,
                 target = target,
             )
+            // [AI生成] F#6：算"记一餐"目标日期——周期含今天用今天(最贴用户当下)、否则用周期首日(回填过去周)。
+            val today = DateTime.today()
+            val addMealDate = if (today >= range.start && today <= range.end) today else range.start
             // 用最新态写回(防并发翻页覆盖)。
-            _state.update { it.copy(loading = false, report = report, memberName = memberName, hasFocusMember = hasFocus, periodLabel = range.label, canGoNewer = it.offset < 0, focusMembers = focusMembers, viewingId = viewingId) }
+            _state.update { it.copy(loading = false, report = report, memberName = memberName, hasFocusMember = hasFocus, periodLabel = range.label, canGoNewer = it.offset < 0, focusMembers = focusMembers, viewingId = viewingId, addMealDate = addMealDate) }
         }
     }
 

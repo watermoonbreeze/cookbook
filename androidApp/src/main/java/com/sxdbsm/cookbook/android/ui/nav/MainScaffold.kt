@@ -244,7 +244,7 @@ fun MainScaffold(
             composable(Routes.DIET_REPORT) {
                 com.sxdbsm.cookbook.android.ui.report.DietReportScreen(
                     onBack = { nav.popBackStack() },
-                    onGoAddMeal = { nav.navigate(Routes.addMeal()) },
+                    onGoAddMeal = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) }, // [AI生成] F#6：报告"记一餐"带周期目标日期(该日有餐=编辑/无=新增)
                 )
             }
             composable(Routes.DIETARY_REFERENCE) {
