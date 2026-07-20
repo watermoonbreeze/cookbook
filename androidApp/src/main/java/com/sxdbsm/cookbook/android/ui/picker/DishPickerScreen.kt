@@ -99,6 +99,14 @@ fun DishPickerScreen(
             color = MaterialTheme.colorScheme.surface,
         ) {
             Column(Modifier.fillMaxSize()) {
+                // [AI修改] §9.30 P0-2:新建入口与选食材对齐——无词=顶栏➕、有词=结果列表末尾 SearchCreateRow(带入搜索词)。
+                //   onAddNew 提到此处供顶栏➕与列表末尾行共用(原只在底部 Surface 内)。
+                val onAddNew = {
+                    if (state.keyword.isNotBlank()) {
+                        prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = state.keyword.trim()))
+                    }
+                    onAddNewDish(vm.confirmSelected()) // 带出当前已勾选，去新建前先保留
+                }
                 TopAppBar(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -121,6 +129,12 @@ fun DishPickerScreen(
                         }
                     },
                     actions = {
+                        // [AI修改] §9.30 P0-2:无搜索词时新建入口=顶栏➕(与选食材对齐);有词时靠列表末尾 SearchCreateRow。
+                        if (showAddNewButton && state.keyword.isBlank()) {
+                            IconButton(onClick = onAddNew) {
+                                Icon(Icons.Outlined.Add, contentDescription = "新建菜品")
+                            }
+                        }
                         if (multiSelect) {
                             Button(
                                 onClick = {
@@ -204,6 +218,14 @@ fun DishPickerScreen(
                         else -> "还没有菜品"
                     }
                     EmptyState(text = emptyText, icon = "🥗")
+                    // [AI修改] §9.30 P0-2:0结果+有搜索词→紧接空态给"新建菜品「词」"末尾行(与选食材覆盖层一致)。
+                    if (showAddNewButton && state.keyword.trim().isNotBlank()) {
+                        com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                            keyword = state.keyword,
+                            entity = "菜品",
+                            onClick = onAddNew,
+                        )
+                    }
                 } else {
                     LazyColumn(Modifier.weight(1f)) {
                         items(state.dishes, key = { it.id }) { dish ->
@@ -221,39 +243,14 @@ fun DishPickerScreen(
                                 },
                             )
                         }
-                    }
-                }
-
-                if (showAddNewButton) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 2.dp,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        // [AI修改] 底部常驻新建行：有搜索词用统一 SearchCreateRow("新建菜品「X」")，空词保留原"添加菜品"按钮。
-                        val onAddNew = {
-                            // [AI修改] 有搜索词则带入新建菜品名(修"选菜品搜索无结果新建时不带名称")。
-                            if (state.keyword.isNotBlank()) {
-                                prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(name = state.keyword.trim()))
-                            }
-                            onAddNewDish(vm.confirmSelected()) // [AI修改] 带出当前已勾选，去新建前先保留
-                        }
-                        if (state.keyword.trim().isNotBlank()) {
-                            com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
-                                keyword = state.keyword,
-                                entity = "菜品",
-                                onClick = onAddNew,
-                            )
-                        } else {
-                            TextButton(
-                                onClick = onAddNew,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                            ) {
-                                Icon(Icons.Outlined.Add, contentDescription = null)
-                                Spacer(Modifier.width(4.dp))
-                                Text("添加菜品", color = MaterialTheme.colorScheme.primary)
+                        // [AI修改] §9.30 P0-2:有搜索词→结果列表末尾常驻"新建菜品「词」"行(§9.19·带入词·替代原底部 Surface)。
+                        if (showAddNewButton && state.keyword.trim().isNotBlank()) {
+                            item(key = "dish-create-row") {
+                                com.sxdbsm.cookbook.android.ui.component.SearchCreateRow(
+                                    keyword = state.keyword,
+                                    entity = "菜品",
+                                    onClick = onAddNew,
+                                )
                             }
                         }
                     }
