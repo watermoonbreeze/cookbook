@@ -178,6 +178,8 @@ private fun MemberCard(
 ) {
     val careNames = careOptions.filter { it.id in member.careCategoryIds }.map { it.name }
     val target = CalorieTarget.dailyTarget(member.toBodyMetrics())
+    // [AI生成] DRIs 国标能量参照(WS/T 578.1-2017·按性别年龄段查表)——与 Mifflin 个性估算并列,给国人年龄段口径参考(仅供参考·非医嘱)。
+    val driRef = com.sxdbsm.cookbook.domain.model.DriEnergyReference.referenceKcal(member.toBodyMetrics())
     Surface(
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surface,
@@ -222,6 +224,14 @@ private fun MemberCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            // [AI生成] 国标参照(WS/T 578.1-2017 按年龄段)——与上方个性估算并列,仅供参考·非医嘱。中老年国标口径通常更贴国人。
+            if (driRef != null) {
+                Text(
+                    "国标参照约 $driRef 千卡（据 WS/T 578.1-2017 · 仅供参考）",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (careNames.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
                 Text("健康状态：${careNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

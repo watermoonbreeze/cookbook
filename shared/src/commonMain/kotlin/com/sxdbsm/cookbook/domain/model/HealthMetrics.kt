@@ -141,3 +141,47 @@ object CalorieTarget {
         }
     }
 }
+
+/**
+ * 膳食能量需要量「国标参照」(EER)——据 **WS/T 578.1-2017《中国居民膳食营养素参考摄入量·第1部分:宏量营养素》**
+ * (现行国家卫生行业标准·等同2013版DRIs能量表·数据 verified)。[AI生成]
+ * <p>
+ * 作 [CalorieTarget] 的 Mifflin-St Jeor **个性估算之外的"国标参照"并列展示**：Mifflin×活动系数对**中老年偏高**，
+ * 国标按年龄段递减更贴近国人。按 **性别 × 年龄段(18-49/50-64/65-79/80+) × 身体活动水平(轻/中/重)** 查表(不依身高体重)。
+ * <p>
+ * 口径/红线：**仅供参考·非医嘱**(UI 承接·标来源"WS/T 578.1-2017")；**65岁以上"重"级国标未制定→返回 null**(不外推);
+ * 未成年(<18)/离谱年龄→null(同 CalorieTarget 不评热量口径)；孕期/哺乳附加量不在此表(需 care 检测另处理·A2 gate)。
+ * 4 档 [ActivityLevel] → DRIs 3 级 PAL 映射：久坐/轻度→轻(PAL1.50)、中度→中(PAL1.75)、高度→重(PAL2.00)。
+ **/
+object DriEnergyReference {
+    private const val ADULT_AGE_MIN = 18
+    private const val AGE_MAX = 120
+
+    // WS/T 578.1-2017 EER(kcal/d)。行=年龄段[18-49,50-64,65-79,80+]，列=PAL[轻,中,重]；-1=国标未制定(65+无重级)。[AI生成 verified]
+    private val MALE = arrayOf(
+        intArrayOf(2250, 2600, 3000),
+        intArrayOf(2100, 2450, 2800),
+        intArrayOf(2050, 2350, -1),
+        intArrayOf(1900, 2200, -1),
+    )
+    private val FEMALE = arrayOf(
+        intArrayOf(1800, 2100, 2400),
+        intArrayOf(1750, 2050, 2350),
+        intArrayOf(1700, 1950, -1),
+        intArrayOf(1500, 1750, -1),
+    )
+
+    /** 国标参照能量(kcal)；缺年龄/未成年/离谱/该档国标未制定→null(不评·不外推)。[AI生成] */
+    fun referenceKcal(m: BodyMetrics): Int? {
+        val a = m.age ?: return null
+        if (a < ADULT_AGE_MIN || a > AGE_MAX) return null
+        val band = when { a <= 49 -> 0; a <= 64 -> 1; a <= 79 -> 2; else -> 3 }
+        val pal = when (m.activityEnum) {
+            ActivityLevel.SEDENTARY, ActivityLevel.LIGHT -> 0
+            ActivityLevel.MODERATE -> 1
+            ActivityLevel.ACTIVE -> 2
+        }
+        val v = (if (m.genderEnum == Gender.MALE) MALE else FEMALE)[band][pal]
+        return v.takeIf { it > 0 }
+    }
+}
