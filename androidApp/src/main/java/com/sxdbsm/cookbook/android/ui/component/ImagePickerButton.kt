@@ -6,6 +6,9 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +16,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.PhotoLibrary
@@ -67,6 +73,7 @@ fun ImagePickerButton(
     modifier: Modifier = Modifier,
     maxCount: Int = 3,
     thumbnailPaths: List<String> = emptyList(),
+    coverStyle: Boolean = false, // [AI生成] F#2/基调:封面卡变体——无图=虚线引导卡、有图=通栏封面(复用同一图片管线),用于菜品编辑页顶部前移引导拍照。
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -136,6 +143,50 @@ fun ImagePickerButton(
     }
 
     Column(modifier = modifier) {
+        if (coverStyle) {
+            // [AI生成] 封面卡：无图=虚线引导卡(前移引导拍照·选填不施压)、有图=通栏封面+删除。复用下方同一图片管线。
+            val firstThumb = thumbnailPaths.firstOrNull().takeUnless { it.isNullOrBlank() } ?: imagePaths.firstOrNull()
+            if (imagePaths.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), RoundedCornerShape(12.dp))
+                        .clickable(enabled = !processing) { chooserOpen = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Outlined.AddAPhoto, contentDescription = null, modifier = Modifier.size(28.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(6.dp))
+                        Text(if (processing) "处理中…" else "给这道菜拍张照", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Spacer(Modifier.height(2.dp))
+                        Text("拍照或从相册选 · 选填", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
+                    StoredImage(
+                        imagePath = firstThumb ?: "",
+                        fallbackText = "封面",
+                        fallbackEmoji = "🍽",
+                        seedId = 0L,
+                        fillWidth = true,
+                        imageHeight = 160.dp,
+                        modifier = Modifier.clip(RoundedCornerShape(12.dp)),
+                    )
+                    TextButton(
+                        onClick = { onImagesChanged(emptyList(), emptyList()) },
+                        modifier = Modifier.padding(6.dp),
+                    ) { Text("移除", style = MaterialTheme.typography.labelMedium) }
+                }
+            }
+            errorMessage?.let { message ->
+                Spacer(Modifier.height(6.dp))
+                Text(text = message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+            return@Column
+        }
         OutlinedButton(
             onClick = { chooserOpen = true },
             enabled = imagePaths.size < maxCount && !processing,
