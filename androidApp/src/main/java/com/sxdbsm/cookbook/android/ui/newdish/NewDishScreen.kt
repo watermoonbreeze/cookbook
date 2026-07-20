@@ -367,14 +367,12 @@ fun NewDishScreen(
                 state.imagePath.isNotBlank() || state.thumbnailPath.isNotBlank()
             var moreExpanded by rememberSaveable { mutableStateOf(false) }
             LaunchedEffect(hasMore) { if (hasMore) moreExpanded = true }
-            TextButton(onClick = { moreExpanded = !moreExpanded }) {
-                Icon(
-                    if (moreExpanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
-                    contentDescription = null,
-                )
-                Spacer(Modifier.width(4.dp))
-                Text("更多信息（可选）", color = MaterialTheme.colorScheme.primary)
-            }
+            // [AI修改] §9.30:统一用共享 MoreOptionsHeader 折叠头(与编辑食材一致),菜品低频区=特殊说明/描述/图片。
+            com.sxdbsm.cookbook.android.ui.component.MoreOptionsHeader(
+                expanded = moreExpanded,
+                onToggle = { moreExpanded = !moreExpanded },
+                hint = "特殊说明 / 描述 / 图片，均选填",
+            )
             if (moreExpanded) {
                 FormFieldLabel("特殊说明")
                 OutlinedTextField(

@@ -28,6 +28,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.sxdbsm.cookbook.android.ui.component.FormBottomBar
 import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
+import com.sxdbsm.cookbook.android.ui.component.MoreOptionsHeader
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
@@ -533,30 +534,8 @@ internal fun IngredientEditorDialog(
 /**
  * 低频区折叠头。[AI生成] 苹果式：高频项常露、选填低频项收纳一行，点开再填。
  */
-@Composable
-internal fun MoreOptionsHeader(expanded: Boolean, onToggle: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { onToggle() }
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            "更多信息（分类 / 详情 / 营养素 / 调养，均选填）",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1f),
-        )
-        Icon(
-            Icons.Outlined.ExpandMore,
-            contentDescription = if (expanded) "收起" else "展开",
-            modifier = Modifier.rotate(if (expanded) 180f else 0f),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
+// [AI修改] §9.30:MoreOptionsHeader 抽到 ui/component/MoreOptionsHeader.kt 作共享件(供编辑菜品复用)。
+//   本文件调用处(食材编辑器)不传 hint→用默认食材口径"分类/详情/营养素/调养，均选填"，行为不变。
 
 /**
  * 编辑器分组容器。[AI生成]
