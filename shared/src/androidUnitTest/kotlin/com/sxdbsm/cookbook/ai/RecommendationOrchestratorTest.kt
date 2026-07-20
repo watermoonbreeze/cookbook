@@ -67,7 +67,7 @@ class RecommendationOrchestratorTest {
 
     @Test
     fun `A1_兜底组合避免两荤_优先荤素搭配`() = runBlocking {
-        // 3荤 + 1素，模型空→兜底；每餐2菜；首餐应荤素搭配(含素菜4)，而非两荤。
+        // 3荤 + 1素，模型空→兜底；QW-1 起每餐 3 菜(主食+荤+素更完整)；首餐应荤素搭配(含素菜4)，而非全荤。
         val meatVegInput = RecommendationInput(
             dishes = listOf(
                 RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
@@ -83,8 +83,8 @@ class RecommendationOrchestratorTest {
         val result = orch.recommend(meatVegInput, mealCount = 1)
         assertEquals(RecommendationSource.RULE_FALLBACK, result.source)
         val meal = result.suggestions.first().dishIds
-        assertEquals(2, meal.size)
-        assertTrue(4L in meal, "首餐应含素菜(荤素搭配)而非两荤: $meal")
+        assertEquals(3, meal.size) // [AI修改] QW-1:FALLBACK_DISHES_PER_MEAL 2→3
+        assertTrue(4L in meal, "首餐应含素菜(荤素搭配)而非全荤: $meal")
     }
 
     @Test

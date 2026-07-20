@@ -22,8 +22,8 @@ data class PlanDish(
     val isHealthy: Boolean, // 含调养推荐且不含限量(有档案时)
     val hasAvoid: Boolean, // 含忌口食材 → 规划时剔除
     val isMeat: Boolean = false, // [AI生成] 是否荤菜(主料含肉/鱼/蛋等)；规划时同餐尽量荤素兼有
-    val isBreakfast: Boolean = false, // 是否早餐菜(粥/蛋/豆浆/奶/面/薯等)；早餐档只从早餐菜里选，符合中式饮食
-    val breakfastSoft: Boolean = false, // 早餐软/饮(粥/豆浆/奶/燕麦/蛋羹/面) vs 硬/主食(蛋/薯/南瓜/玉米/馒头)，用于软硬搭配
+    val isBreakfast: Boolean = false, // 是否早餐菜(粥/蒸蛋/豆浆奶/燕麦/面点/吐司面包等·由 MealSlot.BREAKFAST 判)；早餐档只从早餐菜里选，符合中式饮食。[AI修改] QW-3:去玉米/南瓜/薯误判
+    val breakfastSoft: Boolean = false, // 早餐软/饮(粥/豆浆/奶/燕麦/蛋羹/面) vs 硬/主食(馒头/包子/油条/吐司等)，用于软硬搭配
     val recommendHits: List<String> = emptyList(), // 利于调养的食材(说明用)
     val limitHits: List<String> = emptyList(), // 限量食材(说明用)
 )

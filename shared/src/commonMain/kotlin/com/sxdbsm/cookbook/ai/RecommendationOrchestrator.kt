@@ -223,7 +223,7 @@ class RecommendationOrchestrator(
         private const val SIM_W_PROTEIN = 0.15 // [AI生成] D1:MMR 荤素结构维度(避免一批全荤/全素)
         private const val DEFAULT_MEAL_COUNT = 3
         private const val MAX_DISHES_PER_MEAL = 3
-        private const val FALLBACK_DISHES_PER_MEAL = 2
+        private const val FALLBACK_DISHES_PER_MEAL = 3 // [AI修改] QW-1:2→3,组合更完整(主食+荤+素),贴近一餐(combineScore已补荤素/主食缺口)
         // [AI生成] A1:组合级搭配补分(复用 PeriodPlanner 已验证系数)——本餐荤素偏少一方/无主食时给对应候选加分。
         private const val BALANCE_BONUS = 0.7 // 同餐荤素平衡补分
         private const val STAPLE_BONUS = 0.9 // 本餐未含主食时给主食菜补分

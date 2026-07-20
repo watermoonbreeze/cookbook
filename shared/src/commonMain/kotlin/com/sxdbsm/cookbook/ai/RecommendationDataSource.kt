@@ -379,7 +379,7 @@ class RecommendationDataSource(
                 seasonTags = ingIds.flatMap { seasonByIng[it].orEmpty() }.toSet(),
                 isHealthy = healthAware && recommendHits.isNotEmpty() && limitHits.isEmpty() && avoidHits.isEmpty(),
                 hasAvoid = avoidHits.isNotEmpty(),
-                isBreakfast = BREAKFAST_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 按菜名判早餐菜(符合中式饮食)。
+                isBreakfast = MealSlotMatcher.matches(MealSlot.BREAKFAST, d.name), // [AI修改] QW-3:复用 MealSlot.BREAKFAST 单一真相源(去玉米/南瓜/薯误判),别再各存一份词表(防漂移·红线)。
                 breakfastSoft = BREAKFAST_SOFT_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 软/饮 vs 硬/主食(软硬搭配)。
                 recommendHits = recommendHits.map { it.ingredient_name }.distinct(),
                 limitHits = limitHits.map { it.ingredient_name }.distinct(),
@@ -443,9 +443,8 @@ class RecommendationDataSource(
     }
 
     companion object {
-        // [AI生成] 早餐菜关键词(菜名含则视为早餐菜)。
-        private val BREAKFAST_KEYWORDS = listOf("粥", "蛋羹", "豆浆", "豆奶", "牛奶", "燕麦", "面", "馒头", "包子", "水煮蛋", "薯", "南瓜", "玉米")
-        // [AI生成] 早餐软/饮类关键词(其余早餐菜视为硬/主食，用于软硬搭配)。
+        // [AI修改] QW-3:删早餐菜关键词——isBreakfast 改复用 MealSlotMatcher.matches(BREAKFAST) 单一真相源(防两份词表漂移)。
+        // [AI生成] 早餐软/饮类关键词(判早餐菜里的软/饮 vs 硬/主食，用于软硬搭配·MealSlotMatcher 无此维度故保留在此)。
         private val BREAKFAST_SOFT_KEYWORDS = listOf("粥", "豆浆", "豆奶", "牛奶", "燕麦", "蛋羹", "面")
         private const val RECENT_LIMIT = 15L // 去重参考的最近菜品数(旧按条数，保留兼容)。
         const val RECENT_WINDOW_DAYS_DEFAULT = 7 // [AI生成] B2：去重窗口默认一周；UI 可切一周/二周/三周/四周。

@@ -25,7 +25,21 @@ class MealSlotMatcherTest {
         assertTrue(MealSlotMatcher.matches(MealSlot.BREAKFAST, "小米粥"))
         assertTrue(MealSlotMatcher.matches(MealSlot.BREAKFAST, "蒸蛋羹"))
         assertTrue(MealSlotMatcher.matches(MealSlot.BREAKFAST, "阳春面"))
+        assertTrue(MealSlotMatcher.matches(MealSlot.BREAKFAST, "牛奶燕麦"))
+        assertTrue(MealSlotMatcher.matches(MealSlot.BREAKFAST, "煎饼果子"))
         assertFalse(MealSlotMatcher.matches(MealSlot.BREAKFAST, "红烧肉"), "红烧肉不是早餐菜")
+    }
+
+    @Test
+    fun `QW3去玉米南瓜薯广词_炒菜正餐不再误入早餐`() {
+        // [AI生成] QW-3(2026-07-20#3):裸"玉米/南瓜/薯"曾把炒菜/正餐误判早餐,导致推荐早餐出现松仁玉米等"怪菜"。
+        assertFalse(MealSlotMatcher.matches(MealSlot.BREAKFAST, "松仁玉米"), "松仁玉米是炒菜非早餐")
+        assertFalse(MealSlotMatcher.matches(MealSlot.BREAKFAST, "玉米排骨汤"), "玉米排骨汤是正餐非早餐")
+        assertFalse(MealSlotMatcher.matches(MealSlot.BREAKFAST, "南瓜排骨"), "南瓜排骨是正餐非早餐")
+        assertFalse(MealSlotMatcher.matches(MealSlot.BREAKFAST, "拔丝红薯"), "拔丝红薯是甜点非早餐")
+        // 南瓜粥/红薯粥/南瓜饼仍应命中(经粥/饼)。
+        assertTrue(MealSlotMatcher.matches(MealSlot.BREAKFAST, "南瓜粥"))
+        assertTrue(MealSlotMatcher.matches(MealSlot.BREAKFAST, "南瓜饼"))
     }
 
     @Test

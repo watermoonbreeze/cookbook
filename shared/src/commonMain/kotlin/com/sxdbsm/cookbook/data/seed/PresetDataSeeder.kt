@@ -539,7 +539,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // v4(2026-07-17)=菜系分类·存量自建菜 cuisine 空回填"家常菜"(老库需跑到)。
         // v5(2026-07-17)=高血脂负向维度·营养表加饱和脂肪/胆固醇两列并回填(老库需跑到)。
         // v6(2026-07-19)=菜品餐次分类·seedDishMealSlots 给预设菜补齐 dish_meal_slot(老库需跑一次拿到餐次标)。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v6" // [AI修改] v6:餐次分类补齐式 seed(老库需跑到)
+        private const val SEED_LOGIC_VERSION = "seedlogic-v7" // [AI修改] v7:自动推断餐次重推替换纠存量误标(QW-3去玉米/南瓜/薯误入早餐·老库需跑到)
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
@@ -671,9 +671,14 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     /**
      * 预设菜「适合餐次」补齐式 seed。[AI生成] v28
      *
-     * 回填只补空：仅当该菜尚无任何 dish_meal_slot 关联时才写(不覆盖用户手动改过的餐次/已打标菜)。
-     * seed 显式给了 mealSlots(code)则用之，否则按菜名 MealSlotMatcher 推断；恒非空(推不出兜底正餐)，
-     * 保证"永不出现无餐次菜"。只作用预设菜(按名反查预设菜 id)；用户自建菜的餐次在保存时兜底/编辑时预选。
+     * 两类分治：
+     * · **显式策展餐次**(JSON 给了 mealSlots)：回填只补空，不覆盖已打标(保留人工策展/用户)。
+     * · **自动推断餐次**(JSON 未给)：按最新 [MealSlotMatcher.defaultSlotsFor] **重推并替换旧存量**——
+     *   修早餐关键词误判等历史误标(QW-3·2026-07-20#3:去玉米/南瓜/薯致松仁玉米误入早餐)。
+     *   预设菜不可被用户直接编辑(须复制后改)，故重推自动推断值无用户数据风险；重推前 `unlinkMealSlotsOfDish` 软删旧集，
+     *   再按新集 `linkDishMealSlot`(INSERT OR REPLACE status=1)，新集外的旧餐次留 status=0 即被移除。
+     * 恒非空(推不出兜底正餐)保证"永不出现无餐次菜"。只作用预设菜(按名反查预设菜 id)；自建菜餐次在保存时兜底/编辑时预选。
+     * [AI修改] QW-3：自动推断值改为"重推替换"以纠正存量误标(配合 SEED_LOGIC_VERSION+1 让老库跑一次)。
      */
     private fun seedDishMealSlots() {
         val q = db.cookbookQueries
@@ -681,10 +686,13 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val alreadyTagged = q.selectDishIdsWithMealSlot().executeAsList().toSet()
         loadDishes().forEach dish@{ seed ->
             val dishId = q.selectPresetDishIdByName(seed.name).executeAsOneOrNull() ?: return@dish
-            if (dishId in alreadyTagged) return@dish // 回填只补空，不覆盖已打标
-            val codes = seed.mealSlots.map { it.trim() }.filter { it.isNotBlank() }
-                .ifEmpty { com.sxdbsm.cookbook.ai.MealSlotMatcher.defaultSlotsFor(seed.name).map { it.code } }
-            codes.distinct().forEach codeLoop@{ code ->
+            val explicit = seed.mealSlots.map { it.trim() }.filter { it.isNotBlank() }
+            val autoDerived = explicit.isEmpty()
+            // 显式策展且已打标→跳过(补空语义);自动推断则即使已打标也重推替换(纠存量误标)。
+            if (dishId in alreadyTagged && !autoDerived) return@dish
+            val codes = explicit.ifEmpty { com.sxdbsm.cookbook.ai.MealSlotMatcher.defaultSlotsFor(seed.name).map { it.code } }.distinct()
+            if (autoDerived && dishId in alreadyTagged) q.unlinkMealSlotsOfDish(dishId) // 重推前软删旧集
+            codes.forEach codeLoop@{ code ->
                 val mealTypeId = mealTypeIdByCode[code] ?: return@codeLoop
                 q.linkDishMealSlot(dishId, mealTypeId)
             }

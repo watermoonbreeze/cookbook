@@ -210,9 +210,22 @@ fun AiRecommendScreen(
                                 RecommendControls(state, vm, onOpenFilter = { filterSheetOpen = true })
                                 Spacer(Modifier.height(4.dp))
                                 ResultHeader(
-                                    hint = "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。",
+                                    // [AI修改] QW-1:组合卡现也用于规则兜底(非模型)→文案按来源区分,别一律说"模型"。
+                                    hint = if (state.source == RecommendationSource.MODEL)
+                                        "模型为你搭了 ${state.suggestionGroups.size} 套组合，勾选想做的菜或整套加入这一餐。"
+                                    else
+                                        "为你搭了 ${state.suggestionGroups.size} 套家常组合，勾选想做的菜或整套加入这一餐。",
                                     onRefresh = { vm.recommend() },
                                 )
+                                // [AI生成] QW-1(Google审查🟡3):配了模型却由规则兜底时,组合卡分支也如实标注(与扁平分支诚实一致)。
+                                if (state.modelReady && state.source == RecommendationSource.RULE_FALLBACK) {
+                                    Spacer(Modifier.height(2.dp))
+                                    Text(
+                                        "本次由规则兜底生成（模型未返回有效结果）",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                                 Spacer(Modifier.height(4.dp))
                             }
                             itemsIndexed(state.suggestionGroups) { idx, group ->

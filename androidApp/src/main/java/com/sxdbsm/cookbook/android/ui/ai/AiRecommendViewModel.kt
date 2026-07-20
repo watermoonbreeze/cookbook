@@ -254,7 +254,10 @@ class AiRecommendViewModel(
         } else {
             result.candidates
         }
-        val groups = if (result.source == RecommendationSource.MODEL && result.suggestions.isNotEmpty()) {
+        // [AI修改] QW-1(用户2026-07-20#3):离线纯规则兜底也走"一餐组合"卡,不再展平成孤立单菜——
+        //   fallback() 已把候选贪心组成"荤+素+主食"的 MealSuggestion(此前只在 MODEL 时展示,被浪费)。
+        //   MODEL 恒显组合(原行为不变·含药膳);规则兜底仅非药膳走组合(药膳保留其"含量降序平铺重排")。
+        val groups = if (result.suggestions.isNotEmpty() && (result.source == RecommendationSource.MODEL || !medicinal)) {
             result.suggestions.mapNotNull { s ->
                 val dishes = s.dishIds.mapNotNull { byId[it] }.map { toItem(it, mode) }
                 if (dishes.isEmpty()) null
