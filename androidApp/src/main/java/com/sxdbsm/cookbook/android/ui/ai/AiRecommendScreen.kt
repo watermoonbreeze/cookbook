@@ -511,7 +511,7 @@ private fun SuggestionGroupCard(
             }
             if (!group.cookingHint.isNullOrBlank()) {
                 Spacer(Modifier.height(2.dp))
-                Text("做法：${group.cookingHint}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("搭配建议：${group.cookingHint}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] UX走查M4:与食材详情"做法"(常见烹饪方式)区分,这里是"这套怎么配着做"
             }
             Spacer(Modifier.height(4.dp))
             group.dishes.forEach { dish ->

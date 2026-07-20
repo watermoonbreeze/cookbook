@@ -672,11 +672,10 @@ fun IngredientPickerScreen(
             // [AI生成] 仅浏览模式(非选食材)给"存为菜品"：即食品直接吃场景一步建成同名单食材菜品。
             onSaveAsDish = if (!selectionMode) ({
                 vm.saveIngredientAsDish(ingredient) { already ->
-                    Toast.makeText(
-                        context,
-                        if (already) "已有同名菜品「${ingredient.name}」" else "已把「${ingredient.name}」存成一道菜，记餐时可直接选",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    // [AI修改] UX走查M2:详情关闭后回食材页(有全局Snackbar宿主),改 Snackbar 与出库/入库反馈风格统一(替原Toast)。
+                    appSnackbar?.showMessage(
+                        if (already) "已有同名菜品「${ingredient.name}」" else "已存成一道菜「${ingredient.name}」，记餐时可直接选",
+                    )
                 }
                 selectedIngredient = null
             }) else null,
