@@ -121,9 +121,12 @@ class RecommendationOrchestrator(
      */
     private fun diversify(batch: List<DishCandidate>, lambda: Double): List<DishCandidate> {
         if (lambda >= 0.999 || batch.size <= 2) return batch
-        val head = batch.takeWhile { !it.isRecent && it.avoidNames.isEmpty() } // 可重排的正常菜层
+        // [AI修改] 防御:用 filter 取正常菜层/补集取尾层,替代 takeWhile+drop(依赖"正常层是连续前缀"的隐式不变量)。
+        //   evaluate 的 sortedWith 保证正常层在最前连续段(当前成立),但一旦排序 key 顺序被改,takeWhile 会静默截断错误 head、
+        //   drop 也错位；filter/补集对顺序无依赖、天然正确——当前有序下与原实现等价(filter 保序),未来改排序也不会静默出错。
+        val head = batch.filter { !it.isRecent && it.avoidNames.isEmpty() } // 可重排的正常菜层
         if (head.size <= 2) return batch
-        val tail = batch.drop(head.size) // 最近/忌口层：保持分层末位不动
+        val tail = batch.filter { it.isRecent || it.avoidNames.isNotEmpty() } // 最近/忌口层(补集)：保持分层末位不动
         val maxScore = head.maxOf { it.score }
         val minScore = head.minOf { it.score }
         val span = (maxScore - minScore).takeIf { it > 1e-9 }

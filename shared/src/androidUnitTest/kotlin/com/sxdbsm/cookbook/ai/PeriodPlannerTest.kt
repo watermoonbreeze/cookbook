@@ -27,9 +27,11 @@ class PeriodPlannerTest {
         avoid: Boolean = false,
         breakfast: Boolean = false,
         meat: Boolean = false,
+        methods: List<String> = emptyList(), // [AI生成] 做法名(重油族去重测试用)
     ) = PlanDish(
         id = id, name = "菜$id", mainNames = main, nutritionTags = nutrition, seasonTags = season,
         isHealthy = healthy, hasAvoid = avoid, isMeat = meat, isBreakfast = breakfast,
+        cookingMethodNames = methods,
     )
 
     @Test
@@ -90,6 +92,25 @@ class PeriodPlannerTest {
         val vegCount = picked.count { it == 3L || it == 4L }
         assertEquals(1, meatCount, "一餐应有 1 荤: picked=$picked")
         assertEquals(1, vegCount, "一餐应有 1 素: picked=$picked")
+    }
+
+    @Test
+    fun `重油族跨餐去重_一餐不两道重油菜`() {
+        // 2 道重油(红烧/干煸)+1 道清淡(清蒸)、全素(荤素不干扰)、同 base、1 餐 2 道、FRESH 强去重：
+        //   选一道重油后另一道重油被降权(-f.repeat×0.4>jitter)→清淡菜必入选,一餐不出现两道重油。
+        val dishes = listOf(
+            dish(1, main = listOf("茄子"), methods = listOf("红烧")),
+            dish(2, main = listOf("豆角"), methods = listOf("干煸")),
+            dish(3, main = listOf("南瓜"), methods = listOf("清蒸")),
+        )
+        val plan = planner.plan(
+            dishes, days = 1, mealNames = listOf("晚餐"), dishesMin = 2, dishesMax = 2,
+            seed = 0, style = RecommendationStyle.FRESH,
+        )
+        val ids = plan.days[0].meals[0].dishes.map { it.id }.toSet()
+        assertEquals(2, ids.size)
+        assertTrue(!(1L in ids && 2L in ids), "一餐不应两道重油菜(红烧茄子+干煸豆角): $ids")
+        assertTrue(3L in ids, "重油已用后应补清淡菜(清蒸南瓜): $ids")
     }
 
     @Test

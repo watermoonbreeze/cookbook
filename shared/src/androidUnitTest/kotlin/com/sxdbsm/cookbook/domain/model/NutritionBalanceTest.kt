@@ -53,4 +53,16 @@ class NutritionBalanceTest {
         val s = NutritionBalance.score(recentCarbHeavy, highProtein)
         assertTrue(s > 0.0, "补近期缺的蛋白应得正分: $s")
     }
+
+    @Test
+    fun `极端偏斜基线与候选_score仍clamp在负1到1之间`() {
+        // 算法打磨轮补:raw×SCALE 的 clamp 边界护栏——极端偏斜(纯蛋白基线×纯碳水候选)也不越界。
+        val extremeRecent = NutritionTotals(proteinG = 200.0) // 纯蛋白
+        val extremeCand = NutritionTotals(carbG = 200.0) // 纯碳水(补极缺的碳水)
+        val s = NutritionBalance.score(extremeRecent, extremeCand)
+        assertTrue(s in -1.0..1.0, "score 必 clamp 在[-1,1]: $s")
+        // 反向:候选还堆已过量的蛋白 → 负分,也不越界。
+        val s2 = NutritionBalance.score(extremeRecent, NutritionTotals(proteinG = 200.0))
+        assertTrue(s2 in -1.0..1.0, "负向也不越界: $s2")
+    }
 }

@@ -361,6 +361,9 @@ class RecommendationDataSource(
         val dislikedIds = q.selectDislikedDishIds().executeAsList().toSet()
         val allDishRows = q.selectAllDishes().executeAsList().filter { it.id !in dislikedIds }
         val ingredientsByDish = q.selectAllDishIngredientsForPlan().executeAsList().groupBy { it.dish_id }
+        // [AI生成] 做法名(供周计划重油族跨餐去重)：一条批量查询按 dish_id 分组(无 N+1)。空则该菜按中性族(不去重)。
+        val methodsByDish = if (allDishRows.isEmpty()) emptyMap()
+            else q.selectCookingMethodsByDishIds(allDishRows.map { it.id }).executeAsList().groupBy({ it.dish_id }, { it.name })
         val dishes = allDishRows.map { d ->
             val ings = ingredientsByDish[d.id].orEmpty()
             val ingIds = ings.map { it.ingredient_id }
@@ -388,6 +391,7 @@ class RecommendationDataSource(
                 breakfastSoft = BREAKFAST_SOFT_KEYWORDS.any { d.name.contains(it) }, // [AI生成] 软/饮 vs 硬/主食(软硬搭配)。
                 recommendHits = recommendHits.map { it.ingredient_name }.distinct(),
                 limitHits = limitHits.map { it.ingredient_name }.distinct(),
+                cookingMethodNames = methodsByDish[d.id].orEmpty(), // [AI生成] 重油族跨餐去重用
             )
         }
         PlanContext(dishes = dishes, season = currentSeason(), healthAware = healthAware)

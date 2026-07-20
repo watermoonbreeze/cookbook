@@ -78,6 +78,9 @@ class PeriodPlanner {
         val dayPlans = ArrayList<DayPlan>(days)
         for (day in 0 until days.coerceAtMost(MAX_DAYS)) {
             val meals = ArrayList<PlannedMeal>(mealNames.size)
+            // [AI生成] 重油族跨餐去重(按天重置)：一天内已选重油菜(煎炸红烧)越多,后续重油候选越靠后→一天不"顿顿重油"。
+            //   按天(非全程)重置:一天内错开即可,跨天红烧偶现无妨(避免全程累加把后几天饿死重油菜)。清淡/中性不去重(清淡多多益善·无数据不误伤)。
+            var usedHeavyToday = 0
             for (mealName in mealNames) {
                 // [AI修改] 餐次适配 + 早餐软硬搭配：早餐档只从早餐菜选，且偶数位取硬(主食/蛋)、奇数位取软(粥/饮)。
                 val isBreakfastMeal = mealName.contains("早")
@@ -94,12 +97,13 @@ class PeriodPlanner {
                         .ifEmpty { pool.filter { it !in chosen } }
                     // [AI修改] 分数 + 随机抖动：强信号(应季/健康)仍优先，同分菜每次"生成"换出不同组合。
                     val pick = avail.maxByOrNull {
-                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen, f) + (jitter[it.id] ?: 0.0)
+                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen, f, usedHeavyToday) + (jitter[it.id] ?: 0.0)
                     } ?: break
                     chosen += pick
                     usedDishIds[pick.id] = (usedDishIds[pick.id] ?: 0) + 1
                     pick.mainNames.forEach { usedMainCounts[it] = (usedMainCounts[it] ?: 0) + 1 }
                     pick.nutritionTags.forEach { usedNutrition[it] = (usedNutrition[it] ?: 0) + 1 }
+                    if (cookingHeaviness(pick.cookingMethodNames) == HEAVY_FAMILY) usedHeavyToday++ // [AI生成] 记一天内重油菜数
                     if (pick.isHealthy) healthyPicked++
                     totalPicked++
                 }
@@ -127,6 +131,7 @@ class PeriodPlanner {
         usedNutrition: Map<String, Int>,
         mealChosen: List<PlanDish>, // [AI生成] 本餐已选菜，用于荤素搭配平衡
         f: PlanFactors, // [AI生成] 推荐风格系数
+        usedHeavyToday: Int = 0, // [AI生成] 当天已选重油菜数(重油族跨餐去重)
     ): Double {
         var s = BASE
         // 应季
@@ -150,6 +155,9 @@ class PeriodPlanner {
         // 去重：同菜、同主料降权(风格调节：偏新鲜↑去重、偏熟悉↓去重)
         s -= f.repeat * REPEAT_DISH_PENALTY * (usedDishIds[dish.id] ?: 0)
         s -= f.repeat * REPEAT_MAIN_PENALTY * dish.mainNames.sumOf { usedMainCounts[it] ?: 0 }
+        // [AI生成] 重油族跨餐去重(与单餐 MMR 重油族同 cookingHeaviness 口径)：一天内已有重油菜时,再来的重油菜按数量递减→一天不"顿顿煎炸红烧"。
+        //   只罚重油(2),清淡/中性不罚(清淡多益善·无数据不误伤);风格调节(偏新鲜强去重、偏熟悉弱)。
+        if (cookingHeaviness(dish.cookingMethodNames) == HEAVY_FAMILY) s -= f.repeat * HEAVY_REPEAT_PENALTY * usedHeavyToday
         // 限量降权
         s -= LIMIT_PENALTY * dish.limitHits.size
         return s
@@ -183,6 +191,8 @@ class PeriodPlanner {
         private const val CUISINE_WESTERN_DEMOTE = 0.3 // [AI生成] 用户#2:西式轻降权(中式优先·国内为主)
         private const val REPEAT_DISH_PENALTY = 2.0
         private const val REPEAT_MAIN_PENALTY = 0.5
+        private const val HEAVY_FAMILY = 2 // cookingHeaviness 的"重油族"值(0清淡/1中性/2重油)
+        private const val HEAVY_REPEAT_PENALTY = 0.4 // [AI生成] 一天内每多一道重油菜的降权(略低于同主料重复0.5·软信号);×f.repeat 风格调节
         private const val LIMIT_PENALTY = 0.4
     }
 }

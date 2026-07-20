@@ -27,6 +27,7 @@ data class PlanDish(
     val breakfastSoft: Boolean = false, // 早餐软/饮(粥/豆浆/奶/燕麦/蛋羹/面) vs 硬/主食(馒头/包子/油条/吐司等)，用于软硬搭配
     val recommendHits: List<String> = emptyList(), // 利于调养的食材(说明用)
     val limitHits: List<String> = emptyList(), // 限量食材(说明用)
+    val cookingMethodNames: List<String> = emptyList(), // [AI生成] 做法(红烧/清蒸…)：供周计划"重油族跨餐去重"(与单餐 MMR 重油族同口径·cookingHeaviness)。
 )
 
 /** 规划出的一道菜 + 侧重点说明。[AI生成] */
