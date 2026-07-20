@@ -185,8 +185,10 @@ fun ImagePickerButton(
                 Spacer(Modifier.height(6.dp))
                 Text(text = message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
-            return@Column
-        }
+            // [AI修改] 崩溃根因修复:原此处 return@Column 是"从 inline Column 内容 lambda 提前 return"——
+            //   Compose 会造成组 Start/End 失衡→SlotTable ArrayIndexOutOfBounds(编辑态封面空→出图重组时崩·菜品编辑闪退根因)。
+            //   改 if/else 让两分支组结构平衡,不再提前 return。参见 issuetracker 248513437。
+        } else {
         OutlinedButton(
             onClick = { chooserOpen = true },
             enabled = imagePaths.size < maxCount && !processing,
@@ -229,6 +231,7 @@ fun ImagePickerButton(
                 }
             }
         }
+        } // else(非 coverStyle)分支收尾——与 if(coverStyle) 平衡,替代原 return@Column
     }
 
     if (chooserOpen) {
