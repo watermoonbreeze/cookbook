@@ -118,6 +118,25 @@ class IngredientCrowdCareTest {
     }
 
     @Test
+    fun 人工建议AVOID对数据判留意的也升为慎选_录低值反判绿修复() {
+        // [AI生成] 健康安全修复(审计 F#附2)：动物内脏录了偏低实测嘌呤→痛风数据判 MID(留意/黄)，
+        //   但临床应避免、care avoid 须把它升为慎选(红)。原引擎压制只作用 FIT→此类停在黄(bug)。
+        val avoid = listOf(IngredientCareRule(ingredientId = 1L, categoryId = 9L, categoryName = "痛风", adviceLevel = AdviceLevel.AVOID))
+        // 嘌呤 133(MID·25<133<150) → 数据判留意；care avoid → 应升慎选
+        val r = IngredientCrowdCare.evaluate("猪腰", nut(purine = 133.0), avoid)
+        val v = fitOf(r, HealthCondition.GOUT)
+        assertEquals(CrowdFit.CAUTION, v.fit)
+        assertEquals("见上方宜忌", v.reason)
+        // LIMIT 对数据判 MID 不再抬升(取更严者·careFit=MIND 不比 MID 更严)→保留留意
+        val limit = listOf(IngredientCareRule(ingredientId = 1L, categoryId = 9L, categoryName = "痛风", adviceLevel = AdviceLevel.LIMIT))
+        val rL = IngredientCrowdCare.evaluate("猪腰", nut(purine = 133.0), limit)
+        assertEquals(CrowdFit.MIND, fitOf(rL, HealthCondition.GOUT).fit)
+        // 数据已 HIGH(慎选) + care LIMIT → 不降级，保留慎选(单向只升不降)
+        val rH = IngredientCrowdCare.evaluate("沙丁鱼", nut(purine = 399.0), limit)
+        assertEquals(CrowdFit.CAUTION, fitOf(rH, HealthCondition.GOUT).fit)
+    }
+
+    @Test
     fun 人工建议RECOMMEND不压制() {
         val care = listOf(IngredientCareRule(ingredientId = 1L, categoryId = 9L, categoryName = "高血压", adviceLevel = AdviceLevel.RECOMMEND))
         val r = IngredientCrowdCare.evaluate("番茄", nut(sodium = 5.0), care)

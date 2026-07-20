@@ -111,14 +111,27 @@ object IngredientCrowdCare {
             NutrientLevel.HIGH -> reasons.third
             null -> ""
         }
-        // 单向压制：有同病种人工建议时，数据判"宜"(绿)按人工等级压制，指明去看上方宜忌。
-        //   AVOID→"慎选"(红)、LIMIT→"留意"(黄)；仅压制 FIT（不动 NO_DATA：无数据不臆断，人工建议已在上方如实呈现）。
-        //   [AI修改] 酒类"数据低嘌呤(绿)但临床应避免"须显红——如痛风忌啤酒(care avoid)显慎选而非留意。
-        if (fit == CrowdFit.FIT && suppressLevel != null) {
-            fit = if (suppressLevel == AdviceLevel.AVOID) CrowdFit.CAUTION else CrowdFit.MIND
-            reason = "见上方宜忌"
+        // 单向压制：有同病种人工建议时，按"人工策展 > 数据估算·只升不降"取数据级与 care 级的**更严者**。
+        //   AVOID→"慎选"(红)、LIMIT→"留意"(黄)。不动 NO_DATA(无数据不臆断，人工建议已在上方如实呈现)。
+        //   [AI修改] 健康安全修复(审计 F#附2·"录低值反判绿"):原仅压制 FIT(绿)→漏"数据判 MID(黄)但 care AVOID 应显红"——
+        //     动物内脏录了偏低实测嘌呤判 MID(黄)、痛风临床应避免却压不动(压制只作用 FIT)。改为对任意有数据等级取更严者：
+        //     数据 MID + care AVOID → 慎选(红)✓；数据 HIGH + care LIMIT → 保留慎选(不降级)✓。守单向只升不降。
+        if (suppressLevel != null && fit != CrowdFit.NO_DATA) {
+            val careFit = if (suppressLevel == AdviceLevel.AVOID) CrowdFit.CAUTION else CrowdFit.MIND
+            if (fitSeverity(careFit) > fitSeverity(fit)) {
+                fit = careFit
+                reason = "见上方宜忌"
+            }
         }
         return CrowdCareVerdict(condition, fit, reason)
+    }
+
+    /** CrowdFit 严重度(用于单向压制取更严者)：宜<留意<慎选。NO_DATA 不参与比较(调用处已守 != NO_DATA)。[AI生成] */
+    private fun fitSeverity(f: CrowdFit): Int = when (f) {
+        CrowdFit.FIT -> 0
+        CrowdFit.MIND -> 1
+        CrowdFit.CAUTION -> 2
+        CrowdFit.NO_DATA -> -1
     }
 
     /**
