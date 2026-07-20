@@ -16,7 +16,8 @@
 - 上次总结会话点：2026-07-16 下半场(调料默认克数SeasoningDefaults只对分类调料缩小油菜仍100g + 数据来源页/参考资料组ReferenceScaffold复用 + 功能介绍页Apple欢迎范式 + 配色切换7套AppPalette/Palettes向iOS系统色调校鲜亮有活力+我的外观选择器 + 今日卡宏量渐变条段中心平滑过渡+慢病提示个人视角concerns琥珀点色系墙保持纯结构决策A + 组合部分选 + 交互模式库Apple-UX审阅§九增补9.12-9.17+交互组件复用指南+CLAUDE门禁 + B-1餐食页守卫UnsavedGuard复用件)。关键坑=Material3-1.1.2无HorizontalDivider用Divider、配色改走AppPalette+Palettes别硬编码散落、色系墙不关联热量慢病(热量个人放今日卡)、调料默认克数只对分类调料缩小、宏量渐变别实块糊接缝改段中心平滑过渡、未保存守卫用rememberUnsavedGuard非包裹式、UI交互先Apple-UX过再编码+做UI先查交互组件复用指南
 - 上次总结会话点：2026-07-16 收尾(B批UX B-1~B-5 双门禁完成:UnsavedGuard复用件+餐食页守卫、AppSnackbar统一宿主、库存Tab MiniStepper就地加减、食历卡三图标收ActionSheet、删整天软删撤销snapshotDay+showUndo；渲染宏量渐变回退分段实色；Google代码审查阻断项=撤销saveDayMeals重复抬喜爱度→bumpPreference开关+回归单测；CLAUDE加代码质量门禁=Google工程师审查agent)。关键坑=删/还原走save路径别重复抬统计(saveDayMeals bumpPreference=false)、可逆删除软删+撤销别硬确认(快照读失败别照删/Snackbar Long/单job串行化)、未保存守卫非包裹式rememberUnsavedGuard、卡片能力用可选footer槽、CompositionLocal宿主null默认挂MainScaffold、两门禁(UI先Apple-UX后Google审查)
 - 上次总结会话点：2026-07-17 会话续接+backlog安全项清理(DishPickerFlow埋点清理9fd8c5c/搜索占位省略号41bfa86/AlertDialog句号copywriter审校f3f995e)+大类推进campaign建立(用户授权无人值守全权推进UI/工程/产品三大类·每功能提交+飞书+授权push·高风险selectionMode重构/seed异步化入待确认队列)。关键点=AppLogger.d无release门控每次写文件属排查埋点用完必删、copywriter角色审校连⚪一致性也走门禁、提交协议改为每功能即提交+飞书+授权push(覆盖旧"不push"默认)
-- 总结次数：36
+- 上次总结会话点：2026-07-20 真机反馈批(50道家常菜658→708 + 华为A12倒计时闪退根因修复[导航图未挂时navigate·等currentBackStackEntryFlow.first()]真机验证 + F#4酒水顶层分类[与其他并列·不上色系墙]+酒酿归谷薯 + 可乐重复分类修复[seeder补齐式只加不删→reconcile删旧general关联+unlinkIngredientCategory+SEED v8] + 酒类入库+临床忌口[漏接忌口系统致啤酒对痛风显可食·联网核准35条care规则+CrowdCare压制avoid→慎选红] + F#6报告记一餐带日期 + 食材最近Tab去字母条 + 透明准则确立分级透明T0-T3+apple_software_behavior角色 + 联网核准必列数据来源规则 + 参考内容数据驱动架构会商定案+全App行为透明清单)。关键坑=冷启动intent立即navigate须等导航图就绪、加健康食材必走忌口系统核对(数值判绿≠临床可食)、移预设食材分类要reconcile删旧关联、改共享域判定同步改单测、真机崩溃用logcat -b crash -d捞缓冲
+- 总结次数：37
 
 ## 文件索引
 
