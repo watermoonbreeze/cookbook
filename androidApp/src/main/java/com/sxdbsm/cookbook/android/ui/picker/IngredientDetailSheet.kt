@@ -369,7 +369,7 @@ private fun PantryServingSection(
             )
             // [AI生成] 说明"份"含义，回应用户"共X份是什么意思"：份=还能做几次，餐食自动扣减。
             Text(
-                "1 份 = 够做一次这道菜；记录/计划的餐会自动扣减，剩余用完可点「＋加1份」补充",
+                "1 份 = 够用一次；记录或计划里用到会自动扣减，用完可再加", // [AI修改] UX走查M6:食材不是"这道菜",措辞改"够用一次"
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

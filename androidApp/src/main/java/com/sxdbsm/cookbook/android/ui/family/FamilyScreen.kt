@@ -218,7 +218,7 @@ private fun MemberCard(
                 member.age?.let { append(" · ${it}岁") }
                 append(" · 饭量×${fmt(member.portionCoefficient)}")
             }
-            Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) // [AI修改] UX走查H4:超长成员数据加 maxLines 防挤爆
             Text(
                 if (target != null) "🔥 每日目标约 $target 千卡" else "填好身高·体重·年龄，自动算每日目标", // [AI修改] 文案:更自然(填好…自动算)
                 style = MaterialTheme.typography.bodySmall,
@@ -327,11 +327,12 @@ private fun MemberEditorScreen(
             (member ?: FamilyMember(id = 0, name = "")).copy(
                 name = name.trim(),
                 gender = gender,
-                heightCm = height.toDoubleOrNull(),
-                weightKg = weight.toDoubleOrNull(),
+                // [AI修改] UX走查H3:用 parseDecimalInput 容错"30."/".5"结尾开头小数点,防 toDoubleOrNull 恒null致身高/体重/系数静默丢值。
+                heightCm = com.sxdbsm.cookbook.domain.parseDecimalInput(height),
+                weightKg = com.sxdbsm.cookbook.domain.parseDecimalInput(weight),
                 age = age.toIntOrNull(),
                 activity = activity,
-                portionCoefficient = (coeff.toDoubleOrNull() ?: 1.0).coerceAtLeast(0.1), // 防 0/空导致该成员摄入恒 0
+                portionCoefficient = (com.sxdbsm.cookbook.domain.parseDecimalInput(coeff) ?: 1.0).coerceAtLeast(0.1), // 防 0/空导致该成员摄入恒 0
                 careCategoryIds = careIds.toList(),
                 avoidCategoryIds = avoidCatIds.toList(), // [AI生成] v29:个人忌口分类
                 // [AI修改] 🔴修(Google审查):异步查名(ingLoaded)未完成前若点保存,avoidIngMap 尚空→会静默清空既有忌口食材(数据丢失)。未加载完则保留原值。

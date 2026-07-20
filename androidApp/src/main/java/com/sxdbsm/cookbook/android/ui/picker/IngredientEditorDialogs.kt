@@ -173,12 +173,13 @@ internal fun IngredientEditorDialog(
         prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, false)
     }.collectAsState(false)
     val nutritionColorOn = nutritionColorFlag || calorieNumberFlag
+    // [AI修改] UX走查H3:用 parseDecimalInput 容错"30."/".5"结尾开头小数点,防营养值静默丢失。
     fun buildNutrition() = com.sxdbsm.cookbook.domain.model.IngredientNutrition(
         ingredientId = ingredient?.id ?: 0L,
-        energyKcal = nKcal.toDoubleOrNull(), proteinG = nProtein.toDoubleOrNull(), fatG = nFat.toDoubleOrNull(),
-        carbG = nCarb.toDoubleOrNull(), fiberG = nFiber.toDoubleOrNull(), sodiumMg = nSodium.toDoubleOrNull(),
-        potassiumMg = nPotassium.toDoubleOrNull(), calciumMg = nCalcium.toDoubleOrNull(),
-        gi = nGi.toDoubleOrNull(), purineMg = nPurine.toDoubleOrNull(), pieceGram = nPiece.toDoubleOrNull(),
+        energyKcal = com.sxdbsm.cookbook.domain.parseDecimalInput(nKcal), proteinG = com.sxdbsm.cookbook.domain.parseDecimalInput(nProtein), fatG = com.sxdbsm.cookbook.domain.parseDecimalInput(nFat),
+        carbG = com.sxdbsm.cookbook.domain.parseDecimalInput(nCarb), fiberG = com.sxdbsm.cookbook.domain.parseDecimalInput(nFiber), sodiumMg = com.sxdbsm.cookbook.domain.parseDecimalInput(nSodium),
+        potassiumMg = com.sxdbsm.cookbook.domain.parseDecimalInput(nPotassium), calciumMg = com.sxdbsm.cookbook.domain.parseDecimalInput(nCalcium),
+        gi = com.sxdbsm.cookbook.domain.parseDecimalInput(nGi), purineMg = com.sxdbsm.cookbook.domain.parseDecimalInput(nPurine), pieceGram = com.sxdbsm.cookbook.domain.parseDecimalInput(nPiece),
     )
     val isPreset = ingredient?.source == "preset"
     // [AI生成] A1：营养大类可选项(9个)——distinct 分类名 + 代表 Group + 该顶层分类 id(存在才可选)。

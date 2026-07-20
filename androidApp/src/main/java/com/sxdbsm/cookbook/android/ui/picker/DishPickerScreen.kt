@@ -212,7 +212,7 @@ fun DishPickerScreen(
                     // [AI修改] C深度审查🟡:空态按 Tab/搜索给具体引导(苹果式空态给下一步),而非泛化"没有找到菜品"。
                     val emptyText = when {
                         state.keyword.isNotBlank() -> "没有找到「${state.keyword.trim()}」"
-                        state.sortTab == DishesSortTab.HOME -> "还没有自建菜\n点下方「添加菜品」建一道"
+                        state.sortTab == DishesSortTab.HOME -> "还没有自建菜\n点右上角 ＋ 新建一道" // [AI修改] UX走查M7:入口已改顶栏➕(§9.30),指引对齐
                         state.sortTab == DishesSortTab.FAVORITE -> "还没有喜爱的菜\n给菜品评分后会出现在这里"
                         state.sortTab == DishesSortTab.ALL && state.selectedCuisine != null -> "这个菜系下暂无菜品"
                         else -> "还没有菜品"

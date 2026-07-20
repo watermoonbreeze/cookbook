@@ -251,7 +251,7 @@ fun AiRecommendScreen(
                                 RecommendControls(state, vm, onOpenFilter = { filterSheetOpen = true })
                                 Spacer(Modifier.height(4.dp))
                                 ResultHeader(
-                                    hint = "勾选想做的菜，点下方「确定」加入这一餐。",
+                                    hint = "勾选想做的菜，点下方「加入这一餐」。", // [AI修改] UX走查M3:对齐底部按钮实际文案(原"确定"按钮上没有)
                                     onRefresh = { vm.recommend() },
                                 )
                                 // [AI生成] 配置了模型但本次由规则兜底(模型未返回有效结果)，如实标注。
