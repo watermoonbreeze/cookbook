@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android.ai
 import com.sxdbsm.cookbook.ai.AiRuntime
 import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.GlmProtocol
+import com.sxdbsm.cookbook.ai.LlmChatRequest
 import com.sxdbsm.cookbook.ai.LlmRequest
 import com.sxdbsm.cookbook.android.util.AppLogger
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,23 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
             result.onSuccess { return@withContext Result.success(it) }
             lastError = result.exceptionOrNull()
             AppLogger.w("CloudAi", "[${model.id}] attempt ${attempt + 1} failed: ${lastError?.message}") // 仅记错误摘要，不记内容。
+        }
+        Result.failure(lastError ?: IOException("unknown"))
+    }
+
+    // [AI生成] AI 对话生成前置基建:云端发**真多轮 messages 数组**(非折叠),保留对话结构更准。复用 postOnce 重试/错误逻辑。
+    override suspend fun chat(request: LlmChatRequest): Result<String> = withContext(Dispatchers.IO) {
+        val model = config.selectedModel()
+        val key = config.currentCloudApiKey()
+        if (key.isBlank()) return@withContext Result.failure(IllegalStateException("${model.vendorName} API Key 未配置"))
+        val body = GlmProtocol.buildChatRequestBody(model.model, request.messages, request.temperature, jsonMode = model.supportsJsonMode, maxTokens = RESPONSE_MAX_TOKENS)
+        AppLogger.d("CloudAi", "chat[${model.id}] msgs=${request.messages.size}") // 仅记条数,不记对话内容(可能含家庭健康信息)。
+        var lastError: Throwable? = null
+        repeat(MAX_ATTEMPTS) { attempt ->
+            val result = runCatching { postOnce(model.endpoint, key, body) }
+            result.onSuccess { return@withContext Result.success(it) }
+            lastError = result.exceptionOrNull()
+            AppLogger.w("CloudAi", "chat[${model.id}] attempt ${attempt + 1} failed: ${lastError?.message}")
         }
         Result.failure(lastError ?: IOException("unknown"))
     }

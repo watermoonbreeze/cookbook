@@ -48,6 +48,37 @@ object GlmProtocol {
         )
     }
 
+    /**
+     * 组装**多轮对话** chat/completions 请求体 JSON（AI 对话生成前置基建）。[AI生成]
+     * 把 [LlmMessage] 列表按序映射为 OpenAI messages 数组（role: system/user/assistant）；thinking/max_tokens/jsonMode 口径同 [buildRequestBody]。
+     */
+    fun buildChatRequestBody(
+        model: String,
+        messages: List<LlmMessage>,
+        temperature: Double,
+        jsonMode: Boolean = false,
+        maxTokens: Int? = null,
+    ): String {
+        val disableThinking = model.startsWith("glm-4.5") || model.startsWith("glm-4.6")
+        val mapped = messages.map {
+            ChatMessage(
+                role = when (it.role) { LlmRole.SYSTEM -> "system"; LlmRole.USER -> "user"; LlmRole.ASSISTANT -> "assistant" },
+                content = it.content,
+            )
+        }
+        return json.encodeToString(
+            ChatRequest.serializer(),
+            ChatRequest(
+                model = model,
+                temperature = temperature,
+                messages = mapped,
+                response_format = if (jsonMode) ResponseFormat("json_object") else null,
+                thinking = if (disableThinking) Thinking("disabled") else null,
+                max_tokens = maxTokens,
+            ),
+        )
+    }
+
     /** 从响应 JSON 解析出模型文本；失败/空返回 null。[AI生成] */
     fun parseContent(responseText: String): String? = runCatching {
         json.decodeFromString(ChatResponse.serializer(), responseText)
