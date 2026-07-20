@@ -47,6 +47,11 @@ import org.koin.androidx.compose.koinViewModel
  * [AI修改] 搜索面板 SearchResultsPanel 末尾统一常驻 SearchCreateRow"新建食材「x」"行(覆盖有结果/0结果两态)；
  *   selectionMode 收敛 if(有结果)/else if(有词)分叉为"有词即用面板"(修有结果时新建行消失)；Tab覆盖层0结果改"没找到「x」+新建行"。
  */
+/** 隐藏"来源徽标"的纯来源浏览Tab(分类已隐含来源→去噪·§9.29)：常规/营养/调养(全预设)、家庭(全自建)。[AI生成] */
+private val SOURCE_BADGE_HIDDEN_TABS = setOf(
+    IngredientMainTab.GENERAL, IngredientMainTab.NUTRITION, IngredientMainTab.CARE, IngredientMainTab.CUSTOM,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngredientPickerScreen(
@@ -396,6 +401,7 @@ fun IngredientPickerScreen(
                                         ingredient = ing,
                                         selected = ing.id in ui.selectedIds,
                                         highlighted = ing.id == ui.highlightIngredientId,
+                                        showSourceBadge = ui.mainTab !in SOURCE_BADGE_HIDDEN_TABS, // [AI生成] §9.29 纯来源分类Tab去噪
                                         onClick = { selectedIngredient = ing },
                                         onToggleSelect = if (selecting) ({ vm.toggleSelection(ing) }) else null, // [AI生成] 点勾选圈直接选
                                         onLongClick = if (!selectionMode && onComposeDish != null) ({ composeMode = true; if (ing.id !in ui.selectedIds) vm.toggleSelection(ing) }) else null, // [AI生成] 长按进"组成菜品"多选
@@ -427,6 +433,7 @@ fun IngredientPickerScreen(
                                     ingredient = ing,
                                     selected = ing.id in ui.selectedIds,
                                     highlighted = ing.id == ui.highlightIngredientId,
+                                    showSourceBadge = ui.mainTab !in SOURCE_BADGE_HIDDEN_TABS, // [AI生成] §9.29 纯来源分类Tab去噪
                                     onClick = {
                                         selectedIngredient = ing // [AI修改] 点击食材统一先打开详情，是否加入已选由详情顶部按钮决定。
                                     },

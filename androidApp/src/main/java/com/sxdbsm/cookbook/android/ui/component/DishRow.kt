@@ -39,6 +39,7 @@ fun DishRow(
     showCheckbox: Boolean = false,
     checked: Boolean = false,
     favorite: Boolean = false, // [AI生成] B1：收藏则菜名前显示 ⭐
+    showSourceBadge: Boolean = true, // [AI生成] 来源徽标显隐：纯来源浏览Tab(菜系/家庭)传false去噪·混合来源(最近/喜爱/餐次/搜索/选菜)显。§9.29
     onCheckedChange: ((Boolean) -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
@@ -74,13 +75,15 @@ fun DishRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Spacer(Modifier.height(4.dp))
-            // [AI修改] 每行都带「预设/自建」来源徽章，其后接标签；与食材列表展示统一。
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                SourceBadge(dish.source)
-                dish.tags.take(3).forEach { tag -> TagChip(tag) }
+            // [AI修改] §9.29 来源徽章按上下文显隐(纯来源浏览Tab去噪)；徽章+标签都无时整行省略免空隙。
+            if (showSourceBadge || dish.tags.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    if (showSourceBadge) SourceBadge(dish.source)
+                    dish.tags.take(3).forEach { tag -> TagChip(tag) }
+                }
+                Spacer(Modifier.height(4.dp))
             }
-            Spacer(Modifier.height(4.dp))
             val subText = buildString {
                 dish.mainIngredientNames.take(3).forEachIndexed { i, n ->
                     if (i > 0) append(" · ")

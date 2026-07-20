@@ -159,14 +159,15 @@ internal fun IngredientDetailSheet(
                                     )
                                 }
                                 // [AI生成] 分类路径:搜索点进来时标明食材所在分类(常规›蔬菜类›叶菜)。
-                                if (categoryPath.isNotBlank()) {
-                                    Text(
-                                        categoryPath,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.padding(top = 2.dp),
-                                    )
-                                }
+                                // [AI修改] §9.29 来源(预设/自建)并入此元信息行末尾(卡片徽标在纯来源列表已隐藏→详情此处保留一处来源标识)。
+                                val sourceLabel = if (ingredient.source == "preset") "预设" else "自建"
+                                val metaLine = if (categoryPath.isNotBlank()) "$categoryPath · $sourceLabel" else sourceLabel
+                                Text(
+                                    metaLine,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(top = 2.dp),
+                                )
                             }
                         }
                         // [AI生成] 全屏图片查看器：点顶部层叠缩略图打开，左右滑看全部（叠在食材详情 Dialog 之上）。

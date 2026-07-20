@@ -264,7 +264,7 @@ fun DishesScreen(
                                             )
                                         }
                                         items(dishes, key = { it.id }) { dish ->
-                                            DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                            DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, showSourceBadge = ui.sortTab != DishesSortTab.ALL && ui.sortTab != DishesSortTab.HOME, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
                                         }
                                     }
                                     item { Spacer(Modifier.height(80.dp)) }
@@ -290,7 +290,7 @@ fun DishesScreen(
                             item { EmptyState(text = emptyText, icon = "🥗") }
                         } else {
                             itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
-                                DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, showSourceBadge = ui.sortTab != DishesSortTab.ALL && ui.sortTab != DishesSortTab.HOME, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
                             }
                             item { Spacer(Modifier.height(80.dp)) }
                         }

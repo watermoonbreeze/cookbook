@@ -179,6 +179,9 @@ fun DishDetailScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium,
                         )
+                        // [AI生成] §9.29 来源徽标:列表(菜系/家庭纯来源Tab)已隐藏→详情保留一处来源标识。
+                        Spacer(Modifier.width(8.dp))
+                        com.sxdbsm.cookbook.android.ui.component.SourceBadge(d.source)
                     }
                 }
             }

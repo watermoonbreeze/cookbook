@@ -68,6 +68,7 @@ fun IngredientCard(
     onEdit: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
     showAdviceBadge: Boolean = true,
+    showSourceBadge: Boolean = true, // [AI生成] 来源徽标(预设/自建)显隐：纯来源浏览Tab(常规/营养/调养/家庭)传false去噪·混合来源(最近/库存/搜索)显。§9.29
     footer: (@Composable () -> Unit)? = null, // [AI生成] 卡底可选槽(如库存Tab就地加减份数的 MiniStepper)，不传则无
 ) {
     var menuOpen by remember { mutableStateOf(false) }
@@ -230,17 +231,20 @@ fun IngredientCard(
                 }
             }
             // [AI生成] 来源徽章(预设/自建)：放左上角，与菜品列表展示统一；避开右上角人群建议角标。
-            Surface(
-                color = if (ingredient.source == "preset") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
-                shape = MaterialTheme.shapes.small,
-                modifier = Modifier.align(Alignment.TopStart).padding(2.dp),
-            ) {
-                Text(
-                    text = if (ingredient.source == "preset") "预设" else "自建",
-                    color = if (ingredient.source == "preset") MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                )
+            // [AI修改] §9.29 纯来源浏览Tab(常规/营养/调养/家庭)去噪隐藏(分类已隐含来源)，混合来源列表仍显。
+            if (showSourceBadge) {
+                Surface(
+                    color = if (ingredient.source == "preset") MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
+                    shape = MaterialTheme.shapes.small,
+                    modifier = Modifier.align(Alignment.TopStart).padding(2.dp),
+                ) {
+                    Text(
+                        text = if (ingredient.source == "preset") "预设" else "自建",
+                        color = if (ingredient.source == "preset") MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                    )
+                }
             }
             // [AI修改] 食材选择器里的人群建议角标下沉到通用食材卡，搜索页可复用同一套展示。
             if (showAdviceBadge) {
