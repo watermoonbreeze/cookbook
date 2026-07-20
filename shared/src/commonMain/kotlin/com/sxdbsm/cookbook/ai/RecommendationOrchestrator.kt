@@ -207,16 +207,15 @@ class RecommendationOrchestrator(
         return meals
     }
 
-    /** A1：候选加入本餐已选 [chosen] 的组合分=基础分 + 补荤素缺口 + 补主食。[AI生成] */
+    /** A1：候选加入本餐已选 [chosen] 的组合分=基础分 + 补荤素缺口 + 补主食。[AI修改] 组合补分收敛到 MealCompositionScorer(单一真相源)。 */
     private fun combineScore(cand: DishCandidate, chosen: List<DishCandidate>): Double {
-        var s = cand.score
         val meat = chosen.count { it.isMeat }
         val veg = chosen.count { !it.isMeat }
-        // 荤候选走上行、素候选走下行(cand.isMeat 互斥，同一候选只命中其一)；平衡态(meat==veg)下两类候选各自都能拿补分，倾向"补少的一方"。
-        if (cand.isMeat && meat <= veg) s += BALANCE_BONUS // 本餐荤不多于素→加荤合理
-        if (!cand.isMeat && veg <= meat) s += BALANCE_BONUS // 本餐素不多于荤→加素合理
-        if (chosen.none { it.isStaple } && cand.isStaple) s += STAPLE_BONUS // 本餐还没主食→补主食
-        return s // [AI修改] 用户#2:一餐同菜系由 fallback 的同族过滤保证(不在此软罚,结构性硬保证不混搭)
+        // [AI修改] 荤素/主食补分抽到 MealCompositionScorer(与 PeriodPlanner 共用同一常量/逻辑,防调参漂移);combineScore 调用时 chosen 恒非空,行为不变。
+        return cand.score + MealCompositionScorer.compositionBonus(
+            candMeat = cand.isMeat, candStaple = cand.isStaple,
+            chosenMeat = meat, chosenVeg = veg, chosenHasStaple = chosen.none { it.isStaple },
+        ) // [AI修改] 用户#2:一餐同菜系由 fallback 的同族过滤保证(不在此软罚,结构性硬保证不混搭)
     }
 
     companion object {
@@ -228,9 +227,6 @@ class RecommendationOrchestrator(
         private const val DEFAULT_MEAL_COUNT = 3
         private const val MAX_DISHES_PER_MEAL = 3
         private const val FALLBACK_DISHES_PER_MEAL = 3 // [AI修改] QW-1:2→3,组合更完整(主食+荤+素),贴近一餐(combineScore已补荤素/主食缺口)
-        // [AI生成] A1:组合级搭配补分(复用 PeriodPlanner 已验证系数)——本餐荤素偏少一方/无主食时给对应候选加分。
-        private const val BALANCE_BONUS = 0.7 // 同餐荤素平衡补分
-        private const val STAPLE_BONUS = 0.9 // 本餐未含主食时给主食菜补分
-
+        // [AI修改] 组合级搭配补分(BALANCE_BONUS/STAPLE_BONUS)已收敛到 MealCompositionScorer(与 PeriodPlanner 共用单一真相源,防漂移)。
     }
 }

@@ -1141,6 +1141,13 @@ UPDATE dish SET status = 0 WHERE id = ?;
 selectAllDishes:
 SELECT * FROM dish WHERE status = 1 ORDER BY updated_at DESC;
 
+-- [AI生成] RANDOM 推荐候选：全库有效菜（都算可做），按偏好+名取上限。
+--   刻意避开 selectDishesByIngredientMatch 的 `IN :ingredientIds`——RANDOM 模式会把整库食材 id
+--   传进去展开成上千个占位符，触发 SQLite 999 变量上限(SQLITE_MAX_VARIABLE_NUMBER)预编译崩溃。
+--   RANDOM 语义=整库都可做，本就无需按食材求交集；按 preference 优先(旧路径按 match_count 即配料数排序=复杂菜优先，是意外副作用)。纯新查询无需迁移。
+selectAllDishesForRandom:
+SELECT * FROM dish WHERE status = 1 ORDER BY preference DESC, name COLLATE NOCASE ASC LIMIT :limit;
+
 selectDishById:
 SELECT * FROM dish WHERE id = ? AND status = 1;
 

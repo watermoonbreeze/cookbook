@@ -228,6 +228,24 @@ class DishRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 全库菜品（列表用轻量模型），供 RANDOM 推荐候选。[AI生成]
+     *
+     * RANDOM 语义=整库都可做，不需要按在手食材求交集。故走无 `IN` 的 selectAllDishesForRandom，
+     * 避开 findDishesByIngredients 把整库食材 id 展开成上千占位符导致的 SQLite 999 变量上限崩溃。
+     * 按 preference+名排序取上限，复用 buildDishMinis 批量组装(同 searchDishes 空词分支范式)。
+     */
+    suspend fun listAllDishMinis(limit: Long = 50): List<DishMini> = withContext(ioDispatcher) {
+        buildDishMinis(
+            q.selectAllDishesForRandom(limit).executeAsList().map { row ->
+                DishMiniSource(
+                    id = row.id, name = row.name, imagePath = row.image_path, thumbnailPath = row.thumbnail_path,
+                    preference = row.preference.toInt(), cookingMethodId = row.cooking_method_id, source = row.source, cuisine = row.cuisine,
+                )
+            },
+        )
+    }
+
+    /**
      * 按 id 读取列表/选择器用的轻量菜品。[AI生成]
      *
      * 添加餐食页从“新建菜品”返回后只拿到新菜品 id，需要补成 `DishMini` 才能加入餐食模块。

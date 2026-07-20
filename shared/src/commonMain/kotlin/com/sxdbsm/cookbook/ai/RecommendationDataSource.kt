@@ -69,15 +69,18 @@ class RecommendationDataSource(
         //   getDishById(每菜5~6条SQL)取配料，最多 100 菜≈500+查询。改为保留 DishMini + 一条批量配料查询组装 RuleDish。
         // [AI生成] 负反馈"踩"：用户标"不再推荐"的菜从候选中过滤(沉底=不再出现)；可在菜品详情恢复。
         val dislikedIds = q.selectDislikedDishIds().executeAsList().toSet()
-        val candidateMinis = if (pantryIds.isEmpty()) {
-            emptyList()
-        } else {
-            dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT)
-                .map { it.dish }
-                .filter { it.id !in dislikedIds } // 踩过的不再推荐
-                // [AI修改] v28：按存储的 dish_meal_slot 精准筛餐次(DishMini.mealSlots 已含兜底)，替代菜名启发式 matches。
-                .filter { mealSlot == MealSlot.ALL || mealSlot in it.mealSlots }
+        // [AI修改] RANDOM 走全库 DishMini(无 IN·避 SQLite 999 变量崩溃)；PANTRY 才按在手食材求交集。
+        //   RANDOM 语义=整库都可做，findDishesByIngredients 的 match_count 在 RANDOM 下被丢弃、求交集本就多余(见 listAllDishMinis)。
+        val rawCandidates = when (mode) {
+            RecommendMode.RANDOM -> dishRepo.listAllDishMinis(limit = DISH_PREFILTER_LIMIT)
+            RecommendMode.PANTRY ->
+                if (pantryIds.isEmpty()) emptyList()
+                else dishRepo.findDishesByIngredients(pantryIds.toList(), limit = DISH_PREFILTER_LIMIT).map { it.dish }
         }
+        val candidateMinis = rawCandidates
+            .filter { it.id !in dislikedIds } // 踩过的不再推荐
+            // [AI修改] v28：按存储的 dish_meal_slot 精准筛餐次(DishMini.mealSlots 已含兜底)，替代菜名启发式 matches。
+            .filter { mealSlot == MealSlot.ALL || mealSlot in it.mealSlots }
         val candidateIds = candidateMinis.map { it.id }
         // 批量取候选菜配料并按 dish_id 分组，替代逐菜 getDishById。角色: 调料=SEASONING，其余按 is_main 分主/辅。
         val ingredientsByDish = if (candidateIds.isEmpty()) emptyMap()
