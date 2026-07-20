@@ -54,6 +54,7 @@ fun MineScreen(
     onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
     onOpenDietaryReference: () -> Unit = {}, // [AI生成] 膳食参考依据(阈值/分级引用的权威标准透明展示)
     onOpenDataSource: () -> Unit = {}, // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品来源)
+    onOpenUpdateLog: () -> Unit = {}, // [AI生成] F#8:基础数据更新记录(每次更新做了什么·可查)
     onOpenFeatureGuide: () -> Unit = {}, // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
     onOpenFamily: () -> Unit = {}, // [AI生成] 档案整合:家庭档案(含"我"个人档案)统一入口
     onOpenDietReport: () -> Unit = {}, // [AI生成] 饮食报告(周/月回顾)
@@ -84,6 +85,12 @@ fun MineScreen(
     var selectedLogFileName by remember { mutableStateOf<String?>(null) }
     var pendingExportFile by remember { mutableStateOf<String?>(null) } // [AI生成] 待导出的备份文件名(等 SAF 选好目标位置)。
     var clearCacheConfirm by remember { mutableStateOf(false) } // [AI生成] #1:清除缓存二次确认(兼安抚"不删记录/照片")
+    // [AI生成] F#8:基础数据"更新记录"有无未看(驱动我的页提示·点开更新记录中心即消)。
+    val updateCenter = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.seed.SeedUpdateCenter>()
+    var hasUpdateLog by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        hasUpdateLog = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { updateCenter.hasUnnotified() }
+    }
 
     // [AI生成] SAF 导出：把选中备份写到用户选择的位置(下载/网盘/U盘)。
     val exportLauncher = rememberLauncherForActivityResult(
@@ -352,6 +359,15 @@ fun MineScreen(
 
         InsetGroup(title = "关于") {
             SettingRow(icon = Icons.Outlined.Lightbulb, title = "功能介绍", subtitle = "一页看懂 Cookbook 能做什么、怎么用", trailing = "▸") { onOpenFeatureGuide() } // [AI生成] 首次使用引导
+            InsetDivider(52)
+            // [AI生成] F#8 透明准则:基础数据更新记录(可查兜底)。有未看更新时副文案高亮提示(红点替代·SettingRow 无 badge 参数)。
+            SettingRow(
+                icon = Icons.Outlined.Update,
+                title = "更新记录",
+                subtitle = if (hasUpdateLog) "有新的基础数据更新，点看看做了什么" else "看看每次更新做了什么",
+                subtitleColor = if (hasUpdateLog) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                trailing = "▸",
+            ) { onOpenUpdateLog() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") { aboutDialogOpen = true }
         }

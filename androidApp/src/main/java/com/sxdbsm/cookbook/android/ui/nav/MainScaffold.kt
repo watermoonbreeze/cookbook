@@ -232,6 +232,7 @@ fun MainScaffold(
                     onOpenHealthConditionReference = { nav.navigate(Routes.HEALTH_CONDITION_REFERENCE) }, // [AI生成] 健康状态参考
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] 膳食参考依据
                     onOpenDataSource = { nav.navigate(Routes.DATA_SOURCE) }, // [AI生成] 数据来源
+                    onOpenUpdateLog = { nav.navigate(Routes.UPDATE_LOG) }, // [AI生成] F#8:基础数据更新记录
                     onOpenFeatureGuide = { nav.navigate(Routes.FEATURE_GUIDE) }, // [AI生成] 功能介绍
                     onOpenFamily = { nav.navigate(Routes.FAMILY) }, // [AI生成] 档案整合:家庭档案统一入口
                     onOpenUserAgreement = { nav.navigate(Routes.USER_AGREEMENT) }, // [AI生成] 阶段3-c 用户协议
@@ -252,6 +253,9 @@ fun MainScaffold(
             }
             composable(Routes.DATA_SOURCE) {
                 com.sxdbsm.cookbook.android.ui.reference.DataSourceScreen(onBack = { nav.popBackStack() })
+            }
+            composable(Routes.UPDATE_LOG) {
+                com.sxdbsm.cookbook.android.ui.reference.UpdateLogScreen(onBack = { nav.popBackStack() })
             }
             composable(Routes.TCM_REFERENCE) {
                 com.sxdbsm.cookbook.android.ui.reference.TcmReferenceScreen(onBack = { nav.popBackStack() })

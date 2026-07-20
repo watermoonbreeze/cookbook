@@ -42,6 +42,7 @@ object Routes {
     const val HEALTH_CONDITION_REFERENCE = "health_condition_reference" // [AI生成] 健康状态参考(4病种饮食关注点+口径+免责)
     const val DIETARY_REFERENCE = "dietary_reference" // [AI生成] 膳食参考依据(阈值分级引用的权威标准/指南透明展示)
     const val DATA_SOURCE = "data_source" // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品各自来源)
+    const val UPDATE_LOG = "update_log" // [AI生成] F#8 透明准则:基础数据更新记录(每次更新做了什么·可查)
     const val FEATURE_GUIDE = "feature_guide" // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
     const val USER_AGREEMENT = "user_agreement" // [AI生成] 阶段3-c 用户协议
     const val PRIVACY_POLICY = "privacy_policy" // [AI生成] 阶段3-c 隐私政策
