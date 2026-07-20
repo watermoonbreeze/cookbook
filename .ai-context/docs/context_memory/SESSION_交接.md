@@ -16,6 +16,7 @@
 - **每功能完成走全套**：门禁（Apple-UX 界面 / copywriter 健康文案 / Google 代码审查·阻断必修复验）→保存上下文→总结经验→同步项目说明书(07)→更新待办→飞书(4段)→commit(`[unattended]`)→下一个。**commit 不自动 push**（全局无人值守规则；如需 push 用户会说）。
 - **🔴构建验证看输出别信 exit code**：`scripts\build-cli.bat <task> *> log; Select-String "BUILD SUCCESSFUL"`，别用 `|tail`。
 - **健康免责红线**：仅供参考·非医嘱；**物理隔离**（慢病维度不接色系墙）；**嘌呤/GI 只给定性不给占比**；钠/嘌呤惯例阈值必标"非国标·惯例口径"；忌口菜绝不进推荐/一餐。**数据不编造**：营养联网核准·ref+review·查不到省略·加工食品标 pending。
+- **长跑后台 agent 必须"分批即写即存+断点续连"**（用户2026-07-20定）：数据生成/联网核准类长链接 agent 每凑一小批(如10条)就立即 Write 一个编号文件(`xxx_1.json`/`_2`/…)、别攒到最后统一写；开始前先检查已存在的编号文件跳过已写批次(续连)——防 API 断连丢全部。合并时按编号 glob 收齐再 python 合并校验。见 memory `agent-batch-checkpoint-strategy`。
 - 临时文件 `temp/claude/`；**只交付 Android**。
 
 ## 三、当前状态（本会话·本地commit未push·master 编译通过·shared 单测绿）
