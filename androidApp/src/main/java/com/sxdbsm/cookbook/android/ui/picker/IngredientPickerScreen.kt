@@ -33,6 +33,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
+import com.sxdbsm.cookbook.android.ui.component.SelectionSummaryBar
 import com.sxdbsm.cookbook.android.ui.component.IngredientCard
 import com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
@@ -94,7 +95,6 @@ fun IngredientPickerScreen(
             createDialogOpen = true
         }
     }
-    var selectedMenuOpen by remember { mutableStateOf(false) } // [AI生成] 底部“已选 X 项”跟随弹框开关。
     var recycleBinOpen by remember { mutableStateOf(false) } // [AI生成] 失效食材回收站弹框开关。
     // [AI生成] #4:Tab落地态搜索改右上角图标触发→展开全屏搜索覆盖层(弹窗选择态仍用顶栏整行搜索,不走此开关)。
     var searchOpen by remember { mutableStateOf(false) }
@@ -473,32 +473,35 @@ fun IngredientPickerScreen(
                     }
                     } // Box(字母定位叠放) 收尾
                 }
-                // [AI修改] 移除库存 Tab 底部"从现有食材中添加入库"冗余提示——空态已有引导，非空时也不需常驻这行。
-                // 底部固定栏：仅选择模式且有已选时出现。
+                // [AI修改] 家族化 P3(F#3):底部已选栏统一为 SelectionSummaryBar——支持上拉展开已选清单+就地×移除(替代原下拉菜单3步移除)。
+                // 注:下面两个底栏(selectionMode / composeMode)互斥——composeMode 仅在 `!selectionMode` 时经长按入口(见 onLongClick 守卫)置 true，不会双栏叠加。
+                // 选择模式(菜品选食材):仅有已选时出现，主 CTA"完成"、无次操作。
                 if (selectionMode && ui.selectedIds.isNotEmpty()) {
-                    SelectionBottomBar(
-                        selectedCount = ui.selectedIds.size,
-                        selectedIngredients = ui.selectedIngredients,
-                        menuOpen = selectedMenuOpen,
-                        onMenuOpenChange = { selectedMenuOpen = it },
-                        onPickSelected = { selectedIngredient = it },
-                        onConfirm = {
+                    SelectionSummaryBar(
+                        items = ui.selectedIngredients.map { it.toSelectionItem() },
+                        primaryText = "完成",
+                        onPrimary = {
                             onConfirm(vm.confirmSelected())
                             onDismiss()
                         },
+                        onRemove = { id -> ui.selectedIngredients.firstOrNull { it.id == id }?.let(vm::toggleSelection) },
                     )
                 }
-                // [AI生成] 食材页"组成菜品"多选底栏:长按进入后出现,显已选+组成菜品(从食材出发生成菜品)+取消。
+                // [AI修改] 家族化 P3:"组成菜品"态复用同一栏——参数区分(次操作"取消"+主"组成菜品")，非组件内 mode。空态仍显(可取消)。
                 if (composeMode && onComposeDish != null) {
-                    ComposeDishBottomBar(
-                        selectedCount = ui.selectedIds.size,
-                        onCancel = { composeMode = false; vm.clearSelection() },
-                        onCompose = {
+                    SelectionSummaryBar(
+                        items = ui.selectedIngredients.map { it.toSelectionItem() },
+                        primaryText = "组成菜品",
+                        onPrimary = {
                             val picked = ui.selectedIngredients
                             composeMode = false
                             vm.clearSelection()
                             onComposeDish(picked)
                         },
+                        onRemove = { id -> ui.selectedIngredients.firstOrNull { it.id == id }?.let(vm::toggleSelection) },
+                        secondaryText = "取消",
+                        onSecondary = { composeMode = false; vm.clearSelection() },
+                        alwaysShowWhenEmpty = true,
                     )
                 }
             }
@@ -863,92 +866,15 @@ fun IngredientPickerScreen(
     }
 }
 
-/**
- * 食材页"组成菜品"多选底栏（已选 N · 组成菜品 · 取消）。[AI生成]
- *
- * 从食材出发生成菜品：长按进多选后出现，点"组成菜品"带选中食材跳新建菜品页。
- */
-@Composable
-private fun ComposeDishBottomBar(
-    selectedCount: Int,
-    onCancel: () -> Unit,
-    onCompose: () -> Unit,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 3.dp,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = onCancel) { Text("取消") }
-            Text(
-                "已选 $selectedCount 项",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f).padding(start = 8.dp),
-            )
-            com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
-                text = "组成菜品",
-                onClick = onCompose,
-                enabled = selectedCount > 0,
-            )
-        }
-    }
-}
+// [AI修改] 家族化 P3:ComposeDishBottomBar/SelectionBottomBar 已被统一 SelectionSummaryBar 替代(就地×移除·上拉展开)，删除死码。
 
-/**
- * 选择模式底部固定栏（已选项 + 添加/找菜/完成）。[AI生成]
- *
- * 从主编排抽出，把"选择模式专属"的底栏收敛成命名组件，减少主体里散落的 selectionMode 分叉。
- */
-@Composable
-private fun SelectionBottomBar(
-    selectedCount: Int,
-    selectedIngredients: List<Ingredient>,
-    menuOpen: Boolean,
-    onMenuOpenChange: (Boolean) -> Unit,
-    onPickSelected: (Ingredient) -> Unit,
-    onConfirm: () -> Unit,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                Text(
-                    "已选 $selectedCount 项",
-                    modifier = Modifier.clickable { onMenuOpenChange(true) }, // [AI生成] 点击已选数量打开左下跟随弹框。
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { onMenuOpenChange(false) }) {
-                    selectedIngredients.forEach { ingredient ->
-                        DropdownMenuItem(
-                            text = { Text(ingredient.displayNameText(), maxLines = 1) },
-                            onClick = {
-                                onMenuOpenChange(false)
-                                onPickSelected(ingredient) // [AI生成] 从已选弹框点击食材时打开同一个详情弹层。
-                            },
-                        )
-                    }
-                }
-            }
-            // [AI修改] B-1：菜品编辑选食材时"找菜"无意义(已在建这道菜)，去掉；"添加食材"改由顶部＋。底栏只留完成。
-            Button(onClick = onConfirm, enabled = selectedCount > 0) { Text("完成") }
-        }
-    }
-}
+/** [AI生成] 家族化 P3:食材 → 中性 SelectionItem(底部已选栏用)。来源显"预设/家庭"，无图时用 emoji。 */
+private fun Ingredient.toSelectionItem() = com.sxdbsm.cookbook.android.ui.component.SelectionItem(
+    id = id,
+    title = displayNameText(),
+    subtitle = if (source == "user") "家庭" else "预设",
+    emoji = emoji.ifBlank { null },
+)
 
 /**
  * 全局搜索结果下拉面板。[AI生成]

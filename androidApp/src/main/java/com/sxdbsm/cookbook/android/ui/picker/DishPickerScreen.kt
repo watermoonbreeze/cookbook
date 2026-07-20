@@ -27,6 +27,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.sxdbsm.cookbook.ai.MealSlot // [AI生成] v28:记一餐按餐次预筛
 import com.sxdbsm.cookbook.android.ui.component.AppSearchField
+import com.sxdbsm.cookbook.android.ui.component.SelectionSummaryBar
 import com.sxdbsm.cookbook.android.ui.component.SegmentedControl // [AI生成] C深度:分类Tab
 import com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab // [AI生成] C深度:复用分类Tab枚举
 import com.sxdbsm.cookbook.android.ui.component.DishMiniCard
@@ -138,10 +139,7 @@ fun DishPickerScreen(
                     },
                 )
 
-                // [AI修改] N6：原搜索框位置改为展示"已选菜品"(第一行菜名、第二行标签，横向滚动)。
-                if (multiSelect && state.selected.isNotEmpty()) {
-                    SelectedDishesBar(selected = state.selected, onRemove = { vm.toggle(it, true) })
-                }
+                // [AI修改] 家族化 P3(F#3):已选菜品从顶部横滑条统一下沉到底部 SelectionSummaryBar 的上拉展开清单(与选食材统一·就地×移除)。
 
                 // [AI生成] v28:记一餐按当前餐次预筛入口——一枚可切 chip "只看适合早餐 (N) / 全部"(告知不替决定,不硬隐藏)。仅传入餐次且无搜索时显。
                 if (state.mealSlot != null && state.keyword.isBlank()) {
@@ -245,58 +243,28 @@ fun DishPickerScreen(
                         }
                     }
                 }
-                // [AI生成] §9.30 P1(用户2026-07-20#3真机):多选"完成"下移底部(与选食材 SelectionBottomBar 统一·顶栏不再放完成防挤)。
+                // [AI修改] 家族化 P3(F#3):多选底栏统一为 SelectionSummaryBar(摘要"已选 N 项"+上拉展开清单就地×移除+主 CTA"完成")。
+                //   alwaysShowWhenEmpty=true 保留"完成"入口空态可见(置灰)，与原底部按钮 multiSelect 常显一致。
                 if (multiSelect) {
-                    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
-                        Button(
-                            onClick = { onConfirm(vm.confirmSelected()); onDismiss() },
-                            enabled = state.selected.isNotEmpty(),
-                            modifier = Modifier
-                                .navigationBarsPadding()
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                        ) { Text(if (state.selected.isEmpty()) "完成" else "完成（已选 ${state.selected.size}）") }
-                    }
+                    SelectionSummaryBar(
+                        items = state.selected.map { it.toSelectionItem() },
+                        primaryText = "完成",
+                        onPrimary = { onConfirm(vm.confirmSelected()); onDismiss() },
+                        onRemove = { id -> state.selected.firstOrNull { it.id == id }?.let { vm.toggle(it, true) } },
+                        alwaysShowWhenEmpty = true,
+                    )
                 }
             }
         }
     }
 }
 
-/**
- * 已选菜品横滑条。[AI生成] N6
- *
- * 每个已选菜一列：第一行菜名、第二行标签；点右上角×取消选择；整体横向滚动。
- */
-@Composable
-private fun SelectedDishesBar(selected: List<DishMini>, onRemove: (DishMini) -> Unit) {
-    Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            selected.forEach { dish ->
-                Surface(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = MaterialTheme.shapes.small,
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 8.dp, end = 2.dp, top = 2.dp, bottom = 2.dp)) {
-                        Column {
-                            Text(dish.name, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer, maxLines = 1)
-                            if (dish.tags.isNotEmpty()) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    dish.tags.take(3).forEach { tag -> TagChip(tag) }
-                                }
-                            }
-                        }
-                        IconButton(onClick = { onRemove(dish) }, modifier = Modifier.size(24.dp)) {
-                            Icon(Icons.Outlined.Close, contentDescription = "取消选择", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+// [AI修改] 家族化 P3:SelectedDishesBar(顶部横滑条)已被底部 SelectionSummaryBar 上拉清单替代，删除死码。
+
+/** [AI生成] 家族化 P3:菜品 → 中性 SelectionItem(底部已选栏用)。标签取前 2，有封面显缩略图。 */
+private fun DishMini.toSelectionItem() = com.sxdbsm.cookbook.android.ui.component.SelectionItem(
+    id = id,
+    title = name,
+    badges = tags.take(2),
+    thumbnail = thumbnailPath.ifBlank { imagePath }.ifBlank { null },
+)

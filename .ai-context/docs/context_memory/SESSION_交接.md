@@ -18,6 +18,7 @@
 5. 健康数据红线、透明准则、联网核准必列数据来源 等（见 CLAUDE.md）。
 
 ## 三、本会话交付
+- 🆕 **P3 两选择页统一 + 餐食编辑对齐**（本地已 commit·待 push）：新增共享 `SelectionSummaryBar`(中性 `SelectionItem`·摘要行+上拉展开清单+就地×移除+次操作插槽·三态参数区分无 mode)；菜品选择页删顶部横滑条+底部按钮→底部统一栏；食材选择页删 `SelectionBottomBar`(旧3步移除)+`ComposeDishBottomBar`→统一栏(就地×1步·升级);餐食编辑页保存 CTA 顶栏→底部 `FormBottomBar`(navBarPadding=false)。Apple-UX 设计门禁过+Google 审无阻断(建议#1 互斥注释已加)。构建绿。**真机待验**。
 - 🆕 **P2 食材编辑页·增量二**（本地已 commit·待 push）：①单件克重上移基础卡(仅计件单位/已有值显·`WEIGHT_VOLUME_UNIT_NAMES` 按名判)+别名/图片下沉「更多信息」段 ②`EditorSection`→`InsetGroup` 白卡(灰底)/`TopAppBar`→`AppTopBar`/自绘守卫→`rememberUnsavedGuard`/`FoldSection` 各包白卡 ③**完整 `rememberSaveable` 草稿**(文件级 5 个 Saver+`hydrated` 守卫只水合一次·进程被杀恢复不覆盖草稿·`editedN` 集合) ④§五阻断:保存失败错误条顶栏下固定可见/保存成功统一反馈(Tab Snackbar·选择态 Toast 降级)/`ImagePickerButton.onProcessingChange`→压缩中禁保存。构建绿+shared 单测绿+Google 审无阻断(#1 hydrate 竞态/#2 新建残留/#3 savingContinuation 残留/#7 死码/#8 推演时序 均已修)。**真机待验**:编辑既有食材不崩+旋转/进程杀草稿不丢+单件克重条件显+保存反馈。
 - 📚 落档:`家族化专项_决策与进度.md`(P2 增量二✅)+`experience/06`(rememberSaveable+hydrated 守卫/Edit 写控制字符坑/按名判计件/InsetGroup 折叠等)。
 
@@ -32,9 +33,10 @@
 ## 四、⏭ 下一步（家族化专项·无人值守推进）
 1. ✅ **P1 菜品编辑页**（家族化+闪退根因已修 `c82336c`）·真机待验四链路(编辑既有菜不崩+新建/导入/回传+封面顶/保存底)。崩溃兜底(`ceed26a`)也真机验(制造崩溃看友好界面)。
 2. ✅ **P2 食材编辑页·增量一**(`757db5e`)：4 独立折叠段+去必选红字+Decimal 键盘。真机待验。
-3. ✅ **P2 食材编辑页·增量二**(本会话·本地 commit·待 push)：单件克重上移/别名图片下沉/InsetGroup/守卫/完整草稿/§五阻断 全落地+Google 审修完。真机待验。
-4. 🔴 **P2 增量二·剩余=载体路由化（下一个·风险子批·上下文充裕时做）**：全屏 Dialog→路由页。**架构阻断**(见 `家族化专项_决策与进度.md 二`)：`IngredientPickerScreen` 一体两用(食材 Tab 落地页 有 nav / `asDialog=true` 全屏 Compose Dialog 选择器 无 nav 且遮 Snackbar)——Dialog 内无法 push 路由。**推荐**：抽共享 `IngredientEditorContent`；Tab 入口做真路由页(统一 Snackbar)；选择模式内保持原地复用 Content(Snackbar 被遮→Toast)；完全统一需先路由化"选择器本身"。调用点多入口 + 搜索/CreateBus。**评估:该项重构大、易砸核心选食材流程——若判定 ROI 低/风险高可跳过留待用户拍板，先推进 P3。**
-5. **P3 两选择页统一** `SelectionSummaryBar`(F#3) + 餐食编辑对齐 → P4 全App逐批(每批 Apple-UX过·Google审·真机验)。
-6. **家族化全部完成后**：≥5 轮回测 + 多方审核(多角色 agent)，整体测完再回其他待办(`待办总览.md` H 节真机 bug + F 节反馈批)。
+3. ✅ **P2 食材编辑页·增量二** + ✅ **P3 两选择页统一 + 餐食编辑对齐**(本会话·本地 commit·待 push)。真机待验。
+4. 🔴 **P2 增量二·剩余=载体路由化（风险子批·可跳·需用户拍板·上下文充裕时做）**：全屏 Dialog→路由页。**架构阻断**(见 `家族化专项_决策与进度.md 二`)：`IngredientPickerScreen` 一体两用(食材 Tab 落地页 有 nav / `asDialog=true` 全屏 Compose Dialog 选择器 无 nav 且遮 Snackbar)——Dialog 内无法 push 路由。**推荐**：抽共享 `IngredientEditorContent`；Tab 入口做真路由页(统一 Snackbar)；选择模式内保持原地复用 Content(Snackbar 被遮→Toast)；完全统一需先路由化"选择器本身"。调用点多入口 + 搜索/CreateBus。**评估:该项重构大、易砸核心选食材流程——若判定 ROI 低/风险高可跳过留待用户拍板，先推进 P3。**
+5. ✅ **P3 两选择页统一** `SelectionSummaryBar`(F#3) + 餐食编辑对齐(本会话完成)。剩余可选:AddDayFoodScreen 低频字段 `MoreOptionsHeader` 下沉(§9.31·打磨·非必须)。
+6. **P4 全 App 其余页逐批对齐**基调(视觉字阶/间距/图标/顶栏/底部 CTA/守卫/反馈)——先 Explore 盘点还有哪些页没对齐,按批过 Apple-UX→编码→Google 审→真机验。
+7. **家族化全部完成后**：≥5 轮回测 + 多方审核(多角色 agent)，整体测完再回其他待办(`待办总览.md` H 节真机 bug + F 节反馈批)。
 
 > 接手：构建务必读输出确认 BUILD SUCCESSFUL(`scripts\build-cli.bat :androidApp:assembleDebug`)。**用户远程 git 验证清单**：①菜品编辑不再崩(四链路) ②崩溃出友好界面 ③首页推荐显对应菜图 ④食材编辑 4 折叠开合 ⑤热量修复 ⑥**新增:食材编辑家族化(基础卡+4 折叠白卡/单件克重仅计件显/别名图片在"更多信息"/保存成功提示/旋转不丢草稿)**。**下一步:载体路由化(风险子批·可跳)或直接 P3 两选择页统一。**

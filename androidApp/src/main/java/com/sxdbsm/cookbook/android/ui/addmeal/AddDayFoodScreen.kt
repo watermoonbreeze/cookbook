@@ -187,19 +187,21 @@ fun AddDayFoodScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         snackbarHost = { SnackbarHost(snackbar) }, // [AI生成] A6：移除撤销
         topBar = {
-            // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛。
+            // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛。[AI修改] 家族化 P3/§9.13:保存 CTA 从顶栏右上下移底部 FormBottomBar。
             com.sxdbsm.cookbook.android.ui.component.AppTopBar(
                 title = "添加餐食",
                 onBack = requestBack, // [AI修改] §9.17：走未保存守卫
-                actions = {
-                    com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
-                        text = if (state.isPlan) "保存计划" else "保存",
-                        // [AI修改] D-07(用户2026-07-18二次确认):所有保存餐食(记一餐/实录 与 计划)都先弹预览确认再存。
-                        onClick = { previewOpen = true },
-                        enabled = state.canSave,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                },
+            )
+        },
+        // [AI修改] 家族化 P3(§9.13/基调§一.1):保存/主 CTA 永远在底部胶囊常驻。
+        //   navBarPadding=false——本页是 MainScaffold 无底栏路由,已在 NavHost 层加过 navigationBarsPadding(见 MainScaffold:175),此处不再消费防双下边距。
+        bottomBar = {
+            com.sxdbsm.cookbook.android.ui.component.FormBottomBar(
+                primaryText = if (state.isPlan) "保存计划" else "保存",
+                // [AI修改] D-07(用户2026-07-18二次确认):所有保存餐食(记一餐/实录 与 计划)都先弹预览确认再存。
+                onPrimary = { previewOpen = true },
+                primaryEnabled = state.canSave,
+                navBarPadding = false,
             )
         },
     ) { padding ->

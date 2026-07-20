@@ -8,6 +8,7 @@
 
 1. **保存/主 CTA 永远在底部**：`FormBottomBar` 胶囊常驻底部、合拇指热区、一屏一个；顶栏右上不放保存（§9.13/§9.30）。必填不满足→置灰（最轻反馈·不弹错不加红字）。次 CTA"保存并继续"同位。
 2. **选择永远同一套**：勾选圈 + 底部"已选 N 项"栏（点击上拉展开已选清单·×就地移除）+ 搜索 + 结果末尾"新建"入口。菜品选择↔食材选择用**同一个 `SelectionSummaryBar`**（F#3·中性 `SelectionItem` 模型·回调决定显隐）。
+   > **已选栏落地（P3·`ui/component/SelectionSummaryBar.kt`·已实现）**：摘要行(已选 N 项 + 上拉 chevron + 次操作插槽 + 主 CTA 胶囊) + 上拉展开清单(每项前导 emoji/缩略图 + 主/副文本 + 标签 + 就地 × 移除 16dp 中性色)。三态同一组件、参数区分无 mode 布尔：菜品"完成"、食材"完成"、食材"组成菜品"(secondaryText="取消")。中性 `SelectionItem(id,title,subtitle,badges,emoji,thumbnail)`——菜品 badges=tags/thumbnail=封面，食材 subtitle=预设/家庭·emoji。**移除默认直接**(非撤销·选择集内取消勾选)；空态 `alwaysShowWhenEmpty` 控制显隐(菜品/组成菜品传 true 保 CTA 可见·食材选食材未选即隐)；全屏 Dialog 载体 `navBarPadding=true` 只在摘要行消费一次。菜品页顶部横滑条已下沉底部统一。
 3. **返回永远有未保存守卫**：`rememberUnsavedGuard(isDirty, onConfirmLeave)`（§9.17 非包裹式）；顶栏返回 + 系统 Back 统一走；脏表单→"放弃更改？"(放弃=红字)。
 4. **反馈永远走统一 Snackbar**：保存成功/失败、新建、可撤销删除都走 `LocalAppSnackbar`（§9.12）；可逆破坏操作=软删+撤销、不硬确认弹框。Toast 仅纯告知兜底。
 5. **高频直出 / 低频折叠**（§9.31 新范式）：必填+高频核心字段直出主区（一屏一焦点）；中低频/装饰/进阶字段收进 `MoreOptionsHeader` 折叠区（默认收起·有内容自动展开）；字段多但属"一条连贯录入流"用此分层，别拆 §9.24 分段。
@@ -42,6 +43,6 @@
 1. **P0 沉淀基调**（本文·done）+ 抽/确认共享件（`SelectionSummaryBar`/`DishCoverPicker`/`rememberUnsavedGuard`/`InsetGroup`/`FormBottomBar` 已多在）。
 2. **P1 首个参考实现=菜品编辑页**（含 F#2 拍照·§9.31 分层）+ 质量阻断项修复→真机全回归四链路。
 3. **P2 食材编辑页**（分层拆折叠段+视觉统一·载体升级独立轮）。
-4. **P3 两选择页统一**（`SelectionSummaryBar`·F#3）+ 餐食编辑页对齐。
+4. **P3 两选择页统一**（`SelectionSummaryBar`·F#3）✅ 已实现(设计门禁过·两页迁移·就地×移除治食材页3步移除缺陷) + 餐食编辑页对齐(保存 CTA→FormBottomBar·待做)。
 5. **P4 全 App 其余页**按基调逐批对齐（视觉字阶/间距/图标/顶栏/底部 CTA/守卫/反馈），每批真机验证。
 > 每批过 Apple-UX(已出稿)→编码→Google 代码质量审→装机真机验。基调新范式沉淀回 `苹果风格UI设计方案.md §9.31` 及本文。
