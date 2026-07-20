@@ -84,6 +84,13 @@
   "icon": "🥡"
  },
  {
+  "code": "beverage",
+  "name": "酒水",
+  "dimension": "general",
+  "sort": 125,
+  "icon": "🥤"
+ },
+ {
   "code": "other",
   "name": "其他",
   "dimension": "general",

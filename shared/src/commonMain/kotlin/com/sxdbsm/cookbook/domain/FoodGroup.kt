@@ -82,6 +82,9 @@ object FoodGroup {
         "小麦" to Group.STAPLE, "米粉" to Group.STAPLE, "螺蛳粉" to Group.STAPLE, "吐司" to Group.STAPLE,
         "油条" to Group.STAPLE, "小笼包" to Group.STAPLE, "馓子" to Group.STAPLE, "蒸饺" to Group.STAPLE,
         "三明治" to Group.STAPLE, "凉皮" to Group.STAPLE, "速冻水饺" to Group.STAPLE,
+        // 酒酿/醪糟=发酵糯米制品，营养以碳水为主→归谷薯主食类(F#4·营养大类看膳食结构、与含酒精无关；
+        // 真正的酒——米酒/黄酒/啤酒/白酒——不属九大类,营养大类留空,只挂"酒水"browse 类)。
+        "酒酿" to Group.STAPLE, "醪糟" to Group.STAPLE, "甜酒酿" to Group.STAPLE,
         // 红肉 / 禽肉
         "蹄髈" to Group.RED_MEAT, "扇子骨" to Group.RED_MEAT, "大排" to Group.RED_MEAT, "大骨头" to Group.RED_MEAT,
         "菲力" to Group.RED_MEAT, "西冷" to Group.RED_MEAT, "肉丸" to Group.RED_MEAT, "肥肠" to Group.RED_MEAT,
