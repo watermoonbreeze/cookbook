@@ -18,7 +18,8 @@
 - 上次总结会话点：2026-07-17 会话续接+backlog安全项清理(DishPickerFlow埋点清理9fd8c5c/搜索占位省略号41bfa86/AlertDialog句号copywriter审校f3f995e)+大类推进campaign建立(用户授权无人值守全权推进UI/工程/产品三大类·每功能提交+飞书+授权push·高风险selectionMode重构/seed异步化入待确认队列)。关键点=AppLogger.d无release门控每次写文件属排查埋点用完必删、copywriter角色审校连⚪一致性也走门禁、提交协议改为每功能即提交+飞书+授权push(覆盖旧"不push"默认)
 - 上次总结会话点：2026-07-20 真机反馈批(50道家常菜658→708 + 华为A12倒计时闪退根因修复[导航图未挂时navigate·等currentBackStackEntryFlow.first()]真机验证 + F#4酒水顶层分类[与其他并列·不上色系墙]+酒酿归谷薯 + 可乐重复分类修复[seeder补齐式只加不删→reconcile删旧general关联+unlinkIngredientCategory+SEED v8] + 酒类入库+临床忌口[漏接忌口系统致啤酒对痛风显可食·联网核准35条care规则+CrowdCare压制avoid→慎选红] + F#6报告记一餐带日期 + 食材最近Tab去字母条 + 透明准则确立分级透明T0-T3+apple_software_behavior角色 + 联网核准必列数据来源规则 + 参考内容数据驱动架构会商定案+全App行为透明清单)。关键坑=冷启动intent立即navigate须等导航图就绪、加健康食材必走忌口系统核对(数值判绿≠临床可食)、移预设食材分类要reconcile删旧关联、改共享域判定同步改单测、真机崩溃用logcat -b crash -d捞缓冲
 - 上次总结会话点：2026-07-20 下半程(《App操作基调·设计系统》确立5设计师会诊+菜品编辑页P1家族化[封面coverStyle前移/保存下移FormBottomBar/步骤烹饪标签下沉§9.31折叠]Google审查无阻断 + 热量bug真机DB修复[用户给cookbook.db·python证实:12000根因=配料unit_id空+resolveGrams兜底×piece_gram/60→按克直取防天价;290停旧值=今日卡combine不含dish_ingredient→observeDishContentChanges并进combine])。关键坑=计件兜底×倍率要防大quantity(克数误存)放大、派生汇总依赖A表但源在B表要显式观察B表变化并入combine、数据bug先真机DB python证实再改、大块字段重排用一次原子Edit重写
-- 总结次数：38
+- 上次总结会话点：2026-07-20~21 超长无人值守会话(17笔·全push·master `0e7b6f4`)：家族化P2食材编辑增量二(rememberSaveable全草稿+hydrated守卫)/P3两选择页统一SelectionSummaryBar(食材3步移除→就地×)/P4§1.4/F#1家庭Tab字母条 + 健康安全忌口补漏(CrowdCare引擎修「录低值反判绿」+联网核准104条care规则480→584+回归守卫单测) + F#7 AI按餐次入参 + F#8透明准则(changelog+SeedUpdateCenter双游标+更新记录中心)。方法论:分批增量交付/门禁编排(设计→编码→Google审)/健康数据联网核准加法流程/盲做安全边界(需真机/拍板/前置的记录不盲改)。红线新增:CrowdCare单向压制只升不降+care补漏加法流程、rememberSaveable草稿与异步DB回灌用hydrated守卫。踩坑详见experience/06「家族化P2-P4」「健康安全P3」段。
+- 总结次数：39
 
 ## 文件索引
 
