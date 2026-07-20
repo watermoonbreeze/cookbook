@@ -53,7 +53,6 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.rememberCoroutineScope
-import android.widget.Toast
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import androidx.compose.material3.TextButton
@@ -140,7 +139,9 @@ fun AddDayFoodScreen(
             if (res == SnackbarResult.ActionPerformed) onUndo()
         }
     }
-    val context = androidx.compose.ui.platform.LocalContext.current
+    // [AI修改] 家族化 P4/§1.4:保存成功统一走 Snackbar。保存后 onBack 立即离页→用全局 LocalAppSnackbar(MainScaffold 级·跨导航存活),
+    //   在返回后的目标页(食历/首页)显示,替代原离页即散的 Toast。本地 snackbar 只用于留页的撤销条。
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current
     // [AI生成] §9.17：未保存返回守卫(复用 UnsavedGuard)——厨房场景误触返回易丢这餐编辑。
     val requestBack = com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard(
         isDirty = { vm.isDirty() },
@@ -163,7 +164,7 @@ fun AddDayFoodScreen(
     LaunchedEffect(state.done) {
         if (state.done) {
             AppLogger.d("MealFlow", "AddDayFoodScreen done: date=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 保存完成后记录返回前状态摘要。
-            Toast.makeText(context, "已保存", Toast.LENGTH_SHORT).show() // [AI生成] A4：餐食保存成功轻提示。
+            appSnackbar?.showMessage("已保存") // [AI修改] 家族化 P4/§1.4:保存成功统一 Snackbar(全局宿主·返回后目标页可见)，替代离页即散的 Toast。
             onBack()
         }
     }
