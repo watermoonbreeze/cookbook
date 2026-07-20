@@ -1273,6 +1273,10 @@ insertDishIngredient:
 INSERT OR REPLACE INTO dish_ingredient(dish_id, ingredient_id, quantity, unit_id, is_main, status)
 VALUES (?, ?, ?, ?, ?, 1);
 
+-- [AI生成] 观察配料变化令牌:任意菜配料(用量/单位/增删)改动都会让此查询重发→驱动今日卡等营养汇总重算(修"改菜克数后今日卡停旧值")。纯新查询无需迁移。
+observeDishIngredientCount:
+SELECT COUNT(*) FROM dish_ingredient;
+
 -- [AI修改] 去掉 i.status=1 过滤：菜品要保留对失效食材的引用（灰显 + 失效原因），
 -- 只按 di.status=1 判断该引用本身是否有效。同时读出食材 status/reason 供 UI 判断灰显。
 selectIngredientsOfDish:

@@ -297,7 +297,8 @@ class HomeViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayNutrition: StateFlow<TodayNutrition?> =
         combine(
-            mealRepo.observeTimelineWindow(today, today),
+            // [AI修改] 并入"菜配料变化"令牌:改了菜克数/配料后 dish_ingredient 变→重发→今日卡重算(修停旧值·菜品详情实时对但今日卡不刷)。
+            combine(mealRepo.observeTimelineWindow(today, today), mealRepo.observeDishContentChanges()) { cards, _ -> cards },
             family.observeFocusBody(),
             family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today)),
             explicitGroups,

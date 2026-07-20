@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -27,6 +28,13 @@ import kotlinx.datetime.LocalTime
  */
 class MealRecordRepository(private val db: CookbookDatabase) {
     private val q = db.cookbookQueries
+
+    /**
+     * 监听"菜配料变化"令牌：任意菜的配料(用量/单位/增删)改动都会重发。[AI生成]
+     * 供今日营养卡等汇总把它并进 combine——改了菜克数后 dish_ingredient 变→此流重发→重算,修"今日卡停旧值"(菜品详情实时对但今日卡不刷)。
+     */
+    fun observeDishContentChanges(): Flow<Long> =
+        q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher)
 
     /**
      * 监听全部餐次类型。[AI修改]
