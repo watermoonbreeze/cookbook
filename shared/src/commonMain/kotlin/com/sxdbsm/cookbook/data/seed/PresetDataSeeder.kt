@@ -56,11 +56,37 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         if (q.selectPreference(PreferenceKeys.THEME_MODE).executeAsOneOrNull() == null) seedUserPreferences(now)
 
         // 大批量内容：内容指纹未变则整段跳过。
-        reseedContentIfChanged(now, force = false)
+        val didReseed = reseedContentIfChanged(now, force = false)
 
         // [AI生成] 营养大类回填：仅填 food_group 为空的食材(按名分类)，不覆盖用户已选——升级/老库幂等补齐。
         backfillFoodGroups()
+
+        // [AI生成] F#8 透明准则:维护"更新记录"游标(供启动弹窗/我的红点)——首次引入/全新装→基线对齐不追溯弹旧变更;已有游标且本次真更新了数据→推进已应用版本。
+        updateChangelogCursors(now, didReseed)
     }
+
+    /**
+     * F#8:维护 changelog 告知游标(与内容指纹解耦)。[AI生成]
+     * - 首次引入本功能 / 全新安装(游标不存在)→ APPLIED=NOTIFIED=最新(基线对齐·不把历史变更追溯弹给用户)。
+     * - 已有游标 + 本次确有内容 reseed → 推进 APPLIED 到最新(NOTIFIED 不动→APPLIED>NOTIFIED→首页就绪后该弹)。
+     */
+    private fun updateChangelogCursors(now: Long, didReseed: Boolean) {
+        val q = db.cookbookQueries
+        val latest = latestChangelogVersion()
+        val cursorsExist = q.selectPreference(PreferenceKeys.SEED_NOTIFIED_CHANGELOG_VERSION).executeAsOneOrNull() != null
+        if (!cursorsExist) {
+            q.upsertPreference(PreferenceKeys.SEED_APPLIED_CHANGELOG_VERSION, latest.toString(), now)
+            q.upsertPreference(PreferenceKeys.SEED_NOTIFIED_CHANGELOG_VERSION, latest.toString(), now)
+        } else if (didReseed) {
+            q.upsertPreference(PreferenceKeys.SEED_APPLIED_CHANGELOG_VERSION, latest.toString(), now)
+        }
+    }
+
+    /** F#8:内置 changelog(seed/changelog.json)的最新版本号(无则 0)。[AI生成] */
+    private fun latestChangelogVersion(): Int =
+        SeedResourceLoader.readText("seed/changelog.json")
+            ?.let { runCatching { json.decodeFromString<List<SeedChangelogEntry>>(it) }.getOrNull() }
+            ?.maxOfOrNull { it.version } ?: 0
 
     /**
      * 按名回填营养大类(food_group)。[AI修改]
@@ -94,7 +120,9 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
      */
     suspend fun forceReseedBaseData(): Boolean = withContext(Dispatchers.Default) {
         val now = DateTime.nowEpochSeconds()
-        reseedContentIfChanged(now, force = true)
+        val didReseed = reseedContentIfChanged(now, force = true)
+        updateChangelogCursors(now, didReseed) // [AI生成] F#8:手动更新也推进已应用版本(供完成后按有无未告知内容决定弹窗/轻提示)。
+        didReseed
     }
 
     /**

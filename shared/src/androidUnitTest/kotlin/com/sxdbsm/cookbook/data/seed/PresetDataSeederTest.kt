@@ -92,6 +92,28 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun `F#8 更新记录游标_首装基线对齐不弹_落后告知则有待告知_markNotified清空`() = runBlocking {
+        // [AI生成] F#8 透明准则:reseed 告知游标逻辑守卫。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded() // 首装→APPLIED=NOTIFIED=latest(基线对齐)
+        val center = SeedUpdateCenter(db)
+        val latest = center.latestVersion()
+        assertTrue(latest >= 1, "内置 changelog 应至少有 1 版，实得 $latest")
+        assertTrue(center.pendingChangelog().isEmpty(), "首装应基线对齐、无待告知(不追溯弹历史变更)")
+        assertFalse(center.hasUnnotified(), "首装不应亮红点")
+
+        // 模拟老用户：已告知停在更早版本(latest-1)，已应用=latest → 应有待告知
+        db.cookbookQueries.upsertPreference(PreferenceKeys.SEED_NOTIFIED_CHANGELOG_VERSION, (latest - 1).toString(), 0L)
+        assertTrue(center.pendingChangelog().isNotEmpty(), "已告知落后于已应用→应有待告知条目")
+        assertTrue(center.hasUnnotified(), "应亮红点")
+
+        // 标记已告知→幂等清空(消红点)
+        center.markNotified(0L)
+        assertTrue(center.pendingChangelog().isEmpty(), "markNotified 后应无待告知")
+        assertFalse(center.hasUnnotified(), "红点应消")
+    }
+
+    @Test
     fun seedCreatesCrowdIngredientRules() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded()

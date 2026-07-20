@@ -30,6 +30,7 @@ val sharedModule: Module = module {
     single<SqlDriver> { get<DatabaseDriverFactory>().createDriver() }
     single { CookbookDatabase(get()) }
     single { PresetDataSeeder(get()) }
+    single { com.sxdbsm.cookbook.data.seed.SeedUpdateCenter(get()) } // [AI生成] F#8:基础数据更新记录(启动弹窗/我的红点/更新记录中心共用)。
     single { DishRepository(get()) }
     single { CookingTimerRepository(get()) }
     single { FavoriteComboRepository(get(), get()) }

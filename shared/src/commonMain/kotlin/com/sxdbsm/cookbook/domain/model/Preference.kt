@@ -66,6 +66,12 @@ object PreferenceKeys {
     // [AI生成] 基础数据 seed 内容指纹：记录上次写入的 seed JSON 指纹，内容未变时跳过整段补齐式写入。
     const val SEED_CONTENT_FINGERPRINT = "seed_content_fingerprint"
 
+    // [AI生成] F#8 透明准则:基础数据"更新记录"游标(与指纹解耦·免迁移存偏好)。
+    //   APPLIED=DB 现有数据对应的 changelog 版本(reseed 后=内置最新)；NOTIFIED=已告知用户到的版本。
+    //   APPLIED>NOTIFIED → 有未告知的新版数据(该弹更新说明+我的页红点)。首装/首次引入本功能→基线对齐(不追溯弹旧变更)。
+    const val SEED_APPLIED_CHANGELOG_VERSION = "seed_applied_changelog_version"
+    const val SEED_NOTIFIED_CHANGELOG_VERSION = "seed_notified_changelog_version"
+
     // [AI生成] 旧库 NULL 文本字段清洗标记：清洗只需执行一次，避免每次启动全表 UPDATE。
     const val SEED_LEGACY_SANITIZED = "seed_legacy_sanitized_v1"
 
