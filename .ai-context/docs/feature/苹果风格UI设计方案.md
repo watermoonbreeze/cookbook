@@ -401,3 +401,14 @@ fun PrimaryTabRow(
 - **健康红线(阈值口径)**：GI 低≤55/高≥70(FAO/WHO·有据)；钠 120/600、嘌呤 25/150 每100g **惯例·非国标**。注脚**必标**"低钠依 GB28050;中·高为惯例口径·非国标"、"嘌呤三级为惯例口径·非国标(WS/T560 只分宜/慎/忌不设数值)"、GI"FAO/WHO 口径"，均"仅供参考"。**措辞与 §9.26 病种视角逐字对齐**("惯例口径·非国标")。
 - **工程要点**：VM `combine` 超 5 源→**拆 `filterState`(query/group/metric/levels)+`sortState` 两层再合**(踩坑:重建别丢字段·用命名参数 data class)。**阈值文案从 `NutrientBands` 常量插值**(防常量/阈值文案/caveat 三处漂移)。GI_HIGH 转发 `NutritionLevelEvaluator` 单一真相源。缺数据(null 级)判 `matches` 返 false 排除。
 - **落地**：shared `NutrientLevelFilter`(`FilterMetric`/`NutrientLevel`/`NutrientBands`·纯 levelOf/matches·单测 7 例)；`NutritionTableViewModel`(metricFilter/levelFilter/combine 拆层/excludedNoDataCount)+`NutritionTableScreen`(Tune 图标/ModalBottomSheet/摘要 chip)。复用 `SegmentedControl`/`FilterChip`/`CapsuleButton`/`ModalBottomSheet`，零新组件。无 DB/迁移。
+
+### 9.28 食材详情·人群适配红绿灯"不同人群参考"块（食材层数据驱动·百科式·§9.25 在食材层的延伸）
+> [AI生成 2026-07-20] 商业#6。食材详情对**固定四类慢病人群**(高血压/糖尿病/高血脂/痛风)显宜/留意/慎选，与 §9.25 成员化红绿灯(菜品级·按登记成员)互补——本块**不看成员、百科式**，即使没登记家人也能看"某食材对某人群大致怎么看"。
+
+- **落点+命名**：紧跟"忌口/宜忌"(人工策展 `IngredientCareRule`)之后、"食养"之前；标题**"不同人群参考"**(不用"人群适配"翻译腔)。
+- **防两区矛盾(核心)**：忌口/宜忌用"避免/限量/推荐"(人工强断言)、本块**故意降档**用"适宜/留意/慎选"(数据软提示)——同向叠加不打架。副标题灰字点明**"与上方忌口/宜忌有出入时，以上方为准"**(人工策展>数据估算)。**人工建议单向压制**：同病种 care 已标 AVOID/LIMIT 时，数据判"适宜"压成"留意"(原因"见上方宜忌")——**数据只抬升不洗白、不降级**。
+- **显示条件**：四人群**固定顺序**(高血压→糖尿病→高血脂→痛风)、逐行独立判；缺该指标数据→该行"暂无数据"灰点(**不臆断不跳过**)；**全部暂无数据→整块不显**(纯噪音)、≥1 有数据→四行齐显。
+- **单行范式**(复用 §9.25 `MemberVerdictRow`)：10dp 语义色点(适宜=success/留意=warning/慎选=danger/暂无=灰) + 人群名(bodyMedium·定宽64dp) + 等级词(语义色) + 一句原因(bodySmall 灰·≤6字·`InsetDivider startIndent44`·`InsetGroup`)。**纯文字不加病种图标**(详情已长·图标带焦虑暗示)。措辞比菜品级更克制:食材是原料·用量未定→用"慎选"不用"不宜"。
+- **判级口径(单一真相源·不新造)**：钠/GI/嘌呤复用 `NutrientBands`(120/600·55/70·25/150)；高血脂饱脂/胆固醇用 `IngredientCrowdCare` 食材级**惯例 bands**(饱脂 1.5/5.0 g、胆固醇 50/150 mg·每100g·标注惯例·建议值)、取两指标较重者；痛风缺嘌呤值→按高嘌呤关键词兜底(有实测更准·无实测从严)。
+- **免责就近**：块底一行灰字"仅供参考·非医嘱。嘌呤/钠为惯例口径·非国标，GI 为 FAO/WHO 口径。"(嘌呤/钠非国标必就近标)。**物理隔离**(色点走 `ExtendedColors` 固定三色·不接色系墙)。
+- **落地**：shared `IngredientCrowdCare`(`CrowdFit`/`CrowdCareVerdict`·纯 evaluate·14 单测)；VM `loadIngredientDetail` 加载 `nutritionRepo.ingredientNutrition(id)` 派生 verdicts；`IngredientDetailSheet` 加 `CrowdCareSection`/`CrowdCareRow`。复用 `ExtendedColors`/`InsetGroup`/`InsetDivider`/`SectionTitle`，零新组件、无 DB/迁移。
