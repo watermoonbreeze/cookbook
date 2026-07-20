@@ -140,13 +140,23 @@ object NutritionCalculator {
     /** 计件单位且食材无 piece_gram 时的兜底单件克重（粗估，会标“估算”）。 */
     const val DEFAULT_PIECE_GRAM = 60.0
 
+    /**
+     * 计件数量上限：quantity 超过此值即视为"克数误存"(无人吃 20+ 个)，按克直取、不按计件折算。[AI生成]
+     * 修"鸡腿饭 12000 千卡"根因——配料丢了 g 单位(unit_id 空)时 quantity=100(克)被兜底当"100 个×piece_gram/60g"→6000g→60 倍营养。
+     */
+    const val PIECE_QUANTITY_MAX = 20.0
+
     /** 解析单条配料应计的克数；返回 (克数, 是否兜底估算)。克数为 null 表示无法计算(用量缺失)。 */
     fun resolveGrams(input: NutritionInput): Pair<Double?, Boolean> {
         // [AI修改] 防负克数(架构评审):用量理论≥0,但脏数据/负值不该产生负营养,克数下限 0。
         val qty = (input.quantity ?: return null to false).coerceAtLeast(0.0)
-        input.unitGrams?.let { return (qty * it) to false }
+        input.unitGrams?.let { return (qty * it) to false } // 有克当量单位(g/ml/勺…):重量/体积折算
+        // [AI修改] 无克当量单位(unit_id 空 / 单位无克重)防天价:quantity 是大值(明显克数·非计件,如100克配料丢了g单位)→
+        //   **按克直取**(1克=1克·标估算)，不 ×piece_gram/60(否则 100×60=6000g / 100×piece300=30000g → 数十倍营养 = "12000千卡"根因)。
+        //   仅小数量(≤20·如"2个蛋")才按计件 ×piece_gram / 60 兜底。健康数据正确性红线。
+        if (qty > PIECE_QUANTITY_MAX) return qty to true
         input.nutrition?.pieceGram?.let { return (qty * it) to false }
-        return (qty * DEFAULT_PIECE_GRAM) to true // 兜底估算
+        return (qty * DEFAULT_PIECE_GRAM) to true // 计件兜底估算
     }
 
     /** 汇总一道菜的营养。inputs 为该菜所有配料。 */

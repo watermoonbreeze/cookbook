@@ -94,4 +94,24 @@ class NutritionCalculatorTest {
         assertTrue(d.estimated)
         assertFalse(d.complete)
     }
+
+    @Test
+    fun `大quantity无克当量单位按克直取_防兜底天价`() {
+        // [AI生成] "鸡腿饭12000千卡"根因回归:配料丢了g单位(unitGrams=null)时 quantity=100(克)
+        //   不能被当"100个×piece_gram"折算(否则 100×300=30000g→数十倍营养)。>20 按克直取。
+        val veg = IngredientNutrition(ingredientId = 4, energyKcal = 25.0, pieceGram = 300.0) // 有大 pieceGram(整棵)
+        val input = NutritionInput(quantity = 100.0, unitGrams = null, nutrition = veg)
+        val (grams, est) = NutritionCalculator.resolveGrams(input)
+        assertEquals(100.0, grams) // 按克直取=100g,非 100×300=30000g
+        assertTrue(est) // 标估算(丢了单位)
+        assertEquals(25.0, NutritionCalculator.dishNutrition(listOf(input)).totals.energyKcal, 0.01) // 25×(100/100)=25,非7500
+    }
+
+    @Test
+    fun `小数量计件仍按piece_gram折算`() {
+        // 边界:2个蛋(≤20)仍走计件·pieceGram=50 → 100g,不受大值防护影响。
+        val egg2 = IngredientNutrition(ingredientId = 5, energyKcal = 144.0, pieceGram = 50.0)
+        val (grams, _) = NutritionCalculator.resolveGrams(NutritionInput(quantity = 2.0, unitGrams = null, nutrition = egg2))
+        assertEquals(100.0, grams) // 2×50=100g
+    }
 }
