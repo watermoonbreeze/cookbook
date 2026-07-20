@@ -66,6 +66,32 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun `健康安全_动物内脏配了痛风避免规则_seed后对痛风显慎选红`() = runBlocking {
+        // [AI生成] F#附2 回归守卫：忌口补漏(肥肠→痛风avoid)+引擎压制修(录低值反判绿)整链——
+        //   肥肠即便录了偏低嘌呤(数值可能判黄)，因 care 规则痛风avoid，IngredientCrowdCare 应压成慎选(红)。
+        //   守住"低嘌呤内脏误显可食"的健康安全缺口不回归。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val repo = IngredientRepository(db)
+        val nutritionRepo = com.sxdbsm.cookbook.data.repository.NutritionRepository(db)
+        val feichang = repo.search("肥肠").firstOrNull { it.name == "肥肠" }
+        assertNotNull(feichang, "seed 应含食材：肥肠")
+        val care = repo.listCareRules(feichang.id)
+        assertTrue(
+            care.any { r ->
+                com.sxdbsm.cookbook.domain.HealthCondition.GOUT in com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(r.categoryName) &&
+                    r.adviceLevel == AdviceLevel.AVOID
+            },
+            "肥肠应已 seed 痛风 avoid 忌口规则，实得：${care.map { it.categoryName to it.adviceLevel }}",
+        )
+        val verdicts = com.sxdbsm.cookbook.domain.IngredientCrowdCare.evaluate(
+            feichang.name, nutritionRepo.ingredientNutrition(feichang.id), care,
+        )
+        val gout = verdicts.first { it.condition == com.sxdbsm.cookbook.domain.HealthCondition.GOUT }
+        assertEquals(com.sxdbsm.cookbook.domain.CrowdFit.CAUTION, gout.fit, "动物内脏(肥肠)对痛风应显慎选(红)")
+    }
+
+    @Test
     fun seedCreatesCrowdIngredientRules() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded()
