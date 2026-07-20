@@ -281,8 +281,49 @@ fun DishesScreen(
                             }
                         }
                     }
+                } else if (ui.sortTab == DishesSortTab.HOME) {
+                    // [AI生成] F#1(用户2026-07-20拍板):仅"家庭"Tab 加拼音分组 + 右侧字母条(家庭本按拼音排·跳转有意义);
+                    //   最近=时间序/喜爱=评分序其跳转会打乱核心排序,故不加(走下方 else 纯列表)。
+                    //   结构刻意与菜系/餐次档**完全一致**(dishHeaderItems + 无条件 dish-filters + sections)→直接复用同一个
+                    //   letterIndexMap(offset=letterHeaderCount=2)——偏移由结构一致性保证正确,规避"手工偏移易错"红线。
+                    Box(Modifier.fillMaxSize()) {
+                        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                            dishHeaderItems(ui, vm, tabCount)
+                            // 无条件加 filters item(即使 DishFilterChips 空返回也占 0 高度槽位)——letterHeaderCount=2 的前提,勿改条件加,否则字母跳转偏位。
+                            item(key = "dish-filters") { DishFilterChips(ui, vm) }
+                            if (ui.all.isEmpty()) {
+                                item(key = "dish-empty") { EmptyState(text = emptyText, icon = "🥗") }
+                            } else {
+                                sections.forEach { (letter, dishes) ->
+                                    item(key = "section-$letter") {
+                                        Text(
+                                            text = letter,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.fillMaxWidth()
+                                                .background(MaterialTheme.colorScheme.background)
+                                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                                        )
+                                    }
+                                    items(dishes, key = { it.id }) { dish ->
+                                        DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, showSourceBadge = false, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
+                                    }
+                                }
+                                item { Spacer(Modifier.height(80.dp)) }
+                            }
+                        }
+                        if (sections.isNotEmpty()) {
+                            LetterIndexBar(
+                                letters = sections.keys.toList(),
+                                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 4.dp),
+                                onLetterSelected = { letter ->
+                                    letterIndexMap[letter]?.let { index -> scope.launch { listState.animateScrollToItem(index) } }
+                                },
+                            )
+                        }
+                    }
                 } else {
-                    // 最近/喜爱/家庭：无二级左栏,搜索/计数/筛选在列表头随内容滚(驱动折叠),其后列表。
+                    // 最近/喜爱：无二级左栏,搜索/计数/筛选在列表头随内容滚(驱动折叠),其后纯列表(保时间/评分序·不加字母条)。
                     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                         dishHeaderItems(ui, vm, tabCount)
                         if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
