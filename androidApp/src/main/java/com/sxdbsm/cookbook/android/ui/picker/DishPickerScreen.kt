@@ -129,21 +129,11 @@ fun DishPickerScreen(
                         }
                     },
                     actions = {
-                        // [AI修改] §9.30 P0-2:无搜索词时新建入口=顶栏➕(与选食材对齐);有词时靠列表末尾 SearchCreateRow。
+                        // [AI修改] §9.30 P1(用户2026-07-20#3真机反馈):顶栏只留新建➕(无词时),"完成"下移底部(与选食材统一·治顶栏挤)。
                         if (showAddNewButton && state.keyword.isBlank()) {
                             IconButton(onClick = onAddNew) {
                                 Icon(Icons.Outlined.Add, contentDescription = "新建菜品")
                             }
-                        }
-                        if (multiSelect) {
-                            Button(
-                                onClick = {
-                                    onConfirm(vm.confirmSelected())
-                                    onDismiss()
-                                },
-                                enabled = state.selected.isNotEmpty(),
-                            ) { Text("完成") }
-                            Spacer(Modifier.width(8.dp))
                         }
                     },
                 )
@@ -253,6 +243,19 @@ fun DishPickerScreen(
                                 )
                             }
                         }
+                    }
+                }
+                // [AI生成] §9.30 P1(用户2026-07-20#3真机):多选"完成"下移底部(与选食材 SelectionBottomBar 统一·顶栏不再放完成防挤)。
+                if (multiSelect) {
+                    Surface(tonalElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
+                        Button(
+                            onClick = { onConfirm(vm.confirmSelected()); onDismiss() },
+                            enabled = state.selected.isNotEmpty(),
+                            modifier = Modifier
+                                .navigationBarsPadding()
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                        ) { Text(if (state.selected.isEmpty()) "完成" else "完成（已选 ${state.selected.size}）") }
                     }
                 }
             }
