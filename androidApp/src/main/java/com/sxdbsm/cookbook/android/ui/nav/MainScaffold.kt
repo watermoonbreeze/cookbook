@@ -63,11 +63,15 @@ fun MainScaffold(
     var lastBackAt by remember { mutableStateOf(0L) }
 
     // [AI生成] 点击计时通知 → 进入烹饪计时页（非首页）。
+    // [AI修改] 修华为A12等设备闪退：通知/全屏提醒拉起 Activity 时 openTimer=true 会让本 effect 立即 navigate，
+    //   但此时 NavHost 尚未把导航图挂到 NavController（合成时序更慢的机型上尤其明显）→ 抛
+    //   "Navigation graph has not been set" 崩溃(crash栈 MainScaffold.kt navigate)。
+    //   跳转前先挂起等 currentBackStackEntryFlow 发出首个条目(=图已挂载就绪)再跳，彻底消除时序竞态。
     LaunchedEffect(openTimer) {
-        if (openTimer) {
-            if (currentRoute != Routes.COOKING_TIMER) nav.navigate(Routes.COOKING_TIMER)
-            onTimerConsumed()
-        }
+        if (!openTimer) return@LaunchedEffect
+        nav.currentBackStackEntryFlow.first() // 等导航图就绪(首个回退栈条目出现)，避免图未挂时 navigate 崩溃
+        if (nav.currentDestination?.route != Routes.COOKING_TIMER) nav.navigate(Routes.COOKING_TIMER)
+        onTimerConsumed()
     }
 
     // [AI生成] 阶段3-c 合规门：首启先弹「隐私政策/用户协议同意」(不可绕过·同意后才 init 采数)，通过后才轮到功能介绍。
