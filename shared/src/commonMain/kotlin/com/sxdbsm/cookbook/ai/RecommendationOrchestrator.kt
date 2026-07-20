@@ -146,10 +146,11 @@ class RecommendationOrchestrator(
     }
 
     /**
-     * 两菜综合相似度[0,1]：主料 0.6 + 菜系 0.2 + 做法 0.2。[AI修改] MMR 多样性扩维
+     * 两菜综合相似度[0,1]：主料 0.45 + 重油族 0.15 + 荤素 0.15 + 做法名 0.13 + 菜系 0.12。[AI修改] MMR 多样性扩维·重油族
      *
-     * 原只按主料打散→一批可能全川菜/全红烧；加菜系、做法两维，同批更丰富(不同菜系/做法交替)。
-     * 主料仍主导(最强单调信号)；菜系/做法为空则该维不贡献相似度(自然退化，无数据不误伤)。
+     * 主料仍主导(最强单调信号·≥0.45);其余维度让同批菜系/做法/荤素/油腻度错落。各维为空→该维不贡献(自然退化,无数据不误伤)。
+     * **重油族维度**(新)：做法名 Jaccard 只在做法名完全相同时算相似(红烧≠干煸≠油煎)，感知不到"都很油"→
+     *   加"油腻度族(清淡/中性/重油)相同则相似"，避免"主料/做法名各异却整批煎炸红烧"。两菜都有做法数据才比(空→退化不误判)。
      */
     private fun dishSimilarity(a: DishCandidate, b: DishCandidate): Double {
         val main = jaccard(a.mainNames.toSet(), b.mainNames.toSet())
@@ -157,7 +158,11 @@ class RecommendationOrchestrator(
         val method = jaccard(a.cookingMethodNames.toSet(), b.cookingMethodNames.toSet())
         // [AI生成] D1：荤素结构维度——同为荤或同为素=相似，MMR 据此让同一批荤素交替(避免"主料不同但全是荤菜红烧"一批)。
         val protein = if (a.isMeat == b.isMeat) 1.0 else 0.0
-        return SIM_W_MAIN * main + SIM_W_CUISINE * cuisine + SIM_W_METHOD * method + SIM_W_PROTEIN * protein
+        // [AI生成] 重油族维度：两菜都有做法数据、且油腻度族相同→相似(让 MMR 把"全煎炸红烧"打散)。空做法→退化 0(不误判)。
+        val heavy = if (a.cookingMethodNames.isNotEmpty() && b.cookingMethodNames.isNotEmpty() &&
+            cookingHeaviness(a.cookingMethodNames) == cookingHeaviness(b.cookingMethodNames)) 1.0 else 0.0
+        return SIM_W_MAIN * main + SIM_W_CUISINE * cuisine + SIM_W_METHOD * method +
+            SIM_W_PROTEIN * protein + SIM_W_HEAVY * heavy
     }
 
     /** 集合 Jaccard 相似度[0,1]：|交|/|并|。空∩空=0。[AI生成] */
@@ -212,18 +217,26 @@ class RecommendationOrchestrator(
         val meat = chosen.count { it.isMeat }
         val veg = chosen.count { !it.isMeat }
         // [AI修改] 荤素/主食补分抽到 MealCompositionScorer(与 PeriodPlanner 共用同一常量/逻辑,防调参漂移);combineScore 调用时 chosen 恒非空,行为不变。
-        return cand.score + MealCompositionScorer.compositionBonus(
+        val composition = MealCompositionScorer.compositionBonus(
             candMeat = cand.isMeat, candStaple = cand.isStaple,
             chosenMeat = meat, chosenVeg = veg, chosenHasStaple = chosen.none { it.isStaple },
-        ) // [AI修改] 用户#2:一餐同菜系由 fallback 的同族过滤保证(不在此软罚,结构性硬保证不混搭)
+        )
+        // [AI生成] 一餐内主料不重复：候选主料与本餐已选任一道有重叠→轻罚(防"一餐两道五花肉";真实吃法一餐主料尽量不同)。轻于 BALANCE,不压倒荤素/主食补齐。
+        val candMains = cand.mainNames.toSet()
+        val mainOverlap = if (candMains.isNotEmpty() && chosen.any { (it.mainNames.toSet() intersect candMains).isNotEmpty() }) MAIN_OVERLAP_PENALTY else 0.0
+        return cand.score + composition - mainOverlap // [AI修改] 用户#2:一餐同菜系由 fallback 的同族过滤保证(不在此软罚,结构性硬保证不混搭)
     }
 
     companion object {
         const val DISPLAY_BATCH = 10 // [AI生成] 库存/随机推荐每批展示菜数；"换一换"取下一批不重复、全部推完循环。
-        private const val SIM_W_MAIN = 0.5 // [AI修改] MMR 相似度:主料主导(最强单调信号);为荤素维匀出0.1
-        private const val SIM_W_CUISINE = 0.15 // [AI修改] MMR 相似度:菜系维度(避免一批全川菜)
-        private const val SIM_W_METHOD = 0.2 // [AI生成] MMR 相似度:做法维度(避免一批全红烧)
-        private const val SIM_W_PROTEIN = 0.15 // [AI生成] D1:MMR 荤素结构维度(避免一批全荤/全素)
+        // [AI修改] MMR 相似度五维权重·和=1.0·主料主导(≥0.45最强单调信号)。加"重油族"维时从做法名/菜系匀出(它们是弱信号)。
+        private const val SIM_W_MAIN = 0.45 // 主料(最强单调信号·主导)
+        private const val SIM_W_HEAVY = 0.15 // [AI生成] 重油族(清淡/中性/重油·避免一批全煎炸红烧)
+        private const val SIM_W_PROTEIN = 0.15 // [AI生成] D1:荤素结构(避免一批全荤/全素)
+        private const val SIM_W_METHOD = 0.13 // 做法名 Jaccard(避免一批同做法名·重油族已覆盖粗油腻度故降)
+        private const val SIM_W_CUISINE = 0.12 // 菜系(避免一批全川菜)
+        // ↑ 0.45+0.15+0.15+0.13+0.12 = 1.00；MMRWeightSumTest 锁定和≈1.0 且主料最大,防后续加维失衡。
+        private const val MAIN_OVERLAP_PENALTY = 0.5 // [AI生成] fallback 一餐内主料重叠轻罚(<BALANCE0.7)：防"一餐两道五花肉"(真实吃法一餐主料尽量不同)
         private const val DEFAULT_MEAL_COUNT = 3
         private const val MAX_DISHES_PER_MEAL = 3
         private const val FALLBACK_DISHES_PER_MEAL = 3 // [AI修改] QW-1:2→3,组合更完整(主食+荤+素),贴近一餐(combineScore已补荤素/主食缺口)

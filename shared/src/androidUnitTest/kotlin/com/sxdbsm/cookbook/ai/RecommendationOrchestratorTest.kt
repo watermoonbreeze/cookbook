@@ -294,6 +294,40 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `MMR重油族_主料做法名各异但都重口时清淡菜被打散优先`() = runBlocking {
+        // 4 道全素菜(protein 维恒相同不区分)、主料各异(main维=0)、做法名各异(method Jaccard=0)、菜系空：
+        //   仅"油腻度族"能区分——前3为重油(红烧/干煸/煎)、第4清淡(白灼)。加重油族维后,#1选定后应优先打散出清淡菜到第2位。
+        val dishes = listOf(
+            RuleDish(1, "红烧茄子", listOf(main(201, "茄子")), cookingMethodNames = listOf("红烧")),
+            RuleDish(2, "干煸豆角", listOf(main(202, "豆角")), cookingMethodNames = listOf("干煸")),
+            RuleDish(3, "香煎藕饼", listOf(main(203, "藕")), cookingMethodNames = listOf("香煎")),
+            RuleDish(4, "白灼芥蓝", listOf(main(204, "芥蓝")), cookingMethodNames = listOf("白灼")),
+        )
+        val input = RecommendationInput(dishes, setOf(201L, 202, 203, 204), HealthConstraints(), emptySet())
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val c = orch.recommend(input.copy(style = RecommendationStyle.FRESH), mealCount = 1, rotation = 0).candidates
+        assertEquals("红烧茄子", c.first().name, "首位仍最相关(输入序1)")
+        assertEquals("白灼芥蓝", c[1].name, "第2名应是唯一清淡菜(重油族打散),而非另一道重油菜: ${c.map { it.name }}")
+    }
+
+    @Test
+    fun `fallback一餐不选两道同主料菜`() = runBlocking {
+        // 两道五花肉菜 + 油菜 + 米饭，每餐3道：主料不重复轻罚应让一餐不出现两道五花肉(改推油菜),更贴近真实吃法。
+        val dishes = listOf(
+            RuleDish(1, "红烧肉", listOf(main(301, "五花肉"))),
+            RuleDish(2, "回锅肉", listOf(main(301, "五花肉"))), // 同主料五花肉
+            RuleDish(3, "清炒油菜", listOf(main(302, "油菜"))),
+            RuleDish(4, "米饭", listOf(main(303, "大米"))),
+        )
+        val input = RecommendationInput(dishes, setOf(301L, 302, 303), HealthConstraints(), emptySet())
+        val orch = RecommendationOrchestrator(MockAiRuntime()) // 空→兜底(确定性)
+        val meal = orch.recommend(input, mealCount = 1).suggestions.first().dishIds.toSet()
+        assertEquals(3, meal.size)
+        assertTrue(!(1L in meal && 2L in meal), "一餐不应同时含两道五花肉菜(红烧肉+回锅肉): $meal")
+        assertTrue(3L in meal, "应改推不同主料的油菜: $meal")
+    }
+
+    @Test
     fun `候选不足一批时换一换循环回同一批`() = runBlocking {
         // ≤10 个候选只有一批，换一换循环回同批(符合"全推完再循环")。
         val few = (1L..5L).map { RuleDish(it, "菜$it", listOf(main(100 + it, "料$it"))) }
