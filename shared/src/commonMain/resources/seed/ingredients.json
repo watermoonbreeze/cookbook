@@ -5871,5 +5871,68 @@
       "seasoning_sauce",
       "seasoning_high_sodium"
     ]
+  },
+  {
+    "code": "beer",
+    "name": "啤酒",
+    "unit": "ml",
+    "emoji": "🍺",
+    "categories": [
+      "beverage"
+    ]
+  },
+  {
+    "code": "grape_wine",
+    "name": "葡萄酒",
+    "unit": "ml",
+    "emoji": "🍷",
+    "categories": [
+      "beverage"
+    ]
+  },
+  {
+    "code": "baijiu",
+    "name": "白酒",
+    "unit": "ml",
+    "emoji": "🥃",
+    "categories": [
+      "beverage"
+    ]
+  },
+  {
+    "code": "huangjiu",
+    "name": "黄酒",
+    "unit": "ml",
+    "emoji": "🍶",
+    "categories": [
+      "beverage"
+    ]
+  },
+  {
+    "code": "rice_wine",
+    "name": "米酒",
+    "unit": "ml",
+    "emoji": "🍶",
+    "categories": [
+      "beverage"
+    ]
+  },
+  {
+    "code": "sake",
+    "name": "清酒",
+    "unit": "ml",
+    "emoji": "🍶",
+    "categories": [
+      "beverage"
+    ]
+  },
+  {
+    "code": "jiuniang",
+    "name": "酒酿",
+    "unit": "g",
+    "emoji": "🍚",
+    "categories": [
+      "beverage"
+    ]
   }
 ]
