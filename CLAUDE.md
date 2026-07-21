@@ -67,13 +67,22 @@
 
 **新增较多文案或需通读审校时**，spawn `copywriter` 角色 agent 产出分级审校报告（🔴必改/🟡建议/⚪可选），据其结论按批落地。纯一两处小改可直接按本准则写。文案沉淀与术语表见该角色文件。
 
-## 架构与代码质量准则（凡编码必守·用户 2026-07-21 确立）
+## 架构与代码质量准则（凡编码必守·用户 2026-07-21 确立·经 Google×Apple 架构会诊精修）
 
-**核心：Android 端一律走「数据驱动界面（Data-Driven UI · 单向数据流 UDF）」架构，保证可维护 + 最佳实践。**
+> **两条正交准则，别混为一谈**（会诊结论：原"数据驱动界面"一句混了两个层级）：**A=UI 层怎么流动状态（UDF），B=跨平台共享到哪一层（共享逻辑·原生 UI）**。UDF 是 A 的原则，与 B（是否跨平台/共享什么）**无关**。
 
-- **数据驱动界面（UDF）**：**UI 是 State 的纯函数**——ViewModel 持**单一真相源 UiState**（`StateFlow`/`mutableStateOf`），UI（Compose）**只渲染 State + 上抛事件**，不持有可变业务状态、不写业务逻辑；State 下行、Event 上行（`vm.xxx()`）。派生态由 State 计算（不另存易漂移的副本）；副作用（DB/网络/IO）在 ViewModel/UseCase 里，UI 层不直接做。**iOS 端同理**：SwiftUI 视图由 `@Published`/`ObservableObject` 状态驱动，单向数据流。
-- **分层**：UI / Domain(UseCase·Model) / Data(Repository) 三层（Clean Architecture 简化版·项目现状）；UI 不越层直接碰 DB，业务规则沉在 Domain（如 `HealthRuleEngine`/`MealCompositionScorer` 纯函数），可单测。
-- **可维护 + 最佳实践**：单一真相源、抽共享防调参/逻辑漂移（如 `MealCompositionScorer`）、命名一致、复用优先于复制、消除 N+1、错误处理与边界完备、纯逻辑必带单测、能力显隐由参数（回调/flag）传入决定而非 mode 布尔硬编码。踩坑红线（本文件下方）是数据驱动落地的具体约束（粘性字段 `state.copy` 保留、`stateIn` 冻结、多源并发写回取最新 state 等）。
+**准则 A · UI 层单向数据流（UDF·所有平台通用）**
+- **UI 是 State 的纯函数**：ViewModel 持**单一真相源 UiState**，UI **只渲染 State + 上抛事件**（State 下行、Event 上行 `vm.xxx()`）；UI 不持可变业务状态、不写业务逻辑；派生态由 State 计算（不另存易漂移副本）；副作用（DB/网络/IO）在 VM/UseCase。
+- **落地=MVVM**（非 MVP/双向绑定 MVVM——后者在声明式 UI 里制造状态撕裂）：**Android** VM 暴露 `StateFlow<UiState>`；**状态载体用各端原生表达**——iOS 用 `@Observable`/`@State`（**别把 `StateFlow` 强加给 Swift**），鸿蒙 ArkUI 用其响应式。声明式 UI（Compose/SwiftUI/ArkUI/Compose Desktop）天然要求 UDF，无更优替代。**全量上 MVI/Redux=过度设计**（本项目无此规模痛点；仅极复杂状态机页面才值得 reducer）。
+- **配套纪律（源自踩坑·UDF 的具体约束）**：以**本地 UI 态**为写回单一真相源 + 异步回灌加 `hydrated` 守卫；`_state.update{it.copy()}` 而非"捕获 value→挂起→写回"；**重建 UiState 用 `.copy()` 保留粘性字段**（更优：重建函数接收 `prev` 源头兜底·见踩坑红线）；`stateIn` 冻结坑；能力显隐由**回调/参数**传入决定而非 mode 布尔硬编码。
+
+**准则 B · 跨平台共享边界（战略·共享逻辑不共享像素）**
+- **共享边界按"逻辑 vs 像素"划**：**共享（`commonMain`）= Domain（规则/算法·纯 Kotlin 无平台依赖 + 完整单测·如 `HealthRuleEngine`/`MealCompositionScorer`）+ Data（Repository/SQLDelight·对外暴露 `Flow`/`suspend` 平台中立接口）**——现状已达标，持续下沉。判据一句话：**"能脱离任何 UI 框架、无平台 UI/导航/生命周期概念"的才进 `shared`，沾了就留该端。**
+- **薄表现层 + 原生 UI**：ViewModel 只做**状态编排 + 生命周期**，业务一律调 shared UseCase（**"薄 VM"即未来跨平台上移的最优低成本预留**）；**UI 各平台原生**（Android=Compose，iOS=SwiftUI），**不追求 UI 像素级共享**，保平台体验契合（本 App 核心竞争力=顺手）。
+- **平台边界与时机（避免过度设计·当前只交付 Android）**：iOS 暂不做，真立项时升 Kotlin 2.0+、VM 可下移 `commonMain`（首选**官方 KMP ViewModel**）连 Swift 互操作一起验证——但**默认原生 SwiftUI，不上 CMP-iOS**（牺牲手势/无障碍/系统集成·体验敏感页默认否决）、不上 TCA；桌面（mac/Win）弱需求，要上用 **Compose Multiplatform Desktop**；**鸿蒙（ArkTS/ArkUI）非 KMP 目标·Kotlin 不能直接共享→ArkUI 原生 + 逻辑重写/桥接·现在不做任何架构预留**（预留即负债）。
+- **🔴 反过度设计红线**：**不为不存在的平台消费者**提前上移 VM / 引入 Decompose·MVIKotlin·moko 等框架（那是 iOS/桌面真立项时的决策）。唯一"现在就该做且服务所有未来平台"的动作=**保持 VM 薄 + 持续把业务逻辑下沉 `commonMain`+单测**（详见 `feature/跨平台架构策略.md`）。
+
+**可维护 + 最佳实践（通用）**：单一真相源、抽共享防调参/逻辑漂移（如 `MealCompositionScorer`）、命名一致、复用优先于复制、消除 N+1、错误处理与边界完备、纯逻辑必带单测。**Screen/组件不得注入 `Repository`**（数据访问收进 VM·见踩坑红线）。
 
 **【强制归口】Android 端编码由「Google 高级技术工程师」把关、iOS 端由「Apple 高级技术工程师」把关：**
 - **Android**：一批编码完成后由 **`google_quality_engineer`（代码质量终审）** + 涉架构/模块边界/技术债时加 **`google_architecture_engineer`（架构规范）** 审查，按最佳实践给阻断/建议分级，**阻断必修复复验**（沿用「代码质量门禁」流程）。
