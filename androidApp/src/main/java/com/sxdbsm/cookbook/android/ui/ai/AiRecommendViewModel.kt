@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlin.math.roundToInt
 import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.ai.RecommendationOrchestrator
@@ -30,6 +31,7 @@ class AiRecommendViewModel(
     private val aiConfig: AiRuntimeConfig,
     private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] P3：读写推荐风格偏好
     private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：推荐请求埋点(recommend_requested·仅来源枚举)
+    private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] §9.36:推荐带营养素+热量(每菜 dishNutrition·数据访问收进 VM)
 ) : ViewModel() {
 
     var state by mutableStateOf(AiRecommendUiState())
@@ -162,7 +164,10 @@ class AiRecommendViewModel(
         }
         // [AI修改] F1:粘性字段(engineLabel/selectedSlot/window/风格/selectedIds/pendingManual/showNutritionHint)
         //   全部由 mapResult 的 prev.copy 源头保留——不再逐一手动 .copy(防加字段漏补)。药膳纯本地重排:selectedIds 从 prev 保留(不清用户勾选)。
-        state = mapResult(cached, state.mode, modelReady = state.modelReady, medicinal = on, prev = state)
+        // [AI修改] §9.36:mapResult 现 suspend(查每菜营养)→本地重排也进协程(营养查询快·候选已在手)。
+        viewModelScope.launch {
+            state = mapResult(cached, state.mode, modelReady = state.modelReady, medicinal = on, prev = state)
+        }
     }
 
     fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {
@@ -259,7 +264,7 @@ class AiRecommendViewModel(
 
     // [AI修改] F1(架构审·防复发):接收 prev、内部 prev.copy 只改**数据字段**——粘性态(selectedSlot/recentWindowDays/recommendStyle/
     //   showNutritionHint/engineLabel/pendingManual/selectedIds 等用户选择/会话态)由源头兜底保留，免每个调用方逐一手动 .copy 漏字段(项目历史高频 bug 源:加字段/加调用点就漏)。
-    private fun mapResult(result: RecommendationResult, mode: RecommendMode, modelReady: Boolean, medicinal: Boolean = false, prev: AiRecommendUiState): AiRecommendUiState {
+    private suspend fun mapResult(result: RecommendationResult, mode: RecommendMode, modelReady: Boolean, medicinal: Boolean = false, prev: AiRecommendUiState): AiRecommendUiState {
         if (result.source == RecommendationSource.EMPTY || result.candidates.isEmpty()) {
             val hint = when {
                 mode == RecommendMode.RANDOM -> "菜品库里还没有可推荐的菜，先去添加些菜品吧"
@@ -275,6 +280,10 @@ class AiRecommendViewModel(
         // [AI修改] H1：模型返回了分餐组合(suggestions)时按"搭配方案"分组展示，让云端调用真正被消费；
         // 规则兜底/离线则回退到扁平勾选列表。两条路都汇入 selectedIds、走同一个 onPickMeal 契约。
         val byId = result.candidates.associateBy { it.id }
+        // [AI生成] §9.36:批量查每菜营养(≤10候选·一次·无 N+1)·runCatching 兜底(查询失败→空→静默不显·绝不中断推荐主流程)。
+        val nutritionUiById: Map<Long, DishNutritionUi> = runCatching {
+            nutritionRepo.dishNutrition(result.candidates.map { it.id }).mapValues { (_, dn) -> dn.toNutritionUi() }
+        }.getOrDefault(emptyMap())
         // [AI生成] 药膳一期·食补过滤(仅扁平列表)：**只把含药食同源食材的菜稳定排前**(正向排序偏好，非硬过滤/非罚分/不接慢病评级)。
         //   命中不足不给死胡同：仍展示全部、按含量降序，并如实告知(降级排序)。分组(模型建议)路径不重排，保持搭配完整。
         var medicinalNote = ""
@@ -291,12 +300,17 @@ class AiRecommendViewModel(
         //   MODEL 恒显组合(原行为不变·含药膳);规则兜底仅非药膳走组合(药膳保留其"含量降序平铺重排")。
         val groups = if (result.suggestions.isNotEmpty() && (result.source == RecommendationSource.MODEL || !medicinal)) {
             result.suggestions.mapNotNull { s ->
-                val dishes = s.dishIds.mapNotNull { byId[it] }.map { toItem(it, mode) }
+                val dishes = s.dishIds.mapNotNull { byId[it] }.map { toItem(it, mode, nutritionUiById[it.id]) }
                 if (dishes.isEmpty()) null
-                else SuggestionGroupUi(reason = s.reason, cookingHint = s.cookingHint, dishes = dishes)
+                else {
+                    // [AI生成] §9.36:整套合计热量——组内每菜都有热量才求和(缺任一→null→UI 显"整套热量待完善")。
+                    val kcals = s.dishIds.mapNotNull { nutritionUiById[it]?.kcal }
+                    val mealKcal = if (kcals.size == dishes.size) kcals.sum() else null
+                    SuggestionGroupUi(reason = s.reason, cookingHint = s.cookingHint, dishes = dishes, mealKcal = mealKcal)
+                }
             }
         } else emptyList()
-        val items = orderedCandidates.take(MAX_ITEMS).map { toItem(it, mode) }
+        val items = orderedCandidates.take(MAX_ITEMS).map { toItem(it, mode, nutritionUiById[it.id]) }
         // 只改数据字段(数据/来源/note/清空态标志),粘性态从 prev 保留;selectedIds 不动→recommend(prev已清空)清、setMedicinalFilter(prev为用户选择)保留,两条路各自正确。
         return prev.copy(
             loading = false, error = null, emptyHint = null, dishItems = items, suggestionGroups = groups,
@@ -304,13 +318,29 @@ class AiRecommendViewModel(
         )
     }
 
-    /** 把候选映射为展示项(名称/说明/忌口标红/最近吃过标注)。[AI生成] */
-    private fun toItem(c: DishCandidate, mode: RecommendMode) = DishItemUi(
+    /** 把候选映射为展示项(名称/说明/忌口标红/最近吃过标注/§9.36 营养)。[AI生成] */
+    private fun toItem(c: DishCandidate, mode: RecommendMode, nutrition: DishNutritionUi? = null) = DishItemUi(
         id = c.id, name = c.name, note = buildNote(c, mode),
         // [AI生成] 忌口食材单独标红：仍列出该菜，但明确警示健康档案建议避免。
         avoidText = if (c.avoidNames.isNotEmpty()) "⛔忌口：${c.avoidNames.joinToString("、")}（健康档案建议避免）" else "",
         recentText = recentLabel(c.recentDaysAgo), // [AI生成] B2：窗口内吃过→标注"N天前吃过"(排在最后)
+        nutrition = nutrition, // [AI生成] §9.36:每菜营养(整份热量+宏量+钠提示·null=未算/无数据)
     )
+
+    /** [AI生成] §9.36:DishNutrition→展示 DTO(整份·四舍五入·无数据则各值 null·钠偏高提示·estimated 标"估算")。 */
+    private fun com.sxdbsm.cookbook.domain.model.DishNutrition.toNutritionUi(): DishNutritionUi {
+        // [AI修改] Google审🟡:有料但用量缺(resolveGrams 跳过)→热量恒0·此时算"营养待完善"而非显"整份约0千卡"(usable=有数据且热量>0)。
+        val usable = hasData && totals.energyKcal > 0.0
+        return DishNutritionUi(
+            kcal = if (usable) totals.energyKcal.roundToInt() else null,
+            proteinG = if (usable) totals.proteinG.roundToInt() else null,
+            fatG = if (usable) totals.fatG.roundToInt() else null,
+            carbG = if (usable) totals.carbG.roundToInt() else null,
+            highSodium = usable && totals.sodiumMg >= SODIUM_HIGH_PER_DISH_MG,
+            estimated = usable && !complete,
+            hasData = usable,
+        )
+    }
 
     /** "最近吃过"标注文案。[AI生成] B2 */
     private fun recentLabel(daysAgo: Int?): String = when {
@@ -343,6 +373,8 @@ class AiRecommendViewModel(
         private const val MEAL_COUNT = 3
         private val MAX_ITEMS = com.sxdbsm.cookbook.ai.RecommendationOrchestrator.DISPLAY_BATCH // [AI修改] 每批 10 个，与 orchestrator 分批一致。
         private const val RANDOM_ROTATION_BOUND = 1000 // 随机模式的随机轮转上界。
+        // [AI生成] §9.36:单菜钠"偏咸"提示阈值≈高血压日限 2400mg 的 1/3(惯例·非精确·仅温和提醒不点病名)。
+        private const val SODIUM_HIGH_PER_DISH_MG = 800.0
     }
 }
 
@@ -375,6 +407,16 @@ data class DishItemUi(
     val avoidText: String = "", // [AI生成] 忌口警示(非空则在行内标红)。
     val recentText: String = "", // [AI生成] B2：最近吃过标注(非空则行内浅色显示"N天前吃过")。
     val disliked: Boolean = false, // [AI生成] 负反馈踩：本次标记"不再推荐"→就地灰态(下次推荐由 gather 过滤不再出现)。
+    val nutrition: DishNutritionUi? = null, // [AI生成] §9.36:每菜营养(整份热量+宏量+钠提示)·null=未算好/查询失败(静默不显)。
+)
+
+/** [AI生成] §9.36:推荐菜营养展示 DTO(整份·四舍五入的展示态·UI 不碰 domain DishNutrition)。 */
+data class DishNutritionUi(
+    val kcal: Int?, // 整份热量(千卡)·null=无数据(hasData=false)
+    val proteinG: Int?, val fatG: Int?, val carbG: Int?, // 宏量(g)·同上
+    val highSodium: Boolean = false, // 钠偏高→UI 显"偏咸，注意用量"(浅灰·不红·不点病名)
+    val estimated: Boolean = false, // 部分料缺→UI 行尾"（估算）"
+    val hasData: Boolean = false, // 整菜有无营养数据·false→UI 显"营养待完善"
 )
 
 /** 模型给出的一套搭配方案(一餐组合)。[AI生成] H1：消费 orchestrator 的 MealSuggestion。 */
@@ -382,4 +424,5 @@ data class SuggestionGroupUi(
     val reason: String, // 这套搭配的一句人话理由
     val cookingHint: String?, // 按在手辅料给的做法建议
     val dishes: List<DishItemUi>, // 组合内的菜(勾选整套或单菜均汇入 selectedIds)
+    val mealKcal: Int? = null, // [AI生成] §9.36:整套合计热量(千卡)·null=有菜缺数据(UI 显"整套热量待完善")
 )

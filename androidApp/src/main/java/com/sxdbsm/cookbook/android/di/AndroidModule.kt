@@ -68,7 +68,7 @@ val androidModule = module {
     viewModel { IngredientPickerViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 Pantry/HealthProfile/Nutrition 支持库存 Tab、忌口高亮、自定义营养录入。
     viewModel { DishPickerViewModel(get()) }
     viewModel { SearchViewModel(get(), get(), get()) }
-    viewModel { AiRecommendViewModel(get(), get(), get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置+偏好+阶段3-b Analytics recommend_requested)。
+    viewModel { AiRecommendViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置+偏好+Analytics+§9.36 NutritionRepository 每菜营养)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。
     viewModel { com.sxdbsm.cookbook.android.ui.nutrition.NutritionTableViewModel(get()) } // [AI生成] 食材营养表(全量营养总览)。
     viewModel { com.sxdbsm.cookbook.android.ui.settings.FeatureSettingsViewModel(get()) } // [AI修改] 身体数据编辑移入家庭档案，不再需要 FamilyRepository。

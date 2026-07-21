@@ -575,6 +575,12 @@ private fun SuggestionGroupCard(
                 Spacer(Modifier.height(2.dp))
                 Text("搭配建议：${group.cookingHint}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] UX走查M4:与食材详情"做法"(常见烹饪方式)区分,这里是"这套怎么配着做"
             }
+            // [AI生成] §9.36:整套合计热量(仅热量·受"热量数值显示"开关·缺任一菜数据则不显)。
+            val calorieOn by com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled()
+            if (calorieOn && group.mealKcal != null) {
+                Spacer(Modifier.height(2.dp))
+                Text("整套约 ${group.mealKcal} 千卡（${group.dishes.size} 道菜）", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Spacer(Modifier.height(4.dp))
             group.dishes.forEach { dish ->
                 DishRow(item = dish, selected = dish.id in selectedIds, onToggle = { onToggle(dish.id) }, onDislikeRequest = { onDislikeRequest(dish) })
@@ -618,6 +624,8 @@ private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit, o
                 Spacer(Modifier.height(2.dp))
                 Text(item.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            // [AI生成] §9.36:每菜营养行(整份热量+宏量·钠偏高另提示)——排在忌口/理由之后(客观参数)。
+            DishNutritionLine(item.nutrition)
         }
         // [AI修改] §9.1 统一:Material Checkbox→勾选圈(与选菜品/食材同款·苹果Photos式)。§9.20:已踩隐藏勾选圈(踩的菜不该加入这一餐)。
         if (!item.disliked) {
@@ -637,6 +645,28 @@ private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit, o
                 }
             }
         }
+    }
+}
+
+/**
+ * 每菜营养行(§9.36)：整份热量+三大宏量(热量数字受"热量数值显示"开关·关则只显宏量)；钠偏高另起浅灰"偏咸"行；缺数据"营养待完善"。[AI生成]
+ * 守红线:热量整份不折算·数字受开关·钠不点病名不用红·纯文字浅色无 emoji(§9.35)·免责复用页面底部。
+ */
+@Composable
+private fun DishNutritionLine(n: com.sxdbsm.cookbook.android.ui.ai.DishNutritionUi?) {
+    if (n == null) return // 未算好/查询失败→静默不显(不中断推荐)
+    val calorieOn by com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled()
+    Spacer(Modifier.height(2.dp))
+    if (!n.hasData) {
+        Text("营养待完善", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        return
+    }
+    val macros = "蛋白 ${n.proteinG}g·脂肪 ${n.fatG}g·碳水 ${n.carbG}g"
+    val main = (if (calorieOn && n.kcal != null) "整份约 ${n.kcal} 千卡 · " else "") + macros + (if (n.estimated) "（估算）" else "")
+    Text(main, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    if (n.highSodium) {
+        Spacer(Modifier.height(2.dp))
+        Text("偏咸，注意用量", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

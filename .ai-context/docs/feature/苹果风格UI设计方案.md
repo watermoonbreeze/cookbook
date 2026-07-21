@@ -466,6 +466,18 @@ fun PrimaryTabRow(
 - **崩溃红线**：`ModalBottomSheet`/`DayCard` content 无 `return@Column/Row`·条件用 item/if 插入式 emit·无 coverStyle 变体。
 - **落地样板**：`ui/ai/AiPlanScreen.kt`(P1)·基准参照 `ui/ai/AiRecommendScreen.kt`(`RecommendControls`/`RecommendFilterSheet`)。
 
+### 9.36 AI 推荐营养呈现规范（推荐带出营养素+热量）
+> [AI生成 2026-07-21] 用户"推荐把营养素和热量带出来更直观"·apple_ux_designer 门禁。数据零缺口(dishNutrition 已算)·范式详情页已有。
+- **粒度**：**每菜**带营养行(DishRow/DayCard)；**模型组合卡**带"整套约 X 千卡(N 道菜)"(仅热量)；**候选整批不汇总**(未定态·过载)。
+- **指标**：热量(千卡·打头)+三大宏量(蛋白/脂肪/碳水全带)；**钠不进数字行**·仅偏高时另起浅灰行 `偏咸，注意用量`(不点病名/不用红)；纤维/钾/钙留详情。
+- **🔴热量红线**：显"**整份约 X 千卡**"(不按成员 share 折算·推荐是菜品客观量)；**热量数字受 `CALORIE_NUMBER_ENABLED` 开关**(默认关·关=显宏量隐千卡·"热量是个人概念"红线落地)；**不显达标/占比%**(需身体数据·留今日卡/报告)。
+- **规则/模型/兜底三路统一**：营养挂 `DishItemUi.nutrition`(展示 DTO·UI 不碰 domain DishNutrition)·VM `mapResult` 一处批量 `dishNutrition(allIds)` 回填(runCatching 兜底·失败 null 静默)·DishRow/DayCard 共用 `DishNutritionLine`。VM 注入 `NutritionRepository`(Screen 不注入)。
+- **与 NutritionLineCard(§营养线) 分工**：概览卡=整周**结构**(不带数值·守色系墙不关联热量)·每菜行=分菜**数值**·正交不重复。
+- **降级**：部分缺→行尾 `（估算）`(不显 m/n 分数·太技术)；整菜无数据→`营养待完善`(替代整行·不显0·不报错)；nutrition=null(查询失败)→静默不显(不中断推荐)。
+- **免责/不焦虑**：复用页面底部 `DIET_DISCLAIMER`(不逐行加)·"整份约/估算"内建诚实·钠浅灰不红。
+- **样式**：`bodySmall`+`onSurfaceVariant`+Normal·无 emoji/无彩色(守§9.35)·营养行排 avoidText/note 之后。
+- **待确认**：§开关关时"显宏量隐千卡"边界→apple_software_behavior(个人概念开关约束什么)+视觉师(轻量)。**落地**:AiRecommendScreen(DishRow/SuggestionGroupCard)+VM·AiPlan DayCard 同款(follow-up)。
+
 ### 9.33 家族化对齐边界：语义色走 token · 文档/叙事页不卡化
 > [AI生成 2026-07-21] 家族化 P4 视觉打磨过 `apple_visual_designer` 门禁确立的两条可复用边界。
 - **语义锚点色一律走单一来源 token，不散落硬编码**：宏量三色(蛋白/脂肪/碳水)、收藏星金、状态色(success/warning/danger)、均衡度级别色等**语义色**统一进 `theme/ExtendedColors.kt`(`macroProtein/Fat/Carb`/`favoriteStar`/`success`…)或 `NutritionColor`(级别基色)——**刻意不随 6 套 `AppPalette` 主题变**(语义记忆稳定·家族化统一的是"结构语言"圆角/间距/分组卡,**不是**把语义色也染成主题色)。散落硬编码=漂移隐患(曾现 DietReport 宏量色用 Material 系、与 FamilyStats/色系墙不一致)。收藏星保持金色(跨平台通用"收藏"共识色·染 primary 反而语义模糊)。判据:凡"颜色=某含义"的都进 token。
