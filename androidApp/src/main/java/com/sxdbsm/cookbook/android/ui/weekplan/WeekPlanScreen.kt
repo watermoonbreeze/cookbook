@@ -85,6 +85,11 @@ fun WeekPlanScreen(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                // [AI生成] §营养线:整周膳食搭配概览卡(总卡·在逐日卡之上)。VM 已保证仅有真实主料数据时 nutritionLine 非空(空周/无主料→null 不显·不打扰)。与 AiPlan 同款卡·domain 已算好只呈现。
+                val line = ui.nutritionLine
+                if (line != null) {
+                    item { com.sxdbsm.cookbook.android.ui.component.NutritionLineCard(line, ui.nutritionAdvices) }
+                }
                 items(ui.days, key = { it.date.toString() }) { day ->
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         // 星期几 · 今天 标注

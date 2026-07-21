@@ -43,13 +43,29 @@ class WeekPlanViewModel(
         val weekEnd: LocalDate,
         val today: LocalDate,
         val days: List<DayMealCardData>,
+        // [AI生成] §营养线:已排"这一周"整周膳食搭配概览(与 AiPlan 未来计划同一 WeeklyNutritionLineAggregator·同款概览卡)。
+        val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine? = null,
+        val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice> = emptyList(),
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<UiState> = _weekStart.flatMapLatest { ws ->
         val we = DateTime.plusDays(ws, 6)
         mealRepo.observeTimelineWindow(ws, we).map { cards ->
-            UiState(weekStart = ws, weekEnd = we, today = today, days = cards)
+            // [AI生成] §营养线:从已排卡片反查每日每菜主料名(DishMini.mainIngredientNames·MealRecordRepository 已批量填)聚合整周营养线。
+            //   与 AiPlanViewModel 走同一 aggregate/advise 口径(单一真相源·防漂移)。
+            //   [AI修改] Google审🔴:dayCount=列表长度(observeTimelineWindow 恒返窗口每天含空天)≠有排菜天数→不能靠 dayCount>0 挡空态;
+            //   改在有真实主料数据时才置 nutritionLine,否则 null(概览卡不显)→顺带挡"有菜但无主料记录→0分误导"边界。
+            val perDayMainNames = cards.map { day ->
+                day.meals.flatMap { meal -> meal.dishes.flatMap { it.mainIngredientNames } }
+            }
+            val hasNutritionData = perDayMainNames.any { it.isNotEmpty() }
+            val nutritionLine = if (hasNutritionData) com.sxdbsm.cookbook.domain.WeeklyNutritionLineAggregator.aggregate(perDayMainNames) else null
+            val nutritionAdvices = nutritionLine?.let { com.sxdbsm.cookbook.domain.NutritionLineAdvisor.advise(it) } ?: emptyList()
+            UiState(
+                weekStart = ws, weekEnd = we, today = today, days = cards,
+                nutritionLine = nutritionLine, nutritionAdvices = nutritionAdvices,
+            )
         }
     }.stateIn(
         viewModelScope,
