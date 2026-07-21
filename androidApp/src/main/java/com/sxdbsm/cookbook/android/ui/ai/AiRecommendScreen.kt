@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.*
@@ -69,6 +70,54 @@ internal val RECOMMEND_STYLE_OPTIONS: List<Triple<String, com.sxdbsm.cookbook.ai
     Triple("偏新鲜", com.sxdbsm.cookbook.ai.RecommendationStyle.FRESH, "偏新鲜：多推久没吃的，换换口味"),
     Triple("偏营养", com.sxdbsm.cookbook.ai.RecommendationStyle.NUTRITION, "偏营养：更冲着营养均衡与利健康来搭"),
 )
+
+/**
+ * 慢病知情引导横幅(F4b)：已登记痛风/糖尿病用户在推荐页一次性告知"切偏营养=高GI/嘌呤菜靠后"。[AI生成]
+ *
+ * 守透明/诚实不操纵/免责(设计门禁 apple_ux_designer 产出)：陈述式给选择权、不点病名、主语落在"菜"、
+ * 不预勾选不默认开、无假紧迫/恐吓；免责"惯例参考·非医嘱"。可关闭×(只关不改风格)/切到偏营养(切+锁一次性)。
+ */
+@Composable
+private fun NutritionHintBanner(onSwitch: () -> Unit, onDismiss: () -> Unit) {
+    OutlinedCard(
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        ),
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 4.dp),
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
+                Text("🥗", style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        "想让升糖快、嘌呤偏高的菜自动靠后？",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        "切到「偏营养」推荐风格就行，这些菜会排得靠后一点（仍会列出，不替你藏）。口径为惯例参考·非医嘱。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = "关闭这条提示",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onSwitch) { Text("切到偏营养") }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -185,6 +234,17 @@ fun AiRecommendScreen(
             if (showPlan) {
                 AiPlanBody(planVm, modifier = Modifier.weight(1f))
             } else {
+                // [AI生成] 慢病知情引导(F4b):已登记痛风/糖尿病+非偏营养+未关过→顶部一次性可关闭横幅(固定,滑走不回,更克制)。守透明/诚实不操纵/免责。
+                if (state.showNutritionHint) {
+                    NutritionHintBanner(
+                        onSwitch = {
+                            vm.applyNutritionStyleFromHint()
+                            scope.launch { snackbar.showSnackbar("已切到「偏营养」· 升糖快、嘌呤偏高的菜会排得靠后") }
+                        },
+                        onDismiss = { vm.dismissNutritionHint() },
+                    )
+                    Spacer(Modifier.height(4.dp))
+                }
                 // [AI修改] 与周期计划一致：有推荐结果时，控件(餐次/去重/风格)放进结果 LazyColumn 首 item，
                 // 随结果一起上滑、给内容最大展示空间；无结果态(加载/空/错误/待手动)控件固定在上方。
                 val hasResults = !state.loading && state.error == null && state.emptyHint == null &&

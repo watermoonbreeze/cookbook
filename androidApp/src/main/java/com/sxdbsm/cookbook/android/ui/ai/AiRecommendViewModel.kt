@@ -69,6 +69,18 @@ class AiRecommendViewModel(
         viewModelScope.launch {
             // [AI生成] P3：载入已存的推荐风格(轻干预)，驱动打分权重。
             state = state.copy(recommendStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.fromKey(prefs.get(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE)))
+            // [AI生成] 慢病知情引导(F4b):已登记痛风/糖尿病 + 当前非偏营养 + 未关过 → 顶部一次性提示可切偏营养(默认不改排序·选择权给用户·守透明防操纵)。
+            //   runCatching 兜底:引导计算失败绝不影响推荐主流程。病种复用 gatherConstraints().conditions(轻量·与忌口同源)。
+            runCatching {
+                val dismissed = prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_HINT_DISMISSED, default = false).first()
+                if (!dismissed && state.recommendStyle != com.sxdbsm.cookbook.ai.RecommendationStyle.NUTRITION) {
+                    val conditions = dataSource.gatherConstraints().conditions
+                    if (com.sxdbsm.cookbook.domain.HealthCondition.GOUT in conditions ||
+                        com.sxdbsm.cookbook.domain.HealthCondition.DIABETES in conditions) {
+                        state = state.copy(showNutritionHint = true)
+                    }
+                }
+            }
             if (aiConfig.isModelReady()) {
                 state = state.copy(
                     modelReady = true,
@@ -111,11 +123,24 @@ class AiRecommendViewModel(
     fun setStyle(style: com.sxdbsm.cookbook.ai.RecommendationStyle) {
         if (style == state.recommendStyle) return
         rotation = 0
-        state = state.copy(recommendStyle = style)
+        // [AI生成] 慢病引导:切到偏营养(能力已生效)→引导横幅当帧消失(条件2 不满足)。
+        state = state.copy(recommendStyle = style, showNutritionHint = if (style == com.sxdbsm.cookbook.ai.RecommendationStyle.NUTRITION) false else state.showNutritionHint)
         viewModelScope.launch {
             prefs.set(com.sxdbsm.cookbook.domain.model.PreferenceKeys.RECOMMEND_STYLE, style.name)
             if (!state.pendingManual) recommend(state.mode) // 配了模型待手动的场景不擅自触发
         }
+    }
+
+    /** 慢病知情引导·关闭(右上×)：只写一次性标记、不改风格(尊重"我知道了但不用")。[AI生成] F4b */
+    fun dismissNutritionHint() {
+        state = state.copy(showNutritionHint = false)
+        viewModelScope.launch { prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_HINT_DISMISSED, true) }
+    }
+
+    /** 慢病知情引导·点"切到偏营养"：切风格(启用慢病软降·排序生效)+ 锁一次性 + 触发重推。[AI生成] F4b */
+    fun applyNutritionStyleFromHint() {
+        viewModelScope.launch { prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_HINT_DISMISSED, true) }
+        setStyle(com.sxdbsm.cookbook.ai.RecommendationStyle.NUTRITION) // 内部:改风格+隐横幅(setStyle 已处理)+持久化+重推
     }
 
     /** 选餐次(全部/早餐/…/宵夜)：从第一批开始重新推荐。[AI生成] */
@@ -139,6 +164,7 @@ class AiRecommendViewModel(
             medicinalFilter = on,
             selectedIds = prev.selectedIds,       // 纯重排保留用户已勾选(不清空)
             pendingManual = prev.pendingManual,   // [AI修改] 审查建议1:显式保留(不靠"有缓存⇒pendingManual必false"的隐式不变量),防未来改动踩雷
+            showNutritionHint = prev.showNutritionHint, // [AI生成] 粘性:药膳本地重排也须保留慢病引导显示态
         )
     }
 
@@ -190,6 +216,7 @@ class AiRecommendViewModel(
                     recentWindowDays = window,
                     recommendStyle = style,
                     medicinalFilter = medicinal,
+                    showNutritionHint = state.showNutritionHint, // [AI生成] 粘性:mapResult 重建 state 会丢,显式保留慢病引导显示态
                 )
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
@@ -336,6 +363,7 @@ data class AiRecommendUiState(
     val recommendStyle: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // [AI生成] P3：推荐风格(轻干预权重)
     val medicinalFilter: Boolean = false, // [AI生成] 药膳一期：食补过滤(药食同源优先)，默认关；**只正向排序展示，不接慢病评级**
     val medicinalNote: String = "", // [AI生成] 食补过滤开且药食同源菜不多时的如实告知(降级排序，不给死胡同)
+    val showNutritionHint: Boolean = false, // [AI生成] 慢病知情引导(F4b)：已登记痛风/糖尿病+当前非偏营养+未关过→推荐页顶部一次性提示可切偏营养(粘性字段·mapResult 重建须保留)
 )
 
 /** 单道推荐菜的展示模型。[AI生成] */

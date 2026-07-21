@@ -60,6 +60,9 @@ object PreferenceKeys {
     // [AI生成] 推荐风格(增长型推荐轻干预)：BALANCED/FAMILIAR/FRESH/NUTRITION，默认综合(BALANCED)。
     const val RECOMMEND_STYLE = "recommend_style"
 
+    // [AI生成] 慢病知情引导(F4b)一次性标记：已登记痛风/糖尿病用户在推荐页提示"切偏营养=高GI/嘌呤菜靠后"，关过/切过后永不再显。
+    const val NUTRITION_HINT_DISMISSED = "nutrition_hint_dismissed_v1"
+
     // [AI生成] 身体数据(JSON: BodyMetrics)：身高/体重/年龄/性别/活动量，用于算每日卡路里目标。免迁移存偏好。
     const val BODY_METRICS = "body_metrics"
 
