@@ -160,17 +160,9 @@ class AiRecommendViewModel(
             if (!state.pendingManual) recommend()
             return
         }
-        val prev = state
-        state = mapResult(cached, prev.mode, modelReady = prev.modelReady, medicinal = on).copy(
-            engineLabel = prev.engineLabel,       // 保留粘性字段(mapResult 重建 state 会丢·红线)
-            selectedSlot = prev.selectedSlot,
-            recentWindowDays = prev.recentWindowDays,
-            recommendStyle = prev.recommendStyle,
-            medicinalFilter = on,
-            selectedIds = prev.selectedIds,       // 纯重排保留用户已勾选(不清空)
-            pendingManual = prev.pendingManual,   // [AI修改] 审查建议1:显式保留(不靠"有缓存⇒pendingManual必false"的隐式不变量),防未来改动踩雷
-            showNutritionHint = prev.showNutritionHint, // [AI生成] 粘性:药膳本地重排也须保留慢病引导显示态
-        )
+        // [AI修改] F1:粘性字段(engineLabel/selectedSlot/window/风格/selectedIds/pendingManual/showNutritionHint)
+        //   全部由 mapResult 的 prev.copy 源头保留——不再逐一手动 .copy(防加字段漏补)。药膳纯本地重排:selectedIds 从 prev 保留(不清用户勾选)。
+        state = mapResult(cached, state.mode, modelReady = state.modelReady, medicinal = on, prev = state)
     }
 
     fun setSlot(slot: com.sxdbsm.cookbook.ai.MealSlot) {
@@ -215,14 +207,10 @@ class AiRecommendViewModel(
             }.onSuccess { result ->
                 cachedResult = result // [AI生成] R6:缓存供药膳本地重排复用(免全量 gather+云端)
                 val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
-                state = mapResult(result, mode, modelReady = state.modelReady, medicinal = medicinal).copy(
-                    engineLabel = label,
-                    selectedSlot = slot,
-                    recentWindowDays = window,
-                    recommendStyle = style,
-                    medicinalFilter = medicinal,
-                    showNutritionHint = state.showNutritionHint, // [AI生成] 粘性:mapResult 重建 state 会丢,显式保留慢病引导显示态
-                )
+                // [AI修改] F1:粘性字段(selectedSlot/window/风格/showNutritionHint/selectedIds 等)由 mapResult 的 prev.copy 源头保留;
+                //   仅 engineLabel 依 result.source 由本处算,单独设。slot/window/style 仍用于上方 gather(GatherKey)。
+                state = mapResult(result, mode, modelReady = state.modelReady, medicinal = medicinal, prev = state)
+                    .copy(engineLabel = label)
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
             }
@@ -269,13 +257,20 @@ class AiRecommendViewModel(
         state = state.copy(selectedIds = if (idSet.all { it in cur }) cur - idSet else cur + idSet)
     }
 
-    private fun mapResult(result: RecommendationResult, mode: RecommendMode, modelReady: Boolean, medicinal: Boolean = false): AiRecommendUiState {
+    // [AI修改] F1(架构审·防复发):接收 prev、内部 prev.copy 只改**数据字段**——粘性态(selectedSlot/recentWindowDays/recommendStyle/
+    //   showNutritionHint/engineLabel/pendingManual/selectedIds 等用户选择/会话态)由源头兜底保留，免每个调用方逐一手动 .copy 漏字段(项目历史高频 bug 源:加字段/加调用点就漏)。
+    private fun mapResult(result: RecommendationResult, mode: RecommendMode, modelReady: Boolean, medicinal: Boolean = false, prev: AiRecommendUiState): AiRecommendUiState {
         if (result.source == RecommendationSource.EMPTY || result.candidates.isEmpty()) {
             val hint = when {
                 mode == RecommendMode.RANDOM -> "菜品库里还没有可推荐的菜，先去添加些菜品吧"
                 else -> "库存里还没有能用到的食材，先把家里的主料加入库存" // [AI修改] 文案:去卖萌"吧～"+去"主料/食材"冗余
             }
-            return AiRecommendUiState(loading = false, emptyHint = hint, source = result.source, mode = mode, modelReady = modelReady)
+            // 空态:清数据字段(无菜=无勾选/无分组),粘性态从 prev 保留。
+            return prev.copy(
+                loading = false, error = null, emptyHint = hint, source = result.source, mode = mode, modelReady = modelReady,
+                dishItems = emptyList(), suggestionGroups = emptyList(), selectedIds = emptySet(),
+                medicinalNote = "", medicinalFilter = medicinal,
+            )
         }
         // [AI修改] H1：模型返回了分餐组合(suggestions)时按"搭配方案"分组展示，让云端调用真正被消费；
         // 规则兜底/离线则回退到扁平勾选列表。两条路都汇入 selectedIds、走同一个 onPickMeal 契约。
@@ -302,9 +297,10 @@ class AiRecommendViewModel(
             }
         } else emptyList()
         val items = orderedCandidates.take(MAX_ITEMS).map { toItem(it, mode) }
-        return AiRecommendUiState(
-            loading = false, dishItems = items, suggestionGroups = groups,
-            source = result.source, mode = mode, modelReady = modelReady, medicinalNote = medicinalNote,
+        // 只改数据字段(数据/来源/note/清空态标志),粘性态从 prev 保留;selectedIds 不动→recommend(prev已清空)清、setMedicinalFilter(prev为用户选择)保留,两条路各自正确。
+        return prev.copy(
+            loading = false, error = null, emptyHint = null, dishItems = items, suggestionGroups = groups,
+            source = result.source, mode = mode, modelReady = modelReady, medicinalNote = medicinalNote, medicinalFilter = medicinal,
         )
     }
 

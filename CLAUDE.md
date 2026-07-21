@@ -73,7 +73,7 @@
 
 **准则 A · UI 层单向数据流（UDF·所有平台通用）**
 - **UI 是 State 的纯函数**：ViewModel 持**单一真相源 UiState**，UI **只渲染 State + 上抛事件**（State 下行、Event 上行 `vm.xxx()`）；UI 不持可变业务状态、不写业务逻辑；派生态由 State 计算（不另存易漂移副本）；副作用（DB/网络/IO）在 VM/UseCase。
-- **落地=MVVM**（非 MVP/双向绑定 MVVM——后者在声明式 UI 里制造状态撕裂）：**Android** VM 暴露 `StateFlow<UiState>`；**状态载体用各端原生表达**——iOS 用 `@Observable`/`@State`（**别把 `StateFlow` 强加给 Swift**），鸿蒙 ArkUI 用其响应式。声明式 UI（Compose/SwiftUI/ArkUI/Compose Desktop）天然要求 UDF，无更优替代。**全量上 MVI/Redux=过度设计**（本项目无此规模痛点；仅极复杂状态机页面才值得 reducer）。
+- **落地 = MVVM + UDF（单向数据流·不可变 UiState 作单一真相源）**，**非双向绑定 MVVM / MVP**：撕裂根源是"双向绑定 / 命令式逐步改视图 = 多个可变真相源"（如"草稿 vs DB 回灌打架"），**不是 MVVM 这个名字本身**——UDF 是"数据怎么流"的纪律、MVVM 是"代码怎么分层"的结构，**在 MVVM 里应用 UDF**：VM 暴露不可变 UiState、UI 只渲染、事件上抛、VM 产出**新** State（单向、单一真相源）。**Android** VM 暴露 `StateFlow<UiState>`；**状态载体用各端原生表达**——iOS 用 `@Observable`/`@State`（**别把 `StateFlow` 强加给 Swift**），鸿蒙 ArkUI 用其响应式。声明式 UI（Compose/SwiftUI/ArkUI/Compose Desktop）天然要求 UDF，无更优替代。**全量上 MVI/Redux=过度设计**（本项目无此规模痛点；仅极复杂状态机页面才值得 reducer）。
 - **配套纪律（源自踩坑·UDF 的具体约束）**：以**本地 UI 态**为写回单一真相源 + 异步回灌加 `hydrated` 守卫；`_state.update{it.copy()}` 而非"捕获 value→挂起→写回"；**重建 UiState 用 `.copy()` 保留粘性字段**（更优：重建函数接收 `prev` 源头兜底·见踩坑红线）；`stateIn` 冻结坑；能力显隐由**回调/参数**传入决定而非 mode 布尔硬编码。
 
 **准则 B · 跨平台共享边界（战略·共享逻辑不共享像素）**
