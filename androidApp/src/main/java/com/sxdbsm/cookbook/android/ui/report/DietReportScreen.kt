@@ -40,6 +40,7 @@ import com.sxdbsm.cookbook.android.ui.component.AppTopBar
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.InsetGroup
 import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
+import com.sxdbsm.cookbook.android.ui.component.nutritionLevelColor
 import com.sxdbsm.cookbook.domain.model.CountItem
 import com.sxdbsm.cookbook.domain.model.DietReport
 import org.koin.androidx.compose.koinViewModel
@@ -346,14 +347,11 @@ private fun LegendDot(color: Color, text: String) {
     }
 }
 
-/** 膳食均级(0~4)→色：红→橙→琥珀→浅绿→绿；没记=灰(调用方另处理)。[AI生成] */
-private fun levelColor(level: Int): Color = when (level.coerceIn(0, 4)) {
-    4 -> Color(0xFF4CAF50)
-    3 -> Color(0xFF8BC34A)
-    2 -> Color(0xFFFFB300)
-    1 -> Color(0xFFFF9800)
-    else -> Color(0xFFE57373)
-}
+/**
+ * 膳食均级(0~4)→色：中性灰→琥珀→黄绿→浅绿→绿(**去红**·合"不制造焦虑"健康克制准则)；没记=灰(调用方 lv<0 另处理)。
+ * [AI修改] D3 收敛到色系墙单一来源 [nutritionLevelColor]，与首页色系墙/餐食卡片同色板(防级别色漂移)。
+ */
+private fun levelColor(level: Int): Color = nutritionLevelColor(level)
 
 private fun oneDecimal(v: Double): String {
     val r = (v * 10).roundToInt()
@@ -379,7 +377,8 @@ private fun buildSummary(st: DietReportUiState, r: DietReport): String {
 /** 从报告派生 2~3 条本期发现(鼓励非责备)。[AI生成] */
 private fun buildTips(st: DietReportUiState, r: DietReport): List<Pair<Color, String>> {
     val tips = mutableListOf<Pair<Color, String>>()
-    val green = Color(0xFF4CAF50); val amber = Color(0xFFFFB300); val gray = Color(0xFF9E9E9E)
+    // [AI修改] D3 收敛到色系墙同色板(nutritionLevelColor)：正向=绿(4)、待补=琥珀(1)、中性信息=中性灰(0)，去红防漂移。
+    val green = nutritionLevelColor(4); val amber = nutritionLevelColor(1); val gray = nutritionLevelColor(0)
     if (r.avgLevel >= 3.5) tips += green to "膳食结构较均衡，继续保持"
     r.structureGaps.take(2).forEach { tips += amber to "${it}可以再多安排些" }
     r.topDishes.firstOrNull()?.let { if (it.count >= 2) tips += gray to "最常吃${it.name}，出现 ${it.count} 次" }

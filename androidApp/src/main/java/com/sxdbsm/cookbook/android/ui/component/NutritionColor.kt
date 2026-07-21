@@ -31,6 +31,13 @@ private fun nutritionBase(level: Int): Color = when (level) {
     else -> Color(0xFFBDB4A8) // 空/无：中性灰
 }
 
+/**
+ * 膳食均衡级别(0~4) → 单一来源基色(满色)，供**非色系墙**处(如膳食报告均衡度)复用，避免各处硬编码级别色漂移。
+ * 与色系墙、餐食卡片同一套 [nutritionBase]（琥珀→绿=单一→均衡，**不含红**·合"不制造焦虑"健康克制准则）。
+ * 纯函数(非 Composable)，可在任意 UI 层调用。level 越界自动 coerce。[AI生成] 家族化色收敛·D3 去红。
+ */
+fun nutritionLevelColor(level: Int): Color = nutritionBase(level.coerceIn(0, 4))
+
 /** 由一组菜品(取主料名)算营养级别 0~4。[AI生成] */
 fun nutritionLevelOfDishes(dishes: List<DishMini>): Int {
     val groups = FoodGroup.groupsOf(dishes.flatMap { it.mainIngredientNames })
