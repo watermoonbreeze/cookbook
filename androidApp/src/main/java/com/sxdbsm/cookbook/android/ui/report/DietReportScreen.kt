@@ -312,9 +312,16 @@ private fun CountRow(item: CountItem, unit: String) {
 }
 
 /** 结构日历：每天一个色块(级别色，没记=浅灰)。[AI生成] */
+// [AI修改] 用户2026-07-21:月视图~30天单行会横向溢出(30×17dp≈527dp>屏宽)→改 FlowRow 自动换行:
+//   周(7块)仍单行、月(~30块)约两行·响应式不溢出。色块尺寸/间距/级别色不变(复用已确立 FlowRow 范式)。
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun StructureCalendar(levels: List<Int>) {
-    Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+    androidx.compose.foundation.layout.FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         levels.forEach { lv ->
             Box(
                 Modifier.size(14.dp).clip(RoundedCornerShape(3.dp))
