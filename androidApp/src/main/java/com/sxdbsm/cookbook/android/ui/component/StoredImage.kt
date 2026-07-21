@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -54,6 +55,7 @@ fun StoredImage(
     allowPreview: Boolean = true,
     fillWidth: Boolean = false,
     imageHeight: Dp = size,
+    aspectRatio: Float? = null, // [AI生成] 封面用:fillWidth 时按宽高比(如16:9)约束高度,替代固定 imageHeight——空/有图同比不跳变。
     thumbnailPath: String = "",
 ) {
     val firstPath = remember(imagePath) { decodeImagePaths(imagePath).firstOrNull() }
@@ -66,7 +68,9 @@ fun StoredImage(
         modifier = modifier
             .then(
                 if (fillWidth) {
-                    Modifier.fillMaxWidth().height(imageHeight)
+                    // [AI修改] 封面:优先按宽高比(如16:9)约束,空/有图同比不跳变;未给宽高比则回落固定高度(兼容旧调用)。
+                    if (aspectRatio != null) Modifier.fillMaxWidth().aspectRatio(aspectRatio)
+                    else Modifier.fillMaxWidth().height(imageHeight)
                 } else {
                     Modifier.size(size)
                 },

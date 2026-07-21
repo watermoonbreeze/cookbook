@@ -464,6 +464,7 @@ internal fun IngredientEditorDialog(
                                     onImagesChanged = { i, t -> images = i; thumbnails = t },
                                     onProcessingChange = { imageProcessing = it },
                                     maxCount = 3,
+                                    coverStyle = true, // [AI修改] 统一封面观感(与菜品编辑一致·首图16:9封面+strip多图);maxCount 已 3。
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                             } else {
@@ -576,6 +577,7 @@ internal fun IngredientEditorDialog(
                                     onImagesChanged = { i, t -> images = i; thumbnails = t },
                                     onProcessingChange = { imageProcessing = it }, // [AI生成] §五阻断⑤:压缩中禁保存
                                     maxCount = 3,
+                                    coverStyle = true, // [AI修改] 统一封面观感(与菜品编辑一致·首图16:9封面+strip多图);maxCount 已 3。
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                                 Text(

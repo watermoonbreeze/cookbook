@@ -7,6 +7,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,15 +15,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddAPhoto
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -149,13 +153,14 @@ fun ImagePickerButton(
 
     Column(modifier = modifier) {
         if (coverStyle) {
-            // [AI生成] 封面卡：无图=虚线引导卡(前移引导拍照·选填不施压)、有图=通栏封面+删除。复用下方同一图片管线。
-            val firstThumb = thumbnailPaths.firstOrNull().takeUnless { it.isNullOrBlank() } ?: imagePaths.firstOrNull()
+            // [AI修改] 封面多图卡(apple_ux_designer 规范)：首图=16:9 通栏封面、其余图=下方 64dp 缩略图条(strip)+未满显"再加一张" add tile。
+            //   恢复"最多 3 张"能力(此前 coverStyle 只显 1 张=回归);封面/strip 逐张删(删首图→第2张顶上成封面),不再一键清空全部。
+            //   崩溃红线:空态/有图态用 if/else 平衡分支、strip 用条件"emit"(非 return@Column/Row 提前返回),两分支组结构对称。参见 issuetracker 248513437。
             if (imagePaths.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp)
+                        .aspectRatio(16f / 9f) // [AI修改] 与有图封面同比→出图不再 120→160 跳变。
                         .clip(RoundedCornerShape(12.dp))
                         .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), RoundedCornerShape(12.dp))
                         .clickable(enabled = !processing) { chooserOpen = true },
@@ -164,35 +169,58 @@ fun ImagePickerButton(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Outlined.AddAPhoto, contentDescription = null, modifier = Modifier.size(28.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.height(6.dp))
-                        Text(if (processing) "处理中…" else "给这道菜拍张照", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Text(if (processing) "处理中…" else "拍张照", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.height(2.dp))
-                        Text("拍照或从相册选 · 选填", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("最多 3 张 · 选填", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             } else {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
-                    StoredImage(
-                        imagePath = firstThumb ?: "",
-                        fallbackText = "封面",
-                        fallbackEmoji = "🍽",
-                        seedId = 0L,
-                        fillWidth = true,
-                        imageHeight = 160.dp,
-                        modifier = Modifier.clip(RoundedCornerShape(12.dp)),
-                    )
-                    TextButton(
-                        onClick = { onImagesChanged(emptyList(), emptyList()) },
-                        modifier = Modifier.padding(6.dp),
-                    ) { Text("移除", style = MaterialTheme.typography.labelMedium) }
+                Column {
+                    // 首图=通栏封面(16:9·Crop·点开预览走原图)；右上删除→第2张顶上成新封面(列表左移天然实现)。
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
+                        StoredImage(
+                            imagePath = imagePaths.first(),
+                            thumbnailPath = thumbnailPaths.firstOrNull().orEmpty(),
+                            fallbackText = "封面",
+                            fallbackEmoji = "🍽",
+                            seedId = 0L,
+                            fillWidth = true,
+                            aspectRatio = 16f / 9f,
+                            modifier = Modifier.clip(RoundedCornerShape(12.dp)),
+                        )
+                        CoverDeleteBadge(onClick = { removeImageAt(0, imagePaths, thumbnailPaths, onImagesChanged) })
+                    }
+                    // strip：第 2 张起小图 + 未满显 add tile。有第2张或未满才渲染整条(否则只有封面)。
+                    if (imagePaths.size > 1 || imagePaths.size < maxCount) {
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            imagePaths.drop(1).forEachIndexed { i, path ->
+                                val realIndex = i + 1
+                                Box(contentAlignment = Alignment.TopEnd) {
+                                    StoredImage(
+                                        imagePath = path,
+                                        thumbnailPath = thumbnailPaths.getOrNull(realIndex).orEmpty(),
+                                        fallbackText = "图片${realIndex + 1}",
+                                        fallbackEmoji = "🖼",
+                                        seedId = realIndex.toLong(),
+                                        size = 64.dp,
+                                        corner = 10.dp,
+                                        allowPreview = false, // strip 小图不单独预览(预览只走大封面·免误触)
+                                    )
+                                    CoverDeleteBadge(onClick = { removeImageAt(realIndex, imagePaths, thumbnailPaths, onImagesChanged) })
+                                }
+                            }
+                            if (imagePaths.size < maxCount) {
+                                CoverAddTile(enabled = !processing, onClick = { chooserOpen = true })
+                            }
+                        }
+                    }
                 }
             }
             errorMessage?.let { message ->
                 Spacer(Modifier.height(6.dp))
                 Text(text = message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
-            // [AI修改] 崩溃根因修复:原此处 return@Column 是"从 inline Column 内容 lambda 提前 return"——
-            //   Compose 会造成组 Start/End 失衡→SlotTable ArrayIndexOutOfBounds(编辑态封面空→出图重组时崩·菜品编辑闪退根因)。
-            //   改 if/else 让两分支组结构平衡,不再提前 return。参见 issuetracker 248513437。
         } else {
         OutlinedButton(
             onClick = { chooserOpen = true },
@@ -281,6 +309,55 @@ fun ImagePickerButton(
                 }
             },
         )
+    }
+}
+
+/** 封面/strip 单张删除：按索引同步移除原图+缩略图(复用非cover分支的 filterIndexed 口径)。删首图→第2张顶上成封面。[AI生成] */
+private fun removeImageAt(
+    index: Int,
+    imagePaths: List<String>,
+    thumbnailPaths: List<String>,
+    onImagesChanged: (List<String>, List<String>) -> Unit,
+) {
+    onImagesChanged(
+        imagePaths.filterIndexed { i, _ -> i != index },
+        thumbnailPaths.filterIndexed { i, _ -> i != index },
+    )
+}
+
+/** 封面/strip 图片右上角删除角标：24dp 可视圆 + 44dp 透明触达区(≥红线)。[AI生成] apple_ux_designer 规范 */
+@Composable
+private fun CoverDeleteBadge(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier.size(44.dp).clickable(onClick = onClick),
+        contentAlignment = Alignment.TopEnd,
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(2.dp)
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
+                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Outlined.Close, contentDescription = "删除这张图片", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurface)
+        }
+    }
+}
+
+/** strip 末尾"再加一张" add tile：64dp 虚框 + 拍照图标；仅未满 maxCount 时显示。[AI生成] apple_ux_designer 规范 */
+@Composable
+private fun CoverAddTile(enabled: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(64.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant), RoundedCornerShape(10.dp))
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(Icons.Outlined.AddAPhoto, contentDescription = "再加一张", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

@@ -176,7 +176,7 @@ fun NewDishScreen(
                 onImagesChanged = { images, thumbnails ->
                     vm.setImages(encodeImagePaths(images), encodeImagePaths(thumbnails))
                 },
-                maxCount = 1,
+                maxCount = 3, // [AI修改] 修回归:封面前移时曾误压成 1 张,恢复"最多 3 张"(封面多图 strip)。
                 coverStyle = true,
                 modifier = Modifier.fillMaxWidth(),
             )
