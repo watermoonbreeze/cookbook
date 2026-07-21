@@ -140,6 +140,7 @@ fun FamilyScreen(
             member = null,
             careOptions = careOptions,
             avoidCategoryOptions = avoidCategoryOptions,
+            onResolveNames = vm::ingredientNamesByIds,
             onDismiss = { creating = false },
             onSave = { vm.save(it); creating = false },
         )
@@ -149,6 +150,7 @@ fun FamilyScreen(
             member = m,
             careOptions = careOptions,
             avoidCategoryOptions = avoidCategoryOptions,
+            onResolveNames = vm::ingredientNamesByIds,
             onDismiss = { editing = null },
             onSave = { vm.save(it); editing = null },
         )
@@ -258,6 +260,7 @@ private fun MemberEditorScreen(
     member: FamilyMember?,
     careOptions: List<CrowdType>,
     avoidCategoryOptions: List<com.sxdbsm.cookbook.domain.model.AvoidCategoryOption>, // [AI生成] v29:个人忌口分类chip
+    onResolveNames: suspend (List<Long>) -> Map<Long, String>, // [AI生成] D1-2:忌口食材按 id 查名委托 VM(原 Composable 直注 IngredientRepository=越层·准则"Screen 不得注入 Repository")
     onDismiss: () -> Unit,
     onSave: (FamilyMember) -> Unit,
 ) {
@@ -275,12 +278,12 @@ private fun MemberEditorScreen(
     var careIds by remember { mutableStateOf(member?.careCategoryIds?.toSet() ?: emptySet()) }
     var avoidCatIds by remember { mutableStateOf(member?.avoidCategoryIds?.toSet() ?: emptySet<Long>()) } // [AI生成] v29:个人忌口分类
     // [AI生成] 阶段4-b:个人忌口"具体食材"(id→名·名用于 chip 展示)。编辑进入时按 id 批量查名；搜索添加的自带名。
-    val ingredientRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.IngredientRepository>()
+    // [AI修改] D1-2:查名委托 VM(onResolveNames)·不再在 Composable 直注 IngredientRepository(越层修复)。
     var avoidIngMap by remember { mutableStateOf<Map<Long, String>>(emptyMap()) }
     var ingLoaded by remember { mutableStateOf(false) } // [AI生成] §9.26:忌口食材异步查名完成前不参与 isDirty,防空集误判脏
     var showAvoidPicker by remember { mutableStateOf(false) }
     androidx.compose.runtime.LaunchedEffect(member?.id) {
-        avoidIngMap = ingredientRepo.namesByIds(member?.avoidIngredientIds ?: emptyList())
+        avoidIngMap = onResolveNames(member?.avoidIngredientIds ?: emptyList())
         ingLoaded = true
     }
 

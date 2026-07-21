@@ -63,7 +63,7 @@ val androidModule = module {
     viewModel { TimelineViewModel(get()) }
     viewModel { MineViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 FamilyRepository + 阶段3-c Analytics(匿名统计开关)。
     viewModel { com.sxdbsm.cookbook.android.ui.report.DietReportViewModel(get(), get(), get()) } // [AI生成] 报告模块:MealRecord+Nutrition+Family
-    viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get(), get()) } // [AI修改] 家庭成员管理 + 阶段3-b Analytics(health_profile_set)
+    viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get(), get(), get()) } // [AI修改] 家庭成员管理 + 阶段3-b Analytics + D1-2 IngredientRepository(忌口查名收进VM)
     viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyStatsViewModel(get(), get(), get()) } // [AI生成] 膳食统计
     viewModel { IngredientPickerViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 Pantry/HealthProfile/Nutrition 支持库存 Tab、忌口高亮、自定义营养录入。
     viewModel { DishPickerViewModel(get()) }

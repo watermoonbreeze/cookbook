@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.FamilyRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
+import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.FamilyMember
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +28,11 @@ class FamilyViewModel(
     private val family: FamilyRepository,
     private val health: HealthProfileRepository,
     private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：健康档案设置埋点(health_profile_set·仅布尔"设了")
+    private val ingredients: IngredientRepository, // [AI生成] D1-2:成员编辑忌口食材按 id 查名,收进 VM(原 Composable 直注 IngredientRepository=越层)
 ) : ViewModel() {
+
+    /** 按食材 id 批量查名（成员编辑页个人忌口食材 chip 展示用）。[AI生成] D1-2:数据访问收进 VM。 */
+    suspend fun ingredientNamesByIds(ids: List<Long>): Map<Long, String> = ingredients.namesByIds(ids)
 
     val members: StateFlow<List<FamilyMember>> =
         family.observeMembers().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
