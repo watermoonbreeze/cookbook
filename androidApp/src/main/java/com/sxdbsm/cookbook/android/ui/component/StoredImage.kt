@@ -69,7 +69,8 @@ fun StoredImage(
             .then(
                 if (fillWidth) {
                     // [AI修改] 封面:优先按宽高比(如16:9)约束,空/有图同比不跳变;未给宽高比则回落固定高度(兼容旧调用)。
-                    if (aspectRatio != null) Modifier.fillMaxWidth().aspectRatio(aspectRatio)
+                    //   heightIn(max) 兜底:宽容器(平板/横屏/分屏)下封面不随宽度无上限放大(Google审建议·手机窄列不受影响)。
+                    if (aspectRatio != null) Modifier.fillMaxWidth().aspectRatio(aspectRatio).heightIn(max = COVER_MAX_HEIGHT)
                     else Modifier.fillMaxWidth().height(imageHeight)
                 } else {
                     Modifier.size(size)
@@ -173,6 +174,8 @@ private fun resolveImageFile(context: android.content.Context, path: String): Fi
     )
     return File(imgDir, direct.name)
 }
+
+private val COVER_MAX_HEIGHT = 240.dp // [AI生成] 16:9 封面在宽容器下的高度上限(手机窄列 ~184dp 不受影响·仅平板/横屏兜底)。
 
 private fun imageOptions(preview: Boolean): BitmapFactory.Options =
     BitmapFactory.Options().apply {
