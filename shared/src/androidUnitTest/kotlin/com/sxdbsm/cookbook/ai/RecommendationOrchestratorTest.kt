@@ -245,6 +245,32 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `CF2_早餐上下文已选全软时补硬食避免两软无蛋`() = runBlocking {
+        // [AI生成] C#F2:早餐 3软(白粥/豆浆/燕麦)+1硬(馒头)·每餐3道·空模型走兜底。
+        //   隔离软硬补分:4菜全素(无荤素差异)、白粥/馒头均主食(首道白粥后馒头无 STAPLE_BONUS)→馒头唯一优势=早餐软硬补分。
+        val dishes = listOf(
+            RuleDish(1, "白粥", listOf(main(101, "大米")), breakfastSoft = true),
+            RuleDish(2, "豆浆", listOf(main(102, "黄豆")), breakfastSoft = true),
+            RuleDish(3, "燕麦", listOf(main(104, "燕麦片")), breakfastSoft = true),
+            RuleDish(4, "馒头", listOf(main(103, "面粉")), breakfastSoft = false),
+        )
+        val pantry = setOf(101L, 102, 103, 104)
+        val orch = RecommendationOrchestrator(MockAiRuntime()) // 空→兜底(确定性)
+        // 早餐上下文:首道软(白粥)后,第2道软硬补分让硬食(馒头)胜出→一餐含硬食。
+        val bf = orch.recommend(
+            RecommendationInput(dishes, pantry, HealthConstraints(), emptySet(), isBreakfastMeal = true),
+            mealCount = 1,
+        ).suggestions.first().dishIds.toSet()
+        assertTrue(4L in bf, "早餐已选全软→应补硬食(馒头)避免两软无蛋: $bf")
+        // 非早餐上下文:软硬补分不生效→硬食无优势(同分取先者=软),馒头不入选(证 gate)。
+        val notBf = orch.recommend(
+            RecommendationInput(dishes, pantry, HealthConstraints(), emptySet(), isBreakfastMeal = false),
+            mealCount = 1,
+        ).suggestions.first().dishIds.toSet()
+        assertTrue(4L !in notBf, "非早餐上下文软硬补分不生效(gate)→馒头不因软硬入选: $notBf")
+    }
+
+    @Test
     fun `无可做候选返回EMPTY`() = runBlocking {
         val orch = RecommendationOrchestrator(MockAiRuntime())
         // 库存为空 → 没有可做菜

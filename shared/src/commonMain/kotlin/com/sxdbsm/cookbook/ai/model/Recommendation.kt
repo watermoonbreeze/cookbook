@@ -44,6 +44,7 @@ data class RecommendationInput(
     // [AI生成] 算法3项：口味画像(菜系/做法/主料偏好频次) + 每菜距上次做天数(不限窗口,仅偏新鲜时间衰减用)。
     val tasteProfile: com.sxdbsm.cookbook.ai.TasteProfile = com.sxdbsm.cookbook.ai.TasteProfile.EMPTY,
     val lastCookedDaysAgo: Map<Long, Int> = emptyMap(),
+    val isBreakfastMeal: Boolean = false, // [AI生成] C#F2:本次推荐是否早餐(gather 时 mealSlot==BREAKFAST)→单餐早餐软硬搭配 gate,非早餐不生效。
 )
 
 /** 规则引擎输入的菜品（已把食材按角色标好）。[AI生成] */
@@ -53,6 +54,7 @@ data class RuleDish(
     val ingredients: List<RuleDishIngredient>,
     val cuisine: String = "", // [AI生成] 菜系(家常/川菜…)：供 MMR 多样性菜系维度打散。
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 做法(红烧/清蒸…)：供 MMR 做法维度打散。
+    val breakfastSoft: Boolean = false, // [AI生成] C#F2:早餐软/饮类(gather 按名判)→透传 DishCandidate 供单餐早餐软硬搭配。
 )
 
 data class RuleDishIngredient(
@@ -100,6 +102,7 @@ data class DishCandidate(
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 做法：供 MMR 做法维度打散(避免一批全红烧)。
     val isMeat: Boolean = false, // [AI生成] A1：荤菜(按主料判)——组合级搭配(每餐荤素平衡)+MMR 荤素维度打散。
     val isStaple: Boolean = false, // [AI生成] A1：主食菜(按名+主料判)——组合级搭配(每餐尽量含主食)。
+    val breakfastSoft: Boolean = false, // [AI生成] C#F2:早餐软/饮(粥/豆浆/奶/燕麦/蛋羹/面)——单餐早餐软硬搭配(避免"白粥+豆浆"两软无蛋)。仅早餐上下文用。
 )
 
 /** 模型输出：3 个下一餐组合，每餐 2~3 菜。[AI生成] */

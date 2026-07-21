@@ -68,12 +68,12 @@ class RecommendationOrchestrator(
             ?.let { RecommendationParser.parse(it) }
             ?.let { validate(it, selectable, mealCount) } // [AI生成] R1:合法 id 用非忌口可选集
             ?.takeIf { it.isNotEmpty() }
-            ?.let { supplementComposition(it, selectable) } // [AI生成] C#F1强版:模型输出后补"全荤无素"餐的组合缺口
+            ?.let { supplementComposition(it, selectable, input.isBreakfastMeal) } // [AI生成] C#F1强版:模型输出后补"全荤无素"餐的组合缺口(+C#F2 早餐软硬)
 
         return if (modelSuggestions != null) {
             RecommendationResult(modelSuggestions, candidates, RecommendationSource.MODEL)
         } else {
-            RecommendationResult(fallback(candidates, mealCount), candidates, RecommendationSource.RULE_FALLBACK)
+            RecommendationResult(fallback(candidates, mealCount, input.isBreakfastMeal), candidates, RecommendationSource.RULE_FALLBACK)
         }
     }
 
@@ -88,6 +88,7 @@ class RecommendationOrchestrator(
     private fun supplementComposition(
         meals: List<MealSuggestion>,
         selectable: List<DishCandidate>,
+        isBreakfast: Boolean = false, // [AI生成] C#F2:早餐上下文→补菜时软硬搭配(combineScore 早餐补分)
     ): List<MealSuggestion> {
         val byId = selectable.associateBy { it.id }
         return meals.map { meal ->
@@ -99,7 +100,7 @@ class RecommendationOrchestrator(
             // maxByOrNull 平局取先者(selectable 已按 score 降序)→确定性可测,与 fallback 同口径。
             val add = selectable
                 .filter { it.id !in meal.dishIds && isWesternCuisine(it.cuisine) == western }
-                .maxByOrNull { combineScore(it, chosen) } ?: return@map meal
+                .maxByOrNull { combineScore(it, chosen, isBreakfast) } ?: return@map meal
             // [AI生成] 补菜后同步 reason(否则"理由说两道肉、实际列3道"不一致·Google审🟡)：追加一句自然鼓励语。
             meal.copy(
                 dishIds = meal.dishIds + add.id,
@@ -216,7 +217,7 @@ class RecommendationOrchestrator(
      * 让每餐尽量荤素搭配、尽量含主食(复用 PeriodPlanner 已验证的 BALANCE_BONUS/STAPLE_BONUS 系数)。
      * 只在"正常层"(非忌口非最近)内组合；全是忌口/最近时兜底用全部，保证不空。
      */
-    private fun fallback(candidates: List<DishCandidate>, mealCount: Int): List<MealSuggestion> {
+    private fun fallback(candidates: List<DishCandidate>, mealCount: Int, isBreakfast: Boolean = false): List<MealSuggestion> {
         val normal = candidates.filter { it.avoidNames.isEmpty() && !it.isRecent }
         val pool = (normal.ifEmpty { candidates }).toMutableList() // 全忌口/最近时兜底用全部(不空)
         val meals = ArrayList<MealSuggestion>(mealCount)
@@ -230,7 +231,7 @@ class RecommendationOrchestrator(
                 val sameFamily = pool.filter { isWesternCuisine(it.cuisine) == mealWestern }
                 if (sameFamily.isEmpty()) break
                 // maxByOrNull 平局取先者(pool 已按 score 降序)→确定性可测；勿改成会打乱顺序的实现。
-                val next = sameFamily.maxByOrNull { combineScore(it, chunk) } ?: break
+                val next = sameFamily.maxByOrNull { combineScore(it, chunk, isBreakfast) } ?: break
                 chunk.add(next)
                 pool.remove(next)
             }
@@ -247,8 +248,8 @@ class RecommendationOrchestrator(
         return meals
     }
 
-    /** A1：候选加入本餐已选 [chosen] 的组合分=基础分 + 补荤素缺口 + 补主食。[AI修改] 组合补分收敛到 MealCompositionScorer(单一真相源)。 */
-    private fun combineScore(cand: DishCandidate, chosen: List<DishCandidate>): Double {
+    /** A1：候选加入本餐已选 [chosen] 的组合分=基础分 + 补荤素缺口 + 补主食(+ C#F2 早餐软硬)。[AI修改] 组合补分收敛到 MealCompositionScorer(单一真相源)。 */
+    private fun combineScore(cand: DishCandidate, chosen: List<DishCandidate>, isBreakfast: Boolean = false): Double {
         val meat = chosen.count { it.isMeat }
         val veg = chosen.count { !it.isMeat }
         // [AI修改] 荤素/主食补分抽到 MealCompositionScorer(与 PeriodPlanner 共用同一常量/逻辑,防调参漂移);combineScore 调用时 chosen 恒非空,行为不变。
@@ -259,7 +260,10 @@ class RecommendationOrchestrator(
         // [AI生成] 一餐内主料不重复：候选主料与本餐已选任一道有重叠→轻罚(防"一餐两道五花肉";真实吃法一餐主料尽量不同)。轻于 BALANCE,不压倒荤素/主食补齐。
         val candMains = cand.mainNames.toSet()
         val mainOverlap = if (candMains.isNotEmpty() && chosen.any { (it.mainNames.toSet() intersect candMains).isNotEmpty() }) MAIN_OVERLAP_PENALTY else 0.0
-        return cand.score + composition - mainOverlap // [AI修改] 用户#2:一餐同菜系由 fallback 的同族过滤保证(不在此软罚,结构性硬保证不混搭)
+        // [AI生成] C#F2:早餐软硬搭配——本餐已选**全是软/饮**(粥/豆浆/奶)时,给硬/主食候选补分,避免"白粥+豆浆"两软无蛋(糖尿病早餐升糖快缺蛋白)。
+        //   仅早餐上下文(isBreakfast)+已选非空且全软时生效;非早餐/已有硬食→0(向后兼容不误伤)。与周计划 mealPool 软硬同目标(机制不同:此为打分补·周计划为位次过滤)。
+        val breakfastHard = if (isBreakfast && chosen.isNotEmpty() && chosen.all { it.breakfastSoft } && !cand.breakfastSoft) BREAKFAST_HARD_BONUS else 0.0
+        return cand.score + composition - mainOverlap + breakfastHard // [AI修改] 用户#2:一餐同菜系由 fallback 的同族过滤保证(不在此软罚,结构性硬保证不混搭)
     }
 
     companion object {
@@ -272,6 +276,7 @@ class RecommendationOrchestrator(
         private const val SIM_W_CUISINE = 0.12 // 菜系(避免一批全川菜)
         // ↑ 0.45+0.15+0.15+0.13+0.12 = 1.00；MMRWeightSumTest 锁定和≈1.0 且主料最大,防后续加维失衡。
         private const val MAIN_OVERLAP_PENALTY = 0.5 // [AI生成] fallback 一餐内主料重叠轻罚(<BALANCE0.7)：防"一餐两道五花肉"(真实吃法一餐主料尽量不同)
+        private const val BREAKFAST_HARD_BONUS = 0.7 // [AI生成] C#F2:早餐已选全软(粥/豆浆)时给硬/主食候选补分：避免"白粥+豆浆"两软无蛋。仅早餐上下文生效。独立取值(与 MealCompositionScorer.BALANCE_BONUS 当前同值属巧合·不绑定·调 BALANCE 不联动)
         private const val DEFAULT_MEAL_COUNT = 3
         private const val MAX_DISHES_PER_MEAL = 3
         private const val FALLBACK_DISHES_PER_MEAL = 3 // [AI修改] QW-1:2→3,组合更完整(主食+荤+素),贴近一餐(combineScore已补荤素/主食缺口)

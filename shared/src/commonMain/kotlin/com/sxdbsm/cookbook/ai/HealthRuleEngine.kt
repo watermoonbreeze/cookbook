@@ -179,6 +179,7 @@ class HealthRuleEngine {
             cookingMethodNames = dish.cookingMethodNames, // [AI生成] MMR 做法维度打散
             isMeat = MealSlotMatcher.isMeatByMains(mainIngredients.map { it.name }), // [AI生成] A1：荤菜判定(组合级荤素平衡+MMR荤素维度)
             isStaple = com.sxdbsm.cookbook.domain.StapleFood.isStaple(dish.name, mainIngredients.map { it.name }), // [AI生成] A1：主食菜判定(每餐尽量含主食)
+            breakfastSoft = dish.breakfastSoft, // [AI生成] C#F2:早餐软/饮透传(gather 已按名判)——单餐早餐软硬搭配用
         )
     }
         // [AI修改] B2：分层排序保证"最近吃过的排到最后(但在忌口之前)、忌口最末"，不依赖罚分量级、稳健：

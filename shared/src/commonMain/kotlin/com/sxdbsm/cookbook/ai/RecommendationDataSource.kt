@@ -91,6 +91,7 @@ class RecommendationDataSource(
                 name = mini.name,
                 cuisine = mini.cuisine, // [AI生成] MMR 菜系维度
                 cookingMethodNames = mini.cookingMethodNames, // [AI生成] MMR 做法维度
+                breakfastSoft = BREAKFAST_SOFT_KEYWORDS.any { mini.name.contains(it) }, // [AI生成] C#F2:早餐软/饮判定(与周计划同 BREAKFAST_SOFT_KEYWORDS 口径)→透传 DishCandidate
                 ingredients = ingredientsByDish[mini.id].orEmpty().map { ing ->
                     val role = when {
                         ing.ingredient_id in seasoningIds -> IngredientRole.SEASONING
@@ -199,6 +200,7 @@ class RecommendationDataSource(
             giByName = reco.giByName,
             tasteProfile = tasteProfile, // [AI生成] 口味画像(菜系/做法/主料偏好)
             lastCookedDaysAgo = lastCookedDaysAgo, // [AI生成] 时间衰减(仅偏新鲜)
+            isBreakfastMeal = mealSlot == MealSlot.BREAKFAST, // [AI生成] C#F2:早餐上下文→单餐软硬搭配 gate(非早餐不生效)
         )
     }
 
