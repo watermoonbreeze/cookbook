@@ -77,4 +77,5 @@ val androidModule = module {
     single { com.sxdbsm.cookbook.android.sync.SelectiveSyncBundler(get()) } // [AI生成] 选择性同步打包/合并。
     viewModel { com.sxdbsm.cookbook.android.ui.sync.DeviceSyncViewModel(get(), get()) } // [AI修改] 双设备同传(整库替换/选择性合并)。
     viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置/偏好)。
+    viewModel { com.sxdbsm.cookbook.android.ui.cook.CookModeViewModel(get()) } // [AI生成] D1:分步烹饪页薄 VM(数据访问收进 VM·F-Arch3)。
 }

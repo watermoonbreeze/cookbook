@@ -55,9 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.StoredImage
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
-import com.sxdbsm.cookbook.data.repository.DishRepository
 import kotlinx.coroutines.delay
-import org.koin.compose.koinInject
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * @File : CookModeScreen
@@ -76,10 +75,10 @@ import org.koin.compose.koinInject
 fun CookModeScreen(
     dishId: Long,
     onBack: () -> Unit,
-    repo: DishRepository = koinInject(),
+    vm: CookModeViewModel = koinViewModel(), // [AI修改] D1:数据访问收进薄 VM(原直注 DishRepository·越层)。
 ) {
-    // [AI修改] 用 remember(dishId) 缓存冷流，避免每次重组新建 Flow 反复订阅查库(Compose 红线)。
-    val dish by remember(dishId) { repo.observeDishById(dishId) }.collectAsStateWithLifecycle(null)
+    // [AI修改] 用 remember(dishId) 缓存冷流，避免每次重组新建 Flow 反复订阅查库(Compose 红线)。VM 包 repo·Screen 不触达 data 层。
+    val dish by remember(dishId) { vm.observeDish(dishId) }.collectAsStateWithLifecycle(null)
     val steps = dish?.steps.orEmpty().sortedBy { it.sortOrder }
 
     // [AI生成] 烹饪中保持亮屏，退出恢复。
