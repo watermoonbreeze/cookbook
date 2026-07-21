@@ -168,7 +168,8 @@ class HomeViewModel(
      * 标签改口语餐次词(卡片拼"X吃点什么")：去掉"下一餐·明天·早餐"的排班硬承诺(与已有周期计划歧义)。
      * 20 点后→"明早"(比"明天·早餐"更短更口语)。
      */
-    private fun currentSlot(): Pair<com.sxdbsm.cookbook.ai.MealSlot, String> = when (DateTime.currentHour()) {
+    // [AI修改] F3(架构审):钟点提为参数(默认取内部时钟·生产不变)——4 个边界分支(4/10/14/20)可测,守"派生别依赖内部时钟"红线。
+    private fun currentSlot(hour: Int = DateTime.currentHour()): Pair<com.sxdbsm.cookbook.ai.MealSlot, String> = when (hour) {
         in 4..9 -> com.sxdbsm.cookbook.ai.MealSlot.BREAKFAST to "早餐"
         in 10..13 -> com.sxdbsm.cookbook.ai.MealSlot.LUNCH to "午餐" // [AI修改] 术语统一(早/午/晚/加餐)·去"中餐vs西餐"歧义
         in 14..19 -> com.sxdbsm.cookbook.ai.MealSlot.DINNER to "晚餐"
