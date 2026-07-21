@@ -221,18 +221,27 @@ private fun MemberCard(
                 append(" · 饭量×${fmt(member.portionCoefficient)}")
             }
             Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) // [AI修改] UX走查H4:超长成员数据加 maxLines 防挤爆
-            Text(
-                if (target != null) "🔥 每日目标约 $target 千卡" else "填好身高·体重·年龄，自动算每日目标", // [AI修改] 文案:更自然(填好…自动算)
-                style = MaterialTheme.typography.bodySmall,
-                color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            // [AI生成] 国标参照(WS/T 578.1-2017 按年龄段)——与上方个性估算并列,仅供参考·非医嘱。中老年国标口径通常更贴国人。
-            if (driRef != null) {
+            if (member.isCalorieExempt) {
+                // [AI生成] A2:孕期/哺乳期不评热量(健康红线)——不显目标数字,给中性说明,让"标记孕哺→App 换行为"闭环可见·非医嘱不制造焦虑。
                 Text(
-                    "国标参照约 $driRef 千卡（据 WS/T 578.1-2017 · 仅供参考）",
+                    "孕期 / 哺乳期不按普通标准评估热量，具体请咨询医生或营养师",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            } else {
+                Text(
+                    if (target != null) "🔥 每日目标约 $target 千卡" else "填好身高·体重·年龄，自动算每日目标", // [AI修改] 文案:更自然(填好…自动算)
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                // [AI生成] 国标参照(WS/T 578.1-2017 按年龄段)——与上方个性估算并列,仅供参考·非医嘱。中老年国标口径通常更贴国人。
+                if (driRef != null) {
+                    Text(
+                        "国标参照约 $driRef 千卡（据 WS/T 578.1-2017 · 仅供参考）",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             if (careNames.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
@@ -290,6 +299,15 @@ private fun MemberEditorScreen(
     // 系数自动预选（未手动改过时，随性别/年龄更新）——放 LaunchedEffect 避免组合期写 state。
     androidx.compose.runtime.LaunchedEffect(gender, age) {
         if (!coeffEdited) coeff = fmt(FamilyMember.defaultCoefficient(gender, age.toIntOrNull()))
+    }
+    // [AI生成] A2:生命阶段里"仅女性"的孕哺项(备孕/孕期/哺乳)。男性成员不显示这些项;切到男性时清理已勾选的残留——
+    //   否则残留的孕/哺 care 会让该(男性)成员仍被判"不评热量"(误 gate)。静默清理即可(该项已从男性视图隐藏·消失即反馈)。
+    val femaleOnlyStageKeywords = listOf("备孕", "孕期", "哺乳")
+    val femaleOnlyStageIds = careOptions.filter { opt -> femaleOnlyStageKeywords.any { opt.name.contains(it) } }.map { it.id }.toSet()
+    androidx.compose.runtime.LaunchedEffect(gender) {
+        if (gender == Gender.MALE.name && careIds.any { it in femaleOnlyStageIds }) {
+            careIds = careIds - femaleOnlyStageIds
+        }
     }
     val activityIndex = activities.indexOfFirst { it.name == activity }.coerceAtLeast(0)
 
@@ -433,7 +451,9 @@ private fun MemberEditorScreen(
                                 } else {
                                     // [AI修改] 分组:慢病调理 / 生命阶段(用户 Q6)。生命阶段按名匹配人群分类(备孕/孕期/哺乳/婴幼儿/学龄…)。
                                     val stageKeywords = listOf("备孕", "孕期", "哺乳", "婴幼儿", "学龄前", "学龄儿童")
+                                    // [AI生成] A2:孕哺(备孕/孕期/哺乳)仅女性成员显示;婴幼儿/学龄与性别无关照显。用 filter 收敛(禁 return@·SlotTable 红线)。
                                     val stageOptions = careOptions.filter { opt -> stageKeywords.any { opt.name.contains(it) } }
+                                        .filter { opt -> gender == Gender.FEMALE.name || femaleOnlyStageKeywords.none { opt.name.contains(it) } }
                                     val diseaseOptions = careOptions.filterNot { opt -> stageKeywords.any { opt.name.contains(it) } }
                                     Text(
                                         "健康状态（可多选；与忌口·调养挂钩·仅供参考·非医嘱）",
@@ -457,6 +477,15 @@ private fun MemberEditorScreen(
                                                         Text(c.name, style = MaterialTheme.typography.bodyLarge)
                                                     }
                                                 }
+                                            }
+                                            // [AI生成] A2:生命阶段(女性)补说明,说清"标记孕哺→不按普通标准提醒热量·为什么·非医嘱"(让因果对用户可见·不吓唬)。
+                                            if (groupTitle == "生命阶段" && gender == Gender.FEMALE.name) {
+                                                Text(
+                                                    "孕期、哺乳期身体需要更多能量，标记后就不按普通标准提醒热量了。仅用于更贴心的推荐，非医嘱。",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                                                )
                                             }
                                         }
                                     }

@@ -67,4 +67,30 @@ class CalorieTargetTest {
         assertEquals(CalorieStatus.ON, CalorieTarget.status(1500.0, 0)) // 无有效目标→中性,不判达标
         assertEquals(CalorieStatus.ON, CalorieTarget.status(1500.0, -100))
     }
+
+    @Test
+    fun `A2_孕期哺乳期不评热量目标返null`() {
+        // 孕期/哺乳期热量需求有附加量,普通公式会误判"超标"→误导"吃少点"(健康红线)→不评(同未成年退化)。
+        val base = BodyMetrics(gender = Gender.FEMALE.name, heightCm = 165.0, weightKg = 58.0, age = 30, activity = ActivityLevel.MODERATE.name)
+        assertTrue(CalorieTarget.dailyTarget(base) != null, "普通成年女性可评")
+        assertNull(CalorieTarget.dailyTarget(base.copy(skipCalorieEval = true)), "孕期/哺乳期不评热量")
+        assertNull(DriEnergyReference.referenceKcal(base.copy(skipCalorieEval = true)), "国标参照同样不评")
+    }
+
+    @Test
+    fun `A2_CalorieExemptStage按care名称匹配_备孕不触发`() {
+        assertTrue(CalorieExemptStage.contains(listOf("孕期")))
+        assertTrue(CalorieExemptStage.contains(listOf("哺乳期")))
+        assertTrue(CalorieExemptStage.contains(listOf("高血压", "孕期")), "含孕期即触发")
+        assertTrue(!CalorieExemptStage.contains(listOf("备孕")), "备孕≠孕期,不触发不评")
+        assertTrue(!CalorieExemptStage.contains(listOf("高血压", "糖尿病")), "慢病不触发")
+        assertTrue(!CalorieExemptStage.contains(emptyList()), "无 care 不触发")
+    }
+
+    @Test
+    fun `A2_成员孕哺标志经toBodyMetrics透传到不评热量`() {
+        val member = FamilyMember(id = 1, name = "她", gender = Gender.FEMALE.name, heightCm = 165.0, weightKg = 58.0, age = 30, isCalorieExempt = true)
+        assertTrue(member.toBodyMetrics().skipCalorieEval, "isCalorieExempt→BodyMetrics.skipCalorieEval")
+        assertNull(CalorieTarget.dailyTarget(member.toBodyMetrics()), "孕哺成员经身体数据不评热量")
+    }
 }

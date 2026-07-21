@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.domain.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.math.roundToInt
 
 /**
@@ -39,6 +40,9 @@ data class BodyMetrics(
     val weightKg: Double? = null,
     val age: Int? = null,
     val activity: String = ActivityLevel.MODERATE.name,
+    // [AI生成] A2 健康红线：孕期/哺乳期→不评热量。**派生态·不持久化**(@Transient)：由成员的「生命阶段」care 分类
+    //   (孕期/哺乳期)在 toBodyMetrics() 时置位，非用户直填、非偏好存储→prefs 反序列化恒 false(不影响自填身体数据)。
+    @Transient val skipCalorieEval: Boolean = false,
 ) {
     /** 数据是否齐全(可算目标)。 */
     val complete: Boolean get() = heightCm != null && weightKg != null && age != null &&
@@ -81,9 +85,12 @@ data class FamilyMember(
     val avoidCategoryIds: List<Long> = emptyList(),
     // [AI生成] 阶段4:个人忌口(按**具体食材**·加法)。存 ingredient id;推荐时与分类展开的食材并集进 avoid(含即命中)。默认空=老数据/未设。
     val avoidIngredientIds: List<Long> = emptyList(),
+    // [AI生成] A2:是否处于不评热量的特殊生理时期(孕期/哺乳期)。**派生态·非 DB 列**——FamilyRepository 载入时按该成员
+    //   「生命阶段」care 分类名(孕期/哺乳期)解析置位(复用已拍板 care 信号·不新建字段)。默认 false。
+    val isCalorieExempt: Boolean = false,
 ) {
-    /** 该成员的身体数据(算每日目标热量用)。[AI生成] */
-    fun toBodyMetrics(): BodyMetrics = BodyMetrics(gender = gender, heightCm = heightCm, weightKg = weightKg, age = age, activity = activity)
+    /** 该成员的身体数据(算每日目标热量用)。[AI生成] A2:透传"孕哺不评热量"标志→dailyTarget 统一 gate。 */
+    fun toBodyMetrics(): BodyMetrics = BodyMetrics(gender = gender, heightCm = heightCm, weightKg = weightKg, age = age, activity = activity, skipCalorieEval = isCalorieExempt)
 
     companion object {
         /** 按性别/年龄给饭量系数默认值：成年男1.2/成年女1.0/老人0.8/小孩0.5。[AI生成] */
@@ -94,6 +101,18 @@ data class FamilyMember(
             else -> 1.2
         }
     }
+}
+
+/**
+ * 不评热量的特殊生理时期检测(孕期/哺乳期)。[AI生成] A2 健康红线。
+ * <p>
+ * 孕期/哺乳期热量需求有附加量，普通 Mifflin-St Jeor / 国标 EER 都会系统性低估、误判"超标"→误导"吃少点"。
+ * 信号复用成员「生命阶段」care 分类名(已拍板·`food_category` dimension=crowd·名称"孕期"/"哺乳期")——
+ * **不新建字段**。按关键词匹配("备孕"不含"孕期"→天然排除·与 [HealthCondition.fromCareName] 同范式)。
+ */
+object CalorieExemptStage {
+    /** care 分类名集合里是否含孕期/哺乳期(含即不评热量)。[AI生成] */
+    fun contains(careNames: Collection<String>): Boolean = careNames.any { it.contains("孕期") || it.contains("哺乳") }
 }
 
 /** 当天热量相对目标的达标状态。[AI生成] */
@@ -117,9 +136,12 @@ object CalorieTarget {
     private const val WEIGHT_MIN = 20.0
     private const val WEIGHT_MAX = 300.0
 
-    /** 每日目标热量(kcal)；数据不全 / 未成年 / 越界 返回 null(不评热量达标)。 */
+    /** 每日目标热量(kcal)；数据不全 / 未成年 / 越界 / 孕期哺乳期 返回 null(不评热量达标)。 */
     fun dailyTarget(m: BodyMetrics): Int? {
         if (!m.complete) return null
+        // [AI生成] A2 健康红线：孕期/哺乳期热量需求有附加量，普通公式会误判"超标"→误导"吃少点"。
+        //   同未成年/缺数据退化为 null(不评热量·不制造焦虑)，交由营养师/医生把关。
+        if (m.skipCalorieEval) return null
         val w = m.weightKg!!
         val h = m.heightCm!!
         val a = m.age!!
@@ -171,8 +193,10 @@ object DriEnergyReference {
         intArrayOf(1500, 1750, -1),
     )
 
-    /** 国标参照能量(kcal)；缺年龄/未成年/离谱/该档国标未制定→null(不评·不外推)。[AI生成] */
+    /** 国标参照能量(kcal)；缺年龄/未成年/离谱/该档国标未制定/孕期哺乳期→null(不评·不外推)。[AI生成] */
     fun referenceKcal(m: BodyMetrics): Int? {
+        // [AI生成] A2:孕期/哺乳期附加量不在此表(见类注)→不评·同 CalorieTarget 口径。
+        if (m.skipCalorieEval) return null
         val a = m.age ?: return null
         if (a < ADULT_AGE_MIN || a > AGE_MAX) return null
         val band = when { a <= 49 -> 0; a <= 64 -> 1; a <= 79 -> 2; else -> 3 }

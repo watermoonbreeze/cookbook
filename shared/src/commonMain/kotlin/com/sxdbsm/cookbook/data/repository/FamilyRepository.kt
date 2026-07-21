@@ -4,7 +4,9 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.BodyMetrics
+import com.sxdbsm.cookbook.domain.model.CalorieExemptStage
 import com.sxdbsm.cookbook.domain.model.FamilyMember
+import com.sxdbsm.cookbook.domain.model.Gender
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.flow.Flow
@@ -65,13 +67,14 @@ class FamilyRepository(
     /** 监听全部家庭成员(含各自病种)。[AI生成] */
     fun observeMembers(): Flow<List<FamilyMember>> =
         q.selectAllFamilyMembers().asFlow().mapToList(ioDispatcher)
-            .map { rows -> rows.map { toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus) } }
+            .map { rows -> val exempt = calorieExemptCareIds(); rows.map { toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus, exempt) } }
             .flowOn(ioDispatcher)
 
     /** 读取全部家庭成员(含各自病种)。[AI生成] */
     suspend fun listMembers(): List<FamilyMember> = withContext(ioDispatcher) {
+        val exempt = calorieExemptCareIds()
         q.selectAllFamilyMembers().executeAsList().map {
-            toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus)
+            toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus, exempt)
         }
     }
 
@@ -310,12 +313,24 @@ class FamilyRepository(
 
     private fun toModel(
         id: Long, name: String, gender: String, height: Double?, weight: Double?, age: Long?,
-        activity: String, coeff: Double, isSelf: Long, isFocus: Long,
-    ): FamilyMember = FamilyMember(
-        id = id, name = name, gender = gender, heightCm = height, weightKg = weight, age = age?.toInt(),
-        activity = activity, portionCoefficient = coeff, isSelf = isSelf == 1L, isFocus = isFocus == 1L,
-        careCategoryIds = q.selectMemberCareIds(id).executeAsList(),
-        avoidCategoryIds = q.selectMemberAvoidCategoryIds(id).executeAsList(), // [AI生成] v29:个人忌口分类回显
-        avoidIngredientIds = q.selectMemberAvoidIngredientIds(id).executeAsList(), // [AI生成] 阶段4:个人忌口具体食材回显
-    )
+        activity: String, coeff: Double, isSelf: Long, isFocus: Long, exemptCareIds: Set<Long>,
+    ): FamilyMember {
+        val careIds = q.selectMemberCareIds(id).executeAsList()
+        return FamilyMember(
+            id = id, name = name, gender = gender, heightCm = height, weightKg = weight, age = age?.toInt(),
+            activity = activity, portionCoefficient = coeff, isSelf = isSelf == 1L, isFocus = isFocus == 1L,
+            careCategoryIds = careIds,
+            avoidCategoryIds = q.selectMemberAvoidCategoryIds(id).executeAsList(), // [AI生成] v29:个人忌口分类回显
+            avoidIngredientIds = q.selectMemberAvoidIngredientIds(id).executeAsList(), // [AI生成] 阶段4:个人忌口具体食材回显
+            // [AI生成] A2:该成员是否标记孕期/哺乳期(生命阶段 care)→toBodyMetrics 透传→dailyTarget 不评热量。
+            //   [AI修改] Google审🟡:数据层加性别 gate(仅女性)——健康红线最终防线在此,不只靠 UI 切男性清理(防"男性+孕期"历史脏数据误判)。
+            isCalorieExempt = gender == Gender.FEMALE.name && careIds.any { it in exemptCareIds },
+        )
+    }
+
+    /** 「生命阶段」中"不评热量"的 care 分类 id(孕期/哺乳期)。[AI生成] A2:复用已有 care 信号·非新字段·名称匹配同 CalorieExemptStage。 */
+    private fun calorieExemptCareIds(): Set<Long> =
+        q.selectCareCategories().executeAsList()
+            .filter { CalorieExemptStage.contains(listOf(it.name)) }
+            .map { it.id }.toSet()
 }
