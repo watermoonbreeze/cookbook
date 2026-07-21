@@ -92,10 +92,19 @@ class AiPlanViewModel(
                 )
                 // [AI生成] 标注库存采购/缺料(主料)：不在库→采购、在库份数不够→缺料。
                 val annotatedPlan = dataSource.annotatePlanWithPantry(result.plan)
-                Triple(annotatedPlan, ctx.season to ctx.healthAware, result.byAi)
-            }.onSuccess { (annotatedPlan, seasonHealth, byAi) ->
-                val (season, healthAware) = seasonHealth
-                state = state.copy(loading = false, plan = annotatedPlan, season = season, healthAware = healthAware, byAi = byAi, planStartDate = startDate)
+                // [AI生成] 营养线(P2)：从计划每日菜的主料名(反查 ctx.dishes 候选的 mainNames)聚合整周结构覆盖/缺口/均衡度 + 补充建议。
+                val mainNamesById = ctx.dishes.associate { it.id to it.mainNames }
+                val perDayMainNames = annotatedPlan.days.map { day ->
+                    day.meals.flatMap { it.dishes }.flatMap { mainNamesById[it.id].orEmpty() }
+                }
+                val nutritionLine = com.sxdbsm.cookbook.domain.WeeklyNutritionLineAggregator.aggregate(perDayMainNames)
+                val nutritionAdvices = com.sxdbsm.cookbook.domain.NutritionLineAdvisor.advise(nutritionLine)
+                PlanGenResult(annotatedPlan, ctx.season, ctx.healthAware, result.byAi, nutritionLine, nutritionAdvices)
+            }.onSuccess { r ->
+                state = state.copy(
+                    loading = false, plan = r.plan, season = r.season, healthAware = r.healthAware,
+                    byAi = r.byAi, planStartDate = startDate, nutritionLine = r.nutritionLine, nutritionAdvices = r.nutritionAdvices,
+                )
             }.onFailure {
                 state = state.copy(loading = false, error = "生成失败，请稍后再试")
             }
@@ -126,6 +135,16 @@ class AiPlanViewModel(
         }
     }
 
+    /** generate 一次产出的聚合结果（比 Triple 清晰·含营养线）。[AI生成] */
+    private data class PlanGenResult(
+        val plan: PeriodPlan,
+        val season: String,
+        val healthAware: Boolean,
+        val byAi: Boolean,
+        val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine?,
+        val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice>,
+    )
+
     companion object {
         private const val DISHES_MIN = 2 // [AI修改] 每餐至少 2 道。
         private const val DISHES_MAX = 5 // [AI修改] 每餐最多 5 道，每餐在 2~5 内随机。
@@ -146,5 +165,7 @@ data class AiPlanUiState(
     val byAi: Boolean = false, // [AI生成] 本次计划是否由 AI 生成(否则规则)。
     val planStartDate: LocalDate? = null, // [AI生成] 计划第1天对应的日期(食历最晚日期次日)，用于展示每天的明确日期
     val recommendStyle: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // [AI生成] 推荐风格
+    val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine? = null, // [AI生成] P2:整周营养线(结构覆盖/缺口/均衡度)·概览卡用
+    val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice> = emptyList(), // [AI生成] P2:跨天补充建议
     val error: String? = null,
 )

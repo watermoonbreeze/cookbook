@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.ai
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.ai.model.DayPlan
@@ -95,7 +98,13 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
             Spacer(Modifier.height(8.dp))
         }
 
-        // —— R3：生成上下文条(季节/健康)独立成条,移出控件区(为营养线概览卡让出生成结果首屏黄金位·P2 概览卡插此条之前)。
+        // —— P2 营养线概览卡(生成结果首张·总卡·"总—分"层级在逐日卡之上)。domain 已算好,只呈现。
+        val line = state.nutritionLine
+        if (state.plan != null && line != null && line.dayCount > 0) {
+            item { NutritionLineCard(line, state.nutritionAdvices) }
+        }
+
+        // —— R3：生成上下文条(季节/健康)独立成条,移出控件区(概览卡之后·逐日卡之前)。
         if (state.season.isNotBlank() && state.plan != null) {
             item {
                 val partialRule = state.byAi && state.plan.days.any { d -> d.meals.any { it.fromRule } }
@@ -191,6 +200,52 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
 @Composable
 private fun DayPreset(label: String, value: Int, current: Int, onSelect: (Int) -> Unit) {
     FilterChip(selected = current == value, onClick = { onSelect(value) }, label = { Text(label) })
+}
+
+/**
+ * 「一周营养搭配」概览卡（营养线 P2·§9.35 总卡）。[AI生成]
+ *
+ * 把 domain 已算的整周营养线"盛出来"：整体均衡度色点(去红·复用 nutritionLevelColor)+已吃到的大类 + 跨天补充建议。
+ * 守免责(膳食结构参考·非医嘱)、不制造焦虑(缺口用鼓励口吻·色点不上红)。
+ */
+@Composable
+private fun NutritionLineCard(
+    line: com.sxdbsm.cookbook.domain.NutritionLine,
+    advices: List<com.sxdbsm.cookbook.domain.LineAdvice>,
+) {
+    // 均衡度 0~100 → 级别 0~4 → 去红中性色(与色系墙/膳食报告同 nutritionLevelColor·不上红)。
+    val level = when {
+        line.balanceScore >= 80 -> 4
+        line.balanceScore >= 60 -> 3
+        line.balanceScore >= 40 -> 2
+        else -> 1
+    }
+    val dotColor = com.sxdbsm.cookbook.android.ui.component.nutritionLevelColor(level)
+    val coveredText = com.sxdbsm.cookbook.domain.FoodGroup.Group.entries
+        .filter { it in line.coveredGroups }.joinToString("·") { it.label }
+    com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "一周营养搭配") {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(9.dp).clip(androidx.compose.foundation.shape.CircleShape).background(dotColor))
+                Spacer(Modifier.width(8.dp))
+                Text("整体搭配 ${line.balanceScore} 分", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            }
+            if (coveredText.isNotBlank()) {
+                Spacer(Modifier.height(8.dp))
+                Text("这一周吃到了 $coveredText", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+            }
+            advices.forEach { adv ->
+                Spacer(Modifier.height(6.dp))
+                Text("· ${adv.text}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "按食材参考数据估算膳食结构，仅供了解，非医嘱。",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        }
+    }
 }
 
 @Composable
