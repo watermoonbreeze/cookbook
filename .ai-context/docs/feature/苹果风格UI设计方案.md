@@ -429,3 +429,18 @@ fun PrimaryTabRow(
 - **打磨(减必填/减拦截·不动字段)**：编辑菜品"无食材保存"二次弹框→降为底部浅提示(告知非阻断);编辑食材"营养大类必选"→智能预填兜底可留空(预填失败仍可存·落"自定义-全部")。
 - **分阶段(风险)**：**P0 免真机快赢**(✅已做:MoreOptionsHeader 抽共享件+hint·编辑菜品采用;选菜新建入口对齐)；**P1 需真机**(选择器底部栏对齐·选菜完成按钮下移底部)；**P2 高风险需全回归**(编辑菜品保存下移底部·必填降级——触建菜核心保存链路)。逐阶推进,P0 先交付。
 - **落地**：`ui/component/MoreOptionsHeader.kt`(抽出+hint)、`NewDishScreen`(折叠采用)；余 `DishPickerScreen`/`IngredientPickerScreen`/`IngredientEditorDialogs` 按 P1/P2 推进。
+
+### 9.31 一次性知情引导横幅（健康敏感·守诚实不操纵）
+> [AI生成 2026-07-21] 慢病知情引导(F4b)确立。给**相关子集用户**(如已登记痛风/糖尿病)一次性告知"有个能力可开"(切偏营养=高GI/嘌呤菜靠后)，把选择权交用户、不静默改数据。
+- **载体**：顶部**可关闭横幅**(`OutlinedCard`·`surfaceVariant.copy(alpha0.4)`·`shapes.large`·右上×)，**非弹框**(弹框打断高频动作=过度告知)。放视图内容区顶部固定(滑走不回更克制)。零新组件。
+- **触发三条件**(都满足才显)：相关(命中特定 gate·如病种) + 能力未生效(非目标态) + 未关过(一次性偏好 flag `observeFlag/setFlag`)。切换动作后当帧消失 + 锁 flag 永不再显；× 只锁不改状态。**一次性**单 flag、不做"N天后再提醒"(纠缠=暗黑)。
+- **文案(健康敏感)**：陈述式给选择权("想…就行")、**主语落在物(菜)不落人(病)**、**不点病名**(gate 后台判即可·最不施压)、不预勾选不默认开、无假紧迫/恐吓/从众；守免责("惯例参考·非医嘱")。切换后 Snackbar 反馈(§9.12)。
+- **落地样板**：`AiRecommendScreen.NutritionHintBanner` + VM `showNutritionHint` 粘性字段(mapResult 重建须保留)+`dismiss/apply`(共用 `lockHintForever`)。Preference 一次性 key。**运营伦理自检**(诚实/克制/不操纵/掌控)过 `apple_ux_designer`。
+
+### 9.32 图片"封面 + 缩略图条(strip)"多图（拍照/相册·首图大封面+其余小图）
+> [AI生成 2026-07-21] 拍照回归修复确立。菜品/食材编辑统一：首图=通栏大封面、其余(2/3张)=下方小缩略图条，兼顾"成品封面感"与"多图能力"。
+- **布局**：首图 **16:9 通栏封面**(`fillMaxWidth().aspectRatio(16/9)`·圆角12·**空态卡同比→出图不跳变**)；下方 8dp 间距 **strip**(`Row spacedBy8`·第2张起 **64dp 正方缩略图**·圆角10)+未满 maxCount 显 **add tile**(64dp 虚框+拍照图标)。
+- **渲染标准**：统一走 `StoredImage`·**`ContentScale.Crop`(=center_crop·填满不变形居中裁·食物图最优)**；封面 `imagePath 传原图/thumbnailPath 传缩略图`(点击预览走原图清晰)、`fillWidth+aspectRatio`(+`heightIn` 宽容器兜底)；strip 小图 `allowPreview=false`(免误触·预览只走大封面)。预览大图用 `ContentScale.Fit`(看全貌)。
+- **交互**：逐张删(右上 24dp 圆角标+44dp 触达区)·**删首图→第2张顶上成封面**(列表左移天然实现)·删空回引导卡；**不做"一键清空全部"**(易误清=回归诱因)。添加走拍照/相册 chooser。
+- **能力显隐由参数**：`coverStyle`(封面型:菜品主图/食材主图) vs 非cover横排(流程型:步骤图·多张平等无主次)；`maxCount` 控张数。**崩溃红线**:coverStyle 分支空/有图 **if/else 平衡**、strip 用**条件 emit**(非 `return@Column/Row` 提前返回)——此区曾致 SlotTable 闪退。
+- **落地样板**：`ui/component/ImagePickerButton.kt`(coverStyle 分支+`CoverDeleteBadge`/`CoverAddTile`/`removeImageAt`)+`StoredImage`(加 `aspectRatio` 参数)。
