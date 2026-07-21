@@ -46,6 +46,64 @@ class RecommendationOrchestratorTest {
     }
 
     @Test
+    fun `CF1_模型给两荤无素时validate后补一道素菜`() = runBlocking {
+        // [AI生成] C#F1强版:模型只给两荤(红烧肉+糖醋排骨),候选有素菜油菜→补菜应补进油菜(全荤→补素·组合完整)。
+        val meatOnly = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
+                RuleDish(2, "糖醋排骨", listOf(main(102, "排骨"))),
+                RuleDish(3, "清炒油菜", listOf(main(103, "油菜"))),
+            ),
+            pantryIngredientIds = setOf(101, 102, 103),
+            constraints = HealthConstraints(),
+            recentDishIds = emptySet(),
+        )
+        val json = """{"suggestions":[{"dishIds":[1,2],"reason":"两道肉"}]}"""
+        val result = RecommendationOrchestrator(MockAiRuntime(json)).recommend(meatOnly, mealCount = 1)
+        assertEquals(RecommendationSource.MODEL, result.source)
+        val meal = result.suggestions.first().dishIds
+        assertTrue(3L in meal, "全荤餐应补进素菜油菜: $meal")
+        assertEquals(3, meal.size, "补一道后共3道")
+    }
+
+    @Test
+    fun `CF1_模型已含素菜时不补菜`() = runBlocking {
+        // [AI生成] C#F1强版:已含素菜(1荤1素)的均衡餐不应被补菜(只治全荤无素·不误改均衡餐)。
+        val balanced = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
+                RuleDish(2, "清炒油菜", listOf(main(102, "油菜"))),
+                RuleDish(3, "米饭", listOf(main(103, "大米"))),
+            ),
+            pantryIngredientIds = setOf(101, 102, 103),
+            constraints = HealthConstraints(),
+            recentDishIds = emptySet(),
+        )
+        val json = """{"suggestions":[{"dishIds":[1,2],"reason":"荤素搭配"}]}"""
+        val meal = RecommendationOrchestrator(MockAiRuntime(json)).recommend(balanced, mealCount = 1).suggestions.first().dishIds
+        assertEquals(listOf(1L, 2L), meal, "已含素菜(1荤1素)不应补菜")
+    }
+
+    @Test
+    fun `CF1_不把忌口菜补进餐`() = runBlocking {
+        // [AI生成] C#F1强版:补菜只从非忌口 selectable 取——唯一素菜是忌口菜时,不得补进(宁可不补)。
+        val avoidVeg = RecommendationInput(
+            dishes = listOf(
+                RuleDish(1, "红烧肉", listOf(main(101, "五花肉"))),
+                RuleDish(2, "糖醋排骨", listOf(main(102, "排骨"))),
+                RuleDish(3, "凉拌木耳", listOf(main(103, "木耳"))), // 木耳忌口→素菜但不可补
+            ),
+            pantryIngredientIds = setOf(101, 102, 103),
+            constraints = HealthConstraints(avoidIngredientIds = setOf(103)),
+            recentDishIds = emptySet(),
+        )
+        val json = """{"suggestions":[{"dishIds":[1,2],"reason":"两道肉"}]}"""
+        val meal = RecommendationOrchestrator(MockAiRuntime(json)).recommend(avoidVeg, mealCount = 1).suggestions.first().dishIds
+        assertTrue(3L !in meal, "忌口素菜不得被补进餐: $meal")
+        assertEquals(listOf(1L, 2L), meal, "无非忌口素菜可补→原样(不补忌口菜)")
+    }
+
+    @Test
     fun `模型空返回则规则兜底`() = runBlocking {
         val orch = RecommendationOrchestrator(MockAiRuntime()) // 空 → 兜底
         val result = orch.recommend(input, mealCount = 3)

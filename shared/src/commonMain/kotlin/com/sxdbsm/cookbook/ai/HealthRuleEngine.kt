@@ -112,7 +112,8 @@ class HealthRuleEngine {
         // [AI修改] 因子化打分：权重来自 RecommendationWeights(默认=原常量、可由推荐风格切换)。
         var score = weights.base + weights.seasoning * seasoningRichness
         score += weights.onHandMain * minOf(onHandMainCount, 3) // [AI修改] 用到在手主料→靠前;前3味已足够表达"物尽其用",封顶避免"用5味在手主料"单因子线性碾压营养/偏好(算法评审P1)
-        score += weights.recommend * recommendHits.size
+        // [AI修改] B#6(用户拍板"按建议的来"):调养主料加分封顶 min(,3)，与 onHandMain/missing 因子一致，避免"≥4味调养主料"罕见菜单因子线性碾压营养/偏好/搭配。
+        score += weights.recommend * minOf(recommendHits.size, 3)
         score -= weights.limit * limitHits.size
         if (isRecent) score -= weights.recent
         // [AI修改] 份数不足/缺辅料只做「轻微靠后」的排序微调，不再是断崖式重罚——

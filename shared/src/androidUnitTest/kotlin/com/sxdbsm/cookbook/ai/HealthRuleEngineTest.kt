@@ -249,6 +249,22 @@ class HealthRuleEngineTest {
     }
 
     @Test
+    fun `B6_调养主料加分封顶3味_多味不再线性加`() {
+        // [AI生成] B#6:调养主料加分封顶 min(,3)(与 onHandMain/missing 一致)。
+        // A=3味调养主料、B=5味调养主料,其余相同:封顶后两菜调养加分相等(B 第4/5味不再加分)。
+        val aMains = (101L..103L).map { main(it, "调A$it") }
+        val bMains = (201L..205L).map { main(it, "调B$it") }
+        val recIds = (aMains + bMains).map { it.ingredientId }.toSet()
+        val scores = engine.evaluate(
+            listOf(RuleDish(1, "调养菜A", aMains), RuleDish(2, "调养菜B", bMains)),
+            pantryIngredientIds = recIds,
+            HealthConstraints(recommendIngredientIds = recIds),
+        ).associate { it.id to it.score }
+        // onHandMain 亦封顶3,两菜在手主料都≥3味→该因子相等;recommend 封顶3→亦相等→总分相等。
+        assertEquals(scores[1], scores[2], "调养主料封顶3味:3味与5味加分相等(未封顶则B更高)")
+    }
+
+    @Test
     fun `物尽其用_有辅料也推荐并列缺的主料`() {
         // 木耳炒肉：猪肉(主料)+木耳(辅料)+盐(调料)。方案A''：用到任一非调料即推荐。
         val dish = RuleDish(1, "木耳炒肉", listOf(main(101, "猪肉"), sec(201, "木耳"), sea(901, "盐")))

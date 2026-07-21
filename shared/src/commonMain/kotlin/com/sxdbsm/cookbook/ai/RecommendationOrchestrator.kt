@@ -68,11 +68,43 @@ class RecommendationOrchestrator(
             ?.let { RecommendationParser.parse(it) }
             ?.let { validate(it, selectable, mealCount) } // [AI生成] R1:合法 id 用非忌口可选集
             ?.takeIf { it.isNotEmpty() }
+            ?.let { supplementComposition(it, selectable) } // [AI生成] C#F1强版:模型输出后补"全荤无素"餐的组合缺口
 
         return if (modelSuggestions != null) {
             RecommendationResult(modelSuggestions, candidates, RecommendationSource.MODEL)
         } else {
             RecommendationResult(fallback(candidates, mealCount), candidates, RecommendationSource.RULE_FALLBACK)
+        }
+    }
+
+    /**
+     * C#F1强版(用户拍板#5):模型输出后补组合缺口。[AI生成]
+     *
+     * 只治**全荤无素**(该餐所有菜都是荤菜)且还有空位(<[MAX_DISHES_PER_MEAL])的餐——从非忌口可选集 [selectable]
+     * 补一道最互补的(同菜系族·不与已选重复)，让模型路径的组合完整性向 fallback 看齐(模型偶尔给"两荤无素")。
+     * 复用 [combineScore]:对全荤已选天然优选素菜/主食(BALANCE/STAPLE 补分)→补进的多为素/主食。
+     * **只补不删、不越上限、只从非忌口补**；已含素菜/无同族可补/本餐候选缺失→原样返回该餐(不误改均衡餐)。
+     */
+    private fun supplementComposition(
+        meals: List<MealSuggestion>,
+        selectable: List<DishCandidate>,
+    ): List<MealSuggestion> {
+        val byId = selectable.associateBy { it.id }
+        return meals.map { meal ->
+            val chosen = meal.dishIds.mapNotNull { byId[it] }
+            // 只治"**两荤**无素"(≥2 道且全荤)且还有空位的餐——单道菜不强补(尊重模型/用户"就想吃一道")、
+            // 位满 / 本餐候选缺失(id 不在 selectable) / 已含非荤菜(有素或主食) → 不补。
+            if (chosen.size < 2 || chosen.size >= MAX_DISHES_PER_MEAL || chosen.any { !it.isMeat }) return@map meal
+            val western = isWesternCuisine(chosen.first().cuisine)
+            // maxByOrNull 平局取先者(selectable 已按 score 降序)→确定性可测,与 fallback 同口径。
+            val add = selectable
+                .filter { it.id !in meal.dishIds && isWesternCuisine(it.cuisine) == western }
+                .maxByOrNull { combineScore(it, chosen) } ?: return@map meal
+            // [AI生成] 补菜后同步 reason(否则"理由说两道肉、实际列3道"不一致·Google审🟡)：追加一句自然鼓励语。
+            meal.copy(
+                dishIds = meal.dishIds + add.id,
+                reason = (meal.reason.takeIf { it.isNotBlank() }?.let { "$it，" } ?: "") + "再配一道${add.name}，荤素更均衡",
+            )
         }
     }
 
