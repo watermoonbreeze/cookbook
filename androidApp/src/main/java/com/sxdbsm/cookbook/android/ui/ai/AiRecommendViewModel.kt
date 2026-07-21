@@ -5,7 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlin.math.roundToInt
+import com.sxdbsm.cookbook.android.ui.component.DishNutritionUi
+import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
 import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.ai.RecommendationOrchestrator
@@ -282,7 +283,7 @@ class AiRecommendViewModel(
         val byId = result.candidates.associateBy { it.id }
         // [AI生成] §9.36:批量查每菜营养(≤10候选·一次·无 N+1)·runCatching 兜底(查询失败→空→静默不显·绝不中断推荐主流程)。
         val nutritionUiById: Map<Long, DishNutritionUi> = runCatching {
-            nutritionRepo.dishNutrition(result.candidates.map { it.id }).mapValues { (_, dn) -> dn.toNutritionUi() }
+            nutritionRepo.dishNutrition(result.candidates.map { it.id }).mapValues { (_, dn) -> dn.toDishNutritionUi() }
         }.getOrDefault(emptyMap())
         // [AI生成] 药膳一期·食补过滤(仅扁平列表)：**只把含药食同源食材的菜稳定排前**(正向排序偏好，非硬过滤/非罚分/不接慢病评级)。
         //   命中不足不给死胡同：仍展示全部、按含量降序，并如实告知(降级排序)。分组(模型建议)路径不重排，保持搭配完整。
@@ -327,21 +328,6 @@ class AiRecommendViewModel(
         nutrition = nutrition, // [AI生成] §9.36:每菜营养(整份热量+宏量+钠提示·null=未算/无数据)
     )
 
-    /** [AI生成] §9.36:DishNutrition→展示 DTO(整份·四舍五入·无数据则各值 null·钠偏高提示·estimated 标"估算")。 */
-    private fun com.sxdbsm.cookbook.domain.model.DishNutrition.toNutritionUi(): DishNutritionUi {
-        // [AI修改] Google审🟡:有料但用量缺(resolveGrams 跳过)→热量恒0·此时算"营养待完善"而非显"整份约0千卡"(usable=有数据且热量>0)。
-        val usable = hasData && totals.energyKcal > 0.0
-        return DishNutritionUi(
-            kcal = if (usable) totals.energyKcal.roundToInt() else null,
-            proteinG = if (usable) totals.proteinG.roundToInt() else null,
-            fatG = if (usable) totals.fatG.roundToInt() else null,
-            carbG = if (usable) totals.carbG.roundToInt() else null,
-            highSodium = usable && totals.sodiumMg >= SODIUM_HIGH_PER_DISH_MG,
-            estimated = usable && !complete,
-            hasData = usable,
-        )
-    }
-
     /** "最近吃过"标注文案。[AI生成] B2 */
     private fun recentLabel(daysAgo: Int?): String = when {
         daysAgo == null -> ""
@@ -373,8 +359,6 @@ class AiRecommendViewModel(
         private const val MEAL_COUNT = 3
         private val MAX_ITEMS = com.sxdbsm.cookbook.ai.RecommendationOrchestrator.DISPLAY_BATCH // [AI修改] 每批 10 个，与 orchestrator 分批一致。
         private const val RANDOM_ROTATION_BOUND = 1000 // 随机模式的随机轮转上界。
-        // [AI生成] §9.36:单菜钠"偏咸"提示阈值≈高血压日限 2400mg 的 1/3(惯例·非精确·仅温和提醒不点病名)。
-        private const val SODIUM_HIGH_PER_DISH_MG = 800.0
     }
 }
 
@@ -408,15 +392,6 @@ data class DishItemUi(
     val recentText: String = "", // [AI生成] B2：最近吃过标注(非空则行内浅色显示"N天前吃过")。
     val disliked: Boolean = false, // [AI生成] 负反馈踩：本次标记"不再推荐"→就地灰态(下次推荐由 gather 过滤不再出现)。
     val nutrition: DishNutritionUi? = null, // [AI生成] §9.36:每菜营养(整份热量+宏量+钠提示)·null=未算好/查询失败(静默不显)。
-)
-
-/** [AI生成] §9.36:推荐菜营养展示 DTO(整份·四舍五入的展示态·UI 不碰 domain DishNutrition)。 */
-data class DishNutritionUi(
-    val kcal: Int?, // 整份热量(千卡)·null=无数据(hasData=false)
-    val proteinG: Int?, val fatG: Int?, val carbG: Int?, // 宏量(g)·同上
-    val highSodium: Boolean = false, // 钠偏高→UI 显"偏咸，注意用量"(浅灰·不红·不点病名)
-    val estimated: Boolean = false, // 部分料缺→UI 行尾"（估算）"
-    val hasData: Boolean = false, // 整菜有无营养数据·false→UI 显"营养待完善"
 )
 
 /** 模型给出的一套搭配方案(一餐组合)。[AI生成] H1：消费 orchestrator 的 MealSuggestion。 */

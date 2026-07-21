@@ -140,7 +140,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                         val d = com.sxdbsm.cookbook.util.DateTime.plusDays(s, day.dayIndex)
                         "${d.monthNumber}月${d.dayOfMonth}日"
                     }
-                    DayCard(day, dateLabel)
+                    DayCard(day, dateLabel, state.nutritionByDishId)
                 }
                 item {
                     Spacer(Modifier.height(8.dp))
@@ -249,7 +249,11 @@ private fun NutritionLineCard(
 }
 
 @Composable
-private fun DayCard(day: DayPlan, dateLabel: String? = null) {
+private fun DayCard(
+    day: DayPlan,
+    dateLabel: String? = null,
+    nutritionByDishId: Map<Long, com.sxdbsm.cookbook.android.ui.component.DishNutritionUi> = emptyMap(), // [AI生成] §9.36:每菜营养(整份热量+宏量·与AI推荐同款)
+) {
     // [AI生成] 库存挂钩关→周期规划不显缺料/采购标注、缺料菜不变灰(与食历/详情同口径去噪)。
     val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
     // [AI修改] P1 家族化(§9.35 R1)：灰卡 surfaceVariant→白卡 surface(与另两档结果卡同族)·卡内 14→16·卡间 Spacer(10)·卡头 primary→onSurface(强调色只给可交互)。
@@ -293,6 +297,8 @@ private fun DayCard(day: DayPlan, dateLabel: String? = null) {
                         if (d.reason.isNotBlank()) {
                             Text("　${d.reason}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+                        // [AI生成] §9.36:每菜营养行(整份热量+宏量·热量数字受开关·钠偏高浅灰提示·缺数据"营养待完善")——与AI推荐逐菜同款。
+                        com.sxdbsm.cookbook.android.ui.component.DishNutritionLine(nutritionByDishId[d.id])
                     }
                     if (pantryHookOn && d.purchaseNames.isNotEmpty()) {
                         // [AI修改] P1(§9.35 R6)：去装饰 emoji(纯文字标注·error 色保留=需注意信息)。

@@ -11,6 +11,8 @@ import com.sxdbsm.cookbook.ai.PeriodPlanner
 import com.sxdbsm.cookbook.ai.PlanOrchestrator
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.ai.model.PeriodPlan
+import com.sxdbsm.cookbook.android.ui.component.DishNutritionUi
+import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
 import com.sxdbsm.cookbook.data.repository.DayMealDraft
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.MealType
@@ -33,6 +35,7 @@ class AiPlanViewModel(
     aiRuntime: AiRuntime,
     private val aiConfig: AiRuntimeConfig,
     private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] 读写推荐风格(与AI推荐共用)
+    private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] §9.36:逐日卡每菜营养(整份热量+宏量·与AI推荐同款 DishNutritionLine)
 ) : ViewModel() {
 
     var state by mutableStateOf(AiPlanUiState())
@@ -99,11 +102,17 @@ class AiPlanViewModel(
                 }
                 val nutritionLine = com.sxdbsm.cookbook.domain.WeeklyNutritionLineAggregator.aggregate(perDayMainNames)
                 val nutritionAdvices = com.sxdbsm.cookbook.domain.NutritionLineAdvisor.advise(nutritionLine)
-                PlanGenResult(annotatedPlan, ctx.season, ctx.healthAware, result.byAi, nutritionLine, nutritionAdvices)
+                // [AI生成] §9.36:批量查计划内每菜营养(去重全部 dishId·一次·无 N+1)·runCatching 兜底(失败→空→逐日卡静默不显·绝不中断计划)。
+                val dishIds = annotatedPlan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
+                val nutritionByDishId = runCatching {
+                    nutritionRepo.dishNutrition(dishIds).mapValues { (_, dn) -> dn.toDishNutritionUi() }
+                }.getOrDefault(emptyMap())
+                PlanGenResult(annotatedPlan, ctx.season, ctx.healthAware, result.byAi, nutritionLine, nutritionAdvices, nutritionByDishId)
             }.onSuccess { r ->
                 state = state.copy(
                     loading = false, plan = r.plan, season = r.season, healthAware = r.healthAware,
                     byAi = r.byAi, planStartDate = startDate, nutritionLine = r.nutritionLine, nutritionAdvices = r.nutritionAdvices,
+                    nutritionByDishId = r.nutritionByDishId,
                 )
             }.onFailure {
                 state = state.copy(loading = false, error = "生成失败，请稍后再试")
@@ -143,6 +152,7 @@ class AiPlanViewModel(
         val byAi: Boolean,
         val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine?,
         val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice>,
+        val nutritionByDishId: Map<Long, DishNutritionUi>, // [AI生成] §9.36:逐日卡每菜营养
     )
 
     companion object {
@@ -167,5 +177,6 @@ data class AiPlanUiState(
     val recommendStyle: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // [AI生成] 推荐风格
     val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine? = null, // [AI生成] P2:整周营养线(结构覆盖/缺口/均衡度)·概览卡用
     val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice> = emptyList(), // [AI生成] P2:跨天补充建议
+    val nutritionByDishId: Map<Long, DishNutritionUi> = emptyMap(), // [AI生成] §9.36:逐日卡每菜营养(整份热量+宏量·null 视为无数据静默不显)
     val error: String? = null,
 )
