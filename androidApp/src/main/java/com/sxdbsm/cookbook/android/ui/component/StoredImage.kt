@@ -132,7 +132,9 @@ fun StoredImage(
 internal fun rememberImageBitmap(path: String?, preview: Boolean): ImageBitmap? {
     val context = LocalContext.current
     val cacheKey = remember(path, preview) { if (preview) null else path?.let { imageCacheKey(it) } }
-    val image by produceState<ImageBitmap?>(initialValue = cacheKey?.let { imageCache.get(it) }, key1 = cacheKey) {
+    // [AI修改] 拍板1 bug 修：key 用 path+preview,不用 cacheKey——preview=true 时 cacheKey 恒 null,
+    //   原 key1=cacheKey 致全屏预览 path 变了(如删当前图后当前页指向新图)produceState 不重跑、显旧图(左右滑才刷新)。
+    val image by produceState<ImageBitmap?>(initialValue = cacheKey?.let { imageCache.get(it) }, key1 = path, key2 = preview) {
         value = if (path.isNullOrBlank()) {
             null
         } else {
