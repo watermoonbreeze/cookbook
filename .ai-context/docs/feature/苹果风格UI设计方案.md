@@ -444,3 +444,9 @@ fun PrimaryTabRow(
 - **交互**：逐张删(右上 24dp 圆角标+44dp 触达区)·**删首图→第2张顶上成封面**(列表左移天然实现)·删空回引导卡；**不做"一键清空全部"**(易误清=回归诱因)。添加走拍照/相册 chooser。
 - **能力显隐由参数**：`coverStyle`(封面型:菜品主图/食材主图) vs 非cover横排(流程型:步骤图·多张平等无主次)；`maxCount` 控张数。**崩溃红线**:coverStyle 分支空/有图 **if/else 平衡**、strip 用**条件 emit**(非 `return@Column/Row` 提前返回)——此区曾致 SlotTable 闪退。
 - **落地样板**：`ui/component/ImagePickerButton.kt`(coverStyle 分支+`CoverDeleteBadge`/`CoverAddTile`/`removeImageAt`)+`StoredImage`(加 `aspectRatio` 参数)。
+
+### 9.33 家族化对齐边界：语义色走 token · 文档/叙事页不卡化
+> [AI生成 2026-07-21] 家族化 P4 视觉打磨过 `apple_visual_designer` 门禁确立的两条可复用边界。
+- **语义锚点色一律走单一来源 token，不散落硬编码**：宏量三色(蛋白/脂肪/碳水)、收藏星金、状态色(success/warning/danger)、均衡度级别色等**语义色**统一进 `theme/ExtendedColors.kt`(`macroProtein/Fat/Carb`/`favoriteStar`/`success`…)或 `NutritionColor`(级别基色)——**刻意不随 6 套 `AppPalette` 主题变**(语义记忆稳定·家族化统一的是"结构语言"圆角/间距/分组卡,**不是**把语义色也染成主题色)。散落硬编码=漂移隐患(曾现 DietReport 宏量色用 Material 系、与 FamilyStats/色系墙不一致)。收藏星保持金色(跨平台通用"收藏"共识色·染 primary 反而语义模糊)。判据:凡"颜色=某含义"的都进 token。
+- **文档页/叙事页保持简单·不套 InsetGroup**(苹果式克制的正面体现)：`InsetGroup` 是"设置分组/列表行"范式;**长文档页**(隐私政策/用户协议·阅读优先·纯节标题+正文+段距)和**叙事欢迎页**(FeatureGuide=feature-highlights hero 卡+点缀色)**不该套 InsetGroup**——硬套会碎片化长文阅读、把有气场的欢迎页压成干巴设置表。**"不是所有页都要卡化",确认不改也是打磨价值**。
+- **落地样板**：`ExtendedColors.favoriteStar`;`FamilyStatsScreen`/`DietReportScreen` 宏量色收敛;`FeatureGuideScreen`/`PolicyScreen` 保持现状。
