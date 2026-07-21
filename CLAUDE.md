@@ -67,6 +67,19 @@
 
 **新增较多文案或需通读审校时**，spawn `copywriter` 角色 agent 产出分级审校报告（🔴必改/🟡建议/⚪可选），据其结论按批落地。纯一两处小改可直接按本准则写。文案沉淀与术语表见该角色文件。
 
+## 架构与代码质量准则（凡编码必守·用户 2026-07-21 确立）
+
+**核心：Android 端一律走「数据驱动界面（Data-Driven UI · 单向数据流 UDF）」架构，保证可维护 + 最佳实践。**
+
+- **数据驱动界面（UDF）**：**UI 是 State 的纯函数**——ViewModel 持**单一真相源 UiState**（`StateFlow`/`mutableStateOf`），UI（Compose）**只渲染 State + 上抛事件**，不持有可变业务状态、不写业务逻辑；State 下行、Event 上行（`vm.xxx()`）。派生态由 State 计算（不另存易漂移的副本）；副作用（DB/网络/IO）在 ViewModel/UseCase 里，UI 层不直接做。**iOS 端同理**：SwiftUI 视图由 `@Published`/`ObservableObject` 状态驱动，单向数据流。
+- **分层**：UI / Domain(UseCase·Model) / Data(Repository) 三层（Clean Architecture 简化版·项目现状）；UI 不越层直接碰 DB，业务规则沉在 Domain（如 `HealthRuleEngine`/`MealCompositionScorer` 纯函数），可单测。
+- **可维护 + 最佳实践**：单一真相源、抽共享防调参/逻辑漂移（如 `MealCompositionScorer`）、命名一致、复用优先于复制、消除 N+1、错误处理与边界完备、纯逻辑必带单测、能力显隐由参数（回调/flag）传入决定而非 mode 布尔硬编码。踩坑红线（本文件下方）是数据驱动落地的具体约束（粘性字段 `state.copy` 保留、`stateIn` 冻结、多源并发写回取最新 state 等）。
+
+**【强制归口】Android 端编码由「Google 高级技术工程师」把关、iOS 端由「Apple 高级技术工程师」把关：**
+- **Android**：一批编码完成后由 **`google_quality_engineer`（代码质量终审）** + 涉架构/模块边界/技术债时加 **`google_architecture_engineer`（架构规范）** 审查，按最佳实践给阻断/建议分级，**阻断必修复复验**（沿用「代码质量门禁」流程）。
+- **iOS**：由 **`apple_architect`（架构）** + **`apple_quality_engineer`（质量打磨）** 把关，守 Apple 平台惯用法与体验打磨。
+- 重大架构决策可 Google（规模/规范）× Apple（简洁/平台契合）双视角交叉评审。**新架构/大重构前先出设计、审查后再编码**，不跳门禁。
+
 ## 临时目录
 
 除用户明确要求外，处理问题需要创建的临时文件放在 `temp/claude/`。
