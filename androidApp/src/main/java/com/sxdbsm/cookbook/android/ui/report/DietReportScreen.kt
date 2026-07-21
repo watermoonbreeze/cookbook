@@ -58,7 +58,11 @@ import kotlin.math.roundToInt
  * [AI生成] 报告模块 MVP（用户 2026-07-18 拍板）。
  **/
 @Composable
-fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: (kotlinx.datetime.LocalDate) -> Unit) {
+fun DietReportScreen(
+    onBack: () -> Unit,
+    onGoAddMeal: (kotlinx.datetime.LocalDate) -> Unit,
+    onGoWeekPlan: (kotlinx.datetime.LocalDate) -> Unit = {}, // [AI生成] 空周期→跳一周计划(带该周日期·以周为单位)
+) {
     val vm: DietReportViewModel = koinViewModel()
     val st by vm.state.collectAsStateWithLifecycle()
 
@@ -120,10 +124,11 @@ fun DietReportScreen(onBack: () -> Unit, onGoAddMeal: (kotlinx.datetime.LocalDat
             when {
                 st.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 st.report?.hasData != true -> EmptyState(
-                    text = "这段时间还没记一餐\n记一餐就能生成饮食报告",
-                    icon = "🍽",
-                    actionLabel = "去记一餐",
-                    onAction = { onGoAddMeal(st.addMealDate) }, // [AI生成] F#6：带当前周期目标日期跳转(有餐=编辑/无=新增)
+                    // [AI修改] 用户2026-07-21:空周期统一跳"一周计划"(带该周日期·以周为单位·月则含月首日所在周)，从整周维度把这几天安排上,比单条记一餐更贴"规划"。
+                    text = "这段时间还没记一餐\n去一周计划把这几天安排上",
+                    icon = "🗓",
+                    actionLabel = "去一周计划",
+                    onAction = { onGoWeekPlan(st.weekJumpDate) },
                 )
                 else -> ReportBody(st, st.report!!)
             }

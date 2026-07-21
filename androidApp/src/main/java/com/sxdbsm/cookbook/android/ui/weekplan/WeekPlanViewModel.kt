@@ -61,6 +61,9 @@ class WeekPlanViewModel(
     fun nextWeek() { _weekStart.value = DateTime.plusDays(_weekStart.value, 7) }
     fun thisWeek() { _weekStart.value = mondayOf(today) }
 
+    /** 定位到指定日期所在周(报告空周期→跳一周计划·月则传月首日=定位含月首日的那周)。[AI生成] */
+    fun jumpToWeekOf(date: LocalDate) { _weekStart.value = mondayOf(date) }
+
     /** 删除某天全部餐食。[AI生成] */
     fun deleteDay(date: LocalDate) {
         viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }

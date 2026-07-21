@@ -49,9 +49,12 @@ fun WeekPlanScreen(
     onEditMealDate: (LocalDate) -> Unit,
     onCopyMeal: (LocalDate) -> Unit,
     onOpenDish: (Long) -> Unit = {},
+    initialDate: LocalDate? = null, // [AI生成] 报告空周期跳入时定位到该日期所在周(空=从今天所在周)
     vm: WeekPlanViewModel = koinViewModel(),
 ) {
     val ui by vm.uiState.collectAsStateWithLifecycle()
+    // [AI生成] 带目标日期进入→定位到该周(仅一次·initialDate 变化才重跳)。
+    androidx.compose.runtime.LaunchedEffect(initialDate) { initialDate?.let { vm.jumpToWeekOf(it) } }
     val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI修改] UX:删除改软删+撤销(§9.12)，替代硬确认弹框
 
     Scaffold(

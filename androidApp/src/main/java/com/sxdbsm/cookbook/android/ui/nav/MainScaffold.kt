@@ -246,6 +246,7 @@ fun MainScaffold(
                 com.sxdbsm.cookbook.android.ui.report.DietReportScreen(
                     onBack = { nav.popBackStack() },
                     onGoAddMeal = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) }, // [AI生成] F#6：报告"记一餐"带周期目标日期(该日有餐=编辑/无=新增)
+                    onGoWeekPlan = { date -> nav.navigate(Routes.weekPlanFrom(DateTime.formatDate(date))) }, // [AI生成] 空周期→跳一周计划定位该周(月则含月首日)
                 )
             }
             composable(Routes.DIETARY_REFERENCE) {
@@ -301,13 +302,19 @@ fun MainScaffold(
             composable(Routes.SHOPPING_LIST) {
                 com.sxdbsm.cookbook.android.ui.shopping.ShoppingListScreen(onBack = { nav.popBackStack() })
             }
-            composable(Routes.WEEK_PLAN) {
+            composable(
+                Routes.WEEK_PLAN_ROUTE, // [AI修改] 可选 date 参数(报告空周期定位该周)；无参(如首页入口)date="" → initialDate=null 从今天所在周。
+                arguments = listOf(navArgument("date") { type = NavType.StringType; defaultValue = "" }),
+            ) { entry ->
                 // [AI生成] B3 一周计划：逐日编辑/复制/安排复用既有添加餐食/复制路由。
+                val dateArg = entry.arguments?.getString("date").orEmpty()
+                val initialDate = dateArg.takeIf { it.isNotBlank() }?.let { runCatching { DateTime.parseDate(it) }.getOrNull() }
                 com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanScreen(
                     onBack = { nav.popBackStack() },
                     onEditMealDate = { date -> nav.navigate(Routes.addMeal(DateTime.formatDate(date))) },
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
+                    initialDate = initialDate,
                 )
             }
             composable(Routes.FREE_PAIRING) {

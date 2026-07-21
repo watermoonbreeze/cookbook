@@ -34,7 +34,9 @@ object Routes {
     const val FAMILY_STATS = "family_stats" // [AI生成] 膳食统计 // [AI生成] 家庭成员管理
     const val FEATURE_SETTINGS = "feature_settings" // [AI生成] 功能设置(分步执行等开关)
     const val SHOPPING_LIST = "shopping_list" // [AI生成] 采购清单(今天及未来餐食采购/缺料汇总)
-    const val WEEK_PLAN = "week_plan" // [AI生成] B3 一周计划视图
+    const val WEEK_PLAN = "week_plan" // [AI生成] B3 一周计划视图(无参=从今天所在周)
+    const val WEEK_PLAN_ROUTE = "week_plan?date={date}" // [AI生成] 路由模式:可选 date 参数(定位到该日期所在周)
+    fun weekPlanFrom(date: String) = "week_plan?date=$date" // [AI生成] 报告空周期→带目标日期跳一周计划(定位该周·月则含月首日所在周)
     const val FREE_PAIRING = "free_pairing" // [AI生成] 食材自由搭配(离线规则轻搭配)
     const val NUTRITION_TABLE = "nutrition_table" // [AI生成] 食材营养表(全量营养总览)
     const val DIET_REPORT = "diet_report" // [AI生成] 饮食报告(周/月·家庭+个人)

@@ -52,6 +52,7 @@ data class DietReportUiState(
     //   点"去记一餐"带此日期跳转(AddDayFood 按日期 configure：该日有餐=编辑、无=新增)，
     //   修"报告某周无餐点记一餐没带日期、开成最后一餐往后"的问题。
     val addMealDate: LocalDate = DateTime.today(),
+    val weekJumpDate: LocalDate = DateTime.today(), // [AI生成] 空周期→跳一周计划的目标日期(周期首日·月则=月首日→定位含月首日的那周)
 )
 
 class DietReportViewModel(
@@ -114,7 +115,7 @@ class DietReportViewModel(
             val today = DateTime.today()
             val addMealDate = if (today >= range.start && today <= range.end) today else range.start
             // 用最新态写回(防并发翻页覆盖)。
-            _state.update { it.copy(loading = false, report = report, memberName = memberName, hasFocusMember = hasFocus, periodLabel = range.label, canGoNewer = it.offset < 0, focusMembers = focusMembers, viewingId = viewingId, addMealDate = addMealDate) }
+            _state.update { it.copy(loading = false, report = report, memberName = memberName, hasFocusMember = hasFocus, periodLabel = range.label, canGoNewer = it.offset < 0, focusMembers = focusMembers, viewingId = viewingId, addMealDate = addMealDate, weekJumpDate = range.start) }
         }
     }
 
