@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.sxdbsm.cookbook.android.ui.component.AppTopBar
+import com.sxdbsm.cookbook.android.ui.component.FoldSection
 import com.sxdbsm.cookbook.android.ui.component.FormBottomBar
 import com.sxdbsm.cookbook.android.ui.component.ImagePickerButton
 import com.sxdbsm.cookbook.android.ui.component.InsetGroup
@@ -652,53 +653,6 @@ internal fun IngredientEditorDialog(
             },
             onDismiss = { categoryPickerOpen = false },
         )
-    }
-}
-
-
-/**
- * 低频区折叠头。[AI生成] 苹果式：高频项常露、选填低频项收纳一行，点开再填。
- */
-// [AI修改] §9.30:MoreOptionsHeader 抽到 ui/component/MoreOptionsHeader.kt 作共享件(供编辑菜品复用)。
-//   本文件调用处(食材编辑器)不传 hint→用默认食材口径"分类/详情/营养素/调养，均选填"，行为不变。
-
-// [AI修改] 质量审#7:EditorSection 已被 InsetGroup 全量替换→删除死代码。
-
-/**
- * 可折叠分组容器（§四·低频区独立折叠段）。[AI生成]
- * 标题整行可点开合 + 右侧 chevron；仅展开时渲染内容。**禁在 content 里提前 return**（Compose inline 布局内提前 return 致组失衡崩溃·见踩坑红线）。
- */
-@Composable
-internal fun FoldSection(
-    title: String,
-    expanded: Boolean,
-    onToggle: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit,
-) {
-    // [AI修改] §四:整段包在 InsetGroup 白卡内使用→自带横向 16dp 内距(卡内),标题行 v12 触达≥48;展开内容底部 16 内距。
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onToggle() }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-            Icon(
-                Icons.Outlined.ExpandMore,
-                contentDescription = if (expanded) "收起" else "展开",
-                modifier = Modifier.rotate(if (expanded) 180f else 0f),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (expanded) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                content = content,
-            )
-        }
     }
 }
 

@@ -147,9 +147,11 @@ fun NewDishScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp),
+                    .verticalScroll(rememberScrollState()),
             ) {
+            // [AI修改] §9.31/对齐食材编辑:低频区改用 InsetGroup+FoldSection(自带16dp屏边距)→外层不再统一 horizontal padding;
+            //   常露区(封面/菜名/食材/餐次)包一层 16dp 内距 Column,折叠段各自 InsetGroup 自带边距(防双重32dp·同食材编辑页坑)。
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
             if (state.loading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
@@ -277,19 +279,19 @@ fun NewDishScreen(
                     }
             }
             // [AI修改] #3：自建/编辑菜品不提供菜系选择(菜系是预设菜维度)；DB cuisine 列保留，编辑预设菜原样带回。
+            } // 常露区(封面/菜名/食材/餐次)结束——以下低频区改分类折叠段(各自 InsetGroup 自带屏边距)
 
-            // [AI修改] 基调§9.31:低频区下沉——步骤/烹饪方式/标签/特殊说明/描述收进折叠(默认收起·有内容自动展开)，
-            //   第一屏只留封面+菜名+食材+餐次核心四件事(一屏一焦点)。封面已移出到顶部,故 hasMore 不再含 imagePath。
-            val hasMore = state.steps.isNotEmpty() || state.cookingMethodNames.isNotEmpty() ||
-                state.tags.isNotEmpty() || state.specialNote.isNotBlank() || state.description.isNotBlank()
-            var moreExpanded by rememberSaveable { mutableStateOf(false) }
-            LaunchedEffect(hasMore) { if (hasMore) moreExpanded = true }
-            com.sxdbsm.cookbook.android.ui.component.MoreOptionsHeader(
-                expanded = moreExpanded,
-                onToggle = { moreExpanded = !moreExpanded },
-                hint = "步骤 / 烹饪方式 / 标签 / 说明，均选填",
-            )
-            if (moreExpanded) {
+            // [AI修改] §9.31/对齐食材编辑:低频区从"单个更多折叠"改为"分类独立折叠段"(操作步骤 / 更多信息·各自开合·复用共享 FoldSection)。
+            //   新建默认收起(填名+加食材+选餐次即可快速建菜)、编辑既有菜默认展开;某段有内容(导入/复制/模板预填)则自动展开(与编辑默认展开共存·别丢)。
+            var expandSteps by rememberSaveable(state.editingId) { mutableStateOf(state.editingId != null) }
+            var expandMore by rememberSaveable(state.editingId) { mutableStateOf(state.editingId != null) }
+            LaunchedEffect(state.steps.isNotEmpty()) { if (state.steps.isNotEmpty()) expandSteps = true }
+            val moreHasContent = state.cookingMethodNames.isNotEmpty() || state.tags.isNotEmpty() ||
+                state.specialNote.isNotBlank() || state.description.isNotBlank()
+            LaunchedEffect(moreHasContent) { if (moreHasContent) expandMore = true }
+            Spacer(Modifier.height(10.dp))
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup {
+                com.sxdbsm.cookbook.android.ui.component.FoldSection("操作步骤（选填）", expandSteps, { expandSteps = !expandSteps }) {
                 OperationStepsEditor(
                     steps = state.steps,
                     onAddStep = vm::addStep,
@@ -304,7 +306,11 @@ fun NewDishScreen(
                     onPickTemplate = { vm.loadStepTemplates(); stepTemplateSheetOpen = true },
                     onStepFocused = { focusedStepIndex = it },
                 )
-
+                } // FoldSection「操作步骤」content 结束
+            } // InsetGroup① 结束
+            Spacer(Modifier.height(10.dp))
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup {
+                com.sxdbsm.cookbook.android.ui.component.FoldSection("更多信息（烹饪方式 / 标签 / 说明）", expandMore, { expandMore = !expandMore }) {
                 FormFieldLabel("烹饪方式")
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -374,7 +380,8 @@ fun NewDishScreen(
                     minLines = 2,
                     shape = MaterialTheme.shapes.medium,
                 )
-            }
+                } // FoldSection「更多信息」content 结束
+            } // InsetGroup② 结束
             Spacer(Modifier.height(16.dp))
             }
             // [AI修改] 基调:主 CTA 底部常驻胶囊(§9.13 合拇指·一屏一个),作滚动区兄弟常驻底部;无食材先提示(利健康统计)。
@@ -597,9 +604,8 @@ private fun OperationStepsEditor(
     onPickTemplate: () -> Unit, // [AI生成] #2 打开"选择步骤"模板弹层
     onStepFocused: (Int) -> Unit, // [AI生成] #2 某步输入框获焦→记录为当前定位步(模板插入目标)
 ) {
-    // [AI修改] #2：标题右侧加"选择步骤"入口——套用预设/自建步骤模板。
+    // [AI修改] §9.31:标题由外层 FoldSection「操作步骤（选填）」承载,此处只留"选择步骤"模板入口(右对齐·避免与段标题重复)。
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        FormFieldLabel("操作步骤")
         Spacer(Modifier.weight(1f))
         TextButton(onClick = onPickTemplate) {
             Icon(Icons.Outlined.FormatListNumbered, contentDescription = null, modifier = Modifier.size(18.dp)) // [AI修改] 步骤模板用列表编号图标,与"导入整菜/配料组"区分
