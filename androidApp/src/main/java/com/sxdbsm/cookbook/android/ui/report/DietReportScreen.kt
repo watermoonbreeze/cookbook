@@ -1,7 +1,9 @@
 package com.sxdbsm.cookbook.android.ui.report
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -196,8 +199,11 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                     }
                     Spacer(Modifier.height(8.dp))
                     Text("结构日历", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(4.dp))
-                    StructureCalendar(r.perDayLevels)
+                    Spacer(Modifier.height(6.dp))
+                    // [AI修改] F#5:图例(每格含义·去红级别色·没记空心)+周对齐日历网格(去横滑·月1号对齐周几)。
+                    StructureLegend()
+                    Spacer(Modifier.height(6.dp))
+                    StructureCalendarGrid(r.perDayLevels, st.period)
                     if (r.structureGaps.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
                         // [AI修改] 文案审校🔴1:nutritionGaps 返回纯名词(优质蛋白/主食…)，报告里补成完整句才读得懂、且鼓励非责备。
@@ -311,25 +317,88 @@ private fun CountRow(item: CountItem, unit: String) {
     }
 }
 
-/** 结构日历：每天一个色块(级别色，没记=浅灰)。[AI生成] */
-// [AI修改] 用户2026-07-21:月视图~30天单行会横向溢出(30×17dp≈527dp>屏宽)→改 FlowRow 自动换行:
-//   周(7块)仍单行、月(~30块)约两行·响应式不溢出。色块尺寸/间距/级别色不变(复用已确立 FlowRow 范式)。
+/**
+ * F#5 结构日历图例：4档级别色 + 没记空心 + 一句说明。[AI生成]
+ * 去红级别色(nutritionLevelColor·与首页色系墙同板)·鼓励非责备·仅供参考非医嘱。
+ */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun StructureCalendar(levels: List<Int>) {
+private fun StructureLegend() {
     androidx.compose.foundation.layout.FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        levels.forEach { lv ->
-            Box(
-                Modifier.size(14.dp).clip(RoundedCornerShape(3.dp))
-                    .background(if (lv < 0) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f) else levelColor(lv)),
-            )
+        LegendSwatch(nutritionLevelColor(3), "均衡")
+        LegendSwatch(nutritionLevelColor(2), "尚可")
+        LegendSwatch(nutritionLevelColor(1), "单一")
+        LegendSwatch(null, "没记")
+    }
+    Spacer(Modifier.height(4.dp))
+    Text(
+        "每个格子=那天吃到的食物种类齐不齐 · 仅供参考",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+/** 图例小方块(色块或没记空心描边)+标签。[AI生成] F#5 */
+@Composable
+private fun LegendSwatch(color: Color?, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        val m = Modifier.size(12.dp).clip(RoundedCornerShape(3.dp))
+        if (color != null) {
+            Box(m.background(color))
+        } else {
+            Box(m.border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(3.dp)))
+        }
+        Spacer(Modifier.width(4.dp))
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * F#5 结构日历(简单两排·用户2026-07-21定)：周=单行7格、月=均分**两排**(带小日号·补齐等宽)。[AI生成]
+ * **不做周对齐**(避免月首日落在周中要塞前置占位、摊成5-6行的复杂)。去红级别色(nutritionLevelColor·同色系墙)；
+ * **有记但0类**(有记但主料无可归类)按"单一"显(coerceAtLeast(1))不混同没记；没记(-1)=空心描边；补齐位(i≥size)=透明。
+ * 日号按格底明度取黑/白(深色可读)。**禁 content 内 return@**(SlotTable 红线)——用 if/else 平衡分支·格值随位置固定不切分支。
+ */
+@Composable
+private fun StructureCalendarGrid(levels: List<Int>, period: ReportPeriod) {
+    val isMonth = period == ReportPeriod.MONTH
+    val rowCount = if (isMonth) 2 else 1
+    val perRow = if (isMonth) (levels.size + 1) / 2 else levels.size.coerceAtLeast(1) // 月:上排稍多或等·两排等宽(补齐位透明)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        for (r in 0 until rowCount) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                for (c in 0 until perRow) {
+                    val i = r * perRow + c // 该格在 levels 的下标(月:日号=i+1)
+                    Box(Modifier.weight(1f).aspectRatio(1f), contentAlignment = Alignment.Center) {
+                        if (i >= levels.size) {
+                            // 补齐占位(使两排等宽)·透明不可点
+                        } else if (levels[i] < 0) {
+                            // 没记=空心描边
+                            Box(
+                                Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp))
+                                    .border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(4.dp)),
+                            )
+                        } else {
+                            val cellColor = nutritionLevelColor(levels[i].coerceAtLeast(1))
+                            Box(Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp)).background(cellColor))
+                            if (isMonth) {
+                                Text("${i + 1}", style = MaterialTheme.typography.labelSmall, color = onCellTextColor(cellColor))
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
+/** F#5:日号在色块上的可读色——按格底明度取黑/白(深色适配·Google审🟡)。[AI生成] */
+private fun onCellTextColor(bg: Color): Color =
+    if (bg.luminance() > 0.5f) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.85f)
 
 /** 三大宏量供能比分段条。[AI生成] */
 @Composable
