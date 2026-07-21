@@ -3,8 +3,8 @@ package com.sxdbsm.cookbook.android.ui.report
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -200,7 +199,7 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                     Spacer(Modifier.height(8.dp))
                     Text("结构日历", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(6.dp))
-                    // [AI修改] F#5:图例(每格含义·去红级别色·没记空心)+周对齐日历网格(去横滑·月1号对齐周几)。
+                    // [AI修改] F#5:图例(每格含义·去红级别色·没记空心)+结构日历(周单行/月两排·纯色块不显日期·周月同尺寸)。
                     StructureLegend()
                     Spacer(Modifier.height(6.dp))
                     StructureCalendarGrid(r.perDayLevels, st.period)
@@ -358,36 +357,39 @@ private fun LegendSwatch(color: Color?, label: String) {
 }
 
 /**
- * F#5 结构日历(简单两排·用户2026-07-21定)：周=单行7格、月=均分**两排**(带小日号·补齐等宽)。[AI生成]
+ * F#5 结构日历(简单两排·用户2026-07-21定，2026-07-21微调)：周=单行7格、月=均分**两排**。[AI修改]
+ * **不显示日期**(周/月均无日号，只留纯色块)；**周月色块尺寸统一**——用 BoxWithConstraints 按"半月最密(16格)"
+ * 为基准算固定格宽 cell，周(7格)与月(两排)都用同一 cell 尺寸靠左排列：周不再撑满放大、两边一致、任意屏宽不溢出。[AI修改]
  * **不做周对齐**(避免月首日落在周中要塞前置占位、摊成5-6行的复杂)。去红级别色(nutritionLevelColor·同色系墙)；
- * **有记但0类**(有记但主料无可归类)按"单一"显(coerceAtLeast(1))不混同没记；没记(-1)=空心描边；补齐位(i≥size)=透明。
- * 日号按格底明度取黑/白(深色可读)。**禁 content 内 return@**(SlotTable 红线)——用 if/else 平衡分支·格值随位置固定不切分支。
+ * **有记但0类**(有记但主料无可归类)按"单一"显(coerceAtLeast(1))不混同没记；没记(-1)=空心描边；补齐位(i≥size)=透明占位。
+ * **禁 content 内 return@**(SlotTable 红线)——用 if/else 平衡分支·格值随位置固定不切分支。
  */
 @Composable
 private fun StructureCalendarGrid(levels: List<Int>, period: ReportPeriod) {
     val isMonth = period == ReportPeriod.MONTH
     val rowCount = if (isMonth) 2 else 1
     val perRow = if (isMonth) (levels.size + 1) / 2 else levels.size.coerceAtLeast(1) // 月:上排稍多或等·两排等宽(补齐位透明)
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        for (r in 0 until rowCount) {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                for (c in 0 until perRow) {
-                    val i = r * perRow + c // 该格在 levels 的下标(月:日号=i+1)
-                    Box(Modifier.weight(1f).aspectRatio(1f), contentAlignment = Alignment.Center) {
+    val spacing = 4.dp
+    val basisCols = 16 // [AI修改] 半月最密格数为统一基准：周/月色块同尺寸、周不放大、宽屏窄屏都放得下
+    BoxWithConstraints {
+        val cell = (maxWidth - spacing * (basisCols - 1)) / basisCols // [AI修改] 固定格宽(去 weight/aspectRatio 撑满)
+        Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
+            for (r in 0 until rowCount) {
+                Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
+                    for (c in 0 until perRow) {
+                        val i = r * perRow + c // 该格在 levels 的下标
                         if (i >= levels.size) {
                             // 补齐占位(使两排等宽)·透明不可点
+                            Box(Modifier.size(cell))
                         } else if (levels[i] < 0) {
                             // 没记=空心描边
                             Box(
-                                Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp))
+                                Modifier.size(cell).clip(RoundedCornerShape(4.dp))
                                     .border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(4.dp)),
                             )
                         } else {
-                            val cellColor = nutritionLevelColor(levels[i].coerceAtLeast(1))
-                            Box(Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp)).background(cellColor))
-                            if (isMonth) {
-                                Text("${i + 1}", style = MaterialTheme.typography.labelSmall, color = onCellTextColor(cellColor))
-                            }
+                            // 有记=去红级别色纯色块(不再显日号)
+                            Box(Modifier.size(cell).clip(RoundedCornerShape(4.dp)).background(nutritionLevelColor(levels[i].coerceAtLeast(1))))
                         }
                     }
                 }
@@ -395,10 +397,6 @@ private fun StructureCalendarGrid(levels: List<Int>, period: ReportPeriod) {
         }
     }
 }
-
-/** F#5:日号在色块上的可读色——按格底明度取黑/白(深色适配·Google审🟡)。[AI生成] */
-private fun onCellTextColor(bg: Color): Color =
-    if (bg.luminance() > 0.5f) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.85f)
 
 /** 三大宏量供能比分段条。[AI生成] */
 @Composable
