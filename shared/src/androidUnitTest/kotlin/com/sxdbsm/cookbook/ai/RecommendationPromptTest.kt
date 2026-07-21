@@ -15,11 +15,14 @@ import kotlin.test.assertTrue
  **/
 class RecommendationPromptTest {
 
-    private fun cand(id: Long, name: String, recentDaysAgo: Int? = null, isMeat: Boolean = false, isStaple: Boolean = false) = DishCandidate(
+    private fun cand(
+        id: Long, name: String, recentDaysAgo: Int? = null, isMeat: Boolean = false, isStaple: Boolean = false,
+        methods: List<String> = emptyList(),
+    ) = DishCandidate(
         id = id, name = name, mainNames = listOf("主料"), secondaryNames = emptyList(),
         seasoningsOnHand = emptyList(), limitHits = emptyList(), recommendHits = emptyList(),
         isRecent = recentDaysAgo != null, score = 1.0, recentDaysAgo = recentDaysAgo,
-        isMeat = isMeat, isStaple = isStaple,
+        isMeat = isMeat, isStaple = isStaple, cookingMethodNames = methods,
     )
 
     @Test
@@ -52,6 +55,26 @@ class RecommendationPromptTest {
         assertTrue(req.user.substringAfter("红烧肉").substringBefore("\n").contains("荤"), "荤菜候选应标『荤』")
         assertTrue(req.user.substringAfter("米饭").substringBefore("\n").contains("主食"), "主食候选应标『主食』")
         assertTrue(req.user.substringAfter("清炒油菜").substringBefore("\n").contains("素"), "素菜候选应标『素』")
+    }
+
+    @Test
+    fun `重油度与互补分级透传_清淡重口标注_补营养分强弱`() {
+        val req = RecommendationPrompt.build(
+            listOf(
+                cand(1, "红烧肉", methods = listOf("红烧")), // 重口
+                cand(2, "清蒸鱼", methods = listOf("清蒸")), // 清淡
+                cand(3, "炒时蔬", methods = listOf("炒")), // 中性→不标
+            ),
+            HealthConstraints(), mealCount = 3,
+            nutritionBalanceScores = mapOf(1L to 0.7, 2L to 0.2), // 1 强补/2 一般补/3 不补
+        )
+        assertTrue(req.system.contains("清淡") && req.system.contains("重口"), "system 应含重油度引导")
+        assertTrue(req.user.substringAfter("红烧肉").substringBefore("\n").contains("重口"), "红烧应标『重口』")
+        assertTrue(req.user.substringAfter("清蒸鱼").substringBefore("\n").contains("清淡"), "清蒸应标『清淡』")
+        assertTrue(!req.user.substringAfter("炒时蔬").substringBefore("\n").let { it.contains("清淡") || it.contains("重口") }, "中性做法不标重油度")
+        assertTrue(req.user.substringAfter("红烧肉").substringBefore("\n").contains("补营养✓✓"), "强补(0.7)应✓✓")
+        assertTrue(req.user.substringAfter("清蒸鱼").substringBefore("\n").contains("补营养✓") &&
+            !req.user.substringAfter("清蒸鱼").substringBefore("\n").contains("✓✓"), "一般补(0.2)应单✓")
     }
 
     @Test

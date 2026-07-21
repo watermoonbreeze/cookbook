@@ -16,6 +16,8 @@ import com.sxdbsm.cookbook.ai.model.HealthConstraints
  **/
 object RecommendationPrompt {
 
+    private const val NB_STRONG = 0.5 // [AI生成] 营养互补度[-1,1]≥此值算"强补"(✓✓),(0,0.5)算"一般补"(✓)——透传强弱给模型。
+
     fun build(
         candidates: List<DishCandidate>,
         constraints: HealthConstraints,
@@ -33,6 +35,8 @@ object RecommendationPrompt {
             append("每一餐搭配 2~3 个菜，共给 $mealCount 个不同的餐。")
             // [AI生成] 组合完整性:把"每餐荤素+主食"作为软引导喂模型(候选已标 荤/素/主食),让模型路径也像纯规则兜底那样避免"一餐两荤无素无主食";候选不足时不强求。
             append("每一餐尽量荤素搭配、包含一道主食（候选已标『荤/素/主食』），避免一餐全是荤菜或没有主食；若候选里合适的菜不够则以现有为准，不必硬凑。")
+            // [AI生成] 重油度对齐:规则/周计划已用 cookingHeaviness 打散重油,模型路径原无此信息→补一句(候选标『清淡/重口』)让模型也别一餐全煎炸。
+            append("一餐里尽量搭配些清淡做法的菜（候选标『清淡』），别整餐都是煎炸红烧等重口（标『重口』）。")
             append("根据每个菜在手的调料，给一句简短做法建议（有葱姜蒜酱→红烧/爆炒，只有盐油→清蒸/白灼）。")
             append("优先选择标注「利调养」的菜、尽量少选标注「注意限量」的菜（候选已按利于健康排序，靠前更优）。")
             // [AI生成] 3a：推荐风格(用户轻干预)。
@@ -65,12 +69,18 @@ object RecommendationPrompt {
                 append("- id=").append(c.id).append(" ").append(c.name)
                 append(if (c.isMeat) "｜荤" else "｜素") // [AI生成] 组合完整性:荤素结构标注(供模型每餐荤素搭配)
                 if (c.isStaple) append("｜主食") // [AI生成] 组合完整性:主食标注(供模型每餐含一道主食)
+                when (cookingHeaviness(c.cookingMethodNames)) { // [AI生成] 重油度标注(供模型别一餐全煎炸);中性/无数据不标
+                    0 -> append("｜清淡")
+                    2 -> append("｜重口")
+                }
                 append("｜主料:").append(c.mainNames.joinToString("、").ifEmpty { "-" })
                 if (c.onHandNames.isNotEmpty()) append("｜在手:").append(c.onHandNames.joinToString("、")) // [AI生成] 用到你库存的食材(物尽其用)
                 if (c.seasoningsOnHand.isNotEmpty()) append("｜在手调料:").append(c.seasoningsOnHand.joinToString("、"))
                 if (c.recommendHits.isNotEmpty()) append("｜利调养:").append(c.recommendHits.joinToString("、"))
                 if ((preferenceScores[c.id] ?: 0.0) >= 0.5) append("｜常做") // [AI生成] 3a：偏好画像高=常做/爱吃
-                if ((nutritionBalanceScores[c.id] ?: 0.0) > 0.0) append("｜补营养") // [AI生成] 3a：能补近期缺的宏量
+                // [AI修改] 互补度分级(原二值)：把已算好的营养互补强弱透传给模型(强补✓✓/一般补✓),让模型分得清"很补"和"微补"。
+                val nb = nutritionBalanceScores[c.id] ?: 0.0
+                if (nb > 0.0) append(if (nb >= NB_STRONG) "｜补营养✓✓" else "｜补营养✓")
                 c.recentDaysAgo?.let { d -> append(if (d <= 0) "｜今天吃过" else "｜${d}天前吃过") } // [AI生成] R2：近吃标签，帮模型主动避开近期吃过的(换口味)；d≤0 归"今天"(防御非正数)
                 if (c.missingNames.isNotEmpty()) append("｜还差:").append(c.missingNames.joinToString("、")) // [AI生成] 缺的主料/辅料，供模型措辞提示
                 if (c.limitHits.isNotEmpty()) append("｜注意限量:").append(c.limitHits.joinToString("、"))
