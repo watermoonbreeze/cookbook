@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,12 +20,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddAPhoto
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -90,6 +87,8 @@ fun ImagePickerButton(
     LaunchedEffect(processing) { onProcessingChange(processing) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    // [AI生成] 拍板1:封面/strip 点开进全屏查看器(删除迁到查看器·编辑卡去删除角标免误触)。null=未开。
+    var viewerPage by remember { mutableStateOf<Int?>(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
         val remaining = maxCount - imagePaths.size
@@ -176,8 +175,9 @@ fun ImagePickerButton(
                 }
             } else {
                 Column {
-                    // 首图=通栏封面(16:9·Crop·点开预览走原图)；右上删除→第2张顶上成新封面(列表左移天然实现)。
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
+                    // [AI修改] 拍板1:首图=通栏封面(16:9·Crop)·点整张进全屏查看器(删除在查看器里)；去右上删除角标(免误触)。
+                    //   崩溃红线:去角标后 Box 内只剩 StoredImage 单子项、外层加 clickable,组结构简单无早退。
+                    Box(modifier = Modifier.fillMaxWidth().clickable { viewerPage = 0 }) {
                         StoredImage(
                             imagePath = imagePaths.first(),
                             thumbnailPath = thumbnailPaths.firstOrNull().orEmpty(),
@@ -186,9 +186,9 @@ fun ImagePickerButton(
                             seedId = 0L,
                             fillWidth = true,
                             aspectRatio = 16f / 9f,
+                            allowPreview = false, // 点击由外层 Box 接管进全屏查看器(禁 StoredImage 自带 AlertDialog·免双弹层)
                             modifier = Modifier.clip(RoundedCornerShape(12.dp)),
                         )
-                        CoverDeleteBadge(onClick = { removeImageAt(0, imagePaths, thumbnailPaths, onImagesChanged) })
                     }
                     // strip：第 2 张起小图 + 未满显 add tile。有第2张或未满才渲染整条(否则只有封面)。
                     if (imagePaths.size > 1 || imagePaths.size < maxCount) {
@@ -196,7 +196,8 @@ fun ImagePickerButton(
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                             imagePaths.drop(1).forEachIndexed { i, path ->
                                 val realIndex = i + 1
-                                Box(contentAlignment = Alignment.TopEnd) {
+                                // [AI修改] 拍板1:strip 小图去删除角标(64dp 小图叠角标必误触)·改整张 clickable 点开进全屏查看器(在那删)。
+                                Box(modifier = Modifier.clickable { viewerPage = realIndex }) {
                                     StoredImage(
                                         imagePath = path,
                                         thumbnailPath = thumbnailPaths.getOrNull(realIndex).orEmpty(),
@@ -205,9 +206,8 @@ fun ImagePickerButton(
                                         seedId = realIndex.toLong(),
                                         size = 64.dp,
                                         corner = 10.dp,
-                                        allowPreview = false, // strip 小图不单独预览(预览只走大封面·免误触)
+                                        allowPreview = false, // 点击由外层 Box 接管进查看器(禁自带弹框)
                                     )
-                                    CoverDeleteBadge(onClick = { removeImageAt(realIndex, imagePaths, thumbnailPaths, onImagesChanged) })
                                 }
                             }
                             if (imagePaths.size < maxCount) {
@@ -310,6 +310,18 @@ fun ImagePickerButton(
             },
         )
     }
+
+    // [AI生成] 拍板1:全屏查看器(封面/strip 点开进此)·底部"删除这张"复用 removeImageAt(删首图→第2张顶上成封面·删空→查看器守卫 onDismiss 回引导卡)。
+    viewerPage?.let { page ->
+        FullScreenImageViewer(
+            imagePaths = imagePaths,
+            thumbnailPaths = thumbnailPaths,
+            initialPage = page,
+            contentDescription = "菜品照片",
+            onDismiss = { viewerPage = null },
+            onDelete = { idx -> removeImageAt(idx, imagePaths, thumbnailPaths, onImagesChanged) },
+        )
+    }
 }
 
 /** 封面/strip 单张删除：按索引同步移除原图+缩略图(复用非cover分支的 filterIndexed 口径)。删首图→第2张顶上成封面。[AI生成] */
@@ -323,27 +335,6 @@ private fun removeImageAt(
         imagePaths.filterIndexed { i, _ -> i != index },
         thumbnailPaths.filterIndexed { i, _ -> i != index },
     )
-}
-
-/** 封面/strip 图片右上角删除角标：24dp 可视圆 + 44dp 透明触达区(≥红线)。[AI生成] apple_ux_designer 规范 */
-@Composable
-private fun CoverDeleteBadge(onClick: () -> Unit) {
-    Box(
-        modifier = Modifier.size(44.dp).clickable(onClick = onClick),
-        contentAlignment = Alignment.TopEnd,
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(2.dp)
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
-                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Icons.Outlined.Close, contentDescription = "删除这张图片", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurface)
-        }
-    }
 }
 
 /** strip 末尾"再加一张" add tile：64dp 虚框 + 拍照图标；仅未满 maxCount 时显示。[AI生成] apple_ux_designer 规范 */

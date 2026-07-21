@@ -14,16 +14,21 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +58,7 @@ fun FullScreenImageViewer(
     initialPage: Int,
     contentDescription: String,
     onDismiss: () -> Unit,
+    onDelete: ((index: Int) -> Unit)? = null, // [AI生成] 拍板1:传入则底部显"删除这张"·删该 index(能力由回调显隐·非 mode 硬编码)。
 ) {
     if (imagePaths.isEmpty()) { onDismiss(); return }
     Dialog(
@@ -60,6 +66,11 @@ fun FullScreenImageViewer(
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnBackPress = true, dismissOnClickOutside = false),
     ) {
         val pagerState = rememberPagerState(initialPage = initialPage.coerceIn(0, imagePaths.size - 1)) { imagePaths.size }
+        // [AI生成] 拍板1:删除使 list 变短→pageCount 变;currentPage 越界时收敛到新末页(删末张→退上一张)，防显示异常(崩溃红线:LaunchedEffect 收敛,非 body 内同步 scroll+return)。
+        LaunchedEffect(imagePaths.size) {
+            val last = imagePaths.size - 1
+            if (last >= 0 && pagerState.currentPage > last) pagerState.scrollToPage(last)
+        }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             HorizontalPager(
                 state = pagerState,
@@ -105,10 +116,11 @@ fun FullScreenImageViewer(
                 }
             }
 
-            // 底部圆点指示（多张）。
+            // 底部圆点指示（多张）。[AI修改] 拍板1:有删除按钮时上移(bottom 24→72)让位,不与胶囊重叠。
             if (imagePaths.size > 1) {
                 Row(
-                    modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(bottom = 24.dp),
+                    modifier = Modifier.fillMaxSize().navigationBarsPadding()
+                        .padding(bottom = if (onDelete != null) 72.dp else 24.dp),
                     verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.Center,
                 ) {
@@ -117,6 +129,30 @@ fun FullScreenImageViewer(
                             Modifier.padding(horizontal = 4.dp).size(6.dp).clip(CircleShape)
                                 .background(if (i == pagerState.currentPage) Color.White else Color.White.copy(alpha = 0.4f)),
                         )
+                    }
+                }
+            }
+
+            // [AI生成] 拍板1:底部"删除这张"胶囊(仅传 onDelete 时显·Box 内平级 emit 非 page lambda 内 return·守崩溃红线)。
+            //   大图上看清再删=天然确认(§9.12 不弹硬确认);删该 index→list 变短→上方 LaunchedEffect 收敛页码/删空则顶部守卫 onDismiss。
+            if (onDelete != null) {
+                Row(
+                    modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(bottom = 20.dp),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color.Black.copy(alpha = 0.4f))
+                            .clickable { onDelete(pagerState.currentPage) }
+                            .heightIn(min = 44.dp)
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Outlined.Delete, contentDescription = "删除这张照片", tint = Color.White, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("删除这张", color = Color.White)
                     }
                 }
             }

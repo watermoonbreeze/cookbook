@@ -441,9 +441,18 @@ fun PrimaryTabRow(
 > [AI生成 2026-07-21] 拍照回归修复确立。菜品/食材编辑统一：首图=通栏大封面、其余(2/3张)=下方小缩略图条，兼顾"成品封面感"与"多图能力"。
 - **布局**：首图 **16:9 通栏封面**(`fillMaxWidth().aspectRatio(16/9)`·圆角12·**空态卡同比→出图不跳变**)；下方 8dp 间距 **strip**(`Row spacedBy8`·第2张起 **64dp 正方缩略图**·圆角10)+未满 maxCount 显 **add tile**(64dp 虚框+拍照图标)。
 - **渲染标准**：统一走 `StoredImage`·**`ContentScale.Crop`(=center_crop·填满不变形居中裁·食物图最优)**；封面 `imagePath 传原图/thumbnailPath 传缩略图`(点击预览走原图清晰)、`fillWidth+aspectRatio`(+`heightIn` 宽容器兜底)；strip 小图 `allowPreview=false`(免误触·预览只走大封面)。预览大图用 `ContentScale.Fit`(看全貌)。
-- **交互**：逐张删(右上 24dp 圆角标+44dp 触达区)·**删首图→第2张顶上成封面**(列表左移天然实现)·删空回引导卡；**不做"一键清空全部"**(易误清=回归诱因)。添加走拍照/相册 chooser。
-- **能力显隐由参数**：`coverStyle`(封面型:菜品主图/食材主图) vs 非cover横排(流程型:步骤图·多张平等无主次)；`maxCount` 控张数。**崩溃红线**:coverStyle 分支空/有图 **if/else 平衡**、strip 用**条件 emit**(非 `return@Column/Row` 提前返回)——此区曾致 SlotTable 闪退。
-- **落地样板**：`ui/component/ImagePickerButton.kt`(coverStyle 分支+`CoverDeleteBadge`/`CoverAddTile`/`removeImageAt`)+`StoredImage`(加 `aspectRatio` 参数)。
+- **交互**：[AI修改 2026-07-21 拍板1] **删除入口不放编辑卡、收进全屏查看器**——coverStyle 编辑卡只负责"看+加"，**封面/strip 均不挂删除角标**(64dp 小图叠 44dp 角标必误触·用户痛点)；封面/strip 点击**统一进 `FullScreenImageViewer`**(strip `allowPreview=false` 但外层 `Box` 加 `clickable` 打开查看器·封面同理·避免 StoredImage 自带 AlertDialog 双弹层)。查看器底部提供"删除这张"、删后按 §9.34 顺移/关闭。**删首图→第2张顶上成封面**·删空回引导卡；**不做"一键清空全部"**。添加走拍照/相册 chooser。
+- **能力显隐由参数**：`coverStyle`(封面型:菜品主图/食材主图) vs 非cover横排(流程型:步骤图·多张平等无主次)；`maxCount` 控张数。**崩溃红线**:coverStyle 分支空/有图 **if/else 平衡**、strip 用**条件 emit**(非 `return@Column/Row` 提前返回)；去角标后封面/strip 均为 `Box{StoredImage}` 单子项(结构更简)——此区曾致 SlotTable 闪退。
+- **落地样板**：`ui/component/ImagePickerButton.kt`(coverStyle 分支+`viewerPage` 状态 host `FullScreenImageViewer`·`CoverAddTile`/`removeImageAt`)+`StoredImage`(加 `aspectRatio` 参数)。
+
+### 9.34 全屏图片查看器（统一单/多张查看 · 含删除）
+> [AI生成 2026-07-21 拍板1] 图片点开一律进全屏查看器，删除入口从编辑卡角标迁至此，治"小图角标误触"+"单张没铺开"。
+- **单张也走全屏查看器**：图片点开一律进 `FullScreenImageViewer`(`ContentScale.Fit + fillMaxSize` 铺满黑底)，**弃用** StoredImage 自带 420dp 封顶的 AlertDialog 小弹框预览("单张没铺开"根因·本场景 `allowPreview=false`)。单张时不显页码/圆点(现有 `size>1` 守卫)。
+- **删除能力由回调 `onDelete(index)?` 显隐**(不用 mode 布尔)：传入才显底部"删除这张"胶囊(高40/触达44/圆角20/黑底α0.4/白图标+文字·`Icons.Outlined.Delete`)；只读预览场景不传即纯查看。**大图上看清再删=天然确认**(§9.12 不弹硬确认)；`removeImageAt` 只改 list **不即删物理文件**(可撤销·物理清理另做)。
+- **删除后行为**：删非末张→pager 当前 index 不变(下一张顶上)；删末张→退到上一张；删到空→顶部 `if(imagePaths.isEmpty()){onDismiss();return}` 守卫回空态。pager pageCount 随 list 变短，用 `LaunchedEffect(imagePaths.size)` 把 currentPage `coerceIn/scrollToPage` **防越界**(崩溃红线:LaunchedEffect 收敛·非 body 内同步 scroll+return)。
+- **布局让位**：删除胶囊 `BottomCenter+navigationBarsPadding+bottom20`；圆点指示器有删除时 `bottom 24→72` 上移到胶囊上方；顶部关闭/页码不动。翻页横扫(图区)/删除点击(底中)/关闭(左上) 三区分离不冲突。
+- **崩溃红线**：删除胶囊作 `Box` 内平级子 emit(条件 emit·**非** page lambda 内 return)；page lambda `if(shown!=null){Image}else{转圈}` 维持 if/else 平衡。
+- **落地样板**：`ui/component/FullScreenImageViewer.kt`(`onDelete` 参数+底部胶囊+页码收敛)。**follow-up**:删除"撤销"Snackbar 由编辑页宿主承接(§9.12·当前靠"大图确认+物理不即删+未保存不持久"三重软保护·可后补)。
 
 ### 9.33 家族化对齐边界：语义色走 token · 文档/叙事页不卡化
 > [AI生成 2026-07-21] 家族化 P4 视觉打磨过 `apple_visual_designer` 门禁确立的两条可复用边界。
