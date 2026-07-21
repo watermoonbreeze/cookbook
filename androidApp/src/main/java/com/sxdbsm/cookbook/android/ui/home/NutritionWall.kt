@@ -30,6 +30,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import com.sxdbsm.cookbook.android.ui.component.MacroBar
+import com.sxdbsm.cookbook.android.ui.component.MacroLegend
 import com.sxdbsm.cookbook.android.ui.component.nutritionWallColor
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
@@ -142,35 +144,6 @@ fun NutritionTodayCard(
                 }
             }
         }
-    }
-}
-
-/** 宏量图例项：小色点 + 文字(与占比条同色对应)。[AI生成] 3c */
-@Composable
-private fun MacroLegend(color: Color, label: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(7.dp).clip(RoundedCornerShape(50)).background(color))
-        Spacer(Modifier.width(3.dp))
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-/**
- * 宏量占比条：蛋白/脂肪/碳水按供能占比分三段实色(清晰体现各占多少)，整条胶囊端头。[AI生成]
- * 三色用 ExtendedColors 固定编码色、不随主题变。用户反馈渐变不好看且不体现占比，故用分段实色。
- */
-@Composable
-private fun MacroBar(p: Int, f: Int, c: Int, protein: Color, fat: Color, carb: Color) {
-    if (p + f + c <= 0) return
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(8.dp)
-            .clip(RoundedCornerShape(4.dp)),
-    ) {
-        if (p > 0) Box(Modifier.weight(p.toFloat()).fillMaxWidth().height(8.dp).background(protein))
-        if (f > 0) Box(Modifier.weight(f.toFloat()).fillMaxWidth().height(8.dp).background(fat))
-        if (c > 0) Box(Modifier.weight(c.toFloat()).fillMaxWidth().height(8.dp).background(carb))
     }
 }
 

@@ -576,11 +576,18 @@ private fun SuggestionGroupCard(
                 Spacer(Modifier.height(2.dp))
                 Text("搭配建议：${group.cookingHint}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] UX走查M4:与食材详情"做法"(常见烹饪方式)区分,这里是"这套怎么配着做"
             }
-            // [AI生成] §9.36:整套合计热量(仅热量·受"热量数值显示"开关·缺任一菜数据则不显)。
+            // [AI修改] §9.37:整套合计=热量(受开关)+三宏量色点(labelSmall)·hasData=false 不显·部分缺数据标注。
             val calorieOn by com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled()
-            if (calorieOn && group.mealKcal != null) {
+            val mealMacro = group.mealMacro
+            if (mealMacro != null && mealMacro.hasData) {
                 Spacer(Modifier.height(2.dp))
-                Text("整套约 ${group.mealKcal} 千卡（${group.dishes.size} 道菜）", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val head = "整套" + (if (calorieOn && mealMacro.kcal != null) "约 ${mealMacro.kcal} 千卡" else "")
+                com.sxdbsm.cookbook.android.ui.component.MacroDotFlow(
+                    mealMacro.proteinG, mealMacro.fatG, mealMacro.carbG,
+                    head = head,
+                    tail = "（${group.dishes.size} 道菜）" + (if (mealMacro.partial) " · 部分菜暂无数据" else ""),
+                    textStyle = MaterialTheme.typography.labelSmall,
+                )
             }
             Spacer(Modifier.height(4.dp))
             group.dishes.forEach { dish ->

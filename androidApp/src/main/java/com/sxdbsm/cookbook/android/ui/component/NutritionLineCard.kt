@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +39,7 @@ import com.sxdbsm.cookbook.domain.NutritionLine
 fun NutritionLineCard(
     line: NutritionLine,
     advices: List<LineAdvice>,
+    macro: MacroSummaryUi? = null, // [AI生成] §9.37:整周宏量合计(热量+碳蛋脂供能比条·null/无数据则不显该区·WeekPlan 暂不传)
 ) {
     // 均衡度 0~100 → 级别 0~4 → 去红中性色(与色系墙/膳食报告同 nutritionLevelColor·不上红)。
     val level = when {
@@ -49,12 +51,32 @@ fun NutritionLineCard(
     val dotColor = nutritionLevelColor(level)
     val coveredText = FoodGroup.Group.entries
         .filter { it in line.coveredGroups }.joinToString("·") { it.label }
+    val calorieOn by rememberCalorieNumberEnabled() // [AI修改] §9.37 Google审🟡-1:提到函数级(块外·避免条件切换重订阅·四处一致)
     InsetGroup(title = "一周营养搭配") {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(9.dp).clip(CircleShape).background(dotColor))
                 Spacer(Modifier.width(8.dp))
                 Text("整体搭配 ${line.balanceScore} 分", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            }
+            // [AI生成] §9.37:一周合计(热量受开关 + 碳蛋脂供能比条+图例·全 App 唯一讲清颜色语义处)——放均衡度分下、覆盖大类上。
+            val pg = macro?.proteinG; val fg = macro?.fatG; val cg = macro?.carbG
+            if (macro != null && macro.hasData && pg != null && fg != null && cg != null) {
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("一周合计", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    val kcal = macro.kcal
+                    if (calorieOn && kcal != null) {
+                        Spacer(Modifier.weight(1f))
+                        Text("约 $kcal 千卡", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+                MacroBarWithLegend(pg, fg, cg)
+                if (macro.partial) {
+                    Spacer(Modifier.height(4.dp))
+                    Text("（部分菜暂无数据，仅统计已有部分）", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                }
             }
             if (coveredText.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))

@@ -478,6 +478,16 @@ fun PrimaryTabRow(
 - **样式**：`bodySmall`+`onSurfaceVariant`+Normal·无 emoji/无彩色(守§9.35)·营养行排 avoidText/note 之后。
 - **待确认**：§开关关时"显宏量隐千卡"边界→apple_software_behavior(个人概念开关约束什么)+视觉师(轻量)。**落地**:AiRecommendScreen(DishRow/SuggestionGroupCard)+VM·AiPlan DayCard 同款(follow-up)。
 
+### 9.37 营养素配色统一呈现：色点前缀 + 供能比条两级（周计划/推荐宏量汇总）
+> [AI生成 2026-07-21] 用户"周计划/推荐每餐用对应颜色标出、每日+整周+整套加碳蛋脂"·apple_visual_designer+apple_ux_designer 双门禁会诊收敛。§9.36 营养呈现的延伸。
+- **一套色 token + 两级呈现**（`ui/component/NutritionMacro.kt` 单一真相源·四场景复用）：
+  - **语言A·色点前缀**（文本级·最克制）：宏量词前加 6dp 三色点(蛋白绿/脂肪琥珀/碳水蓝·`ExtendedColors`)、**数字/文字恒灰**(`onSurfaceVariant`)、`FlowRow` 窄屏换行。用于**每菜行/每日小计/推荐整套**(`MacroDotFlow`)。
+  - **语言B·供能比条+图例**（图形级）：`MacroBar`(p·4/f·9/c·4 分三段) + `MacroLegend`(色点+克数)。**仅整周概览卡**(`MacroBarWithLegend`)——总层级才配比条，不下放每菜/每餐(噪声爆炸)。
+- **层级取舍(砍每餐层·防过载)**：菜(色点行)/日(卡头下"当天合计"色点行)/周(概览卡"一周合计"比条+图例)**三层粒度递进不平行**；**每餐不加小计不着色**(靠每菜行色点已达"每餐颜色标出")；**餐次标题不上色**(非营养维度·上色制造语义混乱)。
+- **🔴红线一致**：热量数字受 `CALORIE_NUMBER_ENABLED`(关则 head 省"约X千卡"·宏量克数恒显)；汇总用**原始 `DishNutrition.totals` 累加再取整**(非累加展示态·避免累积误差·`summarizeMacros`)；缺数据统一"（部分菜暂无数据）"、`hasData=false` 整块不显(**永不显约0/空条**)；只色点着三色、热量/钠/估算恒灰；宏量色只走 token。
+- **不该做**：不染数字本身(只染点)、不给每菜挂比条、不上第4/5种色、不显达标率/占比%/进度环、不"又条又点"堆叠。
+- **落地**：`NutritionMacro.kt`(MacroSummaryUi/summarizeMacros/MacroDotFlow/MacroBarWithLegend·MacroBar/Legend 从 NutritionWall 抽共享)·`DishNutritionLine`(色点前缀)·`AiPlanScreen` DayCard 每日小计+`NutritionLineCard` 一周合计·`AiRecommendScreen` 方案卡·三 VM(AiPlan dailyMacro/weekMacro·AiRecommend mealMacro)。**WeekPlan 概览卡整周宏量=follow-up**(需注入 repo 改 flatMapLatest)。
+
 ### 9.33 家族化对齐边界：语义色走 token · 文档/叙事页不卡化
 > [AI生成 2026-07-21] 家族化 P4 视觉打磨过 `apple_visual_designer` 门禁确立的两条可复用边界。
 - **语义锚点色一律走单一来源 token，不散落硬编码**：宏量三色(蛋白/脂肪/碳水)、收藏星金、状态色(success/warning/danger)、均衡度级别色等**语义色**统一进 `theme/ExtendedColors.kt`(`macroProtein/Fat/Carb`/`favoriteStar`/`success`…)或 `NutritionColor`(级别基色)——**刻意不随 6 套 `AppPalette` 主题变**(语义记忆稳定·家族化统一的是"结构语言"圆角/间距/分组卡,**不是**把语义色也染成主题色)。散落硬编码=漂移隐患(曾现 DietReport 宏量色用 Material 系、与 FamilyStats/色系墙不一致)。收藏星保持金色(跨平台通用"收藏"共识色·染 primary 反而语义模糊)。判据:凡"颜色=某含义"的都进 token。

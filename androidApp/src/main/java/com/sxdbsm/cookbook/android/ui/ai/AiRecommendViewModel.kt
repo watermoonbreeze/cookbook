@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.android.ui.component.DishNutritionUi
+import com.sxdbsm.cookbook.android.ui.component.MacroSummaryUi
+import com.sxdbsm.cookbook.android.ui.component.summarizeMacros
 import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
 import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
@@ -282,9 +284,11 @@ class AiRecommendViewModel(
         // 规则兜底/离线则回退到扁平勾选列表。两条路都汇入 selectedIds、走同一个 onPickMeal 契约。
         val byId = result.candidates.associateBy { it.id }
         // [AI生成] §9.36:批量查每菜营养(≤10候选·一次·无 N+1)·runCatching 兜底(查询失败→空→静默不显·绝不中断推荐主流程)。
-        val nutritionUiById: Map<Long, DishNutritionUi> = runCatching {
-            nutritionRepo.dishNutrition(result.candidates.map { it.id }).mapValues { (_, dn) -> dn.toDishNutritionUi() }
+        //   [AI修改] §9.37:保留原始 DishNutrition(dishNutriById) 供整套宏量汇总(用 totals 累加·非累加展示态取整)；Ui 态另转给每菜行。
+        val dishNutriById = runCatching {
+            nutritionRepo.dishNutrition(result.candidates.map { it.id })
         }.getOrDefault(emptyMap())
+        val nutritionUiById: Map<Long, DishNutritionUi> = dishNutriById.mapValues { (_, dn) -> dn.toDishNutritionUi() }
         // [AI生成] 药膳一期·食补过滤(仅扁平列表)：**只把含药食同源食材的菜稳定排前**(正向排序偏好，非硬过滤/非罚分/不接慢病评级)。
         //   命中不足不给死胡同：仍展示全部、按含量降序，并如实告知(降级排序)。分组(模型建议)路径不重排，保持搭配完整。
         var medicinalNote = ""
@@ -304,10 +308,10 @@ class AiRecommendViewModel(
                 val dishes = s.dishIds.mapNotNull { byId[it] }.map { toItem(it, mode, nutritionUiById[it.id]) }
                 if (dishes.isEmpty()) null
                 else {
-                    // [AI生成] §9.36:整套合计热量——组内每菜都有热量才求和(缺任一→null→UI 显"整套热量待完善")。
-                    val kcals = s.dishIds.mapNotNull { nutritionUiById[it]?.kcal }
-                    val mealKcal = if (kcals.size == dishes.size) kcals.sum() else null
-                    SuggestionGroupUi(reason = s.reason, cookingHint = s.cookingHint, dishes = dishes, mealKcal = mealKcal)
+                    // [AI修改] §9.37:整套合计=热量+三宏量(用原始 totals 累加·热量受开关显示·宏量恒显)；
+                    //   有数据的菜求和·存在缺数据菜标"（部分菜暂无数据）"·全缺→hasData=false(UI 不显合计)。放宽比原"缺一即 null"更常出得来。
+                    val mealMacro = summarizeMacros(dishes.map { dishNutriById[it.id] })
+                    SuggestionGroupUi(reason = s.reason, cookingHint = s.cookingHint, dishes = dishes, mealMacro = mealMacro)
                 }
             }
         } else emptyList()
@@ -399,5 +403,5 @@ data class SuggestionGroupUi(
     val reason: String, // 这套搭配的一句人话理由
     val cookingHint: String?, // 按在手辅料给的做法建议
     val dishes: List<DishItemUi>, // 组合内的菜(勾选整套或单菜均汇入 selectedIds)
-    val mealKcal: Int? = null, // [AI生成] §9.36:整套合计热量(千卡)·null=有菜缺数据(UI 显"整套热量待完善")
+    val mealMacro: MacroSummaryUi? = null, // [AI修改] §9.37:整套合计(热量+三宏量·热量受开关·hasData=false→UI 不显合计行)
 )

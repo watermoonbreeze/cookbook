@@ -101,7 +101,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
         // —— P2 营养线概览卡(生成结果首张·总卡·"总—分"层级在逐日卡之上)。domain 已算好,只呈现。
         val line = state.nutritionLine
         if (state.plan != null && line != null && line.dayCount > 0) {
-            item { com.sxdbsm.cookbook.android.ui.component.NutritionLineCard(line, state.nutritionAdvices) }
+            item { com.sxdbsm.cookbook.android.ui.component.NutritionLineCard(line, state.nutritionAdvices, state.weekMacro) }
         }
 
         // —— R3：生成上下文条(季节/健康)独立成条,移出控件区(概览卡之后·逐日卡之前)。
@@ -140,7 +140,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                         val d = com.sxdbsm.cookbook.util.DateTime.plusDays(s, day.dayIndex)
                         "${d.monthNumber}月${d.dayOfMonth}日"
                     }
-                    DayCard(day, dateLabel, state.nutritionByDishId)
+                    DayCard(day, dateLabel, state.nutritionByDishId, state.dailyMacro[day.dayIndex])
                 }
                 item {
                     Spacer(Modifier.height(8.dp))
@@ -207,9 +207,11 @@ private fun DayCard(
     day: DayPlan,
     dateLabel: String? = null,
     nutritionByDishId: Map<Long, com.sxdbsm.cookbook.android.ui.component.DishNutritionUi> = emptyMap(), // [AI生成] §9.36:每菜营养(整份热量+宏量·与AI推荐同款)
+    dayMacro: com.sxdbsm.cookbook.android.ui.component.MacroSummaryUi? = null, // [AI生成] §9.37:当天宏量小计(卡头下"总"锚点·热量受开关)
 ) {
     // [AI生成] 库存挂钩关→周期规划不显缺料/采购标注、缺料菜不变灰(与食历/详情同口径去噪)。
     val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
+    val calorieOn by com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled() // [AI修改] §9.37 Google审🟡-1:提到函数级(块外·避免条件切换重订阅·四处一致)
     // [AI修改] P1 家族化(§9.35 R1)：灰卡 surfaceVariant→白卡 surface(与另两档结果卡同族)·卡内 14→16·卡间 Spacer(10)·卡头 primary→onSurface(强调色只给可交互)。
     Surface(
         color = MaterialTheme.colorScheme.surface,
@@ -222,6 +224,16 @@ private fun DayCard(
                 "第 ${day.dayIndex + 1} 天" + (dateLabel?.let { " · $it" } ?: ""),
                 style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
             )
+            // [AI生成] §9.37:当天营养小计(色点前缀·热量受开关·部分缺数据标注)——卡头下"总"锚点，未展开每餐前先给当天总量。
+            if (dayMacro != null && dayMacro.hasData) {
+                Spacer(Modifier.height(6.dp))
+                val head = "当天合计" + (if (calorieOn && dayMacro.kcal != null) " · 约 ${dayMacro.kcal} 千卡" else "")
+                com.sxdbsm.cookbook.android.ui.component.MacroDotFlow(
+                    dayMacro.proteinG, dayMacro.fatG, dayMacro.carbG,
+                    head = head,
+                    tail = if (dayMacro.partial) "（部分菜暂无数据）" else null,
+                )
+            }
             day.meals.forEach { meal ->
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {

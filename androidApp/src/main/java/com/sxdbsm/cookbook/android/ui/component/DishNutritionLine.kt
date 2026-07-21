@@ -53,7 +53,8 @@ fun DishNutrition.toDishNutritionUi(): DishNutritionUi {
 }
 
 /**
- * 每菜营养行(§9.36)：整份热量+三大宏量(热量数字受"热量数值显示"开关·关则只显宏量)；钠偏高另起浅灰"偏咸"行；缺数据"营养待完善"。[AI生成]
+ * 每菜营养行(§9.36+§9.37)：整份热量(受开关) + 三大宏量「色点+灰克数」(蛋白绿/脂肪琥珀/碳水蓝·恒显)；钠偏高另起浅灰"偏咸"行；缺数据"营养待完善"。[AI修改]
+ * §9.37:宏量改「色点前缀」呈现(复用 MacroDotFlow·单一画法)——满足"每餐用对应颜色标出"，仍守克制(只色点着色·数字/热量/钠恒灰)。
  * 守红线:热量整份不折算·数字受开关·钠不点病名不用红·纯文字浅色无 emoji(§9.35)·免责复用页面底部。
  */
 @Composable
@@ -65,9 +66,9 @@ fun DishNutritionLine(n: DishNutritionUi?) {
         Text("营养待完善", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         return
     }
-    val macros = "蛋白 ${n.proteinG}g·脂肪 ${n.fatG}g·碳水 ${n.carbG}g"
-    val main = (if (calorieOn && n.kcal != null) "整份约 ${n.kcal} 千卡 · " else "") + macros + (if (n.estimated) "（估算）" else "")
-    Text(main, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    // [AI修改] §9.37:整份热量(受开关)拼进 head·三宏量交给 MacroDotFlow 上三色点·estimated 走 tail。
+    val head = if (calorieOn && n.kcal != null) "整份约 ${n.kcal} 千卡" else null
+    MacroDotFlow(n.proteinG, n.fatG, n.carbG, head = head, tail = if (n.estimated) "（估算）" else null)
     if (n.highSodium) {
         Spacer(Modifier.height(2.dp))
         Text("偏咸，注意用量", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

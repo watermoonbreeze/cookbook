@@ -12,6 +12,8 @@ import com.sxdbsm.cookbook.ai.PlanOrchestrator
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.ai.model.PeriodPlan
 import com.sxdbsm.cookbook.android.ui.component.DishNutritionUi
+import com.sxdbsm.cookbook.android.ui.component.MacroSummaryUi
+import com.sxdbsm.cookbook.android.ui.component.summarizeMacros
 import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
 import com.sxdbsm.cookbook.data.repository.DayMealDraft
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
@@ -104,15 +106,20 @@ class AiPlanViewModel(
                 val nutritionAdvices = com.sxdbsm.cookbook.domain.NutritionLineAdvisor.advise(nutritionLine)
                 // [AI生成] §9.36:批量查计划内每菜营养(去重全部 dishId·一次·无 N+1)·runCatching 兜底(失败→空→逐日卡静默不显·绝不中断计划)。
                 val dishIds = annotatedPlan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
-                val nutritionByDishId = runCatching {
-                    nutritionRepo.dishNutrition(dishIds).mapValues { (_, dn) -> dn.toDishNutritionUi() }
-                }.getOrDefault(emptyMap())
-                PlanGenResult(annotatedPlan, ctx.season, ctx.healthAware, result.byAi, nutritionLine, nutritionAdvices, nutritionByDishId)
+                val dishNutri = runCatching { nutritionRepo.dishNutrition(dishIds) }.getOrDefault(emptyMap())
+                val nutritionByDishId = dishNutri.mapValues { (_, dn) -> dn.toDishNutritionUi() }
+                // [AI生成] §9.37:每日/整周宏量汇总(用原始 DishNutrition.totals 累加再取整·非累加展示态·避免累积误差)。
+                //   dailyMacro 按 dayIndex·某天全菜无数据→hasData=false(逐日卡不显小计)；weekMacro 整周合计给概览卡。
+                val dailyMacro = annotatedPlan.days.associate { day ->
+                    day.dayIndex to summarizeMacros(day.meals.flatMap { it.dishes }.map { dishNutri[it.id] })
+                }
+                val weekMacro = summarizeMacros(annotatedPlan.days.flatMap { it.meals }.flatMap { it.dishes }.map { dishNutri[it.id] })
+                PlanGenResult(annotatedPlan, ctx.season, ctx.healthAware, result.byAi, nutritionLine, nutritionAdvices, nutritionByDishId, dailyMacro, weekMacro)
             }.onSuccess { r ->
                 state = state.copy(
                     loading = false, plan = r.plan, season = r.season, healthAware = r.healthAware,
                     byAi = r.byAi, planStartDate = startDate, nutritionLine = r.nutritionLine, nutritionAdvices = r.nutritionAdvices,
-                    nutritionByDishId = r.nutritionByDishId,
+                    nutritionByDishId = r.nutritionByDishId, dailyMacro = r.dailyMacro, weekMacro = r.weekMacro,
                 )
             }.onFailure {
                 state = state.copy(loading = false, error = "生成失败，请稍后再试")
@@ -153,6 +160,8 @@ class AiPlanViewModel(
         val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine?,
         val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice>,
         val nutritionByDishId: Map<Long, DishNutritionUi>, // [AI生成] §9.36:逐日卡每菜营养
+        val dailyMacro: Map<Int, MacroSummaryUi>, // [AI生成] §9.37:每日宏量小计(按 dayIndex)
+        val weekMacro: MacroSummaryUi, // [AI生成] §9.37:整周宏量合计(概览卡)
     )
 
     companion object {
@@ -178,5 +187,7 @@ data class AiPlanUiState(
     val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine? = null, // [AI生成] P2:整周营养线(结构覆盖/缺口/均衡度)·概览卡用
     val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice> = emptyList(), // [AI生成] P2:跨天补充建议
     val nutritionByDishId: Map<Long, DishNutritionUi> = emptyMap(), // [AI生成] §9.36:逐日卡每菜营养(整份热量+宏量·null 视为无数据静默不显)
+    val dailyMacro: Map<Int, MacroSummaryUi> = emptyMap(), // [AI生成] §9.37:每日宏量小计(按 dayIndex·hasData=false 则逐日卡不显)
+    val weekMacro: MacroSummaryUi? = null, // [AI生成] §9.37:整周宏量合计(概览卡"一周合计"区·null/hasData=false 则不显)
     val error: String? = null,
 )
