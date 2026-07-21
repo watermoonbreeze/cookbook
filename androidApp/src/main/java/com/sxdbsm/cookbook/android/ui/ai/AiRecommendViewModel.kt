@@ -131,15 +131,20 @@ class AiRecommendViewModel(
         }
     }
 
+    /** 慢病引导"永不再显"一次性标记：dismiss/切偏营养 共用单一真相源(防"锁 flag"逻辑散两处漏改)。[AI生成] Google审建议2 */
+    private fun lockNutritionHintForever() {
+        viewModelScope.launch { prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_HINT_DISMISSED, true) }
+    }
+
     /** 慢病知情引导·关闭(右上×)：只写一次性标记、不改风格(尊重"我知道了但不用")。[AI生成] F4b */
     fun dismissNutritionHint() {
         state = state.copy(showNutritionHint = false)
-        viewModelScope.launch { prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_HINT_DISMISSED, true) }
+        lockNutritionHintForever()
     }
 
     /** 慢病知情引导·点"切到偏营养"：切风格(启用慢病软降·排序生效)+ 锁一次性 + 触发重推。[AI生成] F4b */
     fun applyNutritionStyleFromHint() {
-        viewModelScope.launch { prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_HINT_DISMISSED, true) }
+        lockNutritionHintForever()
         setStyle(com.sxdbsm.cookbook.ai.RecommendationStyle.NUTRITION) // 内部:改风格+隐横幅(setStyle 已处理)+持久化+重推
     }
 
