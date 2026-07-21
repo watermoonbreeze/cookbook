@@ -78,6 +78,9 @@ fun ImagePickerButton(
     coverStyle: Boolean = false, // [AI生成] F#2/基调:封面卡变体——无图=虚线引导卡、有图=通栏封面(复用同一图片管线),用于菜品编辑页顶部前移引导拍照。
     // [AI生成] §五阻断⑤:压缩/保存图片处理中对外露出 processing 态——编辑器据此在压缩期禁用保存,防空图路径存库。默认 no-op(不关心的调用方无感)。
     onProcessingChange: (Boolean) -> Unit = {},
+    // [AI生成] §9.34 follow-up(§9.12撤销):查看器删一张图时上抛让**编辑页宿主**弹撤销 Snackbar(viewer 是 Dialog·自身弹会被裁剪)。
+    //   参数 restore=还原回调(重发删前列表·按原顺序插回)。默认 null=不提供撤销(纯软保护:大图确认+物理不即删+未保存不持久)。
+    onImageDeleted: ((restore: () -> Unit) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -319,7 +322,13 @@ fun ImagePickerButton(
             initialPage = page,
             contentDescription = "菜品照片",
             onDismiss = { viewerPage = null },
-            onDelete = { idx -> removeImageAt(idx, imagePaths, thumbnailPaths, onImagesChanged) },
+            onDelete = { idx ->
+                // [AI生成] §9.12/§9.34 follow-up:删前快照删后上抛让编辑页宿主 show 撤销·还原=重发删前完整列表(按原顺序插回)。
+                val preImages = imagePaths
+                val preThumbs = thumbnailPaths
+                removeImageAt(idx, imagePaths, thumbnailPaths, onImagesChanged)
+                onImageDeleted?.invoke { onImagesChanged(preImages, preThumbs) }
+            },
         )
     }
 }

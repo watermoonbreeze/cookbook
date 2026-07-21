@@ -79,7 +79,6 @@ fun NewDishScreen(
     var ingredientGroupSheetOpen by remember { mutableStateOf(false) } // [AI生成] B5 "配料组"弹层开关
     var groupEditorOpen by remember { mutableStateOf(false) } // [AI生成] 需求2 全屏配料组编辑器开关
     var focusedStepIndex by remember { mutableStateOf<Int?>(null) } // [AI生成] #2 当前定位(聚焦)的步骤下标：模板插入到这一步
-    var noIngredientPromptOpen by remember { mutableStateOf(false) } // [AI生成] 无食材保存前的"建议添加食材"提示
     var discardPromptOpen by remember { mutableStateOf(false) } // [AI生成] 有未保存改动时返回的"放弃更改?"守卫
     val context = LocalContext.current
 
@@ -181,6 +180,8 @@ fun NewDishScreen(
                 maxCount = 3, // [AI修改] 修回归:封面前移时曾误压成 1 张,恢复"最多 3 张"(封面多图 strip)。
                 coverStyle = true,
                 modifier = Modifier.fillMaxWidth(),
+                // [AI生成] §192(§9.12撤销):删图后编辑页宿主弹撤销 Snackbar(§9.34 follow-up)·还原插回原位。
+                onImageDeleted = { restore -> appSnackbar?.showUndo("已删除这张图片", onUndo = restore) },
             )
             Spacer(Modifier.height(16.dp))
 
@@ -388,7 +389,11 @@ fun NewDishScreen(
             //   navBarPadding=false:本页在 MainScaffold NavHost 已被 navigationBarsPadding 避让,不重复避让(防双下边距·§9.30)。
             com.sxdbsm.cookbook.android.ui.component.FormBottomBar(
                 primaryText = if (state.saving) "保存中…" else "保存",
-                onPrimary = { if (state.ingredients.isEmpty()) noIngredientPromptOpen = true else vm.save() },
+                // [AI修改] §9.30 P2:无食材保存不再弹打断对话框→直接存 + 底部浅 Snackbar 告知(非阻断·告知非拦截·减一次决策)。
+                onPrimary = {
+                    if (state.ingredients.isEmpty()) appSnackbar?.showMessage("还没加食材 · 营养/热量待完善，之后可在编辑里补上")
+                    vm.save()
+                },
                 primaryEnabled = state.name.isNotBlank() && !state.saving && !state.loading && state.errorMessage == null,
                 navBarPadding = false,
             )
@@ -440,26 +445,7 @@ fun NewDishScreen(
         )
     }
 
-    // [AI生成] 无食材保存提示：添加食材后才能统计营养/热量等健康膳食指标；点"添加食材"直接开选择器。
-    if (noIngredientPromptOpen) {
-        AlertDialog(
-            onDismissRequest = { noIngredientPromptOpen = false },
-            title = { Text("这道菜还没添加食材") },
-            text = { Text("添加食材后，才能统计这道菜的营养、热量等健康膳食指标。要现在添加吗？") },
-            confirmButton = {
-                TextButton(onClick = {
-                    noIngredientPromptOpen = false
-                    ingredientPickerOpen = true // [AI生成] 等同触发"添加食材"事件
-                }) { Text("添加食材") }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    noIngredientPromptOpen = false
-                    vm.save()
-                }) { Text("继续保存") }
-            },
-        )
-    }
+    // [AI修改] §9.30 P2:无食材保存的打断对话框已移除→改保存时底部浅 Snackbar 告知(见 FormBottomBar onPrimary·非阻断)。
 
     if (tagInputOpen) {
         // [AI修改] T3：标签弹窗改为库选择器——展示标签库可直接选，输入并添加会存进库，可编辑删除自建标签。
@@ -604,6 +590,7 @@ private fun OperationStepsEditor(
     onPickTemplate: () -> Unit, // [AI生成] #2 打开"选择步骤"模板弹层
     onStepFocused: (Int) -> Unit, // [AI生成] #2 某步输入框获焦→记录为当前定位步(模板插入目标)
 ) {
+    val stepSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI生成] §192:步骤图删除撤销宿主(编辑页路由·非Dialog)
     // [AI修改] §9.31:标题由外层 FoldSection「操作步骤（选填）」承载,此处只留"选择步骤"模板入口(右对齐·避免与段标题重复)。
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Spacer(Modifier.weight(1f))
@@ -658,6 +645,7 @@ private fun OperationStepsEditor(
                         onImagesChanged = { images, thumbnails -> onUpdateStepImages(index, images, thumbnails) },
                         maxCount = 3,
                         modifier = Modifier.fillMaxWidth(),
+                        onImageDeleted = { restore -> stepSnackbar?.showUndo("已删除这张图片", onUndo = restore) }, // [AI生成] §192
                     )
                     Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                         TextButton(onClick = { onRemoveStep(index) }) {
