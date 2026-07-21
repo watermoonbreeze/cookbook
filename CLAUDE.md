@@ -178,6 +178,10 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 权威数据核准(营养/GI/嘌呤)用**分片后台 agent 联网**(先 `ToolSearch select:WebSearch,WebFetch`)各写 `temp/*_N.json`→python **覆盖升级式**合并(auth 值覆盖、**保留 auth 未覆盖字段**不 null 老值、ref+review 取 auth)；查不到的字段**省略不编造**、口径不确定标 `pending`+ref 注明，一手权威成分表才 `verified`；合并后跑 `validateNutritionSeedForTest`+`:shared:testDebugUnitTest`。
 - 真机诊断"数据有但没传到 UI"：`adb -s <序列号>`(多设备)；Compose 底栏文本不进无障碍树(`uiautomator dump` 抓不到)；华为等 shell 无 `sqlite3`，`adb exec-out run-as <pkg> cat databases/x.db>本地` 用 python 读；在**查(repo)→存(state)→读(UI)** 三处埋 `AppLogger.d`/`CookbookLog.d`，一次 logcat 定位断点，完事删日志。
 - 本项目 db **不在默认 `databases/`**：落 `getExternalFilesDir(null)/cookbook/db/cookbook.db`(app 专属外部目录，零权限)，`run-as ... cat databases/` 取不到——直接 `adb pull` 该外部路径(无需 run-as)。**Git Bash 调 adb 访问 `/sdcard/...` 必须 `export MSYS_NO_PATHCONV=1`**，否则被转成 `C:/Program Files/Git/sdcard/...` 报 No such file。数据 bug 修复先 `adb pull` 拉库→python 模拟要跑的 SQL 统计影响行数+抽查目标→证明有效再改代码。
+- Compose `produceState`/`LaunchedEffect` 的 **key 用真正随内容变化的输入(如 path)**，别用某分支恒定的派生值：`rememberImageBitmap` 曾 `key1=cacheKey`(preview 时 cacheKey 恒 null)→path 变不重解码→全屏查看器删当前图预览不刷新(左右滑才变)；修 `key1=path,key2=preview`。
+- 给被多处调用的函数加 `suspend`(为批量查库/IO)前**先 grep 所有调用点**：有同步调用点编译红(`Suspend function should be called only from a coroutine`)，包 `viewModelScope.launch` 或把 IO 移出(mapResult 加营养查询变 suspend 打断了 setMedicinalFilter 同步重排)。
+- **热量数字统一受 `CALORIE_NUMBER_ENABLED` 开关(默认关·"热量是个人概念"红线)**：推荐卡/餐食卡/今日卡关=只显宏量隐千卡(用 `rememberCalorieNumberEnabled`)；推荐显"整份约X千卡"**不按成员 share 折算**；不显达标/占比%；钠慢病提示浅灰"偏咸"**不点病名不用红**；有料但用量缺致热量恒0→算"营养待完善"别显"约0千卡"。
+- 表单越层修复按**准则 A 复核实质违规**：表单 20+ 本地态/isDirty 不是违规(准则A背书本地态作写回单一真相源+hydrated守卫)，**只有 `koinInject<Repository>` 是真越层**→min-fix 收进 VM+回调下传即可，别硬抽完整表单 VM(重引 hydration/数据丢失坑=过度设计)。
 
 ## 技术栈
 
