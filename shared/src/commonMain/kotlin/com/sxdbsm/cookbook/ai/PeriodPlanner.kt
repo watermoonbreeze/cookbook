@@ -58,6 +58,8 @@ class PeriodPlanner {
         style: RecommendationStyle = RecommendationStyle.DEFAULT, // [AI生成] 推荐风格(轻干预)：调整新颖/健康/搭配/去重权重
     ): PeriodPlan {
         val f = planFactors(style) // 风格系数
+        // [AI生成] D4:慢病软降权重(仅"偏营养"风格 >0·与单餐 HealthRuleEngine 共用 style.weights() 真相源)——高GI/嘌呤候选轻度靠后。
+        val chronicWeight = style.weights().chronicDiseaseNutrition
         val lo = dishesMin.coerceAtLeast(1)
         val hi = dishesMax.coerceAtLeast(lo)
         val pool = candidates.filterNot { it.hasAvoid } // 忌口硬剔除
@@ -97,7 +99,7 @@ class PeriodPlanner {
                         .ifEmpty { pool.filter { it !in chosen } }
                     // [AI修改] 分数 + 随机抖动：强信号(应季/健康)仍优先，同分菜每次"生成"换出不同组合。
                     val pick = avail.maxByOrNull {
-                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen, f, usedHeavyToday) + (jitter[it.id] ?: 0.0)
+                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen, f, usedHeavyToday, chronicWeight) + (jitter[it.id] ?: 0.0)
                     } ?: break
                     chosen += pick
                     usedDishIds[pick.id] = (usedDishIds[pick.id] ?: 0) + 1
@@ -132,6 +134,7 @@ class PeriodPlanner {
         mealChosen: List<PlanDish>, // [AI生成] 本餐已选菜，用于荤素搭配平衡
         f: PlanFactors, // [AI生成] 推荐风格系数
         usedHeavyToday: Int = 0, // [AI生成] 当天已选重油菜数(重油族跨餐去重)
+        chronicWeight: Double = 0.0, // [AI生成] D4:慢病软降权重(仅"偏营养"风格>0)
     ): Double {
         var s = BASE
         // 应季
@@ -160,6 +163,11 @@ class PeriodPlanner {
         if (cookingHeaviness(dish.cookingMethodNames) == HEAVY_FAMILY) s -= f.repeat * HEAVY_REPEAT_PENALTY * usedHeavyToday
         // 限量降权
         s -= LIMIT_PENALTY * dish.limitHits.size
+        // [AI生成] D4:慢病数值软降(仅"偏营养"风格·登记糖尿病/痛风时命中非空)——高GI/嘌呤主料轻度靠后,与单餐同 ChronicDiseasePenalty 口径。
+        //   命中已在 gatherForPlan 按病种 gate + 去重 avoid∪limit,此处只按数量罚;弱可感知(0.6×≤0.7≈≤0.42)不反超应季/健康/搭配核心信号。
+        if (chronicWeight > 0.0 && (dish.highGiHits.isNotEmpty() || dish.highPurineHits.isNotEmpty())) {
+            s -= chronicWeight * ChronicDiseasePenalty.penaltyBase(dish.highGiHits.size, dish.highPurineHits.size)
+        }
         return s
     }
 

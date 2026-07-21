@@ -28,10 +28,12 @@ class PeriodPlannerTest {
         breakfast: Boolean = false,
         meat: Boolean = false,
         methods: List<String> = emptyList(), // [AI生成] 做法名(重油族去重测试用)
+        highGi: List<String> = emptyList(), // [AI生成] D4:高GI主料命中(慢病软降测试用)
+        highPurine: List<String> = emptyList(), // [AI生成] D4:高嘌呤主料命中(慢病软降测试用)
     ) = PlanDish(
         id = id, name = "菜$id", mainNames = main, nutritionTags = nutrition, seasonTags = season,
         isHealthy = healthy, hasAvoid = avoid, isMeat = meat, isBreakfast = breakfast,
-        cookingMethodNames = methods,
+        cookingMethodNames = methods, highGiHits = highGi, highPurineHits = highPurine,
     )
 
     @Test
@@ -132,6 +134,35 @@ class PeriodPlannerTest {
         val lunchDishes = plan.days[0].meals.first { it.mealName == "中餐" }.dishes.map { it.id }
         assertTrue(1L in bfDishes && 2L !in bfDishes, "早餐应只出早餐菜: $bfDishes")
         assertTrue(2L in lunchDishes && 1L !in lunchDishes, "中餐应只出非早餐菜: $lunchDishes")
+    }
+
+    @Test
+    fun `偏营养风格_高嘌呤高GI菜被软降到最后`() {
+        // 4 道干净全素菜 + 1 道命中高嘌呤/高GI的菜(id=5)，同 base、同素(荤素/主食不干扰)、5 选 4：
+        //   偏营养风格开启慢病软降(-0.6×0.42)，命中菜应被挤出成唯一落选者。seed 固定确定性。
+        val clean = (1L..4L).map { dish(it, main = listOf("料$it")) }
+        val flagged = dish(5, main = listOf("猪肝"), highGi = listOf("白米饭"), highPurine = listOf("猪肝"))
+        val plan = planner.plan(
+            clean + flagged, days = 1, mealNames = listOf("中餐"), dishesMin = 4, dishesMax = 4,
+            seed = 0, style = RecommendationStyle.NUTRITION,
+        )
+        val picked = plan.days[0].meals[0].dishes.map { it.id }.toSet()
+        assertEquals(4, picked.size)
+        assertTrue(5L !in picked, "偏营养风格下高嘌呤/高GI菜应被软降落选: picked=$picked")
+    }
+
+    @Test
+    fun `非营养风格_慢病命中不改变计划(gate关闭)`() {
+        // 同一组菜、同 seed、非营养风格(FAMILIAR·chronicWeight=0)：带不带慢病命中，生成的计划必须完全一致——
+        //   证明软降门禁只在"偏营养"风格生效，其余风格零影响(向后兼容·不误伤)。
+        val base = (1L..4L).map { dish(it, main = listOf("料$it")) }
+        val withoutHits = base + dish(5, main = listOf("猪肝"))
+        val withHits = base + dish(5, main = listOf("猪肝"), highGi = listOf("白米饭"), highPurine = listOf("猪肝"))
+        fun idsOf(dishes: List<PlanDish>) = planner.plan(
+            dishes, days = 1, mealNames = listOf("中餐"), dishesMin = 4, dishesMax = 4,
+            seed = 0, style = RecommendationStyle.FAMILIAR,
+        ).days[0].meals[0].dishes.map { it.id }
+        assertEquals(idsOf(withoutHits), idsOf(withHits), "非营养风格下慢病命中不应改变计划(gate 关闭)")
     }
 
     @Test

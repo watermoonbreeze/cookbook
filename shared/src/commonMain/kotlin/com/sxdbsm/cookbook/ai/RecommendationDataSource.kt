@@ -350,6 +350,11 @@ class RecommendationDataSource(
             else ingredientRepo.listByCategories(personalAvoidCatIds).map { it.id }.toSet()
         val personalAvoidIds = personalAvoidFromCat + familyRepo.allPersonalAvoidIngredientIds().toSet() // [AI修改] 阶段4:并入具体食材忌口
         val healthAware = careCategoryIds.isNotEmpty()
+        // [AI生成] D4:慢病数值软降(周计划)——care 分类名→病种集(与 gather()/今日卡同口径 fromCareName)；giByName 仅登记糖尿病才查(gate 省全表查)。
+        //   命中仅在登记病种时非空→PlanDish 带上,由 PeriodPlanner 在"偏营养"风格软降(与单餐 HealthRuleEngine 同口径)。
+        val careCategoryNames = if (careCategoryIds.isEmpty()) emptyList() else q.selectFoodCategoryNamesByIds(careCategoryIds).executeAsList()
+        val conditions = careCategoryNames.flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }.toSet()
+        val giByName = if (com.sxdbsm.cookbook.domain.HealthCondition.DIABETES in conditions) nutritionRepo.giByName() else emptyMap()
         // 营养/应季标签(按食材)
         val tagRows = q.selectNutritionSeasonTags().executeAsList()
         val nutritionByIng = tagRows.filter { it.dim == "nutrition" }.groupBy({ it.ingredient_id }, { it.tag_name }).mapValues { it.value.toSet() }
@@ -376,6 +381,11 @@ class RecommendationDataSource(
             val limitHits = ings.filter { it.is_main == 1L && it.ingredient_id in limitIds && it.ingredient_id !in seasoningIds }
             val recommendHits = ings.filter { it.is_main == 1L && it.ingredient_id in recommendIds && it.ingredient_id !in seasoningIds }
             val planMainNames = ings.filter { it.is_main == 1L && it.ingredient_id !in seasoningIds }.map { it.ingredient_name }
+            // [AI生成] D4:高GI/高嘌呤主料命中(仅登记糖尿病/痛风时非空)——去重 avoid∪limit 料防双重罚(与单餐 HealthRuleEngine 同 alreadyFlagged 口径)。
+            val chronicFlagged = (avoidHits.map { it.ingredient_name } + limitHits.map { it.ingredient_name }).toSet()
+            val (highGiHits, highPurineHits) = com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.dishQualitativeHits(
+                mainNames = planMainNames, conditions = conditions, giByName = giByName, alreadyFlagged = chronicFlagged,
+            )
             PlanDish(
                 id = d.id,
                 name = d.name,
@@ -392,6 +402,8 @@ class RecommendationDataSource(
                 recommendHits = recommendHits.map { it.ingredient_name }.distinct(),
                 limitHits = limitHits.map { it.ingredient_name }.distinct(),
                 cookingMethodNames = methodsByDish[d.id].orEmpty(), // [AI生成] 重油族跨餐去重用
+                highGiHits = highGiHits, // [AI生成] D4:高GI主料(仅糖尿病)·周计划营养风格软降
+                highPurineHits = highPurineHits, // [AI生成] D4:高嘌呤主料(仅痛风)·周计划营养风格软降
             )
         }
         PlanContext(dishes = dishes, season = currentSeason(), healthAware = healthAware)

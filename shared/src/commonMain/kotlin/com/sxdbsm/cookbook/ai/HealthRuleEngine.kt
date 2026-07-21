@@ -20,10 +20,7 @@ import kotlin.math.exp
 class HealthRuleEngine {
 
     companion object {
-        // [AI生成] 慢病数值软约束调参(具名便于调参/测试引用)：每命中一味高GI/高嘌呤主料罚 STEP，每类最多计 CAP 味，整因子封顶 PENALTY_CAP。
-        private const val CHRONIC_HIT_STEP = 0.25
-        private const val CHRONIC_HITS_PER_DIM_CAP = 2
-        private const val CHRONIC_PENALTY_CAP = 0.7
+        // [AI修改] D4:慢病软降罚分公式收敛到 ChronicDiseasePenalty(与周计划 PeriodPlanner 共用单一真相源,防调参漂移)。
 
         // [AI生成] 中式优先·西式排后(用户2026-07-20#2)：西式菜轻度降权,同分中式靠前;轻(<recommend0.6)不排除西式。
         private const val CUISINE_WESTERN_DEMOTE = 0.3
@@ -148,10 +145,9 @@ class HealthRuleEngine {
             val (highGi, highPurine) = com.sxdbsm.cookbook.domain.NutritionLevelEvaluator.dishQualitativeHits(
                 mainNames = mainIngredients.map { it.name }, conditions = conditions, giByName = giByName, alreadyFlagged = flagged,
             )
-            // 每类(GI/嘌呤)最多计 CHRONIC_HITS_PER_DIM_CAP 味 × 每味 CHRONIC_HIT_STEP，整因子封顶 CHRONIC_PENALTY_CAP。
+            // [AI修改] D4:罚分基数收敛到 ChronicDiseasePenalty(每维封顶2味×0.25、整体封顶0.7)，与周计划同口径。
             // 营养风格权重 0.6 下**实际最大软降 ≈ 0.6×0.7 = 0.42 分**(弱可感知,<单个 recommend/nutritionBalance 因子量级 0.9~1.28,故不反超核心信号)。
-            val chronicPenalty = ((minOf(highGi.size, CHRONIC_HITS_PER_DIM_CAP) + minOf(highPurine.size, CHRONIC_HITS_PER_DIM_CAP)) * CHRONIC_HIT_STEP)
-                .coerceAtMost(CHRONIC_PENALTY_CAP)
+            val chronicPenalty = ChronicDiseasePenalty.penaltyBase(highGi.size, highPurine.size)
             score -= weights.chronicDiseaseNutrition * chronicPenalty
         }
         // [AI修改] 忌口菜大幅降权排到所有正常菜之后(仍保留、带 avoidNames 让 UI 标红警示)，让用户看得到但明确知道该避免。

@@ -28,6 +28,9 @@ data class PlanDish(
     val recommendHits: List<String> = emptyList(), // 利于调养的食材(说明用)
     val limitHits: List<String> = emptyList(), // 限量食材(说明用)
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 做法(红烧/清蒸…)：供周计划"重油族跨餐去重"(与单餐 MMR 重油族同口径·cookingHeaviness)。
+    // [AI生成] D4:高GI/高嘌呤主料命中(仅登记糖尿病/痛风时非空·已去重 avoid∪limit 防双罚)——周计划"偏营养"风格软降(与单餐同口径)。
+    val highGiHits: List<String> = emptyList(), // 高GI(≥70)主料，仅登记糖尿病
+    val highPurineHits: List<String> = emptyList(), // 高嘌呤"应避免"主料，仅登记痛风
 )
 
 /** 规划出的一道菜 + 侧重点说明。[AI生成] */
