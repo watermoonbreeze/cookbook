@@ -76,3 +76,7 @@ lint/tmp/
 
 # Android Profiling
 *.hprof
+
+# 数据核对工具输出/缓存
+scripts/data/reports/
+scripts/data/__pycache__/
