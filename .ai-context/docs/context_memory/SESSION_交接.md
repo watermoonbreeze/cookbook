@@ -2,7 +2,11 @@
 
 > 会话交接唯一固定入口（每次交接覆盖，历史流水在 git）。
 > 触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落地文档+覆盖本文件+git 提交。
-> 更新时间：**2026-07-21 续接 session·营养线 UI 主线收官（3 笔新提交全 push origin/master·末位 `4ac74bf`）**。承上一 session(17 提交末位 `4cf9ddb`)。本轮把「营养线」贯通到界面各处 + 编辑体验统一：**#1 AiPlan 逐日卡每菜营养行 `9952c25`** + **#3 菜品编辑低频区分类折叠 `da85c1a`** + **#4 WeekPlan 已排周营养概览卡 `4ac74bf`**。三处均抽/复用共享组件(DishNutritionLine/FoldSection/NutritionLineCard·单一真相源)、走 Google 质量审(#4 修 1 阻断:空周误显0分卡·已复验)、构建通过。**#2 概览卡视觉打磨判定跳过(现状复用 §9.35 达标)。UI 待用户统一真机测。**
+> 更新时间：**2026-07-21 续接 session·营养线 UI 主线 + A2 健康红线 + 报告小修（多笔全 push origin/master·末位 `48ed37a`）**。承上一 session(17 提交末位 `4cf9ddb`)。本轮：
+> **营养线三件套**：#1 AiPlan 逐日卡每菜营养行 `9952c25` + #3 菜品编辑低频区分类折叠 `da85c1a` + #4 WeekPlan 已排周营养概览卡 `4ac74bf`(抽/复用共享 DishNutritionLine/FoldSection/NutritionLineCard·单一真相源·#4 修1阻断空周0分卡已复验)。
+> **A2 健康红线 `3452004`**：孕期/哺乳期成员不评估热量(复用已拍板「生命阶段」care 信号·**不新建字段**·集中式 gate:BodyMetrics.skipCalorieEval@Transient+FamilyMember.isCalorieExempt→toBodyMetrics→dailyTarget/referenceKcal 首部 return null·5个热量点零改动全覆盖·数据层加性别 gate·UI 仅女性显孕哺+切男性清理+说明+MemberCard中性提示·+3单测·Google审无阻断)。
+> **报告月结构日历改两行 `343ebd3`**(用户今日提)：StructureCalendar 单Row→FlowRow 自动换行(月~30块去横滑溢出·简版·与 F#5 完整设计对账留存)。
+> **#2 概览卡视觉打磨判跳过**(现状复用 §9.35 达标)。均走门禁+构建+push。**UI 待用户统一真机测。**
 >
 > **📌 数据扩充(联网核准营养)已泊车待跑**：见 `数据扩充_营养核准_待跑.md`——195 条 pending 缺口已摸清+分 5 片+agent prompt+合并步骤全就绪，用户要求"先做 UI 后跑数据"，**下次要数据扩充直接按该档执行不用重摸**。
 
@@ -37,16 +41,15 @@
 - **报告空周/月→跳一周计划**(带周日期·月含月首日·`WEEK_PLAN_ROUTE` 参数化)。
 - 会商方案：营养线四角色(产品/营养师/运营/文案) · AiPlan界面统一 · A#4/A#6 得失分析。
 
-## 四、⏭ 下一步（营养线 UI 主线已收官·剩余项各有约束·待用户定向）
-> ✅ 本续接 session 已做完：#1 AiPlan逐日营养行 · #3 菜品编辑折叠 · #4 WeekPlan营养卡（原队列 1/3/4）。#2 视觉打磨判跳过。
+## 四、⏭ 下一步（营养线 UI + A2 健康红线已收官·剩余项各有约束）
+> ✅ 本续接 session 已做完：#1 AiPlan逐日营养行 · #3 菜品编辑折叠 · #4 WeekPlan营养卡 · **A2 孕哺不评热量(健康红线·`3452004`)** · 报告月历改两行(`343ebd3`) · backlog 状态对账。#2 视觉打磨判跳过。
 >
-> 剩余 greenlit 队列（各有前置/性质约束·建议下次由用户挑方向）：
-1. **A2 孕期/哺乳不评热量 gate**(C组9·健康红线·**建议优先**)：孕期/哺乳成员不评热量/不推"吃少点"(误压=红线)。domain 层 gate·有单测基建·可无人值守做。**做完解锁 #2下项**。需理清成员孕哺状态字段 + CalorieTarget/DriEnergy。
-2. **A#6 B 当日能量软因子**：依赖上条 A2 gate 先落地→再 B(同构 `chronicDiseaseNutrition`·封顶0.4·暗因子·复用 CalorieTarget·缺数据恒0)。暗因子不可见。
-3. **A#4 GI 一维**（低价值·可不做）：`gi_high`(21食材) code→category_id 解析路径未清(food_category 无 code 列)。或 DishCandidate 补 highGiStaple 进 MMR。分析结论=最小化做或不做。
-4. **CookingTimer VM化**(F-Arch1·**需真机验**)：CookMode 末页 0 VM·含倒计时/AlarmManager/息屏·androidApp 无测试基建→**无人值守做有回归风险(计时/持久化只能真机验)**·建议用户在场时做。
-5. **数据扩充**(联网核准营养·**已泊车**)：直接按 `数据扩充_营养核准_待跑.md` 执行(195 pending 已分片)。
-6. 小 follow-up：热量开关 calorieOn 上提减订阅(perf)。
+> 剩余队列（各有前置/性质约束·多数需真机或用户定向）：
+1. **A#6-B 当日能量软因子**：A2 gate 已落地(前置解锁)→可做 B(同构 `chronicDiseaseNutrition`·封顶0.4·**暗因子·用户不可见**·复用 CalorieTarget·缺数据恒0)。⚠️但"暗因子不可验证"且与"热量个人概念"红线有张力(handoff 建议 A 现在做/B 排期·**未显式拍板**)——**建议排期时先与用户确认是否要**,勿盲上。
+2. **A#4 GI 一维**（低价值·可不做）：`gi_high`(21食材) code→category_id 解析路径未清(food_category 无 code 列)。分析结论=最小化做或不做。
+3. **CookingTimer VM化**(F-Arch1·**需真机验**)：CookMode 末页 0 VM·含倒计时/AlarmManager/息屏·androidApp 无测试基建→无人值守做有回归风险·**建议用户在场时做**。
+4. **F#5 报告结构日历完整版**(7列周对齐网格+图例+rangeStart+色阶映射)：简版"两行"已交付(`343ebd3`);完整版**两前置(缺rangeStart/色阶语义冲突)不适合盲做**·需一次小设计确认。
+5. **数据扩充**(联网核准营养·**已泊车**)：用户要求"先UI后数据"·UI 主线现已largely done·直接按 `数据扩充_营养核准_待跑.md` 执行(195 pending 已分片·后台+断点续连)。
+6. 其余 backlog：190 选择/编辑统一 P1P2(需真机)、193 AI规则推荐贴合(🔴·algorithm会诊剩下批)、203 全App家族化 P2-P4(需真机验P1)、204 F#3底部栏展开(需UX)。
 
-> **暂缓/待用户**：营养线宏量慢病分布层(需 NutritionTotals)·补充建议回灌 PeriodPlanner 闭环。
-> **接手推进**：读 `算法拍板落地` + `待办总览` + 本档 → 剩余项**建议先 A2 健康 gate(可无人值守·健康红线价值高)**，#4 计时器留用户在场做，数据扩充按泊车档跑。每功能过门禁+构建+push·真机验证用户统一做。
+> **接手推进**：读 `算法拍板落地` + `待办总览`(单一真相源) + 本档 → 剩余多数需真机/用户定向;可无人值守安全推的主要是**数据扩充(泊车档·后台跑)**。A#6-B 暗因子建议先确认。每功能过门禁+构建+push·真机验证用户统一做。
