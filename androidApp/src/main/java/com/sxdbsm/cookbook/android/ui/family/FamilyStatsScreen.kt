@@ -109,12 +109,13 @@ fun FamilyStatsScreen(
                         )
                     }
                     Spacer(Modifier.height(8.dp))
+                    val ext = com.sxdbsm.cookbook.android.ui.theme.LocalExtendedColors.current // [AI修改] 宏量色收敛到单一来源(值不变+深色适配·防硬编码漂移)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Legend(Color(0xFF5C9A6A), "蛋白 ${stats.proteinG}g")
+                        Legend(ext.macroProtein, "蛋白 ${stats.proteinG}g")
                         Spacer(Modifier.width(10.dp))
-                        Legend(Color(0xFFE0A23C), "脂肪 ${stats.fatG}g")
+                        Legend(ext.macroFat, "脂肪 ${stats.fatG}g")
                         Spacer(Modifier.width(10.dp))
-                        Legend(Color(0xFF6E9BD1), "碳水 ${stats.carbG}g")
+                        Legend(ext.macroCarb, "碳水 ${stats.carbG}g")
                     }
                     if (!stats.isFamily) {
                         Spacer(Modifier.height(6.dp))

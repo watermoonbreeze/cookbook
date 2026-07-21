@@ -92,7 +92,7 @@ fun DishDetailScreen(
                             Icon(
                                 imageVector = if (vm.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
                                 contentDescription = if (vm.isFavorite) "取消收藏" else "收藏",
-                                tint = if (vm.isFavorite) androidx.compose.ui.graphics.Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = if (vm.isFavorite) com.sxdbsm.cookbook.android.ui.theme.LocalExtendedColors.current.favoriteStar else MaterialTheme.colorScheme.onSurfaceVariant, // [AI修改] 收藏金星收进 ExtendedColors.favoriteStar(防硬编码·像素不变·金星语义色刻意不染主题)
                             )
                         }
                         // [AI修改] 自建菜正常编辑；预设菜给"另存为我的菜"(复制后可改)，不再让用户猜怎么改。

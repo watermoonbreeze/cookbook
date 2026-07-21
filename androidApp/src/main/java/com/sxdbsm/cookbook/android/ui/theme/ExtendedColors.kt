@@ -30,6 +30,8 @@ data class ExtendedColors(
     val macroProtein: Color,
     val macroFat: Color,
     val macroCarb: Color,
+    // [AI生成] 收藏星语义色(金/琥珀·跨平台通用"收藏"共识色)：刻意**不随主题变**(收藏=语义锚点·非主题着色)，仅明暗适配。防散落硬编码。
+    val favoriteStar: Color,
 )
 
 // [AI修改] 苹果风格 Phase 0：语义色对齐方案——健康绿 / 限量琥珀 / 忌口红，克制用于状态。
@@ -49,6 +51,7 @@ val LightExtendedColors = ExtendedColors(
     macroProtein = Color(0xFF5C9A6A),
     macroFat = Color(0xFFE0A23C),
     macroCarb = Color(0xFF6E9BD1),
+    favoriteStar = Color(0xFFFFB300), // 金星(收藏语义·原 DishDetail 硬编码值·像素不变)
 )
 
 val DarkExtendedColors = ExtendedColors(
@@ -67,6 +70,7 @@ val DarkExtendedColors = ExtendedColors(
     macroProtein = Color(0xFF84BE91),
     macroFat = Color(0xFFEDB65C),
     macroCarb = Color(0xFF8FB4E0),
+    favoriteStar = Color(0xFFFFCA45), // 金星深色态(略提亮·保深色对比)
 )
 
 val LocalExtendedColors = compositionLocalOf { LightExtendedColors }

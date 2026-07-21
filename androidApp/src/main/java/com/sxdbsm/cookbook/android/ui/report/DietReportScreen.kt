@@ -195,10 +195,10 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                     if (r.structureGaps.isNotEmpty()) {
                         Spacer(Modifier.height(8.dp))
                         // [AI修改] 文案审校🔴1:nutritionGaps 返回纯名词(优质蛋白/主食…)，报告里补成完整句才读得懂、且鼓励非责备。
-                        r.structureGaps.forEach { TipRow(Color(0xFFFFB300), "这段时间${it}吃得偏少，可以多安排点") }
+                        r.structureGaps.forEach { TipRow(com.sxdbsm.cookbook.android.ui.theme.LocalExtendedColors.current.warning, "这段时间${it}吃得偏少，可以多安排点") } // [AI修改] 提示色收敛语义色(待改进=warning)
                     } else {
                         Spacer(Modifier.height(8.dp))
-                        TipRow(Color(0xFF4CAF50), "五大类基本吃到，结构均衡")
+                        TipRow(com.sxdbsm.cookbook.android.ui.theme.LocalExtendedColors.current.success, "五大类基本吃到，结构均衡") // [AI修改] 提示色收敛语义色(均衡=success)
                     }
                 }
             }
@@ -321,17 +321,19 @@ private fun StructureCalendar(levels: List<Int>) {
 /** 三大宏量供能比分段条。[AI生成] */
 @Composable
 private fun MacroBar(p: Int, f: Int, c: Int) {
+    // [AI修改] 宏量色收敛到单一来源 ExtendedColors(原硬编码 Material 系已漂移·与 FamilyStats/首页色系墙不一致)→逐像素对齐权威色+深色适配。
+    val ext = com.sxdbsm.cookbook.android.ui.theme.LocalExtendedColors.current
     Spacer(Modifier.height(4.dp))
     Row(Modifier.fillMaxWidth().height(14.dp).clip(RoundedCornerShape(7.dp))) {
-        if (p > 0) Box(Modifier.weight(p.toFloat()).fillMaxSize().background(Color(0xFF66BB6A)))
-        if (f > 0) Box(Modifier.weight(f.toFloat()).fillMaxSize().background(Color(0xFFFFB300)))
-        if (c > 0) Box(Modifier.weight(c.toFloat()).fillMaxSize().background(Color(0xFF42A5F5)))
+        if (p > 0) Box(Modifier.weight(p.toFloat()).fillMaxSize().background(ext.macroProtein))
+        if (f > 0) Box(Modifier.weight(f.toFloat()).fillMaxSize().background(ext.macroFat))
+        if (c > 0) Box(Modifier.weight(c.toFloat()).fillMaxSize().background(ext.macroCarb))
     }
     Spacer(Modifier.height(4.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        LegendDot(Color(0xFF66BB6A), "蛋白 $p%")
-        LegendDot(Color(0xFFFFB300), "脂肪 $f%")
-        LegendDot(Color(0xFF42A5F5), "碳水 $c%")
+        LegendDot(ext.macroProtein, "蛋白 $p%")
+        LegendDot(ext.macroFat, "脂肪 $f%")
+        LegendDot(ext.macroCarb, "碳水 $c%")
     }
 }
 
