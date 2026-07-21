@@ -579,14 +579,14 @@
     "fat": 0.1,
     "carb": 8.3,
     "fiber": 2.1,
-    "sodium": 2.4,
+    "sodium": 3.5,
     "potassium": 242,
-    "calcium": 1,
+    "calcium": 13,
     "gi": 28,
     "purine": 55,
     "pieceGram": 80,
-    "ref": "杏鲍菇(鲜)综合参考(foodwake/燕芸坊/百度健康)，非《中国食物成分表》原表；嘌呤为菌类偏低参考值",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 杏鲍菇(条目602·源《中国食物成分表》)",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -773,19 +773,19 @@
   },
   {
     "ingredient": "五花肉",
-    "kcal": 508,
-    "protein": 7.7,
-    "fat": 53.0,
+    "kcal": 560,
+    "protein": 9.3,
+    "fat": 59.0,
     "carb": 0,
     "fiber": 0,
-    "sodium": 43.5,
-    "potassium": 204,
+    "sodium": 80,
+    "potassium": 214,
     "calcium": 6,
     "purine": 120,
-    "ref": "中国食物成分表第6版·猪肉(肥瘦/五花)；嘌呤参考痛风食物嘌呤表",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 猪肉[肋条肉](条目783·源《中国食物成分表》第6版)",
+    "review": "verified",
     "saturatedFat": 10.4,
-    "cholesterol": 79
+    "cholesterol": 109
   },
   {
     "ingredient": "牛肉",
@@ -1079,7 +1079,7 @@
     "potassium": 280,
     "calcium": 28,
     "purine": 391,
-    "ref": "中国食物成分表(带鱼);嘌呤参考食物嘌呤表(高嘌呤,来源间150~400mg差异较大)",
+    "ref": "中国食物成分表 带鱼(经典表值127kcal·广泛引用);第6版howtoeat[切段]为108kcal口径不同",
     "review": "pending",
     "cholesterol": 76,
     "saturatedFat": 1.4
@@ -1163,7 +1163,7 @@
     "gi": 54,
     "purine": 15,
     "pieceGram": 150,
-    "ref": "薄荷健康 / 中国食物成分表(甘薯类比对)",
+    "ref": "中国食物成分表 甘薯类比对(紫薯非独立标准条目);GI 悉尼GI库红薯类约54~77",
     "review": "pending",
     "cholesterol": 0
   },
@@ -1244,7 +1244,7 @@
     "gi": 69,
     "purine": 20,
     "pieceGram": 35,
-    "ref": "USDA FDC(whole-wheat bread) / 薄荷健康 交叉核对",
+    "ref": "USDA FDC 172688 whole-wheat bread(commercially prepared)交叉;品牌差异大",
     "review": "pending",
     "saturatedFat": 0.7,
     "cholesterol": 0.0
@@ -1297,7 +1297,7 @@
     "gi": 15,
     "purine": 12,
     "pieceGram": 800,
-    "ref": "中国食物成分表 结球甘蓝(卷心菜,圆白菜)，foodwake/cnopendata转载；不同版本kcal在17~24间浮动，取结球甘蓝代表值",
+    "ref": "中国食物成分表 结球甘蓝(绿)[圆白菜](经典表值·广泛引用);howtoeat第6版[紫]为25kcal",
     "review": "pending",
     "cholesterol": 0
   },
@@ -1642,14 +1642,14 @@
     "fat": 7.8,
     "carb": 0,
     "fiber": 0,
-    "sodium": 44.0,
+    "sodium": 63.3,
     "potassium": 361,
     "calcium": 13,
     "purine": 150,
-    "ref": "中国食物成分表(大西洋鲑)/fatsecret.cn",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版) 鲑鱼[大马哈鱼/三文鱼](howtoeat 1426·CDC营养所)",
+    "review": "verified",
     "saturatedFat": 3.05,
-    "cholesterol": 59
+    "cholesterol": 68
   },
   {
     "ingredient": "鸭蛋",
@@ -1749,7 +1749,7 @@
     "calcium": 120,
     "gi": 32,
     "purine": 2,
-    "ref": "中国食物成分表第6版·牛乳(低脂/部分脱脂)/USDA低脂奶交叉核对",
+    "ref": "低脂牛奶为加工品·《中国食物成分表》无独立低脂条目;官方牛乳(均值)为全脂54kcal/脂3.2",
     "review": "pending",
     "cholesterol": 12
   },
@@ -1765,26 +1765,26 @@
     "calcium": 118,
     "gi": 20,
     "purine": 2,
-    "ref": "中国食物成分表第6版·酸奶(原味,估算无糖)/USDA plain yogurt交叉核对",
+    "ref": "无糖酸奶为加工品·口径随品牌;USDA plain whole yogurt约61kcal交叉",
     "review": "pending",
     "saturatedFat": 2.0,
     "cholesterol": 13.0
   },
   {
     "ingredient": "鳕鱼",
-    "kcal": 88,
+    "kcal": 89,
     "protein": 20.4,
     "fat": 0.5,
-    "carb": 0,
+    "carb": 0.5,
     "fiber": 0,
-    "sodium": 130,
+    "sodium": 130.3,
     "potassium": 321,
     "calcium": 42,
     "purine": 109,
-    "ref": "中国食物成分表(鳕鱼);嘌呤参考食物嘌呤表(71~109mg区间取中高值)",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 鳕鱼[鳕狭/明太鱼](条目1062·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 0.13,
-    "cholesterol": 43
+    "cholesterol": 114
   },
   {
     "ingredient": "蟹",
@@ -1859,13 +1859,13 @@
     "fat": 46.1,
     "carb": 24.0,
     "fiber": 14.0,
-    "sodium": 9,
+    "sodium": 8.3,
     "potassium": 358,
     "calcium": 780,
     "gi": 35,
     "purine": 62,
-    "ref": "中国食物成分表(白芝麻,生);来源间热量/脂肪略有差异",
-    "review": "pending",
+    "ref": "中国食物成分表(标准版第6版第一册) 黑芝麻(559kcal/钙780mg口径);白芝麻钙约620",
+    "review": "verified",
     "saturatedFat": 7.0,
     "cholesterol": 0
   },
@@ -1907,10 +1907,10 @@
     "carb": 13.0,
     "fiber": 0.8,
     "sodium": 6800,
-    "potassium": 350,
-    "calcium": 70,
+    "potassium": 337,
+    "calcium": 66,
     "purine": 20,
-    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 酱油(均值)代表老抽;老抽碳水通常更高,取均值口径",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 酱油(均值,条目1518)代表老抽;老抽为酱油子类无独立一手条目",
     "review": "pending",
     "cholesterol": 0
   },
@@ -1955,7 +1955,7 @@
     "potassium": 90,
     "calcium": 30,
     "purine": 40,
-    "ref": "李锦记蚝油营养标签(fatsecret.cn);钠为蚝油类常见口径估值",
+    "ref": "蚝油为品牌加工调味品·《中国食物成分表》无独立条目;钠为高钠调味品口径",
     "review": "pending"
   },
   {
@@ -2138,18 +2138,18 @@
   },
   {
     "ingredient": "鹰嘴豆",
-    "kcal": 364,
-    "protein": 19.3,
-    "fat": 6.0,
-    "carb": 60.7,
+    "kcal": 342,
+    "protein": 21.2,
+    "fat": 4.2,
+    "carb": 60.0,
     "fiber": 17.4,
-    "sodium": 24,
-    "potassium": 875,
-    "calcium": 105,
+    "sodium": 6,
+    "potassium": 830,
+    "calcium": 150,
     "gi": 32,
     "purine": 110,
-    "ref": "鹰嘴豆(干)综合参考(fatsecret.cn/gluok/维基)，非《中国食物成分表》原表，数值口径不一待官方核对",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 鹰嘴豆[桃豆](条目369·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 0.6,
     "cholesterol": 0.0
   },
@@ -2263,19 +2263,19 @@
   },
   {
     "ingredient": "红枣",
-    "kcal": 264,
+    "kcal": 276,
     "protein": 3.2,
     "fat": 0.5,
     "carb": 67.8,
     "fiber": 6.2,
-    "sodium": 6,
+    "sodium": 6.2,
     "potassium": 524,
     "calcium": 64,
     "gi": 60,
     "purine": 22,
     "pieceGram": 8,
-    "ref": "中国食物成分表 枣(干,红枣) HowToEat details/272；GI为干枣中高参考值；单颗克重为估值。注:若指鲜枣(鲜)则为125kcal/碳水30.5g/GI偏高，口径不同待确认",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版) 枣[干](howtoeat 272·CDC营养所)",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -2341,9 +2341,9 @@
     "calcium": 14,
     "purine": 60,
     "pieceGram": 50,
-    "ref": "中国食物成分表(香肠)/yanyunfang.com/nutrition/377",
-    "review": "pending",
-    "cholesterol": 88,
+    "ref": "中国食物成分表 香肠(标准表值·多源一致引用;非罐头/腊肠子类)",
+    "review": "verified",
+    "cholesterol": 82,
     "saturatedFat": 17.2
   },
   {
@@ -2357,7 +2357,7 @@
     "potassium": 416,
     "calcium": 24,
     "purine": 75,
-    "ref": "中国食物成分表(腊肉,生)/yanyunfang.com/nutrition/373",
+    "ref": "中国食物成分表 腊肉(生)标准表值;一手页未直取(咸肉/腊肠为不同子类)",
     "review": "pending",
     "saturatedFat": 10.6,
     "cholesterol": 123
@@ -2374,8 +2374,8 @@
     "calcium": 33,
     "purine": 70,
     "pieceGram": 250,
-    "ref": "中国食物成分表(猪蹄)/365shouce/1432",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 猪蹄(条目793·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 4.325,
     "cholesterol": 192
   },
@@ -2435,32 +2435,32 @@
     "fat": 1.1,
     "carb": 0,
     "fiber": 0,
-    "sodium": 91,
-    "potassium": 316,
+    "sodium": 91.5,
+    "potassium": 136,
     "calcium": 184,
     "purine": 210,
     "pieceGram": 80,
-    "ref": "中国食物成分表(沙丁鱼)/hpcn21云健康食物库",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版) 沙丁鱼(鲜)(howtoeat 1415·CDC营养所)",
+    "review": "verified",
     "saturatedFat": 1.53,
-    "cholesterol": 142
+    "cholesterol": 158
   },
   {
     "ingredient": "鱿鱼",
     "kcal": 84,
-    "protein": 17.0,
-    "fat": 1.4,
+    "protein": 17.4,
+    "fat": 1.6,
     "carb": 0,
     "fiber": 0,
     "sodium": 110,
     "potassium": 290,
-    "calcium": 43,
+    "calcium": 44,
     "purine": 226,
     "pieceGram": 200,
-    "ref": "中国食物成分表(鱿鱼,鲜)/foodwake/852",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 乌贼(鲜)[鱿鱼](条目1129·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 0.36,
-    "cholesterol": 224
+    "cholesterol": 268
   },
   {
     "ingredient": "扇贝",
@@ -2538,8 +2538,8 @@
     "calcium": 118,
     "purine": 60,
     "pieceGram": 60,
-    "ref": "中国食物成分表(nlc.chinanutri.cn/fq/foodinfo/995.html)",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 咸鸭蛋(条目995·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 4.4,
     "cholesterol": 647.0
   },
@@ -2585,12 +2585,12 @@
     "fat": 48.1,
     "carb": 4.9,
     "fiber": 4.1,
-    "sodium": 20,
-    "potassium": 672,
-    "calcium": 37,
+    "sodium": 20.6,
+    "potassium": 102,
+    "calcium": 16,
     "purine": 60,
-    "ref": "中国食物成分表(南瓜子,炒)/tiantiancaipu food-1344",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 南瓜子仁(条目770·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 8.66,
     "cholesterol": 0
   },
@@ -2605,8 +2605,8 @@
     "potassium": 813,
     "calcium": 255,
     "purine": 25,
-    "ref": "USDA FDC(Seeds,flaxseed)/fatsecret.cn",
-    "review": "pending",
+    "ref": "USDA FoodData Central Seeds,flaxseed(FDC 169414)·亚麻籽无中国成分表值用USDA",
+    "review": "verified",
     "saturatedFat": 3.663,
     "cholesterol": 0
   },
@@ -2684,8 +2684,8 @@
     "calcium": 66,
     "gi": 25,
     "purine": 90,
-    "ref": "中国食物成分表 nlc.chinanutri.cn/fq/foodinfo/299(1382kJ);GI大麦约25;嘌呤谷物约90mg估",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 大麦[元麦](条目299·源《中国食物成分表》)",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -2699,8 +2699,8 @@
     "potassium": 280,
     "calcium": 294,
     "purine": 30,
-    "ref": "中国食物成分表(荠菜,foodwake/百度健康转载);高钙蔬菜",
-    "review": "pending",
+    "ref": "中国食物成分表 荠菜(31kcal/钙294mg口径·CDC营养所数据)",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -2729,8 +2729,8 @@
     "potassium": 285,
     "calcium": 67,
     "purine": 25,
-    "ref": "中国食物成分表 马兰[马兰头](meishichina/bmcx转载)",
-    "review": "pending",
+    "ref": "中国食物成分表 马兰[马兰头](25kcal标准表值·CDC营养所数据,科普中国/med66引)",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -2762,7 +2762,7 @@
     "gi": 70,
     "purine": 8,
     "pieceGram": 3,
-    "ref": "中国食物成分表 桂圆(干)/龙眼干,foodwake#483及多源转载(nlc 720为鲜品未用);GI约70估",
+    "ref": "中国食物成分表 桂圆干/龙眼干(常引277kcal口径);nlc桂圆(720)为鲜品72kcal",
     "review": "pending",
     "cholesterol": 0
   },
@@ -2792,8 +2792,8 @@
     "potassium": 325,
     "calcium": 2,
     "purine": 140,
-    "ref": "中国食物成分表 nlc.chinanutri.cn/fq/foodinfo/867 驴肉(瘦) 491kJ;嘌呤为畜肉估算",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 驴肉(瘦)(条目867·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 1.3,
     "cholesterol": 74.0
   },
@@ -2810,8 +2810,8 @@
     "gi": 60,
     "purine": 60,
     "pieceGram": 15,
-    "ref": "中国食物成分表(鱼丸,howtoeat 1466);GI/嘌呤为鱼糜制品估算,件重按常见品牌",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版) 鱼丸(howtoeat 1466·CDC营养所)",
+    "review": "verified",
     "cholesterol": 77
   },
   {
@@ -2827,7 +2827,7 @@
     "gi": 60,
     "purine": 45,
     "pieceGram": 20,
-    "ref": "多品牌猪肉水饺营养成分表区间估算(百度健康/fatsecret);口径不确定",
+    "ref": "多品牌猪肉水饺营养成分标签区间估算;《中国食物成分表》无标准条目",
     "review": "pending"
   },
   {
@@ -2843,7 +2843,7 @@
     "gi": 88,
     "purine": 15,
     "pieceGram": 20,
-    "ref": "黑芝麻汤圆品牌营养成分表估算(市售湯圓标示/百度健康);GI按糯米制品(悉尼GI库糯米约87-95)",
+    "ref": "黑芝麻汤圆品牌营养成分标签估算;GI按糯米制品(Atkinson2008/悉尼GI糯米约87)",
     "review": "pending",
     "saturatedFat": 1.4,
     "cholesterol": 0.0
@@ -2861,7 +2861,7 @@
     "gi": 73,
     "purine": 30,
     "pieceGram": 100,
-    "ref": "康师傅方便面(带面饼)营养成分表 fatsecret/miaofoods;钠为含调料包估算,口径不确定",
+    "ref": "油炸方便面(带面饼)营养成分标签估算;钠含调料包差异大",
     "review": "pending",
     "saturatedFat": 9.5,
     "cholesterol": 0
@@ -2879,7 +2879,7 @@
     "gi": 80,
     "purine": 25,
     "pieceGram": 260,
-    "ref": "市售自热煲仔饭(约265g/份550kcal)折100g估算;因配菜差异大,口径不确定",
+    "ref": "市售自热煲仔饭折100g估算;配菜差异大,无标准条目",
     "review": "pending",
     "saturatedFat": 2.0,
     "cholesterol": 10.0
@@ -2896,10 +2896,10 @@
     "calcium": 57,
     "purine": 70,
     "pieceGram": 25,
-    "ref": "中国食物成分表(午餐肉,howtoeat 1102);嘌呤为畜肉加工品估算",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版) 午餐肉[北京](howtoeat 1102·CDC营养所)",
+    "review": "verified",
     "saturatedFat": 11,
-    "cholesterol": 62
+    "cholesterol": 56
   },
   {
     "ingredient": "鱼罐头",
@@ -2913,10 +2913,10 @@
     "calcium": 17,
     "purine": 180,
     "pieceGram": 180,
-    "ref": "中国食物成分表(沙丁鱼茄汁熟罐头,howtoeat 1480)为代表值;嘌呤按沙丁鱼类高嘌呤估算,品牌口径不确定",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版) 沙丁鱼[茄汁,熟]罐头(howtoeat 1480)为代表值",
+    "review": "verified",
     "saturatedFat": 2.0,
-    "cholesterol": 60.0
+    "cholesterol": 39.0
   },
   {
     "ingredient": "水果罐头",
@@ -2931,7 +2931,7 @@
     "gi": 63,
     "purine": 5,
     "pieceGram": 200,
-    "ref": "糖水黄桃罐头品牌营养成分表估算(百度健康/配料查);GI按含糖罐装水果估算,口径不确定",
+    "ref": "糖水黄桃罐头品牌营养成分标签估算;含糖量随品牌差异大",
     "review": "pending",
     "cholesterol": 0
   },
@@ -2947,7 +2947,7 @@
     "calcium": 30,
     "purine": 60,
     "pieceGram": 220,
-    "ref": "品牌估算(速食盖饭浇头/料理包无统一成分表,按肉+酱汁配菜口径估算)",
+    "ref": "速食盖饭浇头/料理包无统一成分表·按肉+酱汁配菜口径估算",
     "review": "pending",
     "cholesterol": 0.0
   },
@@ -2983,17 +2983,17 @@
   },
   {
     "ingredient": "沙拉酱",
-    "kcal": 688,
-    "protein": 1.4,
-    "fat": 73.9,
-    "carb": 6,
+    "kcal": 713,
+    "protein": 2.8,
+    "fat": 78.8,
+    "carb": 1.0,
     "fiber": 0,
-    "sodium": 710,
-    "potassium": 20,
-    "calcium": 8,
+    "sodium": 733.6,
+    "potassium": 160,
+    "calcium": 9,
     "purine": 5,
-    "ref": "fatsecret.cn 蛋黄酱/沙拉酱综合(品牌差异大,脂肪70%左右口径)",
-    "review": "pending",
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 沙拉酱(条目1536·源《中国食物成分表》)",
+    "review": "verified",
     "saturatedFat": 11.7,
     "cholesterol": 42
   },
@@ -3074,9 +3074,9 @@
     "potassium": 403,
     "calcium": 9,
     "purine": 111.5,
-    "ref": "中国食物成分表 羊肉(瘦) nlc.chinanutri.cn/fq/foodinfo/850(带骨羊排实际脂肪偏高);嘌呤按羊肉111.5mg(糖护士嘌呤表)",
-    "review": "pending",
-    "cholesterol": 85.0,
+    "ref": "食物营养成分查询平台 nlc.chinanutri.cn 羊肉(瘦)(条目850·代表羊排精瘦部分)",
+    "review": "verified",
+    "cholesterol": 60,
     "saturatedFat": 6.5
   },
   {
@@ -3086,13 +3086,13 @@
     "fat": 0.4,
     "carb": 1.4,
     "fiber": 0,
-    "sodium": 230,
+    "sodium": 65.4,
     "potassium": 447,
-    "calcium": 53,
+    "calcium": 21,
     "purine": 89.8,
     "pieceGram": 300,
-    "ref": "章鱼(HowToEat引中国食物成分表第6版);嘌呤按近缘乌贼89.8mg(糖护士嘌呤表)",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版) 章鱼[八爪鱼](howtoeat 1586·CDC营养所)",
+    "review": "verified",
     "saturatedFat": 0.23,
     "cholesterol": 48
   },
@@ -3193,7 +3193,7 @@
     "gi": 25,
     "purine": 25,
     "pieceGram": 0.5,
-    "ref": "中国食物成分表(八角/大料)转引 meishichina.com/YuanLiao/BaJiao;香辛料微量食用,钠/钾未获权威值;USDA anise seed可交叉参考",
+    "ref": "中国食物成分表(八角/大料)转引;香辛料微量食用,钠/钾未获权威值;USDA star anise(367kcal)/anise seed(337kcal)口径均与原值195kcal差异大",
     "review": "pending",
     "saturatedFat": 0.6,
     "cholesterol": 0.0
@@ -3211,8 +3211,8 @@
     "gi": 20,
     "purine": 20,
     "pieceGram": 2,
-    "ref": "USDA FoodData Central(Spices,cinnamon,ground)交叉薄荷健康;中国食物成分表无桂皮独立条目,以USDA肉桂粉近似;香辛料微量食用",
-    "review": "pending",
+    "ref": "USDA FoodData Central, Spices, cinnamon, ground (SR Legacy 171320)",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -3227,8 +3227,8 @@
     "calcium": 931,
     "gi": 25,
     "purine": 30,
-    "ref": "USDA FoodData Central(Spices,cumin seed);中国食物成分表无孜然独立条目;香辛料微量食用",
-    "review": "pending",
+    "ref": "USDA FoodData Central, Spices, cumin seed (SR Legacy 170923)",
+    "review": "verified",
     "saturatedFat": 1.54,
     "cholesterol": 0
   },
@@ -3244,7 +3244,7 @@
     "calcium": 2,
     "gi": 25,
     "purine": 25,
-    "ref": "中国食物成分表(胡椒粉)转引 yanyunfang.com/nutrition/730.html;USDA black pepper钾/钙更高(1329/443),此为国内白胡椒粉口径;香辛料微量食用",
+    "ref": "中国食物成分表(胡椒粉)转引;USDA white pepper(296kcal)/black pepper(251kcal)口径均与原值差异大",
     "review": "pending",
     "cholesterol": 0
   },
@@ -3261,8 +3261,8 @@
     "gi": 20,
     "purine": 20,
     "pieceGram": 0.2,
-    "ref": "USDA FoodData Central(Spices,bay leaf);中国食物成分表无香叶条目;炖煮后捞出,实际摄入极少",
-    "review": "pending",
+    "ref": "USDA FoodData Central, Spices, bay leaf (SR Legacy 170917)",
+    "review": "verified",
     "saturatedFat": 2.28,
     "cholesterol": 0.0
   },
@@ -3278,7 +3278,7 @@
     "calcium": 181,
     "gi": 25,
     "purine": 25,
-    "ref": "转引 foodwake.cn/food/941(数据源标注中国食物成分表);蛋白质1.0g疑偏低待核;复合香辛料,微量食用",
+    "ref": "复合香辛料,无中国食物成分表单一权威条目;蛋白质1.0g疑偏低待核;微量食用",
     "review": "pending",
     "cholesterol": 0.0
   },
@@ -3326,7 +3326,7 @@
     "calcium": 6,
     "gi": 45,
     "purine": 50,
-    "ref": "转引百度健康/薄荷健康(蟹味菇/真姬菇,鲜);中国食物成分表无独立条目,为估算值;鲜菌嘌呤较低",
+    "ref": "真姬菇/蟹味菇鲜品;中国食物成分表无独立条目,为估算值;鲜菌嘌呤较低",
     "review": "pending",
     "cholesterol": 0
   },
@@ -3343,7 +3343,7 @@
     "gi": 45,
     "purine": 50,
     "pieceGram": 100,
-    "ref": "中国食物成分表(猴头菇,鲜)转引 yanyunfang.com/nutrition/147.html;钾8mg为成分表原值(偏低存疑);嘌呤鲜菌较低",
+    "ref": "猴头菇(鲜)转引 foodwake/yanyunfang;foodwake未明示中国食物成分表版本;钾8mg偏低存疑",
     "review": "pending",
     "cholesterol": 0
   },
@@ -3375,7 +3375,7 @@
     "calcium": 164,
     "gi": 30,
     "purine": 65,
-    "ref": "中国食物营养数据(冻豆腐)转引 hpcn21.com;成品口径;嘌呤约55-70mg(中嘌呤)",
+    "ref": "冻豆腐转引 hpcn21.com(二手);成分表无冻豆腐独立条目,北豆腐(84kcal/12.2蛋白/4.8脂肪/钙138)可参考",
     "review": "pending",
     "saturatedFat": 0.5,
     "cholesterol": 0.0
@@ -3393,7 +3393,7 @@
     "gi": 35,
     "purine": 70,
     "pieceGram": 15,
-    "ref": "中国食物成分表(油炸豆腐/油豆腐)转引百度健康/tiantiancaipu;成品口径;钠/钾未获权威值;嘌呤约70mg以上",
+    "ref": "油炸豆腐/油豆腐转引二手站;成品口径;钠/钾未获权威值",
     "review": "pending",
     "cholesterol": 0,
     "saturatedFat": 3.0
@@ -3410,8 +3410,8 @@
     "calcium": 200,
     "gi": 30,
     "purine": 150,
-    "ref": "中国食物成分表(青豆[青大豆],干) nlc.chinanutri.cn/fq/foodinfo/328.html;能量1667kJ/4.184≈398kcal;此为干青大豆口径,若指鲜毛豆(菜用大豆)则约131kcal/13.1g蛋白;GI大豆低;干豆嘌呤偏高",
-    "review": "pending",
+    "ref": "食物营养成分查询平台(中国疾控中心营养所) 青豆[青大豆](干) nlc.chinanutri.cn/fq/foodinfo/328.html",
+    "review": "verified",
     "saturatedFat": 0.04,
     "cholesterol": 0
   },
@@ -3477,7 +3477,7 @@
     "calcium": 57,
     "gi": 0,
     "purine": 60,
-    "ref": "中国食物成分表(舌鳎/龙利鱼) foodwake.cn/food/1578;嘌呤取比目鱼类估(约60mg,中等偏低);市售龙利鱼柳多为巴沙鱼,营养略异",
+    "ref": "舌鳎/龙利鱼 foodwake(未明示CFCT版本);市售龙利鱼柳多为巴沙鱼,营养略异",
     "review": "pending",
     "saturatedFat": 0.44,
     "cholesterol": 45
@@ -3523,13 +3523,13 @@
     "fiber": 0,
     "sodium": 26.0,
     "potassium": 98,
-    "calcium": 156,
+    "calcium": 1030,
     "gi": 0,
     "purine": 130,
-    "ref": "中国食物成分表(田螺,可食部) foodwake.cn/food/842;钙取可食部约156mg(带壳统计口径可达1030mg);嘌呤约130mg(较高嘌呤)",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版)/中国疾控中心营养所 田螺 转 howtoeat.cn/food/details/1562",
+    "review": "verified",
     "saturatedFat": 0.36,
-    "cholesterol": 50
+    "cholesterol": 154
   },
   {
     "ingredient": "泥鳅",
@@ -3704,21 +3704,21 @@
   },
   {
     "ingredient": "炼乳",
-    "kcal": 332,
+    "kcal": 335,
     "protein": 8.0,
     "fat": 8.7,
     "carb": 55.4,
     "fiber": 0,
-    "sodium": 130,
-    "potassium": 293,
+    "sodium": 211.9,
+    "potassium": 309,
     "calcium": 242,
     "gi": 60,
     "purine": 10,
     "pieceGram": 15,
-    "ref": "中国食物成分表 炼乳(甜,罐头)[nlc.chinanutri.cn/972]; 甜炼乳蔗糖含量高,各品牌差异较大,取CFCT代表值",
-    "review": "pending",
+    "ref": "食物营养成分查询平台(中国疾控中心营养所) 炼乳(甜,罐头) nlc.chinanutri.cn/fq/foodinfo/972.html",
+    "review": "verified",
     "saturatedFat": 5.5,
-    "cholesterol": 34.0
+    "cholesterol": 36.0
   },
   {
     "ingredient": "淡奶油",
@@ -3732,7 +3732,7 @@
     "calcium": 65,
     "gi": 30,
     "purine": 8,
-    "ref": "稀奶油(淡奶油,乳脂30-38%)参考值,交叉核对薄荷健康/fatsecret; 各品牌脂肪含量差异大(35%动物淡奶油),非CFCT精确单条",
+    "ref": "稀奶油(淡奶油,乳脂30-38%)参考,各品牌差异大,非CFCT精确单条",
     "review": "pending",
     "saturatedFat": 19.0,
     "cholesterol": 111
@@ -3890,7 +3890,7 @@
   },
   {
     "ingredient": "甘蔗",
-    "kcal": 64,
+    "kcal": 66,
     "protein": 0.4,
     "fat": 0.1,
     "carb": 16.0,
@@ -3901,8 +3901,8 @@
     "gi": 43,
     "purine": 3,
     "pieceGram": 100,
-    "ref": "甘蔗(汁/可食部)参考,交叉核对云健康/燕芸坊/foodwake; CFCT未单列鲜甘蔗肉,数值为汁液口径参考; GI约43",
-    "review": "pending",
+    "ref": "食物营养成分查询平台(中国疾控中心营养所) 甘蔗汁 nlc.chinanutri.cn/fq/foodinfo/1610.html(成分表无鲜甘蔗肉,取甘蔗汁口径)",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -3917,8 +3917,8 @@
     "calcium": 169,
     "gi": 20,
     "purine": 50,
-    "ref": "中国食物成分表(第6版) 口蘑(白蘑)[nlc.chinanutri.cn/576]; 注:CFCT该条为干口蘑(水分9.2g),鲜口蘑热量/蛋白约为其1/10; 嘌呤菌类约50-100mg参考",
-    "review": "pending",
+    "ref": "食物营养成分查询平台(中国疾控中心营养所) 口蘑(白蘑) nlc.chinanutri.cn/fq/foodinfo/576.html",
+    "review": "verified",
     "saturatedFat": 0.5,
     "cholesterol": 0.0
   },
@@ -3988,7 +3988,7 @@
     "gi": 20,
     "purine": 20,
     "pieceGram": 15,
-    "ref": "李锦记蒸鱼豉油营养标签换算(每15ml 16kcal,钠616mg/10ml折约6160mg/100ml); 品牌产品非CFCT,各品牌钠差异大",
+    "ref": "品牌产品(李锦记蒸鱼豉油)营养标签换算,非CFCT,各品牌钠差异大",
     "review": "pending"
   },
   {
@@ -4004,7 +4004,7 @@
     "gi": 35,
     "purine": 30,
     "pieceGram": 20,
-    "ref": "咖喱粉口径，fatsecret.cn/云健康食物库交叉核对；咖喱块因品牌差异大（钠高、脂肪高）未采信，本条按纯咖喱粉计",
+    "ref": "咖喱粉口径,二手食物库;咖喱块因品牌差异大未采信",
     "review": "pending",
     "saturatedFat": 2.2,
     "cholesterol": 0.0
@@ -4039,7 +4039,7 @@
     "gi": 72,
     "purine": 15,
     "pieceGram": 100,
-    "ref": "干米线口径，中国食物成分表/fatsecret.cn；GI 按米粉类悉尼GI库≈70-75",
+    "ref": "干米线口径;CFCT/二手站;CFCT干米粉为349kcal/0.4蛋白/85.8碳水,与原值蛋白差异大(口径/配方不同)",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4102,12 +4102,12 @@
     "fiber": 2.0,
     "sodium": 27,
     "potassium": 177,
-    "calcium": 45,
+    "calcium": 65,
     "gi": 15,
     "purine": 15,
     "pieceGram": 500,
-    "ref": "紫甘蓝，USDA 红甘蓝口径交叉核对（成分表未单列紫甘蓝，取红甘蓝近似）",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版)/中国疾控中心营养所 结球甘蓝[紫](紫甘蓝) 转 howtoeat.cn/food/details/862",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -4129,23 +4129,23 @@
   },
   {
     "ingredient": "菜心",
-    "kcal": 23,
-    "protein": 1.7,
-    "fat": 0.4,
-    "carb": 3.9,
+    "kcal": 28,
+    "protein": 2.8,
+    "fat": 0.5,
+    "carb": 4.0,
     "fiber": 1.7,
-    "sodium": 28,
+    "sodium": 26.0,
     "potassium": 236,
     "calcium": 96,
     "gi": 15,
     "purine": 15,
-    "ref": "菜薹/菜心，中国食物成分表；钙含量较高",
-    "review": "pending",
+    "ref": "食物营养成分查询平台(中国疾控中心营养所) 白菜薹[菜薹,菜心] nlc.chinanutri.cn/fq/foodinfo/453.html",
+    "review": "verified",
     "cholesterol": 0
   },
   {
     "ingredient": "韭黄",
-    "kcal": 22,
+    "kcal": 24,
     "protein": 2.3,
     "fat": 0.2,
     "carb": 3.9,
@@ -4155,8 +4155,8 @@
     "calcium": 25,
     "gi": 15,
     "purine": 25,
-    "ref": "韭黄，中国食物成分表",
-    "review": "pending",
+    "ref": "中国食物成分表(第6版)/中国疾控中心营养所 韭黄[韭芽] 转 howtoeat.cn/food/details/827",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -4187,7 +4187,7 @@
     "calcium": 3,
     "gi": 20,
     "purine": 50,
-    "ref": "白玉菇鲜品，鲜蘑近似（成分表未单列）；嘌呤按食用菌鲜品≈50mg",
+    "ref": "白玉菇鲜品,鲜蘑近似(成分表未单列);嘌呤按食用菌鲜品估",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4203,7 +4203,7 @@
     "calcium": 2,
     "gi": 20,
     "purine": 50,
-    "ref": "海鲜菇（真姬菇）鲜品，鲜蘑近似；嘌呤按食用菌鲜品≈50mg",
+    "ref": "海鲜菇(真姬菇)鲜品,鲜蘑近似;嘌呤按食用菌鲜品估",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4219,7 +4219,7 @@
     "calcium": 6,
     "gi": 0,
     "purine": 100,
-    "ref": "猪肉末（肥瘦相间七分瘦），中国食物成分表猪肉均值近似；嘌呤按猪肉≈70-110mg。肥瘦比不同差异大",
+    "ref": "猪肉末(肥瘦相间七分瘦),介于CFCT瘦猪肉(153kcal/20.7蛋白/7.8脂肪)与猪肉均值之间,无单一权威条目;肥瘦比不同差异大",
     "review": "pending",
     "saturatedFat": 5.0,
     "cholesterol": 70.0
@@ -4261,19 +4261,19 @@
   },
   {
     "ingredient": "鸭腿",
-    "kcal": 240,
-    "protein": 16.0,
-    "fat": 19.0,
-    "carb": 0.5,
+    "kcal": 238,
+    "protein": 15.5,
+    "fat": 19.7,
+    "carb": 0.2,
     "fiber": 0,
-    "sodium": 69,
+    "sodium": 69.0,
     "potassium": 191,
     "calcium": 6,
     "gi": 0,
     "purine": 138,
     "pieceGram": 120,
-    "ref": "带皮生鸭腿，中国食物成分表鸭肉近似（成分表未单列鸭腿）；嘌呤按鸭肉嘌呤表≈130-140mg",
-    "review": "pending",
+    "ref": "食物营养成分查询平台(中国疾控中心营养所) 鸭(均值) nlc.chinanutri.cn/fq/foodinfo/891.html(成分表无鸭腿独立条目,取鸭肉均值口径)",
+    "review": "verified",
     "cholesterol": 94,
     "saturatedFat": 5.9
   },
@@ -4290,7 +4290,7 @@
     "gi": 0,
     "purine": 95,
     "pieceGram": 20,
-    "ref": "培根（加工猪肉），中国食物成分表/云健康食物库；钠取加工肉高值(约1600mg)。国外品牌热量可达400-540kcal，差异大；嘌呤按加工猪肉≈90-100mg",
+    "ref": "培根(加工猪肉),二手食物库;国外品牌热量可达400-540kcal,国内二手站达505kcal,差异极大;无CFCT单一权威条目",
     "review": "pending",
     "cholesterol": 68,
     "saturatedFat": 14.0
@@ -4320,13 +4320,13 @@
     "fat": 1.1,
     "carb": 2.8,
     "fiber": 0,
-    "sodium": 425,
+    "sodium": 425.7,
     "potassium": 140,
     "calcium": 133,
     "gi": 0,
     "purine": 180,
-    "ref": "花蛤/蛤蜊（可食部），中国食物成分表 nlc.chinanutri.cn/fq/foodinfo/1120.html 均值近似；嘌呤按蛤蜊类嘌呤表≈150-200mg（高嘌呤）",
-    "review": "pending",
+    "ref": "食物营养成分查询平台(中国疾控中心营养所) 蛤蜊(均值) nlc.chinanutri.cn/fq/foodinfo/1120.html",
+    "review": "verified",
     "cholesterol": 156
   },
   {
@@ -4442,7 +4442,7 @@
     "gi": 68,
     "purine": 10,
     "pieceGram": 100,
-    "ref": "干河粉，云健康食物库/食物库（大米制）；GI 按米制河粉≈60-70。市售湿河粉钠200-400mg",
+    "ref": "干河粉,二手食物库(大米制);GI 米制河粉约60-70;市售湿河粉钠200-400mg",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4459,7 +4459,7 @@
     "gi": 70,
     "purine": 25,
     "pieceGram": 6,
-    "ref": "饺子皮（精制小麦粉制），成分表面粉近似；GI 按精制小麦粉制品≈70。含水量致热量低于干面粉",
+    "ref": "饺子皮(精制小麦粉制),成分表面粉近似估算;GI精制小麦制品约70;含水致热量低于干面粉",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4641,7 +4641,7 @@
     "calcium": 120,
     "gi": 40,
     "purine": 150,
-    "ref": "pending：大豆组织蛋白(TVP)干品，蛋白约52%、碳水约34%(半数为膳食纤维)、脂肪约1%，据维基百科/植物组织蛋白工艺文献综合估算，无中国食物成分表单一权威条目；嘌呤按大豆制品估",
+    "ref": "大豆组织蛋白(TVP)干品,据植物组织蛋白工艺文献综合估算,无中国食物成分表单一权威条目",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4657,7 +4657,7 @@
     "calcium": 40,
     "gi": 62,
     "purine": 20,
-    "ref": "pending：山药干制浓缩粉，碳水约70-82%(以淀粉为主)、蛋白约5%，据百度百科/控糖指南综合估算，无成分表单一权威条目；GI 62±2(控糖指南)",
+    "ref": "山药干制浓缩粉,综合估算,无成分表单一权威条目;GI 62±2",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4706,7 +4706,7 @@
     "calcium": 20,
     "gi": 55,
     "purine": 22,
-    "ref": "pending：玉米糁(玉米渣)以干重计约350-370kcal、蛋白约8-10%、膳食纤维约7-9%，据美食天下/控糖指南综合估算；GI 51-55(控糖指南/玉米渣)",
+    "ref": "玉米糁(玉米渣)干重,综合估算;GI 51-55",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4755,7 +4755,7 @@
     "calcium": 15,
     "gi": 55,
     "purine": 15,
-    "ref": "pending：乌冬面(生/半干)缺中国食物成分表条目，据 fatsecret/控糖指南综合估算(煮后含水膨胀约2倍)；GI 46-55(控糖指南)",
+    "ref": "乌冬面(生/半干)缺中国食物成分表条目,据二手站综合估算;GI 46-55",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4803,7 +4803,7 @@
     "calcium": 25,
     "gi": 60,
     "purine": 60,
-    "ref": "pending：螺蛳粉为组合速食(干米粉约351kcal+高钠调料包)，据 fatsecret/品牌营养表综合估算，钠随调料波动大(800-1200mg)；无成分表单一权威条目",
+    "ref": "螺蛳粉组合速食(干米粉+高钠调料包),据品牌营养表综合估算,钠波动大(800-1200mg);无成分表单一条目",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4820,7 +4820,7 @@
     "gi": 65,
     "purine": 20,
     "pieceGram": 165,
-    "ref": "pending：粽子馅料差异大(素/肉/甜咸)，取白米粽均值(fatsecret/澎湃营养专家)，肉粽热量更高(约234kcal/100g,台湾成分表)；单个约100-200g,取165g；GI 参考糯米制品约65-87",
+    "ref": "粽子馅料差异大,取白米粽均值(二手站);肉粽热量更高(约234kcal);GI糯米制品约65-87",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4870,7 +4870,7 @@
     "calcium": 20,
     "gi": 70,
     "purine": 18,
-    "ref": "pending：炕馍(烙饼/干馍类面食)无成分表专条，按烙饼/白面主食(面粉+少油烙制)估算；GI 参考精制面食约70",
+    "ref": "炕馍(烙饼/干馍类面食)无成分表专条,按烙饼/白面主食估算;GI精制面食约70",
     "review": "pending",
     "saturatedFat": 0.8,
     "cholesterol": 0.0
@@ -4887,7 +4887,7 @@
     "calcium": 30,
     "gi": 65,
     "purine": 20,
-    "ref": "pending：杂粮煎饼(玉米/小米/面粉糊摊制)配方差异大,据云健康食物库/寨香品牌综合估算(288-329kcal/100g)；无成分表专条",
+    "ref": "杂粮煎饼(玉米/小米/面粉糊摊制)配方差异大,二手食物库综合估算(288-329kcal);无成分表专条",
     "review": "pending",
     "cholesterol": 0
   },
@@ -4903,7 +4903,7 @@
     "calcium": 25,
     "gi": 70,
     "purine": 18,
-    "ref": "pending：卷饼(春饼皮/面饼,面粉为主)无成分表专条,按薄面饼/白面主食估算；GI 参考精制面食约70",
+    "ref": "卷饼(春饼皮/面饼,面粉为主)无成分表专条,按薄面饼/白面主食估算;GI精制面食约70",
     "review": "pending",
     "saturatedFat": 0.9,
     "cholesterol": 0.0
@@ -4984,7 +4984,7 @@
     "calcium": 180,
     "gi": 15,
     "purine": 15,
-    "ref": "近似值：以乌塌菜(乌菜/塌棵菜,《中国食物成分表》,nlc.chinanutri.cn/fq/foodinfo/456.html)同类叶菜估算；'大黑菜'为乌塌菜地方俗名,无独立权威条目,钙沿用乌塌菜特征值(约180mg)",
+    "ref": "近似值：大黑菜疑为乌塌菜地方俗名；成分表『乌菜』(nlc.chinanutri.cn/fq/foodinfo/456.html)官方值 kcal28/蛋白2.6/脂肪0.4/碳水4.2/钠115.5/钾154/钙186，与本条原值差异较大，身份存疑故不合并",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5000,7 +5000,7 @@
     "calcium": 90,
     "gi": 15,
     "purine": 18,
-    "ref": "近似值：华中农大菘蓝×甘蓝型油菜杂交新蔬菜,无《中国食物成分表》条目；宏量按菜薹类(白菜薹,nlc.chinanutri.cn/fq/foodinfo/453.html)估算,VC实测98.4mg/100g(农业农村部武汉品质检测中心,新华网20250410报道)",
+    "ref": "近似值：华中农大菘蓝×甘蓝型油菜杂交新蔬菜,无《中国食物成分表》条目；宏量按菜薹类(白菜薹,nlc.chinanutri.cn/fq/foodinfo/453.html)估算,VC实测98.4mg/100g(农业农村部武汉品质检测中心)",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5048,23 +5048,23 @@
     "calcium": 113,
     "gi": 15,
     "purine": 20,
-    "ref": "近似值：地方野菜,无《中国食物成分表》独立条目；据嫩茎叶实测(蛋白3.2/碳水6.0/纤维3.4)与钙113、钾280,来源hpcn21.com/shiwuku/juhuanao 及百度百科菊花脑条目",
+    "ref": "近似值：地方野菜,无《中国食物成分表》独立条目；据嫩茎叶实测(蛋白3.2/碳水6.0/纤维3.4)与钙113、钾280",
     "review": "pending",
     "cholesterol": 0
   },
   {
     "ingredient": "艾蒿",
-    "kcal": 20,
+    "kcal": 55,
     "protein": 3.0,
     "fat": 0.6,
-    "carb": 3.7,
+    "carb": 13.6,
     "fiber": 3.0,
-    "sodium": 20,
-    "potassium": 160,
-    "calcium": 180,
+    "sodium": 0,
+    "potassium": 677,
+    "calcium": 137,
     "gi": 15,
     "purine": 22,
-    "ref": "近似值：《中国食物成分表》有艾蒿条目(nlc.chinanutri.cn/fq/foodinfo/532.html)但公开数值不全;蛋白/碳水取美食天下艾草,钙取艾叶特征值(约180mg),存来源差异",
+    "ref": "《中国食物成分表》艾蒿(nlc.chinanutri.cn/fq/foodinfo/532.html)：能量55kcal(原表231kJ)、碳水13.6、钠0、钾677、钙137；官网蛋白/脂肪/纤维未列(—)，蛋白/脂肪沿用原估值",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5080,7 +5080,7 @@
     "calcium": 112,
     "gi": 15,
     "purine": 25,
-    "ref": "《中国食物成分表》苜蓿[草头,金花菜],foodwake.cn/food/331;钾为同类估算,标注pending因钾值来源不一",
+    "ref": "《中国食物成分表》苜蓿[草头,金花菜]；各版本/来源宏量差异大(一说60kcal/3.9P/1.0F/10.9C,一说35kcal/5.0P/0.7F/2.9C),官方nlc页面未取到确值,维持 pending",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5096,7 +5096,7 @@
     "calcium": 30,
     "gi": 15,
     "purine": 18,
-    "ref": "近似值：南瓜尖/南瓜藤嫩茎叶,无独立成分表条目;蛋白1.7、钾303、VC13.5取南瓜藤(HowToEat howtoeat.cn/food/details/920 及文献),其余按嫩茎叶估算",
+    "ref": "近似值：南瓜尖/南瓜藤嫩茎叶,无独立成分表条目;蛋白1.7、钾303取南瓜藤估算",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5112,7 +5112,7 @@
     "calcium": 78,
     "gi": 15,
     "purine": 18,
-    "ref": "近似值：红薯叶/番薯藤,以红薯叶《中国食物成分表》类数据近似(health.baidu.com 红薯叶条目);梗(叶柄)钙可能高于此值",
+    "ref": "近似值：红薯叶柄(梗),成分表『甘薯叶』有条目但公开核心四项未取到确值;梗(叶柄)营养低于叶片,数值为估算",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5128,7 +5128,7 @@
     "calcium": 40,
     "gi": 20,
     "purine": 25,
-    "ref": "近似值：韭菜花(韭薹),无独立权威条目;宏量与纤维据meishichina/tiantiancaipu韭菜花条目,钾钙取韭菜类近似",
+    "ref": "近似值：韭菜花(韭薹),无独立权威条目(成分表有蒜苔无韭菜花);宏量据二手来源,钾钙取韭菜类近似",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5176,7 +5176,7 @@
     "calcium": 50,
     "gi": 15,
     "purine": 15,
-    "ref": "近似值：贡菜(莴笋薹脱水制品,泡发后)无独立成分表条目;此为鲜/泡发态估算(干贡菜浓缩值另计),来源health.baidu.com 贡菜条目",
+    "ref": "近似值：贡菜(莴笋薹脱水制品,泡发后)无独立成分表条目;此为鲜/泡发态估算",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5240,7 +5240,7 @@
     "calcium": 12,
     "gi": 30,
     "purine": 8,
-    "ref": "近似值：西瓜皮(白瓤,按蔬菜)无权威成分表条目;以西瓜瓤(nlc.chinanutri.cn/fq/foodinfo/739.html)偏低糖估算,数值为推算",
+    "ref": "近似值：西瓜皮(白瓤,按蔬菜)无权威成分表条目;数值为推算",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5304,24 +5304,24 @@
     "calcium": 60,
     "gi": 30,
     "purine": 60,
-    "ref": "近似值(干重):干豆角为豇豆脱水制品,《中国食物成分表》有豇豆(干)条目(nlc.chinanutri.cn/fq/foodinfo/367.html);此为脱水浓缩估算值,含水率/工艺不同差异大",
+    "ref": "近似值(干重):干豆角为豇豆角脱水制品,成分表无该脱水制品条目;含水率/工艺不同差异大",
     "review": "pending",
     "cholesterol": 0
   },
   {
     "ingredient": "小葱",
-    "kcal": 27,
-    "protein": 1.6,
-    "fat": 0.4,
-    "carb": 4.9,
+    "kcal": 42,
+    "protein": 2.5,
+    "fat": 0.3,
+    "carb": 7.2,
     "fiber": 1.4,
     "sodium": 10.4,
     "potassium": 143,
-    "calcium": 72,
+    "calcium": 54,
     "gi": 15,
     "purine": 12,
-    "ref": "《中国食物成分表》细香葱[香葱,四季葱],nlc.chinanutri.cn/fq/foodinfo/442.html;钾值各源不一(123-226mg),标pending",
-    "review": "pending",
+    "ref": "《中国食物成分表》标准版第6版 细香葱[香葱,四季葱]，中国疾控中心营养所 nlc.chinanutri.cn/fq/foodinfo/442.html",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -5353,7 +5353,7 @@
     "gi": 0,
     "purine": 90,
     "pieceGram": 50,
-    "ref": "近似值:鸡毛蛋即毛鸡蛋/旺鸡蛋(鸡胚死胎),HowToEat毛蛋 howtoeat.cn/food/details/1333(176kcal/脂肪13.2);蛋白/矿物质取鸡蛋近似,单枚约50g",
+    "ref": "近似值:鸡毛蛋=毛鸡蛋/旺鸡蛋(鸡胚死胎),非普通鸡蛋,无独立权威成分表条目;矿物质取鸡蛋近似",
     "review": "pending",
     "saturatedFat": 3.2,
     "cholesterol": 585.0
@@ -5406,7 +5406,7 @@
     "gi": 45,
     "purine": 8,
     "pieceGram": 100,
-    "ref": "近似值:香瓜茄(人参果)无权威成分表统一条目,各源差异极大(21-85kcal);此取偏高糖来源(health.baidu 人参果条目)估算,GI为水果类推定",
+    "ref": "近似值:香瓜茄(人参果)无权威成分表统一条目,各源差异极大(21-85kcal);GI为水果类推定",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5440,7 +5440,7 @@
     "gi": 40,
     "purine": 5,
     "pieceGram": 200,
-    "ref": "近似值:丑橘(不知火杂柑)无独立成分表条目,以柑橘类估算(1ggy.com及health.baidu丑橘条目,约37-42kcal/VC50);GI约40(柑橘类,低);单个可食约200g",
+    "ref": "近似值:丑橘(不知火杂柑)无独立成分表条目,以柑橘类估算(约37-42kcal);GI约40(柑橘类,低)",
     "review": "pending",
     "cholesterol": 0
   },
@@ -5473,7 +5473,7 @@
     "calcium": 15,
     "gi": 0,
     "purine": 138,
-    "ref": "口径=猪肘/肘子，天天菜谱猪肘条目(引中国食物成分表)；嘌呤按猪肉约138mg/100g(《成人高尿酸血症与痛风食养指南2024》)，为全肉近似",
+    "ref": "口径=猪肘/肘子;成分表无独立猪肘条目,数值近似;嘌呤按猪肉约138mg/100g(《成人高尿酸血症与痛风食养指南2024》)",
     "review": "pending",
     "saturatedFat": 2.0,
     "cholesterol": 80.0
@@ -5490,7 +5490,7 @@
     "calcium": 1,
     "gi": 0,
     "purine": 138,
-    "ref": "口径=猪肉后臀尖(近似后腿)，HowToEat/中国食物成分表；嘌呤按猪肉约138mg/100g(痛风食养指南2024)。同部位近似标 pending",
+    "ref": "口径=猪后腿瘦肉;成分表相近条目:猪肉(瘦)143kcal/20.3P/6.2F(foodinfo/788)、猪肉(腿)189kcal/17.9P/12.8F(foodinfo/789),本条介于两者间无精确条目;嘌呤按猪肉约138mg/100g(痛风食养指南2024)",
     "review": "pending",
     "saturatedFat": 3.9,
     "cholesterol": 79.0
@@ -5507,7 +5507,7 @@
     "calcium": 30,
     "gi": 0,
     "purine": 138,
-    "ref": "pending：猪骨部位无独立成分表条目，可食部少(骨多肉少)；数值按猪大排/排骨近似(燕芸坊/中国食物成分表)，嘌呤按猪肉约138mg/100g",
+    "ref": "pending：猪扇骨部位无独立成分表条目,可食部少(骨多肉少);数值按猪排骨近似;嘌呤按猪肉约138mg/100g",
     "review": "pending",
     "saturatedFat": 7.8,
     "cholesterol": 80.0
@@ -5541,7 +5541,7 @@
     "calcium": 40,
     "gi": 0,
     "purine": 138,
-    "ref": "pending：猪大骨可食部少(骨为主)、无独立成分表条目；数值按猪排骨近似(中国食物成分表)，嘌呤按猪肉约138mg/100g",
+    "ref": "pending：猪大骨可食部少(骨为主)、无独立成分表条目;数值按猪排骨近似;嘌呤按猪肉约138mg/100g",
     "review": "pending",
     "saturatedFat": 4.7,
     "cholesterol": 165.0
@@ -5558,7 +5558,7 @@
     "calcium": 3,
     "gi": 0,
     "purine": 105,
-    "ref": "口径=牛后腿膝圆/和尚头，美食天下牛霖条目；矿物质按牛里脊近似(中国食物成分表 nlc.chinanutri.cn)；嘌呤按牛肉约105mg/100g(痛风食养指南2024)。同部位近似标 pending",
+    "ref": "口径=牛后腿膝圆/和尚头;成分表无独立条目,近似牛肉(里脊)108kcal/22.2P/0.9F(foodinfo/827);嘌呤按牛肉约105mg/100g(痛风食养指南2024)",
     "review": "pending",
     "saturatedFat": 1.0,
     "cholesterol": 59
@@ -5592,7 +5592,7 @@
     "calcium": 6,
     "gi": 0,
     "purine": 105,
-    "ref": "pending：口径=牛外脊(sirloin)，成分表无独立条目，用 FatSecret 生西冷牛排(0.3cm脂肪)；缺钠/钾/钙；嘌呤按牛肉约105mg/100g(痛风食养指南2024)",
+    "ref": "pending：口径=牛外脊(sirloin),成分表无独立条目,用 FatSecret 生西冷牛排;缺钠/钾/钙权威值;嘌呤按牛肉约105mg/100g",
     "review": "pending",
     "saturatedFat": 2.6,
     "cholesterol": 58.0
@@ -5610,7 +5610,7 @@
     "gi": 45,
     "purine": 105,
     "pieceGram": 15,
-    "ref": "pending：加工肉丸(含淀粉碳水偏高)，天天菜谱/FatSecret牛肉丸条目；市售品牌钠常达600mg+/100g差异大；嘌呤按牛肉约105mg/100g",
+    "ref": "pending：加工肉丸(含淀粉碳水偏高),无独立成分表条目;市售品牌钠差异大;嘌呤按牛肉约105mg/100g",
     "review": "pending",
     "saturatedFat": 1.8,
     "cholesterol": 40.0
@@ -5628,7 +5628,7 @@
     "gi": 48,
     "purine": 120,
     "pieceGram": 15,
-    "ref": "pending：加工肉丸泛称，无独立成分表条目，按牛肉丸近似(天天菜谱/FatSecret)；含淀粉碳水偏高、市售钠差异大；嘌呤按肉类约120mg/100g",
+    "ref": "pending：加工肉丸泛称,无独立成分表条目,按牛肉丸近似;含淀粉碳水偏高、市售钠差异大;嘌呤按肉类约120mg/100g",
     "review": "pending",
     "saturatedFat": 1.4,
     "cholesterol": 40.0
@@ -5713,7 +5713,7 @@
     "calcium": 15,
     "gi": 0,
     "purine": 150,
-    "ref": "pending：鸭内脏杂拌混合无独立权威条目，按鸭肫/鸭肠/鸭心等内脏均值估算；嘌呤按内脏混合≥150保守取值",
+    "ref": "pending：鸭内脏杂拌混合无独立权威条目,按鸭肫/鸭肠/鸭心等内脏均值估算;嘌呤按内脏混合≥150保守取值",
     "review": "pending",
     "saturatedFat": 1.5,
     "cholesterol": 150.0
@@ -5831,7 +5831,7 @@
     "calcium": 13,
     "gi": 0,
     "purine": 120,
-    "ref": "pending：薄荷健康/百度健康(猪头肉，高脂)；数值随肥肉占比波动(热量395-500)，取高脂市售值；嘌呤参考猪肉部位约120mg估值",
+    "ref": "pending：猪头肉高脂,成分表无独立条目;数值随肥肉占比波动(热量395-500),取高脂市售值;嘌呤参考猪肉部位约120mg估值",
     "review": "pending",
     "cholesterol": 304,
     "saturatedFat": 15.0
@@ -5848,7 +5848,7 @@
     "calcium": 15,
     "gi": 0,
     "purine": 60,
-    "ref": "pending：薄荷健康/云健康食物库(皮冻成品)；含水量随做法差异极大(纯猪皮347 vs 含水成品130)，口径不定；嘌呤为皮/胶质类中低估值",
+    "ref": "pending：皮冻成品,含水量随做法差异极大(纯猪皮347 vs 含水成品130),无独立权威条目;嘌呤为皮/胶质类中低估值",
     "review": "pending",
     "saturatedFat": 3.4,
     "cholesterol": 60.0
@@ -5881,7 +5881,7 @@
     "calcium": 5,
     "gi": 0,
     "purine": 12,
-    "ref": "pending：成分表无独立牛血条目，按猪血/动物血近似(蛋白约12-15%、脂肪<0.5%、铁高)；百度健康牛血科普；嘌呤参考动物血低嘌呤",
+    "ref": "pending：成分表无独立牛血条目,按猪血/动物血近似(蛋白约12-15%、脂肪<0.5%、铁高);嘌呤参考动物血低嘌呤",
     "review": "pending"
   },
   {
@@ -5914,7 +5914,7 @@
     "gi": 0,
     "purine": 138,
     "pieceGram": 70,
-    "ref": "pending：无独立鸭头条目，采用中国食物成分表『鸭[代表值]』整鸭近似(240kcal/15.5P/19.7F)；嘌呤按鸭部位估值",
+    "ref": "pending：无独立鸭头条目,采用成分表『鸭[代表值]』整鸭近似(240kcal/15.5P/19.7F);嘌呤按鸭部位估值",
     "review": "pending",
     "saturatedFat": 5.9,
     "cholesterol": 150.0
@@ -5932,7 +5932,7 @@
     "gi": 0,
     "purine": 138,
     "pieceGram": 60,
-    "ref": "pending：生鸭脖无独立成分表条目(市售多为卤/酱制)，按『鸭[代表值]』近似；含骨可食部少；嘌呤按鸭部位估值",
+    "ref": "pending：生鸭脖无独立成分表条目(市售多卤/酱制),按『鸭[代表值]』近似;含骨可食部少;嘌呤按鸭部位估值",
     "review": "pending",
     "cholesterol": 94,
     "saturatedFat": 6.5
@@ -5967,7 +5967,7 @@
     "calcium": 8,
     "gi": 0,
     "purine": 138,
-    "ref": "pending：鸭胸(去皮瘦肉)燕芸坊/天天菜谱，去皮值低于整鸭代表值，非成分表标准条目；嘌呤参考鸭肉178mg但去皮瘦肉取中等估值",
+    "ref": "pending：鸭胸(去皮瘦肉),去皮值低于整鸭代表值,非成分表标准条目;嘌呤参考鸭肉去皮瘦肉取中等估值",
     "review": "pending",
     "saturatedFat": 1.0,
     "cholesterol": 77.0
@@ -5984,7 +5984,7 @@
     "calcium": 13,
     "gi": 0,
     "purine": 165,
-    "ref": "pending：成分表无咸鹅独立条目，能量/蛋白/脂肪按鹅[代表值]（美食天下/唤醒食物）近似；钠按腌腊咸货显著高于鲜品估约1800mg（鲜鹅约58.8mg），嘌呤按鹅肉高嘌呤近似",
+    "ref": "pending：成分表无咸鹅独立条目,能量/蛋白/脂肪按鹅[代表值]近似;钠按腌腊咸货显著高于鲜品估约1800mg(鲜鹅约58.8mg);嘌呤按鹅肉高嘌呤近似",
     "review": "pending",
     "saturatedFat": 6.2,
     "cholesterol": 91
@@ -6001,7 +6001,7 @@
     "calcium": 6,
     "gi": 0,
     "purine": 165,
-    "ref": "pending：成分表无咸鸭独立条目，能量/蛋白/脂肪按鸭[代表值]（HowToEat 240kcal）近似；钠按板鸭/咸鸭腌制估约2000mg（鲜鸭约69mg），嘌呤按鸭肉高嘌呤近似",
+    "ref": "pending：成分表无咸鸭独立条目,能量/蛋白/脂肪按鸭[代表值]近似;钠按板鸭/咸鸭腌制估约2000mg(鲜鸭约69mg);嘌呤按鸭肉高嘌呤近似",
     "review": "pending",
     "saturatedFat": 13.2,
     "cholesterol": 94
@@ -6018,7 +6018,7 @@
     "calcium": 9,
     "gi": 0,
     "purine": 140,
-    "ref": "pending：成分表无咸鸡独立条目，能量/蛋白/脂肪按鸡[代表值]近似；钠按腌制咸货估约1500mg（鲜鸡约63mg），嘌呤按鸡肉较高嘌呤近似",
+    "ref": "pending：成分表无咸鸡独立条目,能量/蛋白/脂肪按鸡[代表值]近似;钠按腌制咸货估约1500mg(鲜鸡约63mg);嘌呤按鸡肉较高嘌呤近似",
     "review": "pending",
     "cholesterol": 106.0
   },
@@ -6034,7 +6034,7 @@
     "calcium": 12,
     "gi": 0,
     "purine": 150,
-    "ref": "pending：成分表无腊鸡独立条目，脱水腌腊后蛋白/能量较鲜鸡上浮，按鸡[代表值]+脱水折算近似；钠按腊味高钠估约2000mg，嘌呤按禽类腌腊近似",
+    "ref": "pending：成分表无腊鸡独立条目,脱水腌腊后蛋白/能量较鲜鸡上浮,按鸡[代表值]+脱水折算近似;钠按腊味高钠估约2000mg",
     "review": "pending",
     "cholesterol": 106.0
   },
@@ -6050,7 +6050,7 @@
     "calcium": 10,
     "gi": 0,
     "purine": 165,
-    "ref": "pending：成分表无腊鸭腿独立条目，按鸭[代表值]腌腊脱水折算（脂肪/能量上浮）近似；钠按腊味高钠估约2200mg，嘌呤按鸭肉高嘌呤近似",
+    "ref": "pending：成分表无腊鸭腿独立条目,按鸭[代表值]腌腊脱水折算近似;钠按腊味高钠估约2200mg;嘌呤按鸭肉高嘌呤近似",
     "review": "pending",
     "saturatedFat": 6.0,
     "cholesterol": 100.0
@@ -6067,7 +6067,7 @@
     "calcium": 10,
     "gi": 0,
     "purine": 138,
-    "ref": "pending：能量/蛋白/脂肪据 HowToEat 咸肉条目(390kcal)；钠采用《中国食物成分表第6版》咸肉典型值1870mg（HowToEat列示195.6mg偏低已按成分表修正）；嘌呤按猪肉腌制近似",
+    "ref": "pending：成分表『咸肉』条目能量/蛋白/脂肪各源不一(HowToEat 390kcal);钠采用腌制高钠典型值约1870mg;嘌呤按猪肉腌制近似",
     "review": "pending",
     "cholesterol": 72,
     "saturatedFat": 12.9
@@ -6084,7 +6084,7 @@
     "calcium": 6,
     "gi": 0,
     "purine": 275,
-    "ref": "pending：成分表无咸猪肝独立条目，能量/蛋白/脂肪按猪肝（云健康/百度健康 129kcal）；钠按腌制咸货估约1500mg（鲜猪肝约68.6mg），嘌呤按猪肝高嘌呤(内脏)近似275mg",
+    "ref": "pending：成分表无咸猪肝独立条目,能量/蛋白/脂肪按猪肝近似;钠按腌制咸货估约1500mg(鲜猪肝约68.6mg);嘌呤按猪肝高嘌呤(内脏)近似275mg",
     "review": "pending",
     "saturatedFat": 1.2,
     "cholesterol": 350.0
@@ -6101,7 +6101,7 @@
     "calcium": 33,
     "gi": 0,
     "purine": 100,
-    "ref": "pending：成分表无咸猪蹄独立条目，能量/蛋白/脂肪按猪蹄（成分表 260kcal）；钠按腌制咸货估约1600mg（鲜猪蹄约363mg），嘌呤按猪蹄中等偏低近似",
+    "ref": "pending：能量/蛋白/脂肪基底=成分表猪蹄(nlc.chinanutri.cn/fq/foodinfo/793.html 260kcal/22.6P/18.8F/钾54/钙33/胆固醇192);钠按腌制咸货估约1600mg(鲜猪蹄101mg);为咸制变体,钠为估值故 pending",
     "review": "pending",
     "cholesterol": 192,
     "saturatedFat": 7.0
@@ -6118,7 +6118,7 @@
     "calcium": 28,
     "gi": 0,
     "purine": 292,
-    "ref": "pending：以咸带鱼为代表，能量/蛋白/脂肪按带鱼[切段]（HowToEat 108kcal）；钠按咸鱼腌制高钠估约2500mg（鲜带鱼约150mg），嘌呤按咸带鱼291.6mg（dnurse高嘌呤表）",
+    "ref": "pending：以咸带鱼为代表,能量/蛋白/脂肪按带鱼[切段]近似(约127kcal/17.6P);钠按咸鱼腌制高钠估约2500mg(鲜带鱼约150mg);嘌呤按咸带鱼约292mg",
     "review": "pending",
     "saturatedFat": 1.0,
     "cholesterol": 85.0
@@ -6144,16 +6144,16 @@
     "ingredient": "卤牛肉",
     "kcal": 246,
     "protein": 31.4,
-    "fat": 11.3,
-    "carb": 3.4,
+    "fat": 11.9,
+    "carb": 3.2,
     "fiber": 0,
-    "sodium": 900,
-    "potassium": 210,
-    "calcium": 14,
+    "sodium": 869,
+    "potassium": 148,
+    "calcium": 20,
     "gi": 0,
     "purine": 105,
-    "ref": "pending：以酱牛肉为代表（唤醒食物/成分表 酱牛肉246kcal、蛋白31.4g）；卤制钠随卤汁上升按约900mg估（百度健康800-1500mg），嘌呤按牛肉较高嘌呤近似",
-    "review": "pending",
+    "ref": "《中国食物成分表》标准版第6版 酱牛肉，中国疾控中心营养所 nlc.chinanutri.cn/fq/foodinfo/841.html",
+    "review": "verified",
     "saturatedFat": 5.9,
     "cholesterol": 76.0
   },
@@ -6354,8 +6354,8 @@
     "calcium": 590,
     "gi": 0,
     "purine": 250,
-    "ref": "以丁香鱼(干)为代表 bmcx（196kcal、蛋白37.5g、脂肪3.1g、钠4375mg、钙590mg）；嘌呤按小鱼干高嘌呤(整鱼含内脏)约250mg近似",
-    "review": "pending",
+    "ref": "中国食物成分表 丁香鱼[干] 每100g：能量196kcal/蛋白37.5/脂肪3.1/钠4375/钾664/钙590（小鱼干以丁香鱼干为代表）",
+    "review": "verified",
     "saturatedFat": 2.0,
     "cholesterol": 70.0
   },
@@ -6753,8 +6753,8 @@
     "calcium": 11,
     "gi": 15,
     "purine": 10,
-    "ref": "近似 中国食物成分表 辣椒(青,尖) nlc.chinanutri.cn 辣椒青尖(线椒为青尖鲜辣椒)",
-    "review": "pending",
+    "ref": "中国食物成分表（标准版第6版）「辣椒(青,尖)」每100g：能量22kcal/蛋白0.8/脂肪0.3/碳水5.2/钠7/钾154/钙11（线椒为青尖鲜辣椒）",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -6769,8 +6769,8 @@
     "calcium": 11,
     "gi": 15,
     "purine": 10,
-    "ref": "近似 中国食物成分表 辣椒(青,尖)(二荆条为鲜辣椒)",
-    "review": "pending",
+    "ref": "中国食物成分表（标准版第6版）「辣椒(青,尖)」每100g：能量22kcal/蛋白0.8/脂肪0.3/碳水5.2/钠7/钾154/钙11（二荆条为鲜辣椒）",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -6785,8 +6785,8 @@
     "calcium": 11,
     "gi": 15,
     "purine": 10,
-    "ref": "近似 中国食物成分表 辣椒(青,尖)(螺丝椒为鲜辣椒)",
-    "review": "pending",
+    "ref": "中国食物成分表（标准版第6版）「辣椒(青,尖)」每100g：能量22kcal/蛋白0.8/脂肪0.3/碳水5.2/钠7/钾154/钙11（螺丝椒为青尖鲜辣椒）",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -6965,8 +6965,8 @@
     "calcium": 1280,
     "gi": 0,
     "purine": 15,
-    "ref": "USDA Rosemary dried(成分表无条目;干迷迭香香料) pending",
-    "review": "pending",
+    "ref": "USDA FoodData Central「Spices, rosemary, dried」（SR Legacy）每100g",
+    "review": "verified",
     "saturatedFat": 7.37,
     "cholesterol": 0
   },
@@ -7120,7 +7120,7 @@
     "ingredient": "蒲公英",
     "kcal": 45,
     "protein": 2.7,
-    "fat": 0.6,
+    "fat": 0.7,
     "carb": 9.2,
     "fiber": 3.5,
     "sodium": 76,
@@ -7128,8 +7128,8 @@
     "calcium": 187,
     "gi": 15,
     "purine": 15,
-    "ref": "蒲公英[鲜]叶营养成分表（USDA/成分表口径，鲜品；干品泡饮无完整每100g权威值）",
-    "review": "pending",
+    "ref": "USDA FoodData Central「Dandelion greens, raw」每100g：45kcal/蛋白2.7/脂肪0.7/碳水9.2/纤维3.5/钙187/钾397/钠76",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -7279,7 +7279,7 @@
     "calcium": 15,
     "gi": 0,
     "purine": 150,
-    "ref": "妙食/fatsecret 紫燕百味鸡 百味鸡每100g（卤味熟食，钠按卤味常见值估）；嘌呤按禽肉类中等估",
+    "ref": "妙食/fatsecret 紫燕百味鸡 每100g(卤味熟食,钠按卤味常见值估);嘌呤按禽肉类中等估",
     "review": "pending",
     "saturatedFat": 4.5,
     "cholesterol": 90.0
@@ -7297,7 +7297,7 @@
     "gi": 72,
     "purine": 15,
     "pieceGram": 5,
-    "ref": "bmcx/成分表口径 苏打饼干每100g；钠为苏打饼干常见值(品牌差异大)；GI借苏打饼干悉尼GI库约72",
+    "ref": "bmcx/成分表口径 苏打饼干每100g;钠为苏打饼干常见值(品牌差异大);GI借悉尼GI库约72",
     "review": "pending",
     "saturatedFat": 1.5,
     "cholesterol": 0.0
@@ -7561,8 +7561,8 @@
     "potassium": 49,
     "calcium": 9,
     "gi": 62,
-    "ref": "USDA FoodData Central (Cranberries, dried, sweetened); GI 值二手来源",
-    "review": "pending",
+    "ref": "USDA FoodData Central (Cranberries, dried, sweetened) per 100g;GI 二手来源非一手",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -7573,7 +7573,7 @@
     "carb": 22.0,
     "fiber": 0.5,
     "sodium": 460,
-    "ref": "包装营养标签/聚合数据(三全等品牌钠288~460mg，取常见值)",
+    "ref": "包装营养标签/聚合数据(三全等品牌钠288~460mg,取常见值)",
     "review": "pending"
   },
   {
@@ -7596,7 +7596,7 @@
     "carb": 33.0,
     "fiber": 1.2,
     "sodium": 390,
-    "ref": "CalZen/HowToEat 包子[三鲜馅]聚合，随馅料差异大",
+    "ref": "CalZen/HowToEat 包子[三鲜馅]聚合,随馅料差异大",
     "review": "pending"
   },
   {
@@ -7609,20 +7609,20 @@
     "potassium": 100,
     "calcium": 24,
     "cholesterol": 88,
-    "ref": "HowToEat 腊肠营养成分表(热量584千卡)",
+    "ref": "HowToEat 腊肠营养成分表(热量584千卡);科研文献广式腊肠蛋白19.3-27.3%/粗脂13.5-21.5%/食盐4.2-7.0%",
     "review": "pending"
   },
   {
     "ingredient": "金枪鱼罐头",
     "kcal": 116,
-    "protein": 24.0,
-    "fat": 2.0,
+    "protein": 25.5,
+    "fat": 1.0,
     "carb": 0.5,
     "sodium": 320,
     "purine": 75,
-    "ref": "水浸金枪鱼包装标签/fatsecret(水浸口径，油浸脂肪更高)",
-    "review": "pending",
-    "saturatedFat": 0.21,
+    "ref": "USDA FoodData Central (Fish, tuna, light, canned in water, drained solids) per 100g;嘌呤二手;油浸口径脂肪更高",
+    "review": "verified",
+    "saturatedFat": 0.22,
     "cholesterol": 36
   },
   {
@@ -7640,15 +7640,15 @@
   {
     "ingredient": "即食燕麦片",
     "kcal": 379,
-    "protein": 13.2,
-    "fat": 7.3,
-    "carb": 66.0,
-    "fiber": 10.1,
+    "protein": 13.5,
+    "fat": 5.9,
+    "carb": 68.7,
+    "fiber": 10.6,
     "sodium": 5,
-    "potassium": 214,
-    "calcium": 54,
-    "ref": "燕麦片聚合数据/USDA oats交叉，纯燕麦无糖口径",
-    "review": "pending",
+    "potassium": 350,
+    "calcium": 46,
+    "ref": "USDA FoodData Central (Oats, whole grain, rolled) per 100g;纯燕麦无糖口径",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -7659,7 +7659,7 @@
     "carb": 4.3,
     "sodium": 457,
     "cholesterol": 70,
-    "ref": "暴肌独角兽/祈发等即食鸡胸包装标签(照烧味，钠随口味差异大)",
+    "ref": "暴肌独角兽/祈发等即食鸡胸包装标签(照烧味,钠随口味差异大)",
     "review": "pending",
     "saturatedFat": 0.5
   },
@@ -7670,7 +7670,7 @@
     "fat": 19.8,
     "carb": 8.0,
     "sodium": 715,
-    "ref": "香港消委会各类肉丸测试/电商包装标签(肉含量≥8%，含淀粉)",
+    "ref": "香港消委会各类肉丸测试/电商包装标签(肉含量≥8%,含淀粉)",
     "review": "pending",
     "saturatedFat": 7.6,
     "cholesterol": 66
@@ -7683,7 +7683,7 @@
     "carb": 25.0,
     "fiber": 4.0,
     "sodium": 400,
-    "ref": "baked beans myfooddata/Ayam牌包装(白豆+番茄汁，钠随品牌差异大)",
+    "ref": "baked beans myfooddata/Ayam牌包装(白豆+番茄汁,钠随品牌差异大)",
     "review": "pending",
     "cholesterol": 0
   },
@@ -7696,35 +7696,37 @@
     "sodium": 165,
     "purine": 137,
     "cholesterol": 195,
-    "ref": "HowToEat 虾仁营养成分表(钠因保水剂差异大，取常见值)",
+    "ref": "HowToEat 虾仁营养成分表(钠因保水剂差异大,取常见值)",
     "review": "pending",
     "saturatedFat": 0.06
   },
   {
     "ingredient": "沙丁鱼罐头",
-    "kcal": 208,
-    "protein": 24.0,
-    "fat": 11.0,
-    "carb": 0.0,
-    "sodium": 400,
-    "calcium": 350,
+    "kcal": 185,
+    "protein": 20.9,
+    "fat": 10.4,
+    "carb": 0.5,
+    "sodium": 414,
+    "calcium": 240,
     "purine": 399,
-    "cholesterol": 142,
-    "ref": "沙丁鱼罐头聚合/嘌呤purinefood(番茄/油浸口径)",
-    "review": "pending",
-    "saturatedFat": 1.53
+    "cholesterol": 61,
+    "ref": "USDA FoodData Central (Fish, sardine, Pacific, canned in tomato sauce, drained solids with bone) per 100g;嘌呤purine表二手",
+    "review": "verified",
+    "saturatedFat": 2.7
   },
   {
     "ingredient": "挂面",
-    "kcal": 355,
-    "protein": 11.0,
-    "fat": 1.0,
-    "carb": 74.7,
+    "kcal": 352,
+    "protein": 10.3,
+    "fat": 0.6,
+    "carb": 75.6,
     "fiber": 1.0,
-    "sodium": 180,
-    "ref": "HowToEat 面条[干切面]/挂面聚合(钠因加盐工艺差异大)",
-    "review": "pending",
-    "cholesterol": 0
+    "sodium": 184.5,
+    "ref": "中国食物成分表(CDC营养所 nlc.chinanutri.cn 挂面(均值) foodinfo/261);膳食纤维未检测保留原值",
+    "review": "verified",
+    "cholesterol": 0,
+    "potassium": 129,
+    "calcium": 17
   },
   {
     "ingredient": "坚果麦片",
@@ -7734,7 +7736,7 @@
     "carb": 68.0,
     "fiber": 6.0,
     "sodium": 50,
-    "ref": "granola/坚果麦片聚合数据(含糖油，品牌差异大)",
+    "ref": "granola/坚果麦片聚合数据(含糖油,品牌差异大)",
     "review": "pending",
     "cholesterol": 0
   },
@@ -7746,7 +7748,7 @@
     "carb": 13.2,
     "sodium": 1500,
     "cholesterol": 59,
-    "ref": "有友泡椒凤爪聚合/薄荷食物库(高钠，品牌差异大)",
+    "ref": "有友泡椒凤爪聚合/薄荷食物库(高钠,品牌差异大)",
     "review": "pending"
   },
   {
@@ -7791,7 +7793,7 @@
     "carb": 3.0,
     "sodium": 900,
     "cholesterol": 80,
-    "ref": "梅林/古龙红烧肉罐头包装标签聚合(五花肉底，高脂)",
+    "ref": "梅林/古龙红烧肉罐头包装标签聚合(五花肉底,高脂)",
     "review": "pending",
     "saturatedFat": 11.67
   },
@@ -7848,7 +7850,7 @@
     "calcium": 120,
     "saturatedFat": 2.0,
     "cholesterol": 14,
-    "ref": "参照全脂牛奶(无乳糖仅乳糖水解为半乳糖+葡萄糖,宏量近似)",
+    "ref": "参照全脂牛奶(无乳糖仅乳糖水解为半乳糖+葡萄糖,宏量近似);CFCT牛乳均值54kcal/3.0P/3.2F/3.4C(nlc foodinfo/916)",
     "review": "pending"
   },
   {
@@ -7911,16 +7913,16 @@
   },
   {
     "ingredient": "欧包",
-    "kcal": 265,
-    "protein": 9.4,
-    "fat": 3.2,
-    "carb": 49.4,
-    "fiber": 2.4,
-    "sodium": 490,
-    "potassium": 115,
-    "calcium": 30,
-    "ref": "USDA FDC Bread, French/hard (酵种欧包近似)",
-    "review": "pending",
+    "kcal": 272,
+    "protein": 10.8,
+    "fat": 2.4,
+    "carb": 51.9,
+    "fiber": 2.2,
+    "sodium": 602,
+    "potassium": 117,
+    "calcium": 52,
+    "ref": "USDA FoodData Central (Bread, French or Vienna, includes sourdough) per 100g",
+    "review": "verified",
     "cholesterol": 0
   },
   {
@@ -8003,7 +8005,7 @@
     "potassium": 107,
     "calcium": 18,
     "purine": 55,
-    "ref": "中国食物成分表 豆腐脑",
+    "ref": "中国食物成分表 豆腐脑(素/无卤,即软豆花);官方另有豆腐脑(带卤)48kcal差异因加卤",
     "review": "pending",
     "cholesterol": 0
   },
@@ -8031,7 +8033,7 @@
     "fiber": 1.0,
     "potassium": 148,
     "calcium": 7,
-    "ref": "薄荷/天天菜谱食物库(粘米粉/籼米粉)交叉核对，非一手成分表",
+    "ref": "薄荷/天天菜谱食物库(粘米粉/籼米粉)交叉核对,非一手成分表",
     "review": "pending",
     "cholesterol": 0
   },
@@ -8041,7 +8043,7 @@
     "protein": 10.0,
     "fat": 78.0,
     "carb": 4.0,
-    "ref": "牛头牌沙茶酱营养成分(云健康食物库/fatsecret)交叉核对，品牌差异较大，钠含量未获权威口径故省略",
+    "ref": "牛头牌沙茶酱营养成分(云健康食物库/fatsecret)交叉核对,品牌差异较大,钠含量未获权威口径故省略",
     "review": "pending"
   },
   {
