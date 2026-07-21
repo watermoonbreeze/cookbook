@@ -454,6 +454,18 @@ fun PrimaryTabRow(
 - **崩溃红线**：删除胶囊作 `Box` 内平级子 emit(条件 emit·**非** page lambda 内 return)；page lambda `if(shown!=null){Image}else{转圈}` 维持 if/else 平衡。
 - **落地样板**：`ui/component/FullScreenImageViewer.kt`(`onDelete` 参数+底部胶囊+页码收敛)。**follow-up**:删除"撤销"Snackbar 由编辑页宿主承接(§9.12·当前靠"大图确认+物理不即删+未保存不持久"三重软保护·可后补)。
 
+### 9.35 AI 推荐三档家族化统一（周计划对齐库存/随机档）
+> [AI生成 2026-07-21] 用户"周计划界面风格需与另两档统一"·apple_ux_designer 会商→P1 已落地(`AiPlanScreen`)。方案见 `AI推荐界面统一方案.md`。
+- **三档共容器**：库存/随机/周期计划共用 `AiRecommendScreen` + 顶部 `SegmentedControl`；周计划(`AiPlanBody`)是嵌入档,须与另两档"一眼是一家人"。
+- **结果卡统一白卡**：`Surface(surface)`+`shapes.medium`(12)+**卡内 16dp**+`tonalElevation=0`;卡间 `padding(bottom=10)`(≈Spacer10)。**弃 `surfaceVariant` 灰卡**(灰底上菜名要硬提亮=底色选错的信号)。`DayCard` 白卡化后菜名回默认 `onSurface`。
+- **静态卡头用 `onSurface`**：强调色 `primary` 只给可交互元素·不染"第N天"静态标题。
+- **控件区遵 §9.31 高频直出/低频折叠**：高频(天数 chip+Slider+生成)直出；低频(用餐人数+推荐风格)收进「计划设置」`ModalBottomSheet`(与另两档「筛选」弹层同构·有非默认值加 ● 圆点)。治"控件墙 5 组平铺"。
+- **标注语言统一"纯文字浅色"**：去装饰 emoji(🛒⚠→纯文字·error 色保留)；"规则补充"胶囊徽标→`labelSmall` 灰字(`· 规则补充`)。全 `Icons.Outlined`(需图标时)。
+- **空态给下一步**：统一 `EmptyState`(呼应营养线文案"排上几天就能看到搭得均不均衡")。
+- **为营养线概览卡预留(P2)**：生成结果首张卡位置留给"一周营养搭配"概览卡(`InsetGroup` 总卡·总—分层级)·季节/健康提示条已下移让位;逐日卡=内容白卡。营养线落地只填该槽·不动其余布局。
+- **崩溃红线**：`ModalBottomSheet`/`DayCard` content 无 `return@Column/Row`·条件用 item/if 插入式 emit·无 coverStyle 变体。
+- **落地样板**：`ui/ai/AiPlanScreen.kt`(P1)·基准参照 `ui/ai/AiRecommendScreen.kt`(`RecommendControls`/`RecommendFilterSheet`)。
+
 ### 9.33 家族化对齐边界：语义色走 token · 文档/叙事页不卡化
 > [AI生成 2026-07-21] 家族化 P4 视觉打磨过 `apple_visual_designer` 门禁确立的两条可复用边界。
 - **语义锚点色一律走单一来源 token，不散落硬编码**：宏量三色(蛋白/脂肪/碳水)、收藏星金、状态色(success/warning/danger)、均衡度级别色等**语义色**统一进 `theme/ExtendedColors.kt`(`macroProtein/Fat/Carb`/`favoriteStar`/`success`…)或 `NutritionColor`(级别基色)——**刻意不随 6 套 `AppPalette` 主题变**(语义记忆稳定·家族化统一的是"结构语言"圆角/间距/分组卡,**不是**把语义色也染成主题色)。散落硬编码=漂移隐患(曾现 DietReport 宏量色用 Material 系、与 FamilyStats/色系墙不一致)。收藏星保持金色(跨平台通用"收藏"共识色·染 primary 反而语义模糊)。判据:凡"颜色=某含义"的都进 token。

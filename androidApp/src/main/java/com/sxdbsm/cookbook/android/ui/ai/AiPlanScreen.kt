@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +17,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,10 +40,14 @@ import com.sxdbsm.cookbook.ai.model.DayPlan
 fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
     val state = vm.state
     val mainRange = com.sxdbsm.cookbook.ai.MealPortion.mainRange(state.people)
+    // [AI修改] P1 家族化统一(§9.35)：控件区做"高频直出/低频折叠"——天数+生成直出、人数+风格收进「计划设置」弹层(与另两档「筛选」弹层同构)。
+    var settingsOpen by remember { mutableStateOf(false) }
+    // 非默认值(非"综合"风格)→设置入口加 ● 圆点提示,与另两档一致。
+    val hasNonDefault = state.recommendStyle != com.sxdbsm.cookbook.ai.RecommendationStyle.BALANCED
     // [AI修改] 整个页面(控件+计划)放同一 LazyColumn：生成计划后上滑，控件整体滚走、给计划更大空间。
     LazyColumn(modifier = modifier.fillMaxSize()) {
         item {
-            // 规划天数：标签 + 周期快捷 整合成一行(可横滑)。
+            // —— 高频直出：天数快捷 chip ——
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("天数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.width(8.dp))
@@ -50,7 +57,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                     }
                 }
             }
-            // [AI修改] 天数显示补回：进度条右侧显示当前"N 天"。
+            // 天数精调 Slider + 当前天数。
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Slider(
                     value = state.days.toFloat(),
@@ -67,17 +74,11 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            // 用餐人数(MiniStepper) 与「生成」同一行，生成按钮在右侧。
+            // —— 高频直出：「计划设置」入口 + 「生成」——低频(人数/风格)收进弹层。
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("用餐人数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.width(8.dp))
-                com.sxdbsm.cookbook.android.ui.component.MiniStepper(
-                    valueText = "${state.people} 人",
-                    onMinus = { vm.setPeople(state.people - 1) },
-                    onPlus = { vm.setPeople(state.people + 1) },
-                    minusEnabled = state.people > 1,
-                    plusEnabled = state.people < com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE,
-                )
+                TextButton(onClick = { settingsOpen = true }) {
+                    Text("计划设置" + if (hasNonDefault) " ●" else "")
+                }
                 Spacer(Modifier.weight(1f))
                 com.sxdbsm.cookbook.android.ui.component.CapsuleButton(
                     text = if (state.loading) "生成中…" else "生成",
@@ -86,46 +87,43 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                 )
             }
             Text(
-                "正餐约 ${mainRange.first}~${mainRange.last} 菜",
+                "${state.people} 人 · 正餐约 ${mainRange.first}~${mainRange.last} 菜",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 2.dp),
             )
-            // [AI生成] 推荐风格(与AI推荐共用)：影响规划的新颖/健康/搭配/去重权重；已有计划则改风格即重生成。
-            Spacer(Modifier.height(6.dp))
-            Text(
-                RECOMMEND_STYLE_OPTIONS[RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0)].third,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(4.dp))
-            com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
-                options = RECOMMEND_STYLE_OPTIONS.map { it.first },
-                selectedIndex = RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0),
-                onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            if (state.season.isNotBlank() && state.plan != null) {
-                Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
+        }
+
+        // —— R3：生成上下文条(季节/健康)独立成条,移出控件区(为营养线概览卡让出生成结果首屏黄金位·P2 概览卡插此条之前)。
+        if (state.season.isNotBlank() && state.plan != null) {
+            item {
                 val partialRule = state.byAi && state.plan.days.any { d -> d.meals.any { it.fromRule } }
                 Text(
                     buildString {
-                        append(if (state.byAi) "AI 规划" else "规则规划") // [AI修改] 文案:去标题装饰emoji(文字本身已表意)
+                        append(if (state.byAi) "AI 规划" else "规则规划")
                         if (partialRule) append("（部分餐次由规则补充，已在下方标注）")
                         append(" · 当前季节：${state.season}（应季优先）")
-                        if (state.healthAware) append(" · 已参考健康档案（膳食指南口径整理，仅供参考）") // [AI修改] 文案:去伪精确健康断言"利健康≥80%"(守免责·非医嘱)
+                        if (state.healthAware) append(" · 已参考健康档案（膳食指南口径整理，仅供参考）")
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
-            Spacer(Modifier.height(8.dp))
         }
 
         when {
             state.loading -> item { Box(Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
             state.error != null -> item { Text(state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 16.dp)) }
-            state.plan == null -> item { Text("选好天数，点「生成计划」。", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 16.dp)) }
+            state.plan == null -> item {
+                // R4：空态给下一步(呼应营养线文案),对齐另两档居中提示。
+                com.sxdbsm.cookbook.android.ui.component.EmptyState(
+                    text = "还没安排这一周\n排上几天，就能看到这一周搭得均不均衡",
+                    icon = "🗓",
+                    modifier = Modifier.padding(top = 24.dp),
+                )
+            }
             else -> {
                 items(state.plan.days, key = { it.dayIndex }) { day ->
                     // [AI生成] 每天标注明确日期(计划起始日 + dayIndex)，让"第N天"对应真实日期。
@@ -143,6 +141,50 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
             }
         }
     }
+
+    // —— 低频折叠：「计划设置」弹层(人数 + 推荐风格)。条件 emit·ModalBottomSheet 内无 early return(守崩溃红线)。
+    if (settingsOpen) {
+        ModalBottomSheet(onDismissRequest = { settingsOpen = false }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 20.dp),
+            ) {
+                Text("计划设置", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("用餐人数", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Spacer(Modifier.weight(1f))
+                    com.sxdbsm.cookbook.android.ui.component.MiniStepper(
+                        valueText = "${state.people} 人",
+                        onMinus = { vm.setPeople(state.people - 1) },
+                        onPlus = { vm.setPeople(state.people + 1) },
+                        minusEnabled = state.people > 1,
+                        plusEnabled = state.people < com.sxdbsm.cookbook.ai.MealPortion.MAX_PEOPLE,
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
+                Text("推荐风格", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(4.dp))
+                // [AI修改] Google审🟡:提取 styleIdx 复用(去重·与另两档 RecommendFilterSheet 对齐)。
+                val styleIdx = RECOMMEND_STYLE_OPTIONS.indexOfFirst { it.second == state.recommendStyle }.coerceAtLeast(0)
+                Text(
+                    RECOMMEND_STYLE_OPTIONS[styleIdx].third,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(6.dp))
+                com.sxdbsm.cookbook.android.ui.component.SegmentedControl(
+                    options = RECOMMEND_STYLE_OPTIONS.map { it.first },
+                    selectedIndex = styleIdx,
+                    onSelect = { idx -> vm.setStyle(RECOMMEND_STYLE_OPTIONS[idx].second) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -155,34 +197,30 @@ private fun DayPreset(label: String, value: Int, current: Int, onSelect: (Int) -
 private fun DayCard(day: DayPlan, dateLabel: String? = null) {
     // [AI生成] 库存挂钩关→周期规划不显缺料/采购标注、缺料菜不变灰(与食历/详情同口径去噪)。
     val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
+    // [AI修改] P1 家族化(§9.35 R1)：灰卡 surfaceVariant→白卡 surface(与另两档结果卡同族)·卡内 14→16·卡间 Spacer(10)·卡头 primary→onSurface(强调色只给可交互)。
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.surface,
         shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        tonalElevation = 0.dp,
+        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 "第 ${day.dayIndex + 1} 天" + (dateLabel?.let { " · $it" } ?: ""),
-                style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
             )
             day.meals.forEach { meal ->
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(meal.mealName, style = MaterialTheme.typography.titleSmall)
                     if (meal.fromRule) {
-                        // [AI生成] 该餐 AI 未覆盖、由规则补充，标注区分。
+                        // [AI修改] P1(§9.35 R6)：规则补充胶囊徽标→labelSmall 灰字(与另两档"纯文字浅色标注"语言统一)。
                         Spacer(Modifier.width(6.dp))
-                        Surface(
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
-                            shape = MaterialTheme.shapes.small,
-                        ) {
-                            Text(
-                                "规则补充",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
-                            )
-                        }
+                        Text(
+                            "· 规则补充",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
                 meal.dishes.forEach { d ->
@@ -202,10 +240,11 @@ private fun DayCard(day: DayPlan, dateLabel: String? = null) {
                         }
                     }
                     if (pantryHookOn && d.purchaseNames.isNotEmpty()) {
-                        Text("　🛒 采购：${d.purchaseNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                        // [AI修改] P1(§9.35 R6)：去装饰 emoji(纯文字标注·error 色保留=需注意信息)。
+                        Text("　采购：${d.purchaseNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     }
                     if (pantryHookOn && d.shortageNames.isNotEmpty()) {
-                        Text("　⚠ 缺：${d.shortageNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                        Text("　缺：${d.shortageNames.joinToString("、")}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     }
                 }
             }
