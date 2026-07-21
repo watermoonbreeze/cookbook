@@ -41,7 +41,7 @@ object DataSourceReference {
                     levels = listOf(
                         DietaryRefLevel("主来源", "《中国食物成分表(标准版·第6版)》· 中国疾控中心营养与健康所"),
                         DietaryRefLevel("在线查询", "食物营养成分查询平台 nlc.chinanutri.cn（能量 kJ÷4.184=kcal）"),
-                        DietaryRefLevel("交叉核对", "USDA FoodData Central（进口/缺项，如蓝莓、全麦面包）"),
+                        DietaryRefLevel("交叉核对", "USDA FoodData Central（进口/缺项，如蓝莓、全麦面包、饱和脂肪值）"),
                     ),
                     caliber = "每100g可食部；谷物/干货按生/干、蔬菜鲜菌按鲜品；每条 ref 记实际来源，review：权威成分表=已核、估算=待核",
                     appliesTo = emptyList(),
