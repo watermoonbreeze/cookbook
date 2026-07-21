@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,6 +51,8 @@ fun AiSettingsScreen(
     val context = LocalContext.current
 
     Scaffold(
+        // [AI修改] D2 家族化卡化：灰底(Scaffold 默认 background)+ contentWindowInsets 0(与设置族 FeatureSettingsScreen 一致)。
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
             // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛(原用默认 surface 色,收敛后与全局一致)。
             com.sxdbsm.cookbook.android.ui.component.AppTopBar(
@@ -60,39 +61,43 @@ fun AiSettingsScreen(
             )
         },
     ) { padding ->
+        // [AI修改] D2：三档来源收敛进单个 InsetGroup 白卡(对齐设置族)；外层 Column 去 padding(16)、由卡/页脚各自内缩。
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Text("模型来源", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(4.dp))
+            com.sxdbsm.cookbook.android.ui.component.InsetGroup(title = "模型来源") {
+                // —— 云端 ——（选中即展开云端子块，条件 if 插入=安全，禁 early return·崩溃红线）
+                RuntimeRow("云端大模型", AiRuntimeType.CLOUD, state.type, enabled = true) { vm.onTypeChange(it) }
+                if (state.type == AiRuntimeType.CLOUD) {
+                    CloudSection(
+                        state = state,
+                        onSelectModel = { vm.onSelectModel(it) },
+                        onEditKey = { keyDialogOpen = true },
+                        onShowGuide = { guideOpen = true },
+                    )
+                }
+                com.sxdbsm.cookbook.android.ui.component.InsetDivider(startIndent = 48)
 
-            // —— 云端 ——
-            RuntimeOption("云端大模型", AiRuntimeType.CLOUD, state.type, enabled = true) { vm.onTypeChange(it) }
-            if (state.type == AiRuntimeType.CLOUD) {
-                CloudSection(
-                    state = state,
-                    onSelectModel = { vm.onSelectModel(it) },
-                    onEditKey = { keyDialogOpen = true },
-                    onShowGuide = { guideOpen = true },
-                )
+                // —— 规则 ——
+                RuntimeRow("规则推荐（不用模型，离线可用）", AiRuntimeType.MOCK, state.type, enabled = true) { vm.onTypeChange(it) }
+                com.sxdbsm.cookbook.android.ui.component.InsetDivider(startIndent = 48)
+
+                // —— 端侧 ——（末行后不加分隔线）
+                RuntimeRow("端侧本地模型（接入中）", AiRuntimeType.ON_DEVICE, state.type, enabled = false) { vm.onTypeChange(it) }
+                OnDeviceSelfTestSection() // [AI生成] 端侧设备自测：先给流畅度预估，让用户对能否流畅使用有预期。
             }
 
-            // —— 规则 ——
-            RuntimeOption("规则推荐（不用模型，离线可用）", AiRuntimeType.MOCK, state.type, enabled = true) { vm.onTypeChange(it) }
-            // —— 端侧 ——
-            RuntimeOption("端侧本地模型（接入中）", AiRuntimeType.ON_DEVICE, state.type, enabled = false) { vm.onTypeChange(it) }
-            OnDeviceSelfTestSection() // [AI生成] 端侧设备自测：先给流畅度预估，让用户对能否流畅使用有预期。
-
-            Spacer(Modifier.height(20.dp))
+            // [AI修改] D2：隐私小字移到卡外页脚(裸 Text·不进白卡)，与设置族一致。
             Text(
                 "隐私：走云端时只发送在手食材名 + 粗约束标签（如\"忌高嘌呤\"）+ 候选菜名，不发送完整健康档案。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
             )
+            Spacer(Modifier.height(24.dp))
         }
     }
 
@@ -223,7 +228,8 @@ private fun CloudSection(
     val vendorKey = state.keyByVendor[model.vendor].orEmpty()
     var expanded by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.padding(start = 40.dp, end = 4.dp, bottom = 8.dp)) {
+    // [AI修改] D2：子块外层缩进对齐来源行文字左缘(48dp)，收进 InsetGroup 白卡。
+    Column(modifier = Modifier.padding(start = 48.dp, end = 16.dp, bottom = 14.dp)) {
         // 模型下拉
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             OutlinedTextField(
@@ -321,7 +327,8 @@ private fun OnDeviceSelfTestSection() {
     val context = LocalContext.current
     var report by remember { mutableStateOf<DeviceAiReport?>(null) }
 
-    Column(modifier = Modifier.padding(start = 40.dp, end = 4.dp, bottom = 8.dp)) {
+    // [AI修改] D2：端侧自测子块缩进与云端子块一致(对齐来源行文字左缘·收进白卡)。
+    Column(modifier = Modifier.padding(start = 48.dp, end = 16.dp, bottom = 14.dp)) {
         OutlinedButton(onClick = { report = DeviceAiCapability.evaluate(context) }) {
             Text(if (report == null) "测试本机能否流畅运行" else "重新测试")
         }
@@ -355,8 +362,9 @@ private fun OnDeviceSelfTestSection() {
     }
 }
 
+/** [AI修改] D2：单选来源行改 InsetGroup 内的 list-row（整行 selectable·16/14 padding·端侧 disabled）。 */
 @Composable
-private fun RuntimeOption(
+private fun RuntimeRow(
     label: String,
     value: AiRuntimeType,
     selected: AiRuntimeType,
@@ -367,7 +375,7 @@ private fun RuntimeOption(
         modifier = Modifier
             .fillMaxWidth()
             .selectable(selected = value == selected, enabled = enabled) { onSelect(value) }
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(selected = value == selected, onClick = { if (enabled) onSelect(value) }, enabled = enabled)
