@@ -7827,14 +7827,14 @@
  },
  {
   "ingredient": "速冻虾仁",
-  "kcal": 199,
+  "kcal": 89,
   "protein": 20.8,
   "fat": 0.6,
   "carb": 0.0,
   "sodium": 165,
   "purine": 137,
   "cholesterol": 195,
-  "ref": "HowToEat 虾仁营养成分表(钠因保水剂差异大,取常见值)",
+  "ref": "HowToEat 虾仁营养成分表(钠因保水剂差异大,取常见值) ｜ kcal 经能量交叉(Atwater)+USDA核实修正 199→89(原值与P20.8/F0.6/C0不自洽)",
   "review": "pending",
   "saturatedFat": 0.06
  },
