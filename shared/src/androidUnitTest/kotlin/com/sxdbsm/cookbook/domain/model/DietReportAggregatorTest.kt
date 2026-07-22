@@ -78,6 +78,46 @@ class DietReportAggregatorTest {
         assertEquals(0, r.recordedDays)
         assertTrue(!r.hasData)
         assertNull(r.personal, "无记餐→个人营养 null")
+        assertNull(r.perDayNutrition, "无记餐→逐日营养 null(不画空曲线)")
         assertEquals(List(7) { -1 }, r.perDayLevels, "每天均为没记(-1)")
+    }
+
+    // [AI生成] 营养趋势折线(§9.40):逐日个人营养序列与 personal 均值**同源**——防两套口径漂移。
+    @Test
+    fun `逐日营养与均值同源_防漂移`() {
+        val a = dish(1, "菜A", listOf("米饭"))
+        val b = dish(2, "菜B", listOf("鸡蛋"))
+        val cards = listOf(
+            card(day(0), listOf(a)),   // 记
+            card(day(1), emptyList()), // 空
+            card(day(2), listOf(b)),   // 记
+        )
+        // 家庭口径 A=1000 / B=2000；share 0.5 → 个人 A=500 / B=1000；均值=(500+1000)/2=750。
+        val nutri = mapOf(
+            1L to NutritionTotals(energyKcal = 1000.0, proteinG = 30.0, fatG = 10.0, carbG = 150.0, sodiumMg = 800.0),
+            2L to NutritionTotals(energyKcal = 2000.0, proteinG = 60.0, fatG = 40.0, carbG = 250.0, sodiumMg = 1200.0),
+        )
+        val r = DietReportAggregator.aggregate(cards, periodDays = 3, share = 0.5, dishNutrition = nutri, target = null)
+        val perDay = r.perDayNutrition
+        assertNotNull(perDay, "个人视角逐日营养非空")
+        assertEquals(3, perDay.size, "长度=逐天(含空天)")
+        assertNull(perDay[1], "空天=null(断点·不脑补 0 暴跌)")
+        assertNotNull(perDay[0]); assertNotNull(perDay[2])
+        assertEquals(500.0, perDay[0]!!.energyKcal, 1e-6, "A 1000×0.5")
+        assertEquals(1000.0, perDay[2]!!.energyKcal, 1e-6, "B 2000×0.5")
+        // 防漂移核心：逐日(非空)序列聚合回均值 ≈ personal.avgKcal。
+        val recorded = perDay.filterNotNull()
+        val avgFromSeries = recorded.sumOf { it.energyKcal } / recorded.size
+        assertEquals(r.personal!!.avgKcal.toDouble(), avgFromSeries, 0.5, "逐日序列均值≈个人均值(同源不漂移)")
+        assertEquals(750, r.personal!!.avgKcal)
+    }
+
+    @Test
+    fun `家庭视角_逐日营养为null`() {
+        val a = dish(1, "菜A", listOf("米饭"))
+        val cards = listOf(card(day(0), listOf(a)))
+        val nutri = mapOf(1L to NutritionTotals(energyKcal = 1000.0))
+        val r = DietReportAggregator.aggregate(cards, periodDays = 7, share = null, dishNutrition = nutri, target = null)
+        assertNull(r.perDayNutrition, "家庭视角不画曲线→null")
     }
 }

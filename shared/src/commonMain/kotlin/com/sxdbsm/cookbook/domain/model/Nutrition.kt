@@ -95,6 +95,21 @@ data class NutritionTotals(
         cholesterolMg + o.cholesterolMg,
     )
 
+    /** 按系数缩放（如按成员食用份额 share 折算个人摄入）。[AI生成] 营养趋势折线:逐日×share 与均值同源。 */
+    operator fun times(f: Double) = NutritionTotals(
+        energyKcal * f,
+        proteinG * f,
+        fatG * f,
+        carbG * f,
+        fiberG * f,
+        sodiumMg * f,
+        potassiumMg * f,
+        calciumMg * f,
+        purineMg * f,
+        saturatedFatG * f,
+        cholesterolMg * f,
+    )
+
     companion object {
         val EMPTY = NutritionTotals()
     }

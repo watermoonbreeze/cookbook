@@ -231,7 +231,18 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                         StatRow("日均钠", "${p.avgSodiumMg} mg")
                         StatRow("日均钾", "${p.avgPotassiumMg} mg")
                         StatRow("日均膳食纤维", "${p.avgFiberG} g")
-                        Spacer(Modifier.height(6.dp))
+                        // [AI生成] 营养走势折线(§9.40):个人视角逐日营养(已×份额)画宏量克数单条折线+三色切换·作营养摄入卡子区(非独立卡)。
+                        //   守无目标线/无刻度/无红/断线示没记/热量不做主轴。个人视角有记录时 perDayNutrition 非空。
+                        r.perDayNutrition?.let { series ->
+                            Spacer(Modifier.height(12.dp))
+                            Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
+                            Spacer(Modifier.height(12.dp))
+                            com.sxdbsm.cookbook.android.ui.component.NutritionTrendChart(
+                                perDayNutrition = series,
+                                isMonth = st.period == ReportPeriod.MONTH,
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
                         // [AI修改] 文案审校🔴3:免责补"估算·来自食材参考数据"(慢病敏感数值别被当权威摄入量)。
                         Text("· 营养按你的饭量估算，来自食材参考数据，仅供了解，非医嘱", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                     }

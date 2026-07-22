@@ -45,6 +45,9 @@ data class DietReport(
     val perDayLevels: List<Int>, // 每天均级(-1=没记，0..4)——结构日历
     val structureGaps: List<String>, // 结构缺口(缺蛋白/蔬菜…)
     val personal: PersonalNutrition?, // 家庭视角=null
+    // [AI生成] 营养趋势折线(§9.40):逐日个人营养(已×share·空天=null·长度=periodDays)。
+    //   个人视角且有记录才非空;家庭视角/无记录=null。与 personal 均值同源(防口径漂移·见单测)。
+    val perDayNutrition: List<NutritionTotals?>? = null,
 ) {
     val hasData: Boolean get() = recordedDays > 0
     val coverageText: String get() = "$recordedDays / $periodDays 天"
@@ -94,19 +97,29 @@ object DietReportAggregator {
         val avgLevel = if (levelsRecorded.isEmpty()) 0.0 else levelsRecorded.average()
         val structureGaps = FoodGroup.nutritionGaps(FoodGroup.groupsOf(ingredientNames, explicitGroups))
 
-        // 个人营养(仅个人视角)：逐日摄入(该日菜营养和×份额)，均值/达标天/宏量比。
-        val personal = if (share != null && share > 0.0 && recordedDays > 0) {
+        // 个人营养(仅个人视角)：先算**逐日个人摄入**(该日菜营养和×份额·空天=null)作单一真相源——
+        //   趋势折线用它逐点画、个人均值/达标天/宏量比由它聚合而来(同源·防口径漂移·见 DietReportAggregatorTest)。
+        val perDayNutrition: List<NutritionTotals?>? =
+            if (share != null && share > 0.0 && recordedDays > 0) {
+                dayDishes.map { dishes ->
+                    if (dishes.isEmpty()) null
+                    else dishes.fold(NutritionTotals.EMPTY) { acc, d ->
+                        acc + (dishNutrition[d.id] ?: NutritionTotals.EMPTY)
+                    } * share
+                }
+            } else {
+                null
+            }
+
+        val personal = if (perDayNutrition != null) {
+            val recordedTotals = perDayNutrition.filterNotNull() // 已×share·仅有记的天
             var kcalSum = 0.0; var pSum = 0.0; var fSum = 0.0; var cSum = 0.0
             var naSum = 0.0; var kSum = 0.0; var fiberSum = 0.0; var onTarget = 0
-            recordedDayIdx.forEach { idx ->
-                val dayTotal = dayDishes[idx].fold(NutritionTotals.EMPTY) { acc, d ->
-                    acc + (dishNutrition[d.id] ?: NutritionTotals.EMPTY)
-                }
-                val kcal = dayTotal.energyKcal * share
-                kcalSum += kcal
-                pSum += dayTotal.proteinG * share; fSum += dayTotal.fatG * share; cSum += dayTotal.carbG * share
-                naSum += dayTotal.sodiumMg * share; kSum += dayTotal.potassiumMg * share; fiberSum += dayTotal.fiberG * share
-                if (target != null && kcal > 0.0 && CalorieTarget.status(kcal, target) == CalorieStatus.ON) onTarget++
+            recordedTotals.forEach { dt ->
+                kcalSum += dt.energyKcal
+                pSum += dt.proteinG; fSum += dt.fatG; cSum += dt.carbG
+                naSum += dt.sodiumMg; kSum += dt.potassiumMg; fiberSum += dt.fiberG
+                if (target != null && dt.energyKcal > 0.0 && CalorieTarget.status(dt.energyKcal, target) == CalorieStatus.ON) onTarget++
             }
             val n = recordedDays
             val pKcal = pSum * 4; val fKcal = fSum * 9; val cKcal = cSum * 4
@@ -139,6 +152,7 @@ object DietReportAggregator {
             perDayLevels = perDayLevels,
             structureGaps = structureGaps,
             personal = personal,
+            perDayNutrition = perDayNutrition,
         )
     }
 }

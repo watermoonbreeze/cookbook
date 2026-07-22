@@ -511,3 +511,13 @@ fun PrimaryTabRow(
 - **展示 / 操作两区分栏(有菜时)**：上区 = 小标题「已选 N 道」+ `MealDishGrid`(×可撤销移除)；**半透 hairline**(`Divider 0.5dp · outlineVariant.copy(alpha=0.5)`·同 `InsetHairline`)分隔；下区 = 操作。**空块**只显轻引导「还没加菜」+ 操作区(不渲染网格)。变体用 **if/else 平衡分支**(非 early return·守 SlotTable 崩溃红线)。
 - **操作区(下)**：首行 = `常吃 chips`(FrequentDishChips·无候选自不占位)；次行 = **`添加菜品`(主·primary accent) + `AI 推荐`(次·onSurfaceVariant 中性)** 两按钮 `weight(1f)` 平分，空/非空块样式统一。`备注`低频·中性色收在最下(点开才展开)。
 - **要点**：主/次动作用**颜色**分层(accent vs 中性)不用大小；低频 = 收进 ⋯ 或折叠，不占常驻视觉；分区靠小标题 + 半透 hairline 一目了然。落地样板 `AddDayFoodScreen.MealBlockCard`。
+
+### 9.40 营养趋势折线（饮食报告专属·个人视角·宏量克数）
+> [AI生成 2026-07-22] 用户"周计划营养素曲线图"→ 多方会商洞察"曲线归饮食报告(真实摄入)"→ 拍板(甲+A) → apple_ux_designer 门禁出规格 → 编码 + Google 质量门禁。方案见 `feature/营养趋势曲线方案.md`。
+- **归属**：曲线**只放饮食报告**(真实摄入趋势主场)、**周计划不做曲线**(计划态是预估未吃·连成趋势线诱导把计划当既成事实/制造焦虑·与结构覆盖功能重叠)。落点=报告「营养摄入」卡**内部子区**(非独立卡)·膳食纤维行后、免责前。
+- **画什么**：**宏量克数单条折线 + 三色切换 chip(蛋白/脂肪/碳水·默认蛋白)**——不画三线(96dp 无刻度小图三线成"意面"+诱导对比考核)。切换用**轻 chip**(选中=宏量语义色 alpha0.14 背景+同色字·非红·比 SegmentedControl 克制)非页面级控件。三色取 `LocalExtendedColors.macroProtein/macroFat/macroCarb`(全 App 单一来源·禁新造)。
+- **反考核硬红线(全守)**：**无目标线/达标带、无 y 轴刻度数字、全程无红、断线示没记(空天/零值=null 断点·不跨空天连线·不补0·防"脑补暴跌")、热量不做主轴、家庭视角不画(个人专属)**。归一化 **min 恒取 0**(不以本期最小值为底·否则最低那天贴底像掉到0)。
+- **绘制**：`Canvas` 96dp·线宽2dp 圆角(Round cap/join)·**周视图画点(≤7天·增强"每天一个值")月视图不画点**(点多成珠帘·孤立单点段仍画)·极淡地面线(非0基准/目标线)·**分段 polyline**(连续非空点一段·空天断开)。x 轴**锚点标签**(周=周一·周三·周五·周日 / 月=1·8·15·22·末·SpaceBetween 非像素对齐每点)。
+- **可读性**：无 y 刻度下靠一行「怎么看」解读锚讲清纵向(`蛋白 · 每天克数，线越高那天吃得越多`·随 chip 换名)；空/少数据三态(整段该宏量无数据→兜底提示保留 chip 可切回 / 只记1天→孤立点+「只记了这一天，多记几天就能看出走势」 / 2~3天不连续→各自孤立点短段不跨空连)。免责由外层卡统一承载·不重复。
+- **数据层(shared·防漂移)**：`NutritionTotals.times(f)`(×share)；`DietReport.perDayNutrition: List<NutritionTotals?>?`(逐日个人营养·已×share·空天 null·长度=periodDays·家庭/无记录=null)·`aggregate()` 把逐日序列作**单一真相源**、`personal` 均值由它 filterNotNull 聚合(同源不漂移)·防漂移单测(逐日均值≈avgKcal)。**消费 `List<NutritionTotals?>` 即可·未新增 NutritionTrendPoint 类型**(复用 NutritionTotals·反过度设计)。
+- **反过度设计边界(不做)**：目标线/达标带、多线堆叠双轴、热量主轴、缩放游标网格、面积填充、家庭视角曲线、独立"营养趋势"卡、组件内 isPlan 布尔、月周聚合。**Step2 留后续**：tap 某天高亮+摘要、切换动效、6主题×深浅线色复核。落地样板 `NutritionTrendChart` + `DietReportScreen` 营养摄入卡。
