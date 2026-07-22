@@ -103,9 +103,11 @@ object DietReportAggregator {
             if (share != null && share > 0.0 && recordedDays > 0) {
                 dayDishes.map { dishes ->
                     if (dishes.isEmpty()) null
-                    else dishes.fold(NutritionTotals.EMPTY) { acc, d ->
-                        acc + (dishNutrition[d.id] ?: NutritionTotals.EMPTY)
-                    } * share
+                    // [AI修改] 食用比例(是否吃完)：个人摄入 = Σ(整份×eatenRatio) × share(IntakeCalculator 单一真相源·防漂移)。
+                    else IntakeCalculator.personalIntake(
+                        dishes.map { d -> (dishNutrition[d.id] ?: NutritionTotals.EMPTY) to d.eatenRatio },
+                        share,
+                    )
                 }
             } else {
                 null

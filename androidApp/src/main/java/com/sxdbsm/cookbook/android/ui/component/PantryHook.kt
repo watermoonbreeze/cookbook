@@ -24,20 +24,21 @@ import org.koin.compose.koinInject
 fun rememberPantryHookEnabled(): State<Boolean> {
     val prefs = koinInject<PreferenceRepository>()
     return remember(prefs) {
-        prefs.observeFlag(PreferenceKeys.PANTRY_HOOK_ENABLED, default = true)
-    }.collectAsStateWithLifecycle(true)
+        prefs.observeFlag(PreferenceKeys.PANTRY_HOOK_ENABLED, default = PreferenceKeys.DEFAULT_PANTRY_HOOK)
+    }.collectAsStateWithLifecycle(PreferenceKeys.DEFAULT_PANTRY_HOOK)
 }
 
 /**
- * "热量数值显示"总开关的 Composable 读取(default=关)。[AI生成] §9.36
+ * "热量数值显示"总开关的 Composable 读取(**default=开**)。[AI修改] §9.36
  *
- * "热量是个人概念"红线的落地开关：默认关。推荐卡/餐食卡/今日卡等热量**数字**显隐统一读此。
+ * [AI修改] 2026-07-22 用户决策"先默认展示健康膳食能力·可关闭"(透明 opt-out)：热量数字由默认关翻为**默认开**
+ *   (旧"热量个人概念·默认关"红线按此更新)。推荐卡/餐食卡/今日卡等热量**数字**显隐统一读此·仍守"仅供参考·非医嘱"。
  * 关时只显宏量结构(客观食物构成·非个人能量概念)、不显千卡数字。集中一处避免各消费点重复样板。
  */
 @Composable
 fun rememberCalorieNumberEnabled(): State<Boolean> {
     val prefs = koinInject<PreferenceRepository>()
     return remember(prefs) {
-        prefs.observeFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, default = false)
-    }.collectAsStateWithLifecycle(false)
+        prefs.observeFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, default = PreferenceKeys.DEFAULT_CALORIE_NUMBER)
+    }.collectAsStateWithLifecycle(PreferenceKeys.DEFAULT_CALORIE_NUMBER)
 }

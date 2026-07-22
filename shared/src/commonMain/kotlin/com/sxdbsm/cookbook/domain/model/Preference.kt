@@ -48,14 +48,22 @@ object PreferenceKeys {
     const val HOME_RECENT_COUNT = "home_recent_count"
     const val HOME_POPULAR_COUNT = "home_popular_count"
 
-    // [AI生成] 分步执行开关：开启后菜品操作步骤显示"步骤N"序号并可进入分步烹饪；默认关(只按用户书写顺序展示)。
+    // [AI生成] 分步执行开关：开启后菜品操作步骤显示"步骤N"序号并可进入分步烹饪；**默认开**(用户可关)。
     const val STEP_MODE_ENABLED = "step_mode_enabled"
 
-    // [AI生成] 营养色系开关：开启后餐食卡片按营养均衡级别配背景色，并驱动首页"每天营养色系墙"；默认关。
+    // [AI生成] 营养色系开关：开启后餐食卡片按营养均衡级别配背景色，并驱动首页"每天营养色系墙"；**默认开**(用户可关)。
     const val NUTRITION_COLOR_ENABLED = "nutrition_color_enabled"
 
-    // [AI生成] 热量数值显示开关：开启后餐食卡片/详情显示估算热量与达标(数字)；与营养色系独立控制；默认关。
+    // [AI生成] 热量数值显示开关：开启后餐食卡片/详情显示估算热量与达标(数字)；与营养色系独立控制；**默认开**(用户可关)。
     const val CALORIE_NUMBER_ENABLED = "calorie_number_enabled"
+
+    // [AI修改] 功能开关默认值集中定义(防散落漂移·踩坑红线:observeFlag 默认各调用点传易漂移)——所有调用点统一引用这些常量。
+    //   用户 2026-07-22 决策"先默认展示健康膳食能力·可关闭"(透明 opt-out)：热量数值/营养色系/分步执行由默认关翻为**默认开**。
+    //   热量数字仍守"仅供参考·非医嘱"免责(旧"热量个人概念·默认关"红线按此决策更新为"默认开·可关")。
+    const val DEFAULT_STEP_MODE = true
+    const val DEFAULT_NUTRITION_COLOR = true
+    const val DEFAULT_CALORIE_NUMBER = true
+    const val DEFAULT_PANTRY_HOOK = true
 
     // [AI生成] 推荐风格(增长型推荐轻干预)：BALANCED/FAMILIAR/FRESH/NUTRITION，默认综合(BALANCED)。
     const val RECOMMEND_STYLE = "recommend_style"

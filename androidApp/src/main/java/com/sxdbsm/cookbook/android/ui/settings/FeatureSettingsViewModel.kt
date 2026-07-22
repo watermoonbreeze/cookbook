@@ -23,28 +23,28 @@ class FeatureSettingsViewModel(
     private val prefs: PreferenceRepository,
 ) : ViewModel() {
 
-    /** 分步执行开关：默认关（只按用户书写顺序展示步骤，不显示步骤序号、不进分步烹饪）。[AI生成] */
+    /** 分步执行开关：**默认开**(用户可关)。[AI修改] 2026-07-22 用户决策默认展示能力·可关闭·统一引用集中默认常量。 */
     val stepModeEnabled: StateFlow<Boolean> =
-        prefs.observeFlag(PreferenceKeys.STEP_MODE_ENABLED, default = false)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        prefs.observeFlag(PreferenceKeys.STEP_MODE_ENABLED, default = PreferenceKeys.DEFAULT_STEP_MODE)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreferenceKeys.DEFAULT_STEP_MODE)
 
     fun setStepMode(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.STEP_MODE_ENABLED, enabled) }
     }
 
-    /** 营养色系开关：默认关。[AI生成] */
+    /** 营养色系开关：**默认开**(用户可关)。[AI修改] 同上决策。 */
     val nutritionColorEnabled: StateFlow<Boolean> =
-        prefs.observeFlag(PreferenceKeys.NUTRITION_COLOR_ENABLED, default = false)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        prefs.observeFlag(PreferenceKeys.NUTRITION_COLOR_ENABLED, default = PreferenceKeys.DEFAULT_NUTRITION_COLOR)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreferenceKeys.DEFAULT_NUTRITION_COLOR)
 
     fun setNutritionColor(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.NUTRITION_COLOR_ENABLED, enabled) }
     }
 
-    /** 热量数值显示开关：默认关。[AI生成] 与营养色系独立控制(数字/配色分开)。 */
+    /** 热量数值显示开关：**默认开**(用户可关)。[AI修改] 同上决策(旧"默认关·热量个人概念红线"按用户新决策更新)·与营养色系独立控制。 */
     val calorieNumberEnabled: StateFlow<Boolean> =
-        prefs.observeFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, default = false)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+        prefs.observeFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, default = PreferenceKeys.DEFAULT_CALORIE_NUMBER)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreferenceKeys.DEFAULT_CALORIE_NUMBER)
 
     fun setCalorieNumber(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, enabled) }

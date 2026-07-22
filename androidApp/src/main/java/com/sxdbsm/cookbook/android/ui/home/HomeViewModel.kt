@@ -313,37 +313,47 @@ class HomeViewModel(
         viewModelScope.launch { family.setViewingMember(id) }
     }
 
+    /**
+     * 今日餐卡共享上游(单一订阅·防重复)。[AI生成] Google审🟡-2:todayNutrition 与 todayMeals 复用同一条 observeTimelineWindow 订阅。
+     *
+     * 并入"菜配料变化"+"食用比例变化"令牌:改克数/配料(dish_ingredient)或就地调吃了多少(meal_record_dish.eaten_ratio)
+     * →重发→今日卡重算(改B表不触发A表Flow·踩坑红线)。
+     */
+    private val todayCards: StateFlow<List<com.sxdbsm.cookbook.domain.model.DayMealCardData>> =
+        combine(mealRepo.observeTimelineWindow(today, today), mealRepo.observeDishContentChanges(), mealRepo.observeEatenRatioChanges()) { cards, _, _ -> cards }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val todayNutrition: StateFlow<TodayNutrition?> =
         combine(
-            // [AI修改] 并入"菜配料变化"令牌:改了菜克数/配料后 dish_ingredient 变→重发→今日卡重算(修停旧值·菜品详情实时对但今日卡不刷)。
-            combine(mealRepo.observeTimelineWindow(today, today), mealRepo.observeDishContentChanges()) { cards, _ -> cards },
+            todayCards,
             family.observeFocusBody(),
             family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today)),
             explicitGroups,
             focusConditions,
         ) { cards, body, share, explicit, conditions ->
                 if (share <= 0.0) return@combine null // [AI修改] 关注成员今天未在家吃→不显今日营养卡
-                val ids = cards.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
-                if (ids.isEmpty()) return@combine null
-                val totals = nutritionRepo.totalOf(ids)
-                if (totals.energyKcal <= 0) return@combine null
-                val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
-                // [AI生成] 今日"还缺什么"如实解读(缺优质蛋白/主食/蔬菜)，非推荐非医嘱。
-                val mains = cards.flatMap { it.meals }.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
-                val gaps = FoodGroup.nutritionGaps(FoodGroup.groupsOf(mains, explicit))
-                // [AI修改] 今日营养卡按关注成员个人摄入(全家餐×份额)展示 + 达标评定。
-                val kcal = totals.energyKcal * share
-                val status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, it) }
-                // [AI生成] A-1：慢病温和提示(个人视角，色系墙不动)——按关注成员份额的钠 + 热量达标评估，缺数据不下调。
-                val baseLevel = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit))
-                val personalTotals = com.sxdbsm.cookbook.domain.model.NutritionTotals(
-                    energyKcal = kcal, sodiumMg = totals.sodiumMg * share,
-                    potassiumMg = totals.potassiumMg * share, // [AI生成] 高血压深挖：补钾份额，供评级器钾正向提示(DASH 增钾)
-                    fiberG = totals.fiberG * share, // [AI生成] 糖尿病深挖：补膳食纤维份额，供评级器纤维正向提示(高纤延缓升糖)
-                    saturatedFatG = totals.saturatedFatG * share, // [AI生成] 高血脂深挖：补饱和脂肪份额，供评级器负向提示
-                    cholesterolMg = totals.cholesterolMg * share, // [AI生成] 高血脂深挖：补胆固醇份额，供评级器负向提示
+                // [AI修改] 食用比例(是否吃完)：按**每道菜实例**(带 eatenRatio)折算个人摄入=Σ(整份×eatenRatio)×share(IntakeCalculator 单一真相源)。
+                //   用实例列表(非 distinct id)——同菜在不同餐次可各自吃了多少不同；营养按 distinct id 批量查一次再按实例映射。
+                val dishInstances = cards.flatMap { it.meals }.flatMap { it.dishes }
+                if (dishInstances.isEmpty()) return@combine null
+                val ids = dishInstances.map { it.id }.distinct()
+                val nutById = nutritionRepo.dishNutrition(ids).mapValues { it.value.totals }
+                // 全字段个人摄入(已×eatenRatio×share)：达标/慢病评估/展示统一读此，不再逐字段各乘(防口径漂移)。
+                val personalTotals = com.sxdbsm.cookbook.domain.model.IntakeCalculator.personalIntake(
+                    dishInstances.map { d -> (nutById[d.id] ?: com.sxdbsm.cookbook.domain.model.NutritionTotals.EMPTY) to d.eatenRatio },
+                    share,
                 )
+                if (personalTotals.energyKcal <= 0) return@combine null
+                val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
+                // [AI生成] 今日"还缺什么"如实解读(缺优质蛋白/主食/蔬菜)，非推荐非医嘱。(食用比例不影响定性——少吃仍是这道菜的属性)
+                val mains = dishInstances.flatMap { it.mainIngredientNames }
+                val gaps = FoodGroup.nutritionGaps(FoodGroup.groupsOf(mains, explicit))
+                // [AI修改] 今日营养卡按关注成员个人摄入(全家餐×食用比例×份额)展示 + 达标评定。
+                val kcal = personalTotals.energyKcal
+                val status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, it) }
+                // [AI生成] A-1：慢病温和提示(个人视角，色系墙不动)——按关注成员摄入(含食用比例)的钠 + 热量达标评估，缺数据不下调。
+                val baseLevel = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit))
                 // [AI生成] P4 痛风：从今日主料名匹配"应避免"高嘌呤定性食物(与"健康定性按主料判定"口径一致)，命中→痛风提示。
                 //   [AI修改] 仅登记痛风才算匹配(gate 最外层省无谓匹配)。
                 val highPurineHits = if (com.sxdbsm.cookbook.domain.HealthCondition.GOUT in conditions)
@@ -357,15 +367,36 @@ class HomeViewModel(
                 )
                 TodayNutrition(
                     kcal = kcal.roundToInt(),
-                    proteinG = (totals.proteinG * share).roundToInt(),
-                    fatG = (totals.fatG * share).roundToInt(),
-                    carbG = (totals.carbG * share).roundToInt(),
+                    proteinG = personalTotals.proteinG.roundToInt(),
+                    fatG = personalTotals.fatG.roundToInt(),
+                    carbG = personalTotals.carbG.roundToInt(),
                     target = target,
                     status = status,
                     gaps = gaps,
                     concerns = assessment.concerns,
                 )
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    /**
+     * 今日各餐(带 mealRecordId + 每菜 eatenRatio)供"按实际吃了多少调整"弹层。[AI生成] 食用比例(是否吃完)
+     *
+     * 并入 observeEatenRatioChanges 令牌→改了比例弹层即时反映(DB 为单一真相源·UDF·无本地态漂移·改B表不触发A表Flow红线)。
+     * 只列有 mealRecordId 且非空的餐(可写回)。
+     */
+    val todayMeals: StateFlow<List<com.sxdbsm.cookbook.domain.model.MealSection>> =
+        todayCards.map { cards ->
+            cards.flatMap { it.meals }.filter { it.mealRecordId != null && it.dishes.isNotEmpty() }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** 就地设某餐某菜的食用比例(分菜调)。[AI生成] */
+    fun setDishEaten(mealRecordId: Long, dishId: Long, ratio: Double) {
+        viewModelScope.launch { mealRepo.setEatenRatio(mealRecordId, dishId, ratio) }
+    }
+
+    /** 整餐一次设为同一食用比例(这一餐整体)。[AI生成] */
+    fun setMealEaten(mealRecordId: Long, ratio: Double) {
+        viewModelScope.launch { mealRepo.setEatenRatioForMeal(mealRecordId, ratio) }
+    }
 
     /**
      * 往年营养平均色：早于本年、且有餐食记录的年份，取该年"有餐日"的平均营养级别。[AI生成]

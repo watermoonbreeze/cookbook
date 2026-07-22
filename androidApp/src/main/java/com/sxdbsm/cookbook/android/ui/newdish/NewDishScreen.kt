@@ -69,8 +69,8 @@ fun NewDishScreen(
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
     val prefillBus = org.koin.compose.koinInject<NewDishPrefillBus>() // [AI生成] 搜索"点此新建"/食材"组成菜品"预填总线
     val stepModeEnabled by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
-    }.collectAsStateWithLifecycle(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_STEP_MODE)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_STEP_MODE)
     var tagInputOpen by remember { mutableStateOf(false) }
     var importPickerOpen by remember { mutableStateOf(false) }
     var ingredientPickerOpen by remember { mutableStateOf(false) }

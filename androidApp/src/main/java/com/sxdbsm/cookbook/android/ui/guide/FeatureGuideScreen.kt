@@ -144,6 +144,8 @@ fun FeatureGuideScreen(onBack: () -> Unit) {
                     Spacer(Modifier.height(16.dp))
                 }
                 Spacer(Modifier.height(8.dp))
+                GuideDefaultsNote() // [AI生成] 透明告知:健康膳食展示已默认开启·可关闭(用户决策"先展示·可 opt-out")
+                Spacer(Modifier.height(16.dp))
                 GuidePlannedNote()
                 Text(
                     "健康相关内容均为参考、非医嘱，慢病管理请遵医嘱。",
@@ -225,6 +227,32 @@ private fun FeatureRow(f: GuideFeature, accent: Color) {
             Text(f.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Text(
                 f.desc,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/**
+ * 透明告知：健康膳食展示默认已开启，可关闭。[AI生成]
+ *
+ * 用户决策"先把热量/营养/步骤展示给用户看·可自行关闭"(透明 opt-out)。四要素：做了什么/为什么/影响什么/怎么控制。
+ * 守健康免责(热量/营养仅供参考·非医嘱·不制造焦虑)。
+ */
+@Composable
+private fun GuideDefaultsNote() {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("已为你开启这些展示", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(
+                "为了让你一开始就能用上完整的健康膳食功能，已默认开启「热量数值、营养色系、分步步骤」的展示——" +
+                    "餐食卡和首页会显示估算热量、均衡配色与步骤序号。热量/营养都是估算、仅供参考、非医嘱；" +
+                    "不需要的话，随时到「我的 → 功能设置」一键关闭。",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

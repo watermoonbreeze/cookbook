@@ -68,8 +68,8 @@ fun DishDetailScreen(
     // [AI修改] observeFlag 用 remember 缓存，避免每次重组新建 Flow 反复订阅查库。
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
     val stepMode by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, false)
-    }.collectAsStateWithLifecycle(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.STEP_MODE_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_STEP_MODE)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_STEP_MODE)
     // [AI生成] 阶段3-b 匿名统计：本菜详情出现过"忌口标注"(忌口命中真实场景比例·核心KPI)。
     //   **仅布尔存在性**·不带病种/菜/食材;LaunchedEffect 按(dishId,是否忌口)去重·防重组重复上报;未同意时闸门拦截。
     val analytics = org.koin.compose.koinInject<com.sxdbsm.cookbook.analytics.Analytics>()

@@ -244,7 +244,8 @@ private fun ReportBody(st: DietReportUiState, r: DietReport) {
                         }
                         Spacer(Modifier.height(10.dp))
                         // [AI修改] 文案审校🔴3:免责补"估算·来自食材参考数据"(慢病敏感数值别被当权威摄入量)。
-                        Text("· 营养按你的饭量估算，来自食材参考数据，仅供了解，非医嘱", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                        // [AI修改] 食用比例(是否吃完)会商:旧"按你的饭量估算"隐性夸大(当时只按份额算·无食用量)→现已应用吃完度,口径诚实为"份量和吃了多少"。
+                        Text("· 营养按你分到的份量和吃了多少估算，来自食材参考数据，仅供了解，非医嘱", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                     }
                 }
             }

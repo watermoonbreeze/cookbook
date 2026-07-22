@@ -1,0 +1,4 @@
+-- [AI生成] 食用比例(是否吃完)：meal_record_dish 加 eaten_ratio，默认 1.0=吃完。
+--   老行自动补 1.0，与旧"整份×share"口径数学恒等、零回归；本列全新、带 DEFAULT，ALTER 对已有行无副作用。
+--   列序追加末尾(与 Cookbook.sq CREATE TABLE 一致)。个人摄入 = 整份 × eaten_ratio × share(见 IntakeCalculator)。
+ALTER TABLE meal_record_dish ADD COLUMN eaten_ratio REAL NOT NULL DEFAULT 1.0;

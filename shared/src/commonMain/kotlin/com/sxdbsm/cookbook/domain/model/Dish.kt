@@ -83,6 +83,12 @@ data class DishMini(
     val purchaseIngredients: List<String> = emptyList(), // [AI生成] 该菜主料不在库存的食材名(需采购)；非空则灰显"采购"
     /** [AI生成] v28：适合餐次(列表/推荐/记一餐按餐次筛)。buildDishMinis 已填(存储值优先、未打标回退 MealSlotMatcher 兜底，恒非空)。 */
     val mealSlots: List<MealSlot> = emptyList(),
+    /**
+     * [AI生成] 食用比例(是否吃完)：这道菜这一餐实际吃掉的比例[0,1]，默认 1.0=吃完。
+     * **仅在"餐次上下文"(buildDishesByMealRecord)才真赋值**；库列表/推荐/搜索等非餐次场景恒为默认 1.0(不消费·无意义)。
+     * 个人摄入折算 = 整份 × eatenRatio × share(见 IntakeCalculator)。用它前先确认来自餐次查询(踩坑红线:DishMini 默认字段勿裸用)。
+     */
+    val eatenRatio: Double = 1.0,
 )
 
 /**

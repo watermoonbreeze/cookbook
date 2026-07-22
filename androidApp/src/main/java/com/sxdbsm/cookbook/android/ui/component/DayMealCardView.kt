@@ -46,12 +46,12 @@ fun DayMealCardView(
     // [AI生成] 营养色系(功能设置开关)：开启后按当天营养均衡级别配卡片背景色。
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
     val nutritionColorEnabled by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
-    }.collectAsStateWithLifecycle(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
     // [AI修改] 热量数值显示与营养色系拆分独立控制：数字只看本开关，配色只看营养色系。
     val calorieNumberEnabled by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, false)
-    }.collectAsStateWithLifecycle(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
     val nutritionLevel = if (data.meals.isNotEmpty()) nutritionLevelOfDishes(data.meals.flatMap { it.dishes }) else 0
     // [AI生成] 当天总热量估算(随"热量数值显示"开关显示)：按当天所有菜的营养折算求和；无数据则不显示。
     val nutritionRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.NutritionRepository>()

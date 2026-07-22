@@ -68,7 +68,7 @@ fun FeatureSettingsScreen(
                     title = "分步执行",
                     subtitle = "关联两处：①操作步骤显示「步骤 1/2/3」序号、详情页可进入分步烹饪；" +
                         "②编辑菜品「选择步骤」套用模板时，开=模板每步单独成一条步骤，关=合并写入当前所在步骤。" +
-                        "关闭则只按你书写的顺序展示、不强制编号（默认关闭）。",
+                        "关闭则只按你书写的顺序展示、不强制编号（默认开启，可关闭）。",
                     checked = stepMode,
                     onCheckedChange = vm::setStepMode,
                 )
@@ -79,7 +79,7 @@ fun FeatureSettingsScreen(
                 SwitchRow(
                     title = "营养色系",
                     subtitle = "按当天营养均衡度给餐食卡片上色——越均衡越偏健康绿、越单一越偏暖，" +
-                        "首页「每天营养色系墙」用同一口径。只是直观提示，不代表精确评分。默认关闭。",
+                        "首页「每天营养色系墙」用同一口径。只是直观提示，不代表精确评分。默认开启，可关闭。",
                     checked = nutritionColor,
                     onCheckedChange = vm::setNutritionColor,
                 )
@@ -87,7 +87,7 @@ fun FeatureSettingsScreen(
                 SwitchRow(
                     title = "热量数值显示",
                     subtitle = "在餐食卡片/首页显示当天估算热量与达标(数字)。数值按食材每100g营养×用量折算，" +
-                        "用量或营养缺失时为估算值，仅供参考。与营养色系独立，关闭则只看颜色不看数字。默认关闭。",
+                        "用量或营养缺失时为估算值，仅供参考、非医嘱。与营养色系独立，关闭则只看颜色不看数字。默认开启，可关闭。",
                     checked = calorieNumber,
                     onCheckedChange = vm::setCalorieNumber,
                 )

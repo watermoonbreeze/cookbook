@@ -60,12 +60,12 @@ fun HomeScreen(
     // [AI生成] 营养色系墙：功能设置开启时展示近 5 周每天营养级别热力图。
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
     val nutritionColorEnabled by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
-    }.collectAsStateWithLifecycle(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
     // [AI生成] 热量数值显示(与营养色系独立)：控制首页「今日营养」卡的数字呈现。
     val calorieNumberEnabled by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, false)
-    }.collectAsStateWithLifecycle(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
     val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
     val yearAverages by vm.yearAverages.collectAsStateWithLifecycle()
     val todayNutrition by vm.todayNutrition.collectAsStateWithLifecycle()
@@ -82,6 +82,9 @@ fun HomeScreen(
     }
     var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
     var wallExpanded by rememberSaveable { mutableStateOf(true) } // [AI生成] 营养色系墙折叠态：默认展开(整墙显示)，收起后标题右侧显示昨/今/明三色块。
+    // [AI生成] 食用比例(是否吃完)："按实际吃了多少调整"弹层开关 + 今日各餐(带 eatenRatio)。仅热量数字开时暴露入口。
+    var showEatenSheet by remember { mutableStateOf(false) }
+    val todayMeals by vm.todayMeals.collectAsStateWithLifecycle()
     val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI生成] B-5：删整天撤销 Snackbar
     // [AI修改] 苹果风格：首页用大标题(Large Title)，下滑折叠为小标题。
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -179,6 +182,17 @@ fun HomeScreen(
                         switcher = focusSwitcher, // [AI生成] 多人关注:成员切换器
                         onSelectViewing = vm::setViewing,
                     )
+                    // [AI生成] 食用比例(是否吃完)入口：仅热量数字开+今日有可写回餐时露出的折叠文字按钮(记账动线零新增·会商门禁)。
+                    if (todayMeals.isNotEmpty()) {
+                        Text(
+                            "按实际吃了多少调整",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(horizontal = 20.dp, vertical = 2.dp)
+                                .clickable { showEatenSheet = true },
+                        )
+                    }
                 }
             }
             item { Spacer(Modifier.height(28.dp)) }
@@ -274,6 +288,17 @@ fun HomeScreen(
         //   首页聚焦"今天吃了啥/该吃啥"(今日卡+计划含今天)，更克制、少重复。
         item { Spacer(Modifier.height(80.dp)) } // 留底部 FAB 空间。
     }
+    }
+
+    // [AI生成] 食用比例(是否吃完)调整弹层：热量数字开+有今日餐时才可开；空了自动关(副作用放 LaunchedEffect·不在组合期写状态·Google审⚪-1)。
+    LaunchedEffect(todayMeals.isEmpty()) { if (todayMeals.isEmpty()) showEatenSheet = false }
+    if (showEatenSheet && todayMeals.isNotEmpty()) {
+        EatenAdjustSheet(
+            meals = todayMeals,
+            onSetMeal = vm::setMealEaten,
+            onSetDish = vm::setDishEaten,
+            onDismiss = { showEatenSheet = false },
+        )
     }
 
     if (themeDialogOpen) {

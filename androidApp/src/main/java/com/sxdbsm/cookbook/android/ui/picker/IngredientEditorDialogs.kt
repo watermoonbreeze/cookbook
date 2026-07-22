@@ -266,11 +266,11 @@ internal fun IngredientEditorDialog(
     val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
     // [AI修改] 营养录入提示：营养色系或热量数值任一开启即提示(两者都吃这份营养数据)。
     val nutritionColorFlag by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, false)
-    }.collectAsState(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
+    }.collectAsState(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
     val calorieNumberFlag by remember(prefs) {
-        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, false)
-    }.collectAsState(false)
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
+    }.collectAsState(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
     val nutritionColorOn = nutritionColorFlag || calorieNumberFlag
     // [AI修改] UX走查H3:用 parseDecimalInput 容错"30."/".5"结尾开头小数点,防营养值静默丢失。
     fun buildNutrition() = com.sxdbsm.cookbook.domain.model.IngredientNutrition(

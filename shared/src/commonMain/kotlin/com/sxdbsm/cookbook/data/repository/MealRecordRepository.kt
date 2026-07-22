@@ -37,6 +37,15 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher)
 
     /**
+     * 监听食用比例(eaten_ratio)变化令牌。[AI生成]
+     *
+     * 就地调某餐某菜"吃了多少"走 UPDATE meal_record_dish，而今日卡的 observeTimelineWindow 只监听 meal_record 表
+     * (改B表不触发A表Flow·踩坑红线)→ 今日卡不刷新。把本令牌并入今日卡 combine，比例改动即触发重算。
+     */
+    fun observeEatenRatioChanges(): Flow<Any> =
+        q.observeMealRecordDishRevision().asFlow().mapToOne(ioDispatcher)
+
+    /**
      * 监听全部餐次类型。[AI修改]
      */
     fun observeMealTypes(): Flow<List<MealType>> =
@@ -262,6 +271,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             val newDishIds = meals.flatMap { it.dishIds }.toSet()
             // [AI修改] 撤销还原(bumpPreference=false)不抬喜爱度；否则只对相对基线"新出现"的菜抬(编辑/移动不重复抬)。
             val dishIdsToIncrement = if (bumpPreference) newDishIds - oldDishIds else emptySet()
+            // [AI生成] 食用比例(是否吃完)：整日删重插前快照(餐次类型,菜)→eaten_ratio，重插后回填非默认值，防编辑当天静默重置用户调好的吃完度(Google审🟡-1数据丢失)。
+            val oldRatios = q.selectEatenRatiosByDate(dateStr).executeAsList()
+                .associate { (it.meal_type_id to it.dish_id) to it.eaten_ratio }
             q.deleteMealRecordDishesByDate(dateStr)
             q.deleteMealRecordsByDate(dateStr)
             meals.forEach { meal ->
@@ -276,11 +288,29 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                 recordIds += recordId
                 meal.dishIds.forEachIndexed { index, dishId ->
                     q.insertMealRecordDish(recordId, dishId, index.toLong())
+                    // 回填该(餐次类型,菜)之前调过的食用比例(非默认1.0才写)，保留用户"吃了多少"。
+                    val prevRatio = oldRatios[meal.mealTypeId to dishId]
+                    if (prevRatio != null && prevRatio != 1.0) q.updateMealRecordDishEatenRatio(prevRatio, recordId, dishId)
                     if (dishId in dishIdsToIncrement) q.incrementDishPreference(now, dishId)
                 }
             }
         }
         recordIds
+    }
+
+    /**
+     * 就地设置某餐某菜的食用比例(是否吃完)。[AI生成]
+     *
+     * 今日卡"按实际吃了多少调整"入口写此，独立于整餐替换 save 路径(只改 eaten_ratio·不动 sort/status/喜爱度)。
+     * ratio 强制 coerceIn(0.0,1.0) 防脏值放大营养(踩坑红线:比例>1 会再现"天价"、负值出负营养)。
+     */
+    suspend fun setEatenRatio(mealRecordId: Long, dishId: Long, ratio: Double) = withContext(ioDispatcher) {
+        q.updateMealRecordDishEatenRatio(ratio.coerceIn(0.0, 1.0), mealRecordId, dishId)
+    }
+
+    /** 整餐一次设置吃完度(该餐所有菜同值)。[AI生成] 今日卡"这一餐整体"档。ratio 同样 coerceIn 防脏值。 */
+    suspend fun setEatenRatioForMeal(mealRecordId: Long, ratio: Double) = withContext(ioDispatcher) {
+        q.updateEatenRatioForMeal(ratio.coerceIn(0.0, 1.0), mealRecordId)
     }
 
     /**
@@ -459,6 +489,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     cuisine = row.cuisine, // [AI修改] 补齐 cuisine/source，餐食卡 DishMini 字段与列表一致
                     shortageIngredients = flags.shortage[key].orEmpty(),
                     purchaseIngredients = flags.purchase[key].orEmpty(),
+                    eatenRatio = row.eaten_ratio, // [AI生成] 食用比例(是否吃完)·仅餐次上下文真赋值·供 IntakeCalculator 折算个人摄入
                 )
             }
         }
