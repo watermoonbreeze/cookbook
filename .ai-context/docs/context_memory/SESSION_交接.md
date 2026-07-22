@@ -2,7 +2,7 @@
 
 > 交接唯一固定入口。触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落档+**覆盖**本文件+git 提交。
 > **维护约定（省 token）**：只保留当前状态·每次**全覆盖**·不堆历史明细（历史靠 git log + 同目录 `SESSION_交接_历史.md`）·目标 ≤1 屏。
-> 更新时间：**2026-07-22 · 数据/编辑 session（菜品食材剂量默认值专项交付·待 commit+push）。本数据 session 主线已清·剩 off-type UI 队列各单开 session。**
+> 更新时间：**2026-07-22 · 数据/编辑 session（剂量默认值专项 P1/P2/P4 + A1空量修复 + A2/C查证，全部已 push：`417e0a9`/`95acf72`+交接docs）。本数据 session 已收尾清空·剩 off-type 各单开 session。**
 
 ## 本 session 交付（数据/编辑类·深度·无人值守）
 - ✅ **P1 修加食材单位丢失 bug**（`NewDishViewModel`）：`gramUnit()` 依赖异步 `availableUnits`、被"菜名自动加食材"竞速→units 未加载返 null→默认100g 落到计件默认单位(个/只)/NULL→详情"青椒100.0个/肉丝100.0无单位"、营养按错单位折算。修=`unitsReady:CompletableDeferred`+`cachedGramUnit`+`autoAddFromName` await 单位就绪+加食材 `unitId=gram?.id`(移除落 `defaultUnitId` 的错兜底=根因)+units 加载 runCatching 防永挂+餐次预选前置解耦。
@@ -20,7 +20,7 @@
 - 【**数据/健康**·需你 greenlight+联网核准】四项数据待核(玫瑰花/章鱼/年糕/生蚝)、全库忌口补漏剩余边界(鸡毛蛋/鱼油/植物高嘌呤)、GI/纤维覆盖补齐——健康数据你历来亲自把关。
 
 ## 先读清单
-1. 本文件 + `待办总览.md`（本 session 完成=#30/#31 剂量专项；新登记=[UI统一]两编辑页、[UI/调研]营养走势三线两行；off-type 队列=quantity-NULL跟进、是否吃完会商）。
+1. 本文件 + `待办总览.md`（本 session 完成=#30/#31 剂量专项 + 自建菜空量 A1 + A2/C 查证关闭；新登记=[UI统一]两编辑页、[UI/调研]营养走势三线两行；off-type 队列=是否吃完会商、健康数据需 greenlight 项）。
 2. `unattended_decisions.md`(2026-07-22 剂量专项决策+取舍)。
 3. `CLAUDE.md` 踩坑红线(尤其 SQLDelight/加列/seed 指纹/单位英文化)+架构准则+ `~/.claude/workflow_auto_orchestration.md`(编码流程:级别区间+第六章能力层门禁)。
 
