@@ -369,4 +369,62 @@ class NutritionLevelEvaluatorTest {
         val sanGao = HealthCondition.fromCareName("三高")
         assertTrue(HealthCondition.HYPERTENSION in sanGao && HealthCondition.DIABETES in sanGao && HealthCondition.HYPERLIPIDEMIA in sanGao)
     }
+
+    // [AI生成] 运营#177 ③ topNutritionConcernKind：记菜后 Snackbar 取 Top-1 营养维度(结构化 kind·与 evaluate 同阈值·守热量红线不带文案)。
+    private fun kindTotals(kcal: Double = 800.0, sodium: Double = 0.0, satFat: Double = 0.0, chol: Double = 0.0) =
+        NutritionTotals(energyKcal = kcal, sodiumMg = sodium, saturatedFatG = satFat, cholesterolMg = chol)
+
+    @Test
+    fun `topKind_未登记病种或无数据_返回null`() {
+        // 未登记病种→null(即使高钠，gate)。
+        assertEquals(null, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(sodium = 5000.0), emptySet()))
+        // totals null / 热量0 → null(缺数据不误报，同 evaluate 守卫)。
+        assertEquals(null, NutritionLevelEvaluator.topNutritionConcernKind(null, setOf(HealthCondition.HYPERTENSION)))
+        assertEquals(null, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(kcal = 0.0, sodium = 5000.0), setOf(HealthCondition.HYPERTENSION)))
+    }
+
+    @Test
+    fun `topKind_钠含MID档命中_未达MID不命中`() {
+        // WARN(3000/2400=1.25) 与 MID(2000/2400≈0.83) 都算命中(Snackbar 不分档)。
+        assertEquals(MealConcernKind.SODIUM, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(sodium = 3000.0), setOf(HealthCondition.HYPERTENSION)))
+        assertEquals(MealConcernKind.SODIUM, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(sodium = 2000.0), setOf(HealthCondition.HYPERTENSION)))
+        // <MID(1000/2400≈0.42) → 不命中。
+        assertEquals(null, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(sodium = 1000.0), setOf(HealthCondition.HYPERTENSION)))
+    }
+
+    @Test
+    fun `topKind_GI嘌呤油脂各自命中_gate生效`() {
+        assertEquals(MealConcernKind.HIGH_GI, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(), setOf(HealthCondition.DIABETES), highGiFoods = listOf("白米饭")))
+        // 登记糖尿病但无命中→null。
+        assertEquals(null, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(), setOf(HealthCondition.DIABETES)))
+        assertEquals(MealConcernKind.HIGH_PURINE, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(), setOf(HealthCondition.GOUT), highPurineHits = listOf("猪肝")))
+        // 油脂：饱脂或胆固醇任一超 MID 即命中。
+        assertEquals(MealConcernKind.HIGH_FAT, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(satFat = 25.0), setOf(HealthCondition.HYPERLIPIDEMIA)))
+        assertEquals(MealConcernKind.HIGH_FAT, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(chol = 400.0), setOf(HealthCondition.HYPERLIPIDEMIA)))
+    }
+
+    @Test
+    fun `topKind_多命中取Top1严重度_嘌呤大于油脂大于钠`() {
+        // 钠+嘌呤 → 嘌呤更重(HIGH_PURINE ordinal 1 < SODIUM 3)。
+        assertEquals(
+            MealConcernKind.HIGH_PURINE,
+            NutritionLevelEvaluator.topNutritionConcernKind(
+                kindTotals(sodium = 3000.0), setOf(HealthCondition.HYPERTENSION, HealthCondition.GOUT), highPurineHits = listOf("猪肝"),
+            ),
+        )
+        // 油脂+钠 → 油脂更重(HIGH_FAT 2 < SODIUM 3)。
+        assertEquals(
+            MealConcernKind.HIGH_FAT,
+            NutritionLevelEvaluator.topNutritionConcernKind(
+                kindTotals(sodium = 3000.0, satFat = 25.0), setOf(HealthCondition.HYPERTENSION, HealthCondition.HYPERLIPIDEMIA),
+            ),
+        )
+        // 嘌呤+油脂 → 嘌呤更重(1 < 2)。
+        assertEquals(
+            MealConcernKind.HIGH_PURINE,
+            NutritionLevelEvaluator.topNutritionConcernKind(
+                kindTotals(satFat = 25.0), setOf(HealthCondition.GOUT, HealthCondition.HYPERLIPIDEMIA), highPurineHits = listOf("猪肝"),
+            ),
+        )
+    }
 }

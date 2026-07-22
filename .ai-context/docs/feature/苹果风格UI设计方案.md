@@ -493,3 +493,12 @@ fun PrimaryTabRow(
 - **语义锚点色一律走单一来源 token，不散落硬编码**：宏量三色(蛋白/脂肪/碳水)、收藏星金、状态色(success/warning/danger)、均衡度级别色等**语义色**统一进 `theme/ExtendedColors.kt`(`macroProtein/Fat/Carb`/`favoriteStar`/`success`…)或 `NutritionColor`(级别基色)——**刻意不随 6 套 `AppPalette` 主题变**(语义记忆稳定·家族化统一的是"结构语言"圆角/间距/分组卡,**不是**把语义色也染成主题色)。散落硬编码=漂移隐患(曾现 DietReport 宏量色用 Material 系、与 FamilyStats/色系墙不一致)。收藏星保持金色(跨平台通用"收藏"共识色·染 primary 反而语义模糊)。判据:凡"颜色=某含义"的都进 token。
 - **文档页/叙事页保持简单·不套 InsetGroup**(苹果式克制的正面体现)：`InsetGroup` 是"设置分组/列表行"范式;**长文档页**(隐私政策/用户协议·阅读优先·纯节标题+正文+段距)和**叙事欢迎页**(FeatureGuide=feature-highlights hero 卡+点缀色)**不该套 InsetGroup**——硬套会碎片化长文阅读、把有气场的欢迎页压成干巴设置表。**"不是所有页都要卡化",确认不改也是打磨价值**。
 - **落地样板**：`ExtendedColors.favoriteStar`;`FamilyStatsScreen`/`DietReportScreen` 宏量色收敛;`FeatureGuideScreen`/`PolicyScreen` 保持现状。
+
+### 9.38 记菜命中慢病轻提示 Snackbar（保存反馈合并·T1 事后留痕）
+> [AI生成 2026-07-22] 运营#177 ③ 过 apple_software_behavior(T1 行为契约)+apple_ux_designer+copywriter+Google 质量 四门禁确立。
+- **触发三闸(全满足才提示)**：已登记健康档案(当前查看成员病种非空·通用模式永不提示) + 保存成功 + **仅新增/复制新建**(`loadedFromDate==null`·编辑既有餐/移动日期不触发→天然一次性、**无需 DB 守卫列**·避加列踩坑)。
+- **合并成一条**(§9.12 单宿主)：与保存反馈合并——无命中 `已保存`；有命中 `已保存 · <定性句>`。`showMessage`(Short≈4s·非弹框/非红点/无 action)，弹完即走、`consumeCareHint` 防重组重弹。
+- **take Top-1**：一餐多命中只出最重一条(严重度:忌口>嘌呤>油脂>钠>GI·`MealConcernKind` ordinal)，不连接、不显"N 处"(计数=施压·红名单禁)。
+- **只显定性不出数字**(守热量个人概念红线)：钠→"这餐钠偏高，可留意"/GI→"升糖较快"/嘌呤→"嘌呤偏高"/油脂(饱脂+胆固醇合并)→"油脂偏高"/忌口→"这道在{名}的忌口清单里，可留意"(多/无名→"这道有人忌口")。**落脚统一"可留意"**(严重度只决定选哪条·不加重语气)、不点病名、不判决(忌口中性告知归属·承认可能给别的家人吃)。
+- **判定归口 shared**：`MealHealthHintUseCase`(gate→忌口 avoid presence + 营养个人×share→Top-1) + `NutritionLevelEvaluator.topNutritionConcernKind`(与 `evaluate` 同阈值·防漂移)·薄 VM 只编排·带单测·失败降级不阻断保存。**不加设置开关**(控制权归健康档案源头 + Snackbar 可忽略)。
+- **落地样板**：`MealHealthHintUseCase`/`NutritionLevel.MealConcernKind`/`AddMealViewModel.careHint`/`AddDayFoodScreen.saveResultSnackbarText`。

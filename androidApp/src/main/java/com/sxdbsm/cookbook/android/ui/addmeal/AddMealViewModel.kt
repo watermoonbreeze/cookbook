@@ -59,6 +59,7 @@ data class AddMealUiState(
     val dateWarning: String? = null, // [AI生成] F7：选到已有餐食的日期时的一次性提示(不切换过去)
     val isEditingExisting: Boolean = false, // [AI生成] N3：编辑既有某天餐食时日期锁定不可改(防改日期导致数据错乱)；仅新增可改
     val minSelectableDate: LocalDate? = null, // [AI生成] 复制场景可选日期下限(=最新餐食日期+1)
+    val careHint: com.sxdbsm.cookbook.ai.MealHealthHint? = null, // [AI生成] 运营#177 ③ 记菜命中慢病轻提示(保存成功一次性·仅新增·由 UI 拼进 Snackbar·消费即清)
 ) {
     /**
      * 页面是否允许保存。[AI生成]
@@ -77,6 +78,7 @@ class AddMealViewModel(
     private val dishRepo: DishRepository,
     private val comboRepo: FavoriteComboRepository,
     private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：记一餐埋点(meal_logged·仅餐次枚举)
+    private val hintUseCase: com.sxdbsm.cookbook.ai.MealHealthHintUseCase, // [AI生成] 运营#177 ③ 记菜命中慢病轻提示判定(纯读·薄 VM 只编排)
 ) : ViewModel() {
     companion object {
         private const val TAG = "MealFlow" // [AI生成] 添加/编辑餐食链路统一日志 Tag。
@@ -227,6 +229,11 @@ class AddMealViewModel(
     /** 消费一次性日期冲突提示。[AI生成] */
     fun consumeDateWarning() {
         if (_state.value.dateWarning != null) _state.value = _state.value.copy(dateWarning = null)
+    }
+
+    /** 消费一次性慢病轻提示(Snackbar 弹过即清，避免重组重复)。[AI生成] 运营#177 ③ */
+    fun consumeCareHint() {
+        if (_state.value.careHint != null) _state.value = _state.value.copy(careHint = null)
     }
 
     /**
@@ -422,7 +429,12 @@ class AddMealViewModel(
                 // [AI生成] 阶段3-b 匿名统计：记了一餐(核心KPI周频次)。**仅上报餐次枚举**·不带菜名/日期/给谁。
                 //   口径:一次save(可含多餐次块)=一次"记一餐"动作、只报一次(不逐块虚增)·slot取首块餐次(审查建议3)。
                 analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.MealLogged(slotTagOf(s.mealTypes.firstOrNull { mt -> mt.id == drafts.first().mealTypeId }?.code)))
-                _state.value = _state.value.copy(saving = false, done = true, errorMessage = null)
+                // [AI生成] 运营#177 ③：仅新增/复制新建(loadedFromDate==null·编辑既有餐不提示、天然一次性)判本餐是否命中已登记慢病关注点，
+                //   与 done 同帧置入 careHint 供 UI 拼一句 Snackbar(Top-1·定性不显数字)。判定纯读、失败降级 null，绝不阻断保存(行为师 T1 契约)。
+                val hint = if (loadedFromDate == null)
+                    runCatching { hintUseCase.evaluate(drafts.flatMap { it.dishIds }.distinct(), s.date) }.getOrNull()
+                else null
+                _state.value = _state.value.copy(saving = false, done = true, careHint = hint, errorMessage = null)
             }.onFailure {
                 AppLogger.e(TAG, "save meals failed: date=${s.date}", it) // [AI生成] 记录保存失败异常。
                 AppLogger.event(

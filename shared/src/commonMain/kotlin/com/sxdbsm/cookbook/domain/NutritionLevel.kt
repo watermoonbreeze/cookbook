@@ -46,6 +46,15 @@ enum class HealthCondition {
 /** 评估结果：级别 + 逐条提示(如"偏咸·高血压留意")。[AI生成] */
 data class NutritionAssessment(val level: Int, val concerns: List<String>)
 
+/**
+ * 记一餐后"命中慢病关注点"的维度种类(供结果处 Snackbar 轻提示 take Top-1)。[AI生成] 运营#177 ③
+ *
+ * 声明顺序 = 严重度优先级(ordinal 越小越重)，供多命中时取 Top-1：忌口 > 高嘌呤 > 油脂(饱脂/胆固醇) > 钠 > 高GI。
+ * **只表达"命中哪个维度"、不带文案不带数字**——文案由 UI 层按 kind 映射(守"陈述事实非判决·不点病名·热量个人概念不出数字"红线，见 copywriter 门禁)。
+ * AVOID(忌口)维度不在 [NutritionLevelEvaluator.topNutritionConcernKind] 产出(它只管营养数值维度)，由上层 UseCase 另判后合并排序。
+ */
+enum class MealConcernKind { AVOID, HIGH_PURINE, HIGH_FAT, SODIUM, HIGH_GI }
+
 object NutritionLevelEvaluator {
 
     // 每日钠限量基准(mg)，见「膳食参考依据」：一般 2000(膳食指南/NRV)、高血压 2400(高血压指南2018)。
@@ -247,5 +256,44 @@ object NutritionLevelEvaluator {
         }
 
         return NutritionAssessment(level, concerns)
+    }
+
+    /**
+     * 本餐命中的**营养数值维度**中最重的一项(供记菜后 Snackbar 轻提示 take Top-1)。[AI生成] 运营#177 ③
+     *
+     * 命中口径与 [evaluate] 完全一致——共用同批阈值常量([SODIUM_HYPERTENSION_MG]/[MID_RATIO]/[SAT_FAT_DAILY_G]/
+     * [CHOLESTEROL_DAILY_MG])与 match* 方法，防两处漂移；仅返回**维度种类**(不分 MID/WARN 档、不带文案不带数字)，
+     * 文案由 UI 层按 [MealConcernKind] 映射(守热量个人概念:不出百分比数字)。忌口 AVOID 维度由 UseCase 另判合并。
+     * null=未命中/无营养数据(totals 空或热量≤0→缺数据不误报，向后兼容同 [evaluate] 守卫)。
+     *
+     * @param totals 该食用者份额后的摄入合计(个人视角，与今日卡同口径×share)
+     * @param conditions 该食用者已登记病种(空=不触发任何维度，调用方应先 gate)
+     * @param highPurineHits 命中"应避免"高嘌呤定性食物名(仅痛风时非空，由 [matchHighPurineFoods])
+     * @param highGiFoods 命中高GI(≥70)食物名(仅糖尿病时非空，由 [matchHighGiFoods])
+     */
+    fun topNutritionConcernKind(
+        totals: NutritionTotals?,
+        conditions: Set<HealthCondition>,
+        days: Int = 1,
+        highPurineHits: List<String> = emptyList(),
+        highGiFoods: List<String> = emptyList(),
+    ): MealConcernKind? {
+        if (totals == null || totals.energyKcal <= 0.0) return null
+        val d = days.coerceAtLeast(1)
+        val hits = mutableListOf<MealConcernKind>()
+        // 钠(高血压)：占比≥MID 即算命中(与 evaluate 的 MID/WARN 两档都提示一致，kind 不分档)。
+        if (HealthCondition.HYPERTENSION in conditions && totals.sodiumMg > 0.0 &&
+            totals.sodiumMg / (SODIUM_HYPERTENSION_MG * d) >= MID_RATIO
+        ) hits += MealConcernKind.SODIUM
+        // GI(糖尿病)/嘌呤(痛风)：定性命中(非空即命中，缺数据→空→不误报)。
+        if (HealthCondition.DIABETES in conditions && highGiFoods.isNotEmpty()) hits += MealConcernKind.HIGH_GI
+        if (HealthCondition.GOUT in conditions && highPurineHits.isNotEmpty()) hits += MealConcernKind.HIGH_PURINE
+        // 油脂(高血脂)：饱和脂肪或胆固醇任一≥MID 即命中(文案合并为"油脂偏高"·copywriter 门禁)。
+        if (HealthCondition.HYPERLIPIDEMIA in conditions) {
+            val fatHigh = totals.saturatedFatG > 0.0 && totals.saturatedFatG / (SAT_FAT_DAILY_G * d) >= MID_RATIO
+            val cholHigh = totals.cholesterolMg > 0.0 && totals.cholesterolMg / (CHOLESTEROL_DAILY_MG * d) >= MID_RATIO
+            if (fatHigh || cholHigh) hits += MealConcernKind.HIGH_FAT
+        }
+        return hits.minByOrNull { it.ordinal }
     }
 }

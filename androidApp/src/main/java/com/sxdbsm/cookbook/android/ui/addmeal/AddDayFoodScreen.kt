@@ -116,6 +116,25 @@ private fun aiSlotCodeForMealType(name: String?): String {
     }
 }
 
+/**
+ * 记菜保存反馈文案：命中慢病关注点时与"已保存"合并成一条(take Top-1·定性不显数字)。[AI生成] 运营#177 ③
+ *
+ * 门禁裁决：apple_ux_designer(合并一条·§9.30) + copywriter(定性句·落脚统一"可留意"·不点病名/不判决/不出百分比数字·守热量个人概念红线)。
+ * 无命中→"已保存"；有命中→"已保存 · {定性句}"。忌口带当前查看成员名(中性告知归属·承认可能给别的家人吃)。
+ */
+private fun saveResultSnackbarText(hint: com.sxdbsm.cookbook.ai.MealHealthHint?): String {
+    val tail = when (hint?.kind) {
+        com.sxdbsm.cookbook.domain.MealConcernKind.SODIUM -> "这餐钠偏高，可留意"
+        com.sxdbsm.cookbook.domain.MealConcernKind.HIGH_GI -> "这餐升糖较快，可留意"
+        com.sxdbsm.cookbook.domain.MealConcernKind.HIGH_PURINE -> "这餐嘌呤偏高，可留意"
+        com.sxdbsm.cookbook.domain.MealConcernKind.HIGH_FAT -> "这餐油脂偏高，可留意"
+        com.sxdbsm.cookbook.domain.MealConcernKind.AVOID ->
+            hint.memberName?.takeIf { it.isNotBlank() }?.let { "这道在${it}的忌口清单里，可留意" } ?: "这道有人忌口，可留意"
+        null -> return "已保存"
+    }
+    return "已保存 · $tail"
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddDayFoodScreen(
@@ -181,7 +200,9 @@ fun AddDayFoodScreen(
     LaunchedEffect(state.done) {
         if (state.done) {
             AppLogger.d("MealFlow", "AddDayFoodScreen done: date=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 保存完成后记录返回前状态摘要。
-            appSnackbar?.showMessage("已保存") // [AI修改] 家族化 P4/§1.4:保存成功统一 Snackbar(全局宿主·返回后目标页可见)，替代离页即散的 Toast。
+            // [AI修改] 运营#177 ③：保存反馈与慢病轻提示合并成一条(有命中→"已保存 · {定性句}")。全局宿主·返回后目标页可见·弹完即走天然一次性。
+            appSnackbar?.showMessage(saveResultSnackbarText(state.careHint))
+            vm.consumeCareHint() // 消费一次性提示，避免重组重复。
             onBack()
         }
     }
