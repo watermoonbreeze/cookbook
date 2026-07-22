@@ -7718,7 +7718,8 @@
   "carb": 47.0,
   "fiber": 1.3,
   "sodium": 165,
-  "ref": "HowToEat 馒头[代表值]/中国食物成分表口径",
+  "gi": 88,
+  "ref": "HowToEat 馒头[代表值]/中国食物成分表口径·GI88(白面馒头·成分表GI表/国际研究·FAO-WHO高GI≥70)",
   "review": "pending",
   "cholesterol": 0
  },
@@ -7875,7 +7876,8 @@
   "carb": 68.0,
   "fiber": 6.0,
   "sodium": 50,
-  "ref": "granola/坚果麦片聚合数据(含糖油,品牌差异大)",
+  "gi": 56,
+  "ref": "granola/坚果麦片聚合数据(含糖油,品牌差异大)·GI56(燕麦制品系统综述均值·中GI·FAO-WHO·高糖款偏高)",
   "review": "pending",
   "cholesterol": 0
  },
@@ -8183,7 +8185,8 @@
   "fiber": 1.0,
   "potassium": 148,
   "calcium": 7,
-  "ref": "薄荷/天天菜谱食物库(粘米粉/籼米粉)交叉核对,非一手成分表",
+  "gi": 65,
+  "ref": "薄荷/天天菜谱食物库(粘米粉/籼米粉)交叉核对,非一手成分表·GI65(籼米粉=米粉/米线原料·非糯米故非87·悉尼GI库·中GI·FAO-WHO)",
   "review": "pending",
   "cholesterol": 0
  },
