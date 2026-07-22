@@ -478,39 +478,45 @@ internal fun IngredientEditorDialog(
                         .padding(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    // [AI修改] §四/基调§一.7:基础信息 InsetGroup 白卡——名称*+(非预设)营养大类+单位+单件克重[仅计件条件显];别名/图片下沉"更多信息"段。
+                    // [AI修改] 拍照封面前移到最上(与菜品编辑一致·发现性↑·选填不施压·用户2026-07-22优化)——无图=虚线引导卡/有图=通栏封面,
+                    //   复用 ImagePickerButton coverStyle 同一图片管线(EXIF摆正/缩略图);单组件放置无 inline lambda 提前 return,守崩溃红线。
+                    //   预设/自建都在顶部显封面。Box 补 16dp 屏边距(scroll Column 无横向内距,靠各卡自带)。
+                    Box(Modifier.padding(horizontal = 16.dp)) {
+                        ImagePickerButton(
+                            imagePaths = images,
+                            thumbnailPaths = thumbnails,
+                            onImagesChanged = { i, t -> images = i; thumbnails = t },
+                            onProcessingChange = { imageProcessing = it }, // [AI生成] §五阻断⑤:压缩中禁保存
+                            maxCount = 3,
+                            coverStyle = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    // [AI修改] §四/基调§一.7:基础信息 InsetGroup 白卡——名称*+二级名称(同行各半)+(非预设)营养大类+单位+单件克重[仅计件]。拍照/图片已上移顶部封面。
                     InsetGroup(title = "基础信息") {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            OutlinedTextField(
-                                value = name,
-                                onValueChange = { if (!isPreset) name = it },
-                                label = { Text("食材名称 *") },
-                                singleLine = true,
-                                enabled = !isPreset,
-                                // [AI修改] B-6：挂 FocusRequester，"保存并继续"复位后聚焦此框直接可打字。
-                                modifier = Modifier.fillMaxWidth().focusRequester(nameFocus),
-                                shape = MaterialTheme.shapes.medium,
-                            )
-                            if (isPreset) {
-                                // 预设食材无折叠段,别名/图片留基础卡内可编辑(用 if/else 平衡分支,禁提前 return·守崩溃红线)。
+                            // [AI修改] 食材名称 + 二级名称同一行各占一半(用户2026-07-22优化)。名称必填、二级名称选填;预设食材名称禁改、二级名称可改。
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                OutlinedTextField(
+                                    value = name,
+                                    onValueChange = { if (!isPreset) name = it },
+                                    label = { Text("食材名称 *") },
+                                    singleLine = true,
+                                    enabled = !isPreset,
+                                    // [AI修改] B-6：挂 FocusRequester，"保存并继续"复位后聚焦此框直接可打字。
+                                    modifier = Modifier.weight(1f).focusRequester(nameFocus),
+                                    shape = MaterialTheme.shapes.medium,
+                                )
                                 OutlinedTextField(
                                     value = alias,
                                     onValueChange = { alias = it },
                                     label = { Text("二级名称") },
                                     singleLine = true,
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.weight(1f),
                                     shape = MaterialTheme.shapes.medium,
                                 )
-                                ImagePickerButton(
-                                    imagePaths = images,
-                                    thumbnailPaths = thumbnails,
-                                    onImagesChanged = { i, t -> images = i; thumbnails = t },
-                                    onProcessingChange = { imageProcessing = it },
-                                    maxCount = 3,
-                                    coverStyle = true, // [AI修改] 统一封面观感(与菜品编辑一致·首图16:9封面+strip多图);maxCount 已 3。
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                            } else {
+                            }
+                            if (!isPreset) {
                                 // [AI修改] §四:营养大类 chip 上移基础卡(去"必选"红字唠叨·唯一真必填=名称)。
                                 Text("营养大类", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(
@@ -604,25 +610,8 @@ internal fun IngredientEditorDialog(
                             }
                         }
                         InsetGroup {
-                            FoldSection("更多信息（别名 / 图片 / 其它分类）", expandMore, { expandMore = !expandMore }) {
-                                // [AI修改] §四:别名/图片从基础卡下沉至此(基础卡只留高频必填);此段收低频装饰信息。
-                                OutlinedTextField(
-                                    value = alias,
-                                    onValueChange = { alias = it },
-                                    label = { Text("二级名称") }, // [AI修改] 食材展示规则为“食材名称(二级名称)”。
-                                    singleLine = true,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = MaterialTheme.shapes.medium,
-                                )
-                                ImagePickerButton(
-                                    imagePaths = images,
-                                    thumbnailPaths = thumbnails,
-                                    onImagesChanged = { i, t -> images = i; thumbnails = t },
-                                    onProcessingChange = { imageProcessing = it }, // [AI生成] §五阻断⑤:压缩中禁保存
-                                    maxCount = 3,
-                                    coverStyle = true, // [AI修改] 统一封面观感(与菜品编辑一致·首图16:9封面+strip多图);maxCount 已 3。
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
+                            // [AI修改] 别名/图片已上移(封面到顶、二级名称与名称同行·用户2026-07-22优化);此段只留"其它分类"低频项。
+                            FoldSection("其它分类（营养维度 / 自建分类）", expandMore, { expandMore = !expandMore }) {
                                 Text(
                                     // [AI修改] 分类改为可选：不选也能保存，在「自定义-全部」中查看。
                                     selectedCategoryNames.ifBlank { "未选择其它分类（营养维度/自建分类等，可不选）" },
