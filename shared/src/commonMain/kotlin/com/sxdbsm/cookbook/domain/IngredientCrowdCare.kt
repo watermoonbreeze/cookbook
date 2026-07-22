@@ -94,7 +94,7 @@ object IngredientCrowdCare {
             HealthCondition.DIABETES ->
                 NutrientBands.levelOf(FilterMetric.GI, n?.gi) to Triple("升糖较慢", "升糖中等", "升糖偏快")
             HealthCondition.GOUT ->
-                purineLevel(name, n) to Triple("嘌呤低", "嘌呤中等", "嘌呤偏高")
+                purineLevel(name, n) to Triple("嘌呤低", if (isPlantHighPurine(name, n)) "植物嘌呤·利用率低" else "嘌呤中等", "嘌呤偏高")
             HealthCondition.HYPERLIPIDEMIA ->
                 lipidLevel(n) to Triple("脂肪较低", "脂肪中等", "脂肪偏高")
         }
@@ -140,9 +140,32 @@ object IngredientCrowdCare {
      * 注：兜底"命中即 HIGH"取向比实测值更保守——同类食材录了低实测值可能判 FIT、未录值命中关键词则判 HIGH，属"有实测更准、无实测从严"的有意设计。
      */
     private fun purineLevel(name: String, n: IngredientNutrition?): NutrientLevel? {
-        n?.purineMg?.let { return NutrientBands.levelOf(FilterMetric.PURINE, it) }
+        n?.purineMg?.let {
+            val level = NutrientBands.levelOf(FilterMetric.PURINE, it)
+            // [AI生成] Q1修复:植物来源实测高嘌呤降"留意"(MID)、不判"慎选红"——《成人高尿酸血症与痛风食养指南(2024)》
+            //   明确植物嘌呤利用率低、高嘌呤蔬菜/菌菇/豆类不增痛风风险(豆制品列推荐食物)。动物来源(肉/内脏/海鲜/蛋)高嘌呤仍判红。
+            //   仅降食材百科展示级、不接管忌口(忌口按 care 规则·植物高嘌呤本就无 care avoid)。守单向压制:若误加 care avoid 仍升红。
+            return if (level == NutrientLevel.HIGH && isPlantSource(name)) NutrientLevel.MID else level
+        }
         return if (NutritionLevelEvaluator.matchHighPurineFoods(listOf(name)).isNotEmpty()) NutrientLevel.HIGH else null
     }
+
+    /** 植物来源(蔬菜/菌菇/豆/主食/水果)——痛风嘌呤判级的"植物高嘌呤利用率低"降级依据。[AI生成] */
+    private val PLANT_GROUPS = setOf(
+        FoodGroup.Group.VEGETABLE, FoodGroup.Group.FUNGI, FoodGroup.Group.BEAN,
+        FoodGroup.Group.STAPLE, FoodGroup.Group.FRUIT,
+    )
+
+    // [AI生成] 藻类(紫菜/海带等)虽归 FUNGI，但《食养指南2024》"植物嘌呤利用率低"主要针对豆/菜/菌菇、藻类是否适用存疑
+    //   →存疑从严:藻类不做植物豁免、按实测嘌呤数值判(高嘌呤藻类如干紫菜仍可判红)，待权威口径明确再定。
+    private val ALGAE_KW = listOf("紫菜", "海带", "海苔", "裙带", "石花", "龙须菜", "羊栖菜")
+
+    private fun isPlantSource(name: String): Boolean =
+        ALGAE_KW.none { name.contains(it) } && FoodGroup.classify(name) in PLANT_GROUPS
+
+    /** 是否"植物来源 + 实测高嘌呤"(给专门 reason「植物嘌呤·利用率低」，区别于真·中嘌呤)。[AI生成] */
+    private fun isPlantHighPurine(name: String, n: IngredientNutrition?): Boolean =
+        n?.purineMg?.let { NutrientBands.levelOf(FilterMetric.PURINE, it) == NutrientLevel.HIGH } == true && isPlantSource(name)
 
     /** 高血脂·饱和脂肪/胆固醇判级：各判级取较重者；均无数据→null。[AI生成] 惯例·建议值口径（见常量注释）。 */
     private fun lipidLevel(n: IngredientNutrition?): NutrientLevel? {

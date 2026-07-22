@@ -149,4 +149,23 @@ class IngredientCrowdCareTest {
         val r = IngredientCrowdCare.evaluate("酱油", nut(sodium = 5000.0))
         assertEquals(CrowdFit.CAUTION, fitOf(r, HealthCondition.HYPERTENSION).fit)
     }
+
+    @Test
+    fun 植物来源高嘌呤对痛风降留意不判红_动物仍红_Q1修复() {
+        // [AI生成] Q1修复:《成人高尿酸血症与痛风食养指南(2024)》植物嘌呤利用率低、不增痛风风险→
+        //   植物高嘌呤(黄豆/干香菇)显"留意(MIND)"非"慎选红(CAUTION)"、reason=植物专门措辞；动物高嘌呤仍红。
+        val 黄豆 = fitOf(IngredientCrowdCare.evaluate("黄豆", nut(purine = 190.0)), HealthCondition.GOUT)
+        assertEquals(CrowdFit.MIND, 黄豆.fit)
+        assertEquals("植物嘌呤·利用率低", 黄豆.reason)
+        assertEquals(CrowdFit.MIND, fitOf(IngredientCrowdCare.evaluate("干香菇", nut(purine = 214.0)), HealthCondition.GOUT).fit)
+        // 动物来源高嘌呤仍判慎选红(不受影响·守现有行为)
+        assertEquals(CrowdFit.CAUTION, fitOf(IngredientCrowdCare.evaluate("沙丁鱼", nut(purine = 399.0)), HealthCondition.GOUT).fit)
+        // 植物·中嘌呤(不触发降级·本就 MID)措辞仍为"嘌呤中等"
+        assertEquals("嘌呤中等", fitOf(IngredientCrowdCare.evaluate("豆腐", nut(purine = 100.0)), HealthCondition.GOUT).reason)
+        // 单向压制不被降级破坏:植物高嘌呤若误加 care avoid → 仍升慎选红(只升不降)
+        val avoid = listOf(IngredientCareRule(ingredientId = 1L, categoryId = 9L, categoryName = "痛风", adviceLevel = AdviceLevel.AVOID))
+        assertEquals(CrowdFit.CAUTION, fitOf(IngredientCrowdCare.evaluate("黄豆", nut(purine = 190.0), avoid), HealthCondition.GOUT).fit)
+        // 藻类(紫菜/海带)存疑从严:虽归 FUNGI 但不做植物豁免,实测高嘌呤仍判慎选红(指南植物豁免主要针对豆/菜/菌菇)
+        assertEquals(CrowdFit.CAUTION, fitOf(IngredientCrowdCare.evaluate("紫菜", nut(purine = 200.0)), HealthCondition.GOUT).fit)
+    }
 }
