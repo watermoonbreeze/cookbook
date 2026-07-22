@@ -2546,17 +2546,17 @@
  },
  {
   "ingredient": "生蚝",
-  "kcal": 73,
-  "protein": 5.3,
-  "fat": 2.1,
-  "carb": 8.2,
+  "kcal": 57.6,
+  "protein": 10.9,
+  "fat": 1.5,
+  "carb": 0.0,
   "fiber": 0,
   "sodium": 270,
   "potassium": 200,
   "calcium": 131,
   "purine": 239,
   "pieceGram": 50,
-  "ref": "中国食物成分表(nlc.chinanutri.cn/fq/foodinfo/1112.html)",
+  "ref": "nlc.chinanutri.cn（中疾控营养所官方） 生蚝",
   "review": "verified",
   "saturatedFat": 0.47,
   "cholesterol": 40
@@ -4093,10 +4093,10 @@
  },
  {
   "ingredient": "年糕",
-  "kcal": 348,
-  "protein": 6.5,
-  "fat": 1.3,
-  "carb": 80.3,
+  "kcal": 158,
+  "protein": 3.3,
+  "fat": 0.6,
+  "carb": 34.7,
   "fiber": 0.8,
   "sodium": 20,
   "potassium": 42,
@@ -4104,7 +4104,7 @@
   "gi": 87,
   "purine": 20,
   "pieceGram": 100,
-  "ref": "中国食物成分表（美食天下引用）；GI 取糯米制品悉尼GI库≈87（高GI）",
+  "ref": "nlc.chinanutri.cn（中疾控营养所官方） 年糕(成品)",
   "review": "verified",
   "cholesterol": 0
  },
@@ -7128,7 +7128,7 @@
  },
  {
   "ingredient": "玫瑰花",
-  "kcal": 30,
+  "kcal": 280,
   "protein": 8.5,
   "fat": 3.0,
   "carb": 68.0,
@@ -7138,7 +7138,7 @@
   "calcium": 60,
   "gi": 0,
   "purine": 10,
-  "ref": "美食天下/百度健康 玫瑰花（干花）参考值，无成分表官方整叶每100g数据，多作泡饮；数值为跨库近似",
+  "ref": "干玫瑰花蕾参考值(热量 250-350 惯例·非成分表原书)｜原 kcal=30 系鲜花口径误录·与自身 P8.5/C68(干品)矛盾已修",
   "review": "pending",
   "saturatedFat": 0.4,
   "cholesterol": 0.0
@@ -8223,7 +8223,8 @@
   "ref": "中国疾控中心营养与健康所食物成分查询平台(红葡萄酒,能量180kJ≈43kcal;干红略低于甜型) ｜ purine:参考公认食品嘌呤含量表（惯例口径·非国标·仅供参考） ｜ satFat:USDA FDC SR Legacy",
   "review": "verified",
   "purine": 5,
-  "saturatedFat": 0.0
+  "saturatedFat": 0.0,
+  "fat": 0.0
  },
  {
   "ingredient": "白酒",
@@ -8244,7 +8245,8 @@
   "fat": 0.0,
   "calcium": 41,
   "ref": "中国食物成分表·发酵酒(黄酒),热量66kcal/蛋白1.6g/钙41mg;碳水随甜度差异大(干型低·甜型高),口径不定故省略",
-  "review": "pending"
+  "review": "pending",
+  "carb": 8.6
  },
  {
   "ingredient": "米酒",
@@ -8253,7 +8255,8 @@
   "fat": 0.2,
   "calcium": 16,
   "ref": "中国食物成分表·江米酒(米酒/甜酒),热量91kcal/蛋白1.6g/脂0.2g/钙16mg;碳水各库口径冲突(部分记0系遗漏)故省略",
-  "review": "pending"
+  "review": "pending",
+  "carb": 12.1
  },
  {
   "ingredient": "清酒",

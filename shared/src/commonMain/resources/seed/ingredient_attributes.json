@@ -47,12 +47,6 @@
  "猪腰": [
   "ORGAN_HIGH_CHOLESTEROL"
  ],
- "鸡肝": [
-  "ORGAN_HIGH_CHOLESTEROL"
- ],
- "鸭肝": [
-  "ORGAN_HIGH_CHOLESTEROL"
- ],
  "雪碧": [
   "PROCESSED_FRUCTOSE"
  ],
@@ -61,5 +55,69 @@
  ],
  "植脂末": [
   "TRANS_FAT"
+ ],
+ "火腿": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "香肠": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "腊肉": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "午餐肉": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "培根": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "咸肉": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "火腿肠": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "萨拉米香肠": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "帕尔马火腿": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "广式腊肠": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "火腿罐头": [
+  "CURED_PROCESSED_MEAT"
+ ],
+ "咸鸭蛋": [
+  "PICKLED_HIGH_SALT"
+ ],
+ "皮蛋": [
+  "PICKLED_HIGH_SALT"
+ ],
+ "腐乳": [
+  "PICKLED_HIGH_SALT"
+ ],
+ "咸鱼": [
+  "PICKLED_HIGH_SALT"
+ ],
+ "酸菜": [
+  "PICKLED_HIGH_SALT"
+ ],
+ "榨菜": [
+  "PICKLED_HIGH_SALT"
+ ],
+ "咸菜": [
+  "PICKLED_HIGH_SALT"
+ ],
+ "咸猪肝": [
+  "PICKLED_HIGH_SALT",
+  "ORGAN_HIGH_CHOLESTEROL"
+ ],
+ "肥肠": [
+  "ORGAN_HIGH_CHOLESTEROL"
+ ],
+ "油条": [
+  "DEEP_FRIED"
  ]
 }
