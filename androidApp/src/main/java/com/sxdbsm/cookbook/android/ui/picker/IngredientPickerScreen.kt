@@ -399,7 +399,8 @@ fun IngredientPickerScreen(
                                 items(group, key = { it.id }) { ing ->
                                     IngredientCard(
                                         ingredient = ing,
-                                        selected = ing.id in ui.selectedIds,
+                                        // [AI修改] 选中高亮仅在选择/组菜场景显——管理浏览态(selecting=false)不显"选中"(修:管理页新建后误显打钩选中)。
+                                        selected = selecting && ing.id in ui.selectedIds,
                                         highlighted = ing.id == ui.highlightIngredientId,
                                         showSourceBadge = ui.mainTab !in SOURCE_BADGE_HIDDEN_TABS, // [AI生成] §9.29 纯来源分类Tab去噪
                                         onClick = { selectedIngredient = ing },
@@ -431,7 +432,8 @@ fun IngredientPickerScreen(
                                     } else null
                                 IngredientCard(
                                     ingredient = ing,
-                                    selected = ing.id in ui.selectedIds,
+                                    // [AI修改] 选中高亮仅在选择/组菜场景显——管理浏览态(selecting=false)不显"选中"(修:管理页新建后误显打钩选中)。
+                                    selected = selecting && ing.id in ui.selectedIds,
                                     highlighted = ing.id == ui.highlightIngredientId,
                                     showSourceBadge = ui.mainTab !in SOURCE_BADGE_HIDDEN_TABS, // [AI生成] §9.29 纯来源分类Tab去噪
                                     onClick = {
