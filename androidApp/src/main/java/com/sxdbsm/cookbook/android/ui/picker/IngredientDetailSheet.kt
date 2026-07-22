@@ -435,8 +435,10 @@ private fun SectionTitle(text: String) {
  */
 @Composable
 private fun CareRuleLine(rule: IngredientCareRule, mine: Boolean) {
+    // [AI生成] L3：attr 源规则由食材属性(含酒精/腌腊等)自动识别生成，标注来源+"可改"提示用户可在编辑页调整。
+    val attrHint = if (rule.source == "attr") "（按属性识别 · 可在编辑食材里改）" else ""
     val text = "${rule.categoryName}：${rule.adviceLevel.label()}" +
-        rule.reason.takeIf { it.isNotBlank() }?.let { "，$it" }.orEmpty()
+        rule.reason.takeIf { it.isNotBlank() }?.let { "，$it" }.orEmpty() + attrHint
     if (mine) {
         Surface(
             color = MaterialTheme.colorScheme.errorContainer,

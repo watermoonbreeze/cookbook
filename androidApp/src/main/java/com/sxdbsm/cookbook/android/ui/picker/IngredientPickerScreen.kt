@@ -715,6 +715,7 @@ fun IngredientPickerScreen(
             onAddUnit = vm::addUnit,
             onSave = vm::saveIngredientEditor,
             onGuessNutrition = { n, cb -> vm.guessNutrition(n, cb) }, // [AI生成] 智能推演：新建按名预填营养
+            onGuessAttributes = { n, cb -> vm.guessAttributes(n, cb) }, // [AI生成] L3：新建按名推断属性标签
         )
     }
 

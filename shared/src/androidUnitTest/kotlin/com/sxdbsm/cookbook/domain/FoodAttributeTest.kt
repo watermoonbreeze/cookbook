@@ -65,4 +65,56 @@ class FoodAttributeTest {
             assertTrue(FoodAttributeCare.MAP[attr]?.isNotEmpty() == true, "$attr 缺 care 映射")
         }
     }
+
+    @Test
+    fun `每个属性的care_code都能解析到分类名`() {
+        for (attr in FoodAttribute.values()) {
+            FoodAttributeCare.MAP[attr].orEmpty().forEach { c ->
+                assertTrue(
+                    FoodAttributeCare.CARE_CODE_TO_NAME.containsKey(c.categoryCode),
+                    "$attr 的 ${c.categoryCode} 缺 CARE_CODE_TO_NAME 映射",
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `expandDeduped同病种取更严level`() {
+        // 含酒精(痛风 avoid) + 浓肉汤(痛风 avoid)：痛风只留一条 avoid，不因去重降级。
+        val r = FoodAttributeCare.expandDeduped(listOf(FoodAttribute.CONTAINS_ALCOHOL, FoodAttribute.RICH_BROTH))
+        val gout = r.filter { it.categoryCode == "care_gout" }
+        assertEquals(1, gout.size, "痛风去重后只剩一条")
+        assertEquals("avoid", gout[0].level)
+        // 高血压来自含酒精仍在。
+        assertTrue(r.any { it.categoryCode == "care_hypertension" && it.level == "limit" })
+    }
+
+    @Test
+    fun `expandDeduped两属性同病种不同level取avoid`() {
+        // 加工果糖(痛风 limit) + 含酒精(痛风 avoid) → 痛风取 avoid（更严）。
+        val r = FoodAttributeCare.expandDeduped(listOf(FoodAttribute.PROCESSED_FRUCTOSE, FoodAttribute.CONTAINS_ALCOHOL))
+        val gout = r.filter { it.categoryCode == "care_gout" }
+        assertEquals(1, gout.size)
+        assertEquals("avoid", gout[0].level)
+    }
+
+    @Test
+    fun `deriveAttributes按reason精确反推属性`() {
+        val reasons = FoodAttributeCare.expand(listOf(FoodAttribute.CONTAINS_ALCOHOL, FoodAttribute.DEEP_FRIED)).map { it.reason }
+        val got = FoodAttributeCare.deriveAttributes(reasons).toSet()
+        assertEquals(setOf(FoodAttribute.CONTAINS_ALCOHOL, FoodAttribute.DEEP_FRIED), got)
+    }
+
+    @Test
+    fun `deriveAttributes未知reason忽略不误报`() {
+        val got = FoodAttributeCare.deriveAttributes(listOf("这是用户手写的原因，不属于任何属性模板"))
+        assertTrue(got.isEmpty())
+    }
+
+    @Test
+    fun `deriveAttributes与expand互为逆运算`() {
+        val attrs = listOf(FoodAttribute.PROCESSED_FRUCTOSE, FoodAttribute.CURED_PROCESSED_MEAT, FoodAttribute.PICKLED_HIGH_SALT)
+        val reasons = FoodAttributeCare.expand(attrs).map { it.reason }
+        assertEquals(attrs.toSet(), FoodAttributeCare.deriveAttributes(reasons).toSet())
+    }
 }

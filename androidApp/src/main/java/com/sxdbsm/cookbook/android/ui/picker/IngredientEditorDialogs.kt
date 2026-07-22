@@ -35,6 +35,8 @@ import com.sxdbsm.cookbook.android.ui.component.InsetGroup
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard
+import com.sxdbsm.cookbook.domain.FoodAttribute
+import com.sxdbsm.cookbook.domain.FoodAttributeCare
 import com.sxdbsm.cookbook.domain.model.AdviceLevel
 import com.sxdbsm.cookbook.domain.model.FoodCategory
 import com.sxdbsm.cookbook.domain.model.Ingredient
@@ -125,10 +127,13 @@ internal fun IngredientEditorDialog(
         List<IngredientCareRule>,
         com.sxdbsm.cookbook.domain.model.IngredientNutrition?,
         String, // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)
+        List<String>, // [AI生成] L3：食材属性标签(FoodAttribute.name)——submit 时展开成 attr care。
         Boolean, // [AI生成] B-6：keepOpen——true=保存并继续(留页复位)，false=保存并返回。
     ) -> Unit,
     // [AI生成] 食材智能推演：按名推演营养(回调异步返回)，UI 据结果预填。默认 no-op(编辑既有食材不推)。
     onGuessNutrition: (String, (com.sxdbsm.cookbook.domain.NutritionGuess) -> Unit) -> Unit = { _, _ -> },
+    // [AI生成] L3：按名推断属性标签(回调返回)，UI 据结果预勾+提示确认。默认 no-op(编辑既有食材不推)。
+    onGuessAttributes: (String, (List<FoodAttribute>) -> Unit) -> Unit = { _, _ -> },
 ) {
     // [AI修改] §五阻断③:全字段草稿持久化(rememberSaveable+文件级 Saver)——进程被杀/旋转不丢已填。
     //   inputs=ingredient?.id:切换编辑对象时重置;集合/枚举/careRules 用 Saver 序列化为字符串。
@@ -154,6 +159,7 @@ internal fun IngredientEditorDialog(
     var expandNutrition by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
     var expandMore by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
     var expandDetail by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
+    var expandAttr by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) } // [AI生成] L3：食材属性折叠段(新建收起/编辑展开/推断命中强制展开)。
     var expandCare by rememberSaveable(ingredient?.id) { mutableStateOf(ingredient != null) }
     // [AI生成] Item4：自定义食材营养素(每100g)录入。[AI修改] §五阻断③:改 rememberSaveable(仅按 id 键)持久草稿,预填改由下方 hydrate 块"只填空"完成(不覆盖草稿)。
     fun fmtNum(v: Double?): String = v?.let { if (it % 1.0 == 0.0) it.toInt().toString() else it.toString() } ?: ""
@@ -211,8 +217,34 @@ internal fun IngredientEditorDialog(
         if ("purine" !in editedN) nPurine = ""
         guessSource = null
     }
+    // [AI生成] L3 食材属性：selectedAttrs=当前勾选(FoodAttribute.name·submit 单一真相)；attrsTouched=用户手动改过(改过后推断不再覆盖)；
+    //   guessedAttrs=本次按名推断出的集合(供 banner 展示+一键清空·瞬态)。§六 Apple-UX 规范。
+    var selectedAttrs by rememberSaveable(ingredient?.id, stateSaver = StringSetSaver) { mutableStateOf<Set<String>>(emptySet()) }
+    var attrsTouched by rememberSaveable(ingredient?.id) { mutableStateOf(false) }
+    var guessedAttrs by remember(ingredient?.id) { mutableStateOf<Set<String>>(emptySet()) }
+    /** 应用一次属性推断：仅新建且用户未手动改过——整组替换为推断结果(名字变则跟随，无命中即清空推断)。 */
+    fun applyGuessAttrs(attrs: List<FoodAttribute>) {
+        if (attrsTouched) return
+        val codes = attrs.map { it.name }.toSet()
+        selectedAttrs = codes
+        guessedAttrs = codes
+        if (codes.isNotEmpty()) expandAttr = true // 让用户看见被预勾的属性(可撤)
+    }
+    /** 清空识别：移除推断预勾的属性(可逆·不弹确认，§9.9)，保留用户手动加的。 */
+    fun clearGuessedAttrs() {
+        selectedAttrs = selectedAttrs - guessedAttrs
+        guessedAttrs = emptySet()
+    }
+    /** 手动勾选/取消一个属性：打脏(推断不再覆盖)；取消的若来自推断也同步从 banner 集合移除。 */
+    fun toggleAttr(code: String) {
+        val nowSelected = code !in selectedAttrs
+        selectedAttrs = if (nowSelected) selectedAttrs + code else selectedAttrs - code
+        if (!nowSelected) guessedAttrs = guessedAttrs - code
+        attrsTouched = true
+    }
     // [AI生成] 触发预填：仅新建食材；LaunchedEffect(name) 每次改名重启，delay(600) 天然去抖(打字停下才推演)。
     // [AI修改] 质量审#8:显式等水合再推演(别只靠 delay(600) 晚于水合的隐式时序)——防将来去抖调小/水合加等待后推演覆盖恢复草稿。
+    // [AI修改] L3：同一去抖同一 name 一并推断属性(复用 lastGuessedName 守卫+竞态丢弃)。
     LaunchedEffect(name, hydrated) {
         if (ingredient != null || !hydrated) return@LaunchedEffect
         val n = name.trim()
@@ -221,6 +253,7 @@ internal fun IngredientEditorDialog(
         lastGuessedName = n
         // [AI修改] 审查建议1：查询异步(不随本 effect 取消)，回来时名已变则丢弃(防慢查询回灌覆盖新名结果)。
         onGuessNutrition(n) { g -> if (name.trim() == n) applyGuess(g) }
+        onGuessAttributes(n) { attrs -> if (name.trim() == n) applyGuessAttrs(attrs) }
     }
     // [AI生成] B-6：连续录入("保存并继续")支撑——聚焦名称框、记录本次意图与已存名(供 Toast)。
     val context = LocalContext.current
@@ -300,7 +333,12 @@ internal fun IngredientEditorDialog(
         eatingNotes = detail?.eatingNotes.orEmpty()
         storageTips = detail?.storageTips.orEmpty()
         healthNote = detail?.healthNote.orEmpty()
-        careRules = ui.editorCareRules
+        // [AI修改] L3：attr 源 care 不回灌进编辑页 care 列表(否则用户看到删不掉的自动规则困惑)，只留人工 care；
+        //   attr care 靠唯一 reason 反推还原属性 chip 预勾，保存时由 selectedAttrs 重新展开(不丢)。
+        careRules = ui.editorCareRules.filter { it.source != "attr" }
+        selectedAttrs = FoodAttributeCare
+            .deriveAttributes(ui.editorCareRules.filter { it.source == "attr" }.map { it.reason })
+            .map { it.name }.toSet()
         val nu = ui.editorNutrition
         nKcal = fmtNum(nu?.energyKcal); nProtein = fmtNum(nu?.proteinG); nFat = fmtNum(nu?.fatG)
         nCarb = fmtNum(nu?.carbG); nFiber = fmtNum(nu?.fiberG); nSodium = fmtNum(nu?.sodiumMg)
@@ -317,7 +355,9 @@ internal fun IngredientEditorDialog(
             storageTips.isNotBlank() || healthNote.isNotBlank() || careRules.isNotEmpty() ||
             (groupTouched && selectedGroup != null) ||
             // [AI修改] 智能推演：营养"脏"看用户是否真手改过(editedN)，而非有值——否则系统预填就误判未保存拦返回。
-            editedN.isNotEmpty() || nPiece.isNotBlank()
+            editedN.isNotEmpty() || nPiece.isNotBlank() ||
+            // [AI修改] L3：属性"脏"同理只看手动改过(attrsTouched)且当前有勾选，纯推断预勾不算未保存。
+            (attrsTouched && selectedAttrs.isNotEmpty())
         )
     // [AI修改] §9.17/基调:自绘 confirmDiscard 换统一 rememberUnsavedGuard(非包裹式返回 requestBack)——顶栏返回+系统 Back 统一走。
     //   isDirty 含 !creatingIngredient;onConfirmLeave 再挡一次 creating,防保存中被返回打断。
@@ -348,6 +388,7 @@ internal fun IngredientEditorDialog(
             careRules,
             buildNutrition(), // [AI生成] Item4：自定义营养(空则VM侧不写)
             selectedGroup?.name ?: "", // [AI生成] A1：营养大类
+            selectedAttrs.toList(), // [AI生成] L3：食材属性标签(展开成 attr care)
             keepOpen,
         )
     }
@@ -362,7 +403,8 @@ internal fun IngredientEditorDialog(
         categoryIds = emptySet()
         selectedGroup = null
         groupTouched = false // 恢复"按名预选营养大类"
-        expandNutrition = false; expandMore = false; expandDetail = false; expandCare = false // 折叠低频区回到快速建材态
+        expandNutrition = false; expandMore = false; expandDetail = false; expandAttr = false; expandCare = false // 折叠低频区回到快速建材态
+        selectedAttrs = emptySet(); attrsTouched = false; guessedAttrs = emptySet() // [AI生成] L3：属性复位,下一个食材重新推断
         commonMethods = ""
         prepTips = ""
         eatingNotes = ""
@@ -599,6 +641,41 @@ internal fun IngredientEditorDialog(
                                 DetailTextField("食用注意", eatingNotes) { eatingNotes = it }
                                 DetailTextField("保存建议", storageTips) { storageTips = it }
                                 DetailTextField("健康说明", healthNote) { healthNote = it }
+                            }
+                        }
+                        // [AI生成] L3：食材属性折叠段——通俗多选 chip(可能影响忌口)，插在营养/做法之后、调养建议之前。
+                        //   属性→care 单向生成(source='attr')，仅食材详情忌口区展示，不进上方调养建议列表(§六 Apple-UX 规范)。
+                        InsetGroup {
+                            FoldSection("食材属性（可能影响忌口）", expandAttr, { expandAttr = !expandAttr }) {
+                                Text(
+                                    "如含酒精、腌腊肉、油炸等——用于给对应慢病家人做健康提示。填了名字会帮你识别，可自行增减。",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                // [AI生成] L3：按名识别到属性时顶一条善意提示条(标"已识别·请核对"+影响谁+一键清空·可撤)。
+                                val guessedList = FoodAttribute.values().filter { it.name in guessedAttrs }
+                                if (guessedList.isNotEmpty()) {
+                                    Spacer(Modifier.height(8.dp))
+                                    AttributeGuessBanner(attrs = guessedList, onClear = { clearGuessedAttrs() })
+                                }
+                                Spacer(Modifier.height(8.dp))
+                                androidx.compose.foundation.layout.FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    FoodAttribute.values().forEach { attr ->
+                                        androidx.compose.material3.FilterChip(
+                                            selected = attr.name in selectedAttrs,
+                                            onClick = { toggleAttr(attr.name) },
+                                            label = { Text(attr.display) },
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(6.dp))
+                                Text(
+                                    "属性仅用于健康提示 · 仅供参考 · 非医嘱。",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                         // [AI修改] 调养建议独立折叠段(§四·自定义食材可编辑含调养规则)；标题由 FoldSection 承载,CareRuleEditor 内不再重复标题。
@@ -1015,5 +1092,50 @@ private fun NutritionGuessBanner(source: com.sxdbsm.cookbook.domain.NutritionGue
             TextButton(onClick = onClear) { Text("清空预填") }
         }
     }
+}
+
+/**
+ * 属性按名识别善意提示条(§9.19 变体·L3 自建食材)。[AI生成]
+ *
+ * 复用营养预填 banner 的观感(primary α0.06 善意底、Info 图标)；四要素：识别出什么(属性通俗名)、影响谁(慢病病种)、
+ * 可撤(清空识别)；措辞守透明 T2 + 免责。右侧"清空识别"一键去掉推断预勾(可撤·§9.9)。
+ */
+@Composable
+private fun AttributeGuessBanner(attrs: List<FoodAttribute>, onClear: () -> Unit) {
+    if (attrs.isEmpty()) return
+    val names = attrs.joinToString("、") { it.display }
+    // 受影响病种(去重·短名)：从属性展开的 care 病种 code 取通俗短名。
+    val conds = attrs
+        .flatMap { FoodAttributeCare.MAP[it].orEmpty() }
+        .map { shortCondName(it.categoryCode) }
+        .distinct()
+        .joinToString(" / ")
+    Surface(
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.06f),
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                Text("已按名字识别，请核对", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    "识别为「$names」，会给 $conds 家人做提示。可下方增减，仅供参考·非医嘱。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            TextButton(onClick = onClear) { Text("清空识别") }
+        }
+    }
+}
+
+/** care 病种 code → 通俗短名(banner 用)。[AI生成] L3 */
+private fun shortCondName(categoryCode: String): String = when (categoryCode) {
+    "care_gout" -> "痛风"
+    "care_diabetes" -> "糖尿病"
+    "care_hyperlipidemia" -> "高血脂"
+    "care_hypertension" -> "高血压"
+    else -> "相关"
 }
 

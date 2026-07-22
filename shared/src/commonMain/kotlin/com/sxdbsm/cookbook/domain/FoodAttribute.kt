@@ -58,6 +58,9 @@ data class AttributeCare(val categoryCode: String, val level: String, val reason
  * 「食材属性 → care 规则」声明式映射表。改这里即调整所有打该标签食材的 care。[AI生成]
  * 每条 level/reason 按权威指南定性（痛风/糖尿病/高血脂/高血压食养·诊疗指南·2023-2024 卫健委），守免责「仅供参考·非医嘱」。
  * 🔴 新增/改映射前须联网核实指南口径（边界:哪些算/不算/什么level），见脚本方案三-B。
+ * 🔴 **reason 文本是 {@link #deriveAttributes} 的反推 key**（自建食材编辑页靠它从已存 attr care 还原属性 chip 预勾）：
+ *    改动某条 reason 文案后，旧库里已落该 reason 的 attr care 将反推失败→编辑该食材时对应 chip 不预勾、保存后 attr care 被当无属性清除。
+ *    如需改文案，接受该退化（用户重勾即自愈）或配套数据迁移；单测 `deriveAttributes与expand互为逆运算` 守卫映射自洽。
  */
 object FoodAttributeCare {
     val MAP: Map<FoodAttribute, List<AttributeCare>> = mapOf(
@@ -93,4 +96,44 @@ object FoodAttributeCare {
     /** 把食材的属性标签列表展开成 care 规则模板（去重前）。[AI生成] */
     fun expand(attributes: List<FoodAttribute>): List<AttributeCare> =
         attributes.flatMap { MAP[it].orEmpty() }
+
+    /**
+     * care 分类 code → 预设分类名（食养病种）。[AI生成] 自建食材 L3
+     * FoodCategory 运行时无 code 列（见踩坑红线），故属性展开的 care 需按名解析到分类 id；
+     * 名与 {@code seed/food_categories.json} 的 crowd 病种一致，改名须同步。
+     */
+    val CARE_CODE_TO_NAME: Map<String, String> = mapOf(
+        "care_gout" to "高尿酸血症与痛风",
+        "care_diabetes" to "2型糖尿病与血糖异常",
+        "care_hyperlipidemia" to "高脂血症",
+        "care_hypertension" to "高血压",
+    )
+
+    // [AI生成] 反向索引：care reason 文本 → 属性（每条 reason 全局唯一）。用于从已存 attr care 精确反推曾勾选的属性。
+    private val REASON_TO_ATTR: Map<String, FoodAttribute> =
+        MAP.entries.flatMap { (attr, cares) -> cares.map { it.reason to attr } }.toMap()
+
+    private fun severity(level: String): Int = when (level) {
+        "avoid" -> 2
+        "limit" -> 1
+        else -> 0
+    }
+
+    /**
+     * 展开并按病种去重（同病种取更严 level）。[AI生成] 自建食材 L3
+     * 落库 {@code replaceCareRules} 对同一 categoryId 只保留一条（distinctBy），故多属性命中同病种时先在此取更严者，
+     * 避免"含酒精 avoid + 浓肉汤 avoid"这类被随机截断成较松的一条。
+     */
+    fun expandDeduped(attributes: List<FoodAttribute>): List<AttributeCare> =
+        expand(attributes)
+            .groupBy { it.categoryCode }
+            .map { (_, cares) -> cares.maxByOrNull { severity(it.level) }!! }
+
+    /**
+     * 从已存的 attr care 规则（按 reason）精确反推曾勾选的属性。[AI生成] 自建食材 L3
+     * 编辑既有自建食材时用于预勾属性 chip（属性本身不落列、只落展开后的 care，靠唯一 reason 反查还原）。
+     * @param reasons 该食材 source='attr' care 规则的 reason 文本列表
+     */
+    fun deriveAttributes(reasons: List<String>): List<FoodAttribute> =
+        reasons.mapNotNull { REASON_TO_ATTR[it] }.distinct()
 }

@@ -612,6 +612,7 @@ class IngredientPickerViewModel(
         careRules: List<IngredientCareRule>,
         nutrition: com.sxdbsm.cookbook.domain.model.IngredientNutrition? = null, // [AI生成] Item4：自定义营养(每100g)，非空且有值才写
         foodGroup: String = "", // [AI生成] A1：营养大类(FoodGroup.Group 名，空=未选)——存 food_group + 挂到对应顶层分类。
+        attributeCodes: List<String> = emptyList(), // [AI生成] L3：食材属性标签(FoodAttribute.name)——展开成 attr care 与人工 care 合并落库。
         keepOpen: Boolean = false, // [AI生成] B-6："保存并继续"——成功后不置 lastSavedIngredientId(不关弹层)，改+1 continueSavedNonce 让弹层复位留页。
     ) {
         val trimmedName = name.trim()
@@ -680,10 +681,38 @@ class IngredientPickerViewModel(
                 }
                 if (ingredient?.source != "preset") {
                     ingredientRepo.saveIngredientDetail(detail.copy(ingredientId = ingredientId))
-                    ingredientRepo.replaceCareRules(
-                        ingredientId,
-                        careRules.map { it.copy(ingredientId = ingredientId, source = if (ingredient == null) "user" else it.source) },
-                    )
+                    // [AI生成] L3：属性标签展开成 attr care(source='attr')，与人工 care 合并——
+                    //   人工优先(manual 在前，replaceCareRules 的 distinctBy{categoryId} 保留人工那条)；attr 只作为数值层盲区补充。
+                    //   attr care 不进编辑页 care 列表(UI 已过滤 source=='attr')，仅食材详情忌口区展示，故此处过滤掉传入的 attr 项再重建。
+                    val manualCareRules = careRules
+                        .filter { it.source != "attr" }
+                        .map { it.copy(ingredientId = ingredientId, source = if (ingredient == null) "user" else it.source) }
+                    val attrCareRules = com.sxdbsm.cookbook.domain.FoodAttributeCare
+                        .expandDeduped(attributeCodes.mapNotNull { com.sxdbsm.cookbook.domain.FoodAttribute.fromCode(it) })
+                        .mapNotNull { ac ->
+                            val catName = com.sxdbsm.cookbook.domain.FoodAttributeCare.CARE_CODE_TO_NAME[ac.categoryCode]
+                            if (catName == null) {
+                                // [AI生成] Google审建议3:病种 code 无映射时静默丢会让数值层盲区补充失效且无痕→记诊断日志(默认关·不刷 release)。
+                                com.sxdbsm.cookbook.platform.CookbookDiag.log("AttrCare") { "属性 care 病种 code 无 CARE_CODE_TO_NAME 映射: ${ac.categoryCode}" }
+                                return@mapNotNull null
+                            }
+                            val cat = _state.value.allCategories.firstOrNull {
+                                it.name == catName && (it.dimension == "crowd" || it.crowdTypeId != null)
+                            }
+                            if (cat == null) {
+                                com.sxdbsm.cookbook.platform.CookbookDiag.log("AttrCare") { "属性 care 未命中 crowd 分类(名:$catName)·该条 care 丢弃" }
+                                return@mapNotNull null
+                            }
+                            IngredientCareRule(
+                                ingredientId = ingredientId,
+                                categoryId = cat.id,
+                                categoryName = cat.name,
+                                adviceLevel = AdviceLevel.fromCode(ac.level) ?: AdviceLevel.LIMIT,
+                                reason = ac.reason,
+                                source = "attr",
+                            )
+                        }
+                    ingredientRepo.replaceCareRules(ingredientId, manualCareRules + attrCareRules)
                 }
                 // [AI生成] Item4：填了任一项(含GI/单件克重)才写(空则不动，避免清空已有)——自定义食材由此纳入营养/热量统计。
                 if (nutrition != null && nutrition.hasAnyInput) {
@@ -827,6 +856,12 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             runCatching { nutritionRepo.guessNutritionByName(name) }.getOrNull()?.let(onResult)
         }
+    }
+
+    /** 按名推断自建食材属性标签(L2·保守·仅命中才推)，回调结果供 UI 预勾+提示确认。[AI生成] 自建食材双层判定 L3 */
+    fun guessAttributes(name: String, onResult: (List<com.sxdbsm.cookbook.domain.FoodAttribute>) -> Unit) {
+        if (name.isBlank()) { onResult(emptyList()); return }
+        onResult(com.sxdbsm.cookbook.domain.AttributeGuesser.guess(name))
     }
 
     fun addToPantry(ingredient: Ingredient) = addServings(ingredient.id, 1)
