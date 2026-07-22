@@ -1,6 +1,8 @@
 package com.sxdbsm.cookbook.data.seed
 
 import com.sxdbsm.cookbook.db.CookbookDatabase
+import com.sxdbsm.cookbook.domain.FoodAttribute
+import com.sxdbsm.cookbook.domain.FoodAttributeCare
 import com.sxdbsm.cookbook.domain.model.PreferenceKeys
 import com.sxdbsm.cookbook.platform.Pinyin
 import com.sxdbsm.cookbook.util.DateTime
@@ -140,8 +142,9 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val careRulesJson = SeedResourceLoader.readText("seed/ingredient_care_rules.json").orEmpty()
         val dishesJson = SeedResourceLoader.readText("seed/dishes.json").orEmpty()
         val nutritionJson = SeedResourceLoader.readText("seed/ingredient_nutrition.json").orEmpty() // [AI生成] L2 营养数据文件
+        val attributesJson = SeedResourceLoader.readText("seed/ingredient_attributes.json").orEmpty() // [AI生成] 食材属性标签(方案B)
         // [AI修改] seed 逻辑版本盐：seed 处理逻辑变更(而非JSON内容)也要让老库跑一次。v2=预设菜配料补齐修复(凉皮0千卡)。
-        val fingerprint = fingerprintOf(SEED_LOGIC_VERSION, categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson, nutritionJson)
+        val fingerprint = fingerprintOf(SEED_LOGIC_VERSION, categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson, nutritionJson, attributesJson)
 
         val stored = q.selectPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT).executeAsOneOrNull()?.value_
         if (!force && stored == fingerprint) {
@@ -551,7 +554,16 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
      */
     private fun seedIngredientCareRules(categoryIdsByCode: Map<String, Long>) {
         val q = db.cookbookQueries
-        loadIngredientCareRules().forEach { rule ->
+        val manual = loadIngredientCareRules()
+        val manualKeys = manual.mapTo(mutableSetOf()) { it.ingredient to it.category }
+        // [AI生成] 属性标签体系(方案B)：食材属性标签(ingredient_attributes.json)经 FoodAttributeCare 展开成 care 规则，
+        //   与人工 care 合并——**同(食材,病种)去重、人工优先**(人工 reason/ref 更精准，如可乐 diabetes 人工=avoid 覆盖属性 limit)。
+        //   加食材只需打属性标签即自动配全 care，不漏不冗余；判定/UI 复用现有 care 链路、零改动。
+        val generated = loadIngredientAttributes().flatMap { (name, codes) ->
+            FoodAttributeCare.expand(codes.mapNotNull { FoodAttribute.fromCode(it) })
+                .map { SeedIngredientCareRule(name, it.categoryCode, it.level, it.reason) }
+        }.filter { (it.ingredient to it.category) !in manualKeys }
+        (manual + generated).forEach { rule ->
             val ingredientId = q.selectIngredientIdByNameIncludingInactive(rule.ingredient).executeAsOneOrNull()?.id
                 ?: return@forEach
             val categoryId = categoryIdsByCode[rule.category] ?: return@forEach
@@ -570,6 +582,12 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             ?.let { json.decodeFromString(it) }
             ?: emptyList()
 
+    // [AI生成] 食材属性标签：食材名 → 属性标签码列表(FoodAttribute.name)。空/缺→无属性。
+    private fun loadIngredientAttributes(): Map<String, List<String>> =
+        SeedResourceLoader.readText("seed/ingredient_attributes.json")
+            ?.let { json.decodeFromString<Map<String, List<String>>>(it) }
+            ?: emptyMap()
+
     private companion object {
         const val DEFAULT_INGREDIENT_EMOJI = "🥗" // [AI生成] 所有兜底食材统一使用更清爽的沙拉图标。
 
@@ -582,7 +600,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // v4(2026-07-17)=菜系分类·存量自建菜 cuisine 空回填"家常菜"(老库需跑到)。
         // v5(2026-07-17)=高血脂负向维度·营养表加饱和脂肪/胆固醇两列并回填(老库需跑到)。
         // v6(2026-07-19)=菜品餐次分类·seedDishMealSlots 给预设菜补齐 dish_meal_slot(老库需跑一次拿到餐次标)。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v8" // [AI修改] v8:预设食材 general 分类 reseed 对齐 JSON(删 JSON 已无的旧 browse 关联,如可乐 other→beverage 遗留·老库需跑到修"两分类都有")
+        // v9(2026-07-22)=食材属性标签体系(方案B)：ingredient_attributes.json 属性标签展开成 care(与人工合并·人工优先)·老库需跑一次拿属性生成的 care。
+        private const val SEED_LOGIC_VERSION = "seedlogic-v9" // [AI修改] v9:食材属性标签体系·attributes 展开 care
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
