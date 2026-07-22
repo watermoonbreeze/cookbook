@@ -1,20 +1,65 @@
 {
- "啤酒": ["CONTAINS_ALCOHOL"],
- "白酒": ["CONTAINS_ALCOHOL"],
- "黄酒": ["CONTAINS_ALCOHOL"],
- "米酒": ["CONTAINS_ALCOHOL"],
- "清酒": ["CONTAINS_ALCOHOL"],
- "可乐": ["PROCESSED_FRUCTOSE"],
- "白糖": ["PROCESSED_FRUCTOSE"],
- "红糖": ["PROCESSED_FRUCTOSE"],
- "冰糖": ["PROCESSED_FRUCTOSE"],
- "甘蔗": ["PROCESSED_FRUCTOSE"],
- "蜂蜜": ["PROCESSED_FRUCTOSE"],
- "葡萄干": ["PROCESSED_FRUCTOSE"],
- "蔓越莓干": ["PROCESSED_FRUCTOSE"],
- "红枣": ["PROCESSED_FRUCTOSE"],
- "猪肝": ["ORGAN_HIGH_CHOLESTEROL"],
- "猪腰": ["ORGAN_HIGH_CHOLESTEROL"],
- "鸡肝": ["ORGAN_HIGH_CHOLESTEROL"],
- "鸭肝": ["ORGAN_HIGH_CHOLESTEROL"]
+ "啤酒": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "白酒": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "黄酒": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "米酒": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "清酒": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "可乐": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "白糖": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "红糖": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "冰糖": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "甘蔗": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "蜂蜜": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "葡萄干": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "蔓越莓干": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "红枣": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "猪肝": [
+  "ORGAN_HIGH_CHOLESTEROL"
+ ],
+ "猪腰": [
+  "ORGAN_HIGH_CHOLESTEROL"
+ ],
+ "鸡肝": [
+  "ORGAN_HIGH_CHOLESTEROL"
+ ],
+ "鸭肝": [
+  "ORGAN_HIGH_CHOLESTEROL"
+ ],
+ "雪碧": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "芬达": [
+  "PROCESSED_FRUCTOSE"
+ ],
+ "植脂末": [
+  "TRANS_FAT"
+ ]
 }

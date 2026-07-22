@@ -8280,5 +8280,35 @@
   "fiber": 0.5,
   "ref": "食物库·醪糟/甜酒酿(发酵糯米制品,营养大类=谷薯主食类);热量约80~120kcal·碳水20~25g因工艺原料而异,取常见DB值",
   "review": "pending"
+ },
+ {
+  "ingredient": "雪碧",
+  "kcal": 40,
+  "protein": 0.05,
+  "fat": 0.02,
+  "carb": 10.1,
+  "saturatedFat": 0.0,
+  "ref": "USDA FoodData Central（参考·国内产品配方或略异）",
+  "review": "pending"
+ },
+ {
+  "ingredient": "芬达",
+  "kcal": 48,
+  "protein": 0.0,
+  "fat": 0.0,
+  "carb": 12.3,
+  "saturatedFat": 0.0,
+  "ref": "USDA FoodData Central（参考·国内产品配方或略异）",
+  "review": "pending"
+ },
+ {
+  "ingredient": "植脂末",
+  "kcal": 431,
+  "protein": 1.9,
+  "fat": 15.7,
+  "carb": 73.4,
+  "saturatedFat": 3.8,
+  "ref": "USDA FoodData Central（参考·国内产品配方或略异）",
+  "review": "pending"
  }
 ]
