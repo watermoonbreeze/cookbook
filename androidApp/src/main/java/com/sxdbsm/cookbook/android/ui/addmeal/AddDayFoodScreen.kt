@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -79,6 +80,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.MealDishGrid
+import com.sxdbsm.cookbook.android.ui.component.ActionSheet // [AI生成] 餐次简洁化:低频操作收纳(§9.11)
+import com.sxdbsm.cookbook.android.ui.component.SheetAction
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.component.DayMealCardView // [AI生成] D保存预览:复用首页/食历餐食卡渲染草稿
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
@@ -374,7 +377,6 @@ fun AddDayFoodScreen(
                         )
                         saveComboBlockId = block.id
                     },
-                    hasCombos = state.favoriteCombos.isNotEmpty(),
                     quickDishes = frequentDishes, // [AI生成] part1：常吃 chips 候选(组件内再排除本块已加)
                     onQuickAddDish = { dish ->
                         // [AI生成] part1：点 chip 即入餐 + Snackbar 撤销(误点高频，撤销优于确认，单 job 串行化防连点挤丢)。
@@ -574,7 +576,6 @@ private fun MealBlockCard(
     onOpenCombos: () -> Unit,
     onSaveCombo: () -> Unit,
     onAiRecommend: () -> Unit,
-    hasCombos: Boolean,
     quickDishes: List<DishMini> = emptyList(), // [AI生成] part1：本块"常吃"一键 chips 候选(全局常吃菜，本组件再排除本块已加)
     onQuickAddDish: (DishMini) -> Unit = {}, // [AI生成] part1：点 chip 即把该菜加入本块(点后移出列表=天然反馈)
 ) {
@@ -588,6 +589,8 @@ private fun MealBlockCard(
         tonalElevation = 0.dp,
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // [AI修改] 餐次简洁化①③:头部 = 餐次 + 时间 + ⋯溢出菜单(低频操作收进 ActionSheet·§9.11)。
+            var menuOpen by remember { mutableStateOf(false) }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 MealTypeDropdown(
                     selectedId = block.mealTypeId,
@@ -601,82 +604,86 @@ private fun MealBlockCard(
                     Spacer(Modifier.width(4.dp))
                     Text(block.mealTime?.formatForUi() ?: "选择时间")
                 }
-                if (canRemove) {
-                    IconButton(onClick = onRemoveBlock) {
-                        Icon(Icons.Outlined.Close, contentDescription = "删除餐食模块")
-                    }
+                // [AI修改] 餐次简洁化①:删本块从头部常驻×收进 ⋯,与选/存组合同归低频菜单(去杂乱)。
+                IconButton(onClick = { menuOpen = true }) {
+                    Icon(Icons.Outlined.MoreVert, contentDescription = "更多操作")
                 }
             }
+            if (menuOpen) {
+                // [AI生成] 餐次简洁化①:选组合/存组合/删本块收纳。存组合仅本块有菜可选;删本块仅可删时出现。
+                val actions = buildList {
+                    add(SheetAction("从收藏组合选") { onOpenCombos() })
+                    if (block.dishes.isNotEmpty()) add(SheetAction("存为组合") { onSaveCombo() })
+                    if (canRemove) add(SheetAction("删除这个餐次", destructive = true) { onRemoveBlock() })
+                }
+                ActionSheet(
+                    actions = actions,
+                    onDismiss = { menuOpen = false },
+                    title = mealTypes.firstOrNull { it.id == block.mealTypeId }?.name,
+                )
+            }
 
-            // [AI修改] 移除"请选择用餐时间"死分支：newBlock/setMealType 恒给默认时间(固定餐次defaultTime/加餐nowTime)，mealTime 不会为 null。
+            // [AI修改] 移除"请选择用餐时间"死分支:newBlock/setMealType 恒给默认时间,mealTime 不会为 null。
 
             Spacer(Modifier.height(10.dp))
             Divider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // [AI生成] part1 餐次常吃 chips：排除本块已加菜后取前 8，点即入餐(少一步)。无候选则整行不渲染(不占位)。
-            // [AI修改] 审查建议2：纯派生态用 remember 缓存(依赖候选与本块已选)，免每次重组重算。
+            // [AI生成] part1 餐次常吃 chips:排除本块已加菜后取前 8,点即入餐(少一步)。无候选则整行不渲染。
+            // [AI修改] 审查建议2:纯派生态用 remember 缓存(依赖候选与本块已选)。
             val quickChips = remember(quickDishes, block.dishes) {
                 quickDishes.filter { d -> block.dishes.none { it.id == d.id } }.take(8)
             }
 
-            if (block.dishes.isEmpty()) {
-                Column {
-                    FrequentDishChips(dishes = quickChips, onAdd = onQuickAddDish) // [AI生成] 空块:chips 在"添加菜品"上方
-                    TextButton(
-                        onClick = onAddDish,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Icon(Icons.Outlined.Add, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("添加菜品", color = MaterialTheme.colorScheme.primary) // [AI修改] 主动作 accent
-                    }
-                    TextButton(onClick = onAiRecommend, modifier = Modifier.fillMaxWidth()) { // [AI生成] 餐次块内 AI 推荐入口。
-                        Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("AI 推荐", color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 次动作中性
-                    }
-                    // [AI修改] A10：空块固定露出"从收藏组合选"入口(不再仅在有组合时才出现)——
-                    // 无组合时点了给引导，让"整餐照搬"能力对新用户也可见。
-                    TextButton(onClick = onOpenCombos, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (hasCombos) "从收藏组合选" else "从收藏组合选（先保存一餐为组合）", color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 次动作中性
-                    }
-                }
+            // [AI修改] 餐次简洁化③:展示区(上)——有菜显"已选N道"小标题+菜格(§9.12 ×可撤销移除);空块显轻引导。
+            if (block.dishes.isNotEmpty()) {
+                Text(
+                    "已选 ${block.dishes.size} 道",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+                // [AI修改] F2/F3:复用 MealDishGrid(4列+主食置顶+角标+点菜进详情);右上角×移除由 overlay slot 注入。
+                MealDishGrid(
+                    dishes = block.dishes,
+                    onDishClick = { dish -> onOpenDish(dish.id) },
+                    cellOverlay = { dish ->
+                        IconButton(
+                            onClick = { onRemoveDish(dish.id) },
+                            modifier = Modifier.align(Alignment.TopEnd).size(24.dp),
+                        ) {
+                            Icon(Icons.Outlined.Close, contentDescription = "移除菜品", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                )
+                Spacer(Modifier.height(12.dp))
+                // [AI生成] 餐次简洁化③:半透 hairline 分隔"展示/操作"两区(视觉更一目了然)。
+                Divider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                Spacer(Modifier.height(12.dp))
             } else {
-                // [AI修改] F2/F3：复用 MealDishGrid(4列+主食置顶+角标+点菜进详情)；右上角×移除由 overlay slot 注入。
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MealDishGrid(
-                        dishes = block.dishes,
-                        onDishClick = { dish -> onOpenDish(dish.id) },
-                        cellOverlay = { dish ->
-                            IconButton(
-                                onClick = { onRemoveDish(dish.id) },
-                                modifier = Modifier.align(Alignment.TopEnd).size(24.dp),
-                            ) {
-                                Icon(Icons.Outlined.Close, contentDescription = "移除菜品", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.error)
-                            }
-                        },
-                    )
-                    FrequentDishChips(dishes = quickChips, onAdd = onQuickAddDish) // [AI生成] 有菜块:chips 在已有网格下方、"添加菜品"上方
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = onAddDish) {
-                            Icon(Icons.Outlined.Add, contentDescription = null)
-                            Text("添加菜品")
-                        }
-                        TextButton(onClick = onAiRecommend) { // [AI生成] 餐次块内 AI 推荐入口。
-                            Icon(Icons.Outlined.AutoAwesome, contentDescription = null)
-                            Text("AI 推荐")
-                        }
-                    }
+                Text(
+                    "还没加菜",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.padding(bottom = 10.dp),
+                )
+            }
+
+            // [AI修改] 餐次简洁化③④:操作区(下)——首行常吃 chips,其下加菜按钮(主=添加菜品accent/次=AI推荐中性)。选/存组合已移入 ⋯ 菜单。
+            FrequentDishChips(dishes = quickChips, onAdd = onQuickAddDish)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TextButton(onClick = onAddDish, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("添加菜品") // 主动作:TextButton 默认 primary accent
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    if (hasCombos) {
-                        TextButton(onClick = onOpenCombos) { Text("选择组合") }
-                    }
-                    TextButton(onClick = onSaveCombo) { Text("保存组合") }
+                TextButton(onClick = onAiRecommend, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Outlined.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(4.dp))
+                    Text("AI 推荐", color = MaterialTheme.colorScheme.onSurfaceVariant) // 次动作:中性
                 }
             }
 
@@ -696,9 +703,9 @@ private fun MealBlockCard(
                 )
             } else {
                 TextButton(onClick = { noteExpanded = true }, modifier = Modifier.padding(top = 4.dp)) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.width(4.dp))
-                    Text("备注")
+                    Text("备注", color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 低频·中性(不与添加菜品 accent 争视觉)
                 }
             }
         }

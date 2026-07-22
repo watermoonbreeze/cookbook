@@ -128,7 +128,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
             state.plan == null -> item {
                 // R4：空态给下一步(呼应营养线文案),对齐另两档居中提示。
                 com.sxdbsm.cookbook.android.ui.component.EmptyState(
-                    text = "还没安排这一周\n排上几天，就能看到这一周搭得均不均衡",
+                    text = "还没排菜\n排上几天，就能看看这几天搭得均不均衡", // [AI修改] 文案通用化:天数可变(当天~一月),去"这一周"硬编码时段词
                     icon = "🗓",
                     modifier = Modifier.padding(top = 24.dp),
                 )

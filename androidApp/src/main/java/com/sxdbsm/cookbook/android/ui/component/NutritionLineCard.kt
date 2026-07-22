@@ -27,7 +27,7 @@ import com.sxdbsm.cookbook.domain.NutritionLine
  * @File : NutritionLineCard
  * @Time : 2026/07/21
  * @Author : SXD-AI
- * @Desc : 「一周营养搭配」概览卡（营养线 P2·§9.35 总卡）——AiPlan(未来计划)/WeekPlan(已排周)两屏共用。
+ * @Desc : 「这份计划的营养搭配」概览卡（营养线 P2·§9.35 总卡）——AiPlan(未来计划)/WeekPlan(已排周)两屏共用。
  * <p>
  * 把 domain 已算的整周营养线"盛出来"：整体均衡度色点(去红·复用 nutritionLevelColor)+已吃到的大类 + 跨天补充建议。
  * 守免责(膳食结构参考·非医嘱)、不制造焦虑(缺口用鼓励口吻·色点不上红)。纯呈现 Composable·入参仅领域模型·无 UI 耦合。
@@ -52,7 +52,7 @@ fun NutritionLineCard(
     val coveredText = FoodGroup.Group.entries
         .filter { it in line.coveredGroups }.joinToString("·") { it.label }
     val calorieOn by rememberCalorieNumberEnabled() // [AI修改] §9.37 Google审🟡-1:提到函数级(块外·避免条件切换重订阅·四处一致)
-    InsetGroup(title = "一周营养搭配") {
+    InsetGroup(title = "这份计划的营养搭配") { // [AI修改] 文案通用化:天数可变(1~30),去"一周"硬编码时段词
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(9.dp).clip(CircleShape).background(dotColor))
@@ -64,7 +64,7 @@ fun NutritionLineCard(
             if (macro != null && macro.hasData && pg != null && fg != null && cg != null) {
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("一周合计", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("整套合计", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) // [AI修改] 文案通用化:去时段词
                     val kcal = macro.kcal
                     if (calorieOn && kcal != null) {
                         Spacer(Modifier.weight(1f))
@@ -80,7 +80,8 @@ fun NutritionLineCard(
             }
             if (coveredText.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
-                Text("这一周吃到了 $coveredText", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+                // [AI修改] 口径bug修复:计划是未来餐"没吃",应"安排了"非"吃到了"("吃到了"是报告侧措辞·诚实红线);并去"一周"时段词
+                Text("这几天安排了 $coveredText", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
             }
             advices.forEach { adv ->
                 Spacer(Modifier.height(6.dp))

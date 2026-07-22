@@ -503,3 +503,11 @@ fun PrimaryTabRow(
 - **只显定性不出数字**(守热量个人概念红线)：钠→"这餐钠偏高，可留意"/GI→"升糖较快"/嘌呤→"嘌呤偏高"/油脂(饱脂+胆固醇合并)→"油脂偏高"/忌口→"这道在{名}的忌口清单里，可留意"(多/无名→"这道有人忌口")。**落脚统一"可留意"**(严重度只决定选哪条·不加重语气)、不点病名、不判决(忌口中性告知归属·承认可能给别的家人吃)。
 - **判定归口 shared**：`MealHealthHintUseCase`(gate→忌口 avoid presence + 营养个人×share→Top-1) + `NutritionLevelEvaluator.topNutritionConcernKind`(与 `evaluate` 同阈值·防漂移)·薄 VM 只编排·带单测·失败降级不阻断保存。**不加设置开关**(控制权归健康档案源头 + Snackbar 可忽略)。
 - **落地样板**：`MealHealthHintUseCase`/`NutritionLevel.MealConcernKind`/`AddMealViewModel.careHint`/`AddDayFoodScreen.saveResultSnackbarText`。
+
+### 9.39 餐次块（记一餐 MealBlockCard）简洁化：展示/操作分区 + 低频收 ⋯
+> [AI生成 2026-07-22] 用户反馈餐次界面"有点杂乱"→ 上会话 apple_ux_designer 出方案、本会话编码 + Google 质量门禁(无阻断)。零新组件、全复用既有件。
+- **头部三件**：`餐次下拉(weight1)` + `选择时间` + **`⋯`(MoreVert)溢出菜单**。原头部常驻的「×删除本块」与底部「选择组合/保存组合」三个低频操作**统一收进 ⋯ → `ActionSheet`(§9.11)**，去按钮堆叠杂乱。
+- **⋯ 菜单动态项**：`从收藏组合选`(常显·无组合靠 picker 内空态引导) + `存为组合`(仅本块有菜) + `删除这个餐次`(destructive 红字·仅 `canRemove` 即多于一块时)。`title=` 当前餐次名给多块场景定位。
+- **展示 / 操作两区分栏(有菜时)**：上区 = 小标题「已选 N 道」+ `MealDishGrid`(×可撤销移除)；**半透 hairline**(`Divider 0.5dp · outlineVariant.copy(alpha=0.5)`·同 `InsetHairline`)分隔；下区 = 操作。**空块**只显轻引导「还没加菜」+ 操作区(不渲染网格)。变体用 **if/else 平衡分支**(非 early return·守 SlotTable 崩溃红线)。
+- **操作区(下)**：首行 = `常吃 chips`(FrequentDishChips·无候选自不占位)；次行 = **`添加菜品`(主·primary accent) + `AI 推荐`(次·onSurfaceVariant 中性)** 两按钮 `weight(1f)` 平分，空/非空块样式统一。`备注`低频·中性色收在最下(点开才展开)。
+- **要点**：主/次动作用**颜色**分层(accent vs 中性)不用大小；低频 = 收进 ⋯ 或折叠，不占常驻视觉；分区靠小标题 + 半透 hairline 一目了然。落地样板 `AddDayFoodScreen.MealBlockCard`。
