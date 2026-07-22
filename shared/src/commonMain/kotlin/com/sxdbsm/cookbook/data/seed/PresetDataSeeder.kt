@@ -602,7 +602,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // v6(2026-07-19)=菜品餐次分类·seedDishMealSlots 给预设菜补齐 dish_meal_slot(老库需跑一次拿到餐次标)。
         // v9(2026-07-22)=食材属性标签体系(方案B)：ingredient_attributes.json 属性标签展开成 care(与人工合并·人工优先)·老库需跑一次拿属性生成的 care。
         // v10(2026-07-22)=修复历史"默认克数配错单位"数据：quantity=100 且单位空/计件 → 改"克"(详情"100.0个/无单位"·营养按错单位折算根因)·老库需跑一次修。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v10" // [AI修改] v10:修复默认克数配错单位数据(repairDishIngredientGramUnitForDefault)
+        // v11(2026-07-22)=A1:修复自建菜 quantity=NULL 配料(0营养)：按食材名分类补智能默认克数+克单位·仅 source='user'·老库需跑一次修。
+        private const val SEED_LOGIC_VERSION = "seedlogic-v11" // [AI修改] v11:修复自建菜空用量配料(selectUserDishIngredientsWithNullQuantity)
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
@@ -658,6 +659,19 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // quantity=100 且单位空/计件 → 统一改"克"。幂等、只改 bug 签名明确的行(见 .sq 注释)。gram 单位缺失则跳过。
         (unitIds["g"] ?: unitIds["克"])?.let { gramId ->
             q.repairDishIngredientGramUnitForDefault(unit_id = gramId)
+            // [AI生成] A1:修复自建菜里 quantity=NULL 的配料(用户加食材没设量→营养算0)——按食材名分类给智能默认克数(蛋50/菜150…)+克单位。
+            //   幂等(fillDishIngredientQuantityIfNull 只填 NULL 行·不覆盖用户已填)；仅 source='user'(预设菜空量由下方 seed 循环填正确值)。
+            val seasoningIds = q.selectSeasoningIngredientIds().executeAsList().toSet()
+            q.selectUserDishIngredientsWithNullQuantity().executeAsList().forEach { row ->
+                val grams = com.sxdbsm.cookbook.domain.SeasoningDefaults
+                    .defaultGramFor(row.ingredient_name, row.ingredient_id in seasoningIds).toDouble()
+                q.fillDishIngredientQuantityIfNull(
+                    quantity = grams,
+                    unit_id = gramId,
+                    dish_id = row.dish_id,
+                    ingredient_id = row.ingredient_id,
+                )
+            }
         }
         loadDishes().forEach dish@{ seed ->
             // [AI生成] 先给已存在的预设菜补菜系(幂等，仅当前为空才补)，再判断是否跳过插入——老库升级也能拿到菜系。

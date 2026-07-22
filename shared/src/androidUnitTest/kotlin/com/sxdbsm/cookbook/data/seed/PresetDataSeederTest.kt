@@ -204,6 +204,29 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun `A1_自建菜空用量配料_seed后按分类补默认克数与克单位`() = runBlocking {
+        // [AI生成] A1 回归：模拟老 bug——用户加食材到自建菜没设量(quantity=NULL)→营养算 0。
+        // seed 应按食材名分类补智能默认克数(蛋类=50)+克单位；且**只修 source='user'**(预设菜空量走 seed 循环填正确值)。
+        val db = RepositoryTestDatabase.create()
+        val seeder = PresetDataSeeder(db)
+        seeder.seedIfNeeded()
+        val q = db.cookbookQueries
+        val eggId = q.selectIngredientIdByNameIncludingInactive("鸡蛋").executeAsOneOrNull()?.id
+        assertNotNull(eggId, "seed 应含鸡蛋")
+        val gramId = q.selectAllMeasurementUnits().executeAsList().first { it.name == "g" || it.name == "克" }.id
+        q.insertDish(
+            name = "测试蒸蛋A1", cooking_method_id = null, special_note = "", description = "",
+            image_path = "", thumbnail_path = "", source = "user", created_at = 0L, updated_at = 0L, cuisine = "",
+        )
+        val dishId = q.lastInsertId().executeAsOne()
+        q.insertDishIngredient(dish_id = dishId, ingredient_id = eggId!!, quantity = null, unit_id = null, is_main = 1L)
+        seeder.forceReseedBaseData() // 重跑 seed 触发 A1 修复
+        val egg = q.selectIngredientsOfDish(dishId).executeAsList().first { it.ingredient_name == "鸡蛋" }
+        assertEquals(50.0, egg.quantity, "鸡蛋空用量应补为蛋类默认 50g(非 0/非 NULL)")
+        assertEquals(gramId, egg.unit_id, "空用量修复应同时配克单位")
+    }
+
+    @Test
     fun dishSeedJsonHasNoDanglingReferences() {
         // [AI生成] D5 扩充红线守卫：每道预设菜的食材名/烹饪方式/单位都必须能解析，否则 seeder 静默跳过导致少关联。
         val db = RepositoryTestDatabase.create()

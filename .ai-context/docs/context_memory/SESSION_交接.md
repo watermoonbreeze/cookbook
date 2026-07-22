@@ -9,13 +9,15 @@
 - ✅ **P2 智能默认克数**（`SeasoningDefaults`+单测）：非调料按 `FoodGroup.classify` 给经验默认(蛋50/菜150/奶200/肉150…惯例非权威可改)·判不出退100。
 - ✅ **P4 修复历史错单位数据**（`Cookbook.sq`+`PresetDataSeeder`）：幂等 `repairDishIngredientGramUnitForDefault`(quantity=100 且 unit 空/计件→gram)·`SEED_LOGIC_VERSION` v9→v10·**纯UPDATE无.sqm迁移**·真机库副本验证(精确修10行/144合法行不动/幂等残留0)。
 - ✅ **透明**：`changelog.json` v2 告知用户(修单位显示+分类默认克数)。
-- **门禁**：google_quality_engineer 无阻断(2建议已收口)+独立 /code-review 无新bug。构建 `:shared:testDebugUnitTest`+`:androidApp:assembleDebug` 均绿。真机验待用户做。
+- ✅ **A1 修 quantity=NULL 配料(0营养)**：seeder 幂等修 user 自建菜空用量配料(8行)→按食材名分类补默认克数+克单位(`selectUserDishIngredientsWithNullQuantity` 仅 source='user'·`SEED_LOGIC_VERSION` v11)·加 `PresetDataSeederTest` 回归·真机库副本验证。
+- ✅ **A2/C 查证关待办**：A2=`dish_ingredient(dish_id,ingredient_id)` 确认有 `uq_dish_ingredient` UNIQUE；C=RANDOM IN 999崩溃隐患**早已修**(`listAllDishMinis` 无 IN)→均标结论关闭·零代码(先查证再改·不虚做)。
+- **门禁**：剂量三件套过 google_quality_engineer 无阻断(2建议已收口)+独立 /code-review 无新bug；A1 小改自评(复用已测原语+回归测试)。构建 `:shared:testDebugUnitTest`+`:androidApp:assembleDebug` 均绿。真机验待用户做。
 - 决策日志：`context_memory/unattended_decisions.md`(2026-07-22 条)。
 
 ## ⏭ 下一步（本数据 session 主线已清·以下均 off-type·各单开 session）
 - 【**UI**·本 session 新登记】①**添加食材 vs 添加菜品两编辑页不统一**(字体色/名称范式:一个外置label一个内部placeholder·抽共享 `FormField`/`FormSection` 根治反复·待办🔴)②**营养走势折线三线同显**(蛋白/脂肪/碳水免切换)+**周/月视图统一评估**("整体调研"·待办🟡)。两项**须单开 UI session + Apple-UX 门禁**。
-- 【**数据**·跟进】菜品食材 **quantity=NULL 的 user 菜**(8行·0营养·另一根因:用户加食材没设量)→评估修复(编辑预填/seeder兜底)·待办可补。
 - 【**会商**】「是否吃完/实际食用量影响摄入」多方会商(待办 A#📄·关联北极星营养统计准确性)。
+- 【**数据/健康**·需你 greenlight+联网核准】四项数据待核(玫瑰花/章鱼/年糕/生蚝)、全库忌口补漏剩余边界(鸡毛蛋/鱼油/植物高嘌呤)、GI/纤维覆盖补齐——健康数据你历来亲自把关。
 
 ## 先读清单
 1. 本文件 + `待办总览.md`（本 session 完成=#30/#31 剂量专项；新登记=[UI统一]两编辑页、[UI/调研]营养走势三线两行；off-type 队列=quantity-NULL跟进、是否吃完会商）。

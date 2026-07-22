@@ -1362,6 +1362,15 @@ fillDishIngredientQuantityIfNull:
 UPDATE dish_ingredient SET quantity = ?, unit_id = ?
 WHERE dish_id = ? AND ingredient_id = ? AND status = 1 AND quantity IS NULL;
 
+-- [AI生成] 取**自建菜**里 quantity=NULL 的配料(用户加食材没设量→营养算0)，供 seeder 按食材名分类补智能默认克数。
+-- **仅 source='user'**：预设菜的空用量由 seedDishes 循环用 seed 正确值(如牛肉250g)回填，不能被分类默认抢填覆盖。
+selectUserDishIngredientsWithNullQuantity:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id, COALESCE(i.name, '') AS ingredient_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+JOIN dish d ON d.id = di.dish_id
+WHERE di.status = 1 AND di.quantity IS NULL AND d.source = 'user';
+
 -- [AI生成] 修复历史"默认克数配错单位"数据：早期加食材 bug(gramUnit()未加载返null)使默认 100g
 -- 落到食材计件默认单位(个/只)或 NULL → 详情显"100.0个/100.0(无单位)"、营养按错单位折算。
 -- 只改**签名明确=bug**的行：quantity 恰为默认 100.0 且 单位为空 或 指向计件单位(grams IS NULL)→统一改"克"(:gramUnitId)。

@@ -219,3 +219,11 @@
 **off-type 进待办(未做·UI类单开session)**：①添加食材vs添加菜品两编辑页不统一(字体色/名称范式·抽共享FormField) ②营养走势折线三线同显+周月视图统一评估(用户2026-07-22提)。
 
 **高风险/禁止项**：无。文件数(7)在阶段限额内。
+
+### 续做 A1+A2+C（用户指定·同数据/编辑 session）
+
+- **A1 修 quantity=NULL 配料(0营养)**：真机库 8 行 user 自建菜配料 quantity=NULL(用户加食材没设量)→营养算0。seeder 幂等修:`selectUserDishIngredientsWithNullQuantity`(**仅 source='user'**·preset 空量走 seed 循环填正确值不能被抢填)→按食材名 `SeasoningDefaults.defaultGramFor`(蛋50/菜150/奶200…)+`fillDishIngredientQuantityIfNull`(quantity+克单位)·`SEED_LOGIC_VERSION` v10→v11。真机库副本验证:精确命中8行/排除4行preset软删。加 `PresetDataSeederTest` A1 回归测试(鸡蛋空量→50g+克·绿)。**小改自评**(复用已测原语)免单独 Google agent。
+- **A2 关待办悬案**:查证 `dish_ingredient(dish_id,ingredient_id)` **有 `uq_dish_ingredient` UNIQUE 索引**(CREATE TABLE+真机库均有)→待办 E组标结论关闭·零代码。
+- **C 查证已修**:待办 line92「RANDOM 模式 IN 全食材展开 999崩溃隐患」**早已修**(`RANDOM→listAllDishMinis`/`selectAllDishesForRandom` 无 IN·`Cookbook.sq:1145` 注释含原理·pantryIds 仅内存Set·candidateIds≤100)→**先查证再改**未重复造轮子·待办标结论关闭·零代码。
+
+**取舍**:C 本是待办列的"待做"，查证发现已修→如实标关闭不虚做(省 token+诚实)。A1 只修 user 菜(preset 由 seed 填)。**高风险/禁止项**:无。
