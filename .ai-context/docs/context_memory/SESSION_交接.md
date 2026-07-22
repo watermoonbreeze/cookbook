@@ -1,73 +1,50 @@
 # 🔖 SESSION 交接入口（新会话先读这里）
 
-> 会话交接唯一固定入口（每次交接覆盖，历史流水在 git）。
-> 触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落地文档+覆盖本文件+git 提交。
-> 更新时间：**2026-07-22 续·自建食材 L3 属性双层判定 UI 落地（commit `b2f565b`·push origin/master）**。承数据体系大轮。
-> **🆕 本次交付 = 自建食材 L3 属性 UI（交接明确的"下一步"·已完成）**：shared 加 `FoodAttributeCare.CARE_CODE_TO_NAME`/`expandDeduped`(同病种取更严)/`deriveAttributes`(按唯一 reason 反推属性)+7 单测；VM `saveIngredientEditor` 加 `attributeCodes`→展开 `source='attr'` care 与人工合并(人工优先·`distinctBy{categoryId}` 保留 manual 在前)+`guessAttributes`+解析失败 diag；UI `IngredientEditorDialogs` 新「食材属性(可能影响忌口)」折叠段(`FilterChip` 多选 8 属性)+`AttributeGuessBanner`(按名识别·请核对·影响谁·一键清空·可撤)+状态机(`selectedAttrs`/`attrsTouched`/`guessedAttrs`·`rememberSaveable`+`StringSetSaver`·复用同一去抖推断)+**编辑既有食材**hydrate 反推预勾&过滤 attr 源不进人工 care 列表(受 hydrated 守卫)·submit 由 selectedAttrs 重新展开落库(不丢不重复)；`IngredientPickerScreen` 接 `onGuessAttributes`；详情页忌口区 attr 源标"按属性识别·可改"。**门禁**：Apple-UX §六 规范遵循·Google 质量终审无阻断(建议已采纳:diag 日志+reason 耦合注释)·构建+`:shared:testDebugUnitTest` 过。真机验证待用户做。方案见 `feature/自建食材双层判定_方案讨论.md`(六=规范·状态已标已实现)。
->
-> 更新时间(上一次)：**2026-07-22 超长无人值守·数据体系大轮（全 push origin/master·经验已总结第41次）**。承上一 session(营养线 UI·末位 `6a08ecf`)。本轮全程用户拍板"脚本优先不烧token"，做完：**①②③数据扩充+交叉核对+资产化/cron ④数值+属性双层标准+属性care+联网纠正 ⑤加工食品入库+自建食材L3(shared+UX规范·UI待实现)+营养表待办**。**⑥食材数据已全部处理好**(用户"深度全权处理")：现有食材属性标签全面补全(40食材·加工肉/腌制/内脏/油炸/含糖·28 care)、4项待核处理完(年糕/生蚝→nlc·玫瑰花30→280鲜花口径误录·章鱼保留品种)、数据质检(能量自洽无新错·删不在库标签·补酒类字段)、健康参考页4慢病属性风险齐全、数据性能待办已记。**经验/上下文/交接三件套已做**。下方 ①–⑤ 是本轮各批详情：
-> **① 第二批数据扩充(脚本非LLM联网·省token)**：satFat+122(curl下载USDA SR Legacy全库13MB→建7793索引→中文映射本地匹配) / purine+31(用户授权·忌口红线已核与现有加工肉口径一致) / gi+5(仅补有标准GI主食)。单测过·来源已入数据来源页。见 `数据扩充_营养核准_待跑.md`(已记第二批完成)。
-> **② 全数据源脚本交叉核对(零token全量·用户诉求)**：能量Atwater自洽(本地) + USDA全库交叉 + nlc中国口径按名交叉(逆向出foodName接口·502条)。**三源真录入错铁证仅1条=速冻虾仁kcal199→89(已修)**；USDA 28条差异几乎全是中/美口径差异非错(不盲从他源);nlc精确匹配消错配噪音。见 `全数据源交叉核对_发现.md`。
-> **③ 资产化+cron(用户"更优建议")**：`scripts/data/` 工具集(nutri_selfcheck.py能量自洽 + nlc_cross.py同口径交叉 + cn_usda_map/cn_gi_purine_ref数据资产 + README含nlc接口备忘) + cron `22be4982` 月度体检(每月1号·跑脚本+待核飞书+只报告不改库)。
-> **🟡 4项待核交用户把关(守健康数据人工把关红线·未擅改)**：玫瑰花kcal30(与自身PFC矛盾) / 章鱼kcal135(偏高) / 年糕kcal348(口径存疑) / 生蚝蛋白5.3(偏低)。
-> **④ 健康判定=营养数值+食材属性双层(用户确立·参照啤酒·已固化)**：已固化 CLAUDE.md门禁红线(第120行) + 方案文档 `feature/健康判定_数值加属性双层.md`(整体审视矩阵/缺口/方案A渐进-B属性标签体系-C)。含糖/高果糖属性care首批:可乐/白糖/红糖/冰糖/甘蔗/蜂蜜/葡萄干/蔓越莓干/红枣 补痛风limit+糖尿病(可乐avoid)·care600。**🔴联网纠正**(用户"联网看具体情况"):食养指南2024新鲜水果与痛风无显著相关→**撤销荔枝/香蕉/芒果/西瓜痛风care**(原过度)·限的是加工浓缩果糖(含糖饮料/果汁/果葡糖浆/果脯蜜饯)。番茄酱等调味品"适量就行"不补。**页面同步已做**:健康状态参考页(判定机制节+痛风/糖尿病属性节+新鲜水果口径)、食材详情页(数据驱动自动·care经seed显示宜忌+红绿灯·无需改码)。单测+构建过·push。**用户"都要A+B"已做**：A补缺口(排查发现高血脂数值层satFat/chol已覆盖·反式脂肪食材不在库·数值已判红加care limit无效→无有效补漏·核心由含糖类体现) + **B属性标签体系首版**(`FoodAttribute`枚举+`FoodAttributeCare`声明式映射+`ingredient_attributes.json`打标+seed展开去重人工优先·**向后兼容现有care零变化**·未来加食材打标签自动配全care·7用例单测·SEED_LOGIC v8→v9·设计见 `feature/食材属性标签体系设计.md`)。**规则优化**(用户要求·果糖-水果教训):脚本方案加**三-B「判定口径必联网核实」**——数值抓取脚本零token,但属性→忌口映射/阈值/机制是"规则"·必联网核实权威指南别想当然(核实边界)·CLAUDE.md+属性门禁同步。反式脂肪/高草酸待对应食材入库/档案。详见 `属性风险care补漏.md`、`健康判定_数值加属性双层.md`。
-> **⑤ 加工食品入库 + 自建食材L3 + 营养表待办(2026-07-22 收尾)**：**加工食品首批入库**(雪碧/芬达→PROCESSED_FRUCTOSE·植脂末→TRANS_FAT·USDA营养·属性标签**首次对新食材生成care·反式脂肪落地**)。**L3 自建食材属性**(用户定 L3全面+提示确认)：shared逻辑✅(`FoodAttribute`扩8属性+`display`通俗名+`AttributeGuesser`按名保守推断+排除词+单测·push) + **Apple-UX完整交互规范✅**(属性`FilterChip`勾选区+L2推断提示确认复刻`onGuessNutrition`+属性→care单向生成`source='attr'`不回灌care列表·见 `自建食材双层判定_方案讨论.md`六) + **🔨UI待实现**(`IngredientEditorDialogs.kt`复杂表单·据规范·守hydrated/Saver红线·质量优先单独谨慎做)。**自建食材营养自动获取规划**(手动/扫描OCR/联网nlc-USDA三来源·`自建食材营养自动获取_规划.md`)。**新待办**(待办总览G批)：食材营养表体现营养素+8属性列+**冻结左侧食材名列**(左右滑固定·食材体系落地后·需UX门禁)。
->
-> **📌 剩余可自主的数据优化(可选)**：nlc按名匹配 miss239(太严漏糙米/猪瘦肉等)可迭代"归一+词根映射"提命中·让月度体检更全。非紧急。
+> 会话交接唯一固定入口。触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落地文档+**覆盖**本文件+git 提交。
+> **维护约定（省 token·2026-07-22 定）**：本文件**只保留当前状态**，每次交接**全覆盖**——**不堆"上一次/上上次"交付明细**（目标 ≤1 屏）。**完整历史靠 git**（每次交接一个 commit·`git log`/`git show` 可完整回溯）+ 同目录 **`SESSION_交接_历史.md`**（append-only·每次追加一行：日期·末位 commit·一句摘要）。
+> 更新时间：**2026-07-22 · L3+bug+布局+运营方案 多项交付 & 确立"一个 session 一类"规则（全 push origin/master·末位代码 commit `c255aa4`）**。
+
+## 本 session 交付（全 push·按 commit）
+- **自建食材 L3 属性双层判定 UI ✅**(`b2f565b`)：shared `FoodAttributeCare.CARE_CODE_TO_NAME`/`expandDeduped`(同病种取更严)/`deriveAttributes`(按唯一 reason 反推属性)+7单测；VM `saveIngredientEditor` 加 `attributeCodes`→展开 `source='attr'` care 与人工合并(人工优先·`distinctBy{categoryId}` 保留 manual 在前)+`guessAttributes`；UI 属性折叠段(`FilterChip`×8)+`AttributeGuessBanner`(按名识别/影响谁/一键清空·可撤)+状态机(`selectedAttrs`/`attrsTouched`/`guessedAttrs`·`Saver`+`hydrated` 守卫)+编辑既有食材反推预勾&过滤 attr 源不进人工 care 列表·submit 由 selectedAttrs 重新展开落库(不丢不重复)+详情标"按属性识别·可改"。门禁全过。方案 `feature/自建食材双层判定_方案讨论.md`(六=规范·已标已实现)。
+- **bug 修**(`efdb9cc`)：食材管理页(`selectionMode=false`)新建后误显"选中"高亮→卡片 `selected` 关联 `selecting`(=`selectionMode||composeMode`)·非选择浏览态永不显选中(两处网格渲染点)。
+- **编辑器布局优化**(`c255aa4`·用户提)：拍照封面移到表单最上(同菜品·复用 `ImagePickerButton` coverStyle·预设/自建都在顶部)+二级名称与食材名称同一行各占一半;"更多信息"折叠段→只留"其它分类"。守崩溃红线。
+- **运营一期 #177 方案**(`e13f2f1`·`apple_operations_designer`)：`feature/运营一期_首屏化方案.md`——盘点发现①首屏化+④周小结页面**已落地**·真正缺口=**③记菜命中慢病结果处轻提示(全新·T1·Snackbar 一次性·陈述事实非判决·仅登记档案触发)**+②首启衔接。P0=③②①·P1=④#178。
+- **待办登记本轮批准批次** + 暂缓项归档(待办总览头部) · **确立"一个 session 只做一类事"全局规则**(已落 `~/.claude/CLAUDE.md` 强提醒 + 项目 memory `cookbook-session-by-type`)。
+- **🔄 未实现（下一步可接）= A#6-B 当日能量暗因子**：已摸清推荐取数管线；**设计点**——选项B称"当日能量按单成员×share·数据全现成零改动"，但 `RecommendationDataSource.gather` 只有**整菜今日合计**、无"按观看成员折算的今日能量+`CalorieTarget.dailyTarget`"→**需补一处取数·非纯零改动**。方案 `context_memory/算法拍板落地_2026-07-21.md §四`(前置 A2 gate 已落地)。
 
 ## 一、先按序读（进入状态）
-1. **本文件** + `context_memory/算法拍板落地_2026-07-21.md`（8 项算法拍板状态总表 + A#4/A#6 分析 + C#F2/C#F3 结论）。
-2. `feature/待办总览.md`（**唯一 backlog 真相源**·A 类新增营养线/推荐带营养素/报告空周/菜品编辑折叠/AiPlan风格统一等·各项状态最新）。
-3. `feature/周计划营养线方案.md`（营养线四角色会商·§⏱落地进度：domain✅+AiPlan概览卡✅·WeekPlan屏+宏量慢病层 follow-up）+ `feature/AI推荐界面统一方案.md`（P1✅ 已实现·P2 概览卡随营养线）。
-4. `feature/苹果风格UI设计方案.md` **§9.34/9.35/9.36**（本轮新范式：全屏查看器含删除 / AI推荐三档家族化统一 / 推荐营养呈现）。
-5. `CLAUDE.md` 踩坑红线 + 架构准则（凡编码必守）。
+1. 本文件 + `feature/待办总览.md`（**唯一 backlog 真相源**·头部有 2026-07-22 批准批次与暂缓项）。
+2. 对应主题方案文档：`context_memory/算法拍板落地_2026-07-21.md §四`(A#6-B) / `feature/运营一期_首屏化方案.md`(#177) / `feature/自建食材双层判定_方案讨论.md`(L3·已实现) / `feature/健康判定_数值加属性双层.md`+`feature/食材属性标签体系设计.md`(数据双层)。
+3. `CLAUDE.md` 踩坑红线 + 架构准则（凡编码必守）。
 
 ## 二、工作规则（用户已定·稳定）
-1. 中文；**深度模式·无人值守·全权推进·每做一个功能完都验证审核测试(门禁+构建+单测)·快速做完不反复问确认**。先 Explore/读码摸现状再动·别过度设计·动手前验证别改已正确的。
-2. **每功能走全套门禁**：界面/交互→`apple_ux_designer`(编码前出规范·崩溃敏感区必走)/`apple_visual_designer`；App 自动行为→`apple_software_behavior`；文案→`copywriter`；**Android 代码质量→`google_quality_engineer`(阻断必修复复验)·涉架构→`google_architecture_engineer`**。会诊类多角色并行→我汇总收敛落方案文档。
-3. 🔴构建看输出别信 exit code（`scripts\build-cli.bat :androidApp:assembleDebug` / `:shared:testDebugUnitTest` grep `BUILD SUCCESSFUL`）。数据 bug 先 python 拉真机库证实再改。崩溃红线：inline Column/Row/Box content lambda 禁 `return@`(SlotTable 崩)·coverStyle 变体用 if/else·条件用 item/if 插入式 emit。
-4. **每功能一批**：门禁→构建+单测→commit(`[unattended]`)→**push origin/master**(用户要真机验)→落档。真机验证用户统一做(UI 全做完)。
-5. 红线：健康免责(仅供参考·非医嘱)、透明准则(分级告知)、联网核准必列数据来源、AI 生成内容落库、**热量个人概念(受 CALORIE_NUMBER_ENABLED 开关·不折算显整份)**、抽共享防调参漂移(MealCompositionScorer/ChronicDiseasePenalty/DishNutritionLine 等)。
+1. **🔴 一个 session 只做一类事**（数据/算法/UI/bug/文档）·off-type 的 bug/待办**进队列(`待办总览.md`)不当场做**（除非用户明说"现在做"或真依赖当前上下文）·切类型=换 session。已落全局 CLAUDE.md 强提醒。
+2. 中文；**深度模式·无人值守·全权推进·每功能完都验证审核测试(门禁+构建+单测)·快速做完不反复问确认**。先 Explore/读码摸现状·别过度设计·别改已正确的。
+3. **每功能走全套门禁**：界面/交互→`apple_ux_designer`(编码前出规范·崩溃敏感区必走)/`apple_visual_designer`；App 自动行为→`apple_software_behavior`；文案→`copywriter`；Android 代码质量→`google_quality_engineer`(阻断必修复复验)·涉架构→`google_architecture_engineer`。
+4. 🔴构建看输出别信 exit code（`scripts\build-cli.bat :androidApp:assembleDebug`/`:shared:testDebugUnitTest` grep `BUILD SUCCESSFUL`）。数据 bug 先 python 拉真机库证实再改。崩溃红线：inline Column/Row/Box content lambda 禁 `return@`·coverStyle 变体用 if/else·条件用 item/if 插入式 emit。
+5. **每功能一批**：门禁→构建+单测→commit(`[unattended]`)→**push origin/master**→落档。真机验证用户统一做。
+6. 红线：健康免责(仅供参考·非医嘱)、透明准则(分级告知)、联网核准必列数据来源、AI 生成内容落库、**热量个人概念(受 CALORIE_NUMBER_ENABLED 开关·不折算显整份)**、抽共享防调参漂移(MealCompositionScorer/ChronicDiseasePenalty 等)。
 
-## 三-新、本续接 session 交付（3 提交·全 push·末位 `4ac74bf`）
-- **#1 AiPlan 逐日卡每菜营养行 `9952c25`**：抽 `DishNutritionLine`(+`DishNutritionUi`+`toDishNutritionUi`)到 `ui/component` 共享(原埋 AiRecommend 私有)，AiPlan 逐日卡每菜显整份热量+宏量(受开关)+钠偏咸+缺数据待完善；AiPlanVM 加 NutritionRepository 批量查(distinct·无 N+1·runCatching 兜底)。
-- **#3 菜品编辑低频区分类折叠 `da85c1a`**：抽 `FoldSection` 到 `ui/component` 共享(原私有于 IngredientEditorDialogs)；NewDishScreen 低频区从单个 MoreOptionsHeader 大折叠→两个 `InsetGroup{FoldSection{}}`(操作步骤/更多信息·各自开合)；折叠态 `rememberSaveable(editingId)`(新建收起/编辑展开/有内容自动展开)；删孤儿组件 MoreOptionsHeader。
-- **#4 WeekPlan 已排周营养概览卡 `4ac74bf`**：抽 `NutritionLineCard` 到 `ui/component` 共享(原私有于 AiPlanScreen)；WeekPlanVM 从已排卡片主料名聚合整周营养线(同 `WeeklyNutritionLineAggregator`)；LazyColumn 首项插概览卡。Google 审修 1 阻断(空周 dayCount 恒=窗口天数≠有排菜天数→改 VM 侧有真实主料数据才置 nutritionLine 否则 null·已复验)。
-- **A2 健康红线 `3452004`**、**F#5 结构日历两排 `b45fd46`**(先 `343ebd3` FlowRow→升级)——详见头部。
-- **UI 清理批 `6a08ecf`**：#204/#190-P1 早已实现(SelectionSummaryBar 选择底部栏统一·状态曾滞后) · #190-P2 无食材保存软化(去打断对话框→浅 Snackbar) · #192 拍照删除撤销(ImagePickerButton onImageDeleted 上抛·封面+步骤图接·IngredientEditor Dialog 留 follow-up)。
-- **#2 概览卡视觉打磨=跳过**：现状复用 §9.35 去红色阶(`nutritionLevelColor` 琥珀→绿)+主题自适应文字·已达标·无边际价值。
-- 门禁贯彻：每功能 Explore 摸现状→(交互/视觉/质量)门禁→构建(daemon 偶瞬崩·重试即过·非编译错)→单测(改动纯 androidApp UI 层·shared 未触)→commit→push。**本轮所有 UI 相关可实现项已清空**(见下四)。
-
-## 三、上一 session 交付（17 提交·全 push·末位 `4cf9ddb`）
-- **确定方案 D 批**：D3 膳食均衡度色去红(收敛 nutritionLevelColor) · D4 周计划慢病 GI/嘌呤软降(抽 ChronicDiseasePenalty 与单餐同口径) · D2 AiSettings 卡化 · D1-1 CookMode + D1-2 FamilyEdit **VM 化(F-Arch2/3 结案·min-fix)**。
-- **算法拍板批**：B#6 recommend 封顶 · C#F1 强版模型输出后补组合缺口 · C#F2 早餐软硬透传单餐(避免白粥+豆浆两软无蛋)。均单测+Google 审。
-- **🌟周计划营养线全链路**：domain 一期(`WeeklyNutritionLineAggregator`+`NutritionLineAdvisor`+8 单测·结构层) + **AiPlan「一周营养搭配」概览卡**(把整周结构覆盖/缺口/均衡度盛出来·去红·免责)。
-- **🌟AiPlan 界面统一 P1**：DayCard 白卡化 + 控件折叠进「计划设置」弹层 + 提示条独立 + 空态 EmptyState + 标注去 emoji(§9.35)。
-- **🌟推荐带营养素热量**：AiRecommend 每菜"整份约 X 千卡·蛋白/脂肪/碳水"行 + 组合卡合计 + 钠"偏咸"提示 + 缺数据"待完善"·热量受开关(§9.36)·规则+模型+兜底三路统一·`DishNutritionLine`/`rememberCalorieNumberEnabled`。
-- **拍照**：删除入口迁全屏查看器(去缩略图角标免误触·单图铺开·§9.34) + **查看器删当前图预览不刷新 bug 修**(produceState key preview 恒 null·用户真机抓的)。
-- **报告空周/月→跳一周计划**(带周日期·月含月首日·`WEEK_PLAN_ROUTE` 参数化)。
-- 会商方案：营养线四角色(产品/营养师/运营/文案) · AiPlan界面统一 · A#4/A#6 得失分析。
-
-## 四、⏭ 下一步（**UI 相关可实现项本轮全清空**·用户 2026-07-21 收尾交接·剩余各有约束）
-> ✅ 本续接 session 已做完：营养线三件套(#1/#3/#4) · A2 孕哺不评热量 · F#5 结构日历两排 · UI 清理批(#204/#190/#192) · backlog 对账。#2 判跳过。
+## 三、⏭ 下一步（**按类型分 session 做**·off-type 进队列）
+> **✅ 本 session 已清（全 push）**：L3 属性 UI · 管理页误选中 bug · 编辑器封面上移+名称同行 · 运营 #177 方案 · 待办批次登记 · 会话规则。真机验证待用户做（L3 五步已发飞书）。
 >
-> **① 数据扩充 + 全数据源脚本交叉核对 + 资产化/cron = ✅ 本 session 全部完成**(见头部①②③ + `数据扩充_营养核准_待跑.md`/`全数据源交叉核对_发现.md`/`数据获取脚本化方案.md`)。**数据线告一段落**，剩：
-> - 🟡 **4项待核交用户把关**(玫瑰花/章鱼/年糕/生蚝·kcal或蛋白存疑·未擅改)——用户确认后修，或后续一手权威核。
-> - (可选自主)nlc匹配迭代提命中·让cron月度体检更全·非紧急。
-> - 第三批数据(剩余gi/satFat/purine缺口)**ROI递减**(多为USDA无对应中国特有食材/无标准GI调料酒),按需非批量。
+> **下一个 session 选一类干净开做（交接后 `/clear` → 「会话继续」+ 指定主题）：**
 >
-> **② 剩余 UI（都非"干净可无人值守"·建议用户在场/定向）**：
-> - **#203 食材编辑器 Dialog→路由页**：唯一实质剩余 UI 重构·**高爆炸半径**(多处以 Dialog 打开·转路由要改导航+所有打开点+传参)·建议用户在场做。视觉家族化(InsetGroup/AppTopBar/FoldSection)其实已做,只差载体转换(转了顺带解 #192 IngredientEditor 撤销宿主受限)。
-> - **#208 更新基础数据启动弹窗(透明准则)**：后端 changelog+更新记录中心已做·启动弹窗"v1基线不触发·待下次数据变更才有效"→**现在做真机也验不了**·待有数据更新(如数据扩充落地)时一起做。
-> - **#177 运营一期首屏化**：需运营设计门禁+方向定义·非纯实现。
+> **【数据类】**（联网核准·健康红线·用户把关·可合一个 session）
+> - **四项数据核准**：玫瑰花/章鱼/年糕/生蚝(kcal 或蛋白存疑)。数据大轮已部分处理(玫瑰花 30→280 pending·章鱼 135·年糕/生蚝→nlc)，需逐项对**一手权威**复核定 verified/pending·未擅改。
+> - **全库健康忌口补漏剩余边界**(F#附2)：核心缺口第一批已闭环，剩 鸡毛蛋卫生忌口 / 鱼油(高胆固醇 vs Omega3) / 植物高嘌呤(干香菇/腐竹/青豆) avoid 还是 limit·联网核准后定·来源入数据来源页。
 >
-> **③ 算法/健康(需用户拍板)**：A#6-B 当日能量暗因子(不可验证+与"热量个人概念"红线张力·未显式拍板·建议先确认) · A#4 GI(低价值可不做) · CookingTimer VM化(需真机验计时) · #209/#210 健康忌口补漏(联网核准·用户历来亲自把关·勿盲改)。
-
-> **接手推进**：读 `待办总览`(唯一 backlog 真相源) + `健康判定_数值加属性双层.md`/`食材属性标签体系设计.md`/`自建食材双层判定_方案讨论.md`(六=UI交互规范·状态已标已实现) + 本档。**✅ 自建食材 L3 属性 UI 已实现(本次·`b2f565b`)**——交接曾明确的"下一步"已完成、真机验证待用户做。
+> **【算法类】**（独立 session·需先定口径）
+> - **A#6-B 当日能量暗因子**(选项B·greenlit)：⚠️先定"当日能量按单成员×share"取数(gather 现无·需补 `CalorieTarget.dailyTarget`+今日成员能量)·`HealthRuleEngine` 加同构软因子(仿 chronicDiseaseNutrition·封顶≈0.4·暗因子不可见·缺数据/多成员/没吃多恒0)·守热量个人概念红线。方案 `算法拍板落地_2026-07-21.md §四`。
+> - A#4 GI 一维(低价值·可不做)。
 >
-> **⏭ 下一步(剩余·各有约束·多需用户介入)**：
-> - **真机验证 L3**(用户做)：自建食材加"米酒/培根/油条"等看属性 chip 自动识别提示、勾选保存后详情页忌口红绿灯是否体现、编辑既有食材属性 chip 是否预勾且保存不丢 attr care。
-> - **#203 食材编辑器 Dialog→路由页**(在场·高爆炸半径·多打开点转路由)。
-> - **A#6-B 当日能量暗因子**(拍板·与"热量个人概念"红线张力) · 旧 **#209/#210 健康忌口补漏**(用户亲核联网) · **#208 更新基础数据启动弹窗**(待有数据变更才验) · **#177 运营一期首屏化**(需运营门禁)。
-> - **营养表体现营养素+8属性列+冻结左侧食材名列**(待办总览 G 批·食材体系落地后·需 UX 门禁) · 数据性能专项(数据源增多) · nlc 匹配迭代提命中(可选)。
-> - 每功能过门禁(交互→Apple-UX·代码→Google 质量·自动行为→Apple 软件行为师)+构建+单测+push·真机验证用户统一做。
+> **【UI/交互类】**（各走门禁·多需用户在场）
+> - **运营一期 #177 落地**：P0=③记菜命中慢病轻提示(全新·Snackbar 一次性)+②首启衔接·须过 apple_software_behavior+apple_ux_designer+copywriter。
+> - **#203 食材编辑器 Dialog→路由页**(用户在场·高爆炸半径)。
+> - **#208 更新基础数据启动弹窗**(待有数据变更才验)。
+>
+> **【真机待验】**(用户)：L3 属性 UI(飞书 5 步) · 管理页选中修复 · 编辑器封面/同行布局。
+>
+> **【暂缓·时机成熟】**：营养表体现营养素+8属性列+冻结左列(食材体系落地后·需 UX 门禁) · 数据性能专项(数据源增多) · nlc 匹配迭代提命中(可选)。
+>
+> **接手先读**：`待办总览` + 本档 + 对应主题方案文档。每功能过门禁+构建+单测+push·真机验证用户统一做。
