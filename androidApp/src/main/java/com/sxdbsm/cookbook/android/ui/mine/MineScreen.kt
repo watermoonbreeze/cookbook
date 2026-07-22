@@ -53,6 +53,7 @@ fun MineScreen(
     onOpenFreePairing: () -> Unit = {},
     onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
     onOpenDietaryReference: () -> Unit = {}, // [AI生成] 膳食参考依据(阈值/分级引用的权威标准透明展示)
+    onOpenNutritionRule: () -> Unit = {}, // [AI生成] 营养怎么算的(热量/摄入折算/分级口径的计算说明)
     onOpenDataSource: () -> Unit = {}, // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品来源)
     onOpenUpdateLog: () -> Unit = {}, // [AI生成] F#8:基础数据更新记录(每次更新做了什么·可查)
     onOpenFeatureGuide: () -> Unit = {}, // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
@@ -274,6 +275,9 @@ fun MineScreen(
             SettingRow(icon = Icons.Outlined.TableChart, title = "食材营养表", subtitle = "全部食材每100g营养一览，可搜索/按大类筛选/排序", trailing = "▸") { onOpenNutritionTable() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.MenuBook, title = "膳食参考依据", subtitle = "营养提示所依据的国家标准/权威指南，分类列出+免责", trailing = "▸") { onOpenDietaryReference() }
+            InsetDivider(52)
+            // [AI生成] 营养怎么算的：热量/摄入折算/分级口径的计算说明(膳食参考依据的"怎么算"姊妹页·紧随其后)。
+            SettingRow(icon = Icons.Outlined.Calculate, title = "营养怎么算的", subtitle = "热量、摄入折算、各项分级是怎么算出来的", trailing = "▸") { onOpenNutritionRule() }
             InsetDivider(52)
             // [AI生成] 健康状态参考：病种+生命阶段饮食关注点 + App 怎么提示 + 口径 + 免责。
             SettingRow(icon = Icons.Outlined.MonitorHeart, title = "健康状态参考", subtitle = "慢病与孕期/婴幼儿等各自饮食关注点与提示口径，仅供参考", trailing = "▸") { onOpenHealthConditionReference() }
