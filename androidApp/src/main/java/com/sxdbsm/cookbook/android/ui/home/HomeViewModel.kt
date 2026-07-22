@@ -314,13 +314,13 @@ class HomeViewModel(
     }
 
     /**
-     * 今日餐卡共享上游(单一订阅·防重复)。[AI生成] Google审🟡-2:todayNutrition 与 todayMeals 复用同一条 observeTimelineWindow 订阅。
+     * 今日餐卡共享上游(单一订阅·防重复)。[AI修改] Google审🟡-2:todayNutrition 与 todayMeals 复用同一条 observeTimelineWindow 订阅。
      *
-     * 并入"菜配料变化"+"食用比例变化"令牌:改克数/配料(dish_ingredient)或就地调吃了多少(meal_record_dish.eaten_ratio)
-     * →重发→今日卡重算(改B表不触发A表Flow·踩坑红线)。
+     * "菜配料变化"+"食用比例变化"令牌已下沉进 observeTimelineWindow(改克数/配料/就地调吃了多少即时重算·改B表不触发A表Flow红线)，
+     * 此处不再重复并令牌(避免双重订阅)——observeTimelineWindow 自身已在 eaten_ratio/dish_ingredient 变化时重发新卡片。
      */
     private val todayCards: StateFlow<List<com.sxdbsm.cookbook.domain.model.DayMealCardData>> =
-        combine(mealRepo.observeTimelineWindow(today, today), mealRepo.observeDishContentChanges(), mealRepo.observeEatenRatioChanges()) { cards, _, _ -> cards }
+        mealRepo.observeTimelineWindow(today, today)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -378,9 +378,10 @@ class HomeViewModel(
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     /**
-     * 今日各餐(带 mealRecordId + 每菜 eatenRatio)供"按实际吃了多少调整"弹层。[AI生成] 食用比例(是否吃完)
+     * 今日各餐(带 mealRecordId + 每菜 eatenRatio)供"按实际吃了多少调整"弹层。[AI修改] 食用比例(是否吃完)
      *
-     * 并入 observeEatenRatioChanges 令牌→改了比例弹层即时反映(DB 为单一真相源·UDF·无本地态漂移·改B表不触发A表Flow红线)。
+     * 派生自 todayCards(=observeTimelineWindow·已内并 eaten_ratio/配料令牌)→改了比例弹层即时反映
+     * (DB 为单一真相源·UDF·无本地态漂移·改B表不触发A表Flow红线由 observeTimelineWindow 内令牌兜住)。
      * 只列有 mealRecordId 且非空的餐(可写回)。
      */
     val todayMeals: StateFlow<List<com.sxdbsm.cookbook.domain.model.MealSection>> =

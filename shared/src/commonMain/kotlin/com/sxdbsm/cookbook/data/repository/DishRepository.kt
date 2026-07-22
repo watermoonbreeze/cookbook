@@ -529,6 +529,11 @@ class DishRepository(private val db: CookbookDatabase) {
                 q.linkDishTag(dishId, tagId)
             }
 
+            // [AI生成] 兜底解析"克"单位 id：编辑器加食材时若单位字典未就绪(gramUnit() 返 null)，unitId 会落 null。
+            //   默认克数(SeasoningDefaults)本就是克，null 只来自时序 gap(用户显式选的单位都非 null)。存 NULL 会致
+            //   重载详情按 default_unit_id 回退显"100.0个"、营养按错单位折算(踩坑红线)。此处统一回填"克"，让持久化永不留空单位。
+            val gramUnitId = q.selectMeasurementUnitIdByName("g").executeAsOneOrNull()
+                ?: q.selectMeasurementUnitIdByName("克").executeAsOneOrNull()
             // [AI修改] 同步食材：同样采用“全量替换”策略，简单且适合 MVP。
             q.deleteIngredientsOfDish(dishId)
             ingredients.forEach { di ->
@@ -536,7 +541,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     dish_id = dishId,
                     ingredient_id = di.ingredient.id,
                     quantity = di.quantity,
-                    unit_id = di.unitId,
+                    unit_id = di.unitId ?: gramUnitId, // [AI修改] 空单位回填"克"，防"100克显成100个"/营养算错(bug根因)
                     is_main = if (di.isMain) 1 else 0,
                 )
                 q.updateIngredientLastReferencedAt(

@@ -15,6 +15,7 @@ import com.sxdbsm.cookbook.pantry.PantryUsage
 import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -29,21 +30,9 @@ import kotlinx.datetime.LocalTime
 class MealRecordRepository(private val db: CookbookDatabase) {
     private val q = db.cookbookQueries
 
-    /**
-     * 监听"菜配料变化"令牌：任意菜的配料(用量/单位/增删)改动都会重发。[AI生成]
-     * 供今日营养卡等汇总把它并进 combine——改了菜克数后 dish_ingredient 变→此流重发→重算,修"今日卡停旧值"(菜品详情实时对但今日卡不刷)。
-     */
-    fun observeDishContentChanges(): Flow<Long> =
-        q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher)
-
-    /**
-     * 监听食用比例(eaten_ratio)变化令牌。[AI生成]
-     *
-     * 就地调某餐某菜"吃了多少"走 UPDATE meal_record_dish，而今日卡的 observeTimelineWindow 只监听 meal_record 表
-     * (改B表不触发A表Flow·踩坑红线)→ 今日卡不刷新。把本令牌并入今日卡 combine，比例改动即触发重算。
-     */
-    fun observeEatenRatioChanges(): Flow<Any> =
-        q.observeMealRecordDishRevision().asFlow().mapToOne(ioDispatcher)
+    // [AI修改] 原独立的 observeDishContentChanges()/observeEatenRatioChanges() 令牌方法已删除：
+    //   令牌已直接下沉进 observeTimelineWindow 的 combine(见下)，改 dish_ingredient(克数/配料)或
+    //   meal_record_dish(eaten_ratio·就地调吃了多少·改B表不触发A表Flow红线)即令卡片重发，无需上层各自并令牌。
 
     /**
      * 监听全部餐次类型。[AI修改]
@@ -177,12 +166,18 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     fun observeTimelineWindow(start: LocalDate, end: LocalDate): Flow<List<DayMealCardData>> {
         val startDate = minOf(start, end)
         val endDate = maxOf(start, end)
-        return q.selectMealRecordsBetween(
-            start = DateTime.formatDate(startDate),
-            end = DateTime.formatDate(endDate),
-        )
-            .asFlow()
-            .mapToList(ioDispatcher)
+        // [AI修改] 并入"食用比例变化"+"菜配料变化"令牌：改 meal_record_dish(就地调 eaten_ratio)或 dish_ingredient(克数/配料)
+        //   只动 B 表，而 selectMealRecordsBetween 只监听 meal_record(A 表)→卡片停旧值(踩坑红线:改B表不触发A表Flow)。
+        //   令牌变化时 combine 重发→重跑 buildDayMealCards 读新 eaten_ratio→今日卡/"按实际吃了多少"弹层即时刷新(修"点了没反应·退出重进才生效")。
+        //   卡片内容(DishMini.eatenRatio)真变才与旧值不等→下游 stateIn 去重后才发 UI，无谓令牌抖动不刷屏。
+        return combine(
+            q.selectMealRecordsBetween(
+                start = DateTime.formatDate(startDate),
+                end = DateTime.formatDate(endDate),
+            ).asFlow().mapToList(ioDispatcher),
+            q.observeMealRecordDishRevision().asFlow().mapToOne(ioDispatcher),
+            q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher),
+        ) { records, _, _ -> records }
             .map { records ->
                 buildDayMealCards(startDate, endDate, records)
             }
@@ -272,8 +267,17 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             // [AI修改] 撤销还原(bumpPreference=false)不抬喜爱度；否则只对相对基线"新出现"的菜抬(编辑/移动不重复抬)。
             val dishIdsToIncrement = if (bumpPreference) newDishIds - oldDishIds else emptySet()
             // [AI生成] 食用比例(是否吃完)：整日删重插前快照(餐次类型,菜)→eaten_ratio，重插后回填非默认值，防编辑当天静默重置用户调好的吃完度(Google审🟡-1数据丢失)。
-            val oldRatios = q.selectEatenRatiosByDate(dateStr).executeAsList()
-                .associate { (it.meal_type_id to it.dish_id) to it.eaten_ratio }
+            val oldRatioRows = q.selectEatenRatiosByDate(dateStr).executeAsList()
+            val oldRatios = oldRatioRows.associate { (it.meal_type_id to it.dish_id) to it.eaten_ratio }
+            // [AI生成] 每餐(餐次类型)"统一吃完度"：加菜前该餐所有菜同一非默认值→新加菜继承(用户"整餐设少量"后加一道菜仍属这餐，
+            //   否则新菜恒 1.0 让整餐档变"混合"→整餐档不高亮→用户误以为"少量没了"·用户2026-07-22报 BUG2)。仅统一态继承，混合态新菜仍默认 1.0。
+            val mealUniformRatio: Map<Long, Double> = oldRatioRows.groupBy { it.meal_type_id }
+                .mapNotNull { (typeId, rows) ->
+                    // distinct/!=1.0 用精确相等：eaten_ratio 只来自离散档位常量(1.0/0.75/0.5/0.25·coerce 后原样入库·不经算术)，
+                    // 无浮点误差。若将来改为按份数等运算折算写回，此处需改容差判定(abs(x-1.0)>1e-9 + 按容差分组)。
+                    val distinct = rows.map { it.eaten_ratio }.distinct()
+                    if (distinct.size == 1 && distinct.first() != 1.0) typeId to distinct.first() else null
+                }.toMap()
             q.deleteMealRecordDishesByDate(dateStr)
             q.deleteMealRecordsByDate(dateStr)
             meals.forEach { meal ->
@@ -288,8 +292,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                 recordIds += recordId
                 meal.dishIds.forEachIndexed { index, dishId ->
                     q.insertMealRecordDish(recordId, dishId, index.toLong())
-                    // 回填该(餐次类型,菜)之前调过的食用比例(非默认1.0才写)，保留用户"吃了多少"。
-                    val prevRatio = oldRatios[meal.mealTypeId to dishId]
+                    // 回填该(餐次类型,菜)之前调过的食用比例(非默认1.0才写)，保留用户"吃了多少"；
+                    // 新加菜(oldRatios 无)则继承本餐统一吃完度(mealUniformRatio)，让"整餐设少量后加菜"整餐仍是少量。
+                    val prevRatio = oldRatios[meal.mealTypeId to dishId] ?: mealUniformRatio[meal.mealTypeId]
                     if (prevRatio != null && prevRatio != 1.0) q.updateMealRecordDishEatenRatio(prevRatio, recordId, dishId)
                     if (dishId in dishIdsToIncrement) q.incrementDishPreference(now, dishId)
                 }

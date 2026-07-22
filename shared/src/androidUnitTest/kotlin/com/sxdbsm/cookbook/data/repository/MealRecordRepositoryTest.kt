@@ -110,6 +110,85 @@ class MealRecordRepositoryTest {
         assertEquals(0.5, dishes.first().eatenRatio, 1e-9)
     }
 
+    // [AI生成] 食用比例·数据保全(用户2026-07-22报 BUG2)：整餐设"少量"后编辑**加一道新菜**保存，原有菜的比例不能丢。
+    @Test
+    fun addingDishOnEditPreservesExistingEatenRatio() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("BREAKFAST", "早餐", "07:30", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        suspend fun mkDish(name: String) = dishRepo.saveDish(
+            id = 0, name = name, cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val a = mkDish("菜A"); val b = mkDish("菜B"); val c = mkDish("菜C"); val d = mkDish("菜D")
+        val date = LocalDate(2026, 6, 5)
+        val recordIds = mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(7, 30), "", listOf(a, b, c))))
+        // 整餐设为"少量"(0.25)。
+        mealRepo.setEatenRatioForMeal(recordIds.first(), 0.25)
+        // 编辑：早餐加一道新菜 D，整日删重插保存。
+        mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(7, 30), "", listOf(a, b, c, d))))
+
+        val byId = mealRepo.loadDayMealsForEdit(date).first().dishes.associate { it.id to it.eatenRatio }
+        assertEquals(0.25, byId[a]!!, 1e-9, "原有菜A吃完度应保留0.25")
+        assertEquals(0.25, byId[b]!!, 1e-9, "原有菜B吃完度应保留0.25")
+        assertEquals(0.25, byId[c]!!, 1e-9, "原有菜C吃完度应保留0.25")
+        // 整餐统一"少量"→新加菜继承少量(否则整餐档变混合→用户误以为"少量没了")。
+        assertEquals(0.25, byId[d]!!, 1e-9, "新加菜D应继承本餐统一吃完度0.25")
+    }
+
+    // [AI生成] 食用比例：本餐吃完度**混合**(非统一)时，新加菜不继承、默认吃完1.0(只对统一态继承，避免瞎猜)。
+    @Test
+    fun addingDishInheritsOnlyWhenMealRatioUniform() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        suspend fun mkDish(name: String) = dishRepo.saveDish(
+            id = 0, name = name, cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val a = mkDish("菜A"); val b = mkDish("菜B"); val c = mkDish("菜C")
+        val date = LocalDate(2026, 6, 5)
+        val recordIds = mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(a, b))))
+        // 混合：A=0.5、B=吃完1.0。
+        mealRepo.setEatenRatio(recordIds.first(), a, 0.5)
+        mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(a, b, c))))
+
+        val byId = mealRepo.loadDayMealsForEdit(date).first().dishes.associate { it.id to it.eatenRatio }
+        assertEquals(0.5, byId[a]!!, 1e-9, "A保留0.5")
+        assertEquals(1.0, byId[b]!!, 1e-9, "B保留1.0")
+        assertEquals(1.0, byId[c]!!, 1e-9, "混合态不继承，新菜C默认1.0")
+    }
+
+    // [AI生成] 食用比例：整餐都"吃完"(统一但=默认1.0)时加菜，新菜正确保持1.0(默认值不触发继承分支·Google审测试缺口)。
+    @Test
+    fun addingDishToAllEatenMealKeepsDefault() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("DINNER", "晚餐", "18:30", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        suspend fun mkDish(name: String) = dishRepo.saveDish(
+            id = 0, name = name, cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val a = mkDish("菜A"); val b = mkDish("菜B")
+        val date = LocalDate(2026, 6, 5)
+        // 全部默认吃完(1.0)·从不调比例。
+        mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(18, 30), "", listOf(a))))
+        mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(18, 30), "", listOf(a, b))))
+
+        val byId = mealRepo.loadDayMealsForEdit(date).first().dishes.associate { it.id to it.eatenRatio }
+        assertEquals(1.0, byId[a]!!, 1e-9, "A默认1.0")
+        assertEquals(1.0, byId[b]!!, 1e-9, "统一但=1.0默认→不触发继承，新菜B仍1.0")
+    }
+
     // [AI生成] 食用比例：整餐一次设置(setEatenRatioForMeal)把该餐所有菜设同值，且 loadDayMealsForEdit 能读回。
     @Test
     fun setEatenRatioForMealSetsAllDishesAndRoundTrips() = runBlocking {
