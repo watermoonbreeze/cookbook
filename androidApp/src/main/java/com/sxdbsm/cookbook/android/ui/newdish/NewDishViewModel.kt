@@ -113,21 +113,34 @@ class NewDishViewModel(
     // [AI生成] 菜名自动加食材的防抖 job：用户停顿后再推演，避免逐字命中弹多次。
     private var autoAddJob: kotlinx.coroutines.Job? = null
 
+    // [AI生成] 单位字典就绪信号：加食材(尤其菜名自动加食材)必须等单位加载完再取"克"单位，
+    // 否则 gramUnit() 返 null → 默认克数落到食材计件默认单位(个/只)→"100.0个"错单位(bug根因)。
+    private val unitsReady = kotlinx.coroutines.CompletableDeferred<Unit>()
+
+    // [AI生成] 缓存"克"单位：availableUnits 一加载即缓存，避免依赖 state 时序；gramUnit() 兜底读它。
+    private var cachedGramUnit: MeasurementUnit? = null
+
     init {
         viewModelScope.launch {
             seasoningIds = runCatching { ingredientRepo.seasoningIngredientIds() }.getOrDefault(emptySet())
         }
         viewModelScope.launch {
             cachedIngredientNames = runCatching { ingredientRepo.allActiveNames() }.getOrDefault(emptyList())
-            autoAddFromName() // 名字可能已预填(新建带菜名/组成菜品)，加载完名单后补推一次
+            // [AI修改] 餐次预选只依赖菜名、不需单位，先做——避免被 autoAddFromName 内的 unitsReady.await() 顺延(慢机字典慢时观感卡半拍)。
             updateMealSlotPreselect() // [AI生成] v28：预填菜名的智能预选餐次
+            autoAddFromName() // 名字可能已预填(新建带菜名/组成菜品)，加载完名单后补推一次(内部会 await 单位就绪)
         }
         viewModelScope.launch {
             // [AI修改] 页面打开后加载计量单位字典，用于食材用量输入。
             // [AI修改] 先把挂起查询结果放到局部变量，再基于最新 state 合并，避免旧空表单快照覆盖编辑加载结果。
-            val units = ingredientRepo.listMeasurementUnits()
-            val cookingMethods = dishRepo.listCookingMethods()
-            val tags = dishRepo.listDishTags() // [AI生成] T3：标签库
+            // [AI修改] 三个字典查询各自 runCatching 降级(对齐同 init 里 seasoningIds/cachedIngredientNames)：
+            //          任一抛异常也不能让 unitsReady 永不完成——否则 autoAddFromName 的 await 永挂、
+            //          连带 scheduleAutoAddFromName 里紧随的餐次预选也永久失效(Google 审查建议1)。
+            val units = runCatching { ingredientRepo.listMeasurementUnits() }.getOrDefault(emptyList())
+            val cookingMethods = runCatching { dishRepo.listCookingMethods() }.getOrDefault(emptyList())
+            val tags = runCatching { dishRepo.listDishTags() }.getOrDefault(emptyList()) // [AI生成] T3：标签库
+            // [AI生成] 单位一到手先缓存"克"并放行 unitsReady，让等待中的自动加食材拿到正确单位(空字典则 null，下游走 UI 显示瑕疵而非永挂)。
+            cachedGramUnit = units.firstOrNull { it.name == "g" || it.name == "克" }
             _state.update { current ->
                 AppLogger.d(TAG, "init dictionaries merged: currentEditId=${current.editingId} currentName=${current.name} units=${units.size} methods=${cookingMethods.size}")
                 current.copy(
@@ -136,6 +149,7 @@ class NewDishViewModel(
                     availableTags = tags,
                 )
             }
+            if (!unitsReady.isCompleted) unitsReady.complete(Unit)
         }
     }
 
@@ -303,8 +317,9 @@ class NewDishViewModel(
         autoAddJob?.cancel()
         autoAddJob = viewModelScope.launch {
             kotlinx.coroutines.delay(350) // 防抖：等停顿再推演，避免逐字命中弹多次
-            autoAddFromName()
+            // [AI修改] 餐次预选只依赖菜名、不需单位，先做——避免被 autoAddFromName 内的 unitsReady.await() 顺延(慢机字典慢时观感卡半拍)。
             updateMealSlotPreselect() // [AI生成] v28：菜名稳定后按名智能预选餐次(未手动碰过才覆盖)
+            autoAddFromName()
         }
     }
 
@@ -334,6 +349,7 @@ class NewDishViewModel(
         if (_state.value.editingId != null) return
         val dishName = _state.value.name
         if (dishName.isBlank() || cachedIngredientNames.isEmpty()) return
+        unitsReady.await() // [AI生成] 等单位字典就绪再取"克"单位，避免默认克数落到错单位("100.0个"根因)。
         val existingNames = _state.value.ingredients.map { it.ingredient.name.trim() }.toSet()
         val methods = _state.value.availableCookingMethods.map { it.name } // 烹饪方式字典作额外停用词
         val cands = com.sxdbsm.cookbook.domain.DishNameIngredientGuesser
@@ -379,8 +395,11 @@ class NewDishViewModel(
             ingredient = ing,
             isMain = false,
             quantity = defaultGram,
-            unitName = gram?.name ?: "克",
-            unitId = gram?.id ?: ing.defaultUnitId,
+            // [AI修改] 默认克数必配"克"单位；不再落到食材计件默认单位(ing.defaultUnitId=个/只)——那会把"100克"显成"100个"、
+            // 且营养按错单位折算(bug根因)。此路径 gram 恒非空(autoAddFromName 已 await 单位就绪)；
+            // 极端兜底为 null 单位时营养由 Nutrition.resolveGrams 的 PIECE_QUANTITY_MAX 按克折算兜住，不放大。
+            unitName = gram?.name ?: "g",
+            unitId = gram?.id,
         )
     }
 
@@ -485,7 +504,9 @@ class NewDishViewModel(
     fun addIngredient(ingredient: Ingredient, quantity: Double? = null) {
         if (_state.value.ingredients.any { it.ingredient.id == ingredient.id }) return
         // [AI修改] #55：新加食材默认剂量(克)，用户可用 −N+ 调整(±5，最小0)。配料组套用带来的克数优先(quantity)。
-        // [AI修改] 调料按正常每菜用量给默认(盐3g/酱油10g…)，非调料仍100g——避免调料默认100g把钠等营养算爆。
+        // [AI修改] 调料按正常每菜用量给默认(盐3g/酱油10g…)，非调料按食物大类给经验默认(见 SeasoningDefaults)。
+        // [AI修改] 此为同步路径(无 await)，units 未加载时 gram 可能为 null → unitId=null，营养由
+        //          Nutrition.resolveGrams 的 PIECE_QUANTITY_MAX 按克折算兜住(不放大)；正常时序 units 早已就绪。
         val gram = gramUnit()
         val defaultGram = com.sxdbsm.cookbook.domain.SeasoningDefaults
             .defaultGramFor(ingredient.name, ingredient.id in seasoningIds).toDouble()
@@ -494,8 +515,9 @@ class NewDishViewModel(
                 ingredient = ingredient,
                 isMain = false, // [AI修改] 当前版本暂不暴露/保存“主料”语义，后续再扩展原料/调味料分类。
                 quantity = quantity ?: defaultGram,
-                unitName = gram?.name ?: "克",
-                unitId = gram?.id ?: ingredient.defaultUnitId,
+                // [AI修改] 默认克数必配"克"单位；不再落到 ingredient.defaultUnitId(个/只)——避免"100克"显成"100个"、营养算错(bug根因)。gram 为 null 时留空单位由营养层兜。
+                unitName = gram?.name ?: "g",
+                unitId = gram?.id,
             ),
         )
     }
@@ -572,9 +594,9 @@ class NewDishViewModel(
         )
     }
 
-    /** 取"克"单位(用于剂量)。[AI修改] 单位已英文化(克→g)，兼容新(g)/老库(克)。 */
+    /** 取"克"单位(用于剂量)。[AI修改] 单位已英文化(克→g)，兼容新(g)/老库(克)；state 未含时兜底缓存值(防时序 race)。 */
     private fun gramUnit(): com.sxdbsm.cookbook.domain.model.MeasurementUnit? =
-        _state.value.availableUnits.firstOrNull { it.name == "g" || it.name == "克" }
+        _state.value.availableUnits.firstOrNull { it.name == "g" || it.name == "克" } ?: cachedGramUnit
 
     /**
      * 切换某个食材是否为主料。[AI修改]

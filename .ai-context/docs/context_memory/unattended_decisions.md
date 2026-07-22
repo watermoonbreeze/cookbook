@@ -200,3 +200,22 @@
 - Phase2 菜品 147→516(+369)：去重、全家常菜、食材名全匹配、5道带做法。
 - Phase3(进行中)：配料组+6组味型(葱姜蒜辣/樟树椒洋葱香菜/凉拌汁/酸菜鱼料/水煮料/煎肉香料)；食材详情agent补新食材技法(莲藕焯水冷冻/面筋控量/桂鱼清蒸等)。
 - 用户补充理念：一菜多做法=多条菜品用做法区分(Phase2已按method拆)；变体子类用通用名+二级名(别名)。
+
+## 无人值守（2026-07-22）：菜品食材剂量默认值专项（深度）
+
+**触发**：会话继续接「数据/编辑」session，做待办 #30(BUG单位/剂量)+#31(智能默认克数)合并专项。深度级·无人值守。
+
+**真机库证实(GCL0220212004523)**：损坏行**全部是 user 自建菜**(青椒肉丝/蒸土豆/鸭腿饭/猪肚包鸡 + 若干测试垃圾菜)；无 preset 损坏。P3「牛肉汤炖白菜豆腐粉丝」经查是**软删菜(dish390 status=0)残留**、活跃 dish530 数据正确→**非 bug**。
+
+**自主决策**：
+1. **P1 修 race**(NewDishViewModel)：`unitsReady:CompletableDeferred`+`cachedGramUnit`；`autoAddFromName` await 单位就绪；加食材 `unitId=gram?.id`(移除落到 `defaultUnitId` 的错兜底·bug根因)。取舍：`saveIngredientAsDish` 平行路径不加守卫(用户触发时序已就绪+P4兜底·加注释)。
+2. **P2 智能默认克数**(SeasoningDefaults)：非调料按 `FoodGroup.classify` 给经验默认(蛋50/菜150/奶200…·惯例非权威可改)·判不出退100。
+3. **P4 数据修复** `[需关注·改数据中风险]`：seeder 幂等 UPDATE `repairDishIngredientGramUnitForDefault`(quantity=100 且 unit 空/计件→gram)·`SEED_LOGIC_VERSION` v9→v10。**纯 UPDATE 无 schema 迁移**(免.sqm)。真机库副本模拟验证：精确修10行/144合法行不动/幂等残留0。取舍：quantity=100.0 精确匹配(避免误伤合法计件)·极端"真录100个计件"误伤罕见可接受(已.sq注释)。
+4. **透明准则**：changelog.json 加 v2 告知用户(修单位显示+分类默认克数)。
+5. **quantity=NULL 的8行 user 菜**(0营养·另一根因)→记待办跟进·本次不动。
+
+**门禁**：google_quality_engineer 审查(无阻断·2建议已收口:units加载 runCatching 防 unitsReady 永挂 + saveIngredientAsDish 注释) + 叠加独立 /code-review。构建 `:shared:testDebugUnitTest`+`:androidApp:assembleDebug` 均绿。
+
+**off-type 进待办(未做·UI类单开session)**：①添加食材vs添加菜品两编辑页不统一(字体色/名称范式·抽共享FormField) ②营养走势折线三线同显+周月视图统一评估(用户2026-07-22提)。
+
+**高风险/禁止项**：无。文件数(7)在阶段限额内。

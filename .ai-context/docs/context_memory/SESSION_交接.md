@@ -2,27 +2,29 @@
 
 > 交接唯一固定入口。触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落档+**覆盖**本文件+git 提交。
 > **维护约定（省 token）**：只保留当前状态·每次**全覆盖**·不堆历史明细（历史靠 git log + 同目录 `SESSION_交接_历史.md`）·目标 ≤1 屏。
-> 更新时间：**2026-07-22 · UI session（餐次简洁化+文案通用化 `339383c` + 营养趋势折线 `6c47381` 均已上线 push。本 UI session 主线两批全清·剩 off-type 队列各单开 session）。**
+> 更新时间：**2026-07-22 · 数据/编辑 session（菜品食材剂量默认值专项交付·待 commit+push）。本数据 session 主线已清·剩 off-type UI 队列各单开 session。**
 
-## 本 session 交付
-- ✅ **餐次界面简洁化四改**（`339383c`·§9.39·Google 门禁无阻断）：`MealBlockCard`①低频(选组合/存组合/删本块)收头部 `⋯`ActionSheet ②加菜 添加菜品(主accent)+AI推荐(次中性) weight平分 ③展示区「已选N道」+菜格 与 操作区 半透 hairline 分栏·空块轻引导「还没加菜」 ④常吃chips归操作区首行。删无用 hasCombos。
-- ✅ **周计划营养卡文案通用化**（`339383c`）：`NutritionLineCard`「这份计划的营养搭配/整套合计/这几天安排了」(修"吃到了"报告侧措辞口径bug·去"一周"硬编码) + `AiPlanScreen` 空态。
-- ✅ **饮食报告·营养走势折线**（`6c47381`·§9.40·apple_ux_designer 门禁出规格+Google 门禁等价性验证无阻断+防漂移单测）：宏量克数单条折线+三色切换chip(默认蛋白)·96dp·min=0归一·断线分段(空天/零值断点)·周画点月不画·锚点轴标·"怎么看"解读行·空/少数据三态·个人视角专属。shared `NutritionTotals.times`+`DietReport.perDayNutrition`(逐日序列作单一真相源·防漂移)。落 `NutritionTrendChart`+`DietReportScreen` 营养摄入卡子区。
-- **均真机待验**（餐次:多块/单块无删除/空块/⋯菜单;折线:周/月×个人·断线·切宏量·少数据态）。
+## 本 session 交付（数据/编辑类·深度·无人值守）
+- ✅ **P1 修加食材单位丢失 bug**（`NewDishViewModel`）：`gramUnit()` 依赖异步 `availableUnits`、被"菜名自动加食材"竞速→units 未加载返 null→默认100g 落到计件默认单位(个/只)/NULL→详情"青椒100.0个/肉丝100.0无单位"、营养按错单位折算。修=`unitsReady:CompletableDeferred`+`cachedGramUnit`+`autoAddFromName` await 单位就绪+加食材 `unitId=gram?.id`(移除落 `defaultUnitId` 的错兜底=根因)+units 加载 runCatching 防永挂+餐次预选前置解耦。
+- ✅ **P2 智能默认克数**（`SeasoningDefaults`+单测）：非调料按 `FoodGroup.classify` 给经验默认(蛋50/菜150/奶200/肉150…惯例非权威可改)·判不出退100。
+- ✅ **P4 修复历史错单位数据**（`Cookbook.sq`+`PresetDataSeeder`）：幂等 `repairDishIngredientGramUnitForDefault`(quantity=100 且 unit 空/计件→gram)·`SEED_LOGIC_VERSION` v9→v10·**纯UPDATE无.sqm迁移**·真机库副本验证(精确修10行/144合法行不动/幂等残留0)。
+- ✅ **透明**：`changelog.json` v2 告知用户(修单位显示+分类默认克数)。
+- **门禁**：google_quality_engineer 无阻断(2建议已收口)+独立 /code-review 无新bug。构建 `:shared:testDebugUnitTest`+`:androidApp:assembleDebug` 均绿。真机验待用户做。
+- 决策日志：`context_memory/unattended_decisions.md`(2026-07-22 条)。
 
-## ⏭ 下一步（本 UI session 主线已清空·以下均 off-type·各单开 session）
-- 【**数据/编辑**】「菜品食材剂量默认值」专项 = 单位/剂量 bug(详情"青椒100.0个/肉丝无单位"·营养按错单位折算·待办 A#[BUG]行)+加食材智能默认剂量(按分类经验克数非都100g)。**先 adb pull 真机库证实(列名energy_kcal)再改**·数据类单开 session。
-- 【**会商**】「是否吃完/实际食用量影响摄入」多方会商出方案(产品+algorithm+UX+行为师+DB·关联北极星营养统计准确性·待办 A#📄行)。
-- 【可选·非阻断】折线 Step2(tap 高亮+摘要/切换动效/6主题线色复核)、月视图 x 轴锚点精确定位(Google 建议1·约5%偏差·低优先)、`AiPlanScreen`/VM `weekMacro`/`dayCount` 命名去"week"(Google 建议·触碰时顺手)。
+## ⏭ 下一步（本数据 session 主线已清·以下均 off-type·各单开 session）
+- 【**UI**·本 session 新登记】①**添加食材 vs 添加菜品两编辑页不统一**(字体色/名称范式:一个外置label一个内部placeholder·抽共享 `FormField`/`FormSection` 根治反复·待办🔴)②**营养走势折线三线同显**(蛋白/脂肪/碳水免切换)+**周/月视图统一评估**("整体调研"·待办🟡)。两项**须单开 UI session + Apple-UX 门禁**。
+- 【**数据**·跟进】菜品食材 **quantity=NULL 的 user 菜**(8行·0营养·另一根因:用户加食材没设量)→评估修复(编辑预填/seeder兜底)·待办可补。
+- 【**会商**】「是否吃完/实际食用量影响摄入」多方会商(待办 A#📄·关联北极星营养统计准确性)。
 
 ## 先读清单
-1. 本文件 + `待办总览.md`（off-type：A#[BUG]食材单位/剂量行、A#📄"是否吃完影响摄入"行；本 session 完成项已标 ✅=餐次UI优化行）。
-2. 相关方案（本 session 已实现·标注为参考）：`营养趋势曲线方案.md`(Step0/1 已实现) / `苹果风格UI设计方案.md` §9.39(餐次简洁化)+§9.40(营养走势折线)。
-3. `CLAUDE.md` 踩坑红线 + 架构准则（凡编码必守）。
+1. 本文件 + `待办总览.md`（本 session 完成=#30/#31 剂量专项；新登记=[UI统一]两编辑页、[UI/调研]营养走势三线两行；off-type 队列=quantity-NULL跟进、是否吃完会商）。
+2. `unattended_decisions.md`(2026-07-22 剂量专项决策+取舍)。
+3. `CLAUDE.md` 踩坑红线(尤其 SQLDelight/加列/seed 指纹/单位英文化)+架构准则+ `~/.claude/workflow_auto_orchestration.md`(编码流程:级别区间+第六章能力层门禁)。
 
 ## 工作规则（用户已定·稳定）
 1. 🔴 **一个 session 只做一类**·off-type 进待办不当场做·切类型=换 session。
-2. 中文·深度·无人值守·全权推进·快速做完不反复问确认。每功能过门禁(界面→apple_ux_designer / App自动行为→apple_software_behavior / 文案→copywriter / Android代码→google_quality_engineer)+构建+单测。
-3. 🔴 构建看输出别信 exit code（`scripts\build-cli.bat` grep `BUILD SUCCESSFUL`）。崩溃红线：inline Column/Row/Box content lambda 禁 `return@`·coverStyle 变体 if/else。数据 bug 先 python 拉真机库证实再改。
+2. 中文·深度·无人值守·全权推进·快速做完不反复问确认。每功能过门禁(界面→apple_ux_designer / App自动行为→apple_software_behavior / 文案→copywriter / Android代码→google_quality_engineer·标准/深度叠加 /code-review)+构建+单测。
+3. 🔴 构建看输出别信 exit code（grep `BUILD SUCCESSFUL`）。数据 bug 先 python 拉真机库(`adb pull` 外部路径·`MSYS_NO_PATHCONV=1`·列名 energy_kcal)证实再改。**temp/ 未 gitignore→提交必显式 add 指定文件、绝不 `git add -A`**。
 4. 每功能一批→门禁→构建+单测→commit(`[unattended]`)→**push origin/master**→落档。真机验证用户统一做。
-5. 红线：健康免责(仅供参考非医嘱)·透明分级告知·联网核准列数据来源·AI生成内容落库·**热量个人概念(受 `CALORIE_NUMBER_ENABLED` 开关·不折算人均)**·抽共享防调参漂移。
+5. 红线：健康免责·透明分级告知·联网核准列数据来源·AI生成内容落库·热量个人概念(受 `CALORIE_NUMBER_ENABLED`·不折算人均)·抽共享防调参漂移·SQLDelight 改表必加 `.sqm`(纯查询/UPDATE 免迁移)。

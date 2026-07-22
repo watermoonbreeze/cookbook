@@ -601,7 +601,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // v5(2026-07-17)=高血脂负向维度·营养表加饱和脂肪/胆固醇两列并回填(老库需跑到)。
         // v6(2026-07-19)=菜品餐次分类·seedDishMealSlots 给预设菜补齐 dish_meal_slot(老库需跑一次拿到餐次标)。
         // v9(2026-07-22)=食材属性标签体系(方案B)：ingredient_attributes.json 属性标签展开成 care(与人工合并·人工优先)·老库需跑一次拿属性生成的 care。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v9" // [AI修改] v9:食材属性标签体系·attributes 展开 care
+        // v10(2026-07-22)=修复历史"默认克数配错单位"数据：quantity=100 且单位空/计件 → 改"克"(详情"100.0个/无单位"·营养按错单位折算根因)·老库需跑一次修。
+        private const val SEED_LOGIC_VERSION = "seedlogic-v10" // [AI修改] v10:修复默认克数配错单位数据(repairDishIngredientGramUnitForDefault)
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
@@ -653,6 +654,11 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val unitIds = q.selectAllMeasurementUnits().executeAsList().associate { it.name to it.id }
         // [AI生成] 菜系分类:存量自建菜(cuisine 空)一次性幂等回填默认"家常菜"(只填空不覆盖)——解决自建菜在菜系Tab看不到。
         q.backfillEmptyUserDishCuisine(cuisine = com.sxdbsm.cookbook.domain.model.Cuisines.HOME)
+        // [AI生成] 修复历史"默认克数配错单位"数据(详情"100.0个/无单位"·营养按错单位折算)：
+        // quantity=100 且单位空/计件 → 统一改"克"。幂等、只改 bug 签名明确的行(见 .sq 注释)。gram 单位缺失则跳过。
+        (unitIds["g"] ?: unitIds["克"])?.let { gramId ->
+            q.repairDishIngredientGramUnitForDefault(unit_id = gramId)
+        }
         loadDishes().forEach dish@{ seed ->
             // [AI生成] 先给已存在的预设菜补菜系(幂等，仅当前为空才补)，再判断是否跳过插入——老库升级也能拿到菜系。
             if (seed.cuisine.isNotBlank()) q.updatePresetDishCuisineByName(cuisine = seed.cuisine, name = seed.name)

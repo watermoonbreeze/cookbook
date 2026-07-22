@@ -1362,6 +1362,16 @@ fillDishIngredientQuantityIfNull:
 UPDATE dish_ingredient SET quantity = ?, unit_id = ?
 WHERE dish_id = ? AND ingredient_id = ? AND status = 1 AND quantity IS NULL;
 
+-- [AI生成] 修复历史"默认克数配错单位"数据：早期加食材 bug(gramUnit()未加载返null)使默认 100g
+-- 落到食材计件默认单位(个/只)或 NULL → 详情显"100.0个/100.0(无单位)"、营养按错单位折算。
+-- 只改**签名明确=bug**的行：quantity 恰为默认 100.0 且 单位为空 或 指向计件单位(grams IS NULL)→统一改"克"(:gramUnitId)。
+-- 安全:合法 100g 行单位已是 g(grams=1.0)被排除;真实计件用量(1~几个青椒)不为 100 不受影响;幂等(改完再跑无匹配)。纯 UPDATE 无需迁移。
+-- 极端权衡:若用户**真实录入**"100 个某计件食材"会被一并改成"100 克"——现实极罕见(没人一道菜放100个),属可接受的数据修复取舍。
+repairDishIngredientGramUnitForDefault:
+UPDATE dish_ingredient SET unit_id = ?
+WHERE status = 1 AND quantity = 100.0
+  AND (unit_id IS NULL OR unit_id IN (SELECT id FROM measurement_unit WHERE grams IS NULL));
+
 deleteDishIngredientsByIngredient:
 UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
 

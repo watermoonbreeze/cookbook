@@ -875,6 +875,9 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             val existed = dishRepo.dishIdByName(ingredient.name)
             if (existed != null) { onResult(true); return@launch }
+            // [AI修改] gram 取当前已加载单位；此路径由用户在食材列表主动点击触发(units 基本已就绪)，
+            // 故不额外加 units 就绪守卫(不同于 NewDishViewModel 的菜名自动加食材竞速)；极端时序 gram=null 落
+            // quantity=100/unitId=null，会被 seed 的 repairDishIngredientGramUnitForDefault(quantity=100 命中)自动修回。
             val gram = _state.value.availableUnits.firstOrNull { it.name == "g" || it.name == "克" }
             dishRepo.saveDish(
                 id = 0L,

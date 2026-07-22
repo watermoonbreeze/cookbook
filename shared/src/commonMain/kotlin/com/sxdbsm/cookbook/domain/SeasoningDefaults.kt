@@ -13,11 +13,27 @@ package com.sxdbsm.cookbook.domain
  **/
 object SeasoningDefaults {
 
-    /** 普通食材默认克数(主料/辅料)。[AI生成] */
+    /** 普通食材默认克数(分类判不出时的兜底)。[AI生成] */
     const val DEFAULT_INGREDIENT_GRAMS = 100
 
     /** 调料但未命中具体名时的通用默认克数。[AI生成] */
     const val GENERAL_SEASONING_GRAMS = 8
+
+    // [AI生成] #31 非调料食材按食物大类给"一道菜常见用量"经验默认克数(整份/家庭量·惯例非权威·预填后可用 −N+ 改)。
+    // 目的:减少"都默认100g再手动调"的操作(蛋约1个50g、菜量大、奶一杯200g…)，更贴近真实录入。
+    // 量级参考现有预设菜 seed(青椒200/牛肉250/豆腐200…)取稳妥中间值；分类判不出退 DEFAULT_INGREDIENT_GRAMS。
+    private val GROUP_GRAMS: Map<FoodGroup.Group, Int> = mapOf(
+        FoodGroup.Group.STAPLE to 100,      // 主食(米/面):一道菜的主食量
+        FoodGroup.Group.VEGETABLE to 150,   // 蔬菜:量较大
+        FoodGroup.Group.FUNGI to 100,       // 菌菇/海带/紫菜:多为配角
+        FoodGroup.Group.FISH to 150,        // 水产:主料蛋白量
+        FoodGroup.Group.RED_MEAT to 150,    // 红肉:主料蛋白量
+        FoodGroup.Group.WHITE_MEAT to 150,  // 禽肉:主料蛋白量
+        FoodGroup.Group.EGG to 50,          // 蛋:约1个
+        FoodGroup.Group.DAIRY to 200,       // 奶:约一杯
+        FoodGroup.Group.BEAN to 150,        // 豆制品(豆腐等):一块;坚果偏小但本组以豆制品为主
+        FoodGroup.Group.FRUIT to 150,       // 水果:一份
+    )
 
     // [AI生成] 调料名关键词 → 一道菜常见用量(g)。命中即用；顺序敏感(具体在前，如「酱油/蚝油」先于「油」)。
     // 参考：盐日限5g(膳食指南2022)→每菜约3g；酱油/油/料酒按常识 10g；粉末类 2g。
@@ -37,14 +53,19 @@ object SeasoningDefaults {
     )
 
     /**
-     * 某食材加进菜品时的默认克数。[AI生成]
+     * 某食材加进菜品时的默认克数。[AI修改]
      *
-     * 只有被判定为调料(按分类「调味品/油脂类」，见 selectSeasoningIngredientIds)时才用小默认值，
-     * 普通食材(含名字带「油」的油菜/油麦菜等)一律 100g，避免误缩。
+     * - 调料(按分类「调味品/油脂类」，见 selectSeasoningIngredientIds)：按名给小用量(盐3/酱油油10…)，未命中退通用 8g。
+     * - 普通食材：[AI生成] #31 按食物大类(FoodGroup.classify 尾词判定)给经验默认克数(蛋50/菜150/奶200…)，
+     *   减少手动调整；分类判不出(启发式未命中,如生僻自建名)退 DEFAULT_INGREDIENT_GRAMS(100)。
+     *   名字带「油」的油菜/油麦菜等经 classify 仍归蔬菜、不误判(endsWith("油")才排除,「油菜」结尾是「菜」)。
      */
     fun defaultGramFor(name: String, isSeasoning: Boolean): Int {
-        if (!isSeasoning) return DEFAULT_INGREDIENT_GRAMS
-        val hit = KEYWORD_GRAMS.firstOrNull { entry -> entry.first.any { name.contains(it) } }
-        return hit?.second ?: GENERAL_SEASONING_GRAMS
+        if (isSeasoning) {
+            val hit = KEYWORD_GRAMS.firstOrNull { entry -> entry.first.any { name.contains(it) } }
+            return hit?.second ?: GENERAL_SEASONING_GRAMS
+        }
+        val group = FoodGroup.classify(name)
+        return group?.let { GROUP_GRAMS[it] } ?: DEFAULT_INGREDIENT_GRAMS
     }
 }
