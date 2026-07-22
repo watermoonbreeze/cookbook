@@ -304,6 +304,7 @@ fun AiRecommendScreen(
                             }
                             item {
                                 Text(DIET_DISCLAIMER, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(PORTION_HINT, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp)) // [AI生成] 整份/全家分食口径注(避免综合值焦虑)
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -340,6 +341,7 @@ fun AiRecommendScreen(
                             item {
                                 Spacer(Modifier.height(8.dp))
                                 Text(DIET_DISCLAIMER, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(PORTION_HINT, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp)) // [AI生成] 整份/全家分食口径注(避免综合值焦虑)
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -397,6 +399,10 @@ fun AiRecommendScreen(
 // [AI生成] UX:健康免责单一真相源(原两处重复文案),守免责红线·仅供参考非医嘱。
 private const val DIET_DISCLAIMER = "仅为饮食建议参考，忌口与用量请以你的医嘱为准。"
 
+// [AI生成] 营养口径注(避免综合值焦虑·整桌全家分食·copywriter)——AiRecommend/AiPlan 页脚共用(internal 跨文件)。
+//   核心:营养/热量是整份/整套(全家总量)·不折算人均数字(拿不到实时成员数+守热量个人概念红线)·安抚不吓唬。
+internal const val PORTION_HINT = "营养和热量是整桌的量，一家人分着吃就好"
+
 // [AI生成] 推荐规则说明文案(用户 2026-07-18 要求)：列出本机规则+云端 AI 的推荐逻辑，让用户知道菜是怎么推的。
 //   守健康免责红线：仅供参考·非医嘱；忌口"列出不隐藏"的家庭 App 取向也在此说明。经 copywriter 审校口径。
 private const val RECOMMEND_RULES_TEXT =
@@ -417,6 +423,10 @@ private const val RECOMMEND_RULES_TEXT =
         "· 规则先筛出可选菜品（忌口在这一步就被排除，模型不会碰到它们）。\n" +
         "· 模型只在这些候选里挑 2~3 道搭成一餐，并给一句理由和做法建议。\n" +
         "· 模型若选了候选之外的菜会被拦下；任何环节出问题，都自动退回本机规则推荐。\n\n" +
+        "营养和热量怎么看\n" +
+        "· 每道菜显示的是「整份」的量，一整盘菜端上桌就是这么多。\n" +
+        "· 一餐几道菜合起来是「整套」，也就是这一桌全家的量。\n" +
+        "· 一家人分着吃，每个人实际吃到的按各自食量分，都比整份的数字少，不用因为整套数字大而担心。\n\n" +
         "推荐结果仅供参考，非医嘱。健康相关问题请以医生建议为准。"
 
 /**

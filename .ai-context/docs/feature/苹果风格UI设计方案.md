@@ -475,6 +475,7 @@ fun PrimaryTabRow(
 - **与 NutritionLineCard(§营养线) 分工**：概览卡=整周**结构**(不带数值·守色系墙不关联热量)·每菜行=分菜**数值**·正交不重复。
 - **降级**：部分缺→行尾 `（估算）`(不显 m/n 分数·太技术)；整菜无数据→`营养待完善`(替代整行·不显0·不报错)；nutrition=null(查询失败)→静默不显(不中断推荐)。
 - **免责/不焦虑**：复用页面底部 `DIET_DISCLAIMER`(不逐行加)·"整份约/估算"内建诚实·钠浅灰不红。
+- **[2026-07-22] 整份·全家分食口径注(避免综合值焦虑·用户提·copywriter)**：页脚免责行旁加统一浅灰 `PORTION_HINT`「营养和热量是整桌的量，一家人分着吃就好」(AiRecommend/AiPlan 共用 internal const·`labelSmall`+`outline`色) + ⓘ推荐规则说明弹窗补「营养和热量怎么看」三条(整份=一整盘/整套=整桌全家/分着吃比整份少·不用担心)。**泛指不出人均数字**(AI推荐VM 拿不到实时成员数 + 守热量个人概念红线)·**恒显不随 `CALORIE_NUMBER_ENABLED` 开关**·安抚不吓唬(禁"否则超标"类)。UX 免设计 agent(纯文案+复用现有免责行位置无新交互)。
 - **样式**：`bodySmall`+`onSurfaceVariant`+Normal·无 emoji/无彩色(守§9.35)·营养行排 avoidText/note 之后。
 - **待确认**：§开关关时"显宏量隐千卡"边界→apple_software_behavior(个人概念开关约束什么)+视觉师(轻量)。**落地**:AiRecommendScreen(DishRow/SuggestionGroupCard)+VM·AiPlan DayCard 同款(follow-up)。
 
