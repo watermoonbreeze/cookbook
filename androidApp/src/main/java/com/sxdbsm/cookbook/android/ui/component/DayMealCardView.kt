@@ -55,13 +55,6 @@ fun DayMealCardView(
     val nutritionLevel = if (data.meals.isNotEmpty()) nutritionLevelOfDishes(data.meals.flatMap { it.dishes }) else 0
     // [AI生成] 当天总热量估算(随"热量数值显示"开关显示)：按当天所有菜的营养折算求和；无数据则不显示。
     val nutritionRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.NutritionRepository>()
-    var dayKcal by remember(data) { mutableStateOf(0) }
-    if (calorieNumberEnabled) {
-        LaunchedEffect(data) {
-            val ids = data.meals.flatMap { it.dishes }.map { it.id }.distinct()
-            dayKcal = if (ids.isEmpty()) 0 else nutritionRepo.totalOf(ids).energyKcal.roundToInt()
-        }
-    }
     // [AI修改] 达标按「主要关注成员」：身体数据来自关注成员，摄入按其饭量系数占比从全家餐热量估算。
     val familyRepo = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.FamilyRepository>()
     val focusBody by remember(familyRepo) { familyRepo.observeFocusBody() }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.BodyMetrics())
@@ -69,7 +62,23 @@ fun DayMealCardView(
     val focusShare by remember(familyRepo, data.date) { familyRepo.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(data.date)) }.collectAsStateWithLifecycle(1.0)
     val focusName by remember(familyRepo) { familyRepo.observeFocusName() }.collectAsStateWithLifecycle("")
     val dailyTarget = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(focusBody)
-    val personalKcal = (dayKcal * focusShare).roundToInt() // 关注成员当天摄入估算(全家餐×份额占比)
+    // [AI修改] 修"今日营养 vs 今日餐食热量不对应"(用户2026-07-22报)：两处口径必须**同源**。
+    //   根因=今日营养卡按逐道菜实例算、本卡旧用 ids.distinct() 少算同菜多餐次(如午晚同 3 菜)。
+    //   对齐今日营养卡(HomeViewModel)：全家整份按**逐实例**求和；个人摄入=Σ(整份×eatenRatio)×share 走 IntakeCalculator。
+    var dayKcal by remember(data) { mutableStateOf(0) }        // 全家整份(逐实例·含重复菜·不含 eaten/share)
+    var personalKcal by remember(data) { mutableStateOf(0) }    // 关注成员个人摄入(整份×eatenRatio×share·与今日营养卡一致)
+    if (calorieNumberEnabled) {
+        LaunchedEffect(data, focusShare) {
+            val instances = data.meals.flatMap { it.dishes }
+            val ids = instances.map { it.id }.distinct()
+            val byId = if (ids.isEmpty()) emptyMap() else nutritionRepo.dishNutrition(ids).mapValues { it.value.totals }
+            dayKcal = instances.sumOf { byId[it.id]?.energyKcal ?: 0.0 }.roundToInt()
+            personalKcal = com.sxdbsm.cookbook.domain.model.IntakeCalculator.personalIntake(
+                instances.map { (byId[it.id] ?: com.sxdbsm.cookbook.domain.model.NutritionTotals.EMPTY) to it.eatenRatio },
+                focusShare,
+            ).energyKcal.roundToInt()
+        }
+    }
     val containerColor = when {
         nutritionColorEnabled && data.meals.isNotEmpty() -> nutritionTint(nutritionLevel)
         data.isPlanState -> MaterialTheme.colorScheme.secondaryContainer
