@@ -3573,6 +3573,18 @@
   "reason": "糯米甜馅制品GI高，糖尿病人群宜限量（仅供参考非医嘱）"
  },
  {
+  "ingredient": "鸡毛蛋",
+  "category": "care_pregnancy",
+  "level": "avoid",
+  "reason": "未成熟鸡胚+孵化环境易滋生沙门氏菌/李斯特菌，孕妇感染风险高（可致宫内感染/早产），应避免；如食须彻底煮熟、来源正规（食品安全口径·仅供参考非医嘱）"
+ },
+ {
+  "ingredient": "鸡毛蛋",
+  "category": "care_infant",
+  "level": "avoid",
+  "reason": "婴幼儿对沙门氏菌等致病菌抵抗力弱，胚胎蛋须充分加热、来源不明风险高，且非必要辅食，应避免（食品安全口径·仅供参考非医嘱）"
+ },
+ {
   "ingredient": "蚕豆",
   "category": "care_diabetes",
   "level": "limit",
