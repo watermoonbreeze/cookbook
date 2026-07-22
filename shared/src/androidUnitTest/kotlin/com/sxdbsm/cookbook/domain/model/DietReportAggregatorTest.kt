@@ -21,6 +21,10 @@ class DietReportAggregatorTest {
     private fun dish(id: Long, name: String, mains: List<String>) =
         DishMini(id = id, name = name, mainIngredientNames = mains)
 
+    // [AI生成] 带食用比例(是否吃完)的菜，供 eatenRatio 折算用例。
+    private fun dishR(id: Long, name: String, mains: List<String>, eaten: Double) =
+        DishMini(id = id, name = name, mainIngredientNames = mains, eatenRatio = eaten)
+
     private fun card(date: LocalDate, dishes: List<DishMini>) = DayMealCardData(
         date = date, isToday = false, isPlanState = false,
         meals = if (dishes.isEmpty()) emptyList() else listOf(
@@ -69,6 +73,21 @@ class DietReportAggregatorTest {
         assertEquals(2, p.onTargetDays, "两天都达标")
         assertEquals(500, p.avgSodiumMg, "1000×0.5")
         assertTrue(p.proteinPct in 1..99 && p.carbPct in 1..99, "宏量比有值: $p")
+    }
+
+    // [AI生成] 食用比例(是否吃完):个人摄入 = 整份 × eatenRatio × share(IntakeCalculator)。守报告折算路径回归。
+    @Test
+    fun `个人营养_按食用比例折算`() {
+        // 吃一半(0.5) × 份额 0.5 → 个人 = 1600×0.5×0.5 = 400；默认吃完(1.0)时退回 1600×share(既有用例已覆盖零回归)。
+        val d = dishR(1, "套餐", listOf("米饭"), eaten = 0.5)
+        val cards = listOf(card(day(0), listOf(d)))
+        val nutri = mapOf(1L to NutritionTotals(energyKcal = 1600.0, sodiumMg = 1000.0))
+        val r = DietReportAggregator.aggregate(cards, periodDays = 7, share = 0.5, dishNutrition = nutri, target = null)
+        val perDay = r.perDayNutrition
+        assertNotNull(perDay)
+        assertEquals(400.0, perDay[0]!!.energyKcal, 1e-6, "1600×0.5(吃一半)×0.5(份额)=400")
+        assertEquals(250.0, perDay[0]!!.sodiumMg, 1e-6, "钠同折算 1000×0.5×0.5=250")
+        assertEquals(400, r.personal!!.avgKcal, "个人均值随食用比例减半")
     }
 
     @Test
