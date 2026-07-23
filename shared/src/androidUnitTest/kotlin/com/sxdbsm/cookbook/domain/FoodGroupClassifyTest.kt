@@ -20,6 +20,21 @@ import kotlin.test.assertNull
 class FoodGroupClassifyTest {
 
     @Test
+    fun `J12_今日还缺根因_蛋豆腐正确_常见蔬菜classify覆盖缺口`() {
+        // 用户 07-23 吃:小黄瓜/白煮蛋/西兰花/胡萝卜/藕片/娃娃菜/豆腐,却提示缺优质蛋白+蔬菜。
+        // 蛋/豆腐=优质蛋白源、娃娃菜=蔬菜:classify 正确,有正确主料时不误报缺(逻辑不是根因)。
+        assertEquals(Group.EGG, FoodGroup.classify("白煮蛋"))
+        assertEquals(Group.BEAN, FoodGroup.classify("豆腐"))
+        assertEquals(Group.VEGETABLE, FoodGroup.classify("娃娃菜"))
+        assertEquals(false, FoodGroup.nutritionGaps(FoodGroup.groupsOf(listOf("白煮蛋", "豆腐", "娃娃菜"))).contains("优质蛋白"))
+        // 🔴 常见蔬菜若 classify 判不出→今日营养/色系墙误判"缺蔬菜"(尾词非"菜",走关键词也漏)。
+        assertEquals(Group.VEGETABLE, FoodGroup.classify("西兰花"))
+        assertEquals(Group.VEGETABLE, FoodGroup.classify("胡萝卜"))
+        assertEquals(Group.VEGETABLE, FoodGroup.classify("莲藕"))
+        assertEquals(Group.VEGETABLE, FoodGroup.classify("藕"))
+    }
+
+    @Test
     fun `尾词优先_前缀修饰词不误判`() {
         // 脱脂纯牛奶含"牛"→若按关键词会判红肉；尾词"奶"优先→DAIRY。
         assertEquals(Group.DAIRY, FoodGroup.classify("脱脂纯牛奶"))

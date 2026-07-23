@@ -32,8 +32,8 @@ data class DishNutritionUi(
     val hasData: Boolean = false, // 整菜有无营养数据·false→UI 显"营养待完善"
 )
 
-// [AI生成] §9.36:单菜钠"偏咸"提示阈值≈高血压日限 2400mg 的 1/3(惯例·非精确·仅温和提醒不点病名)。
-private const val SODIUM_HIGH_PER_DISH_MG = 800.0
+// [AI生成] §9.36:单菜钠"偏咸"提示阈值≈日限 2000mg(2024版与一般人群一并收紧) 的 1/3(惯例·非精确·仅温和提醒不点病名)。
+private const val SODIUM_HIGH_PER_DISH_MG = 667.0
 
 /**
  * [AI生成] §9.36:DishNutrition→展示 DTO(整份·四舍五入·无数据则各值 null·钠偏高提示·estimated 标"估算")。

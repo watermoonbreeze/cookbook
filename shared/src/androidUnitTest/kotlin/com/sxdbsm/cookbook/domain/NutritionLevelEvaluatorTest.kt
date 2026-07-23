@@ -36,7 +36,7 @@ class NutritionLevelEvaluatorTest {
 
     @Test
     fun `高血压且钠超上限_结构优也拉回尚可并给提示`() {
-        // 钠 3000mg > 2400 上限 → 注意，级别封到 2。
+        // 钠 3000mg > 2000 上限(2024版收紧) → 注意，级别封到 2。
         val r = NutritionLevelEvaluator.evaluate(4, totals(800.0, 3000.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION))
         assertEquals(2, r.level)
         assertTrue(r.concerns.any { it.contains("偏咸") && it.contains("高血压") }, "应给偏咸提示: ${r.concerns}")
@@ -44,8 +44,8 @@ class NutritionLevelEvaluatorTest {
 
     @Test
     fun `高血压且钠七成到上限_略下调到3`() {
-        // 钠 2000mg / 2400 ≈ 83% ∈[0.7,1.0) → 中，级别封到 3。
-        val r = NutritionLevelEvaluator.evaluate(4, totals(800.0, 2000.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION))
+        // 钠 1600mg / 2000 = 80% ∈[0.7,1.0)(2024版上限2000) → 中，级别封到 3。
+        val r = NutritionLevelEvaluator.evaluate(4, totals(800.0, 1600.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION))
         assertEquals(3, r.level)
         assertTrue(r.concerns.any { it.contains("钠偏高") })
     }
@@ -195,7 +195,7 @@ class NutritionLevelEvaluatorTest {
 
     @Test
     fun `高血压高钠高钾_偏咸与钾提示并存_钾不抵消钠罚分`() {
-        // 钠 3000>2400 上限 → 级别封 2；钾 3200/3600≈89% → 正向提示。两条并存、级别仍 2(钾不把下调扣回)。
+        // 钠 3000>2000 上限(2024版收紧) → 级别封 2；钾 3200/3600≈89% → 正向提示。两条并存、级别仍 2(钾不把下调扣回)。
         val r = NutritionLevelEvaluator.evaluate(
             4, totals(800.0, 3000.0, potassium = 3200.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
         )
@@ -211,10 +211,10 @@ class NutritionLevelEvaluatorTest {
 
     @Test
     fun `高血压钠中档高钾_封3级且钾提示并存_钾不动level`() {
-        // 钠 2000/2400≈83% ∈[0.7,1.0) → 封 level=3；钾 3200/3600≈89% → 正向提示。
+        // 钠 1600/2000=80% ∈[0.7,1.0)(2024版上限2000) → 封 level=3；钾 3200/3600≈89% → 正向提示。
         // DASH 语境下"钠偏高·注意少盐"与"钾较充足"诚实并存(增钾平衡钠)；钾只加提示不动 level(仍 3)。
         val r = NutritionLevelEvaluator.evaluate(
-            4, totals(800.0, 2000.0, potassium = 3200.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
+            4, totals(800.0, 1600.0, potassium = 3200.0), CalorieStatus.ON, setOf(HealthCondition.HYPERTENSION),
         )
         assertEquals(3, r.level, "MID 档 level=3，钾不动 level")
         assertTrue(r.concerns.any { it.contains("钠偏高") }, "钠偏高提示在: ${r.concerns}")
@@ -385,10 +385,10 @@ class NutritionLevelEvaluatorTest {
 
     @Test
     fun `topKind_钠含MID档命中_未达MID不命中`() {
-        // WARN(3000/2400=1.25) 与 MID(2000/2400≈0.83) 都算命中(Snackbar 不分档)。
+        // WARN(3000/2000=1.5) 与 MID(2000/2000=1.0)(2024版上限2000) 都算命中(Snackbar 不分档)。
         assertEquals(MealConcernKind.SODIUM, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(sodium = 3000.0), setOf(HealthCondition.HYPERTENSION)))
         assertEquals(MealConcernKind.SODIUM, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(sodium = 2000.0), setOf(HealthCondition.HYPERTENSION)))
-        // <MID(1000/2400≈0.42) → 不命中。
+        // <MID(1000/2000=0.5) → 不命中。
         assertEquals(null, NutritionLevelEvaluator.topNutritionConcernKind(kindTotals(sodium = 1000.0), setOf(HealthCondition.HYPERTENSION)))
     }
 

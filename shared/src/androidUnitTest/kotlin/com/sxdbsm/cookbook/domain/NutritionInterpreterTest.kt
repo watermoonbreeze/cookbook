@@ -34,8 +34,8 @@ class NutritionInterpreterTest {
         assertEquals("高血压 · 钠", block.title)
         val sodium = block.metrics.first { it.label == "钠" }
         assertTrue(sodium.text.contains("2400 mg"))
-        assertTrue(sodium.text.contains("占每日上限 100%"))
-        assertEquals(MetricTone.HIGH, sodium.tone) // 2400/2400=1.0 ≥ WARN → 偏高
+        assertTrue(sodium.text.contains("占每日上限 120%")) // 2024版上限收紧至2000 → 2400/2000=120%
+        assertEquals(MetricTone.HIGH, sodium.tone) // 2400/2000=1.2 ≥ WARN → 偏高
         // 钾达 3200/3600≈89% ≥80% → 正向"较充足"
         val k = block.metrics.first { it.label == "钾" }
         assertEquals(MetricTone.POSITIVE, k.tone)

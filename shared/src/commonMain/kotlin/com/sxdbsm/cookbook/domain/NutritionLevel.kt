@@ -57,9 +57,9 @@ enum class MealConcernKind { AVOID, HIGH_PURINE, HIGH_FAT, SODIUM, HIGH_GI }
 
 object NutritionLevelEvaluator {
 
-    // 每日钠限量基准(mg)，见「膳食参考依据」：一般 2000(膳食指南/NRV)、高血压 2400(高血压指南2018)。
+    // 每日钠限量基准(mg)，见「膳食参考依据」：一般 2000(膳食指南2022/NRV)；高血压 2000(高血压指南2024修订版·钠<2g/d≈5g盐·与一般人群一并收紧·不再用旧版2400/6g)。
     const val SODIUM_DAILY_MG = 2000.0
-    const val SODIUM_HYPERTENSION_MG = 2400.0
+    const val SODIUM_HYPERTENSION_MG = 2000.0
 
     // 占比阈值：≥WARN→注意(下调更多)、≥MID→中(略下调)。见方案，可拍板调整。
     const val WARN_RATIO = 1.0

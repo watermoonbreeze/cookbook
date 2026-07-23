@@ -76,7 +76,7 @@ object DietaryReference {
                 ),
                 DietaryRefItem(
                     indicator = "钠（高血压人群 · 更严）",
-                    levels = listOf(DietaryRefLevel("钠盐目标", "≤ 2400 mg/日（≈6g盐，至少降到此门槛）")),
+                    levels = listOf(DietaryRefLevel("钠盐目标", "钠 < 2000 mg/日（≈5g盐，2024修订版与一般人群一并收紧，更需严格执行）")),
                     caliber = "每日限量（高血压人群）",
                     appliesTo = listOf("高血压"),
                     source = SRC_HTN,
