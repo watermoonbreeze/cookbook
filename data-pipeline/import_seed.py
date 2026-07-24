@@ -24,6 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 SEED_DIR = os.path.join(ROOT, "shared", "src", "commonMain", "resources", "seed")
 FEATURE_TAGS = os.path.join(HERE, "mappings", "feature_tags.txt")
+COND_GUIDELINES = os.path.join(HERE, "mappings", "condition_guidelines.json")
 DEFAULT_DB = os.path.join(HERE, "staging.db")
 
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -91,6 +92,34 @@ def flag(cur, issue, detail, ref_name=None, ingredient_id=None, field=None):
     )
 
 
+def load_condition_guidelines():
+    """condition → 权威指南 source(配置驱动·详细设计十一.3)。忽略 _ 开头的文档键。"""
+    with open(COND_GUIDELINES, encoding="utf-8") as f:
+        raw = json.load(f)
+    return {k: v for k, v in raw.items() if not k.startswith("_")}
+
+
+def enrich_guidelines(db_path: str):
+    """按 condition 配置回填 care_rule.guideline_source(仅空的)。[AI生成] 详细设计十一.3 condition配置驱动。
+    **独立于忠实导入**——在 roundtrip 导出+diff 之后执行，避免富化破坏 seed↔staging 无损校验。
+    返回 (回填数, 待核condition数)。"""
+    cond = load_condition_guidelines()
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    filled = 0
+    for c, meta in cond.items():
+        src = meta.get("source")
+        if not src:
+            continue
+        cur.execute("UPDATE care_rule SET guideline_source=? WHERE condition=? AND (guideline_source IS NULL OR guideline_source='')",
+                    (src, c))
+        filled += cur.rowcount
+    conn.commit()
+    prov = cur.execute("SELECT COUNT(DISTINCT condition) FROM care_rule WHERE guideline_source LIKE '%待核%'").fetchone()[0]
+    conn.close()
+    return filled, prov
+
+
 def run(db_path: str):
     exact, prefixes = load_feature_matcher()
     conn = sqlite3.connect(db_path)
@@ -149,6 +178,7 @@ def run(db_path: str):
         if iid is None:
             flag(cur, "引用完整性", "care规则引用了不存在的食材", ref_name=e["ingredient"], field="care")
             continue
+        # 忠实导入(roundtrip 无损): guideline_source 只取规则自身 ref。按 condition 回填在 enrich_guidelines(导出diff之后)。
         gsrc = e.get("ref")
         cur.execute(
             """INSERT INTO care_rule(ingredient_id,condition,scope,level,reason,guideline_source,reviewed,status,collected_at)
@@ -164,6 +194,7 @@ def run(db_path: str):
         if iid is None:
             flag(cur, "引用完整性", "crowd规则引用了不存在的食材", ref_name=e["ingredient"], field="crowd")
             continue
+        # 忠实导入: crowd_rules.json 无 ref 字段→guideline_source=None(enrich_guidelines 按 condition 回填)。
         cur.execute(
             """INSERT INTO care_rule(ingredient_id,condition,scope,level,reason,guideline_source,reviewed,status,collected_at)
                VALUES(?,?,?,?,?,?,?,?,?)""",

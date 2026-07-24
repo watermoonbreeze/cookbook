@@ -139,12 +139,21 @@ def quality_checks(conn):
         cur.execute("INSERT INTO review_flag(ingredient_id,field,issue,detail) VALUES(?,?,?,?)",
                     (iid, "nutrition", "低置信度", f"{nm}: {detail}"))
 
-    # 缺 guideline: care_rule 无 guideline_source·§八.7 忌口红线(规则须可溯源)。逐条记 flag(报告按 scope/condition 聚合展示)。
+    # 缺 guideline: care_rule 仍无 guideline_source·§八.7 忌口红线(规则须可溯源)。逐条记 flag(报告按 scope/condition 聚合)。
     care_rows = cur.execute("""SELECT c.id,i.id,i.name,c.scope,c.condition FROM care_rule c JOIN ingredient i ON i.id=c.ingredient_id
                                WHERE c.guideline_source IS NULL OR c.guideline_source=''""").fetchall()
     for cid, iid, nm, scope, cond in care_rows:
         cur.execute("INSERT INTO review_flag(ingredient_id,field,issue,detail) VALUES(?,?,?,?)",
                     (iid, "care", "缺guideline", f"{nm} [{scope}:{cond}] 无指南出处(guideline_source 空)"))
+
+    # guideline待核: 按 condition 配置回填但 verified=0(暂无权威食养专项指南·发布前需联网核实原文·守判定口径红线)。
+    prov_rows = cur.execute("""SELECT DISTINCT c.condition FROM care_rule c
+                               WHERE c.guideline_source LIKE '%待核%'""").fetchall()
+    for (cond,) in prov_rows:
+        n = cur.execute("SELECT COUNT(*) FROM care_rule WHERE condition=? AND guideline_source LIKE '%待核%'", (cond,)).fetchone()[0]
+        src = cur.execute("SELECT guideline_source FROM care_rule WHERE condition=? AND guideline_source LIKE '%待核%' LIMIT 1", (cond,)).fetchone()[0]
+        cur.execute("INSERT INTO review_flag(ingredient_id,field,issue,detail) VALUES(?,?,?,?)",
+                    (None, "care", "guideline待核", f"[{cond}]×{n}条: {src}"))
 
     # 单位/量纲越界·§八.3
     unit_rows = cur.execute("SELECT i.id,i.name,n.field,n.value FROM nutrient n JOIN ingredient i ON i.id=n.ingredient_id").fetchall()
@@ -217,11 +226,12 @@ def gen_report(conn, roundtrip_diffs):
         "同名歧义": "同 name_key 多个食材→营养/care 按名关联会歧义；给食材加区分名或用 code 关联。",
         "低置信度": "补权威 ref(《中国食物成分表》条目/USDA-FDC#/悉尼GI库)后升 verified；查不到则维持 pending，别标 verified。",
         "缺guideline": "care/crowd 规则补 `ref`=指南名+机构+年(+原文摘录)；本管线 crowd_rules.json 结构无 ref 字段→属结构性缺口(见报告说明)。",
+        "guideline待核": "该 condition 按配置回填了近似来源但**无权威食养专项指南**(verified=0)：发布前须联网核实指南原文口径(守判定口径红线·别想当然)，核实后在 `mappings/condition_guidelines.json` 升 verified=1。",
         "单位越界": "核对录入单位/量纲(GI 0-100、各值非负)，修正 seed 数值。",
         "合理性": "纤维>碳水/饱脂>总脂→核录入；kcal 与 Atwater 大偏离且非干货/香料→核 kcal 或宏量(参考 nlc 同口径值)。",
         "离群": "**启发式·需人工过滤**(多为亚类/口径/品种差异·非错)：同最细分类内极端值→对照《中国食物成分表》原条目复核(如生蚝钙131类真错)；确为口径差异标注口径，确为错才修 seed。",
     }
-    ISSUE_ORDER = ["引用完整性", "同名歧义", "合理性", "单位越界", "低置信度", "缺guideline", "离群"]
+    ISSUE_ORDER = ["引用完整性", "同名歧义", "合理性", "单位越界", "低置信度", "缺guideline", "guideline待核", "离群"]
 
     lines = []
     lines.append("# 预设食材数据 · 首校体检报告（P0）\n")
@@ -299,6 +309,10 @@ def run():
     diffs += diff_listdict(load("crowd_rules.json"), load_export("crowd_rules.json"),
                            lambda e: {k: e.get(k) for k in ("crowd", "ingredient", "level", "reason")}, "crowd")
     diffs += diff_attributes(load("ingredient_attributes.json"), load_export("ingredient_attributes.json"))
+
+    # 富化(独立于 roundtrip)：按 condition 配置回填 care_rule 权威指南——放在 diff 之后，不破坏无损校验。
+    filled, prov = import_seed.enrich_guidelines(DB)
+    print(f"[verify_roundtrip] guideline 回填 {filled} 条(condition配置驱动) · 待核condition {prov} 个")
 
     conn = sqlite3.connect(DB)
     quality_checks(conn)
