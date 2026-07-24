@@ -1,0 +1,4 @@
+# [AI生成] P0。staging.db 按拍板(详细设计十一.1)纳入 git 留数据快照·不忽略。
+__pycache__/
+*.pyc
+_export/

@@ -1,0 +1,24 @@
+# 特征标签白名单（区分 category 真·分类 vs feature 特征标签）
+# [AI生成] 2026-07-24。import_seed.py 用此判定：ingredients.json.categories[] 里命中本表(精确或前缀)的 → ingredient_feature，其余 → ingredient_category。
+# 语法：一行一条；`prefix:xxx_` 表示前缀匹配（该前缀开头的都算特征标签）；`#` 开头为注释。
+# 依据：特征标签=营养/含量/时令等"描述性"标签，非食物分类层级；真·分类=vegetable/meat/staple/fruit 等食物归属层级。
+
+# 含量/营养分级(前缀)
+prefix:gi_
+prefix:fiber_
+prefix:fat_
+prefix:sodium_
+prefix:purine_
+prefix:calcium_
+prefix:potassium_
+prefix:sugar_
+prefix:protein_
+
+# 营养素富含标签(前缀)
+prefix:nutrition_
+
+# 时令标签(前缀)
+prefix:season_
+
+# 加工/工艺特征(显式)
+whole_grain

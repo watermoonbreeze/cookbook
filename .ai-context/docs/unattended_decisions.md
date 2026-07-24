@@ -309,6 +309,27 @@
 - 本轮无人值守默认不 push，等用户回来。
 
 
+## 任务：数据生产线 P0 基础搭建（2026-07-24·无人值守·深度级）
+
+### 交付：`data-pipeline/` 六脚本 + schema + 特征白名单 + 首校体检报告（按冻结详细设计）
+- **成果**：roundtrip 语义等价 **diff=0**（现有 seed→staging→导出 seed' 无损·链路可信），体检 858 flag：🔴合理性真错 5（饱脂>总脂物理矛盾·培根/沙丁鱼/海带/田螺/羊排·混源口径不一致）+ 🟡真疑 1（章鱼·同 7-22 待核）+ 低置信度 41 + 缺guideline 573（结构性·care/crowd seed 无 ref 字段）+ 离群 223（启发式待人工过滤）。
+
+### 自主决策（供复核）
+1. **特征标签白名单用前缀规则**（gi_/fiber_/fat_/sodium_/purine_/calcium_/potassium_/sugar_/protein_/nutrition_/season_ + whole_grain）区分 category vs feature——107 个 category code 里描述性标签归 feature，食物层级归 category。
+2. **name_key 只去空白不动别名/口径**（保守·避免误并同义异物）；关联失败记 review_flag(引用完整性)——实测 0 孤儿（seed 关联干净）。
+3. **nutrient.source 存完整 ref 不截断**——否则 roundtrip 因 ref 丢字符误报 diff。confidence 另按 ref 关键词派生。
+4. **离群检测用最细分类分组**（staple_legume/staple_grain_product 各自比·非粗 staple 混比）——粗组把豆类/烘焙混进主食致 308 假阳性，改后 223 且标"启发式待人工过滤"。
+5. **修 sqlite3 cursor bug**：同一 cursor 边 SELECT 迭代边 INSERT 会中断外层→低置信度/缺guideline/单位越界只写 1 条·改 fetchall() 后正确（41/573/0）。
+6. **只诊断不改任何 seed**（守详细设计十一.2 + 用户"等真实数据来了再调"）——体检单 + 每类修复方法交付。
+7. **staging.db 纳入 git**（详细设计十一.1）·`_export/`+`__pycache__/` gitignore。
+- **风险**：低（独立目录·纯 stdlib·不碰生产 seed/代码/构建）。**未 push**。
+
+### 待用户拍板（非 P0·记入队列）
+- 5 条 🔴 satFat>fat 真错怎么修（重取 USDA satFat 对齐 fat 口径·还是清空待重采）——健康数据改动需把关。
+- 缺guideline 573 结构性缺口：是否给忌口 seed 补 ref 字段 + 按 condition 批量回填指南出处。
+- P1 USDA 采集（需 key+连通）· nlc 精确匹配迭代常规化（前置已备·需联网跑）。
+
+
 ## 任务：阶段4 忌口改造（2026-07-19 深夜·无人值守·深度级）
 
 ### 决策：忌口"具体食材"能力走**加法方案**，不做破坏性食材id迁移
