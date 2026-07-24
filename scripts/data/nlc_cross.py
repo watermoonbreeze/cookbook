@@ -92,13 +92,14 @@ def rel(a, b):
     return abs(a - b) / b
 
 
-def run(limit=None, only_names=None):
+def run(limit=None, only_names=None, max_seconds=None):
     os.makedirs(REPORTS, exist_ok=True)
     n = json.load(open(SEED, encoding="utf-8"))
     if only_names:
         n = [e for e in n if e["ingredient"] in only_names]
     elif limit:
         n = n[:limit]
+    start = time.time()
 
     done = {}
     if os.path.exists(CACHE):
@@ -110,8 +111,13 @@ def run(limit=None, only_names=None):
                 pass
     cf = open(CACHE, "a", encoding="utf-8")
     flags, hit, miss = [], 0, 0
+    stopped = False
     for e in n:
         name = e["ingredient"]
+        # 按时间上限中止(断点续连:缓存已存·下次接着跑)。
+        if max_seconds and name not in done and time.time() - start > max_seconds:
+            stopped = True
+            break
         if name in done:
             rec = done[name]
         else:
@@ -139,7 +145,7 @@ def run(limit=None, only_names=None):
             flags.append({"name": name, "nlc_name": c["name"], "ours": ours, "nlc": c, "diff": d})
     cf.close()
     flags.sort(key=lambda x: -x["diff"].get("kcal", 0))
-    return {"total": len(n), "hit": hit, "miss": miss, "flags": flags}
+    return {"total": len(n), "hit": hit, "miss": miss, "flags": flags, "stopped": stopped}
 
 
 def write_report(r):
@@ -161,11 +167,14 @@ def write_report(r):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--limit", type=int, default=None, help="只跑前 N 条(抽样/验证)")
+    ap.add_argument("--limit", type=int, default=None, help="按条数: 只跑前 N 条(抽样/验证)")
+    ap.add_argument("--max-seconds", type=int, default=None, help="按时间: 跑够 N 秒即停(断点续连·下次接着跑)")
     ap.add_argument("--names", default=None, help="只跑指定名(逗号分隔·调试匹配)")
     args = ap.parse_args()
     only = set(args.names.split(",")) if args.names else None
-    r = run(limit=args.limit, only_names=only)
+    r = run(limit=args.limit, only_names=only, max_seconds=args.max_seconds)
+    if r.get("stopped"):
+        print(f"[已达时间上限中止·已跑部分落缓存·再次运行接着跑]")
     p = write_report(r)
     print(f"[nlc同口径交叉] 共{r['total']} · 精确匹配{r['hit']} · 未匹配{r['miss']} · kcal差异{len(r['flags'])}")
     print(f"报告: {p}")
