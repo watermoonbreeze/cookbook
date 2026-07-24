@@ -25,12 +25,22 @@ curl -sL -o usda_sr.zip "https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_
 
 列表页是 **JS 动态渲染**，数据走 XHR：
 ```
-POST http://nlc.chinanutri.cn/fq/FoodInfoQueryAction!queryFoodInfoList.do
+POST https://nlc.chinanutri.cn/fq/FoodInfoQueryAction!queryFoodInfoList.do   # 2026-07-25: http 已 308→用 https
 data: categoryOne=0&categoryTwo=0&foodName={名}&pageNum=1&field=0&flag=0
 UA 需伪装浏览器。返回 {list:[[id,img,名,...]]}
 列: [0]id [2]名 [5]食部% [7]能量kJ [8]蛋白 [9]脂肪 [11]纤维 [12]碳水  (kcal=kJ÷4.184)
 ```
 `categoryOne=0` 即全局按名搜；空字符串返回 0（无效）。
+
+**nlc_cross.py 常规化用法**（2026-07-25 迭代）：
+```
+python scripts/data/nlc_cross.py                  # 全量(502·cron 月度体检)
+python scripts/data/nlc_cross.py --limit 10       # 前 N 条(抽样验证·友好不硬刷)
+python scripts/data/nlc_cross.py --names 糙米,大米  # 指定名(调试匹配)
+```
+- **别名感知精确匹配**：查询名归一后 == nlc 主名或某括号别名才命中（`稻米[糙米]`→糙米、`黄瓜[胡瓜]`→黄瓜），宁缺毋滥不放宽子串（避免加工/别名错配噪音）。
+- 报告落 `reports/nlc_diff_report.md`，缓存 `reports/nlc_cache.jsonl`（断点续连·均 gitignore）。
+- **已知 miss 属正常**：nlc 按名搜无该条目（糙米/猪瘦肉返 0·大米只有"香大米"变种）→未来可加"查询词同义扩展(稻米/猪肉)"提命中，但有误配风险，暂不做。
 
 ## 交叉核对流程（推荐顺序）
 
