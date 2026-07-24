@@ -641,10 +641,10 @@
   "calcium": 46,
   "gi": 15,
   "purine": 96,
-  "ref": "中国食物成分表第6版·海带(鲜)；嘌呤参考痛风食物嘌呤表(海带类) ｜ satFat:USDA FDC SR Legacy",
+  "ref": "中国食物成分表第6版·海带(鲜)；嘌呤参考痛风食物嘌呤表(海带类) ｜ satFat:USDA FDC SR Legacy ｜ satFat按USDA[Seaweed,kelp,raw]比例0.441×fat校准(2026-07-25·修satFat>fat)",
   "review": "verified",
   "cholesterol": 0,
-  "saturatedFat": 0.247
+  "saturatedFat": 0.04
  },
  {
   "ingredient": "苹果",
@@ -2505,9 +2505,9 @@
   "calcium": 184,
   "purine": 210,
   "pieceGram": 80,
-  "ref": "中国食物成分表(第6版) 沙丁鱼(鲜)(howtoeat 1415·CDC营养所)",
+  "ref": "中国食物成分表(第6版) 沙丁鱼(鲜)(howtoeat 1415·CDC营养所) ｜ satFat按USDA[Fish,sardine,canned in tomato sauce]比例0.258×fat校准至鲜口径(2026-07-25·修satFat>fat)",
   "review": "verified",
-  "saturatedFat": 1.53,
+  "saturatedFat": 0.28,
   "cholesterol": 158
  },
  {
@@ -3143,10 +3143,10 @@
   "potassium": 403,
   "calcium": 9,
   "purine": 111.5,
-  "ref": "食物营养成分查询平台 nlc.chinanutri.cn 羊肉(瘦)(条目850·代表羊排精瘦部分)",
+  "ref": "食物营养成分查询平台 nlc.chinanutri.cn 羊肉(瘦)(条目850·代表羊排精瘦部分) ｜ satFat按USDA[Lamb瘦肉]比例0.358×fat校准(2026-07-25·修satFat>fat)",
   "review": "verified",
   "cholesterol": 60,
-  "saturatedFat": 6.5
+  "saturatedFat": 1.4
  },
  {
   "ingredient": "章鱼",
@@ -3599,9 +3599,9 @@
   "calcium": 1030,
   "gi": 0,
   "purine": 130,
-  "ref": "中国食物成分表(第6版)/中国疾控中心营养所 田螺 转 howtoeat.cn/food/details/1562",
+  "ref": "中国食物成分表(第6版)/中国疾控中心营养所 田螺 转 howtoeat.cn/food/details/1562 ｜ satFat按USDA[Mollusks,snail,raw]比例0.258×fat校准(2026-07-25·修satFat>fat)",
   "review": "verified",
-  "saturatedFat": 0.36,
+  "saturatedFat": 0.05,
   "cholesterol": 154
  },
  {
@@ -4375,10 +4375,9 @@
   "gi": 0,
   "purine": 95,
   "pieceGram": 20,
-  "ref": "培根(加工猪肉),二手食物库;国外品牌热量可达400-540kcal,国内二手站达505kcal,差异极大;无CFCT单一权威条目",
+  "ref": "培根(加工猪肉),二手食物库;国外品牌热量可达400-540kcal,国内二手站达505kcal,差异极大;无CFCT单一权威条目 ｜ satFat已清空:USDA无fat锚点且本值二手·fat=9亦偏低待核(2026-07-25·修satFat>fat)",
   "review": "pending",
-  "cholesterol": 68,
-  "saturatedFat": 14.0
+  "cholesterol": 68
  },
  {
   "ingredient": "墨鱼",
