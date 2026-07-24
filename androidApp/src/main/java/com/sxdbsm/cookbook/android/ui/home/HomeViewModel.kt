@@ -277,9 +277,11 @@ class HomeViewModel(
     val nutritionWall: StateFlow<List<DayNutrition>> =
         combine(mealRepo.observeTimelineWindow(wallStart, wallEnd), explicitGroups) { cards, explicit ->
                 // [AI修改] 色系墙=全家膳食结构均衡度(蛋白+主食+蔬果齐不齐)，与成员/热量无关；食材显式大类优先于关键词。
+                // [AI修改] J15：营养大类判定用"主料优先·空则回退全食材"(修 is_main 全0/缺标的问题菜漏判主食)。
                 cards.map { card ->
-                    val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }
-                    DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit)))
+                    val names = card.meals.flatMap { it.dishes }
+                        .flatMap { FoodGroup.classificationNames(it.mainIngredientNames, it.allIngredientNames) }
+                    DayNutrition(card.date, FoodGroup.nutritionLevel(FoodGroup.groupsOf(names, explicit)))
                 }
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -347,13 +349,17 @@ class HomeViewModel(
                 if (personalTotals.energyKcal <= 0) return@combine null
                 val target = com.sxdbsm.cookbook.domain.model.CalorieTarget.dailyTarget(body)
                 // [AI生成] 今日"还缺什么"如实解读(缺优质蛋白/主食/蔬菜)，非推荐非医嘱。(食用比例不影响定性——少吃仍是这道菜的属性)
+                // [AI修改] J15：营养大类判定用"主料优先·空则回退全食材"(修 is_main 全0/缺标的问题菜漏判主食)；
+                //   mains(仅主料)保留给痛风/GI 匹配口径不变(与"健康定性按主料判定"一致)。
                 val mains = dishInstances.flatMap { it.mainIngredientNames }
-                val gaps = FoodGroup.nutritionGaps(FoodGroup.groupsOf(mains, explicit))
+                val groupNames = dishInstances.flatMap { FoodGroup.classificationNames(it.mainIngredientNames, it.allIngredientNames) }
+                val dayGroups = FoodGroup.groupsOf(groupNames, explicit)
+                val gaps = FoodGroup.nutritionGaps(dayGroups)
                 // [AI修改] 今日营养卡按关注成员个人摄入(全家餐×食用比例×份额)展示 + 达标评定。
                 val kcal = personalTotals.energyKcal
                 val status = target?.let { com.sxdbsm.cookbook.domain.model.CalorieTarget.status(kcal, it) }
                 // [AI生成] A-1：慢病温和提示(个人视角，色系墙不动)——按关注成员摄入(含食用比例)的钠 + 热量达标评估，缺数据不下调。
-                val baseLevel = FoodGroup.nutritionLevel(FoodGroup.groupsOf(mains, explicit))
+                val baseLevel = FoodGroup.nutritionLevel(dayGroups)
                 // [AI生成] P4 痛风：从今日主料名匹配"应避免"高嘌呤定性食物(与"健康定性按主料判定"口径一致)，命中→痛风提示。
                 //   [AI修改] 仅登记痛风才算匹配(gate 最外层省无谓匹配)。
                 val highPurineHits = if (com.sxdbsm.cookbook.domain.HealthCondition.GOUT in conditions)

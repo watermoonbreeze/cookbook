@@ -3,7 +3,9 @@ package com.sxdbsm.cookbook.domain
 import com.sxdbsm.cookbook.domain.FoodGroup.Group
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * @File : FoodGroupClassifyTest
@@ -117,6 +119,51 @@ class FoodGroupClassifyTest {
         assertNull(FoodGroup.classify("沙拉酱"))
         assertNull(FoodGroup.classify("???"))
         assertNull(FoodGroup.classify("12345"))
+    }
+
+    @Test
+    fun `J15_主料空则回退全食材_修问题菜漏判主食`() {
+        // 07-24 真机复现:炒饭全部 is_main=0 → mainNames 恒空;全食材含糙米(主食)。
+        // 只看主料时(空)→零大类→误报缺主食;回退全食材→糙米被识别→不缺主食。
+        val mains = emptyList<String>()
+        val all = listOf("糙米", "生菜", "胡萝卜", "鸡蛋", "花菜")
+        val names = FoodGroup.classificationNames(mains, all)
+        val groups = FoodGroup.groupsOf(names)
+        assertTrue(Group.STAPLE in groups, "糙米应被识别为主食")
+        assertFalse("主食" in FoodGroup.nutritionGaps(groups), "有糙米不该再误报缺主食")
+    }
+
+    @Test
+    fun `J15_主料非空保持主料口径_辅料不充数`() {
+        // well-labeled 菜(如洋葱炒牛肉:主料=洋葱牛肉)保持主料口径——
+        // 青椒/淀粉/蚝油等非主料辅料不该被并入,避免"单一荤菜"被辅料充成更均衡。
+        val mains = listOf("洋葱", "牛肉")
+        val all = listOf("青椒", "洋葱", "牛肉", "生抽", "蚝油", "花生油", "淀粉")
+        val names = FoodGroup.classificationNames(mains, all)
+        assertEquals(mains, names, "主料非空时应原样返回主料、不并全食材")
+    }
+
+    @Test
+    fun `J15_全天回退后不再误报缺主食_端到端`() {
+        // 镜像 07-24 全天(早/午/晚)问题菜混正常菜:午餐大排饭全 is_main=0、晚餐炒饭糙米 is_main=0。
+        // 用 (mainNames,allNames) 对逐菜回退后汇总,断言全天不缺主食(用户报的误报被修)。
+        val dishes = listOf(
+            // 早餐
+            Pair(listOf("南瓜"), listOf("南瓜")),               // 蒸南瓜(主料非空)
+            Pair(emptyList(), listOf("黄瓜")),                  // 小黄瓜(is_main=0)
+            Pair(emptyList(), listOf("脱脂纯牛奶")),             // 牛奶(is_main=0)
+            Pair(emptyList(), listOf("鸡蛋")),                  // 白煮蛋(is_main=0)
+            // 午餐 大排饭:全 is_main=0,且无米食材
+            Pair(emptyList(), listOf("油菜", "黄瓜", "盐", "生抽", "大排", "食用油", "卤蛋")),
+            // 晚餐
+            Pair(listOf("西红柿", "鸡蛋"), listOf("西红柿", "鸡蛋")),  // 番茄蛋汤
+            Pair(listOf("洋葱", "牛肉"), listOf("青椒", "洋葱", "牛肉", "生抽", "蚝油", "花生油", "淀粉")), // 洋葱炒牛肉
+            Pair(emptyList(), listOf("糙米", "生菜", "胡萝卜", "鸡蛋", "花菜")), // 炒饭:糙米 is_main=0
+        )
+        val names = dishes.flatMap { FoodGroup.classificationNames(it.first, it.second) }
+        val groups = FoodGroup.groupsOf(names)
+        assertTrue(Group.STAPLE in groups, "晚餐炒饭的糙米应让全天含主食")
+        assertTrue(FoodGroup.nutritionGaps(groups).isEmpty(), "全天蛋白/主食/蔬菜齐,不该有还缺项")
     }
 
     @Test

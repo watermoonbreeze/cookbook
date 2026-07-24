@@ -215,8 +215,10 @@ private fun MealSectionRow(
 ) {
     // [AI生成] N8：一餐涵盖的食物大类(按主料名归纳)→餐次名后的分类图标 + 菜品下方营养搭配。
     // [AI修改] 主食(STAPLE)排最前：分类图标行/营养行都让主食标签打头。
-    val groups = com.sxdbsm.cookbook.domain.FoodGroup.groupsOf(section.dishes.flatMap { it.mainIngredientNames })
-        .sortedByDescending { it == com.sxdbsm.cookbook.domain.FoodGroup.Group.STAPLE }
+    // [AI修改] J15：营养大类判定用"主料优先·空则回退全食材"(修 is_main 全0/缺标的问题菜如大排饭/炒饭漏判主食)。
+    val groups = com.sxdbsm.cookbook.domain.FoodGroup.groupsOf(
+        section.dishes.flatMap { com.sxdbsm.cookbook.domain.FoodGroup.classificationNames(it.mainIngredientNames, it.allIngredientNames) },
+    ).sortedByDescending { it == com.sxdbsm.cookbook.domain.FoodGroup.Group.STAPLE }
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(

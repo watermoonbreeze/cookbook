@@ -75,6 +75,12 @@ data class DishMini(
     val tags: List<String> = emptyList(),
     val preference: Int = 0,
     val mainIngredientNames: List<String> = emptyList(),
+    /**
+     * [AI生成] J15：本菜**全部食材名**(含非主料)。仅供营养大类判定"主料空则回退全食材"用——
+     * 修 is_main 全0/缺标的问题菜(简单菜/自建菜/盖浇饭·mainIngredientNames 恒空)漏判主食/蛋白。
+     * 与 mainIngredientNames 一样**仅在餐次上下文**(buildDishesByMealRecord)真填充，其余场景恒空(勿裸用)。
+     */
+    val allIngredientNames: List<String> = emptyList(),
     val cookingMethodName: String? = null,
     val cookingMethodNames: List<String> = emptyList(), // [AI生成] 列表/搜索中展示多个烹饪方式。
     val source: String = "user", // [AI生成] 'preset'=预设(不可直接编辑,复制后编辑)/'user'=自建。

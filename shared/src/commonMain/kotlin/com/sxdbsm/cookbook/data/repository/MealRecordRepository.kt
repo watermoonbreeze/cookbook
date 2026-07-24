@@ -469,6 +469,12 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         } else {
             q.selectMainIngredientNamesByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.ingredient_name })
         }
+        // [AI生成] J15：全部食材名(含非主料)——供营养大类判定"主料空则回退全食材"(修 is_main 全0/缺标的问题菜漏判主食)。
+        val allNamesByDish = if (dishIds.isEmpty()) {
+            emptyMap()
+        } else {
+            q.selectDishIngredientsByDishIds(dishIds).executeAsList().groupBy({ it.dish_id }, { it.ingredient_name })
+        }
         // [AI修改] 多烹饪方式关联(批量)：餐食卡与列表口径一致，之前只回退单个 cooking_method_id 会丢多方式。
         val methodsByDish = if (dishIds.isEmpty()) {
             emptyMap()
@@ -488,6 +494,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                     tags = tagsByDish[row.id].orEmpty(),
                     preference = row.preference.toInt(),
                     mainIngredientNames = mainNamesByDish[row.id].orEmpty(),
+                    allIngredientNames = allNamesByDish[row.id].orEmpty(), // [AI生成] J15：营养大类判定回退用
                     cookingMethodName = methods.firstOrNull(),
                     cookingMethodNames = methods,
                     source = row.source,

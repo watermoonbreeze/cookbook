@@ -134,6 +134,17 @@ object FoodGroup {
     }
 
     /**
+     * 营养大类判定用的食材名：**主料优先·空则回退全食材**。[AI生成] J15
+     *
+     * 背景：`is_main` 标注不可靠——简单菜/自建菜/盖浇饭(如"大排饭""炒饭")常全部 is_main=0，
+     * `mainIngredientNames` 恒空→只看主料时主食/蛋白/蔬菜整类漏判(误报"今日缺主食")。
+     * 修法：主料非空的菜**保持主料口径**(避免姜/葱等辅料把"单一荤菜"充成有蔬菜)；主料为空(问题菜)才
+     * **回退全部食材**如实归纳(调料 classify 恒 null 不污染)。这是纯纠错——原本零贡献的菜才被救，well-labeled 菜口径不变。
+     */
+    fun classificationNames(mainNames: List<String>, allNames: List<String>): List<String> =
+        mainNames.ifEmpty { allNames }
+
+    /**
      * 一餐涵盖的食物大类(按主料名去重，保持枚举顺序)。[AI修改]
      *
      * explicit=名→大类覆盖(食材的显式营养大类 food_group)：优先于关键词，覆盖名字无关键词的自定义食材。
