@@ -19,7 +19,7 @@
 - 📌 **数据脚本方案已相当落地**：`scripts/data/`(能量自检 nutri_selfcheck.py/nlc_cross.py/USDA映射)·7-22 三源全量交叉跑过(真错仅虾仁已修)·今日 505 复检无新真错。
 
 ## ⏭ 下一步（本 session 可续 = 数据健康类）
-- 【P1 核心·门禁】**扩 cn_en_map 中英映射(170项)** 填满 satFat(66%→~95%)：须逐条可信(LLM兜底/人工·§七)·**禁无验证批量自动映射**(错配=satFat>fat根源)。填后跑 `collect_usda.py` 出提案→人工把关→改seed。
+- 【P1·待用户核验】**cn_en 映射批次已出评审清单** `data-pipeline/mappings/cn_en_candidates_review.md`(28候选:高16/中12 + 9诚实SKIP·`build_cn_en_candidates.py` 半自动·真实索引核验+比例satFat·只提案未落seed)。**用户核验后**:确认的→写 `scripts/data/cn_usda_map.json`(confirmed)+按 proposed_satfat 补 seed(过 shared 单测)。剩~130未映射多中式加工/茶饮(SKIP留空)。**禁无验证批量自动映射**(错配=satFat根源)。
 - 【发布链路 P4·未做】staging→预制db(assets)+增量seed(指纹重跑)·guideline富化导回seed(现仅staging层)。condition配置驱动加病种。
 - 【常规化接线】nlc/USDA cron 月度体检(工具就绪·全量502留cron·不硬刷)。
 - 【待核·等真实数据再调】玫瑰花/章鱼/年糕/生蚝 + 培根fat=9(用户定:等真实数据一起调) · 胃炎guideline待联网核原文。
