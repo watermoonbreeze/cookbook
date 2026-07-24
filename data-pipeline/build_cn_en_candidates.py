@@ -70,6 +70,27 @@ CANDIDATES = {
     "生蚝": ["mollusks", "oyster", "raw"],
     "鸭腿": ["duck", "meat", "raw"],
     "鹅肉": ["goose", "meat", "raw"],
+    # 批次3·剩余可能有USDA对口的天然食材(蔬果/杂粮·多数预期SKIP)
+    "韭菜": ["chives", "raw"],
+    "红枣": ["jujube", "raw"],
+    "枸杞": ["goji berries"],
+    "玉米糁": ["cornmeal", "whole-grain"],
+    "苜蓿": ["alfalfa", "seeds", "sprouted"],
+    "空心菜": ["cabbage", "chinese", "raw"],
+    "茼蒿": ["chrysanthemum", "garland"],
+    "醋": ["vinegar"],
+    "面条": ["noodles", "chinese"],
+    "荠菜": ["cornsalad", "raw"],
+    "香椿": ["fireweed", "leaves"],
+    "菜心": ["broccoli", "chinese", "raw"],
+    "豌豆苗": ["peas", "sprouted", "raw"],
+    "鸭血": ["duck", "blood"],
+    "银耳": ["mushrooms", "white"],
+    "花卷": ["bread", "steamed"],
+    "米线": ["rice noodles", "dry"],
+    "红薯叶": ["sweet potato", "leaves", "raw"],
+    "毛豆": ["edamame"],
+    "蚕豆": ["broadbeans", "raw"],
 }
 
 
@@ -135,13 +156,14 @@ def main():
         else:
             ratio = entry["satfat"] / entry["fat"]
             sf = round(min(ratio * our_fat, our_fat), 3)
-            # kcal 偏差>50% 提示口径可疑(降置信)。
+            # kcal 偏差分级: >100%(2倍)≈选错食物→reject建议SKIP; >50%→mid口径可疑; 否则按 raw/cooked 置信。
             uk, ok = entry.get("kcal"), seed[nm].get("kcal")
-            kcal_off = (uk and ok and abs(uk - ok) / max(ok, 1) > 0.5)
-            rec = {"name": nm, "usda_desc": desc, "matched": True, "confidence": ("mid" if kcal_off else conf),
+            off = (abs(uk - ok) / max(ok, 1)) if (uk and ok) else 0
+            conf2 = "reject" if off > 1.0 else ("mid" if off > 0.5 else conf)
+            rec = {"name": nm, "usda_desc": desc, "matched": True, "confidence": conf2,
                    "usda_fat": entry["fat"], "usda_satfat": entry["satfat"], "ratio": round(ratio, 3),
                    "our_fat": our_fat, "proposed_satfat": sf, "usda_kcal": uk, "our_kcal": ok,
-                   "kcal_off": bool(kcal_off)}
+                   "kcal_off": off > 0.5, "kcal_off_pct": round(off * 100)}
             matched.append(rec)
         cf.write(json.dumps(rec, ensure_ascii=False) + "\n")
         cf.flush()
@@ -151,20 +173,25 @@ def main():
     allrecs = [json.loads(l) for l in open(OUT_JSONL, encoding="utf-8")]
     hi = [r for r in allrecs if r.get("matched") and r.get("confidence") == "high"]
     mid = [r for r in allrecs if r.get("matched") and r.get("confidence") == "mid"]
+    rej = [r for r in allrecs if r.get("matched") and r.get("confidence") == "reject"]
     skip = [r for r in allrecs if not r.get("matched")]
     lines = ["# cn_en 映射候选 · 待核验清单", "",
              f"> [AI生成] 半自动·英文候选在**本地USDA全库真实条目**核验·satFat=USDA(satFat/fat)×我方fat(≤fat)。",
-             f"> 匹配{len(hi)+len(mid)}(高{len(hi)}/中{len(mid)}) · 无对口SKIP{len(skip)} · **只提案不改seed·你核验后再落**。", ""]
-    for title, rs in [("🟢 高置信(generic raw·可直接采)", hi), ("🟡 中置信(cooked/species松/kcal偏差·请核)", mid)]:
+             f"> 可采{len(hi)+len(mid)}(高{len(hi)}/中{len(mid)}) · 🔴疑错配{len(rej)} · 无对口SKIP{len(skip)} · **只提案不改seed·你核验后再落**。",
+             "> 核验重点：🟢直接采、🟡看一眼kcal是否离谱、🔴基本是选错食物建议弃、⚪本无对口。", ""]
+    for title, rs in [("🟢 高置信(generic raw·可直接采)", hi), ("🟡 中置信(cooked/species松·请核kcal)", mid)]:
         lines += [f"## {title}（{len(rs)}）", "", "| 食材 | USDA条目 | 比例 | 我方fat | 建议satFat | kcal我/USDA |", "|---|---|---|---|---|---|"]
         for r in rs:
-            mark = "⚠️" if r.get("kcal_off") else ""
+            mark = f"⚠️{r.get('kcal_off_pct')}%" if r.get("kcal_off") else ""
             lines.append(f"| {r['name']} | {r['usda_desc'][:42]} | {r['ratio']} | {r['our_fat']} | **{r['proposed_satfat']}** | {r['our_kcal']}/{r['usda_kcal']}{mark} |")
         lines.append("")
-    lines += [f"## ⚪ 无对口→SKIP留空(不编造·{len(skip)})", "", "、".join(r["name"] for r in skip), ""]
+    lines += [f"## 🔴 疑错配(kcal差>100%·基本选错食物)·建议SKIP复核（{len(rej)}）", ""]
+    for r in rej:
+        lines.append(f"- {r['name']} → {r['usda_desc'][:42]}（kcal 我{r['our_kcal']}/USDA{r['usda_kcal']}·差{r.get('kcal_off_pct')}%）")
+    lines += ["", f"## ⚪ 无对口→SKIP留空(不编造·{len(skip)})", "", "、".join(r["name"] for r in skip), ""]
     open(OUT_MD, "w", encoding="utf-8").write("\n".join(lines))
 
-    print(f"[cn_en候选] 本批匹配{len(matched)}/未匹配{len(nomatch)} · 累计高{len(hi)}/中{len(mid)}/skip{len(skip)}")
+    print(f"[cn_en候选] 本批匹配{len(matched)}/未匹配{len(nomatch)} · 累计可采{len(hi)+len(mid)}(高{len(hi)}/中{len(mid)})/疑错配{len(rej)}/skip{len(skip)}")
     print(f"评审清单: {OUT_MD}")
 
 
