@@ -33,6 +33,8 @@ python data-pipeline/export_seed.py        # staging → 等价 seed（输出 _e
 | `import_seed.py` | 5 seed → staging；name_key 关联失败 → review_flag(引用完整性) |
 | `export_seed.py` | staging → 等价 seed JSON（roundtrip 用·输出 `_export/`） |
 | `verify_roundtrip.py` | 编排首校 + §八校验门 + 产出 `首校体检报告.md` |
+| `collect_usda.py` | P1 USDA 采集(本地全库·零key)：补缺 satFat(口径一致比例) + USDA-CN 交叉校验·**只产提案不改seed** |
+| `mappings/condition_guidelines.json` | condition→权威指南映射(忌口规则可溯源·加病种只补配置) |
 | `mappings/feature_tags.txt` | 特征标签白名单（区分 category 真·分类 vs feature 特征标签） |
 | `staging.db` | 生成物·**入 git**（数据快照可追溯·可由脚本从 seed 重建） |
 | `首校体检报告.md` | 生成物·现有数据体检单（问题分类/条数/每条修复方法） |
@@ -46,6 +48,6 @@ python data-pipeline/export_seed.py        # staging → 等价 seed（输出 _e
 
 ## 后续（非 P0）
 
-- **P1** 采集：USDA-FDC 补 satFat/矿物质（需 key + 连通·`cn_en_map` 中英映射）；GI/嘌呤本地 CSV；nlc 同口径交叉（脚本资产在 `scripts/data/`）。
+- **P1** 采集：`collect_usda.py` 已建(用本地 USDA SR Legacy 全库·零key)。**瓶颈=`cn_en_map` 中英映射覆盖**：175 缺 satFat 中 170 无映射→需扩 `scripts/data/cn_usda_map.json`(§七人工种子/LLM兜底·**禁无验证批量自动映射**·错配=satFat>fat 5错根源)。USDA 全库索引 `temp/claude/nutriverify2/usda_full_idx.json`(不入git·13MB·重建见 `scripts/data/README.md`)。GI/嘌呤本地 CSV；nlc 同口径交叉见 `scripts/data/nlc_cross.py`。
 - **P4** 发布：staging → 预制 db（assets）+ 增量 seed（指纹重跑），见详细设计九。
 - **condition 配置驱动**（详细设计十一.3）：新增病种/生命阶段只补指南清单配置、管线自动产出 care_rule。

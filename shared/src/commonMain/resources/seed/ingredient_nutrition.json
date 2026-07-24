@@ -1992,9 +1992,10 @@
   "potassium": 40,
   "calcium": 8,
   "purine": 5,
-  "ref": "食物营养成分查询平台 nlc.chinanutri.cn 料酒",
+  "ref": "食物营养成分查询平台 nlc.chinanutri.cn 料酒 ｜ satFat=0(fat≈0零脂·USDA采集补缺2026-07-25)",
   "review": "verified",
-  "cholesterol": 0
+  "cholesterol": 0,
+  "saturatedFat": 0.0
  },
  {
   "ingredient": "蚝油",
@@ -4762,9 +4763,10 @@
   "calcium": 8,
   "gi": 65,
   "purine": 5,
-  "ref": "中国食物成分表 nlc.chinanutri.cn 藕粉(foodinfo/322)；GI 参考纯淀粉/藕粉约65(估)",
+  "ref": "中国食物成分表 nlc.chinanutri.cn 藕粉(foodinfo/322)；GI 参考纯淀粉/藕粉约65(估) ｜ satFat=0(fat≈0零脂·USDA采集补缺2026-07-25)",
   "review": "verified",
-  "cholesterol": 0
+  "cholesterol": 0,
+  "saturatedFat": 0.0
  },
  {
   "ingredient": "玉米面",
@@ -7250,9 +7252,10 @@
   "calcium": 10,
   "gi": 14,
   "purine": 0,
-  "ref": "菊粉(inulin/菊苣纤维)为近纯可溶性膳食纤维，维基/BENEO 资料：碳水几乎全为膳食纤维，热量按每克约1.5kcal计约150kcal；产品纯度差异大",
+  "ref": "菊粉(inulin/菊苣纤维)为近纯可溶性膳食纤维，维基/BENEO 资料：碳水几乎全为膳食纤维，热量按每克约1.5kcal计约150kcal；产品纯度差异大 ｜ satFat=0(fat≈0零脂·USDA采集补缺2026-07-25)",
   "review": "pending",
-  "cholesterol": 0
+  "cholesterol": 0,
+  "saturatedFat": 0.0
  },
  {
   "ingredient": "干百合",
@@ -8127,10 +8130,11 @@
   "sodium": 2,
   "potassium": 49,
   "calcium": 2,
-  "ref": "USDA FDC Coffee, brewed(不加糖不加奶) ｜ purine:参考公认食品嘌呤含量表（惯例口径·非国标·仅供参考）",
+  "ref": "USDA FDC Coffee, brewed(不加糖不加奶) ｜ purine:参考公认食品嘌呤含量表（惯例口径·非国标·仅供参考） ｜ satFat=0(fat≈0零脂·USDA采集补缺2026-07-25)",
   "review": "verified",
   "cholesterol": 0,
-  "purine": 0
+  "purine": 0,
+  "saturatedFat": 0.0
  },
  {
   "ingredient": "燕麦奶",
@@ -8245,9 +8249,10 @@
   "protein": 1.6,
   "fat": 0.0,
   "calcium": 41,
-  "ref": "中国食物成分表·发酵酒(黄酒),热量66kcal/蛋白1.6g/钙41mg;碳水随甜度差异大(干型低·甜型高),口径不定故省略",
+  "ref": "中国食物成分表·发酵酒(黄酒),热量66kcal/蛋白1.6g/钙41mg;碳水随甜度差异大(干型低·甜型高),口径不定故省略 ｜ satFat=0(fat≈0零脂·USDA采集补缺2026-07-25)",
   "review": "pending",
-  "carb": 8.6
+  "carb": 8.6,
+  "saturatedFat": 0.0
  },
  {
   "ingredient": "米酒",
