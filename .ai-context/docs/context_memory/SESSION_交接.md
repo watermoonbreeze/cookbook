@@ -8,12 +8,13 @@
 - ✅ **③ 口径收敛(shared·核心权威化)**：周计划营养线 `NutritionLine` 缺口口径从自创三支柱→**膳食宝塔四正向层**(`pillarGapDays→layerGapDays`·`GAP_PILLAR→GAP_LAYER`·引用 `DietaryGuideline` 单一真相源)。新增能力=识别"顿顿有肉却不喝奶不吃豆"的**奶豆坚果缺层**。`balanceScore` 连贯分分母 3→4(`POSITIVE_LAYERS.size`)。advise 显式按宝塔层序 tie-break(Google审🟡1·不依赖 Map 迭代序)。全 App 只剩一套宝塔结构口径(消灭三支柱 vs 宝塔漂移)。
 - ✅ **① 单餐入口补齐(androidApp)**：库存/随机推荐(`AiRecommendScreen`)结果区顶部补餐次结构建议行(`MealStructureHintRow`·与 AiPlan 逐字同款·选定具体餐次显·"全部"不显)——这就是"份量对齐覆盖所有推荐入口"。
 - ✅ **② 权威份量轻入口(androidApp)**：推荐页+周期计划页脚"各类每天吃多少 ›"(`DailyAmountRefLink`·文字跳转)→膳食参考依据页(权威 `DAILY_AMOUNTS` 可达不喧宾)。`MainScaffold` wire `onOpenDietaryReference`。
+- ✅ **A+B 同 session 追加**(P3 内聚·用户要求)：**A**=`NutritionLineTest` 补"已排周7天窗口(含空天)肉菜饭无奶豆→识别奶豆坚果缺层"场景测试(锁 WeekPlan/AiPlan 共享消费口径·Google审🟡2·不搭 androidApp VM 架=反过度设计)；**B**=今日卡下方也挂"各类每天吃多少"轻入口(HomeScreen todayCard 下·`DailyAmountRefLink` internal 跨包复用·**不动6处共用 DayMealCardView**·仅今日卡)。均双绿。
 - 🔴**明确不做**(会诊否决·数据不可靠+焦虑+免责红线)：克数选菜(C)、份量达标进度条/达成度%、减法说教。**权威每日克数份量只在参考页详列，高频推荐动线绝不铺克数。**
 - 验证：`:shared:testDebugUnitTest`(含新增"肉菜饭无奶豆→识别奶豆坚果缺层"核心测试)+`:androidApp:assembleDebug` **均 BUILD SUCCESSFUL**。Google 质量终审**无阻断项**(评"质量高于项目平均")。
 - 文档已更：`功能总线_权威方法论对照.md`(三自创点全✅)·`待办总览.md`第50行(P3完成+8项P2/P3留待办)·`苹果风格UI设计方案.md §9.42`·`周计划营养线方案.md`(P3口径收敛注)。
 
 ## ⏭ 下一步
-- 【🔴 未提交】本 session 改动**尚未 git commit**。用户确认后按"呈现补齐+口径收敛"提交(shared 3文件+androidApp 3文件+4文档·**temp/ 不 add**)。
+- 【提交状态】P3 主体已提交 `e51ee46`；A+B 追加(NutritionLineTest+HomeScreen+MainScaffold+3文档)**待提交第二个 commit**(temp/ 不 add·不 push)。
 - 【权威化重审已收官三大自创点】P1色系墙/P2餐次/P3份量 全✅。**剩 🟡 深化项**(对照文档·各单开 session·会商)：EER个人热量校准(DRIs)·生命阶段适配推荐(孕/老/儿)·食物多样性提示(12种/25种)·微量营养素评估扩展(铁钙维D)。
 - 【P2+P3 留待办·下轮·别过度设计】晚餐肉偏多减法·每餐结构达成度·整周达成汇总·今日卡加"各类每天吃多少"轻入口(需Home plumbing)·WeekPlan已排周缺层回归断言(Google审🟡2·低优)·单餐引入目标餐次名。
 

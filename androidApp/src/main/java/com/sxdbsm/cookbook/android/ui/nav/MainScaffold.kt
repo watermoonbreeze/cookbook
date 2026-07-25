@@ -185,6 +185,7 @@ fun MainScaffold(
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
                     onOpenWeekPlan = { nav.navigate(Routes.WEEK_PLAN) }, // [AI生成] B3
                     onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) }, // [AI修改] 首页卡 v2：整卡点击进 AI 推荐全页(引流·全页看整桌+批量记)
+                    onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] P3-B:今日卡"各类每天吃多少"→膳食参考依据页
                 )
             }
             composable(Routes.TIMELINE) {

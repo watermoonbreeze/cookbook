@@ -52,6 +52,7 @@ fun HomeScreen(
     onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] A1：首页计划卡"复制"入口(与食历页一致，家庭高频"照着某天再吃一次")
     onOpenWeekPlan: () -> Unit = {}, // [AI生成] B3：一周计划入口
     onOpenAiRecommend: () -> Unit = {},
+    onOpenDietaryReference: () -> Unit = {}, // [AI生成] P3-B:今日卡下"各类每天吃多少"轻入口→膳食参考依据页(权威每日份量)
     vm: HomeViewModel = koinViewModel(),
 ) {
     // [AI修改] collectAsStateWithLifecycle 会按 Android 生命周期订阅 StateFlow，避免后台页面继续无意义刷新。
@@ -215,7 +216,7 @@ fun HomeScreen(
             }
         } else {
             item(key = "today-${todayCard.date}") {
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) { // [AI修改] P3-B:Box→Column,今日卡下方挂"各类每天吃多少"轻入口
                     DayMealCardView(
                         data = todayCard,
                         onDishClick = { dish -> onOpenDish(dish.id) },
@@ -226,6 +227,8 @@ fun HomeScreen(
                             vm.deleteDayUndoable(d) { onUndo -> appSnackbar?.showUndo("已删除 $d 的餐食", onUndo = onUndo) }
                         },
                     )
+                    // [AI生成] P3-B:今日卡份量参考轻入口(复用 AiRecommendScreen.DailyAmountRefLink·internal 跨包复用·文字跳转不喧宾)。
+                    com.sxdbsm.cookbook.android.ui.ai.DailyAmountRefLink(onOpenDietaryReference)
                 }
             }
         }

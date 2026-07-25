@@ -117,6 +117,31 @@ class NutritionLineTest {
     }
 
     @Test
+    fun `已排周7天窗口_肉菜饭常年无奶豆_概览识别奶豆坚果缺层_锁WeekPlan与AiPlan共享消费口径`() {
+        // [AI生成] Google审🟡2:显式建模 WeekPlan"已排周"/AiPlan 透传给聚合器的输入形状——
+        //   7 天窗口(observeTimelineWindow 恒返每天含空天)、已排的都是"肉+青菜+米饭"、常年无奶豆。
+        //   两屏共用同一 aggregate/advise(单一真相源),本测锁住共享消费路径的宝塔四层口径回归,
+        //   不为一条纯透传断言从零搭 androidApp VM 测试架(反过度设计)。
+        val week = listOf(
+            listOf("五花肉", "青菜", "大米"),
+            listOf("牛肉", "青菜", "大米"),
+            emptyList(),                        // 空天(未排)
+            listOf("鱼", "青菜", "大米"),
+            emptyList(),
+            listOf("鸡蛋", "青菜", "大米"),      // 有蛋(ANIMAL)但仍无奶豆
+            listOf("五花肉", "青菜", "大米"),
+        )
+        val line = agg(week)
+        assertEquals(7, line.dayCount)
+        assertEquals(5, line.layerGapDays[DietaryGuideline.PagodaLayer.DAIRY_BEANS_NUTS], "5个已排天都缺奶豆坚果·空天不计入: ${line.layerGapDays}")
+        assertEquals(null, line.layerGapDays[DietaryGuideline.PagodaLayer.GRAINS], "主食天天有")
+        assertEquals(null, line.layerGapDays[DietaryGuideline.PagodaLayer.VEGETABLES_FRUITS], "蔬菜天天有")
+        val advices = NutritionLineAdvisor.advise(line)
+        val gap = advices.firstOrNull { it.kind == LineAdvice.Kind.GAP_LAYER }
+        assertTrue(gap != null && gap.text.contains("奶豆坚果"), "已排周概览应提示奶豆坚果缺口(WeekPlan/AiPlan 同款): $advices")
+    }
+
+    @Test
     fun `建议_四层全覆盖多样时不硬凑层缺口建议`() {
         // 每天四正向层齐、蛋白源多样(红肉/水产/禽/蛋/豆各现)→无层缺口。
         val line = agg(
