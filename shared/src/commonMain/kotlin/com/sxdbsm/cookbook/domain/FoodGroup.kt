@@ -192,24 +192,19 @@ object FoodGroup {
     }
 
     /**
-     * 营养均衡级别 0~4。[AI生成]
+     * 营养均衡级别 0~4。[AI修改] 权威化重审 P1：口径从"自创三支柱"改为**膳食宝塔四正向层覆盖度**。
      *
-     * 按三大支柱覆盖度评级：优质蛋白 / 主食·碳水 / 蔬果·膳食纤维。
-     * 0=无(空)，1=单一(仅1类)，2=尚可(2类)，3=均衡(三大类齐)，4=优(三类齐且食材多样≥5大类)。
+     * 按《中国居民平衡膳食宝塔(2022)》四个正向层的覆盖度评级(权威·[DietaryGuideline])：
+     * 谷薯 / 蔬菜水果 / 鱼禽肉蛋 / 奶豆坚果 —— 覆盖几层就是几级。
+     * 0=无(空)，1=较单一(1层)，2=尚可(2层)，3=均衡(3层)，4=营养优(四层齐·含奶豆坚果层)。
      * 供餐食卡片背景配色与首页"每天营养色系墙"用同一级别口径。
+     *
+     * 说明：旧口径把奶/豆并入"蛋白支柱"、level4 靠"≥5大类"启发；新口径让"奶豆坚果"成独立层(宝塔第四层)，
+     * 更权威可溯源。单顿正餐通常够不着奶豆层(诚实：一餐非一座宝塔)，但**全天汇总**易达四层齐。
      */
     fun nutritionLevel(groups: List<Group>): Int {
         if (groups.isEmpty()) return 0
-        val hasProtein = groups.any { it in PROTEIN_GROUPS }
-        val hasStaple = Group.STAPLE in groups
-        val hasVeg = groups.any { it == Group.VEGETABLE || it == Group.FUNGI || it == Group.FRUIT }
-        val pillars = listOf(hasProtein, hasStaple, hasVeg).count { it }
-        return when {
-            pillars >= 3 && groups.size >= 5 -> 4
-            pillars >= 3 -> 3
-            pillars == 2 -> 2
-            else -> 1
-        }
+        return DietaryGuideline.coveredLayers(groups).size.coerceIn(1, 4)
     }
 
     /** 级别文字。[AI生成] */

@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
  * @Author : SXD-AI
  * @Desc : 营养均衡级别(供餐食卡片配色/营养色系墙)测试
  * <p>
- * [AI生成] 守护三大支柱(蛋白/主食/蔬果)覆盖度分级口径。
+ * [AI修改] 权威化重审 P1：口径改为**膳食宝塔四正向层覆盖度**(谷薯/蔬果/鱼禽肉蛋/奶豆坚果)，守护该分级。
  **/
 class FoodGroupNutritionLevelTest {
 
@@ -23,29 +23,43 @@ class FoodGroupNutritionLevelTest {
     }
 
     @Test
-    fun `仅主食或仅肉为较单一1`() {
-        assertEquals(1, level("米饭"))
-        assertEquals(1, level("五花肉"))
+    fun `仅一层为较单一1`() {
+        assertEquals(1, level("米饭"))   // 谷薯层
+        assertEquals(1, level("五花肉")) // 鱼禽肉蛋层
     }
 
     @Test
-    fun `两大类为尚可2`() {
-        // 肉(蛋白) + 米饭(主食)
+    fun `两层为尚可2`() {
+        // 鱼禽肉蛋 + 谷薯
         assertEquals(2, level("五花肉", "米饭"))
-        // 蔬菜 + 主食
+        // 蔬果 + 谷薯
         assertEquals(2, level("青菜", "米饭"))
     }
 
     @Test
-    fun `三大类齐为均衡3`() {
-        // 蛋白(鸡) + 主食(米饭) + 蔬菜
+    fun `三层为均衡3`() {
+        // 鱼禽肉蛋(鸡) + 谷薯(米饭) + 蔬果(青菜)
         assertEquals(3, level("鸡", "米饭", "青菜"))
     }
 
     @Test
-    fun `三类齐且多样为优4`() {
-        // 鱼(蛋白) 米饭(主食) 青菜(蔬) 木耳(菌) 苹果(果) → ≥5 大类
-        assertEquals(4, level("鱼", "米饭", "青菜", "木耳", "苹果"))
+    fun `同层多样不额外加级`() {
+        // 鱼+米饭+青菜+木耳+苹果 = 鱼禽肉蛋/谷薯/蔬果 三层(木耳苹果都在蔬果层) → 仍 3，不因大类多而升4。
+        assertEquals(3, level("鱼", "米饭", "青菜", "木耳", "苹果"))
+    }
+
+    @Test
+    fun `四层齐含奶豆坚果层为营养优4`() {
+        // 鱼禽肉蛋(鱼) + 谷薯(米饭) + 蔬果(青菜) + 奶豆坚果(牛奶) → 四层齐。
+        assertEquals(4, level("鱼", "米饭", "青菜", "牛奶"))
+        // 豆(奶豆坚果层)同样可凑第四层。
+        assertEquals(4, level("鸡", "米饭", "青菜", "豆腐"))
+    }
+
+    @Test
+    fun `豆饭菜三层_缺鱼禽肉蛋层仍为均衡3`() {
+        // 豆腐(奶豆坚果) + 米饭(谷薯) + 青菜(蔬果) = 3 层(无鱼禽肉蛋层) → 3。
+        assertEquals(3, level("豆腐", "米饭", "青菜"))
     }
 
     @Test
