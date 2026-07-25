@@ -1,0 +1,6501 @@
+[
+ {
+  "ingredient": "小米",
+  "carotene": 100.0,
+  "vitB1": 0.33,
+  "vitB2": 0.1,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/301"
+ },
+ {
+  "ingredient": "玉米",
+  "vitB1": 0.16,
+  "vitB2": 0.11,
+  "niacin": 1.8,
+  "vitC": 16.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/292"
+ },
+ {
+  "ingredient": "山药",
+  "carotene": 20.0,
+  "vitB1": 0.05,
+  "vitB2": 0.02,
+  "niacin": 0.3,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/525"
+ },
+ {
+  "ingredient": "芋头",
+  "carotene": 160.0,
+  "vitB1": 0.06,
+  "vitB2": 0.05,
+  "niacin": 0.7,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/526"
+ },
+ {
+  "ingredient": "面条",
+  "vitB1": 0.22,
+  "vitB2": 0.07,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/264"
+ },
+ {
+  "ingredient": "馒头",
+  "vitB1": 0.04,
+  "vitB2": 0.05,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/272"
+ },
+ {
+  "ingredient": "菠菜",
+  "carotene": 2920.0,
+  "vitB1": 0.04,
+  "vitB2": 0.11,
+  "niacin": 0.6,
+  "vitC": 32.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/473"
+ },
+ {
+  "ingredient": "油菜",
+  "carotene": 620.0,
+  "vitB1": 0.04,
+  "vitB2": 0.11,
+  "niacin": 0.7,
+  "vitC": 36.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/457"
+ },
+ {
+  "ingredient": "生菜",
+  "carotene": 360.0,
+  "vitB2": 0.1,
+  "niacin": 0.2,
+  "vitC": 20.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/482"
+ },
+ {
+  "ingredient": "芹菜",
+  "carotene": 60.0,
+  "vitB1": 0.01,
+  "vitB2": 0.08,
+  "niacin": 0.4,
+  "vitC": 12.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/479"
+ },
+ {
+  "ingredient": "西兰花",
+  "carotene": 7210.0,
+  "vitB1": 0.09,
+  "vitB2": 0.13,
+  "niacin": 0.9,
+  "vitC": 51.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/465"
+ },
+ {
+  "ingredient": "菜花",
+  "carotene": 30.0,
+  "vitB1": 0.03,
+  "vitB2": 0.08,
+  "niacin": 0.6,
+  "vitC": 61.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/464"
+ },
+ {
+  "ingredient": "胡萝卜",
+  "carotene": 4130.0,
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 0.6,
+  "vitC": 13.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/380"
+ },
+ {
+  "ingredient": "白萝卜",
+  "carotene": 20.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 21.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/371"
+ },
+ {
+  "ingredient": "冬瓜",
+  "carotene": 80.0,
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.3,
+  "vitC": 18.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/419"
+ },
+ {
+  "ingredient": "黄瓜",
+  "carotene": 90.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/422"
+ },
+ {
+  "ingredient": "苦瓜",
+  "carotene": 100.0,
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "niacin": 0.4,
+  "vitC": 56.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/425"
+ },
+ {
+  "ingredient": "茄子",
+  "carotene": 50.0,
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 0.6,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/402"
+ },
+ {
+  "ingredient": "洋葱",
+  "carotene": 20.0,
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/444"
+ },
+ {
+  "ingredient": "南瓜",
+  "carotene": 890.0,
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/426"
+ },
+ {
+  "ingredient": "韭菜",
+  "carotene": 1410.0,
+  "vitB1": 0.02,
+  "vitB2": 0.09,
+  "niacin": 0.8,
+  "vitC": 24.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/445"
+ },
+ {
+  "ingredient": "香菇",
+  "vitB2": 0.08,
+  "niacin": 2.0,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/584"
+ },
+ {
+  "ingredient": "金针菇",
+  "carotene": 30.0,
+  "vitB1": 0.15,
+  "vitB2": 0.19,
+  "niacin": 4.1,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/575"
+ },
+ {
+  "ingredient": "杏鲍菇",
+  "vitB1": 0.03,
+  "vitB2": 0.14,
+  "niacin": 3.68,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/602"
+ },
+ {
+  "ingredient": "木耳",
+  "carotene": 100.0,
+  "vitB1": 0.17,
+  "vitB2": 0.44,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/579"
+ },
+ {
+  "ingredient": "海带",
+  "vitB1": 0.02,
+  "vitB2": 0.15,
+  "niacin": 1.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/605"
+ },
+ {
+  "ingredient": "苹果",
+  "carotene": 20.0,
+  "vitB1": 0.06,
+  "vitB2": 0.02,
+  "niacin": 0.2,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/613"
+ },
+ {
+  "ingredient": "梨",
+  "carotene": 33.0,
+  "vitB1": 0.03,
+  "vitB2": 0.06,
+  "niacin": 0.3,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/630"
+ },
+ {
+  "ingredient": "香蕉",
+  "carotene": 60.0,
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 0.7,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/726"
+ },
+ {
+  "ingredient": "葡萄",
+  "carotene": 50.0,
+  "vitB1": 0.04,
+  "vitB2": 0.02,
+  "niacin": 0.2,
+  "vitC": 25.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/684"
+ },
+ {
+  "ingredient": "西瓜",
+  "carotene": 450.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/739"
+ },
+ {
+  "ingredient": "牛肉",
+  "vitB1": 0.04,
+  "vitB2": 0.14,
+  "niacin": 5.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/823"
+ },
+ {
+  "ingredient": "羊肉",
+  "vitB1": 0.05,
+  "vitB2": 0.14,
+  "niacin": 4.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/844"
+ },
+ {
+  "ingredient": "猪肝",
+  "vitB1": 0.21,
+  "vitB2": 2.08,
+  "niacin": 15.0,
+  "vitC": 20.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/797"
+ },
+ {
+  "ingredient": "鸡腿",
+  "vitB1": 0.02,
+  "vitB2": 0.14,
+  "niacin": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/882"
+ },
+ {
+  "ingredient": "鸡蛋",
+  "vitB1": 0.09,
+  "vitB2": 0.31,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/979"
+ },
+ {
+  "ingredient": "牛奶",
+  "vitB1": 0.02,
+  "vitB2": 0.11,
+  "niacin": 0.09,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/930"
+ },
+ {
+  "ingredient": "酸奶",
+  "vitB1": 0.02,
+  "vitB2": 0.1,
+  "niacin": 0.1,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/959"
+ },
+ {
+  "ingredient": "豆腐",
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/333"
+ },
+ {
+  "ingredient": "豆浆",
+  "carotene": 90.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/338"
+ },
+ {
+  "ingredient": "豆腐皮",
+  "vitB1": 0.31,
+  "vitB2": 0.11,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/342"
+ },
+ {
+  "ingredient": "黄豆",
+  "carotene": 220.0,
+  "vitB1": 0.41,
+  "vitB2": 0.2,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/326"
+ },
+ {
+  "ingredient": "绿豆",
+  "carotene": 130.0,
+  "vitB1": 0.25,
+  "vitB2": 0.11,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/350"
+ },
+ {
+  "ingredient": "鲈鱼",
+  "vitB1": 0.03,
+  "vitB2": 0.17,
+  "niacin": 3.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1050"
+ },
+ {
+  "ingredient": "鲫鱼",
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1021"
+ },
+ {
+  "ingredient": "带鱼",
+  "vitB1": 0.02,
+  "vitB2": 0.06,
+  "niacin": 2.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1030"
+ },
+ {
+  "ingredient": "花生",
+  "carotene": 10.0,
+  "vitB2": 0.04,
+  "niacin": 14.1,
+  "vitC": 14.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/761"
+ },
+ {
+  "ingredient": "核桃",
+  "vitB1": 0.07,
+  "vitB2": 0.14,
+  "niacin": 1.4,
+  "vitC": 10.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/742"
+ },
+ {
+  "ingredient": "荞麦",
+  "carotene": 20.0,
+  "vitB1": 0.28,
+  "vitB2": 0.16,
+  "niacin": 2.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/309"
+ },
+ {
+  "ingredient": "糯米",
+  "vitB1": 0.11,
+  "vitB2": 0.04,
+  "niacin": 2.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/285"
+ },
+ {
+  "ingredient": "薏米",
+  "vitB1": 0.22,
+  "vitB2": 0.15,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/311"
+ },
+ {
+  "ingredient": "面包",
+  "vitB1": 0.03,
+  "vitB2": 0.06,
+  "niacin": 1.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1316"
+ },
+ {
+  "ingredient": "小白菜",
+  "carotene": 1680.0,
+  "vitB1": 0.02,
+  "vitB2": 0.09,
+  "niacin": 0.7,
+  "vitC": 28.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/452"
+ },
+ {
+  "ingredient": "娃娃菜",
+  "carotene": 48.0,
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 0.61,
+  "vitC": 12.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/461"
+ },
+ {
+  "ingredient": "西葫芦",
+  "carotene": 30.0,
+  "vitB1": 0.01,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/431"
+ },
+ {
+  "ingredient": "丝瓜",
+  "carotene": 90.0,
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/429"
+ },
+ {
+  "ingredient": "莴笋",
+  "carotene": 150.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.5,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/491"
+ },
+ {
+  "ingredient": "毛豆",
+  "carotene": 130.0,
+  "vitB1": 0.15,
+  "vitB2": 0.07,
+  "niacin": 1.4,
+  "vitC": 27.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/391"
+ },
+ {
+  "ingredient": "四季豆",
+  "carotene": 210.0,
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 0.4,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/392"
+ },
+ {
+  "ingredient": "平菇",
+  "carotene": 10.0,
+  "vitB1": 0.06,
+  "vitB2": 0.16,
+  "niacin": 3.1,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/581"
+ },
+ {
+  "ingredient": "银耳",
+  "carotene": 50.0,
+  "vitB1": 0.05,
+  "vitB2": 0.25,
+  "niacin": 5.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/587"
+ },
+ {
+  "ingredient": "紫菜",
+  "carotene": 1370.0,
+  "vitB1": 0.27,
+  "vitB2": 1.02,
+  "niacin": 7.3,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/611"
+ },
+ {
+  "ingredient": "草莓",
+  "carotene": 30.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 47.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/701"
+ },
+ {
+  "ingredient": "芒果",
+  "carotene": 897.0,
+  "vitB1": 0.01,
+  "vitB2": 0.04,
+  "niacin": 0.3,
+  "vitC": 23.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/723"
+ },
+ {
+  "ingredient": "菠萝",
+  "carotene": 20.0,
+  "vitB1": 0.04,
+  "vitB2": 0.02,
+  "niacin": 0.2,
+  "vitC": 18.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/716"
+ },
+ {
+  "ingredient": "火龙果",
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "niacin": 0.22,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/734"
+ },
+ {
+  "ingredient": "鸡翅",
+  "vitB1": 0.01,
+  "vitB2": 0.11,
+  "niacin": 5.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/881"
+ },
+ {
+  "ingredient": "草鱼",
+  "vitB1": 0.04,
+  "vitB2": 0.11,
+  "niacin": 2.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1003"
+ },
+ {
+  "ingredient": "腐竹",
+  "vitB1": 0.13,
+  "vitB2": 0.07,
+  "niacin": 0.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/344"
+ },
+ {
+  "ingredient": "黑豆",
+  "carotene": 30.0,
+  "vitB1": 0.2,
+  "vitB2": 0.33,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/327"
+ },
+ {
+  "ingredient": "鳕鱼",
+  "vitB1": 0.04,
+  "vitB2": 0.13,
+  "niacin": 2.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1062"
+ },
+ {
+  "ingredient": "蛤蜊",
+  "vitB1": 0.01,
+  "vitB2": 0.13,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1120"
+ },
+ {
+  "ingredient": "杏仁",
+  "vitB1": 0.08,
+  "vitB2": 0.56,
+  "vitC": 26.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/752"
+ },
+ {
+  "ingredient": "腰果",
+  "carotene": 49.0,
+  "vitB1": 0.27,
+  "vitB2": 0.13,
+  "niacin": 1.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/756"
+ },
+ {
+  "ingredient": "生抽",
+  "vitB1": 0.02,
+  "vitB2": 0.11,
+  "niacin": 1.08,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1611"
+ },
+ {
+  "ingredient": "老抽",
+  "vitB1": 0.03,
+  "vitB2": 0.08,
+  "niacin": 1.68,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1581"
+ },
+ {
+  "ingredient": "醋",
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1520"
+ },
+ {
+  "ingredient": "豆瓣酱",
+  "vitB1": 0.11,
+  "vitB2": 0.46,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1523"
+ },
+ {
+  "ingredient": "姜",
+  "carotene": 170.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.8,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/528"
+ },
+ {
+  "ingredient": "葱",
+  "carotene": 840.0,
+  "vitB1": 0.05,
+  "vitB2": 0.06,
+  "niacin": 0.4,
+  "vitC": 21.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/443"
+ },
+ {
+  "ingredient": "大蒜",
+  "carotene": 30.0,
+  "vitB1": 0.04,
+  "vitB2": 0.06,
+  "niacin": 0.6,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/436"
+ },
+ {
+  "ingredient": "辣椒",
+  "vitB1": 0.53,
+  "vitB2": 0.16,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/407"
+ },
+ {
+  "ingredient": "猪油",
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1494"
+ },
+ {
+  "ingredient": "鹰嘴豆",
+  "carotene": 86.0,
+  "vitB1": 0.41,
+  "vitB2": 0.25,
+  "vitC": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/369"
+ },
+ {
+  "ingredient": "芥蓝",
+  "carotene": 3450.0,
+  "vitB1": 0.02,
+  "vitB2": 0.09,
+  "niacin": 1.0,
+  "vitC": 76.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/468"
+ },
+ {
+  "ingredient": "茼蒿",
+  "carotene": 1510.0,
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 0.6,
+  "vitC": 18.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/488"
+ },
+ {
+  "ingredient": "苋菜",
+  "carotene": 2110.0,
+  "vitB1": 0.03,
+  "vitB2": 0.12,
+  "niacin": 0.8,
+  "vitC": 47.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/486"
+ },
+ {
+  "ingredient": "香菜",
+  "carotene": 1160.0,
+  "vitB1": 0.04,
+  "vitB2": 0.14,
+  "niacin": 2.2,
+  "vitC": 48.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/485"
+ },
+ {
+  "ingredient": "芦笋",
+  "carotene": 100.0,
+  "vitB1": 0.04,
+  "vitB2": 0.05,
+  "niacin": 0.7,
+  "vitC": 45.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/510"
+ },
+ {
+  "ingredient": "樱桃",
+  "carotene": 210.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.6,
+  "vitC": 10.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/683"
+ },
+ {
+  "ingredient": "荔枝",
+  "carotene": 10.0,
+  "vitB1": 0.1,
+  "vitB2": 0.04,
+  "niacin": 1.1,
+  "vitC": 41.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/722"
+ },
+ {
+  "ingredient": "火腿",
+  "vitB1": 0.28,
+  "vitB2": 0.09,
+  "niacin": 8.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/821"
+ },
+ {
+  "ingredient": "香肠",
+  "vitB1": 0.48,
+  "vitB2": 0.11,
+  "niacin": 4.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/818"
+ },
+ {
+  "ingredient": "腊肉",
+  "vitB1": 0.9,
+  "vitB2": 0.11,
+  "niacin": 4.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/805"
+ },
+ {
+  "ingredient": "猪蹄",
+  "vitB1": 0.05,
+  "vitB2": 0.1,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/793"
+ },
+ {
+  "ingredient": "鸭血",
+  "vitB1": 0.06,
+  "vitB2": 0.06,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/899"
+ },
+ {
+  "ingredient": "鲤鱼",
+  "vitB1": 0.03,
+  "vitB2": 0.09,
+  "niacin": 2.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1012"
+ },
+ {
+  "ingredient": "沙丁鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.03,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1043"
+ },
+ {
+  "ingredient": "鱿鱼",
+  "vitB1": 0.02,
+  "vitB2": 0.13,
+  "niacin": 4.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1130"
+ },
+ {
+  "ingredient": "扇贝",
+  "vitB2": 0.1,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1114"
+ },
+ {
+  "ingredient": "生蚝",
+  "vitB1": 0.04,
+  "vitB2": 0.13,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1112"
+ },
+ {
+  "ingredient": "海参",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1123"
+ },
+ {
+  "ingredient": "虾皮",
+  "vitB1": 0.02,
+  "vitB2": 0.14,
+  "niacin": 3.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1098"
+ },
+ {
+  "ingredient": "咸鸭蛋",
+  "vitB1": 0.16,
+  "vitB2": 0.33,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/995"
+ },
+ {
+  "ingredient": "奶酪",
+  "vitB1": 0.06,
+  "vitB2": 0.91,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/962"
+ },
+ {
+  "ingredient": "南瓜子",
+  "vitB1": 0.08,
+  "vitB2": 0.16,
+  "niacin": 3.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/769"
+ },
+ {
+  "ingredient": "芝麻油",
+  "carotene": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1515"
+ },
+ {
+  "ingredient": "蜂蜜",
+  "vitB2": 0.05,
+  "niacin": 0.1,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1487"
+ },
+ {
+  "ingredient": "鸡精",
+  "vitB1": 0.09,
+  "vitB2": 0.05,
+  "niacin": 0.56,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1567"
+ },
+ {
+  "ingredient": "大麦",
+  "vitB1": 0.43,
+  "vitB2": 0.14,
+  "niacin": 3.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/299"
+ },
+ {
+  "ingredient": "荠菜",
+  "carotene": 2590.0,
+  "vitB1": 0.04,
+  "vitB2": 0.15,
+  "niacin": 0.6,
+  "vitC": 43.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/490"
+ },
+ {
+  "ingredient": "香椿",
+  "carotene": 700.0,
+  "vitB1": 0.07,
+  "vitB2": 0.12,
+  "niacin": 0.9,
+  "vitC": 40.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/561"
+ },
+ {
+  "ingredient": "马兰头",
+  "carotene": 2040.0,
+  "vitB1": 0.06,
+  "vitB2": 0.13,
+  "niacin": 0.8,
+  "vitC": 26.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/555"
+ },
+ {
+  "ingredient": "葡萄干",
+  "vitB1": 0.09,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/689"
+ },
+ {
+  "ingredient": "兔肉",
+  "vitB1": 0.11,
+  "vitB2": 0.1,
+  "niacin": 5.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/875"
+ },
+ {
+  "ingredient": "驴肉",
+  "vitB1": 0.03,
+  "vitB2": 0.16,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/867"
+ },
+ {
+  "ingredient": "鱼丸",
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1067"
+ },
+ {
+  "ingredient": "方便面",
+  "vitB1": 0.12,
+  "vitB2": 0.06,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1291"
+ },
+ {
+  "ingredient": "午餐肉",
+  "vitB1": 0.24,
+  "vitB2": 0.05,
+  "niacin": 11.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/807"
+ },
+ {
+  "ingredient": "番茄酱",
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "niacin": 5.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1539"
+ },
+ {
+  "ingredient": "甜面酱",
+  "carotene": 30.0,
+  "vitB1": 0.03,
+  "vitB2": 0.14,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1527"
+ },
+ {
+  "ingredient": "沙拉酱",
+  "vitB1": 0.07,
+  "vitB2": 0.09,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1536"
+ },
+ {
+  "ingredient": "茭白",
+  "carotene": 30.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.5,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/519"
+ },
+ {
+  "ingredient": "荸荠",
+  "carotene": 20.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.7,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/520"
+ },
+ {
+  "ingredient": "章鱼",
+  "vitB1": 0.07,
+  "vitB2": 0.13,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1133"
+ },
+ {
+  "ingredient": "奶粉",
+  "vitB1": 0.06,
+  "vitB2": 1.6,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/957"
+ },
+ {
+  "ingredient": "黄油",
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/970"
+ },
+ {
+  "ingredient": "花椒",
+  "carotene": 140.0,
+  "vitB1": 0.12,
+  "vitB2": 0.43,
+  "niacin": 1.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1583"
+ },
+ {
+  "ingredient": "五香粉",
+  "vitB2": 0.03,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1564"
+ },
+ {
+  "ingredient": "茶树菇",
+  "vitB1": 0.32,
+  "vitB2": 1.48,
+  "niacin": 39.39,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/591"
+ },
+ {
+  "ingredient": "草菇",
+  "vitB1": 0.08,
+  "vitB2": 0.34,
+  "niacin": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/571"
+ },
+ {
+  "ingredient": "油豆腐",
+  "carotene": 30.0,
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/343"
+ },
+ {
+  "ingredient": "青豆",
+  "carotene": 790.0,
+  "vitB1": 0.41,
+  "vitB2": 0.18,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/328"
+ },
+ {
+  "ingredient": "鲳鱼",
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1056"
+ },
+ {
+  "ingredient": "罗非鱼",
+  "vitB1": 0.11,
+  "vitB2": 0.17,
+  "niacin": 3.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1013"
+ },
+ {
+  "ingredient": "蛏子",
+  "vitB1": 0.02,
+  "vitB2": 0.12,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1108"
+ },
+ {
+  "ingredient": "石榴",
+  "vitB1": 0.05,
+  "vitB2": 0.03,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/690"
+ },
+ {
+  "ingredient": "无花果",
+  "carotene": 30.0,
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/699"
+ },
+ {
+  "ingredient": "桑葚",
+  "carotene": 30.0,
+  "vitB1": 0.02,
+  "vitB2": 0.06,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/693"
+ },
+ {
+  "ingredient": "榴莲",
+  "carotene": 20.0,
+  "vitB1": 0.2,
+  "vitB2": 0.13,
+  "niacin": 1.19,
+  "vitC": 2.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/735"
+ },
+ {
+  "ingredient": "椰子",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.5,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/729"
+ },
+ {
+  "ingredient": "枇杷",
+  "vitB1": 0.01,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/730"
+ },
+ {
+  "ingredient": "炼乳",
+  "vitB1": 0.03,
+  "vitB2": 0.16,
+  "niacin": 0.3,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/972"
+ },
+ {
+  "ingredient": "秋葵",
+  "carotene": 310.0,
+  "vitB1": 0.05,
+  "vitB2": 0.09,
+  "niacin": 1.0,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/412"
+ },
+ {
+  "ingredient": "荷兰豆",
+  "carotene": 480.0,
+  "vitB1": 0.09,
+  "vitB2": 0.04,
+  "niacin": 0.7,
+  "vitC": 16.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/389"
+ },
+ {
+  "ingredient": "芥菜",
+  "carotene": 310.0,
+  "vitB1": 0.03,
+  "vitB2": 0.11,
+  "niacin": 0.5,
+  "vitC": 31.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/466"
+ },
+ {
+  "ingredient": "杨梅",
+  "carotene": 40.0,
+  "vitB1": 0.01,
+  "vitB2": 0.05,
+  "niacin": 0.3,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/727"
+ },
+ {
+  "ingredient": "李子",
+  "carotene": 150.0,
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "niacin": 0.4,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/666"
+ },
+ {
+  "ingredient": "木瓜",
+  "carotene": 870.0,
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "niacin": 0.3,
+  "vitC": 43.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/724"
+ },
+ {
+  "ingredient": "口蘑",
+  "vitB1": 0.07,
+  "vitB2": 0.08,
+  "niacin": 44.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/576"
+ },
+ {
+  "ingredient": "鲍鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.16,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1106"
+ },
+ {
+  "ingredient": "猪肚",
+  "vitB1": 0.07,
+  "vitB2": 0.16,
+  "niacin": 3.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/795"
+ },
+ {
+  "ingredient": "鹅蛋",
+  "carotene": 18.0,
+  "vitB1": 0.06,
+  "vitB2": 0.32,
+  "niacin": 0.1,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1000"
+ },
+ {
+  "ingredient": "年糕",
+  "vitB1": 0.03,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1211"
+ },
+ {
+  "ingredient": "豇豆",
+  "carotene": 60.0,
+  "vitB1": 0.16,
+  "vitB2": 0.08,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/367"
+ },
+ {
+  "ingredient": "竹笋",
+  "vitB1": 0.08,
+  "vitB2": 0.08,
+  "niacin": 0.6,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/499"
+ },
+ {
+  "ingredient": "蒜苗",
+  "carotene": 280.0,
+  "vitB1": 0.11,
+  "vitB2": 0.08,
+  "niacin": 0.5,
+  "vitC": 35.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/439"
+ },
+ {
+  "ingredient": "彩椒",
+  "carotene": 794.0,
+  "vitB1": 0.05,
+  "vitB2": 0.05,
+  "niacin": 1.09,
+  "vitC": 104.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/415"
+ },
+ {
+  "ingredient": "韭黄",
+  "carotene": 260.0,
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 0.7,
+  "vitC": 15.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/446"
+ },
+ {
+  "ingredient": "豌豆苗",
+  "carotene": 2667.0,
+  "vitB1": 0.05,
+  "vitB2": 0.11,
+  "niacin": 1.1,
+  "vitC": 67.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/401"
+ },
+ {
+  "ingredient": "鸡爪",
+  "vitB1": 0.01,
+  "vitB2": 0.13,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/883"
+ },
+ {
+  "ingredient": "墨鱼",
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1127"
+ },
+ {
+  "ingredient": "千张",
+  "carotene": 30.0,
+  "vitB1": 0.04,
+  "vitB2": 0.05,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/345"
+ },
+ {
+  "ingredient": "腐乳",
+  "carotene": 130.0,
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1545"
+ },
+ {
+  "ingredient": "粉条",
+  "vitB1": 0.01,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/325"
+ },
+ {
+  "ingredient": "粉丝",
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/324"
+ },
+ {
+  "ingredient": "莲子",
+  "vitB1": 0.16,
+  "vitB2": 0.08,
+  "niacin": 4.2,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/768"
+ },
+ {
+  "ingredient": "松子",
+  "carotene": 40.0,
+  "vitB1": 0.41,
+  "vitB2": 0.09,
+  "niacin": 3.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/749"
+ },
+ {
+  "ingredient": "芝麻酱",
+  "carotene": 100.0,
+  "vitB1": 0.16,
+  "vitB2": 0.22,
+  "niacin": 5.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1528"
+ },
+ {
+  "ingredient": "藕粉",
+  "vitB2": 0.01,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/322"
+ },
+ {
+  "ingredient": "玉米面",
+  "vitB1": 0.34,
+  "vitB2": 0.06,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/295"
+ },
+ {
+  "ingredient": "玉米糁",
+  "vitB1": 0.1,
+  "vitB2": 0.08,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/297"
+ },
+ {
+  "ingredient": "米粉",
+  "vitB1": 0.7,
+  "vitB2": 0.4,
+  "niacin": 0.3,
+  "vitC": 35.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1183"
+ },
+ {
+  "ingredient": "百合",
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 0.7,
+  "vitC": 18.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/506"
+ },
+ {
+  "ingredient": "鸡毛菜",
+  "carotene": 826.0,
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 0.61,
+  "vitC": 24.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/460"
+ },
+ {
+  "ingredient": "艾蒿",
+  "carotene": 160.0,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/532"
+ },
+ {
+  "ingredient": "苜蓿",
+  "carotene": 2640.0,
+  "vitB1": 0.1,
+  "vitB2": 0.73,
+  "niacin": 2.2,
+  "vitC": 118.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/564"
+ },
+ {
+  "ingredient": "佛手瓜",
+  "carotene": 20.0,
+  "vitB1": 0.01,
+  "vitB2": 0.1,
+  "niacin": 0.1,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/420"
+ },
+ {
+  "ingredient": "菜瓜",
+  "carotene": 20.0,
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "niacin": 0.2,
+  "vitC": 12.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/418"
+ },
+ {
+  "ingredient": "蚕豆",
+  "carotene": 50.0,
+  "vitB1": 0.13,
+  "vitB2": 0.23,
+  "niacin": 2.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/362"
+ },
+ {
+  "ingredient": "豌豆",
+  "carotene": 250.0,
+  "vitB1": 0.49,
+  "vitB2": 0.14,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/368"
+ },
+ {
+  "ingredient": "扁豆",
+  "carotene": 30.0,
+  "vitB1": 0.26,
+  "vitB2": 0.45,
+  "niacin": 2.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/364"
+ },
+ {
+  "ingredient": "人参果",
+  "carotene": 50.0,
+  "vitB2": 0.25,
+  "niacin": 0.3,
+  "vitC": 12.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/725"
+ },
+ {
+  "ingredient": "冬枣",
+  "vitB1": 0.08,
+  "vitB2": 0.09,
+  "niacin": 0.51,
+  "vitC": 243.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/681"
+ },
+ {
+  "ingredient": "柠檬",
+  "vitB1": 0.05,
+  "vitB2": 0.02,
+  "niacin": 0.6,
+  "vitC": 22.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/712"
+ },
+ {
+  "ingredient": "鸭肫",
+  "vitB1": 0.04,
+  "vitB2": 0.15,
+  "niacin": 4.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/900"
+ },
+ {
+  "ingredient": "鸭肠",
+  "vitB1": 0.02,
+  "vitB2": 0.22,
+  "niacin": 3.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/895"
+ },
+ {
+  "ingredient": "猪心",
+  "vitB1": 0.19,
+  "vitB2": 0.48,
+  "niacin": 6.8,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/802"
+ },
+ {
+  "ingredient": "猪血",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/803"
+ },
+ {
+  "ingredient": "鸭翅",
+  "vitB1": 0.02,
+  "vitB2": 0.16,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/893"
+ },
+ {
+  "ingredient": "咸肉",
+  "vitB1": 0.77,
+  "vitB2": 0.21,
+  "niacin": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/808"
+ },
+ {
+  "ingredient": "火腿肠",
+  "vitB1": 0.26,
+  "vitB2": 0.43,
+  "niacin": 2.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/815"
+ },
+ {
+  "ingredient": "鳊鱼",
+  "vitB1": 0.02,
+  "vitB2": 0.07,
+  "niacin": 1.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1023"
+ },
+ {
+  "ingredient": "虾米",
+  "vitB1": 0.01,
+  "vitB2": 0.12,
+  "niacin": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1100"
+ },
+ {
+  "ingredient": "油条",
+  "vitB1": 0.01,
+  "vitB2": 0.07,
+  "niacin": 0.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/277"
+ },
+ {
+  "ingredient": "素鸡",
+  "carotene": 60.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/347"
+ },
+ {
+  "ingredient": "榨菜",
+  "carotene": 490.0,
+  "vitB1": 0.03,
+  "vitB2": 0.06,
+  "niacin": 0.5,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1551"
+ },
+ {
+  "ingredient": "萝卜干",
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 0.9,
+  "vitC": 17.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1550"
+ },
+ {
+  "ingredient": "辣椒酱",
+  "carotene": 790.0,
+  "vitB1": 0.01,
+  "vitB2": 0.09,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1526"
+ },
+ {
+  "ingredient": "菊花",
+  "vitB1": 0.09,
+  "vitB2": 0.51,
+  "niacin": 9.2,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1613"
+ },
+ {
+  "ingredient": "三明治",
+  "vitB1": 0.21,
+  "vitB2": 0.33,
+  "niacin": 1.8,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1261"
+ },
+ {
+  "ingredient": "苏打饼干",
+  "vitB1": 0.03,
+  "vitB2": 0.01,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1323"
+ },
+ {
+  "ingredient": "八宝粥",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.27,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1277"
+ },
+ {
+  "ingredient": "挂面",
+  "vitB1": 0.19,
+  "vitB2": 0.04,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/261"
+ },
+ {
+  "ingredient": "玉米片",
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 2.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1275"
+ },
+ {
+  "ingredient": "花生酱",
+  "vitB1": 0.01,
+  "vitB2": 0.15,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1524"
+ },
+ {
+  "ingredient": "豆腐脑",
+  "vitB1": 0.04,
+  "vitB2": 0.02,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/337"
+ },
+ {
+  "ingredient": "花卷",
+  "vitB2": 0.02,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/269"
+ },
+ {
+  "ingredient": "啤酒",
+  "vitB1": 0.15,
+  "vitB2": 0.04,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1406"
+ },
+ {
+  "ingredient": "葡萄酒",
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1410"
+ },
+ {
+  "ingredient": "黄酒",
+  "vitB1": 0.02,
+  "vitB2": 0.05,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1421"
+ },
+ {
+  "ingredient": "小麦粉(标准粉)",
+  "vitB1": 0.28,
+  "vitB2": 0.08,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/259"
+ },
+ {
+  "ingredient": "通心面",
+  "vitB1": 0.12,
+  "vitB2": 0.03,
+  "niacin": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/268"
+ },
+ {
+  "ingredient": "空锅饼",
+  "vitB1": 0.14,
+  "niacin": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/270"
+ },
+ {
+  "ingredient": "烙饼(标准粉)",
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/271"
+ },
+ {
+  "ingredient": "烧饼(加糖)",
+  "vitB2": 0.01,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/275"
+ },
+ {
+  "ingredient": "油饼",
+  "vitB1": 0.11,
+  "vitB2": 0.05,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/276"
+ },
+ {
+  "ingredient": "水面筋",
+  "vitB1": 0.1,
+  "vitB2": 0.07,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/278"
+ },
+ {
+  "ingredient": "油面筋",
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 2.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/279"
+ },
+ {
+  "ingredient": "稻米(均值)",
+  "vitB1": 0.11,
+  "vitB2": 0.05,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/280"
+ },
+ {
+  "ingredient": "粳米(标一)",
+  "vitB1": 0.16,
+  "vitB2": 0.08,
+  "niacin": 1.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/281"
+ },
+ {
+  "ingredient": "籼米(标准)",
+  "vitB1": 0.09,
+  "vitB2": 0.04,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/282"
+ },
+ {
+  "ingredient": "香大米",
+  "vitB2": 0.08,
+  "niacin": 2.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/283"
+ },
+ {
+  "ingredient": "紫红糯米",
+  "vitB1": 0.31,
+  "vitB2": 0.12,
+  "niacin": 4.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/286"
+ },
+ {
+  "ingredient": "米饭(蒸)(均值)",
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/287"
+ },
+ {
+  "ingredient": "粳米粥",
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/288"
+ },
+ {
+  "ingredient": "籼米粉",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/289"
+ },
+ {
+  "ingredient": "籼米粥",
+  "carotene": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/291"
+ },
+ {
+  "ingredient": "玉米笋(罐头)",
+  "carotene": 40.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/298"
+ },
+ {
+  "ingredient": "青稞",
+  "vitB1": 0.34,
+  "vitB2": 0.11,
+  "niacin": 6.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/300"
+ },
+ {
+  "ingredient": "小米面",
+  "vitB1": 0.13,
+  "vitB2": 0.08,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/302"
+ },
+ {
+  "ingredient": "小米粥",
+  "vitB1": 0.02,
+  "vitB2": 0.07,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/303"
+ },
+ {
+  "ingredient": "大黄米",
+  "vitB1": 0.3,
+  "vitB2": 0.09,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/304"
+ },
+ {
+  "ingredient": "黄米",
+  "vitB1": 0.09,
+  "vitB2": 0.13,
+  "niacin": 1.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/305"
+ },
+ {
+  "ingredient": "高粱米",
+  "vitB1": 0.29,
+  "vitB2": 0.1,
+  "niacin": 1.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/306"
+ },
+ {
+  "ingredient": "糜子(带皮)",
+  "vitB1": 0.45,
+  "vitB2": 0.18,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/307"
+ },
+ {
+  "ingredient": "苦荞麦粉",
+  "vitB1": 0.32,
+  "vitB2": 0.21,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/308"
+ },
+ {
+  "ingredient": "莜麦面",
+  "carotene": 20.0,
+  "vitB1": 0.39,
+  "vitB2": 0.04,
+  "niacin": 3.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/310"
+ },
+ {
+  "ingredient": "薏米面",
+  "vitB1": 0.07,
+  "vitB2": 0.14,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/312"
+ },
+ {
+  "ingredient": "马铃薯",
+  "carotene": 30.0,
+  "vitB1": 0.08,
+  "vitB2": 0.04,
+  "niacin": 1.1,
+  "vitC": 27.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/313"
+ },
+ {
+  "ingredient": "马铃薯粉",
+  "carotene": 120.0,
+  "vitB1": 0.08,
+  "vitB2": 0.06,
+  "niacin": 5.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/314"
+ },
+ {
+  "ingredient": "甘薯(白心)",
+  "carotene": 220.0,
+  "vitB1": 0.07,
+  "vitB2": 0.04,
+  "niacin": 0.6,
+  "vitC": 24.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/315"
+ },
+ {
+  "ingredient": "甘薯片",
+  "carotene": 150.0,
+  "vitB1": 0.15,
+  "vitB2": 0.11,
+  "niacin": 1.1,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/317"
+ },
+ {
+  "ingredient": "甘薯粉",
+  "carotene": 20.0,
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/318"
+ },
+ {
+  "ingredient": "木薯",
+  "vitB1": 0.21,
+  "vitB2": 0.09,
+  "niacin": 1.2,
+  "vitC": 35.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/319"
+ },
+ {
+  "ingredient": "玉米淀粉",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/320"
+ },
+ {
+  "ingredient": "魔芋精粉",
+  "vitB2": 0.1,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/323"
+ },
+ {
+  "ingredient": "黄豆粉",
+  "carotene": 380.0,
+  "vitB1": 0.31,
+  "vitB2": 0.22,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/329"
+ },
+ {
+  "ingredient": "豆腐花",
+  "carotene": 250.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/330"
+ },
+ {
+  "ingredient": "豆浆粉",
+  "vitB1": 0.07,
+  "vitB2": 0.05,
+  "niacin": 0.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/331"
+ },
+ {
+  "ingredient": "豆粕",
+  "vitB1": 0.49,
+  "vitB2": 0.2,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/332"
+ },
+ {
+  "ingredient": "豆奶",
+  "vitB1": 0.02,
+  "vitB2": 0.06,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/339"
+ },
+ {
+  "ingredient": "豆汁(生)",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/340"
+ },
+ {
+  "ingredient": "豆腐丝",
+  "carotene": 30.0,
+  "vitB1": 0.04,
+  "vitB2": 0.12,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/341"
+ },
+ {
+  "ingredient": "豆腐干(均值)",
+  "vitB1": 0.03,
+  "vitB2": 0.07,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/346"
+ },
+ {
+  "ingredient": "素什锦",
+  "vitB1": 0.07,
+  "vitB2": 0.04,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/348"
+ },
+ {
+  "ingredient": "烤麸",
+  "vitB1": 0.04,
+  "vitB2": 0.05,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/349"
+ },
+ {
+  "ingredient": "赤小豆(干)",
+  "carotene": 80.0,
+  "vitB1": 0.16,
+  "vitB2": 0.11,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/351"
+ },
+ {
+  "ingredient": "小豆粥",
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/352"
+ },
+ {
+  "ingredient": "豆沙",
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/353"
+ },
+ {
+  "ingredient": "红豆沙",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/354"
+ },
+ {
+  "ingredient": "红豆馅",
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/355"
+ },
+ {
+  "ingredient": "花豆(干，红)",
+  "carotene": 430.0,
+  "vitB1": 0.25,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/356"
+ },
+ {
+  "ingredient": "芸豆(干，白)",
+  "vitB1": 0.18,
+  "vitB2": 0.26,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/358"
+ },
+ {
+  "ingredient": "眉豆(干)",
+  "vitB1": 0.15,
+  "vitB2": 0.18,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/366"
+ },
+ {
+  "ingredient": "荆豆(干)",
+  "carotene": 250.0,
+  "vitB2": 0.25,
+  "niacin": 1.8,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/370"
+ },
+ {
+  "ingredient": "变萝卜",
+  "carotene": 20.0,
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 0.6,
+  "vitC": 24.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/372"
+ },
+ {
+  "ingredient": "红萝卜",
+  "vitB1": 0.05,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/374"
+ },
+ {
+  "ingredient": "青萝卜",
+  "carotene": 60.0,
+  "vitB1": 0.04,
+  "vitB2": 0.06,
+  "vitC": 14.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/376"
+ },
+ {
+  "ingredient": "小水萝卜",
+  "carotene": 20.0,
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "vitC": 22.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/378"
+ },
+ {
+  "ingredient": "心里美萝卜",
+  "carotene": 10.0,
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "vitC": 23.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/379"
+ },
+ {
+  "ingredient": "芥菜头",
+  "vitB1": 0.06,
+  "vitB2": 0.02,
+  "niacin": 0.6,
+  "vitC": 34.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/382"
+ },
+ {
+  "ingredient": "苤蓝",
+  "carotene": 20.0,
+  "vitB1": 0.04,
+  "vitB2": 0.02,
+  "niacin": 0.5,
+  "vitC": 41.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/383"
+ },
+ {
+  "ingredient": "甜菜根(鲜)",
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.2,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/384"
+ },
+ {
+  "ingredient": "刀豆(鲜)",
+  "carotene": 220.0,
+  "vitB1": 0.05,
+  "vitB2": 0.07,
+  "niacin": 1.0,
+  "vitC": 15.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/386"
+ },
+ {
+  "ingredient": "豆角",
+  "carotene": 200.0,
+  "vitB1": 0.05,
+  "vitB2": 0.07,
+  "niacin": 0.9,
+  "vitC": 18.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/387"
+ },
+ {
+  "ingredient": "龙豆(鲜)",
+  "carotene": 520.0,
+  "vitB1": 0.04,
+  "vitB2": 0.06,
+  "niacin": 1.0,
+  "vitC": 11.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/390"
+ },
+ {
+  "ingredient": "油豆角(鲜)",
+  "carotene": 160.0,
+  "vitB1": 0.07,
+  "vitB2": 0.08,
+  "niacin": 1.4,
+  "vitC": 11.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/395"
+ },
+ {
+  "ingredient": "黄豆芽",
+  "carotene": 30.0,
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 0.6,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/399"
+ },
+ {
+  "ingredient": "绿豆芽",
+  "carotene": 20.0,
+  "vitB1": 0.05,
+  "vitB2": 0.06,
+  "niacin": 0.5,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/400"
+ },
+ {
+  "ingredient": "番茄",
+  "carotene": 550.0,
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "niacin": 0.6,
+  "vitC": 19.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/405"
+ },
+ {
+  "ingredient": "奶柿子",
+  "carotene": 530.0,
+  "vitB1": 0.05,
+  "vitB2": 0.02,
+  "niacin": 1.0,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/406"
+ },
+ {
+  "ingredient": "甜椒",
+  "carotene": 340.0,
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "niacin": 0.9,
+  "vitC": 72.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/410"
+ },
+ {
+  "ingredient": "葫子",
+  "carotene": 980.0,
+  "vitB1": 0.01,
+  "vitB2": 0.06,
+  "niacin": 0.7,
+  "vitC": 29.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/411"
+ },
+ {
+  "ingredient": "樱桃番茄",
+  "carotene": 332.0,
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "niacin": 0.92,
+  "vitC": 33.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/413"
+ },
+ {
+  "ingredient": "葫芦",
+  "carotene": 40.0,
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "niacin": 0.4,
+  "vitC": 11.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/421"
+ },
+ {
+  "ingredient": "节瓜",
+  "vitB1": 0.02,
+  "vitB2": 0.05,
+  "niacin": 0.4,
+  "vitC": 39.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/423"
+ },
+ {
+  "ingredient": "金瓜",
+  "carotene": 60.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.6,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/424"
+ },
+ {
+  "ingredient": "南瓜粉",
+  "carotene": 60.0,
+  "vitB1": 0.04,
+  "vitB2": 0.7,
+  "niacin": 12.5,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/427"
+ },
+ {
+  "ingredient": "蛇瓜",
+  "carotene": 20.0,
+  "vitB1": 0.1,
+  "vitB2": 0.03,
+  "niacin": 0.1,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/428"
+ },
+ {
+  "ingredient": "飞碟瓜",
+  "carotene": 47.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.25,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/432"
+ },
+ {
+  "ingredient": "黄茎瓜",
+  "carotene": 680.0,
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/433"
+ },
+ {
+  "ingredient": "秋黄瓜",
+  "carotene": 40.0,
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/434"
+ },
+ {
+  "ingredient": "青蒜",
+  "carotene": 590.0,
+  "vitB1": 0.06,
+  "vitB2": 0.04,
+  "niacin": 0.6,
+  "vitC": 16.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/437"
+ },
+ {
+  "ingredient": "蒜黄",
+  "carotene": 280.0,
+  "vitB1": 0.05,
+  "vitB2": 0.07,
+  "niacin": 0.6,
+  "vitC": 18.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/438"
+ },
+ {
+  "ingredient": "蒜苔",
+  "carotene": 480.0,
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 0.2,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/440"
+ },
+ {
+  "ingredient": "大葱",
+  "carotene": 60.0,
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 0.5,
+  "vitC": 17.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/441"
+ },
+ {
+  "ingredient": "细香葱",
+  "carotene": 460.0,
+  "vitB1": 0.04,
+  "niacin": 0.5,
+  "vitC": 14.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/442"
+ },
+ {
+  "ingredient": "韭苔",
+  "carotene": 480.0,
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 0.2,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/447"
+ },
+ {
+  "ingredient": "薤白(鲜)",
+  "carotene": 90.0,
+  "vitB1": 0.08,
+  "vitB2": 0.14,
+  "niacin": 1.0,
+  "vitC": 36.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/449"
+ },
+ {
+  "ingredient": "大白菜(均值)",
+  "carotene": 120.0,
+  "vitB1": 0.04,
+  "vitB2": 0.05,
+  "niacin": 0.6,
+  "vitC": 31.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/450"
+ },
+ {
+  "ingredient": "酸白菜",
+  "carotene": 30.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.6,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/451"
+ },
+ {
+  "ingredient": "白菜薹",
+  "carotene": 960.0,
+  "vitB1": 0.05,
+  "vitB2": 0.08,
+  "niacin": 1.2,
+  "vitC": 44.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/453"
+ },
+ {
+  "ingredient": "红菜薹",
+  "carotene": 80.0,
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.9,
+  "vitC": 57.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/454"
+ },
+ {
+  "ingredient": "瓢儿白",
+  "carotene": 1200.0,
+  "vitB2": 0.03,
+  "niacin": 0.5,
+  "vitC": 10.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/455"
+ },
+ {
+  "ingredient": "乌菜",
+  "carotene": 1010.0,
+  "vitB1": 0.06,
+  "vitB2": 0.11,
+  "niacin": 1.1,
+  "vitC": 45.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/456"
+ },
+ {
+  "ingredient": "油菜薹",
+  "carotene": 540.0,
+  "vitB1": 0.08,
+  "vitB2": 0.07,
+  "niacin": 0.8,
+  "vitC": 65.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/458"
+ },
+ {
+  "ingredient": "奶白菜",
+  "carotene": 1141.0,
+  "vitB1": 0.02,
+  "vitB2": 0.1,
+  "niacin": 0.59,
+  "vitC": 37.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/459"
+ },
+ {
+  "ingredient": "乌塌菜",
+  "carotene": 1568.0,
+  "vitB1": 0.01,
+  "vitB2": 0.08,
+  "niacin": 0.21,
+  "vitC": 33.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/462"
+ },
+ {
+  "ingredient": "甘蓝",
+  "carotene": 70.0,
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "niacin": 0.4,
+  "vitC": 40.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/463"
+ },
+ {
+  "ingredient": "结球甘蓝(紫)",
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 0.15,
+  "vitC": 26.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/469"
+ },
+ {
+  "ingredient": "羽衣甘蓝",
+  "carotene": 4368.0,
+  "vitB1": 0.07,
+  "vitB2": 0.18,
+  "niacin": 1.09,
+  "vitC": 63.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/471"
+ },
+ {
+  "ingredient": "冬寒菜(鲜)",
+  "carotene": 6950.0,
+  "vitB1": 0.15,
+  "vitB2": 0.05,
+  "niacin": 0.6,
+  "vitC": 20.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/474"
+ },
+ {
+  "ingredient": "观达菜",
+  "carotene": 380.0,
+  "vitB1": 0.01,
+  "vitB2": 0.1,
+  "niacin": 0.4,
+  "vitC": 23.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/475"
+ },
+ {
+  "ingredient": "胡萝卜缨(红，鲜)",
+  "carotene": 970.0,
+  "vitB1": 0.04,
+  "vitC": 41.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/476"
+ },
+ {
+  "ingredient": "苦菜",
+  "carotene": 540.0,
+  "vitB1": 0.09,
+  "vitB2": 0.11,
+  "niacin": 0.6,
+  "vitC": 19.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/477"
+ },
+ {
+  "ingredient": "萝卜缨(小萝卜)",
+  "carotene": 710.0,
+  "vitB1": 0.03,
+  "vitB2": 0.13,
+  "niacin": 0.4,
+  "vitC": 51.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/478"
+ },
+ {
+  "ingredient": "芹菜茎",
+  "carotene": 340.0,
+  "vitB1": 0.02,
+  "vitB2": 0.06,
+  "niacin": 0.4,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/480"
+ },
+ {
+  "ingredient": "芹菜叶(鲜)",
+  "carotene": 2930.0,
+  "vitB1": 0.08,
+  "vitB2": 0.15,
+  "niacin": 0.9,
+  "vitC": 22.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/481"
+ },
+ {
+  "ingredient": "甜菜叶(鲜)",
+  "vitB1": 0.1,
+  "vitB2": 0.22,
+  "niacin": 0.4,
+  "vitC": 30.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/484"
+ },
+ {
+  "ingredient": "茴香(鲜)",
+  "carotene": 2410.0,
+  "vitB1": 0.06,
+  "vitB2": 0.09,
+  "niacin": 0.8,
+  "vitC": 26.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/489"
+ },
+ {
+  "ingredient": "莴笋叶",
+  "carotene": 880.0,
+  "vitB1": 0.06,
+  "vitB2": 0.1,
+  "niacin": 0.4,
+  "vitC": 13.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/492"
+ },
+ {
+  "ingredient": "蕹菜",
+  "carotene": 1520.0,
+  "vitB1": 0.03,
+  "vitB2": 0.08,
+  "niacin": 0.8,
+  "vitC": 25.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/493"
+ },
+ {
+  "ingredient": "番杏",
+  "carotene": 628.0,
+  "vitB1": 0.03,
+  "vitB2": 0.09,
+  "niacin": 0.23,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/494"
+ },
+ {
+  "ingredient": "樱桃萝卜缨",
+  "carotene": 1440.0,
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 0.26,
+  "vitC": 14.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/495"
+ },
+ {
+  "ingredient": "白笋(干)",
+  "carotene": 10.0,
+  "vitB2": 0.32,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/500"
+ },
+ {
+  "ingredient": "春笋(鲜)",
+  "carotene": 30.0,
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/501"
+ },
+ {
+  "ingredient": "冬笋(鲜)",
+  "carotene": 80.0,
+  "vitB1": 0.08,
+  "vitB2": 0.08,
+  "niacin": 0.6,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/502"
+ },
+ {
+  "ingredient": "黑笋(干)",
+  "vitB2": 0.41,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/503"
+ },
+ {
+  "ingredient": "毛笋(鲜)",
+  "vitB1": 0.04,
+  "vitB2": 0.05,
+  "niacin": 0.3,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/504"
+ },
+ {
+  "ingredient": "玉兰片",
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 0.1,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/505"
+ },
+ {
+  "ingredient": "金针菜",
+  "carotene": 1840.0,
+  "vitB1": 0.05,
+  "vitB2": 0.21,
+  "niacin": 3.1,
+  "vitC": 10.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/508"
+ },
+ {
+  "ingredient": "菊苣",
+  "vitB1": 0.08,
+  "vitB2": 0.08,
+  "niacin": 0.4,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/509"
+ },
+ {
+  "ingredient": "结球菊苣",
+  "carotene": 104.0,
+  "vitB1": 0.04,
+  "vitB2": 0.04,
+  "niacin": 0.23,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/511"
+ },
+ {
+  "ingredient": "软化白菊苣",
+  "carotene": 14.0,
+  "vitB1": 0.04,
+  "vitB2": 0.02,
+  "niacin": 0.07,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/512"
+ },
+ {
+  "ingredient": "慈菇(鲜)",
+  "vitB1": 0.14,
+  "vitB2": 0.07,
+  "niacin": 1.6,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/513"
+ },
+ {
+  "ingredient": "豆瓣菜(鲜)",
+  "carotene": 9550.0,
+  "vitB1": 0.01,
+  "vitB2": 0.11,
+  "niacin": 0.3,
+  "vitC": 52.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/514"
+ },
+ {
+  "ingredient": "菱角(老,鲜)",
+  "carotene": 10.0,
+  "vitB1": 0.19,
+  "vitB2": 0.06,
+  "niacin": 1.5,
+  "vitC": 13.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/515"
+ },
+ {
+  "ingredient": "藕",
+  "carotene": 20.0,
+  "vitB1": 0.09,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 44.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/516"
+ },
+ {
+  "ingredient": "蒲菜(鲜)",
+  "carotene": 10.0,
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 0.5,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/517"
+ },
+ {
+  "ingredient": "水芹菜",
+  "carotene": 380.0,
+  "vitB1": 0.01,
+  "vitB2": 0.19,
+  "niacin": 1.0,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/518"
+ },
+ {
+  "ingredient": "莼菜(瓶装)",
+  "carotene": 330.0,
+  "vitB2": 0.01,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/521"
+ },
+ {
+  "ingredient": "大薯(鲜)",
+  "vitB1": 0.05,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/522"
+ },
+ {
+  "ingredient": "豆薯(鲜)",
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 13.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/523"
+ },
+ {
+  "ingredient": "葛(鲜)",
+  "vitB1": 0.09,
+  "vitB2": 0.05,
+  "vitC": 24.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/524"
+ },
+ {
+  "ingredient": "槟榔芋(鲜)",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 0.3,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/527"
+ },
+ {
+  "ingredient": "白沙蒿(鲜)",
+  "carotene": 4400.0,
+  "vitB1": 0.31,
+  "niacin": 0.8,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/535"
+ },
+ {
+  "ingredient": "白薯叶(鲜)",
+  "carotene": 5968.0,
+  "vitB1": 0.13,
+  "vitB2": 0.28,
+  "niacin": 1.4,
+  "vitC": 56.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/536"
+ },
+ {
+  "ingredient": "败酱(鲜)",
+  "carotene": 6020.0,
+  "vitB2": 0.16,
+  "vitC": 52.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/538"
+ },
+ {
+  "ingredient": "扁蓄菜(鲜)",
+  "carotene": 9550.0,
+  "vitB2": 0.58,
+  "vitC": 158.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/539"
+ },
+ {
+  "ingredient": "朝鲜蓟(鲜)",
+  "carotene": 80.0,
+  "vitB1": 0.08,
+  "vitB2": 0.06,
+  "niacin": 0.8,
+  "vitC": 11.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/540"
+ },
+ {
+  "ingredient": "刺儿菜(鲜)",
+  "carotene": 5990.0,
+  "vitB1": 0.04,
+  "vitB2": 0.33,
+  "niacin": 2.2,
+  "vitC": 44.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/541"
+ },
+ {
+  "ingredient": "大玻璃草叶(鲜)",
+  "carotene": 4560.0,
+  "vitB1": 0.04,
+  "vitB2": 0.22,
+  "niacin": 1.4,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/544"
+ },
+ {
+  "ingredient": "大蓟叶(鲜)",
+  "carotene": 3050.0,
+  "vitB2": 0.32,
+  "vitC": 31.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/546"
+ },
+ {
+  "ingredient": "地肤(鲜)",
+  "carotene": 5720.0,
+  "vitB1": 0.15,
+  "vitB2": 0.31,
+  "niacin": 1.6,
+  "vitC": 39.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/547"
+ },
+ {
+  "ingredient": "地笋(鲜)",
+  "carotene": 6330.0,
+  "vitB1": 0.04,
+  "vitB2": 0.25,
+  "niacin": 1.4,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/548"
+ },
+ {
+  "ingredient": "槐花(鲜)",
+  "carotene": 400.0,
+  "vitB1": 0.04,
+  "vitB2": 0.18,
+  "niacin": 6.6,
+  "vitC": 30.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/552"
+ },
+ {
+  "ingredient": "黄麻叶(鲜)",
+  "vitB1": 0.13,
+  "vitB2": 0.55,
+  "niacin": 1.3,
+  "vitC": 37.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1579"
+ },
+ {
+  "ingredient": "苦苦菜(鲜)",
+  "carotene": 2140.0,
+  "vitC": 62.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/553"
+ },
+ {
+  "ingredient": "马齿苋(鲜)",
+  "carotene": 2230.0,
+  "vitB1": 0.03,
+  "vitB2": 0.11,
+  "niacin": 0.7,
+  "vitC": 23.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/554"
+ },
+ {
+  "ingredient": "牛蒡叶(鲜)",
+  "carotene": 3900.0,
+  "vitB1": 0.02,
+  "vitB2": 0.29,
+  "niacin": 1.1,
+  "vitC": 25.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/557"
+ },
+ {
+  "ingredient": "汤菜(鲜)",
+  "carotene": 410.0,
+  "vitB2": 0.68,
+  "niacin": 0.6,
+  "vitC": 57.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/559"
+ },
+ {
+  "ingredient": "夏枯草(鲜)",
+  "carotene": 3760.0,
+  "vitB2": 0.21,
+  "niacin": 1.2,
+  "vitC": 28.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/560"
+ },
+ {
+  "ingredient": "榆钱(鲜)",
+  "carotene": 730.0,
+  "vitB1": 0.04,
+  "vitB2": 0.12,
+  "niacin": 0.9,
+  "vitC": 11.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/562"
+ },
+ {
+  "ingredient": "荞菜(鲜)",
+  "carotene": 290.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 1.8,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/565"
+ },
+ {
+  "ingredient": "蕨菜(鲜)",
+  "carotene": 1100.0,
+  "vitC": 23.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/566"
+ },
+ {
+  "ingredient": "枸杞菜(鲜)",
+  "carotene": 3550.0,
+  "vitB1": 0.08,
+  "vitB2": 0.32,
+  "niacin": 1.3,
+  "vitC": 58.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/567"
+ },
+ {
+  "ingredient": "酢浆草(鲜)",
+  "carotene": 5240.0,
+  "vitB1": 0.25,
+  "vitB2": 0.31,
+  "vitC": 127.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/568"
+ },
+ {
+  "ingredient": "大红菇(干)",
+  "carotene": 80.0,
+  "vitB1": 0.26,
+  "vitB2": 6.9,
+  "niacin": 19.5,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/572"
+ },
+ {
+  "ingredient": "冬菇(干)",
+  "carotene": 30.0,
+  "vitB1": 0.17,
+  "vitB2": 1.4,
+  "niacin": 24.4,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/573"
+ },
+ {
+  "ingredient": "黄蘑(干)",
+  "carotene": 70.0,
+  "vitB1": 0.15,
+  "vitB2": 1.0,
+  "niacin": 5.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/574"
+ },
+ {
+  "ingredient": "蘑菇(鲜蘑)",
+  "carotene": 10.0,
+  "vitB1": 0.08,
+  "vitB2": 0.35,
+  "niacin": 4.0,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/577"
+ },
+ {
+  "ingredient": "普中红蘑(干)",
+  "vitB2": 1.16,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/582"
+ },
+ {
+  "ingredient": "松蘑(干)",
+  "vitB1": 0.01,
+  "vitB2": 1.48,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/583"
+ },
+ {
+  "ingredient": "羊肚菌(干)",
+  "carotene": 1070.0,
+  "vitB1": 0.1,
+  "vitB2": 2.25,
+  "niacin": 8.8,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/586"
+ },
+ {
+  "ingredient": "珍珠白蘑(干)",
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/588"
+ },
+ {
+  "ingredient": "榛蘑(干)",
+  "carotene": 40.0,
+  "vitB1": 0.01,
+  "vitB2": 0.69,
+  "niacin": 7.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/589"
+ },
+ {
+  "ingredient": "黄伞菇(干)",
+  "vitB1": 0.17,
+  "vitB2": 1.93,
+  "niacin": 41.38,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/592"
+ },
+ {
+  "ingredient": "鸡腿菇(干)",
+  "vitB1": 0.14,
+  "vitB2": 1.79,
+  "niacin": 24.99,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/593"
+ },
+ {
+  "ingredient": "鸡枞(干)",
+  "carotene": 70.0,
+  "vitB1": 0.26,
+  "vitB2": 1.22,
+  "niacin": 34.21,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/594"
+ },
+ {
+  "ingredient": "牛肝菌(白)",
+  "vitB1": 0.14,
+  "vitB2": 1.11,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/596"
+ },
+ {
+  "ingredient": "牛肝菌（黄皮牛肝菌，鲜)",
+  "vitB1": 0.03,
+  "vitB2": 0.57,
+  "niacin": 3.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/599"
+ },
+ {
+  "ingredient": "乳牛肝菌(干)",
+  "carotene": 357.0,
+  "vitB1": 0.86,
+  "vitB2": 1.72,
+  "niacin": 67.66,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/600"
+ },
+ {
+  "ingredient": "青头菌",
+  "vitB1": 0.01,
+  "vitB2": 0.46,
+  "niacin": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/601"
+ },
+ {
+  "ingredient": "竹荪(干)",
+  "vitB1": 0.03,
+  "vitB2": 1.75,
+  "niacin": 9.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/603"
+ },
+ {
+  "ingredient": "发菜(干)",
+  "vitB1": 0.15,
+  "vitB2": 0.54,
+  "niacin": 0.9,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/604"
+ },
+ {
+  "ingredient": "海冻菜(干)",
+  "vitB1": 0.06,
+  "vitB2": 0.2,
+  "niacin": 3.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/608"
+ },
+ {
+  "ingredient": "苔菜(干)",
+  "vitB1": 0.35,
+  "vitB2": 0.4,
+  "niacin": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/610"
+ },
+ {
+  "ingredient": "裙带菜(干)",
+  "carotene": 2230.0,
+  "vitB1": 0.02,
+  "vitB2": 0.07,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/612"
+ },
+ {
+  "ingredient": "苹果（国光苹果）",
+  "carotene": 60.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/614"
+ },
+ {
+  "ingredient": "苹果（红富士苹果)",
+  "carotene": 60.0,
+  "vitB1": 0.01,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/615"
+ },
+ {
+  "ingredient": "红香蕉苹果",
+  "carotene": 100.0,
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/616"
+ },
+ {
+  "ingredient": "红星苹果",
+  "carotene": 10.0,
+  "vitB2": 0.02,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/617"
+ },
+ {
+  "ingredient": "红玉苹果",
+  "carotene": 10.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/618"
+ },
+ {
+  "ingredient": "红元帅苹果",
+  "carotene": 40.0,
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "niacin": 0.2,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/619"
+ },
+ {
+  "ingredient": "苹果（黄香蕉苹果)",
+  "carotene": 20.0,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/620"
+ },
+ {
+  "ingredient": "苹果（黄元帅苹果)",
+  "carotene": 90.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/621"
+ },
+ {
+  "ingredient": "金元帅苹果",
+  "carotene": 90.0,
+  "vitB1": 0.05,
+  "vitB2": 0.01,
+  "niacin": 0.1,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/622"
+ },
+ {
+  "ingredient": "青香蕉苹果",
+  "carotene": 20.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.2,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/623"
+ },
+ {
+  "ingredient": "秋里蒙苹果",
+  "vitB1": 0.03,
+  "vitB2": 0.01,
+  "niacin": 0.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/624"
+ },
+ {
+  "ingredient": "香玉苹果",
+  "carotene": 60.0,
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/625"
+ },
+ {
+  "ingredient": "印度苹果",
+  "carotene": 20.0,
+  "vitB1": 0.04,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/626"
+ },
+ {
+  "ingredient": "祝光苹果",
+  "carotene": 10.0,
+  "vitB1": 0.05,
+  "vitB2": 0.01,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/627"
+ },
+ {
+  "ingredient": "倭锦苹果",
+  "carotene": 50.0,
+  "vitB2": 0.01,
+  "niacin": 0.2,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/628"
+ },
+ {
+  "ingredient": "长把梨",
+  "vitB1": 0.02,
+  "vitB2": 0.07,
+  "niacin": 0.1,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/631"
+ },
+ {
+  "ingredient": "冬果梨",
+  "carotene": 20.0,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/632"
+ },
+ {
+  "ingredient": "鹅黄梨",
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/633"
+ },
+ {
+  "ingredient": "锦丰梨",
+  "carotene": 20.0,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/635"
+ },
+ {
+  "ingredient": "马蹄黄梨",
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "vitC": 10.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/639"
+ },
+ {
+  "ingredient": "明月梨",
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/640"
+ },
+ {
+  "ingredient": "木梨",
+  "vitB1": 0.01,
+  "vitB2": 0.04,
+  "niacin": 0.1,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/641"
+ },
+ {
+  "ingredient": "软梨",
+  "carotene": 20.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/643"
+ },
+ {
+  "ingredient": "苏梅梨",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/644"
+ },
+ {
+  "ingredient": "苏木梨",
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "niacin": 0.4,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/645"
+ },
+ {
+  "ingredient": "酥梨",
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "vitC": 11.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/646"
+ },
+ {
+  "ingredient": "酸梨",
+  "vitB1": 0.03,
+  "vitB2": 0.22,
+  "niacin": 0.8,
+  "vitC": 14.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/647"
+ },
+ {
+  "ingredient": "雪梨",
+  "vitB1": 0.03,
+  "niacin": 0.1,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/650"
+ },
+ {
+  "ingredient": "红果",
+  "carotene": 100.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.4,
+  "vitC": 53.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/654"
+ },
+ {
+  "ingredient": "海棠果",
+  "carotene": 710.0,
+  "vitB1": 0.05,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 20.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/656"
+ },
+ {
+  "ingredient": "沙果",
+  "vitB1": 0.03,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/657"
+ },
+ {
+  "ingredient": "酸刺",
+  "carotene": 150.0,
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "niacin": 0.2,
+  "vitC": 74.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/658"
+ },
+ {
+  "ingredient": "蛇果",
+  "carotene": 16.0,
+  "vitB1": 0.01,
+  "niacin": 0.04,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/659"
+ },
+ {
+  "ingredient": "桃(均值)",
+  "carotene": 20.0,
+  "vitB1": 0.01,
+  "vitB2": 0.03,
+  "niacin": 0.7,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/660"
+ },
+ {
+  "ingredient": "桃（黄桃）",
+  "carotene": 90.0,
+  "vitB2": 0.01,
+  "niacin": 0.3,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/661"
+ },
+ {
+  "ingredient": "桃（久保桃）",
+  "vitB1": 0.04,
+  "vitB2": 0.04,
+  "niacin": 1.2,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/662"
+ },
+ {
+  "ingredient": "蜜桃",
+  "carotene": 10.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 1.0,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/663"
+ },
+ {
+  "ingredient": "蒲桃",
+  "vitB2": 0.02,
+  "niacin": 0.1,
+  "vitC": 25.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/664"
+ },
+ {
+  "ingredient": "李子杏",
+  "carotene": 80.0,
+  "vitB1": 0.03,
+  "vitB2": 0.01,
+  "niacin": 0.5,
+  "vitC": 16.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/667"
+ },
+ {
+  "ingredient": "杏",
+  "carotene": 450.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.6,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/669"
+ },
+ {
+  "ingredient": "杏干",
+  "carotene": 610.0,
+  "vitB2": 0.01,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/671"
+ },
+ {
+  "ingredient": "布朗",
+  "carotene": 46.0,
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.43,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/672"
+ },
+ {
+  "ingredient": "西梅",
+  "carotene": 8.0,
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.18,
+  "vitC": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/673"
+ },
+ {
+  "ingredient": "枣(鲜)",
+  "carotene": 240.0,
+  "vitB1": 0.06,
+  "vitB2": 0.09,
+  "niacin": 0.9,
+  "vitC": 243.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/674"
+ },
+ {
+  "ingredient": "枣（金丝小枣）",
+  "vitB1": 0.04,
+  "vitB2": 0.5,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/676"
+ },
+ {
+  "ingredient": "黑枣(无核)",
+  "carotene": 40.0,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/677"
+ },
+ {
+  "ingredient": "酒枣",
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/678"
+ },
+ {
+  "ingredient": "蜜枣",
+  "vitB1": 0.01,
+  "vitB2": 0.1,
+  "niacin": 0.4,
+  "vitC": 55.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/679"
+ },
+ {
+  "ingredient": "酸枣",
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "niacin": 0.9,
+  "vitC": 900.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/682"
+ },
+ {
+  "ingredient": "红玫瑰葡萄",
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/685"
+ },
+ {
+  "ingredient": "柿",
+  "carotene": 120.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.3,
+  "vitC": 30.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/691"
+ },
+ {
+  "ingredient": "柿饼",
+  "carotene": 290.0,
+  "vitB1": 0.01,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/692"
+ },
+ {
+  "ingredient": "醋栗",
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 28.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/696"
+ },
+ {
+  "ingredient": "黑醋栗",
+  "vitB1": 0.05,
+  "vitB2": 0.05,
+  "niacin": 0.3,
+  "vitC": 181.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/697"
+ },
+ {
+  "ingredient": "沙棘",
+  "carotene": 3840.0,
+  "vitB1": 0.05,
+  "vitB2": 0.21,
+  "niacin": 0.4,
+  "vitC": 204.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/698"
+ },
+ {
+  "ingredient": "中华猕猴桃",
+  "carotene": 130.0,
+  "vitB1": 0.05,
+  "vitB2": 0.02,
+  "niacin": 0.3,
+  "vitC": 62.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/700"
+ },
+ {
+  "ingredient": "红提子葡萄",
+  "carotene": 9.0,
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "niacin": 0.07,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/702"
+ },
+ {
+  "ingredient": "橙",
+  "carotene": 160.0,
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.3,
+  "vitC": 33.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/704"
+ },
+ {
+  "ingredient": "柑桔(均值)",
+  "carotene": 890.0,
+  "vitB1": 0.08,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "vitC": 28.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/705"
+ },
+ {
+  "ingredient": "桔(金桔)",
+  "carotene": 370.0,
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 35.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/706"
+ },
+ {
+  "ingredient": "芦柑",
+  "carotene": 520.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 19.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/707"
+ },
+ {
+  "ingredient": "蜜桔",
+  "carotene": 1660.0,
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.2,
+  "vitC": 19.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/708"
+ },
+ {
+  "ingredient": "小叶桔",
+  "carotene": 2460.0,
+  "vitB1": 0.25,
+  "vitB2": 0.03,
+  "niacin": 0.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/709"
+ },
+ {
+  "ingredient": "桔饼",
+  "carotene": 260.0,
+  "vitB1": 0.03,
+  "vitB2": 0.19,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/710"
+ },
+ {
+  "ingredient": "柚",
+  "carotene": 10.0,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 23.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/711"
+ },
+ {
+  "ingredient": "葡萄柚(台湾)",
+  "vitB1": 0.05,
+  "vitB2": 0.01,
+  "niacin": 0.2,
+  "vitC": 38.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/713"
+ },
+ {
+  "ingredient": "芭蕉",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/715"
+ },
+ {
+  "ingredient": "菠萝蜜",
+  "carotene": 18.0,
+  "vitB1": 0.06,
+  "vitB2": 0.05,
+  "niacin": 0.7,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/717"
+ },
+ {
+  "ingredient": "刺梨",
+  "carotene": 2900.0,
+  "vitB1": 0.05,
+  "vitB2": 0.03,
+  "niacin": 0.0,
+  "vitC": 2585.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/718"
+ },
+ {
+  "ingredient": "番石榴",
+  "vitB1": 0.02,
+  "vitB2": 0.05,
+  "niacin": 0.3,
+  "vitC": 68.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/719"
+ },
+ {
+  "ingredient": "桂圆",
+  "carotene": 20.0,
+  "vitB1": 0.01,
+  "vitB2": 0.14,
+  "niacin": 1.3,
+  "vitC": 43.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/720"
+ },
+ {
+  "ingredient": "杨桃",
+  "carotene": 20.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.7,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/728"
+ },
+ {
+  "ingredient": "橄榄(白榄)",
+  "carotene": 130.0,
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.7,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/731"
+ },
+ {
+  "ingredient": "余柑子",
+  "carotene": 50.0,
+  "vitB2": 0.01,
+  "niacin": 0.5,
+  "vitC": 62.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/732"
+ },
+ {
+  "ingredient": "红毛丹",
+  "vitB1": 0.01,
+  "vitB2": 0.04,
+  "niacin": 0.31,
+  "vitC": 35.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/733"
+ },
+ {
+  "ingredient": "白兰瓜",
+  "carotene": 40.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.6,
+  "vitC": 14.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/736"
+ },
+ {
+  "ingredient": "哈蜜瓜",
+  "carotene": 920.0,
+  "vitB2": 0.01,
+  "vitC": 12.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/737"
+ },
+ {
+  "ingredient": "甜瓜",
+  "carotene": 30.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.3,
+  "vitC": 15.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/738"
+ },
+ {
+  "ingredient": "白果(干)",
+  "vitB2": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/740"
+ },
+ {
+  "ingredient": "菠萝蜜子",
+  "vitB1": 0.31,
+  "vitB2": 0.16,
+  "niacin": 0.9,
+  "vitC": 16.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/741"
+ },
+ {
+  "ingredient": "山核桃(干)",
+  "carotene": 30.0,
+  "vitB1": 0.16,
+  "vitB2": 0.09,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/744"
+ },
+ {
+  "ingredient": "栗子(鲜)",
+  "carotene": 190.0,
+  "vitB1": 0.14,
+  "vitB2": 0.17,
+  "niacin": 0.8,
+  "vitC": 24.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/746"
+ },
+ {
+  "ingredient": "松子仁",
+  "carotene": 10.0,
+  "vitB1": 0.19,
+  "vitB2": 0.25,
+  "niacin": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/751"
+ },
+ {
+  "ingredient": "橡实",
+  "vitB1": 0.03,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/755"
+ },
+ {
+  "ingredient": "榛子(干)",
+  "carotene": 50.0,
+  "vitB1": 0.62,
+  "vitB2": 0.14,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/757"
+ },
+ {
+  "ingredient": "开心果(熟)",
+  "vitB1": 0.45,
+  "vitB2": 0.1,
+  "niacin": 1.05,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/759"
+ },
+ {
+  "ingredient": "胡麻籽",
+  "vitB1": 0.29,
+  "vitB2": 0.28,
+  "niacin": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/760"
+ },
+ {
+  "ingredient": "花生仁(生)",
+  "carotene": 30.0,
+  "vitB1": 0.72,
+  "vitB2": 0.13,
+  "niacin": 17.9,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/763"
+ },
+ {
+  "ingredient": "葵花子(生)",
+  "carotene": 30.0,
+  "vitB1": 0.36,
+  "vitB2": 0.2,
+  "niacin": 4.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/765"
+ },
+ {
+  "ingredient": "葵花子仁",
+  "vitB1": 1.89,
+  "vitB2": 0.16,
+  "niacin": 4.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/767"
+ },
+ {
+  "ingredient": "南瓜子仁",
+  "vitB1": 0.23,
+  "vitB2": 0.09,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/770"
+ },
+ {
+  "ingredient": "西瓜子(炒)",
+  "vitB1": 0.04,
+  "vitB2": 0.08,
+  "niacin": 3.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/771"
+ },
+ {
+  "ingredient": "西瓜子仁",
+  "vitB1": 0.2,
+  "vitB2": 0.08,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/772"
+ },
+ {
+  "ingredient": "芝麻籽(白)",
+  "vitB1": 0.36,
+  "vitB2": 0.26,
+  "niacin": 3.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/773"
+ },
+ {
+  "ingredient": "芡实米(鲜)",
+  "vitB1": 0.4,
+  "vitB2": 0.08,
+  "niacin": 2.5,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/775"
+ },
+ {
+  "ingredient": "猪肉(肥瘦)(均值)",
+  "vitB1": 0.22,
+  "vitB2": 0.16,
+  "niacin": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/779"
+ },
+ {
+  "ingredient": "猪大肠",
+  "vitB1": 0.06,
+  "vitB2": 0.11,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/790"
+ },
+ {
+  "ingredient": "猪大排",
+  "vitB1": 0.8,
+  "vitB2": 0.15,
+  "niacin": 5.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/791"
+ },
+ {
+  "ingredient": "猪小排",
+  "vitB1": 0.3,
+  "vitB2": 0.16,
+  "niacin": 4.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/794"
+ },
+ {
+  "ingredient": "猪肺",
+  "vitB1": 0.04,
+  "vitB2": 0.18,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/796"
+ },
+ {
+  "ingredient": "猪舌",
+  "vitB1": 0.13,
+  "vitB2": 0.3,
+  "niacin": 4.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/799"
+ },
+ {
+  "ingredient": "猪肾",
+  "vitB1": 0.31,
+  "vitB2": 1.14,
+  "niacin": 8.0,
+  "vitC": 13.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/800"
+ },
+ {
+  "ingredient": "猪小肠",
+  "vitB1": 0.12,
+  "vitB2": 0.11,
+  "niacin": 3.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/801"
+ },
+ {
+  "ingredient": "叉烧肉",
+  "vitB1": 0.66,
+  "vitB2": 0.23,
+  "niacin": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/804"
+ },
+ {
+  "ingredient": "猪肉松(均值)",
+  "vitB1": 0.04,
+  "vitB2": 0.13,
+  "niacin": 3.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/811"
+ },
+ {
+  "ingredient": "酱排骨",
+  "vitB1": 0.03,
+  "vitB2": 0.12,
+  "niacin": 2.51,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1575"
+ },
+ {
+  "ingredient": "蛋清肠",
+  "vitB1": 0.65,
+  "vitB2": 0.06,
+  "niacin": 10.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/812"
+ },
+ {
+  "ingredient": "风干肠",
+  "vitB1": 0.12,
+  "vitB2": 0.09,
+  "niacin": 12.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/813"
+ },
+ {
+  "ingredient": "广东香肠",
+  "vitB1": 0.42,
+  "vitB2": 0.07,
+  "niacin": 5.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/814"
+ },
+ {
+  "ingredient": "腊肠",
+  "vitB1": 0.04,
+  "vitB2": 0.12,
+  "niacin": 3.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/816"
+ },
+ {
+  "ingredient": "蒜肠",
+  "vitB1": 0.06,
+  "vitB2": 0.15,
+  "niacin": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/817"
+ },
+ {
+  "ingredient": "小泥肠",
+  "vitB1": 0.16,
+  "vitB2": 0.07,
+  "niacin": 13.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/819"
+ },
+ {
+  "ingredient": "午餐肚",
+  "vitB1": 0.01,
+  "vitB2": 0.31,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/820"
+ },
+ {
+  "ingredient": "金华火腿",
+  "vitB1": 0.51,
+  "vitB2": 0.18,
+  "niacin": 4.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/822"
+ },
+ {
+  "ingredient": "牛蹄筋",
+  "vitB1": 0.07,
+  "vitB2": 0.13,
+  "niacin": 0.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/831"
+ },
+ {
+  "ingredient": "牛大肠",
+  "vitB1": 0.03,
+  "vitB2": 0.08,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/833"
+ },
+ {
+  "ingredient": "牛肺",
+  "vitB1": 0.04,
+  "vitB2": 0.21,
+  "niacin": 3.4,
+  "vitC": 13.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/835"
+ },
+ {
+  "ingredient": "牛肝",
+  "vitB1": 0.16,
+  "vitB2": 1.3,
+  "niacin": 11.9,
+  "vitC": 9.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/836"
+ },
+ {
+  "ingredient": "牛脑",
+  "vitB1": 0.15,
+  "vitB2": 0.25,
+  "niacin": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/837"
+ },
+ {
+  "ingredient": "牛舌",
+  "vitB1": 0.1,
+  "vitB2": 0.16,
+  "niacin": 3.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/838"
+ },
+ {
+  "ingredient": "牛肾",
+  "vitB1": 0.24,
+  "vitB2": 0.85,
+  "niacin": 7.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/839"
+ },
+ {
+  "ingredient": "牛心",
+  "vitB1": 0.26,
+  "vitB2": 0.39,
+  "niacin": 6.8,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/840"
+ },
+ {
+  "ingredient": "酱牛肉",
+  "vitB1": 0.05,
+  "vitB2": 0.22,
+  "niacin": 4.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/841"
+ },
+ {
+  "ingredient": "牛肉干",
+  "vitB1": 0.06,
+  "vitB2": 0.26,
+  "niacin": 15.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/842"
+ },
+ {
+  "ingredient": "牛肉松",
+  "vitB1": 0.04,
+  "vitB2": 0.11,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/843"
+ },
+ {
+  "ingredient": "山羊肉(冻)",
+  "vitB1": 0.06,
+  "vitB2": 0.12,
+  "niacin": 4.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/852"
+ },
+ {
+  "ingredient": "羊蹄筋(生)",
+  "vitB2": 0.1,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/853"
+ },
+ {
+  "ingredient": "羊肚",
+  "vitB1": 0.03,
+  "vitB2": 0.17,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/855"
+ },
+ {
+  "ingredient": "羊肺",
+  "vitB1": 0.05,
+  "vitB2": 0.14,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/856"
+ },
+ {
+  "ingredient": "羊肝",
+  "vitB1": 0.21,
+  "vitB2": 1.75,
+  "niacin": 22.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/857"
+ },
+ {
+  "ingredient": "羊脑",
+  "vitB1": 0.17,
+  "vitB2": 0.27,
+  "niacin": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/858"
+ },
+ {
+  "ingredient": "羊舌",
+  "vitB2": 0.23,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/859"
+ },
+ {
+  "ingredient": "羊肾",
+  "vitB1": 0.35,
+  "vitB2": 2.01,
+  "niacin": 8.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/860"
+ },
+ {
+  "ingredient": "羊心",
+  "vitB1": 0.28,
+  "vitB2": 0.4,
+  "niacin": 5.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/861"
+ },
+ {
+  "ingredient": "羊血",
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/862"
+ },
+ {
+  "ingredient": "腊羊肉",
+  "vitB1": 0.03,
+  "vitB2": 0.5,
+  "niacin": 3.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/863"
+ },
+ {
+  "ingredient": "羊肉串(烤)",
+  "vitB1": 0.04,
+  "vitB2": 0.15,
+  "niacin": 6.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/864"
+ },
+ {
+  "ingredient": "马肉",
+  "vitB1": 0.06,
+  "vitB2": 0.25,
+  "niacin": 2.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/871"
+ },
+ {
+  "ingredient": "马心",
+  "vitB1": 0.22,
+  "vitB2": 0.29,
+  "niacin": 2.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/872"
+ },
+ {
+  "ingredient": "狗肉",
+  "vitB1": 0.34,
+  "vitB2": 0.2,
+  "niacin": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/874"
+ },
+ {
+  "ingredient": "鸡(均值)",
+  "vitB1": 0.05,
+  "vitB2": 0.09,
+  "niacin": 5.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/876"
+ },
+ {
+  "ingredient": "肉鸡(肥)",
+  "vitB1": 0.07,
+  "vitB2": 0.07,
+  "niacin": 13.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/878"
+ },
+ {
+  "ingredient": "鸡胸脯肉",
+  "vitB1": 0.07,
+  "vitB2": 0.13,
+  "niacin": 10.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/880"
+ },
+ {
+  "ingredient": "鸡肝",
+  "vitB1": 0.33,
+  "vitB2": 1.1,
+  "niacin": 11.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/884"
+ },
+ {
+  "ingredient": "鸡心",
+  "vitB1": 0.46,
+  "vitB2": 0.26,
+  "niacin": 11.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/885"
+ },
+ {
+  "ingredient": "鸡血",
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/886"
+ },
+ {
+  "ingredient": "鸡肫",
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 3.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/887"
+ },
+ {
+  "ingredient": "扒鸡",
+  "vitB1": 0.02,
+  "vitB2": 0.17,
+  "niacin": 9.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/888"
+ },
+ {
+  "ingredient": "烤鸡",
+  "vitB1": 0.05,
+  "vitB2": 0.19,
+  "niacin": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/889"
+ },
+ {
+  "ingredient": "鸡肉松",
+  "vitB1": 0.03,
+  "vitB2": 0.11,
+  "niacin": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/890"
+ },
+ {
+  "ingredient": "鸭(均值)",
+  "vitB1": 0.08,
+  "vitB2": 0.22,
+  "niacin": 4.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/891"
+ },
+ {
+  "ingredient": "鸭胸脯肉",
+  "vitB1": 0.01,
+  "vitB2": 0.07,
+  "niacin": 4.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/892"
+ },
+ {
+  "ingredient": "鸭掌",
+  "vitB2": 0.17,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/894"
+ },
+ {
+  "ingredient": "鸭肝",
+  "vitB1": 0.26,
+  "vitB2": 1.05,
+  "niacin": 6.9,
+  "vitC": 18.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/896"
+ },
+ {
+  "ingredient": "鸭舌",
+  "vitB1": 0.01,
+  "vitB2": 0.21,
+  "niacin": 1.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/897"
+ },
+ {
+  "ingredient": "鸭心",
+  "vitB1": 0.14,
+  "vitB2": 0.87,
+  "niacin": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/898"
+ },
+ {
+  "ingredient": "北京烤鸭",
+  "vitB1": 0.04,
+  "vitB2": 0.32,
+  "niacin": 4.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/901"
+ },
+ {
+  "ingredient": "酱鸭",
+  "vitB1": 0.06,
+  "vitB2": 0.22,
+  "niacin": 3.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/902"
+ },
+ {
+  "ingredient": "盐水鸭(熟)",
+  "vitB1": 0.07,
+  "vitB2": 0.21,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/903"
+ },
+ {
+  "ingredient": "鹅",
+  "vitB1": 0.07,
+  "vitB2": 0.23,
+  "niacin": 4.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/904"
+ },
+ {
+  "ingredient": "鹅肝",
+  "vitB1": 0.27,
+  "vitB2": 0.25,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/905"
+ },
+ {
+  "ingredient": "鹅肫",
+  "vitB1": 0.05,
+  "vitB2": 0.06,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/906"
+ },
+ {
+  "ingredient": "烧鹅",
+  "vitB1": 0.09,
+  "vitB2": 0.11,
+  "niacin": 3.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/907"
+ },
+ {
+  "ingredient": "火鸡腿",
+  "vitB1": 0.07,
+  "vitB2": 0.06,
+  "niacin": 8.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/908"
+ },
+ {
+  "ingredient": "火鸡胸脯肉",
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 16.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/909"
+ },
+ {
+  "ingredient": "火鸡肝",
+  "vitB1": 0.06,
+  "vitB2": 1.21,
+  "niacin": 43.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/910"
+ },
+ {
+  "ingredient": "火鸡肫",
+  "vitB1": 0.02,
+  "vitB2": 0.08,
+  "niacin": 7.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/911"
+ },
+ {
+  "ingredient": "鸽",
+  "vitB1": 0.06,
+  "vitB2": 0.2,
+  "niacin": 6.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/912"
+ },
+ {
+  "ingredient": "鹌鹑",
+  "vitB1": 0.04,
+  "vitB2": 0.32,
+  "niacin": 6.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/913"
+ },
+ {
+  "ingredient": "乳品（牛乳，均值)",
+  "vitB1": 0.03,
+  "vitB2": 0.14,
+  "niacin": 0.1,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/916"
+ },
+ {
+  "ingredient": "牛乳(光明牌)",
+  "vitB1": 0.02,
+  "vitB2": 0.1,
+  "niacin": 0.13,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/917"
+ },
+ {
+  "ingredient": "学生奶",
+  "vitB1": 0.02,
+  "vitB2": 0.14,
+  "niacin": 0.06,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/933"
+ },
+ {
+  "ingredient": "乳品（鲜羊乳）",
+  "vitB1": 0.04,
+  "vitB2": 0.12,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/934"
+ },
+ {
+  "ingredient": "全脂加糖奶粉",
+  "vitB1": 0.42,
+  "vitB2": 0.26,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/935"
+ },
+ {
+  "ingredient": "全脂速溶奶粉",
+  "vitB1": 0.08,
+  "vitB2": 0.8,
+  "niacin": 0.5,
+  "vitC": 7.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/936"
+ },
+ {
+  "ingredient": "全脂奶粉(雀巢)",
+  "vitB2": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/937"
+ },
+ {
+  "ingredient": "全脂甜奶粉(三鹿牌)",
+  "vitB1": 0.11,
+  "vitB2": 0.73,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/940"
+ },
+ {
+  "ingredient": "低脂奶粉(高钙高铁，雀巢)",
+  "vitB2": 1.4,
+  "vitC": 60.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/942"
+ },
+ {
+  "ingredient": "高钙高铁奶粉(可淇牌)",
+  "vitB1": 0.8,
+  "vitB2": 1.0,
+  "vitC": 40.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/944"
+ },
+ {
+  "ingredient": "儿童奶粉(安儿健A+，美赞臣)",
+  "vitB1": 0.4,
+  "vitB2": 0.98,
+  "niacin": 5.2,
+  "vitC": 51.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/945"
+ },
+ {
+  "ingredient": "孕妇乳母奶粉(惠氏)",
+  "carotene": 85.0,
+  "vitB1": 0.65,
+  "vitB2": 0.81,
+  "niacin": 7.7,
+  "vitC": 102.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/951"
+ },
+ {
+  "ingredient": "中老年奶粉(可淇牌)",
+  "vitB1": 0.55,
+  "vitB2": 1.0,
+  "vitC": 40.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/953"
+ },
+ {
+  "ingredient": "乳品（酸奶，均值)",
+  "vitB1": 0.03,
+  "vitB2": 0.15,
+  "niacin": 0.2,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/958"
+ },
+ {
+  "ingredient": "奶豆腐(鲜)",
+  "vitB1": 0.01,
+  "vitB2": 0.69,
+  "niacin": 0.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/963"
+ },
+ {
+  "ingredient": "乳酪（羊乳酪）",
+  "carotene": 33.0,
+  "vitB1": 0.04,
+  "vitB2": 0.21,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/964"
+ },
+ {
+  "ingredient": "低脂奶酪",
+  "vitB1": 0.06,
+  "vitB2": 0.49,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/967"
+ },
+ {
+  "ingredient": "硬质干酪",
+  "carotene": 215.0,
+  "vitB1": 0.03,
+  "vitB2": 0.41,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/968"
+ },
+ {
+  "ingredient": "乳品（奶油）",
+  "vitB2": 0.01,
+  "niacin": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/969"
+ },
+ {
+  "ingredient": "酥油",
+  "vitB2": 0.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/971"
+ },
+ {
+  "ingredient": "奶皮子",
+  "vitB1": 0.02,
+  "vitB2": 0.23,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/973"
+ },
+ {
+  "ingredient": "奶片",
+  "vitB1": 0.05,
+  "vitB2": 0.2,
+  "niacin": 1.6,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/974"
+ },
+ {
+  "ingredient": "全脂甜炼乳(雀巢)",
+  "vitB1": 0.07,
+  "vitB2": 0.41,
+  "niacin": 0.21,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/975"
+ },
+ {
+  "ingredient": "脱脂甜炼乳",
+  "carotene": 0.0,
+  "vitB1": 0.1,
+  "vitB2": 0.5,
+  "niacin": 0.2,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/977"
+ },
+ {
+  "ingredient": "蛋（鸡蛋，均值)",
+  "vitB1": 0.11,
+  "vitB2": 0.27,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/978"
+ },
+ {
+  "ingredient": "鸡蛋白",
+  "vitB1": 0.04,
+  "vitB2": 0.31,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/982"
+ },
+ {
+  "ingredient": "蛋黄（鸡蛋黄）",
+  "vitB1": 0.33,
+  "vitB2": 0.29,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/984"
+ },
+ {
+  "ingredient": "鸡蛋黄(乌骨鸡)",
+  "vitB1": 0.07,
+  "vitB2": 0.36,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/985"
+ },
+ {
+  "ingredient": "鸡蛋黄粉",
+  "vitB2": 0.25,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1582"
+ },
+ {
+  "ingredient": "蛋（松花蛋，鸡蛋)",
+  "vitB1": 0.02,
+  "vitB2": 0.13,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/986"
+ },
+ {
+  "ingredient": "荷包蛋(油煎)",
+  "vitB1": 0.06,
+  "vitB2": 0.52,
+  "niacin": 0.1,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/988"
+ },
+ {
+  "ingredient": "蛋（鸭蛋）",
+  "vitB1": 0.17,
+  "vitB2": 0.35,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/990"
+ },
+ {
+  "ingredient": "鸭蛋黄",
+  "vitB1": 0.28,
+  "vitB2": 0.62,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/992"
+ },
+ {
+  "ingredient": "海鸭蛋",
+  "vitB1": 0.13,
+  "vitB2": 0.4,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/993"
+ },
+ {
+  "ingredient": "蛋（松花蛋，鸭蛋)",
+  "vitB1": 0.06,
+  "vitB2": 0.18,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/994"
+ },
+ {
+  "ingredient": "蛋（鹅蛋）",
+  "vitB1": 0.08,
+  "vitB2": 0.3,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/997"
+ },
+ {
+  "ingredient": "蛋黄（鹅蛋黄）",
+  "vitB1": 0.06,
+  "vitB2": 0.59,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/999"
+ },
+ {
+  "ingredient": "蛋（鹌鹑蛋）",
+  "vitB1": 0.11,
+  "vitB2": 0.49,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1001"
+ },
+ {
+  "ingredient": "白条鱼(裸鱼)",
+  "vitB2": 0.07,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1002"
+ },
+ {
+  "ingredient": "感鱼",
+  "vitB1": 0.02,
+  "vitB2": 0.07,
+  "niacin": 1.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1005"
+ },
+ {
+  "ingredient": "胡子鲇",
+  "vitB1": 0.05,
+  "vitB2": 0.11,
+  "niacin": 4.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1006"
+ },
+ {
+  "ingredient": "黄颡鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.06,
+  "niacin": 3.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1007"
+ },
+ {
+  "ingredient": "鱼（黄鳝）",
+  "vitB1": 0.06,
+  "vitB2": 0.98,
+  "niacin": 3.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1008"
+ },
+ {
+  "ingredient": "尖嘴白",
+  "vitB1": 0.05,
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1010"
+ },
+ {
+  "ingredient": "口头鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.04,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1011"
+ },
+ {
+  "ingredient": "湟鱼(裸鲤鱼)",
+  "vitB2": 0.05,
+  "niacin": 2.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1017"
+ },
+ {
+  "ingredient": "鲮鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.04,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1022"
+ },
+ {
+  "ingredient": "鳗鲡",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 3.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1024"
+ },
+ {
+  "ingredient": "鳙鱼",
+  "vitB1": 0.04,
+  "vitB2": 0.11,
+  "niacin": 2.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1025"
+ },
+ {
+  "ingredient": "鳟鱼",
+  "vitB1": 0.08,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1027"
+ },
+ {
+  "ingredient": "参鱼",
+  "vitB1": 0.06,
+  "vitB2": 0.11,
+  "niacin": 3.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1029"
+ },
+ {
+  "ingredient": "堤鱼",
+  "vitB1": 0.19,
+  "vitB2": 0.12,
+  "niacin": 6.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1031"
+ },
+ {
+  "ingredient": "狗母鱼",
+  "vitB1": 0.05,
+  "vitB2": 0.1,
+  "niacin": 3.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1032"
+ },
+ {
+  "ingredient": "海鲫鱼",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 4.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1033"
+ },
+ {
+  "ingredient": "海鳗",
+  "vitB1": 0.06,
+  "vitB2": 0.07,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1034"
+ },
+ {
+  "ingredient": "红娘鱼",
+  "vitB1": 0.03,
+  "vitB2": 0.07,
+  "niacin": 4.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1035"
+ },
+ {
+  "ingredient": "黄鱼(大黄花鱼)",
+  "vitB1": 0.03,
+  "vitB2": 0.1,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1037"
+ },
+ {
+  "ingredient": "黄鲂",
+  "vitB1": 0.03,
+  "vitB2": 0.07,
+  "niacin": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1039"
+ },
+ {
+  "ingredient": "金线鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.03,
+  "niacin": 4.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1040"
+ },
+ {
+  "ingredient": "绿鳍马面豚",
+  "vitB1": 0.02,
+  "vitB2": 0.05,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1041"
+ },
+ {
+  "ingredient": "梅童鱼",
+  "vitB1": 0.02,
+  "vitB2": 0.06,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1042"
+ },
+ {
+  "ingredient": "沙钻鱼",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1044"
+ },
+ {
+  "ingredient": "颚针鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1047"
+ },
+ {
+  "ingredient": "鲅鱼",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1048"
+ },
+ {
+  "ingredient": "鲐鱼",
+  "vitB1": 0.08,
+  "vitB2": 0.12,
+  "niacin": 8.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1051"
+ },
+ {
+  "ingredient": "鲑鱼",
+  "vitB1": 0.07,
+  "vitB2": 0.18,
+  "niacin": 4.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1052"
+ },
+ {
+  "ingredient": "鲑鱼籽酱",
+  "vitB1": 0.33,
+  "vitB2": 0.19,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1053"
+ },
+ {
+  "ingredient": "鲚鱼(大)",
+  "vitB2": 0.08,
+  "niacin": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1054"
+ },
+ {
+  "ingredient": "鲷",
+  "vitB1": 0.02,
+  "vitB2": 0.1,
+  "niacin": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1057"
+ },
+ {
+  "ingredient": "鲽",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1059"
+ },
+ {
+  "ingredient": "鳘鱼",
+  "vitB1": 0.01,
+  "vitB2": 0.05,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1063"
+ },
+ {
+  "ingredient": "鱼片干",
+  "vitB1": 0.11,
+  "vitB2": 0.39,
+  "niacin": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1065"
+ },
+ {
+  "ingredient": "金鲨鱼翅(干)",
+  "carotene": 0.0,
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1066"
+ },
+ {
+  "ingredient": "鱼排",
+  "vitB1": 0.04,
+  "vitB2": 0.05,
+  "niacin": 0.47,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1586"
+ },
+ {
+  "ingredient": "鱼子酱",
+  "vitB1": 0.07,
+  "vitB2": 0.04,
+  "niacin": 0.41,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1068"
+ },
+ {
+  "ingredient": "凤尾鱼(熟)",
+  "carotene": 48.0,
+  "vitB1": 0.02,
+  "vitB2": 0.07,
+  "niacin": 1.45,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1069"
+ },
+ {
+  "ingredient": "箭鱼(炸)",
+  "carotene": 124.0,
+  "vitB1": 0.02,
+  "vitB2": 0.05,
+  "niacin": 1.2,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1070"
+ },
+ {
+  "ingredient": "金枪鱼(盐水浸)",
+  "vitB1": 0.02,
+  "vitB2": 0.11,
+  "niacin": 14.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1071"
+ },
+ {
+  "ingredient": "鳗鱼(红烧)",
+  "vitB1": 0.03,
+  "vitB2": 0.09,
+  "niacin": 1.47,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1074"
+ },
+ {
+  "ingredient": "鲭鱼(炸)",
+  "vitB1": 0.18,
+  "vitB2": 0.28,
+  "niacin": 6.98,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1075"
+ },
+ {
+  "ingredient": "午餐鱼(香辣味)",
+  "vitB1": 0.04,
+  "vitB2": 0.09,
+  "niacin": 4.78,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1086"
+ },
+ {
+  "ingredient": "虾（东方对虾）",
+  "carotene": 420.0,
+  "vitB1": 0.02,
+  "vitB2": 0.11,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1090"
+ },
+ {
+  "ingredient": "虾（海虾）",
+  "vitB1": 0.01,
+  "vitB2": 0.05,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1091"
+ },
+ {
+  "ingredient": "虾（基围虾）",
+  "vitB1": 0.02,
+  "vitB2": 0.07,
+  "niacin": 2.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1093"
+ },
+ {
+  "ingredient": "江虾",
+  "vitB1": 0.04,
+  "vitB2": 0.12,
+  "niacin": 2.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1094"
+ },
+ {
+  "ingredient": "虾（龙虾）",
+  "vitB2": 0.03,
+  "niacin": 4.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1095"
+ },
+ {
+  "ingredient": "虾虎",
+  "vitB1": 0.04,
+  "vitB2": 0.04,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1097"
+ },
+ {
+  "ingredient": "螯虾",
+  "vitB1": 0.02,
+  "vitB2": 0.18,
+  "niacin": 2.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1099"
+ },
+ {
+  "ingredient": "蟹（海蟹）",
+  "vitB1": 0.01,
+  "vitB2": 0.1,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1102"
+ },
+ {
+  "ingredient": "蟹（河蟹）",
+  "vitB1": 0.06,
+  "vitB2": 0.28,
+  "niacin": 1.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1103"
+ },
+ {
+  "ingredient": "蟹肉",
+  "vitB1": 0.03,
+  "vitB2": 0.09,
+  "niacin": 4.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1104"
+ },
+ {
+  "ingredient": "蟹足棒",
+  "vitB2": 0.04,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1105"
+ },
+ {
+  "ingredient": "河蚌",
+  "vitB1": 0.01,
+  "vitB2": 0.18,
+  "niacin": 0.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1109"
+ },
+ {
+  "ingredient": "河蚬",
+  "vitB1": 0.08,
+  "vitB2": 0.13,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1110"
+ },
+ {
+  "ingredient": "牡蛎",
+  "vitB1": 0.01,
+  "vitB2": 0.13,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1111"
+ },
+ {
+  "ingredient": "泥蚶",
+  "vitB1": 0.01,
+  "vitB2": 0.07,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1113"
+ },
+ {
+  "ingredient": "银蚶",
+  "vitB2": 0.06,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1116"
+ },
+ {
+  "ingredient": "贻贝(鲜)",
+  "vitB1": 0.12,
+  "vitB2": 0.22,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1117"
+ },
+ {
+  "ingredient": "海蚌",
+  "carotene": 0.0,
+  "vitB1": 0.0,
+  "vitB2": 0.03,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1119"
+ },
+ {
+  "ingredient": "螺(均值)",
+  "vitB1": 0.03,
+  "vitB2": 0.4,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1121"
+ },
+ {
+  "ingredient": "文蛤丸",
+  "vitB1": 0.01,
+  "vitB2": 0.05,
+  "niacin": 3.79,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1122"
+ },
+ {
+  "ingredient": "海蜇皮",
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1125"
+ },
+ {
+  "ingredient": "海蜇头",
+  "vitB1": 0.07,
+  "vitB2": 0.04,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1126"
+ },
+ {
+  "ingredient": "甲鱼蛋",
+  "vitB1": 1.05,
+  "vitB2": 1.58,
+  "niacin": 0.03,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1134"
+ },
+ {
+  "ingredient": "墨鱼丸",
+  "vitB1": 0.01,
+  "vitB2": 0.03,
+  "niacin": 0.86,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1135"
+ },
+ {
+  "ingredient": "婴儿配方奶粉(爱儿乐，惠氏)",
+  "carotene": 165.0,
+  "vitB1": 0.79,
+  "vitB2": 1.18,
+  "niacin": 4.0,
+  "vitC": 71.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1136"
+ },
+ {
+  "ingredient": "婴儿奶粉(高钙，圣元牌)",
+  "vitB1": 0.4,
+  "vitB2": 0.5,
+  "niacin": 4.0,
+  "vitC": 70.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1150"
+ },
+ {
+  "ingredient": "婴儿配方豆粉(爱儿素，惠氏)",
+  "carotene": 162.0,
+  "vitB1": 0.77,
+  "vitB2": 1.15,
+  "niacin": 4.62,
+  "vitC": 69.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1151"
+ },
+ {
+  "ingredient": "较大婴儿配方奶粉(爱力大2，美赞臣)",
+  "vitB1": 0.43,
+  "vitB2": 0.93,
+  "niacin": 5.0,
+  "vitC": 61.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1152"
+ },
+ {
+  "ingredient": "较大婴幼儿配方奶粉(吉利蜜2，森永牌)",
+  "carotene": 45.0,
+  "vitB1": 0.5,
+  "vitB2": 0.8,
+  "niacin": 6.0,
+  "vitC": 50.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1161"
+ },
+ {
+  "ingredient": "较大婴幼儿奶粉(高钙，圣元牌)",
+  "vitB1": 0.4,
+  "vitB2": 0.6,
+  "niacin": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1164"
+ },
+ {
+  "ingredient": "幼儿奶粉(爱力大3，美赞臣)",
+  "vitB1": 0.45,
+  "vitB2": 0.95,
+  "niacin": 5.2,
+  "vitC": 63.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1166"
+ },
+ {
+  "ingredient": "胡萝卜苹果泥(亨氏)",
+  "carotene": 1807.0,
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "niacin": 0.28,
+  "vitC": 94.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1179"
+ },
+ {
+  "ingredient": "鸡肝蔬菜泥(亨氏)",
+  "vitB1": 0.04,
+  "vitB2": 0.21,
+  "niacin": 1.09,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1180"
+ },
+ {
+  "ingredient": "香甜胡萝卜泥(亨氏)",
+  "carotene": 6085.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.66,
+  "vitC": 64.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1181"
+ },
+ {
+  "ingredient": "豆奶粉",
+  "vitB1": 0.09,
+  "vitB2": 0.09,
+  "niacin": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1182"
+ },
+ {
+  "ingredient": "麦粉(蜂蜜，雀巢)",
+  "vitB1": 0.7,
+  "vitB2": 0.4,
+  "niacin": 0.3,
+  "vitC": 35.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1194"
+ },
+ {
+  "ingredient": "白水羊头",
+  "vitB2": 0.28,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1196"
+ },
+ {
+  "ingredient": "茶汤",
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1197"
+ },
+ {
+  "ingredient": "炒肝",
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1198"
+ },
+ {
+  "ingredient": "春卷",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1199"
+ },
+ {
+  "ingredient": "灌肠",
+  "vitB1": 0.01,
+  "vitB2": 0.13,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1201"
+ },
+ {
+  "ingredient": "煎饼",
+  "vitB1": 0.1,
+  "vitB2": 0.04,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1202"
+ },
+ {
+  "ingredient": "焦圈",
+  "vitB2": 0.01,
+  "niacin": 8.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1203"
+ },
+ {
+  "ingredient": "京八件",
+  "carotene": 40.0,
+  "vitB1": 0.08,
+  "vitB2": 0.03,
+  "niacin": 4.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1204"
+ },
+ {
+  "ingredient": "栗羊羹",
+  "vitB1": 0.06,
+  "vitB2": 0.12,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1205"
+ },
+ {
+  "ingredient": "凉粉",
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1206"
+ },
+ {
+  "ingredient": "龙虾片",
+  "vitB2": 0.01,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1208"
+ },
+ {
+  "ingredient": "驴打滚",
+  "vitB1": 0.05,
+  "vitB2": 0.07,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1209"
+ },
+ {
+  "ingredient": "密三刀",
+  "vitB1": 0.06,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1210"
+ },
+ {
+  "ingredient": "青稞炒面",
+  "vitB1": 0.08,
+  "vitB2": 0.1,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1212"
+ },
+ {
+  "ingredient": "豌豆黄",
+  "carotene": 30.0,
+  "vitB1": 0.04,
+  "vitB2": 0.04,
+  "niacin": 1.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1214"
+ },
+ {
+  "ingredient": "油茶",
+  "vitB1": 0.01,
+  "vitB2": 0.06,
+  "niacin": 0.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1215"
+ },
+ {
+  "ingredient": "油炸豆瓣",
+  "vitB1": 0.11,
+  "vitB2": 0.2,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1216"
+ },
+ {
+  "ingredient": "炸糕",
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "niacin": 3.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1217"
+ },
+ {
+  "ingredient": "糌粑(稞麦熟品)",
+  "vitB1": 0.05,
+  "vitB2": 0.15,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1218"
+ },
+ {
+  "ingredient": "黑芝麻汤圆",
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 1.23,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1220"
+ },
+ {
+  "ingredient": "醪糟",
+  "carotene": 0.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1221"
+ },
+ {
+  "ingredient": "过桥米线",
+  "carotene": 73.0,
+  "vitB1": 0.12,
+  "niacin": 0.6,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1223"
+ },
+ {
+  "ingredient": "蛋糕(均值)",
+  "carotene": 190.0,
+  "vitB1": 0.09,
+  "vitB2": 0.09,
+  "niacin": 0.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1224"
+ },
+ {
+  "ingredient": "月饼(豆沙)",
+  "carotene": 40.0,
+  "vitB1": 0.05,
+  "vitB2": 0.05,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1227"
+ },
+ {
+  "ingredient": "板油酥饼",
+  "vitB1": 0.11,
+  "vitB2": 0.15,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1234"
+ },
+ {
+  "ingredient": "蛋黄酥",
+  "carotene": 200.0,
+  "vitB1": 0.15,
+  "vitB2": 0.04,
+  "niacin": 4.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1235"
+ },
+ {
+  "ingredient": "夹心酥饼",
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1236"
+ },
+ {
+  "ingredient": "江米条",
+  "vitB1": 0.18,
+  "vitB2": 0.03,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1237"
+ },
+ {
+  "ingredient": "开口笑",
+  "carotene": 70.0,
+  "vitB1": 0.05,
+  "vitB2": 0.06,
+  "niacin": 5.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1238"
+ },
+ {
+  "ingredient": "绿豆糕",
+  "carotene": 280.0,
+  "vitB1": 0.23,
+  "vitB2": 0.02,
+  "niacin": 6.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1239"
+ },
+ {
+  "ingredient": "麻烘糕",
+  "vitB1": 0.01,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1240"
+ },
+ {
+  "ingredient": "麻花",
+  "vitB1": 0.05,
+  "vitB2": 0.01,
+  "niacin": 3.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1241"
+ },
+ {
+  "ingredient": "米花糖",
+  "vitB1": 0.05,
+  "vitB2": 0.09,
+  "niacin": 2.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1242"
+ },
+ {
+  "ingredient": "酥皮糕点",
+  "carotene": 70.0,
+  "vitB1": 0.1,
+  "vitB2": 0.1,
+  "niacin": 3.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1243"
+ },
+ {
+  "ingredient": "桃酥",
+  "vitB1": 0.02,
+  "vitB2": 0.05,
+  "niacin": 2.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1244"
+ },
+ {
+  "ingredient": "芝麻桃酥",
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1245"
+ },
+ {
+  "ingredient": "茯苓夹饼",
+  "vitB1": 0.11,
+  "vitB2": 0.14,
+  "niacin": 1.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1246"
+ },
+ {
+  "ingredient": "沙琪玛蛋酥",
+  "vitB1": 0.03,
+  "vitB2": 0.05,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1247"
+ },
+ {
+  "ingredient": "香橙水果馅饼",
+  "vitC": 8.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1248"
+ },
+ {
+  "ingredient": "香芋甜心(肯德基)",
+  "vitB1": 0.08,
+  "vitB2": 0.02,
+  "niacin": 0.54,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1250"
+ },
+ {
+  "ingredient": "鸡肉汉堡(肯德基)",
+  "vitB1": 0.07,
+  "vitB2": 0.05,
+  "niacin": 1.58,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1251"
+ },
+ {
+  "ingredient": "鸡肉卷(肯德基)",
+  "vitB1": 0.15,
+  "vitB2": 0.09,
+  "niacin": 2.25,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1252"
+ },
+ {
+  "ingredient": "新奥尔良鸡翅(肯德基)",
+  "vitB1": 0.05,
+  "vitB2": 0.08,
+  "niacin": 3.41,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1255"
+ },
+ {
+  "ingredient": "劲爆鸡米花(肯德基)",
+  "vitB1": 0.07,
+  "vitB2": 0.11,
+  "niacin": 3.96,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1256"
+ },
+ {
+  "ingredient": "甜玉米籽粒(肯德基)",
+  "vitC": 2.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1257"
+ },
+ {
+  "ingredient": "比萨饼(夹奶酪)",
+  "vitB1": 0.29,
+  "vitB2": 0.26,
+  "niacin": 3.94,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1259"
+ },
+ {
+  "ingredient": "干酪汉堡包(夹熏肉，加调料酱)",
+  "vitB1": 0.16,
+  "vitB2": 0.21,
+  "niacin": 3.4,
+  "vitC": 1.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1266"
+ },
+ {
+  "ingredient": "汉堡包(普通型，夹肉饼，加调料酱和蔬菜)",
+  "vitB1": 0.21,
+  "vitB2": 0.18,
+  "niacin": 3.35,
+  "vitC": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1271"
+ },
+ {
+  "ingredient": "热狗(原味)",
+  "vitB1": 0.24,
+  "vitB2": 0.28,
+  "niacin": 3.72,
+  "vitC": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1272"
+ },
+ {
+  "ingredient": "麦片",
+  "vitB1": 0.2,
+  "vitB2": 0.06,
+  "niacin": 4.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1273"
+ },
+ {
+  "ingredient": "燕麦片",
+  "vitB1": 0.3,
+  "vitB2": 0.13,
+  "niacin": 1.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1274"
+ },
+ {
+  "ingredient": "早餐奶",
+  "vitB1": 0.02,
+  "vitB2": 0.06,
+  "niacin": 0.19,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1276"
+ },
+ {
+  "ingredient": "黑芝麻糊粉",
+  "vitB1": 0.09,
+  "vitB2": 0.07,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1283"
+ },
+ {
+  "ingredient": "苦荞麦片(无糖)",
+  "vitB1": 0.3,
+  "vitB2": 0.16,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1288"
+ },
+ {
+  "ingredient": "干脆面(鸡汁味)",
+  "vitB1": 0.2,
+  "vitB2": 0.03,
+  "niacin": 1.56,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1292"
+ },
+ {
+  "ingredient": "海鲜味方便面(含调味料)",
+  "carotene": 78.0,
+  "vitB1": 0.08,
+  "vitB2": 0.03,
+  "niacin": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1293"
+ },
+ {
+  "ingredient": "红烧牛肉方便面(含调味料)",
+  "carotene": 475.0,
+  "vitB1": 0.24,
+  "vitB2": 0.04,
+  "niacin": 0.94,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1296"
+ },
+ {
+  "ingredient": "鳕鱼方便面(含调味料)",
+  "carotene": 70.0,
+  "vitB1": 0.09,
+  "vitB2": 0.02,
+  "niacin": 0.76,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1299"
+ },
+ {
+  "ingredient": "铁板牛肉炒面(含调味料)",
+  "carotene": 345.0,
+  "vitB1": 0.13,
+  "vitB2": 0.04,
+  "niacin": 1.16,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1302"
+ },
+ {
+  "ingredient": "玉米红烧牛肉味方便面(含调味料)",
+  "vitB1": 0.29,
+  "vitB2": 0.04,
+  "niacin": 0.28,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1305"
+ },
+ {
+  "ingredient": "海鲜鸡汁味米线(含调味料)",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1308"
+ },
+ {
+  "ingredient": "冬菜虾仁馄饨",
+  "vitB1": 0.08,
+  "vitB2": 0.06,
+  "niacin": 1.1,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1311"
+ },
+ {
+  "ingredient": "韭菜合子",
+  "vitB1": 0.04,
+  "vitB2": 0.04,
+  "niacin": 3.1,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1312"
+ },
+ {
+  "ingredient": "糯米饭团",
+  "vitB1": 0.06,
+  "vitB2": 0.02,
+  "niacin": 0.8,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1313"
+ },
+ {
+  "ingredient": "什锦炒饭",
+  "vitB1": 0.05,
+  "vitB2": 0.07,
+  "niacin": 0.6,
+  "vitC": 4.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1314"
+ },
+ {
+  "ingredient": "虾仁炒饭",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.5,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1315"
+ },
+ {
+  "ingredient": "法式牛角面包",
+  "vitB1": 0.05,
+  "vitB2": 0.01,
+  "niacin": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1317"
+ },
+ {
+  "ingredient": "果料面包",
+  "vitB1": 0.07,
+  "vitB2": 0.07,
+  "niacin": 4.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1318"
+ },
+ {
+  "ingredient": "黄油面包",
+  "vitB1": 0.03,
+  "vitB2": 0.02,
+  "niacin": 2.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1319"
+ },
+ {
+  "ingredient": "维生素面包",
+  "vitB1": 0.02,
+  "vitB2": 0.58,
+  "niacin": 5.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1320"
+ },
+ {
+  "ingredient": "葡萄干面包",
+  "carotene": 0.0,
+  "vitB1": 0.05,
+  "vitB2": 0.06,
+  "niacin": 0.6,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1321"
+ },
+ {
+  "ingredient": "饼干(均值)",
+  "carotene": 80.0,
+  "vitB1": 0.08,
+  "vitB2": 0.04,
+  "niacin": 4.7,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1322"
+ },
+ {
+  "ingredient": "水饺(三鲜馅)",
+  "vitB1": 0.06,
+  "vitB2": 0.07,
+  "niacin": 1.68,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1329"
+ },
+ {
+  "ingredient": "包子(三鲜馅)",
+  "vitB1": 0.04,
+  "vitB2": 0.07,
+  "niacin": 1.55,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1573"
+ },
+ {
+  "ingredient": "酥香兰花豆",
+  "vitB1": 0.26,
+  "vitB2": 0.17,
+  "niacin": 1.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1574"
+ },
+ {
+  "ingredient": "雪米饼",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.44,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1340"
+ },
+ {
+  "ingredient": "蛋酥卷",
+  "carotene": 1063.0,
+  "vitB1": 0.02,
+  "vitB2": 0.15,
+  "niacin": 0.45,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1341"
+ },
+ {
+  "ingredient": "巧克力派",
+  "vitB1": 0.03,
+  "vitB2": 0.07,
+  "niacin": 0.25,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1342"
+ },
+ {
+  "ingredient": "法式卷饼",
+  "vitB1": 0.04,
+  "vitB2": 0.22,
+  "niacin": 0.28,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1343"
+ },
+ {
+  "ingredient": "立体脆",
+  "vitB1": 0.87,
+  "vitB2": 0.07,
+  "niacin": 1.45,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1344"
+ },
+ {
+  "ingredient": "粟米脆",
+  "vitB1": 0.05,
+  "vitB2": 0.04,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1345"
+ },
+ {
+  "ingredient": "通心脆",
+  "vitB1": 0.04,
+  "vitB2": 0.04,
+  "niacin": 2.12,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1346"
+ },
+ {
+  "ingredient": "洋葱圈",
+  "vitB1": 0.31,
+  "vitB2": 0.04,
+  "niacin": 0.64,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1347"
+ },
+ {
+  "ingredient": "虾片",
+  "carotene": 0.0,
+  "vitB1": 0.01,
+  "vitB2": 0.0,
+  "niacin": 0.4,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1348"
+ },
+ {
+  "ingredient": "锅巴(豆香)",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1349"
+ },
+ {
+  "ingredient": "海苔",
+  "carotene": 9573.0,
+  "vitB1": 0.24,
+  "vitB2": 0.93,
+  "niacin": 5.98,
+  "vitC": 186.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1351"
+ },
+ {
+  "ingredient": "香菇片",
+  "vitB1": 0.54,
+  "vitB2": 0.24,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1352"
+ },
+ {
+  "ingredient": "薯片(烧烤味)",
+  "vitB1": 0.17,
+  "vitB2": 0.06,
+  "niacin": 2.76,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1353"
+ },
+ {
+  "ingredient": "薯圈",
+  "vitB2": 0.02,
+  "niacin": 0.88,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1355"
+ },
+ {
+  "ingredient": "怪味胡豆",
+  "vitB1": 0.08,
+  "vitB2": 0.19,
+  "niacin": 1.73,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1356"
+ },
+ {
+  "ingredient": "奶油五香豆",
+  "vitB1": 0.44,
+  "vitB2": 0.2,
+  "niacin": 1.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1357"
+ },
+ {
+  "ingredient": "夹心米果",
+  "vitB1": 0.03,
+  "vitB2": 0.16,
+  "niacin": 0.64,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1358"
+ },
+ {
+  "ingredient": "乐芙球",
+  "vitB1": 0.04,
+  "vitB2": 0.31,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1359"
+ },
+ {
+  "ingredient": "玉米花",
+  "vitB1": 0.1,
+  "vitB2": 0.11,
+  "niacin": 1.19,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1360"
+ },
+ {
+  "ingredient": "可口可乐",
+  "vitB1": 0.0,
+  "vitB2": 0.0,
+  "niacin": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1367"
+ },
+ {
+  "ingredient": "甘蔗汁",
+  "carotene": 10.0,
+  "vitB1": 0.01,
+  "vitB2": 0.02,
+  "niacin": 0.2,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1610"
+ },
+ {
+  "ingredient": "菠萝汁饮料(大湖牌)",
+  "vitB1": 0.05,
+  "vitB2": 0.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1368"
+ },
+ {
+  "ingredient": "苹果汁饮料(光明牌)",
+  "niacin": 0.03,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1369"
+ },
+ {
+  "ingredient": "橙汁饮料(光明牌)",
+  "vitB1": 0.06,
+  "vitB2": 0.02,
+  "niacin": 0.21,
+  "vitC": 32.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1576"
+ },
+ {
+  "ingredient": "山楂果肉饮料",
+  "vitB2": 0.01,
+  "vitC": 33.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1372"
+ },
+ {
+  "ingredient": "酸枣果汁饮料",
+  "vitB2": 0.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1373"
+ },
+ {
+  "ingredient": "西番莲汁饮料",
+  "vitB2": 0.01,
+  "niacin": 0.17,
+  "vitC": 12.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1374"
+ },
+ {
+  "ingredient": "西柚汁饮料",
+  "vitB1": 0.04,
+  "vitB2": 0.01,
+  "vitC": 37.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1375"
+ },
+ {
+  "ingredient": "杏仁椰汁饮料",
+  "carotene": 3.0,
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.05,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1377"
+ },
+ {
+  "ingredient": "胡萝卜汁饮料",
+  "carotene": 39.0,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1378"
+ },
+ {
+  "ingredient": "AD钙奶",
+  "carotene": 28.0,
+  "vitB1": 0.03,
+  "vitB2": 0.09,
+  "niacin": 0.05,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1379"
+ },
+ {
+  "ingredient": "健康快车奶饮料",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1380"
+ },
+ {
+  "ingredient": "酸乳饮料(发酵)",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1381"
+ },
+ {
+  "ingredient": "核桃乳(儿童型)",
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1382"
+ },
+ {
+  "ingredient": "杏仁露",
+  "vitB1": 0.0,
+  "niacin": 0.02,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1386"
+ },
+ {
+  "ingredient": "茶（绿茶）",
+  "carotene": 5800.0,
+  "vitB1": 0.02,
+  "vitB2": 0.35,
+  "niacin": 8.0,
+  "vitC": 19.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1614"
+ },
+ {
+  "ingredient": "可可粉",
+  "vitB1": 0.05,
+  "vitB2": 0.16,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1387"
+ },
+ {
+  "ingredient": "麦乳精",
+  "vitB1": 0.05,
+  "vitB2": 0.3,
+  "niacin": 0.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1388"
+ },
+ {
+  "ingredient": "高乐高营养饮品",
+  "vitB1": 1.12,
+  "vitB2": 1.28,
+  "niacin": 37.07,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1389"
+ },
+ {
+  "ingredient": "果珍",
+  "vitB1": 0.03,
+  "vitB2": 0.01,
+  "vitC": 285.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1390"
+ },
+ {
+  "ingredient": "柠檬茶",
+  "vitB1": 0.04,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "vitC": 393.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1391"
+ },
+ {
+  "ingredient": "咖啡豆",
+  "carotene": 99.0,
+  "vitB1": 0.08,
+  "vitB2": 0.11,
+  "niacin": 26.32,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1584"
+ },
+ {
+  "ingredient": "咖啡粉",
+  "vitB1": 0.01,
+  "vitB2": 0.07,
+  "niacin": 28.17,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1585"
+ },
+ {
+  "ingredient": "冰棍",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1392"
+ },
+ {
+  "ingredient": "冰淇淋",
+  "vitB1": 0.01,
+  "vitB2": 0.03,
+  "niacin": 0.2,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1393"
+ },
+ {
+  "ingredient": "雪糕(百乐宝)",
+  "vitB1": 0.05,
+  "vitB2": 0.19,
+  "niacin": 0.07,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1402"
+ },
+ {
+  "ingredient": "雪利酒",
+  "vitB2": 0.01,
+  "niacin": 0.1,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1420"
+ },
+ {
+  "ingredient": "花雕酒(16.5％)",
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1425"
+ },
+ {
+  "ingredient": "伏特加",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1439"
+ },
+ {
+  "ingredient": "威士忌",
+  "vitB1": 0.01,
+  "vitB2": 0.0,
+  "niacin": 0.05,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1440"
+ },
+ {
+  "ingredient": "果汁朗姆酒(9.9%)",
+  "vitB1": 0.03,
+  "vitB2": 0.01,
+  "niacin": 0.1,
+  "vitC": 5.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1443"
+ },
+ {
+  "ingredient": "鸡尾酒",
+  "vitB1": 0.0,
+  "vitB2": 0.0,
+  "niacin": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1444"
+ },
+ {
+  "ingredient": "马提尼酒(32%)",
+  "carotene": 0.0,
+  "vitB1": 0.0,
+  "vitB2": 0.0,
+  "niacin": 0.04,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1445"
+ },
+ {
+  "ingredient": "曼哈顿酒(30.6%)",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.1,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1446"
+ },
+ {
+  "ingredient": "酸味威士忌(16.8%)",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.02,
+  "vitC": 1.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1447"
+ },
+ {
+  "ingredient": "花生牛轧糖",
+  "vitB1": 0.06,
+  "vitB2": 0.01,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1452"
+ },
+ {
+  "ingredient": "奶糖",
+  "vitB1": 0.08,
+  "vitB2": 0.17,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1453"
+ },
+ {
+  "ingredient": "巧克力",
+  "vitB1": 0.06,
+  "vitB2": 0.08,
+  "niacin": 1.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1454"
+ },
+ {
+  "ingredient": "酥糖",
+  "vitB1": 0.1,
+  "vitB2": 0.04,
+  "niacin": 3.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1456"
+ },
+ {
+  "ingredient": "夹心糖",
+  "vitB1": 0.04,
+  "vitB2": 0.11,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1458"
+ },
+ {
+  "ingredient": "水果味软糖",
+  "vitB1": 0.02,
+  "vitB2": 0.04,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1459"
+ },
+ {
+  "ingredient": "牛奶糖",
+  "vitB1": 0.07,
+  "vitB2": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1460"
+ },
+ {
+  "ingredient": "太妃糖",
+  "vitB1": 0.02,
+  "vitB2": 0.14,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1462"
+ },
+ {
+  "ingredient": "海棠脯",
+  "carotene": 60.0,
+  "vitB1": 0.02,
+  "vitB2": 0.05,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1467"
+ },
+ {
+  "ingredient": "李广杏脯",
+  "carotene": 480.0,
+  "vitB2": 0.03,
+  "niacin": 1.5,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1468"
+ },
+ {
+  "ingredient": "苹果脯",
+  "carotene": 70.0,
+  "vitB1": 0.01,
+  "vitB2": 0.09,
+  "niacin": 0.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1469"
+ },
+ {
+  "ingredient": "桃脯",
+  "carotene": 50.0,
+  "vitB1": 0.01,
+  "vitB2": 0.12,
+  "niacin": 0.8,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1470"
+ },
+ {
+  "ingredient": "杏脯",
+  "carotene": 940.0,
+  "vitB1": 0.02,
+  "vitB2": 0.09,
+  "niacin": 0.6,
+  "vitC": 6.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1471"
+ },
+ {
+  "ingredient": "金糕条",
+  "carotene": 60.0,
+  "vitB1": 0.02,
+  "vitB2": 0.08,
+  "niacin": 0.3,
+  "vitC": 10.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1472"
+ },
+ {
+  "ingredient": "山楂果丹皮",
+  "carotene": 150.0,
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.7,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1473"
+ },
+ {
+  "ingredient": "冰糖酸角",
+  "vitB1": 0.22,
+  "vitB2": 0.04,
+  "niacin": 0.23,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1474"
+ },
+ {
+  "ingredient": "甘草杏",
+  "carotene": 596.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1475"
+ },
+ {
+  "ingredient": "清凉杏肉",
+  "vitC": 0.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1476"
+ },
+ {
+  "ingredient": "雪梅",
+  "vitB2": 0.04,
+  "niacin": 0.65,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1477"
+ },
+ {
+  "ingredient": "九制梅肉",
+  "vitB2": 0.07,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1478"
+ },
+ {
+  "ingredient": "九制西梅",
+  "vitB1": 0.03,
+  "vitB2": 0.04,
+  "niacin": 0.77,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1479"
+ },
+ {
+  "ingredient": "九制应子",
+  "vitB1": 0.03,
+  "vitB2": 0.03,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1480"
+ },
+ {
+  "ingredient": "梅脯",
+  "vitB1": 0.02,
+  "vitB2": 0.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1481"
+ },
+ {
+  "ingredient": "黑贡枣",
+  "vitB1": 0.06,
+  "vitB2": 0.12,
+  "vitC": 14.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1483"
+ },
+ {
+  "ingredient": "多味山楂",
+  "vitC": 51.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1484"
+ },
+ {
+  "ingredient": "山楂脯",
+  "vitC": 6.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1485"
+ },
+ {
+  "ingredient": "地瓜干",
+  "vitC": 23.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1486"
+ },
+ {
+  "ingredient": "核桃油",
+  "carotene": 0.0,
+  "vitB2": 0.01,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1511"
+ },
+ {
+  "ingredient": "栗米油",
+  "carotene": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1512"
+ },
+ {
+  "ingredient": "米糠油",
+  "carotene": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1513"
+ },
+ {
+  "ingredient": "油茶籽油",
+  "carotene": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1514"
+ },
+ {
+  "ingredient": "大豆色拉油",
+  "carotene": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1516"
+ },
+ {
+  "ingredient": "色拉油",
+  "carotene": 0.0,
+  "vitC": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1517"
+ },
+ {
+  "ingredient": "酱油(均值)",
+  "vitB1": 0.05,
+  "vitB2": 0.13,
+  "niacin": 1.7,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1518"
+ },
+ {
+  "ingredient": "黄豆酱油",
+  "vitB1": 0.02,
+  "vitB2": 0.15,
+  "niacin": 1.13,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1519"
+ },
+ {
+  "ingredient": "陈醋",
+  "vitB1": 0.11,
+  "vitB2": 0.16,
+  "niacin": 7.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1522"
+ },
+ {
+  "ingredient": "黄酱",
+  "carotene": 80.0,
+  "vitB1": 0.05,
+  "vitB2": 0.28,
+  "niacin": 2.4,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1525"
+ },
+ {
+  "ingredient": "五香豆豉",
+  "vitB1": 0.02,
+  "vitB2": 0.09,
+  "niacin": 0.6,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1572"
+ },
+ {
+  "ingredient": "郫县辣酱",
+  "carotene": 1040.0,
+  "vitB1": 0.04,
+  "vitB2": 0.22,
+  "niacin": 2.1,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1529"
+ },
+ {
+  "ingredient": "海鲜酱(阿香婆)",
+  "vitB1": 0.02,
+  "vitB2": 0.15,
+  "niacin": 1.45,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1530"
+ },
+ {
+  "ingredient": "牛肉酱(阿香婆)",
+  "vitB1": 0.03,
+  "vitB2": 0.14,
+  "niacin": 1.9,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1531"
+ },
+ {
+  "ingredient": "千岛沙拉酱",
+  "vitB1": 0.03,
+  "vitB2": 0.06,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1535"
+ },
+ {
+  "ingredient": "奶油攀司",
+  "vitB1": 0.08,
+  "vitB2": 0.3,
+  "niacin": 0.5,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1537"
+ },
+ {
+  "ingredient": "草莓酱",
+  "vitB1": 0.15,
+  "vitB2": 0.1,
+  "niacin": 0.2,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1538"
+ },
+ {
+  "ingredient": "苹果酱",
+  "vitB1": 0.28,
+  "vitB2": 0.02,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1540"
+ },
+ {
+  "ingredient": "桃酱",
+  "vitB1": 0.01,
+  "vitB2": 0.01,
+  "niacin": 0.5,
+  "vitC": 3.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1541"
+ },
+ {
+  "ingredient": "杏酱",
+  "carotene": 30.0,
+  "vitB1": 0.1,
+  "vitB2": 0.07,
+  "niacin": 0.2,
+  "vitC": 1.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1542"
+ },
+ {
+  "ingredient": "番茄沙司",
+  "carotene": 472.0,
+  "vitB1": 0.02,
+  "vitB2": 0.02,
+  "niacin": 0.7,
+  "vitC": 8.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1544"
+ },
+ {
+  "ingredient": "腌雪里红",
+  "carotene": 50.0,
+  "vitB1": 0.05,
+  "vitB2": 0.07,
+  "niacin": 0.7,
+  "vitC": 4.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1553"
+ },
+ {
+  "ingredient": "剁辣椒",
+  "carotene": 1232.0,
+  "vitB2": 0.07,
+  "niacin": 1.01,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1554"
+ },
+ {
+  "ingredient": "腌大头菜",
+  "vitB1": 0.04,
+  "vitB2": 0.2,
+  "niacin": 1.65,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1557"
+ },
+ {
+  "ingredient": "腌芥菜头",
+  "vitB1": 0.02,
+  "vitB2": 0.03,
+  "niacin": 0.43,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1558"
+ },
+ {
+  "ingredient": "腌萝卜条",
+  "vitB2": 0.01,
+  "niacin": 0.12,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1560"
+ },
+ {
+  "ingredient": "胡椒粉",
+  "carotene": 60.0,
+  "vitB1": 0.09,
+  "vitB2": 0.06,
+  "niacin": 1.8,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1563"
+ },
+ {
+  "ingredient": "咖喱粉",
+  "carotene": 690.0,
+  "vitB1": 0.41,
+  "vitB2": 0.25,
+  "niacin": 7.0,
+  "vitC": 2.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1580"
+ },
+ {
+  "ingredient": "味精",
+  "vitB1": 0.08,
+  "vitB2": 0.0,
+  "niacin": 0.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1566"
+ },
+ {
+  "ingredient": "酵母(干)",
+  "vitB1": 0.09,
+  "vitB2": 0.81,
+  "niacin": 4.3,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1568"
+ },
+ {
+  "ingredient": "枸杞子",
+  "carotene": 9750.0,
+  "vitB1": 0.35,
+  "vitB2": 0.46,
+  "niacin": 4.0,
+  "vitC": 48.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1571"
+ }
+]
