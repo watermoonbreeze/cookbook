@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -126,6 +127,7 @@ fun AiRecommendScreen(
     onBack: () -> Unit,
     onPickMeal: (List<Long>) -> Unit = {},
     initialSlotCode: String = "", // [AI生成] F#7:餐次块带入的 ai.MealSlot.code(空=全部·默认原行为)
+    onOpenDietaryReference: () -> Unit = {}, // [AI生成] P3:页脚"各类每天吃多少"轻入口→膳食参考依据页(权威每日份量可达)
     vm: AiRecommendViewModel = koinViewModel(),
     planVm: AiPlanViewModel = koinViewModel(),
 ) {
@@ -233,7 +235,7 @@ fun AiRecommendScreen(
             Spacer(Modifier.height(4.dp))
 
             if (showPlan) {
-                AiPlanBody(planVm, modifier = Modifier.weight(1f))
+                AiPlanBody(planVm, modifier = Modifier.weight(1f), onOpenDietaryReference = onOpenDietaryReference) // [AI修改] P3:周期计划页脚同款"各类每天吃多少"轻入口
             } else {
                 // [AI生成] 慢病知情引导(F4b):已登记痛风/糖尿病+非偏营养+未关过→顶部一次性可关闭横幅(固定,滑走不回,更克制)。守透明/诚实不操纵/免责。
                 if (state.showNutritionHint) {
@@ -289,6 +291,8 @@ fun AiRecommendScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
+                                // [AI生成] P3:餐次结构建议行(静态·权威 DietaryGuideline·与 AiPlan 逐字同款)——选定具体餐次时在结果区顶部显示一次该餐次合理膳食结构。
+                                MealStructureHintRow(state.selectedSlot.label)
                                 Spacer(Modifier.height(4.dp))
                             }
                             itemsIndexed(state.suggestionGroups) { idx, group ->
@@ -305,6 +309,7 @@ fun AiRecommendScreen(
                             item {
                                 Text(DIET_DISCLAIMER, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(PORTION_HINT, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp)) // [AI生成] 整份/全家分食口径注(避免综合值焦虑)
+                                DailyAmountRefLink(onOpenDietaryReference) // [AI生成] P3:"各类每天吃多少"轻入口→膳食参考依据页(权威每日份量·可达不喧宾)
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -327,6 +332,8 @@ fun AiRecommendScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
+                                // [AI生成] P3:餐次结构建议行(静态·权威 DietaryGuideline·与 AiPlan 逐字同款)——选定具体餐次时在结果区顶部显示一次该餐次合理膳食结构。
+                                MealStructureHintRow(state.selectedSlot.label)
                                 Spacer(Modifier.height(4.dp))
                             }
                             items(state.dishItems, key = { it.id }) { item ->
@@ -342,6 +349,7 @@ fun AiRecommendScreen(
                                 Spacer(Modifier.height(8.dp))
                                 Text(DIET_DISCLAIMER, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(PORTION_HINT, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp)) // [AI生成] 整份/全家分食口径注(避免综合值焦虑)
+                                DailyAmountRefLink(onOpenDietaryReference) // [AI生成] P3:"各类每天吃多少"轻入口→膳食参考依据页(权威每日份量·可达不喧宾)
                                 Spacer(Modifier.height(16.dp))
                             }
                         }
@@ -558,6 +566,34 @@ private fun ResultHeader(hint: String, onRefresh: () -> Unit) {
             Spacer(Modifier.width(4.dp))
             Text("换一换")
         }
+    }
+}
+
+/**
+ * [AI生成] P3:单餐推荐结果区顶部的"餐次结构建议行"（静态·权威 [com.sxdbsm.cookbook.domain.DietaryGuideline]·与 AiPlan 逐字同款）。
+ * 选定具体餐次时显示该餐次合理膳食结构（如"午餐吃饱：主食 + 蔬菜 + 鱼禽肉蛋"）；"全部"→mealKindOf 为 null→不显（沿用 AiPlan 降级）。
+ * 惯例口径、仅供参考、非医嘱（尾注统一在页脚，不逐行重复）。同一次推荐多套方案共用同一餐次→只在结果区顶部出一次，不逐卡重复。
+ */
+@Composable
+private fun MealStructureHintRow(slotLabel: String) {
+    com.sxdbsm.cookbook.domain.DietaryGuideline.mealKindOf(slotLabel)?.let {
+        Text(
+            com.sxdbsm.cookbook.domain.DietaryGuideline.mealShareOf(slotLabel).hint,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp),
+        )
+    }
+}
+
+/**
+ * [AI生成] P3:"各类每天吃多少 ›"文字型轻入口→膳食参考依据页（权威每日份量·膳食宝塔各层克数详列处）。
+ * 让权威份量在推荐动线可达、可溯源，却不在高频结果里平铺克数（避免噪声与份量焦虑·守 UX 克制）。文字跳转、不新造卡片/图标按钮。
+ */
+@Composable
+internal fun DailyAmountRefLink(onClick: () -> Unit) { // internal:同包 AiPlanBody 复用(周期计划页脚同款轻入口)
+    TextButton(onClick = onClick, contentPadding = PaddingValues(0.dp), modifier = Modifier.padding(top = 2.dp)) {
+        Text("各类每天吃多少 ›", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
     }
 }
 

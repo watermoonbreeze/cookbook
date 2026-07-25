@@ -40,7 +40,7 @@ import com.sxdbsm.cookbook.ai.model.DayPlan
  **/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
+fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier, onOpenDietaryReference: () -> Unit = {}) { // [AI修改] P3:加"各类每天吃多少"轻入口回调
     val state = vm.state
     val mainRange = com.sxdbsm.cookbook.ai.MealPortion.mainRange(state.people)
     // [AI修改] P1 家族化统一(§9.35)：控件区做"高频直出/低频折叠"——天数+生成直出、人数+风格收进「计划设置」弹层(与另两档「筛选」弹层同构)。
@@ -148,6 +148,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                     Text(PORTION_HINT, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp)) // [AI生成] 整份/全家分食口径注(避免综合值焦虑·与 AiRecommend 共用常量)
                     // [AI生成] P2:餐次结构建议口径尾注(惯例口径·非国标·仅供参考)——统一放页脚,不逐餐重复。
                     Text("餐次结构建议参考《中国居民膳食指南2022》三餐能量分配，为惯例口径、仅供参考。", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp))
+                    DailyAmountRefLink(onOpenDietaryReference) // [AI生成] P3:"各类每天吃多少"轻入口→膳食参考依据页(权威每日份量·与单餐入口同款)
                     Spacer(Modifier.height(16.dp))
                 }
             }

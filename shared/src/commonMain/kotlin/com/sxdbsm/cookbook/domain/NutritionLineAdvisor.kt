@@ -19,7 +19,8 @@ data class LineAdvice(
     val text: String,
     val suggestGroups: List<FoodGroup.Group> = emptyList(),
 ) {
-    enum class Kind { GAP_PILLAR, MONOTONE }
+    /** [AI修改] P3:GAP_PILLAR(三支柱缺口)→GAP_LAYER(宝塔正向层缺口)，口径统一到膳食宝塔。 */
+    enum class Kind { GAP_LAYER, MONOTONE }
 }
 
 object NutritionLineAdvisor {
@@ -35,20 +36,28 @@ object NutritionLineAdvisor {
         if (line.dayCount == 0) return emptyList()
         val out = mutableListOf<LineAdvice>()
 
-        // 1) 支柱缺口（GAP_PILLAR）：缺失天数最多的支柱→用天数说话、给可补的大类。
-        val topGap = line.pillarGapDays.maxByOrNull { it.value }
-        if (topGap != null && topGap.value > 0) {
-            val (pillar, days) = topGap
-            val (word, groups) = when (pillar) {
-                NutritionLine.Pillar.PROTEIN -> "优质蛋白" to listOf(FoodGroup.Group.FISH, FoodGroup.Group.EGG, FoodGroup.Group.BEAN)
-                NutritionLine.Pillar.STAPLE -> "主食" to listOf(FoodGroup.Group.STAPLE)
-                NutritionLine.Pillar.VEG -> "蔬菜" to listOf(FoodGroup.Group.VEGETABLE, FoodGroup.Group.FUNGI)
+        // 1) 层缺口（GAP_LAYER）：缺失天数最多的宝塔正向层→用天数说话、给可补的大类。[AI修改] P3 口径收敛到宝塔层。
+        // [AI修改] Google审🟡1:并列最大时**显式按 POSITIVE_LAYERS 顺序 tie-break**(谷薯→蔬果→鱼禽肉蛋→奶豆坚果)，
+        //   不依赖 layerGapDays 的 Map 迭代顺序(隐式契约脆弱·换构建方式会静默改选层)。
+        val maxDays = line.layerGapDays.values.maxOrNull() ?: 0
+        val layer = if (maxDays > 0) DietaryGuideline.POSITIVE_LAYERS.firstOrNull { (line.layerGapDays[it] ?: 0) == maxDays } else null
+        if (layer != null) {
+            val days = maxDays
+            // 建议的可补大类按膳食宝塔"优先鱼禽蛋、奶豆坚果"取更优选项；油盐层不属正向层、不会命中。
+            val (word, groups) = when (layer) {
+                DietaryGuideline.PagodaLayer.GRAINS -> "主食" to listOf(FoodGroup.Group.STAPLE)
+                DietaryGuideline.PagodaLayer.VEGETABLES_FRUITS -> "蔬菜水果" to listOf(FoodGroup.Group.VEGETABLE, FoodGroup.Group.FUNGI, FoodGroup.Group.FRUIT)
+                DietaryGuideline.PagodaLayer.ANIMAL_FOODS -> "鱼禽肉蛋" to listOf(FoodGroup.Group.FISH, FoodGroup.Group.EGG, FoodGroup.Group.WHITE_MEAT)
+                DietaryGuideline.PagodaLayer.DAIRY_BEANS_NUTS -> "奶豆坚果" to listOf(FoodGroup.Group.DAIRY, FoodGroup.Group.BEAN)
+                DietaryGuideline.PagodaLayer.OILS_SALT -> "" to emptyList() // 不会出现(layerGapDays 仅正向层)
             }
-            out += LineAdvice(
-                LineAdvice.Kind.GAP_PILLAR,
-                "这周有 $days 天还没吃到$word，挑一两天各加一道，整周会更均衡",
-                groups,
-            )
+            if (word.isNotEmpty()) {
+                out += LineAdvice(
+                    LineAdvice.Kind.GAP_LAYER,
+                    "这周有 $days 天还没吃到$word，挑一两天各加一道，整周会更均衡",
+                    groups,
+                )
+            }
         }
 
         // 2) 单调堆积（MONOTONE）：某大类出现天数≥dayCount×0.7 且蛋白源单一→正向提示换花样。

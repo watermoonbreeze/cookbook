@@ -369,6 +369,7 @@ fun MainScaffold(
                             nav.navigate(Routes.addMealWithDishes(dishIds))
                         }
                     },
+                    onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] P3:"各类每天吃多少"→膳食参考依据页(权威每日份量)
                 )
             }
             composable(Routes.AI_SETTINGS) {
