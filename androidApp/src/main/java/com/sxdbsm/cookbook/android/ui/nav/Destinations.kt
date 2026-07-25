@@ -45,6 +45,7 @@ object Routes {
     const val DIETARY_REFERENCE = "dietary_reference" // [AI生成] 膳食参考依据(阈值分级引用的权威标准/指南透明展示)
     const val NUTRITION_RULE_REFERENCE = "nutrition_rule_reference" // [AI生成] 营养怎么算的(热量/摄入折算/分级口径的计算说明+免责)
     const val HEALTH_SCIENCE_REFERENCE = "health_science_reference" // [AI生成] 健康科普(食物消化吸收代谢+食材与健康状态为什么·分两层)
+    const val VITAMIN_REFERENCE = "vitamin_reference" // [AI生成] 维生素小百科(各维生素作用/来源/缺乏·脂溶水溶分类)
     const val DATA_SOURCE = "data_source" // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品各自来源)
     const val UPDATE_LOG = "update_log" // [AI生成] F#8 透明准则:基础数据更新记录(每次更新做了什么·可查)
     const val FEATURE_GUIDE = "feature_guide" // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)

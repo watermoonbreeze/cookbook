@@ -55,6 +55,7 @@ fun MineScreen(
     onOpenDietaryReference: () -> Unit = {}, // [AI生成] 膳食参考依据(阈值/分级引用的权威标准透明展示)
     onOpenNutritionRule: () -> Unit = {}, // [AI生成] 营养怎么算的(热量/摄入折算/分级口径的计算说明)
     onOpenHealthScience: () -> Unit = {}, // [AI生成] 健康科普(食物消化吸收代谢+食材与健康状态为什么·分两层)
+    onOpenVitamin: () -> Unit = {}, // [AI生成] 维生素小百科(各维生素作用/来源/缺乏)
     onOpenDataSource: () -> Unit = {}, // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品来源)
     onOpenUpdateLog: () -> Unit = {}, // [AI生成] F#8:基础数据更新记录(每次更新做了什么·可查)
     onOpenFeatureGuide: () -> Unit = {}, // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
@@ -285,6 +286,9 @@ fun MineScreen(
             InsetDivider(52)
             // [AI生成] 健康科普：食物消化吸收代谢 + 食材为什么影响健康状态(分两层·机制/原理·兼透明)。
             SettingRow(icon = Icons.Outlined.Science, title = "健康科普", subtitle = "食物在身体里怎么消化转化，以及为什么影响血压/血糖/尿酸", trailing = "▸") { onOpenHealthScience() }
+            InsetDivider(52)
+            // [AI生成] 维生素小百科：各维生素作用/食物来源/缺乏(脂溶A/D/E/K·水溶B族/C)。
+            SettingRow(icon = Icons.Outlined.Medication, title = "维生素小百科", subtitle = "常见维生素干什么、从哪吃、缺了会怎样", trailing = "▸") { onOpenVitamin() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
             InsetDivider(52)
