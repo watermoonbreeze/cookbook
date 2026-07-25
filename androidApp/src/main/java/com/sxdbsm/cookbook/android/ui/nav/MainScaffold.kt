@@ -232,6 +232,7 @@ fun MainScaffold(
                     onOpenHealthConditionReference = { nav.navigate(Routes.HEALTH_CONDITION_REFERENCE) }, // [AI生成] 健康状态参考
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] 膳食参考依据
                     onOpenNutritionRule = { nav.navigate(Routes.NUTRITION_RULE_REFERENCE) }, // [AI生成] 营养怎么算的(计算说明)
+                    onOpenHealthScience = { nav.navigate(Routes.HEALTH_SCIENCE_REFERENCE) }, // [AI生成] 健康科普(消化代谢+食材机制)
                     onOpenDataSource = { nav.navigate(Routes.DATA_SOURCE) }, // [AI生成] 数据来源
                     onOpenUpdateLog = { nav.navigate(Routes.UPDATE_LOG) }, // [AI生成] F#8:基础数据更新记录
                     onOpenFeatureGuide = { nav.navigate(Routes.FEATURE_GUIDE) }, // [AI生成] 功能介绍
@@ -259,6 +260,14 @@ fun MainScaffold(
                     onBack = { nav.popBackStack() },
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) },
                     onOpenHealthCondition = { nav.navigate(Routes.HEALTH_CONDITION_REFERENCE) },
+                )
+            }
+            composable(Routes.HEALTH_SCIENCE_REFERENCE) {
+                // [AI生成] 健康科普:食物消化吸收代谢 + 食材与健康状态为什么(分两层) + 两条互链
+                com.sxdbsm.cookbook.android.ui.reference.HealthScienceReferenceScreen(
+                    onBack = { nav.popBackStack() },
+                    onOpenHealthCondition = { nav.navigate(Routes.HEALTH_CONDITION_REFERENCE) },
+                    onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) },
                 )
             }
             composable(Routes.DATA_SOURCE) {

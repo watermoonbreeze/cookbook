@@ -54,6 +54,7 @@ fun MineScreen(
     onOpenNutritionTable: () -> Unit = {}, // [AI生成] 食材营养表
     onOpenDietaryReference: () -> Unit = {}, // [AI生成] 膳食参考依据(阈值/分级引用的权威标准透明展示)
     onOpenNutritionRule: () -> Unit = {}, // [AI生成] 营养怎么算的(热量/摄入折算/分级口径的计算说明)
+    onOpenHealthScience: () -> Unit = {}, // [AI生成] 健康科普(食物消化吸收代谢+食材与健康状态为什么·分两层)
     onOpenDataSource: () -> Unit = {}, // [AI生成] 数据来源(食材分类/营养/GI/嘌呤/预设菜品来源)
     onOpenUpdateLog: () -> Unit = {}, // [AI生成] F#8:基础数据更新记录(每次更新做了什么·可查)
     onOpenFeatureGuide: () -> Unit = {}, // [AI生成] 功能介绍(首次使用讲清app做什么/怎么用)
@@ -281,6 +282,9 @@ fun MineScreen(
             InsetDivider(52)
             // [AI生成] 健康状态参考：病种+生命阶段饮食关注点 + App 怎么提示 + 口径 + 免责。
             SettingRow(icon = Icons.Outlined.MonitorHeart, title = "健康状态参考", subtitle = "慢病与孕期/婴幼儿等各自饮食关注点与提示口径，仅供参考", trailing = "▸") { onOpenHealthConditionReference() }
+            InsetDivider(52)
+            // [AI生成] 健康科普：食物消化吸收代谢 + 食材为什么影响健康状态(分两层·机制/原理·兼透明)。
+            SettingRow(icon = Icons.Outlined.Science, title = "健康科普", subtitle = "食物在身体里怎么消化转化，以及为什么影响血压/血糖/尿酸", trailing = "▸") { onOpenHealthScience() }
             InsetDivider(52)
             SettingRow(icon = Icons.Outlined.Source, title = "数据来源", subtitle = "食材分类/营养/GI/嘌呤/预设菜品各自来源与出处", trailing = "▸") { onOpenDataSource() }
             InsetDivider(52)

@@ -156,6 +156,9 @@ object DataSourceReference {
         DietaryRefSource("《中国居民膳食指南(2022)》", "", "中国营养学会", "2022"),
         // [AI生成] 2026-07-25:核实现有钠/钾/供能比阈值(SRC_DRIS·DietaryReference 5处引用)真实源自 DRIs·故列入(真实用到才列)。
         DietaryRefSource("《中国居民膳食营养素参考摄入量》 WS/T 578 系列", "钠PI-NCD≤2000mg等阈值出处", "中国营养学会 / 卫生行业标准", "2017/2023"),
+        // [AI生成] 2026-07-25:「健康科普」页(消化吸收代谢+食材机制)内容整理所据(真实引用才列)。
+        DietaryRefSource("《中国营养科学全书(第2版)》", "健康科普·营养素代谢内容", "人民卫生出版社", "2019"),
+        DietaryRefSource("《生理学》(人卫版教材)", "健康科普·消化吸收内容", "人民卫生出版社", ""),
         DietaryRefSource("《中国食物成分表(标准版·第6版)》", "", "中国疾控中心营养与健康所", ""),
         DietaryRefSource("食物营养成分查询平台 nlc.chinanutri.cn", "", "中国疾控中心营养与健康所", ""),
         DietaryRefSource("USDA FoodData Central (fdc.nal.usda.gov)", "", "美国农业部", ""),
