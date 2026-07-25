@@ -1,172 +1,1172 @@
 [
-  {"crowd": "高尿酸", "ingredient": "猪肝", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "咸猪肝", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "猪腰", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "猪心", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "猪肚", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "鸡胗", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "鸭肠", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "鸭肫", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "鸭杂", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "肥肠", "level": "avoid", "reason": "动物内脏嘌呤很高，应避免"},
-  {"crowd": "高尿酸", "ingredient": "沙丁鱼", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "带鱼", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "小鱼干", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "生蚝", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "扇贝", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "蛤蜊", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "蛏子", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "青口", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "虾米", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "虾皮", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "小龙虾", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "梭子蟹", "level": "avoid", "reason": "高嘌呤海鲜/贝类，应避免"},
-  {"crowd": "高尿酸", "ingredient": "猪瘦肉", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "猪里脊", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "牛肉", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "牛腩", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "牛腱", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "羊肉", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "鸡胸肉", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "鸡腿", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "鸭肉", "level": "limit", "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"},
-  {"crowd": "高尿酸", "ingredient": "草鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "鲤鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "鲫鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "鲈鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "鲳鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "三文鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "鱿鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "章鱼", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "虾", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "河虾", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "对虾", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "虾仁", "level": "limit", "reason": "鱼虾嘌呤中等，适量食用"},
-  {"crowd": "高尿酸", "ingredient": "低脂牛奶", "level": "recommend", "reason": "低嘌呤优质蛋白，痛风可常吃"},
-  {"crowd": "高尿酸", "ingredient": "牛奶", "level": "recommend", "reason": "低嘌呤优质蛋白，痛风可常吃"},
-  {"crowd": "高尿酸", "ingredient": "无糖酸奶", "level": "recommend", "reason": "低嘌呤优质蛋白，痛风可常吃"},
-  {"crowd": "高尿酸", "ingredient": "酸奶", "level": "recommend", "reason": "低嘌呤优质蛋白，痛风可常吃"},
-  {"crowd": "高尿酸", "ingredient": "鸡蛋", "level": "recommend", "reason": "低嘌呤优质蛋白，痛风可常吃"},
-  {"crowd": "高尿酸", "ingredient": "鸭蛋", "level": "recommend", "reason": "低嘌呤优质蛋白，痛风可常吃"},
-  {"crowd": "高尿酸", "ingredient": "冬瓜", "level": "recommend", "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"},
-  {"crowd": "高尿酸", "ingredient": "黄瓜", "level": "recommend", "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"},
-  {"crowd": "高尿酸", "ingredient": "卷心菜", "level": "recommend", "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"},
-  {"crowd": "高尿酸", "ingredient": "西兰花", "level": "recommend", "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"},
-  {"crowd": "高尿酸", "ingredient": "白菜", "level": "recommend", "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"},
-  {"crowd": "高尿酸", "ingredient": "芹菜", "level": "recommend", "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"},
-  {"crowd": "高尿酸", "ingredient": "樱桃", "level": "recommend", "reason": "低嘌呤水果，可吃（甜果注意果糖）"},
-  {"crowd": "高尿酸", "ingredient": "苹果", "level": "recommend", "reason": "低嘌呤水果，可吃（甜果注意果糖）"},
-  {"crowd": "高血脂", "ingredient": "五花肉", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "猪油", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "黄油", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "淡奶油", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "猪蹄", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "咸猪蹄", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "猪皮冻", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "培根", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "香肠", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "火腿", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "火腿肠", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "大红肠", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "烤鸭", "level": "avoid", "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"},
-  {"crowd": "高血脂", "ingredient": "猪肝", "level": "avoid", "reason": "动物内脏胆固醇高，应避免"},
-  {"crowd": "高血脂", "ingredient": "咸猪肝", "level": "avoid", "reason": "动物内脏胆固醇高，应避免"},
-  {"crowd": "高血脂", "ingredient": "猪腰", "level": "avoid", "reason": "动物内脏胆固醇高，应避免"},
-  {"crowd": "高血脂", "ingredient": "猪心", "level": "avoid", "reason": "动物内脏胆固醇高，应避免"},
-  {"crowd": "高血脂", "ingredient": "猪肚", "level": "avoid", "reason": "动物内脏胆固醇高，应避免"},
-  {"crowd": "高血脂", "ingredient": "牛肉", "level": "limit", "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"},
-  {"crowd": "高血脂", "ingredient": "羊肉", "level": "limit", "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"},
-  {"crowd": "高血脂", "ingredient": "猪瘦肉", "level": "limit", "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"},
-  {"crowd": "高血脂", "ingredient": "牛腩", "level": "limit", "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"},
-  {"crowd": "高血脂", "ingredient": "鸡蛋", "level": "limit", "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"},
-  {"crowd": "高血脂", "ingredient": "牛奶", "level": "limit", "reason": "全脂奶/坚果热量与脂肪较高，适量"},
-  {"crowd": "高血脂", "ingredient": "花生", "level": "limit", "reason": "全脂奶/坚果热量与脂肪较高，适量"},
-  {"crowd": "高血脂", "ingredient": "核桃", "level": "limit", "reason": "全脂奶/坚果热量与脂肪较高，适量"},
-  {"crowd": "高血脂", "ingredient": "杏仁", "level": "limit", "reason": "全脂奶/坚果热量与脂肪较高，适量"},
-  {"crowd": "高血脂", "ingredient": "三文鱼", "level": "recommend", "reason": "深海鱼富含不饱和脂肪，可常吃"},
-  {"crowd": "高血脂", "ingredient": "带鱼", "level": "recommend", "reason": "深海鱼富含不饱和脂肪，可常吃"},
-  {"crowd": "高血脂", "ingredient": "燕麦", "level": "recommend", "reason": "全谷薯类富含可溶性膳食纤维，可多吃"},
-  {"crowd": "高血脂", "ingredient": "荞麦", "level": "recommend", "reason": "全谷薯类富含可溶性膳食纤维，可多吃"},
-  {"crowd": "高血脂", "ingredient": "糙米", "level": "recommend", "reason": "全谷薯类富含可溶性膳食纤维，可多吃"},
-  {"crowd": "高血脂", "ingredient": "玉米", "level": "recommend", "reason": "全谷薯类富含可溶性膳食纤维，可多吃"},
-  {"crowd": "高血脂", "ingredient": "紫薯", "level": "recommend", "reason": "全谷薯类富含可溶性膳食纤维，可多吃"},
-  {"crowd": "高血脂", "ingredient": "红薯", "level": "recommend", "reason": "全谷薯类富含可溶性膳食纤维，可多吃"},
-  {"crowd": "高血脂", "ingredient": "豆腐", "level": "recommend", "reason": "豆制品植物蛋白、低饱和脂肪，可常吃"},
-  {"crowd": "高血脂", "ingredient": "豆浆", "level": "recommend", "reason": "豆制品植物蛋白、低饱和脂肪，可常吃"},
-  {"crowd": "高血脂", "ingredient": "豆干", "level": "recommend", "reason": "豆制品植物蛋白、低饱和脂肪，可常吃"},
-  {"crowd": "高血脂", "ingredient": "西兰花", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "芹菜", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "冬瓜", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "茄子", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "洋葱", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "香菇", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "木耳", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "海带", "level": "recommend", "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"},
-  {"crowd": "高血脂", "ingredient": "苹果", "level": "recommend", "reason": "低脂水果，可吃"},
-  {"crowd": "高血脂", "ingredient": "低脂牛奶", "level": "recommend", "reason": "低脂奶类，替代全脂"},
-  {"crowd": "高血脂", "ingredient": "无糖酸奶", "level": "recommend", "reason": "低脂奶类，替代全脂"},
-  {"crowd": "高血脂", "ingredient": "橄榄油", "level": "limit", "reason": "不饱和植物油较优，但仍需控制总量"},
-  {"crowd": "高血脂", "ingredient": "菜籽油", "level": "limit", "reason": "不饱和植物油较优，但仍需控制总量"},
-  {"crowd": "高血压", "ingredient": "盐", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "咸菜", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "榨菜", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "腐乳", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "豆瓣酱", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "咸鸭蛋", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "咸鱼", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "鸡精", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "蚝油", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "咸猪肝", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "咸鸭", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "火腿", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "火腿肠", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "香肠", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "培根", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "大红肠", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "甜面酱", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "黄豆酱", "level": "avoid", "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"},
-  {"crowd": "高血压", "ingredient": "生抽", "level": "limit", "reason": "含钠较高，少量使用"},
-  {"crowd": "高血压", "ingredient": "番茄酱", "level": "limit", "reason": "含钠较高，少量使用"},
-  {"crowd": "高血压", "ingredient": "菠菜", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "低脂牛奶", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "无糖酸奶", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "土豆", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "红薯", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "西红柿", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "芹菜", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "冬瓜", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "木耳", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "香菇", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "橙子", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "橘子", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "苹果", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "燕麦", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "高血压", "ingredient": "山药", "level": "recommend", "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"},
-  {"crowd": "糖尿病", "ingredient": "白糖", "level": "avoid", "reason": "精制糖，快速升高血糖，应避免"},
-  {"crowd": "糖尿病", "ingredient": "冰糖", "level": "avoid", "reason": "精制糖，快速升高血糖，应避免"},
-  {"crowd": "糖尿病", "ingredient": "红糖", "level": "avoid", "reason": "精制糖，快速升高血糖，应避免"},
-  {"crowd": "糖尿病", "ingredient": "蜂蜜", "level": "avoid", "reason": "精制糖，快速升高血糖，应避免"},
-  {"crowd": "糖尿病", "ingredient": "香蕉", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "西瓜", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "荔枝", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "葡萄", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "糯米", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "馒头", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "面条", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "大米", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "土豆", "level": "limit", "reason": "高GI或高糖，适量并控制份量"},
-  {"crowd": "糖尿病", "ingredient": "燕麦", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "荞麦", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "糙米", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "玉米", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "绿豆", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "红豆", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "鹰嘴豆", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "西兰花", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "芹菜", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "黄瓜", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "西红柿", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "苦瓜", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "木耳", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"},
-  {"crowd": "糖尿病", "ingredient": "豆腐", "level": "recommend", "reason": "低GI/高膳食纤维，利于餐后血糖平稳"}
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "咸猪肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪腰",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪心",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪肚",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡胗",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸭肠",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸭肫",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸭杂",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "肥肠",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "沙丁鱼",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "带鱼",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "小鱼干",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "生蚝",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "扇贝",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "蛤蜊",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "蛏子",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "青口",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "虾米",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "虾皮",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "小龙虾",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "梭子蟹",
+  "level": "avoid",
+  "reason": "高嘌呤海鲜/贝类，应避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪瘦肉",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪里脊",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛肉",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛腩",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛腱",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊肉",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡胸肉",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡腿",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸭肉",
+  "level": "limit",
+  "reason": "畜禽肉嘌呤中等，缓解期限量、急性期避免"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "草鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鲤鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鲫鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鲈鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鲳鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "三文鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鱿鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "章鱼",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "虾",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "河虾",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "对虾",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "虾仁",
+  "level": "limit",
+  "reason": "鱼虾嘌呤中等，适量食用"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "低脂牛奶",
+  "level": "recommend",
+  "reason": "低嘌呤优质蛋白，痛风可常吃"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛奶",
+  "level": "recommend",
+  "reason": "低嘌呤优质蛋白，痛风可常吃"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "无糖酸奶",
+  "level": "recommend",
+  "reason": "低嘌呤优质蛋白，痛风可常吃"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "酸奶",
+  "level": "recommend",
+  "reason": "低嘌呤优质蛋白，痛风可常吃"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡蛋",
+  "level": "recommend",
+  "reason": "低嘌呤优质蛋白，痛风可常吃"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸭蛋",
+  "level": "recommend",
+  "reason": "低嘌呤优质蛋白，痛风可常吃"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "冬瓜",
+  "level": "recommend",
+  "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "黄瓜",
+  "level": "recommend",
+  "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "卷心菜",
+  "level": "recommend",
+  "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "西兰花",
+  "level": "recommend",
+  "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "白菜",
+  "level": "recommend",
+  "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "芹菜",
+  "level": "recommend",
+  "reason": "低嘌呤蔬菜，可多吃；配合足量饮水"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "樱桃",
+  "level": "recommend",
+  "reason": "低嘌呤水果，可吃（甜果注意果糖）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "苹果",
+  "level": "recommend",
+  "reason": "低嘌呤水果，可吃（甜果注意果糖）"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "五花肉",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪油",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "黄油",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "淡奶油",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪蹄",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "咸猪蹄",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪皮冻",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "培根",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "香肠",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "火腿",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "火腿肠",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "大红肠",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "烤鸭",
+  "level": "avoid",
+  "reason": "饱和脂肪/反式脂肪高，血脂异常应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪肝",
+  "level": "avoid",
+  "reason": "动物内脏胆固醇高，应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "咸猪肝",
+  "level": "avoid",
+  "reason": "动物内脏胆固醇高，应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪腰",
+  "level": "avoid",
+  "reason": "动物内脏胆固醇高，应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪心",
+  "level": "avoid",
+  "reason": "动物内脏胆固醇高，应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪肚",
+  "level": "avoid",
+  "reason": "动物内脏胆固醇高，应避免"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "牛肉",
+  "level": "limit",
+  "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "羊肉",
+  "level": "limit",
+  "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "猪瘦肉",
+  "level": "limit",
+  "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "牛腩",
+  "level": "limit",
+  "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "鸡蛋",
+  "level": "limit",
+  "reason": "红肉/蛋黄含较多饱和脂肪与胆固醇，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "牛奶",
+  "level": "limit",
+  "reason": "全脂奶/坚果热量与脂肪较高，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "花生",
+  "level": "limit",
+  "reason": "全脂奶/坚果热量与脂肪较高，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "核桃",
+  "level": "limit",
+  "reason": "全脂奶/坚果热量与脂肪较高，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "杏仁",
+  "level": "limit",
+  "reason": "全脂奶/坚果热量与脂肪较高，适量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "三文鱼",
+  "level": "recommend",
+  "reason": "深海鱼富含不饱和脂肪，可常吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "带鱼",
+  "level": "recommend",
+  "reason": "深海鱼富含不饱和脂肪，可常吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "燕麦",
+  "level": "recommend",
+  "reason": "全谷薯类富含可溶性膳食纤维，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "荞麦",
+  "level": "recommend",
+  "reason": "全谷薯类富含可溶性膳食纤维，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "糙米",
+  "level": "recommend",
+  "reason": "全谷薯类富含可溶性膳食纤维，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "玉米",
+  "level": "recommend",
+  "reason": "全谷薯类富含可溶性膳食纤维，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "紫薯",
+  "level": "recommend",
+  "reason": "全谷薯类富含可溶性膳食纤维，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "红薯",
+  "level": "recommend",
+  "reason": "全谷薯类富含可溶性膳食纤维，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "豆腐",
+  "level": "recommend",
+  "reason": "豆制品植物蛋白、低饱和脂肪，可常吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "豆浆",
+  "level": "recommend",
+  "reason": "豆制品植物蛋白、低饱和脂肪，可常吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "豆干",
+  "level": "recommend",
+  "reason": "豆制品植物蛋白、低饱和脂肪，可常吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "西兰花",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "芹菜",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "冬瓜",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "茄子",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "洋葱",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "香菇",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "木耳",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "海带",
+  "level": "recommend",
+  "reason": "低脂蔬菜/菌藻，膳食纤维丰富，可多吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "苹果",
+  "level": "recommend",
+  "reason": "低脂水果，可吃"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "低脂牛奶",
+  "level": "recommend",
+  "reason": "低脂奶类，替代全脂"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "无糖酸奶",
+  "level": "recommend",
+  "reason": "低脂奶类，替代全脂"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "橄榄油",
+  "level": "limit",
+  "reason": "不饱和植物油较优，但仍需控制总量"
+ },
+ {
+  "crowd": "高血脂",
+  "ingredient": "菜籽油",
+  "level": "limit",
+  "reason": "不饱和植物油较优，但仍需控制总量"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "盐",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "咸菜",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "榨菜",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "腐乳",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "豆瓣酱",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "咸鸭蛋",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "咸鱼",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "鸡精",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "蚝油",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "咸猪肝",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "咸鸭",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "火腿",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "火腿肠",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "香肠",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "培根",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "大红肠",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "甜面酱",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "黄豆酱",
+  "level": "avoid",
+  "reason": "高钠调味/腌制/加工食品，高血压应严格限钠"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "生抽",
+  "level": "limit",
+  "reason": "含钠较高，少量使用"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "番茄酱",
+  "level": "limit",
+  "reason": "含钠较高，少量使用"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "菠菜",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "低脂牛奶",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "无糖酸奶",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "土豆",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "红薯",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "西红柿",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "芹菜",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "冬瓜",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "木耳",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "香菇",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "橙子",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "橘子",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "苹果",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "燕麦",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "高血压",
+  "ingredient": "山药",
+  "level": "recommend",
+  "reason": "高钾低钠，利于钠钾平衡（DASH 膳食）"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "白糖",
+  "level": "avoid",
+  "reason": "精制糖，快速升高血糖，应避免"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "冰糖",
+  "level": "avoid",
+  "reason": "精制糖，快速升高血糖，应避免"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "红糖",
+  "level": "avoid",
+  "reason": "精制糖，快速升高血糖，应避免"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "蜂蜜",
+  "level": "avoid",
+  "reason": "精制糖，快速升高血糖，应避免"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "香蕉",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "西瓜",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "荔枝",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "葡萄",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "糯米",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "馒头",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "面条",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "大米",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "土豆",
+  "level": "limit",
+  "reason": "高GI或高糖，适量并控制份量"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "燕麦",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "荞麦",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "糙米",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "玉米",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "绿豆",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "红豆",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "鹰嘴豆",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "西兰花",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "芹菜",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "黄瓜",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "西红柿",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "苦瓜",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "木耳",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "糖尿病",
+  "ingredient": "豆腐",
+  "level": "recommend",
+  "reason": "低GI/高膳食纤维，利于餐后血糖平稳"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪肺",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "猪肾",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛肺",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛脑",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛肾",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "牛心",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊肚",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊肺",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊脑",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊肾",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊心",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "羊血",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "马心",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡心",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡血",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸡肫",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸭肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鸭心",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鹅肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "鹅肫",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "火鸡肝",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ },
+ {
+  "crowd": "高尿酸",
+  "ingredient": "火鸡肫",
+  "level": "avoid",
+  "reason": "动物内脏嘌呤很高，痛风/高尿酸应避免（WS/T 560-2017·痛风食养指南2024）"
+ }
 ]

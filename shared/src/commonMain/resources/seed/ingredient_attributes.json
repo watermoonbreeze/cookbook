@@ -119,5 +119,23 @@
  ],
  "油条": [
   "DEEP_FRIED"
+ ],
+ "雪利酒": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "花雕酒(16.5％)": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "果汁朗姆酒(9.9%)": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "鸡尾酒": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "马提尼酒(32%)": [
+  "CONTAINS_ALCOHOL"
+ ],
+ "曼哈顿酒(30.6%)": [
+  "CONTAINS_ALCOHOL"
  ]
 }
