@@ -135,6 +135,67 @@ object DietaryReference {
                 ),
             ),
         ),
+        // [AI生成] 2026-07-25:不同生命阶段膳食要点(膳食指南2022各人群篇·权威口径)——供"生命阶段适配推荐"引用。
+        DietaryRefCategory(
+            title = "不同生命阶段的膳食要点",
+            intro = "孕期、哺乳、婴幼儿、儿童、老年，各阶段饮食重点不同。以下据《中国居民膳食指南(2022)》各人群篇整理，供了解与家庭成员适配参考。",
+            items = listOf(
+                DietaryRefItem(
+                    indicator = "备孕 · 孕期",
+                    levels = listOf(
+                        DietaryRefLevel("叶酸", "备孕起每天补 400 μg，预防胎儿神经管畸形"),
+                        DietaryRefLevel("铁 / 碘", "常吃含铁食物、选加碘盐，孕中晚期适当增加"),
+                        DietaryRefLevel("增量", "孕中晚期适当增加奶、蛋、鱼禽瘦肉；忌烟酒"),
+                    ),
+                    caliber = "孕期膳食要点",
+                    appliesTo = listOf("孕期"),
+                    source = SRC_GUIDE,
+                ),
+                DietaryRefItem(
+                    indicator = "哺乳期",
+                    levels = listOf(
+                        DietaryRefLevel("优质蛋白·钙", "增加鱼禽蛋瘦肉和奶类，保证泌乳与自身营养"),
+                        DietaryRefLevel("汤水·碘", "多喝汤水、继续用加碘盐；忌烟酒、限浓茶咖啡"),
+                    ),
+                    caliber = "哺乳期膳食要点",
+                    appliesTo = listOf("哺乳期"),
+                    source = SRC_GUIDE,
+                ),
+                DietaryRefItem(
+                    indicator = "婴幼儿（0~2 岁）",
+                    levels = listOf(
+                        DietaryRefLevel("6 月龄前", "纯母乳喂养，一般不加水和其他食物"),
+                        DietaryRefLevel("6 月龄起", "逐步添加辅食，从强化铁的泥糊状开始，由少到多、由稀到稠"),
+                        DietaryRefLevel("清淡", "辅食不加盐糖和刺激性调味"),
+                    ),
+                    caliber = "婴幼儿喂养要点",
+                    appliesTo = listOf("婴幼儿"),
+                    source = SRC_GUIDE,
+                ),
+                DietaryRefItem(
+                    indicator = "学龄前 · 学龄儿童（2~17 岁）",
+                    levels = listOf(
+                        DietaryRefLevel("规律", "三餐规律、早餐吃好；天天喝奶（约 300 ml 以上）"),
+                        DietaryRefLevel("限制", "少吃高盐、高糖、高脂零食和含糖饮料，足量饮水"),
+                        DietaryRefLevel("运动", "天天户外活动、保证充足睡眠"),
+                    ),
+                    caliber = "儿童青少年膳食要点",
+                    appliesTo = listOf("学龄前", "学龄"),
+                    source = SRC_GUIDE,
+                ),
+                DietaryRefItem(
+                    indicator = "老年人（65 岁以上）",
+                    levels = listOf(
+                        DietaryRefLevel("优质蛋白", "足量摄入鱼禽蛋瘦肉和奶豆，预防肌肉衰减（肌少症）"),
+                        DietaryRefLevel("好消化", "食物细软、少量多餐；主动足量饮水"),
+                        DietaryRefLevel("维D·体重", "适当户外晒太阳补维 D，关注体重别过瘦"),
+                    ),
+                    caliber = "老年人膳食要点",
+                    appliesTo = listOf("老年"),
+                    source = SRC_GUIDE,
+                ),
+            ),
+        ),
         DietaryRefCategory(
             title = "钠 · 盐 · 钾（高血压）",
             intro = "限钠增钾、改善钠钾比，是高血压膳食的核心。",
