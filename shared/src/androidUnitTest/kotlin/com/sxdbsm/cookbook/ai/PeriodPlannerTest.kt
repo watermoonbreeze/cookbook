@@ -168,6 +168,27 @@ class PeriodPlannerTest {
     }
 
     @Test
+    fun `P2餐次差异化_晚餐不以纯肉打头且荤菜不多于午餐`() {
+        // [AI生成] P2 集成级:验证 mealName→expectedLayers→compositionBonus 全链路接通(纯函数单测已锁分量,此测 plan() 端到端行为)。
+        //   5素(v·主料 classify 均 null→布尔兜底蔬果层)+5荤(m·兜底鱼禽肉蛋层),隔离不靠具体食材名。固定 seed 确定性。
+        val veg = (1L..5L).map { dish(it, main = listOf("v$it"), meat = false) }
+        val meat = (6L..10L).map { dish(it, main = listOf("m$it"), meat = true) }
+        val meatIds = meat.map { it.id }.toSet()
+        val plan = planner.plan(
+            veg + meat, days = 1, mealNames = listOf("午餐", "晚餐"),
+            dishesMin = 3, dishesMax = 3, seed = 0,
+        )
+        val lunch = plan.days[0].meals[0].dishes
+        val dinner = plan.days[0].meals[1].dishes
+        // 晚餐期待{谷,蔬}不含荤→空餐首道:蔬菜补层+0.5 vs 纯肉轻降-0.3(差0.8>jitter幅度0.5)→晚餐首道恒非纯肉。
+        assertTrue(dinner.first().id !in meatIds, "晚餐宜清淡:首道不应是纯肉菜 dinner=${dinner.map { it.id }}")
+        // 晚餐纯肉数 ≤ 午餐(午餐期待含荤·补 ANIMAL 层;晚餐不期待荤+纯肉轻降)。
+        val lunchMeat = lunch.count { it.id in meatIds }
+        val dinnerMeat = dinner.count { it.id in meatIds }
+        assertTrue(dinnerMeat <= lunchMeat, "晚餐荤菜数应≤午餐: 午餐=$lunchMeat 晚餐=$dinnerMeat")
+    }
+
+    @Test
     fun `候选充足时尽量不重复同一道菜`() {
         val dishes = (1L..60L).map { dish(it, main = listOf("料$it")) }
         val plan = planner.plan(dishes, days = 2, mealNames = meals, dishesMin = 2, dishesMax = 2, seed = 7)
