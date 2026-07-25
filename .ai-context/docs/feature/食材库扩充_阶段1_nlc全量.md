@@ -14,13 +14,15 @@
 - 详情页 `foodinfo/{id}.html` 有带标签营养表（更可靠·矿物质/维生素全）→ 需要时二次 detail pass。
 
 ## 有序步骤（逐步执行）
+> 用户2026-07-25决策：①收全610 ②认可"自动+抽样核"忌口口径 ③分页UI晚点做 ④nlc缺的(GI/嘌呤/饱脂)用USDA+GI库补·补不上留空标pending。
 - **S1 探明分类结构+列映射** ✅（见上·2026-07-25）
 - **S2 写全量爬取脚本** ⬜：`scripts/data/nlc_crawl.py`·按 categoryOne×page 遍历·**每食材存整行 raw**（id/名/raw列）→ JSONL 即写即存·`--max-seconds`/`--cats` 控量·断点续连（已爬 id 跳过）。
 - **S3 无人值守分批爬全量** ⬜ → `data-pipeline/_crawl/nlc_foods_raw.jsonl`（~1280 条）。
 - **S4 解析+清洗+去重** ⬜：raw 行→字段(kcal/P/F/纤维/碳水)·nlc 名归一(拆[别名]/(口径))·与现有 505 去重(名归一比对·已有则跳过/记差异)·剔加工重复。
 - **S5 映射 seed schema** ⬜：字段对齐 ingredient_nutrition·**FoodGroup.classify 自动分类**(中文名可分)·单位/pieceGram·source 标"中国食物成分表(nlc)"。
 - **S6 忌口/属性规模化** ⬜：属性标签体系自动展开 care(config 驱动)·**高风险类(高嘌呤/高钠/内脏/酒)抽样人工核**·纯自动无核=红线。
-- **S7 产出新增食材候选清单** ⬜：分批 md/json 给用户核验(名/营养/分类/care/来源)·**不入生产**。
+- **S7 产出新增食材候选清单** ✅：`candidates/nlc_new_candidates_review.md`(用户核验·拍板收全610)。
+- **S9核心 集成610入seed** ✅（2026-07-25）：`integrate_candidates.py` 名清洗(拆[别名]→alias·保口径)+挂有效分类(CAT_MAP→food_categories真code)+去重复核→追加 ingredients.json + ingredient_nutrition.json。**库505→1115翻倍·引用完整性0孤儿·roundtrip仍0·shared单测绿**。610为review=pending·有营养(数值层健康判定自动生效)·**待S6配care + 补GI/嘌呤/饱脂**。
 - **S8 分页 UI**（off-type·单开 session·**库过千前必做**）⬜：营养表 LIMIT/OFFSET 100/页上拉加载+搜索改DB侧。
 - **S9 核验后落库** ⬜：分批 upsert seed·指纹重跑·引用完整性+shared 单测·来源入数据来源页。
 
