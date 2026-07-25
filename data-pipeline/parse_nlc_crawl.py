@@ -25,7 +25,8 @@ OUT_MD = os.path.join(HERE, "candidates", "nlc_new_candidates_review.md")
 CAT_TOP = {"谷物": "staple", "薯类": "staple", "豆类": "soy_nut", "蔬菜": "vegetable", "菌藻": "fungi",
            "水果": "fruit", "坚果": "nut_seed", "畜肉": "meat", "禽肉": "meat", "乳品": "dairy",
            "蛋": "egg", "鱼虾": "aquatic", "婴儿食品": "convenience", "小吃点心": "staple",
-           "快餐": "convenience", "饮料": "beverage", "酒": "beverage"}
+           "快餐": "convenience", "饮料": "beverage", "酒": "beverage",
+           "糖": "seasoning", "油脂": "oil", "调味品": "seasoning", "药食": "other"}
 # 家庭常用度: 快餐/婴儿食品 低优先(非家庭日常食材)
 LOW_PRIORITY_CATS = {"快餐", "婴儿食品"}
 

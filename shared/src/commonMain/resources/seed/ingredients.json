@@ -11602,5 +11602,566 @@
    "beverage"
   ],
   "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1452",
+  "name": "花生牛轧糖",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1453",
+  "name": "奶糖",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1454",
+  "name": "巧克力",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1456",
+  "name": "酥糖",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1458",
+  "name": "夹心糖",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1459",
+  "name": "水果味软糖",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1460",
+  "name": "牛奶糖",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1462",
+  "name": "太妃糖",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1467",
+  "name": "海棠脯",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1468",
+  "name": "李广杏脯",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1469",
+  "name": "苹果脯",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1470",
+  "name": "桃脯",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1471",
+  "name": "杏脯",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1472",
+  "name": "金糕条",
+  "alias": "山楂条",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1473",
+  "name": "山楂果丹皮",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1474",
+  "name": "冰糖酸角",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1475",
+  "name": "甘草杏",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1476",
+  "name": "清凉杏肉",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1477",
+  "name": "雪梅",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1478",
+  "name": "九制梅肉",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1479",
+  "name": "九制西梅",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1480",
+  "name": "九制应子",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1481",
+  "name": "梅脯",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1482",
+  "name": "阿胶枣",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1483",
+  "name": "黑贡枣",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1484",
+  "name": "多味山楂",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1485",
+  "name": "山楂脯",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1486",
+  "name": "地瓜干",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1511",
+  "name": "核桃油",
+  "unit": "g",
+  "categories": [
+   "oil"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1512",
+  "name": "栗米油",
+  "alias": "玉米胚芽油",
+  "unit": "g",
+  "categories": [
+   "oil"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1513",
+  "name": "米糠油",
+  "unit": "g",
+  "categories": [
+   "oil"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1514",
+  "name": "油茶籽油",
+  "unit": "g",
+  "categories": [
+   "oil"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1516",
+  "name": "大豆色拉油",
+  "unit": "g",
+  "categories": [
+   "oil"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1517",
+  "name": "色拉油",
+  "unit": "g",
+  "categories": [
+   "oil"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1518",
+  "name": "酱油(均值)",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1519",
+  "name": "黄豆酱油",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1522",
+  "name": "陈醋",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1525",
+  "name": "黄酱",
+  "alias": "大酱",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1572",
+  "name": "五香豆豉",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1529",
+  "name": "郫县辣酱",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1530",
+  "name": "海鲜酱(阿香婆)",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1531",
+  "name": "牛肉酱(阿香婆)",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1535",
+  "name": "千岛沙拉酱",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1537",
+  "name": "奶油攀司",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1538",
+  "name": "草莓酱",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1540",
+  "name": "苹果酱",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1541",
+  "name": "桃酱",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1542",
+  "name": "杏酱",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1544",
+  "name": "番茄沙司",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1553",
+  "name": "腌雪里红",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1554",
+  "name": "剁辣椒",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1555",
+  "name": "酱八宝菜",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1556",
+  "name": "麻仁金丝",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1557",
+  "name": "腌大头菜",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1558",
+  "name": "腌芥菜头",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1559",
+  "name": "腌韭菜花",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1560",
+  "name": "腌萝卜条",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1563",
+  "name": "胡椒粉",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1580",
+  "name": "咖喱粉",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1566",
+  "name": "味精",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1569",
+  "name": "酵母(干)",
+  "unit": "g",
+  "categories": [
+   "seasoning"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
+ },
+ {
+  "code": "nlc_1571",
+  "name": "枸杞子",
+  "unit": "g",
+  "categories": [
+   "other"
+  ],
+  "ref": "《中国食物成分表》(中疾控营养所) nlc·批量扩充2026-07-25"
  }
 ]

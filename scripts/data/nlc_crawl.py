@@ -29,10 +29,11 @@ OUT = os.path.join(OUT_DIR, "nlc_foods_raw.jsonl")
 URL = "https://nlc.chinanutri.cn/fq/FoodInfoQueryAction!queryFoodInfoList.do"
 HDR = {"User-Agent": "Mozilla/5.0", "X-Requested-With": "XMLHttpRequest",
        "Content-Type": "application/x-www-form-urlencoded"}
-VALID_CATS = [1] + list(range(10, 26))  # cat2-9 空
+VALID_CATS = [1] + list(range(10, 30))  # cat2-9 空·有效=1,10-29
 CAT_NAME = {1: "谷物", 10: "薯类", 11: "豆类", 12: "蔬菜", 13: "菌藻", 14: "水果", 15: "坚果",
             16: "畜肉", 17: "禽肉", 18: "乳品", 19: "蛋", 20: "鱼虾", 21: "婴儿食品",
-            22: "小吃点心", 23: "快餐", 24: "饮料", 25: "酒"}
+            22: "小吃点心", 23: "快餐", 24: "饮料", 25: "酒",
+            26: "糖", 27: "油脂", 28: "调味品", 29: "药食"}
 
 _CTX = ssl.create_default_context()
 _CTX.check_hostname = False

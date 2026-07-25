@@ -8,7 +8,8 @@
 ## nlc 接口备忘（复用·免再探）
 - `POST https://nlc.chinanutri.cn/fq/FoodInfoQueryAction!queryFoodInfoList.do`（http 已 308→https）
 - 浏览分类：`categoryOne={大类}&categoryTwo=0&foodName=&pageNum={页}&field=0&flag=0`；UA 伪装浏览器。
-- 有效 categoryOne：**1, 10–25**（cat2–9 空）。8 条/页。返回 `{currentPage,totalPages,list:[[...]]}`。
+- 有效 categoryOne：**1, 10–29**（cat2–9 空·cat30+ 空）。8 条/页。返回 `{currentPage,totalPages,list:[[...]]}`。**categoryTwo 下钻返回0→cat级(categoryTwo=0)已完整**。
+- **nlc 全量共 ~1356 条**(非8000·8000是USDA SR Legacy·阶段2国际层)。cat26糖/27油脂/28调味品/29药食(2026-07-25补齐)。
 - 分类：1谷物 10薯类 11豆类 12蔬菜(26p) 13菌藻 14水果(16p) 15坚果 16畜肉(13p) 17禽 18乳 19蛋 20鱼虾(17p) 21婴儿 22小吃 23快餐 24饮料 25酒。
 - list 行列（0基）：[0]id [2]名 [5]食部% [6]水分 [7]能量kJ [8]蛋白g [9]脂肪g [11]膳食纤维g [12]碳水g，之后为维生素/矿物质（列位不稳→**爬取存整行 raw·矿物质离线再解析**，钠钾钙 kJ÷4.184=kcal）。
 - 详情页 `foodinfo/{id}.html` 有带标签营养表（更可靠·矿物质/维生素全）→ 需要时二次 detail pass。

@@ -22,7 +22,8 @@ NUT = os.path.join(ROOT, "shared/src/commonMain/resources/seed/ingredient_nutrit
 CAT_MAP = {"谷物": "staple", "薯类": "staple_tuber", "豆类": "soy_nut", "蔬菜": "vegetable",
            "菌藻": "fungi_algae", "水果": "fruit", "坚果": "soy_nut", "畜肉": "meat", "禽肉": "meat",
            "乳品": "dairy", "蛋": "egg", "鱼虾": "aquatic", "婴儿食品": "convenience",
-           "小吃点心": "staple_grain_product", "快餐": "convenience", "饮料": "beverage", "酒": "beverage"}
+           "小吃点心": "staple_grain_product", "快餐": "convenience", "饮料": "beverage", "酒": "beverage",
+           "糖": "seasoning", "油脂": "oil", "调味品": "seasoning", "药食": "other"}
 
 
 def norm(s):
