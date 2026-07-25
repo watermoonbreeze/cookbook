@@ -74,8 +74,8 @@ def run():
         existing_codes.add(code)
         # nutrition 条目(清内部字段)
         nut_e = {"ingredient": name, "kcal": c["kcal"], "protein": c["protein"], "fat": c["fat"],
-                 "carb": c["carb"], "fiber": c["fiber"], "sodium": c["sodium"],
-                 "potassium": c["potassium"], "calcium": c["calcium"],
+                 "carb": c["carb"], "fiber": c["fiber"], "cholesterol": c.get("cholesterol"),
+                 "sodium": c["sodium"], "potassium": c["potassium"], "calcium": c["calcium"],
                  "ref": c["ref"], "review": c["review"]}
         # 去掉值为 None 的营养字段(省略不编造)
         nut_e = {k: v for k, v in nut_e.items() if v is not None}

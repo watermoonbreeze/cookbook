@@ -2,8 +2,8 @@
 """
 parse_nlc_crawl.py — nlc 爬取 raw → seed 营养字段 + 去重 + 分类建议 → 新增食材候选。[AI生成] 2026-07-25 · S4+S5
 
-- 解析 raw 列(已核实映射)：[7]能量kJ [8]蛋白 [9]脂肪 [11]纤维 [12]碳水 [21]钙 [23]钾 [24]钠。
-  缺 GI/嘌呤/饱脂/胆固醇(nlc 无·省略不编造·后续 USDA/GI库补)。kcal=kJ÷4.184。
+- 解析 raw 列(已核实映射·2026-07-25修正)：[7]能量kJ [8]蛋白 [9]脂肪 [10]胆固醇 [11]灰分(不用) [12]碳水 [13]膳食纤维(稀疏·多空) [21]钙 [23]钾 [24]钠。
+  ⚠️历史bug: 曾误把[11]灰分当纤维(魔芋/黄豆灰分~4-5g被当纤维·真纤维在[13])·已修。缺 GI/嘌呤/饱脂(nlc无·省略不编造)。kcal=kJ÷4.184。
 - 名归一去重(拆[别名]/(口径))·与现有 505 去重(已有跳过)。
 - nlc 分类 → 建议顶层分类(供入库参考·实际 FoodGroup.classify 入库时定)。
 - **能量自洽校验**(Atwater)揪解析错。产出 _crawl/nlc_new_candidates.json(review=pending) + 评审汇总。
@@ -54,7 +54,8 @@ def parse_row(r):
     entry = {
         "ingredient": r["name"],
         "kcal": round(kj / 4.184),
-        "protein": g(8), "fat": g(9), "carb": g(12), "fiber": g(11),
+        "protein": g(8), "fat": g(9), "carb": g(12), "fiber": g(13),  # [13]=膳食纤维([11]是灰分·勿用)
+        "cholesterol": g(10),  # [10]=胆固醇(动物性有·植物空)
         "sodium": g(24), "potassium": g(23), "calcium": g(21),
         "ref": f"《中国食物成分表》(中疾控营养所) nlc.chinanutri.cn foodinfo/{r['id']}·批量导入待抽样核",
         "review": "pending",
