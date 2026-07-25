@@ -2,8 +2,9 @@
 """
 extract_vitamins.py — 从 nlc 爬取 raw 提取维生素 → 独立 seed ingredient_vitamins.json。[AI生成] 2026-07-25 · 食材补维生素
 
-- 维生素列(已核实映射)：[14]胡萝卜素μg [17]维生素B1(硫胺素)mg [18]维生素B2(核黄素)mg [19]烟酸mg [20]维生素C mg。
-  (维A总量/视黄醇/维E 列位待精确核·本次先取这5个确定的)
+- 维生素列(极端值核实映射·猪肝视黄醇4972/胡萝卜胡萝卜素4010/橙维C33)：
+  [14]胡萝卜素μg(植物→可转维A) [15]视黄醇μg(动物·维A直接来源) [17]维B1mg [18]维B2mg [19]烟酸mg [20]维C mg。
+  ⚠️维E不在列表列(花生油维E极高却空·需详情页)→省略不编造;维D/B6/叶酸/B12 同不在列表。
 - 按**归一名**匹配 seed 现有食材(nlc_ 及原库能在 nlc 找到的)·只输出至少有一项维生素的。
 - **独立 seed 文件**(同 ingredient_nutrition/details 模式·JSON 免迁移)·数据捕获备用(DB列+展示留后续 2b)。
 - 来源=中国食物成分表(nlc)·已在数据来源页(真实)。只产数据·不改现有 seed。
@@ -18,7 +19,7 @@ CRAWL = os.path.join(HERE, "_crawl", "nlc_foods_raw.jsonl")
 NUT = os.path.join(ROOT, "shared/src/commonMain/resources/seed/ingredient_nutrition.json")
 OUT = os.path.join(ROOT, "shared/src/commonMain/resources/seed/ingredient_vitamins.json")
 
-VIT_COL = {"carotene": 14, "vitB1": 17, "vitB2": 18, "niacin": 19, "vitC": 20}  # 胡萝卜素μg/B1/B2/烟酸/维C mg
+VIT_COL = {"carotene": 14, "retinol": 15, "vitB1": 17, "vitB2": 18, "niacin": 19, "vitC": 20}  # 胡萝卜素/视黄醇μg·B1/B2/烟酸/维C mg
 
 
 def norm(s):
@@ -60,7 +61,7 @@ def run():
         if nk in raw_vit:
             v = raw_vit[nk]
             entry = {"ingredient": e["ingredient"]}
-            for f in ("carotene", "vitB1", "vitB2", "niacin", "vitC"):
+            for f in ("carotene", "retinol", "vitB1", "vitB2", "niacin", "vitC"):
                 if f in v:
                     entry[f] = v[f]
             entry["ref"] = f"《中国食物成分表》(中疾控营养所) nlc foodinfo/{v['_id']}"
@@ -70,7 +71,7 @@ def run():
     json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"[extract_vitamins] seed食材 {len(nut)} · 匹配到维生素 {matched} → {OUT}")
     # 覆盖率
-    for f in ("carotene", "vitB1", "vitB2", "niacin", "vitC"):
+    for f in ("carotene", "retinol", "vitB1", "vitB2", "niacin", "vitC"):
         c = sum(1 for e in out if f in e)
         print(f"  {f}: {c}")
     return out

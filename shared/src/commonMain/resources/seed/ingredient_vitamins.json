@@ -198,6 +198,7 @@
  },
  {
   "ingredient": "杏鲍菇",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.14,
   "niacin": 3.68,
@@ -265,6 +266,7 @@
  },
  {
   "ingredient": "牛肉",
+  "retinol": 7.0,
   "vitB1": 0.04,
   "vitB2": 0.14,
   "niacin": 5.6,
@@ -272,6 +274,7 @@
  },
  {
   "ingredient": "羊肉",
+  "retinol": 22.0,
   "vitB1": 0.05,
   "vitB2": 0.14,
   "niacin": 4.5,
@@ -279,6 +282,7 @@
  },
  {
   "ingredient": "猪肝",
+  "retinol": 4972.0,
   "vitB1": 0.21,
   "vitB2": 2.08,
   "niacin": 15.0,
@@ -287,6 +291,7 @@
  },
  {
   "ingredient": "鸡腿",
+  "retinol": 44.0,
   "vitB1": 0.02,
   "vitB2": 0.14,
   "niacin": 6.0,
@@ -294,6 +299,7 @@
  },
  {
   "ingredient": "鸡蛋",
+  "retinol": 310.0,
   "vitB1": 0.09,
   "vitB2": 0.31,
   "niacin": 0.2,
@@ -301,6 +307,7 @@
  },
  {
   "ingredient": "牛奶",
+  "retinol": 18.0,
   "vitB1": 0.02,
   "vitB2": 0.11,
   "niacin": 0.09,
@@ -354,6 +361,7 @@
  },
  {
   "ingredient": "鲈鱼",
+  "retinol": 19.0,
   "vitB1": 0.03,
   "vitB2": 0.17,
   "niacin": 3.1,
@@ -361,6 +369,7 @@
  },
  {
   "ingredient": "鲫鱼",
+  "retinol": 17.0,
   "vitB1": 0.04,
   "vitB2": 0.09,
   "niacin": 2.5,
@@ -368,6 +377,7 @@
  },
  {
   "ingredient": "带鱼",
+  "retinol": 29.0,
   "vitB1": 0.02,
   "vitB2": 0.06,
   "niacin": 2.8,
@@ -430,6 +440,7 @@
  {
   "ingredient": "娃娃菜",
   "carotene": 48.0,
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.03,
   "niacin": 0.61,
@@ -536,6 +547,7 @@
  },
  {
   "ingredient": "火龙果",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.02,
   "niacin": 0.22,
@@ -544,6 +556,7 @@
  },
  {
   "ingredient": "鸡翅",
+  "retinol": 68.0,
   "vitB1": 0.01,
   "vitB2": 0.11,
   "niacin": 5.3,
@@ -551,6 +564,7 @@
  },
  {
   "ingredient": "草鱼",
+  "retinol": 11.0,
   "vitB1": 0.04,
   "vitB2": 0.11,
   "niacin": 2.8,
@@ -573,6 +587,7 @@
  },
  {
   "ingredient": "鳕鱼",
+  "retinol": 14.0,
   "vitB1": 0.04,
   "vitB2": 0.13,
   "niacin": 2.7,
@@ -580,6 +595,7 @@
  },
  {
   "ingredient": "蛤蜊",
+  "retinol": 21.0,
   "vitB1": 0.01,
   "vitB2": 0.13,
   "niacin": 1.5,
@@ -602,6 +618,7 @@
  },
  {
   "ingredient": "生抽",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.11,
   "niacin": 1.08,
@@ -609,6 +626,7 @@
  },
  {
   "ingredient": "老抽",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.08,
   "niacin": 1.68,
@@ -620,6 +638,11 @@
   "vitB2": 0.05,
   "niacin": 1.4,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1520"
+ },
+ {
+  "ingredient": "料酒",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1570"
  },
  {
   "ingredient": "豆瓣酱",
@@ -664,6 +687,7 @@
  },
  {
   "ingredient": "猪油",
+  "retinol": 27.0,
   "vitB1": 0.02,
   "vitB2": 0.03,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1494"
@@ -671,6 +695,7 @@
  {
   "ingredient": "鹰嘴豆",
   "carotene": 86.0,
+  "retinol": 0.0,
   "vitB1": 0.41,
   "vitB2": 0.25,
   "vitC": 3.5,
@@ -741,6 +766,7 @@
  },
  {
   "ingredient": "火腿",
+  "retinol": 46.0,
   "vitB1": 0.28,
   "vitB2": 0.09,
   "niacin": 8.6,
@@ -762,6 +788,7 @@
  },
  {
   "ingredient": "猪蹄",
+  "retinol": 3.0,
   "vitB1": 0.05,
   "vitB2": 0.1,
   "niacin": 1.5,
@@ -775,6 +802,7 @@
  },
  {
   "ingredient": "鲤鱼",
+  "retinol": 25.0,
   "vitB1": 0.03,
   "vitB2": 0.09,
   "niacin": 2.7,
@@ -816,6 +844,7 @@
  },
  {
   "ingredient": "虾皮",
+  "retinol": 19.0,
   "vitB1": 0.02,
   "vitB2": 0.14,
   "niacin": 3.1,
@@ -823,6 +852,7 @@
  },
  {
   "ingredient": "咸鸭蛋",
+  "retinol": 134.0,
   "vitB1": 0.16,
   "vitB2": 0.33,
   "niacin": 0.1,
@@ -830,6 +860,7 @@
  },
  {
   "ingredient": "奶酪",
+  "retinol": 152.0,
   "vitB1": 0.06,
   "vitB2": 0.91,
   "niacin": 0.6,
@@ -904,6 +935,7 @@
  },
  {
   "ingredient": "兔肉",
+  "retinol": 26.0,
   "vitB1": 0.11,
   "vitB2": 0.1,
   "niacin": 5.8,
@@ -911,6 +943,7 @@
  },
  {
   "ingredient": "驴肉",
+  "retinol": 72.0,
   "vitB1": 0.03,
   "vitB2": 0.16,
   "niacin": 2.5,
@@ -918,6 +951,7 @@
  },
  {
   "ingredient": "鱼丸",
+  "retinol": 5.0,
   "vitB1": 0.02,
   "vitB2": 0.04,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1067"
@@ -953,6 +987,7 @@
  },
  {
   "ingredient": "沙拉酱",
+  "retinol": 87.0,
   "vitB1": 0.07,
   "vitB2": 0.09,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1536"
@@ -977,6 +1012,7 @@
  },
  {
   "ingredient": "章鱼",
+  "retinol": 7.0,
   "vitB1": 0.07,
   "vitB2": 0.13,
   "niacin": 1.4,
@@ -1010,6 +1046,7 @@
  },
  {
   "ingredient": "茶树菇",
+  "retinol": 0.0,
   "vitB1": 0.32,
   "vitB2": 1.48,
   "niacin": 39.39,
@@ -1040,6 +1077,7 @@
  },
  {
   "ingredient": "鲳鱼",
+  "retinol": 24.0,
   "vitB1": 0.04,
   "vitB2": 0.07,
   "niacin": 2.1,
@@ -1054,6 +1092,7 @@
  },
  {
   "ingredient": "蛏子",
+  "retinol": 59.0,
   "vitB1": 0.02,
   "vitB2": 0.12,
   "niacin": 1.2,
@@ -1085,6 +1124,7 @@
  {
   "ingredient": "榴莲",
   "carotene": 20.0,
+  "retinol": 0.0,
   "vitB1": 0.2,
   "vitB2": 0.13,
   "niacin": 1.19,
@@ -1109,6 +1149,7 @@
  },
  {
   "ingredient": "炼乳",
+  "retinol": 41.0,
   "vitB1": 0.03,
   "vitB2": 0.16,
   "niacin": 0.3,
@@ -1178,6 +1219,7 @@
  },
  {
   "ingredient": "鲍鱼",
+  "retinol": 24.0,
   "vitB1": 0.01,
   "vitB2": 0.16,
   "niacin": 0.2,
@@ -1185,6 +1227,7 @@
  },
  {
   "ingredient": "猪肚",
+  "retinol": 3.0,
   "vitB1": 0.07,
   "vitB2": 0.16,
   "niacin": 3.7,
@@ -1193,6 +1236,7 @@
  {
   "ingredient": "鹅蛋",
   "carotene": 18.0,
+  "retinol": 171.0,
   "vitB1": 0.06,
   "vitB2": 0.32,
   "niacin": 0.1,
@@ -1233,6 +1277,7 @@
  {
   "ingredient": "彩椒",
   "carotene": 794.0,
+  "retinol": 0.0,
   "vitB1": 0.05,
   "vitB2": 0.05,
   "niacin": 1.09,
@@ -1259,6 +1304,7 @@
  },
  {
   "ingredient": "鸡爪",
+  "retinol": 37.0,
   "vitB1": 0.01,
   "vitB2": 0.13,
   "niacin": 2.4,
@@ -1363,6 +1409,7 @@
  {
   "ingredient": "鸡毛菜",
   "carotene": 826.0,
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.09,
   "niacin": 0.61,
@@ -1436,6 +1483,7 @@
  },
  {
   "ingredient": "冬枣",
+  "retinol": 0.0,
   "vitB1": 0.08,
   "vitB2": 0.09,
   "niacin": 0.51,
@@ -1452,6 +1500,7 @@
  },
  {
   "ingredient": "鸭肫",
+  "retinol": 6.0,
   "vitB1": 0.04,
   "vitB2": 0.15,
   "niacin": 4.4,
@@ -1459,6 +1508,7 @@
  },
  {
   "ingredient": "鸭肠",
+  "retinol": 16.0,
   "vitB1": 0.02,
   "vitB2": 0.22,
   "niacin": 3.1,
@@ -1466,6 +1516,7 @@
  },
  {
   "ingredient": "猪心",
+  "retinol": 13.0,
   "vitB1": 0.19,
   "vitB2": 0.48,
   "niacin": 6.8,
@@ -1481,6 +1532,7 @@
  },
  {
   "ingredient": "鸭翅",
+  "retinol": 14.0,
   "vitB1": 0.02,
   "vitB2": 0.16,
   "niacin": 2.4,
@@ -1488,6 +1540,7 @@
  },
  {
   "ingredient": "咸肉",
+  "retinol": 20.0,
   "vitB1": 0.77,
   "vitB2": 0.21,
   "niacin": 3.5,
@@ -1495,6 +1548,7 @@
  },
  {
   "ingredient": "火腿肠",
+  "retinol": 5.0,
   "vitB1": 0.26,
   "vitB2": 0.43,
   "niacin": 2.3,
@@ -1502,6 +1556,7 @@
  },
  {
   "ingredient": "鳊鱼",
+  "retinol": 28.0,
   "vitB1": 0.02,
   "vitB2": 0.07,
   "niacin": 1.7,
@@ -1509,6 +1564,7 @@
  },
  {
   "ingredient": "虾米",
+  "retinol": 21.0,
   "vitB1": 0.01,
   "vitB2": 0.12,
   "niacin": 5.0,
@@ -1579,6 +1635,7 @@
  },
  {
   "ingredient": "八宝粥",
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "niacin": 0.27,
@@ -1747,6 +1804,7 @@
  {
   "ingredient": "籼米粥",
   "carotene": 0.0,
+  "retinol": 0.0,
   "vitC": 0.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/291"
  },
@@ -1985,12 +2043,14 @@
  },
  {
   "ingredient": "红豆沙",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.02,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/354"
  },
  {
   "ingredient": "红豆馅",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.04,
   "vitC": 0.0,
@@ -2186,6 +2246,7 @@
  {
   "ingredient": "樱桃番茄",
   "carotene": 332.0,
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.02,
   "niacin": 0.92,
@@ -2239,6 +2300,7 @@
  {
   "ingredient": "飞碟瓜",
   "carotene": 47.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.02,
   "niacin": 0.25,
@@ -2248,6 +2310,7 @@
  {
   "ingredient": "黄茎瓜",
   "carotene": 680.0,
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.02,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/433"
@@ -2255,6 +2318,7 @@
  {
   "ingredient": "秋黄瓜",
   "carotene": 40.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/434"
@@ -2386,6 +2450,7 @@
  {
   "ingredient": "奶白菜",
   "carotene": 1141.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.1,
   "niacin": 0.59,
@@ -2395,6 +2460,7 @@
  {
   "ingredient": "乌塌菜",
   "carotene": 1568.0,
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.08,
   "niacin": 0.21,
@@ -2412,6 +2478,7 @@
  },
  {
   "ingredient": "结球甘蓝(紫)",
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.03,
   "niacin": 0.15,
@@ -2421,6 +2488,7 @@
  {
   "ingredient": "羽衣甘蓝",
   "carotene": 4368.0,
+  "retinol": 0.0,
   "vitB1": 0.07,
   "vitB2": 0.18,
   "niacin": 1.09,
@@ -2526,6 +2594,7 @@
  {
   "ingredient": "番杏",
   "carotene": 628.0,
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.09,
   "niacin": 0.23,
@@ -2534,6 +2603,7 @@
  {
   "ingredient": "樱桃萝卜缨",
   "carotene": 1440.0,
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.09,
   "niacin": 0.26,
@@ -2607,6 +2677,7 @@
  {
   "ingredient": "结球菊苣",
   "carotene": 104.0,
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.04,
   "niacin": 0.23,
@@ -2616,6 +2687,7 @@
  {
   "ingredient": "软化白菊苣",
   "carotene": 14.0,
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.02,
   "niacin": 0.07,
@@ -2962,6 +3034,7 @@
  },
  {
   "ingredient": "黄伞菇(干)",
+  "retinol": 0.0,
   "vitB1": 0.17,
   "vitB2": 1.93,
   "niacin": 41.38,
@@ -2969,6 +3042,7 @@
  },
  {
   "ingredient": "鸡腿菇(干)",
+  "retinol": 0.0,
   "vitB1": 0.14,
   "vitB2": 1.79,
   "niacin": 24.99,
@@ -2977,6 +3051,7 @@
  {
   "ingredient": "鸡枞(干)",
   "carotene": 70.0,
+  "retinol": 0.0,
   "vitB1": 0.26,
   "vitB2": 1.22,
   "niacin": 34.21,
@@ -2984,6 +3059,7 @@
  },
  {
   "ingredient": "牛肝菌(白)",
+  "retinol": 0.0,
   "vitB1": 0.14,
   "vitB2": 1.11,
   "niacin": 2.1,
@@ -2991,6 +3067,7 @@
  },
  {
   "ingredient": "牛肝菌（黄皮牛肝菌，鲜)",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.57,
   "niacin": 3.2,
@@ -2999,6 +3076,7 @@
  {
   "ingredient": "乳牛肝菌(干)",
   "carotene": 357.0,
+  "retinol": 0.0,
   "vitB1": 0.86,
   "vitB2": 1.72,
   "niacin": 67.66,
@@ -3006,6 +3084,7 @@
  },
  {
   "ingredient": "青头菌",
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.46,
   "niacin": 4.0,
@@ -3013,6 +3092,7 @@
  },
  {
   "ingredient": "竹荪(干)",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 1.75,
   "niacin": 9.1,
@@ -3043,6 +3123,7 @@
  {
   "ingredient": "裙带菜(干)",
   "carotene": 2230.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.07,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/612"
@@ -3300,6 +3381,7 @@
  {
   "ingredient": "蛇果",
   "carotene": 16.0,
+  "retinol": 0.0,
   "vitB1": 0.01,
   "niacin": 0.04,
   "vitC": 2.0,
@@ -3374,6 +3456,7 @@
  {
   "ingredient": "布朗",
   "carotene": 46.0,
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "niacin": 0.43,
@@ -3383,6 +3466,7 @@
  {
   "ingredient": "西梅",
   "carotene": 8.0,
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "niacin": 0.18,
@@ -3494,6 +3578,7 @@
  {
   "ingredient": "红提子葡萄",
   "carotene": 9.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.01,
   "niacin": 0.07,
@@ -3646,6 +3731,7 @@
  },
  {
   "ingredient": "红毛丹",
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.04,
   "niacin": 0.31,
@@ -3731,6 +3817,7 @@
  },
  {
   "ingredient": "开心果(熟)",
+  "retinol": 0.0,
   "vitB1": 0.45,
   "vitB2": 0.1,
   "niacin": 1.05,
@@ -3805,6 +3892,7 @@
  },
  {
   "ingredient": "猪肉(肥瘦)(均值)",
+  "retinol": 18.0,
   "vitB1": 0.22,
   "vitB2": 0.16,
   "niacin": 3.5,
@@ -3812,6 +3900,7 @@
  },
  {
   "ingredient": "猪大肠",
+  "retinol": 7.0,
   "vitB1": 0.06,
   "vitB2": 0.11,
   "niacin": 1.9,
@@ -3819,6 +3908,7 @@
  },
  {
   "ingredient": "猪大排",
+  "retinol": 12.0,
   "vitB1": 0.8,
   "vitB2": 0.15,
   "niacin": 5.3,
@@ -3826,6 +3916,7 @@
  },
  {
   "ingredient": "猪小排",
+  "retinol": 5.0,
   "vitB1": 0.3,
   "vitB2": 0.16,
   "niacin": 4.5,
@@ -3833,6 +3924,7 @@
  },
  {
   "ingredient": "猪肺",
+  "retinol": 10.0,
   "vitB1": 0.04,
   "vitB2": 0.18,
   "niacin": 1.8,
@@ -3840,6 +3932,7 @@
  },
  {
   "ingredient": "猪舌",
+  "retinol": 15.0,
   "vitB1": 0.13,
   "vitB2": 0.3,
   "niacin": 4.6,
@@ -3847,6 +3940,7 @@
  },
  {
   "ingredient": "猪肾",
+  "retinol": 41.0,
   "vitB1": 0.31,
   "vitB2": 1.14,
   "niacin": 8.0,
@@ -3855,6 +3949,7 @@
  },
  {
   "ingredient": "猪小肠",
+  "retinol": 6.0,
   "vitB1": 0.12,
   "vitB2": 0.11,
   "niacin": 3.1,
@@ -3862,6 +3957,7 @@
  },
  {
   "ingredient": "叉烧肉",
+  "retinol": 16.0,
   "vitB1": 0.66,
   "vitB2": 0.23,
   "niacin": 7.0,
@@ -3869,6 +3965,7 @@
  },
  {
   "ingredient": "猪肉松(均值)",
+  "retinol": 44.0,
   "vitB1": 0.04,
   "vitB2": 0.13,
   "niacin": 3.3,
@@ -3876,6 +3973,7 @@
  },
  {
   "ingredient": "酱排骨",
+  "retinol": 72.0,
   "vitB1": 0.03,
   "vitB2": 0.12,
   "niacin": 2.51,
@@ -3884,6 +3982,7 @@
  },
  {
   "ingredient": "蛋清肠",
+  "retinol": 20.0,
   "vitB1": 0.65,
   "vitB2": 0.06,
   "niacin": 10.7,
@@ -3912,6 +4011,7 @@
  },
  {
   "ingredient": "蒜肠",
+  "retinol": 5.0,
   "vitB1": 0.06,
   "vitB2": 0.15,
   "niacin": 1.0,
@@ -3926,6 +4026,7 @@
  },
  {
   "ingredient": "午餐肚",
+  "retinol": 4.0,
   "vitB1": 0.01,
   "vitB2": 0.31,
   "niacin": 0.1,
@@ -3933,6 +4034,7 @@
  },
  {
   "ingredient": "金华火腿",
+  "retinol": 20.0,
   "vitB1": 0.51,
   "vitB2": 0.18,
   "niacin": 4.8,
@@ -3954,6 +4056,7 @@
  },
  {
   "ingredient": "牛肺",
+  "retinol": 12.0,
   "vitB1": 0.04,
   "vitB2": 0.21,
   "niacin": 3.4,
@@ -3962,6 +4065,7 @@
  },
  {
   "ingredient": "牛肝",
+  "retinol": 20220.0,
   "vitB1": 0.16,
   "vitB2": 1.3,
   "niacin": 11.9,
@@ -3977,6 +4081,7 @@
  },
  {
   "ingredient": "牛舌",
+  "retinol": 8.0,
   "vitB1": 0.1,
   "vitB2": 0.16,
   "niacin": 3.6,
@@ -3984,6 +4089,7 @@
  },
  {
   "ingredient": "牛肾",
+  "retinol": 88.0,
   "vitB1": 0.24,
   "vitB2": 0.85,
   "niacin": 7.7,
@@ -3991,6 +4097,7 @@
  },
  {
   "ingredient": "牛心",
+  "retinol": 17.0,
   "vitB1": 0.26,
   "vitB2": 0.39,
   "niacin": 6.8,
@@ -3999,6 +4106,7 @@
  },
  {
   "ingredient": "酱牛肉",
+  "retinol": 11.0,
   "vitB1": 0.05,
   "vitB2": 0.22,
   "niacin": 4.4,
@@ -4013,6 +4121,7 @@
  },
  {
   "ingredient": "牛肉松",
+  "retinol": 90.0,
   "vitB1": 0.04,
   "vitB2": 0.11,
   "niacin": 0.9,
@@ -4020,6 +4129,7 @@
  },
  {
   "ingredient": "山羊肉(冻)",
+  "retinol": 8.0,
   "vitB1": 0.06,
   "vitB2": 0.12,
   "niacin": 4.7,
@@ -4033,6 +4143,7 @@
  },
  {
   "ingredient": "羊肚",
+  "retinol": 23.0,
   "vitB1": 0.03,
   "vitB2": 0.17,
   "niacin": 1.8,
@@ -4047,6 +4158,7 @@
  },
  {
   "ingredient": "羊肝",
+  "retinol": 20972.0,
   "vitB1": 0.21,
   "vitB2": 1.75,
   "niacin": 22.1,
@@ -4067,6 +4179,7 @@
  },
  {
   "ingredient": "羊肾",
+  "retinol": 126.0,
   "vitB1": 0.35,
   "vitB2": 2.01,
   "niacin": 8.4,
@@ -4074,6 +4187,7 @@
  },
  {
   "ingredient": "羊心",
+  "retinol": 16.0,
   "vitB1": 0.28,
   "vitB2": 0.4,
   "niacin": 5.6,
@@ -4095,6 +4209,7 @@
  },
  {
   "ingredient": "羊肉串(烤)",
+  "retinol": 52.0,
   "vitB1": 0.04,
   "vitB2": 0.15,
   "niacin": 6.3,
@@ -4102,6 +4217,7 @@
  },
  {
   "ingredient": "马肉",
+  "retinol": 28.0,
   "vitB1": 0.06,
   "vitB2": 0.25,
   "niacin": 2.2,
@@ -4109,6 +4225,7 @@
  },
  {
   "ingredient": "马心",
+  "retinol": 32.0,
   "vitB1": 0.22,
   "vitB2": 0.29,
   "niacin": 2.9,
@@ -4116,6 +4233,7 @@
  },
  {
   "ingredient": "狗肉",
+  "retinol": 12.0,
   "vitB1": 0.34,
   "vitB2": 0.2,
   "niacin": 3.5,
@@ -4123,6 +4241,7 @@
  },
  {
   "ingredient": "鸡(均值)",
+  "retinol": 48.0,
   "vitB1": 0.05,
   "vitB2": 0.09,
   "niacin": 5.6,
@@ -4130,6 +4249,7 @@
  },
  {
   "ingredient": "肉鸡(肥)",
+  "retinol": 226.0,
   "vitB1": 0.07,
   "vitB2": 0.07,
   "niacin": 13.1,
@@ -4137,6 +4257,7 @@
  },
  {
   "ingredient": "鸡胸脯肉",
+  "retinol": 16.0,
   "vitB1": 0.07,
   "vitB2": 0.13,
   "niacin": 10.8,
@@ -4144,6 +4265,7 @@
  },
  {
   "ingredient": "鸡肝",
+  "retinol": 10414.0,
   "vitB1": 0.33,
   "vitB2": 1.1,
   "niacin": 11.9,
@@ -4151,6 +4273,7 @@
  },
  {
   "ingredient": "鸡心",
+  "retinol": 910.0,
   "vitB1": 0.46,
   "vitB2": 0.26,
   "niacin": 11.5,
@@ -4158,6 +4281,7 @@
  },
  {
   "ingredient": "鸡血",
+  "retinol": 56.0,
   "vitB1": 0.05,
   "vitB2": 0.04,
   "niacin": 0.1,
@@ -4165,6 +4289,7 @@
  },
  {
   "ingredient": "鸡肫",
+  "retinol": 36.0,
   "vitB1": 0.04,
   "vitB2": 0.09,
   "niacin": 3.4,
@@ -4172,6 +4297,7 @@
  },
  {
   "ingredient": "扒鸡",
+  "retinol": 32.0,
   "vitB1": 0.02,
   "vitB2": 0.17,
   "niacin": 9.2,
@@ -4179,6 +4305,7 @@
  },
  {
   "ingredient": "烤鸡",
+  "retinol": 37.0,
   "vitB1": 0.05,
   "vitB2": 0.19,
   "niacin": 3.5,
@@ -4186,6 +4313,7 @@
  },
  {
   "ingredient": "鸡肉松",
+  "retinol": 90.0,
   "vitB1": 0.03,
   "vitB2": 0.11,
   "niacin": 1.0,
@@ -4193,6 +4321,7 @@
  },
  {
   "ingredient": "鸭(均值)",
+  "retinol": 52.0,
   "vitB1": 0.08,
   "vitB2": 0.22,
   "niacin": 4.2,
@@ -4207,12 +4336,14 @@
  },
  {
   "ingredient": "鸭掌",
+  "retinol": 11.0,
   "vitB2": 0.17,
   "niacin": 1.1,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/894"
  },
  {
   "ingredient": "鸭肝",
+  "retinol": 1040.0,
   "vitB1": 0.26,
   "vitB2": 1.05,
   "niacin": 6.9,
@@ -4221,6 +4352,7 @@
  },
  {
   "ingredient": "鸭舌",
+  "retinol": 35.0,
   "vitB1": 0.01,
   "vitB2": 0.21,
   "niacin": 1.6,
@@ -4228,6 +4360,7 @@
  },
  {
   "ingredient": "鸭心",
+  "retinol": 24.0,
   "vitB1": 0.14,
   "vitB2": 0.87,
   "niacin": 8.0,
@@ -4235,6 +4368,7 @@
  },
  {
   "ingredient": "北京烤鸭",
+  "retinol": 36.0,
   "vitB1": 0.04,
   "vitB2": 0.32,
   "niacin": 4.5,
@@ -4242,6 +4376,7 @@
  },
  {
   "ingredient": "酱鸭",
+  "retinol": 11.0,
   "vitB1": 0.06,
   "vitB2": 0.22,
   "niacin": 3.7,
@@ -4249,6 +4384,7 @@
  },
  {
   "ingredient": "盐水鸭(熟)",
+  "retinol": 35.0,
   "vitB1": 0.07,
   "vitB2": 0.21,
   "niacin": 2.5,
@@ -4256,6 +4392,7 @@
  },
  {
   "ingredient": "鹅",
+  "retinol": 42.0,
   "vitB1": 0.07,
   "vitB2": 0.23,
   "niacin": 4.9,
@@ -4263,18 +4400,21 @@
  },
  {
   "ingredient": "鹅肝",
+  "retinol": 6100.0,
   "vitB1": 0.27,
   "vitB2": 0.25,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/905"
  },
  {
   "ingredient": "鹅肫",
+  "retinol": 51.0,
   "vitB1": 0.05,
   "vitB2": 0.06,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/906"
  },
  {
   "ingredient": "烧鹅",
+  "retinol": 9.0,
   "vitB1": 0.09,
   "vitB2": 0.11,
   "niacin": 3.6,
@@ -4310,6 +4450,7 @@
  },
  {
   "ingredient": "鸽",
+  "retinol": 53.0,
   "vitB1": 0.06,
   "vitB2": 0.2,
   "niacin": 6.9,
@@ -4317,6 +4458,7 @@
  },
  {
   "ingredient": "鹌鹑",
+  "retinol": 40.0,
   "vitB1": 0.04,
   "vitB2": 0.32,
   "niacin": 6.3,
@@ -4324,6 +4466,7 @@
  },
  {
   "ingredient": "乳品（牛乳，均值)",
+  "retinol": 24.0,
   "vitB1": 0.03,
   "vitB2": 0.14,
   "niacin": 0.1,
@@ -4332,6 +4475,7 @@
  },
  {
   "ingredient": "牛乳(光明牌)",
+  "retinol": 28.0,
   "vitB1": 0.02,
   "vitB2": 0.1,
   "niacin": 0.13,
@@ -4339,6 +4483,7 @@
  },
  {
   "ingredient": "学生奶",
+  "retinol": 30.0,
   "vitB1": 0.02,
   "vitB2": 0.14,
   "niacin": 0.06,
@@ -4346,6 +4491,7 @@
  },
  {
   "ingredient": "乳品（鲜羊乳）",
+  "retinol": 84.0,
   "vitB1": 0.04,
   "vitB2": 0.12,
   "niacin": 2.1,
@@ -4353,6 +4499,7 @@
  },
  {
   "ingredient": "全脂加糖奶粉",
+  "retinol": 183.0,
   "vitB1": 0.42,
   "vitB2": 0.26,
   "niacin": 0.4,
@@ -4360,6 +4507,7 @@
  },
  {
   "ingredient": "全脂速溶奶粉",
+  "retinol": 272.0,
   "vitB1": 0.08,
   "vitB2": 0.8,
   "niacin": 0.5,
@@ -4417,6 +4565,7 @@
  },
  {
   "ingredient": "乳品（酸奶，均值)",
+  "retinol": 26.0,
   "vitB1": 0.03,
   "vitB2": 0.15,
   "niacin": 0.2,
@@ -4433,6 +4582,7 @@
  {
   "ingredient": "乳酪（羊乳酪）",
   "carotene": 33.0,
+  "retinol": 220.0,
   "vitB1": 0.04,
   "vitB2": 0.21,
   "niacin": 0.2,
@@ -4440,6 +4590,7 @@
  },
  {
   "ingredient": "低脂奶酪",
+  "retinol": 119.0,
   "vitB1": 0.06,
   "vitB2": 0.49,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/967"
@@ -4454,12 +4605,14 @@
  },
  {
   "ingredient": "乳品（奶油）",
+  "retinol": 297.0,
   "vitB2": 0.01,
   "niacin": 0.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/969"
  },
  {
   "ingredient": "酥油",
+  "retinol": 426.0,
   "vitB2": 0.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/971"
  },
@@ -4472,6 +4625,7 @@
  },
  {
   "ingredient": "奶片",
+  "retinol": 75.0,
   "vitB1": 0.05,
   "vitB2": 0.2,
   "niacin": 1.6,
@@ -4480,6 +4634,7 @@
  },
  {
   "ingredient": "全脂甜炼乳(雀巢)",
+  "retinol": 105.0,
   "vitB1": 0.07,
   "vitB2": 0.41,
   "niacin": 0.21,
@@ -4488,6 +4643,7 @@
  {
   "ingredient": "脱脂甜炼乳",
   "carotene": 0.0,
+  "retinol": 0.0,
   "vitB1": 0.1,
   "vitB2": 0.5,
   "niacin": 0.2,
@@ -4496,6 +4652,7 @@
  },
  {
   "ingredient": "蛋（鸡蛋，均值)",
+  "retinol": 234.0,
   "vitB1": 0.11,
   "vitB2": 0.27,
   "niacin": 0.2,
@@ -4510,6 +4667,7 @@
  },
  {
   "ingredient": "蛋黄（鸡蛋黄）",
+  "retinol": 438.0,
   "vitB1": 0.33,
   "vitB2": 0.29,
   "niacin": 0.1,
@@ -4517,6 +4675,7 @@
  },
  {
   "ingredient": "鸡蛋黄(乌骨鸡)",
+  "retinol": 179.0,
   "vitB1": 0.07,
   "vitB2": 0.36,
   "niacin": 0.1,
@@ -4524,11 +4683,13 @@
  },
  {
   "ingredient": "鸡蛋黄粉",
+  "retinol": 776.0,
   "vitB2": 0.25,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1582"
  },
  {
   "ingredient": "蛋（松花蛋，鸡蛋)",
+  "retinol": 310.0,
   "vitB1": 0.02,
   "vitB2": 0.13,
   "niacin": 0.2,
@@ -4544,6 +4705,7 @@
  },
  {
   "ingredient": "蛋（鸭蛋）",
+  "retinol": 261.0,
   "vitB1": 0.17,
   "vitB2": 0.35,
   "niacin": 0.2,
@@ -4551,12 +4713,14 @@
  },
  {
   "ingredient": "鸭蛋黄",
+  "retinol": 1980.0,
   "vitB1": 0.28,
   "vitB2": 0.62,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/992"
  },
  {
   "ingredient": "海鸭蛋",
+  "retinol": 116.0,
   "vitB1": 0.13,
   "vitB2": 0.4,
   "vitC": 0.0,
@@ -4564,6 +4728,7 @@
  },
  {
   "ingredient": "蛋（松花蛋，鸭蛋)",
+  "retinol": 215.0,
   "vitB1": 0.06,
   "vitB2": 0.18,
   "niacin": 0.1,
@@ -4571,6 +4736,7 @@
  },
  {
   "ingredient": "蛋（鹅蛋）",
+  "retinol": 192.0,
   "vitB1": 0.08,
   "vitB2": 0.3,
   "niacin": 0.4,
@@ -4578,6 +4744,7 @@
  },
  {
   "ingredient": "蛋黄（鹅蛋黄）",
+  "retinol": 1977.0,
   "vitB1": 0.06,
   "vitB2": 0.59,
   "niacin": 0.6,
@@ -4585,6 +4752,7 @@
  },
  {
   "ingredient": "蛋（鹌鹑蛋）",
+  "retinol": 337.0,
   "vitB1": 0.11,
   "vitB2": 0.49,
   "niacin": 0.1,
@@ -4592,12 +4760,14 @@
  },
  {
   "ingredient": "白条鱼(裸鱼)",
+  "retinol": 11.0,
   "vitB2": 0.07,
   "niacin": 1.9,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1002"
  },
  {
   "ingredient": "感鱼",
+  "retinol": 11.0,
   "vitB1": 0.02,
   "vitB2": 0.07,
   "niacin": 1.3,
@@ -4605,6 +4775,7 @@
  },
  {
   "ingredient": "胡子鲇",
+  "retinol": 8.0,
   "vitB1": 0.05,
   "vitB2": 0.11,
   "niacin": 4.3,
@@ -4619,6 +4790,7 @@
  },
  {
   "ingredient": "鱼（黄鳝）",
+  "retinol": 50.0,
   "vitB1": 0.06,
   "vitB2": 0.98,
   "niacin": 3.7,
@@ -4639,12 +4811,14 @@
  },
  {
   "ingredient": "湟鱼(裸鲤鱼)",
+  "retinol": 10.0,
   "vitB2": 0.05,
   "niacin": 2.8,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1017"
  },
  {
   "ingredient": "鲮鱼",
+  "retinol": 125.0,
   "vitB1": 0.01,
   "vitB2": 0.04,
   "niacin": 3.0,
@@ -4659,6 +4833,7 @@
  },
  {
   "ingredient": "鳙鱼",
+  "retinol": 34.0,
   "vitB1": 0.04,
   "vitB2": 0.11,
   "niacin": 2.8,
@@ -4666,11 +4841,13 @@
  },
  {
   "ingredient": "鳟鱼",
+  "retinol": 206.0,
   "vitB1": 0.08,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1027"
  },
  {
   "ingredient": "参鱼",
+  "retinol": 1.0,
   "vitB1": 0.06,
   "vitB2": 0.11,
   "niacin": 3.6,
@@ -4678,6 +4855,7 @@
  },
  {
   "ingredient": "堤鱼",
+  "retinol": 5.0,
   "vitB1": 0.19,
   "vitB2": 0.12,
   "niacin": 6.5,
@@ -4685,6 +4863,7 @@
  },
  {
   "ingredient": "狗母鱼",
+  "retinol": 11.0,
   "vitB1": 0.05,
   "vitB2": 0.1,
   "niacin": 3.7,
@@ -4699,6 +4878,7 @@
  },
  {
   "ingredient": "海鳗",
+  "retinol": 22.0,
   "vitB1": 0.06,
   "vitB2": 0.07,
   "niacin": 3.0,
@@ -4706,6 +4886,7 @@
  },
  {
   "ingredient": "红娘鱼",
+  "retinol": 6.0,
   "vitB1": 0.03,
   "vitB2": 0.07,
   "niacin": 4.9,
@@ -4713,6 +4894,7 @@
  },
  {
   "ingredient": "黄鱼(大黄花鱼)",
+  "retinol": 10.0,
   "vitB1": 0.03,
   "vitB2": 0.1,
   "niacin": 1.9,
@@ -4720,6 +4902,7 @@
  },
  {
   "ingredient": "黄鲂",
+  "retinol": 10.0,
   "vitB1": 0.03,
   "vitB2": 0.07,
   "niacin": 2.0,
@@ -4727,6 +4910,7 @@
  },
  {
   "ingredient": "金线鱼",
+  "retinol": 20.0,
   "vitB1": 0.01,
   "vitB2": 0.03,
   "niacin": 4.8,
@@ -4734,6 +4918,7 @@
  },
  {
   "ingredient": "绿鳍马面豚",
+  "retinol": 15.0,
   "vitB1": 0.02,
   "vitB2": 0.05,
   "niacin": 3.0,
@@ -4741,6 +4926,7 @@
  },
  {
   "ingredient": "梅童鱼",
+  "retinol": 25.0,
   "vitB1": 0.02,
   "vitB2": 0.06,
   "niacin": 2.1,
@@ -4748,6 +4934,7 @@
  },
  {
   "ingredient": "沙钻鱼",
+  "retinol": 12.0,
   "vitB1": 0.03,
   "vitB2": 0.04,
   "niacin": 2.1,
@@ -4761,6 +4948,7 @@
  },
  {
   "ingredient": "鲅鱼",
+  "retinol": 19.0,
   "vitB1": 0.03,
   "vitB2": 0.04,
   "niacin": 2.1,
@@ -4768,6 +4956,7 @@
  },
  {
   "ingredient": "鲐鱼",
+  "retinol": 38.0,
   "vitB1": 0.08,
   "vitB2": 0.12,
   "niacin": 8.8,
@@ -4775,6 +4964,7 @@
  },
  {
   "ingredient": "鲑鱼",
+  "retinol": 45.0,
   "vitB1": 0.07,
   "vitB2": 0.18,
   "niacin": 4.4,
@@ -4782,6 +4972,7 @@
  },
  {
   "ingredient": "鲑鱼籽酱",
+  "retinol": 111.0,
   "vitB1": 0.33,
   "vitB2": 0.19,
   "niacin": 0.5,
@@ -4789,12 +4980,14 @@
  },
  {
   "ingredient": "鲚鱼(大)",
+  "retinol": 15.0,
   "vitB2": 0.08,
   "niacin": 1.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1054"
  },
  {
   "ingredient": "鲷",
+  "retinol": 12.0,
   "vitB1": 0.02,
   "vitB2": 0.1,
   "niacin": 3.5,
@@ -4802,6 +4995,7 @@
  },
  {
   "ingredient": "鲽",
+  "retinol": 117.0,
   "vitB1": 0.03,
   "vitB2": 0.04,
   "niacin": 1.5,
@@ -4809,6 +5003,7 @@
  },
  {
   "ingredient": "鳘鱼",
+  "retinol": 33.0,
   "vitB1": 0.01,
   "vitB2": 0.05,
   "niacin": 3.0,
@@ -4894,6 +5089,7 @@
  {
   "ingredient": "虾（东方对虾）",
   "carotene": 420.0,
+  "retinol": 17.0,
   "vitB1": 0.02,
   "vitB2": 0.11,
   "niacin": 0.9,
@@ -4915,6 +5111,7 @@
  },
  {
   "ingredient": "江虾",
+  "retinol": 102.0,
   "vitB1": 0.04,
   "vitB2": 0.12,
   "niacin": 2.2,
@@ -4942,6 +5139,7 @@
  },
  {
   "ingredient": "蟹（海蟹）",
+  "retinol": 30.0,
   "vitB1": 0.01,
   "vitB2": 0.1,
   "niacin": 2.5,
@@ -4949,6 +5147,7 @@
  },
  {
   "ingredient": "蟹（河蟹）",
+  "retinol": 389.0,
   "vitB1": 0.06,
   "vitB2": 0.28,
   "niacin": 1.7,
@@ -4963,11 +5162,13 @@
  },
  {
   "ingredient": "蟹足棒",
+  "retinol": 5.0,
   "vitB2": 0.04,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1105"
  },
  {
   "ingredient": "河蚌",
+  "retinol": 243.0,
   "vitB1": 0.01,
   "vitB2": 0.18,
   "niacin": 0.7,
@@ -4975,6 +5176,7 @@
  },
  {
   "ingredient": "河蚬",
+  "retinol": 37.0,
   "vitB1": 0.08,
   "vitB2": 0.13,
   "niacin": 1.4,
@@ -4982,6 +5184,7 @@
  },
  {
   "ingredient": "牡蛎",
+  "retinol": 27.0,
   "vitB1": 0.01,
   "vitB2": 0.13,
   "niacin": 1.4,
@@ -4989,6 +5192,7 @@
  },
  {
   "ingredient": "泥蚶",
+  "retinol": 6.0,
   "vitB1": 0.01,
   "vitB2": 0.07,
   "niacin": 1.1,
@@ -5002,6 +5206,7 @@
  },
  {
   "ingredient": "贻贝(鲜)",
+  "retinol": 73.0,
   "vitB1": 0.12,
   "vitB2": 0.22,
   "niacin": 1.8,
@@ -5010,12 +5215,14 @@
  {
   "ingredient": "海蚌",
   "carotene": 0.0,
+  "retinol": 10.0,
   "vitB1": 0.0,
   "vitB2": 0.03,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1119"
  },
  {
   "ingredient": "螺(均值)",
+  "retinol": 26.0,
   "vitB1": 0.03,
   "vitB2": 0.4,
   "niacin": 1.8,
@@ -5038,6 +5245,7 @@
  },
  {
   "ingredient": "海蜇头",
+  "retinol": 14.0,
   "vitB1": 0.07,
   "vitB2": 0.04,
   "niacin": 0.3,
@@ -5045,6 +5253,7 @@
  },
  {
   "ingredient": "甲鱼蛋",
+  "retinol": 73.0,
   "vitB1": 1.05,
   "vitB2": 1.58,
   "niacin": 0.03,
@@ -5052,6 +5261,7 @@
  },
  {
   "ingredient": "墨鱼丸",
+  "retinol": 4.0,
   "vitB1": 0.01,
   "vitB2": 0.03,
   "niacin": 0.86,
@@ -5157,6 +5367,7 @@
  },
  {
   "ingredient": "白水羊头",
+  "retinol": 13.0,
   "vitB2": 0.28,
   "niacin": 1.4,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1196"
@@ -5170,6 +5381,7 @@
  },
  {
   "ingredient": "炒肝",
+  "retinol": 150.0,
   "vitB1": 0.01,
   "vitB2": 0.02,
   "niacin": 2.1,
@@ -5239,6 +5451,7 @@
  },
  {
   "ingredient": "密三刀",
+  "retinol": 0.0,
   "vitB1": 0.06,
   "niacin": 0.2,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1210"
@@ -5296,6 +5509,7 @@
  {
   "ingredient": "醪糟",
   "carotene": 0.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.02,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1221"
@@ -5311,6 +5525,7 @@
  {
   "ingredient": "蛋糕(均值)",
   "carotene": 190.0,
+  "retinol": 54.0,
   "vitB1": 0.09,
   "vitB2": 0.09,
   "niacin": 0.8,
@@ -5319,6 +5534,7 @@
  {
   "ingredient": "月饼(豆沙)",
   "carotene": 40.0,
+  "retinol": 0.0,
   "vitB1": 0.05,
   "vitB2": 0.05,
   "niacin": 1.9,
@@ -5326,6 +5542,7 @@
  },
  {
   "ingredient": "板油酥饼",
+  "retinol": 40.0,
   "vitB1": 0.11,
   "vitB2": 0.15,
   "niacin": 0.6,
@@ -5341,6 +5558,7 @@
  },
  {
   "ingredient": "夹心酥饼",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.01,
   "niacin": 0.3,
@@ -5392,6 +5610,7 @@
  {
   "ingredient": "酥皮糕点",
   "carotene": 70.0,
+  "retinol": 0.0,
   "vitB1": 0.1,
   "vitB2": 0.1,
   "niacin": 3.2,
@@ -5406,6 +5625,7 @@
  },
  {
   "ingredient": "芝麻桃酥",
+  "retinol": 15.0,
   "vitB1": 0.04,
   "vitB2": 0.07,
   "niacin": 0.1,
@@ -5439,6 +5659,7 @@
  },
  {
   "ingredient": "鸡肉汉堡(肯德基)",
+  "retinol": 44.0,
   "vitB1": 0.07,
   "vitB2": 0.05,
   "niacin": 1.58,
@@ -5446,13 +5667,25 @@
  },
  {
   "ingredient": "鸡肉卷(肯德基)",
+  "retinol": 64.0,
   "vitB1": 0.15,
   "vitB2": 0.09,
   "niacin": 2.25,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1252"
  },
  {
+  "ingredient": "上校鸡块(肯德基)",
+  "retinol": 10.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1253"
+ },
+ {
+  "ingredient": "辣鸡翅(肯德基)",
+  "retinol": 65.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1254"
+ },
+ {
   "ingredient": "新奥尔良鸡翅(肯德基)",
+  "retinol": 332.0,
   "vitB1": 0.05,
   "vitB2": 0.08,
   "niacin": 3.41,
@@ -5460,6 +5693,7 @@
  },
  {
   "ingredient": "劲爆鸡米花(肯德基)",
+  "retinol": 68.0,
   "vitB1": 0.07,
   "vitB2": 0.11,
   "niacin": 3.96,
@@ -5472,6 +5706,7 @@
  },
  {
   "ingredient": "比萨饼(夹奶酪)",
+  "retinol": 104.0,
   "vitB1": 0.29,
   "vitB2": 0.26,
   "niacin": 3.94,
@@ -5480,6 +5715,7 @@
  },
  {
   "ingredient": "干酪汉堡包(夹熏肉，加调料酱)",
+  "retinol": 38.0,
   "vitB1": 0.16,
   "vitB2": 0.21,
   "niacin": 3.4,
@@ -5488,6 +5724,7 @@
  },
  {
   "ingredient": "汉堡包(普通型，夹肉饼，加调料酱和蔬菜)",
+  "retinol": 0.0,
   "vitB1": 0.21,
   "vitB2": 0.18,
   "niacin": 3.35,
@@ -5496,6 +5733,7 @@
  },
  {
   "ingredient": "热狗(原味)",
+  "retinol": 0.0,
   "vitB1": 0.24,
   "vitB2": 0.28,
   "niacin": 3.72,
@@ -5518,6 +5756,7 @@
  },
  {
   "ingredient": "早餐奶",
+  "retinol": 43.0,
   "vitB1": 0.02,
   "vitB2": 0.06,
   "niacin": 0.19,
@@ -5532,6 +5771,7 @@
  },
  {
   "ingredient": "苦荞麦片(无糖)",
+  "retinol": 159.0,
   "vitB1": 0.3,
   "vitB2": 0.16,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1288"
@@ -5570,6 +5810,7 @@
  {
   "ingredient": "铁板牛肉炒面(含调味料)",
   "carotene": 345.0,
+  "retinol": 5.0,
   "vitB1": 0.13,
   "vitB2": 0.04,
   "niacin": 1.16,
@@ -5584,6 +5825,7 @@
  },
  {
   "ingredient": "海鲜鸡汁味米线(含调味料)",
+  "retinol": 5.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1308"
@@ -5659,6 +5901,7 @@
  {
   "ingredient": "葡萄干面包",
   "carotene": 0.0,
+  "retinol": 0.0,
   "vitB1": 0.05,
   "vitB2": 0.06,
   "niacin": 0.6,
@@ -5668,6 +5911,7 @@
  {
   "ingredient": "饼干(均值)",
   "carotene": 80.0,
+  "retinol": 24.0,
   "vitB1": 0.08,
   "vitB2": 0.04,
   "niacin": 4.7,
@@ -5676,6 +5920,7 @@
  },
  {
   "ingredient": "水饺(三鲜馅)",
+  "retinol": 4.0,
   "vitB1": 0.06,
   "vitB2": 0.07,
   "niacin": 1.68,
@@ -5697,6 +5942,7 @@
  },
  {
   "ingredient": "雪米饼",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.02,
   "niacin": 0.44,
@@ -5719,6 +5965,7 @@
  },
  {
   "ingredient": "法式卷饼",
+  "retinol": 135.0,
   "vitB1": 0.04,
   "vitB2": 0.22,
   "niacin": 0.28,
@@ -5726,6 +5973,7 @@
  },
  {
   "ingredient": "立体脆",
+  "retinol": 0.0,
   "vitB1": 0.87,
   "vitB2": 0.07,
   "niacin": 1.45,
@@ -5733,12 +5981,14 @@
  },
  {
   "ingredient": "粟米脆",
+  "retinol": 0.0,
   "vitB1": 0.05,
   "vitB2": 0.04,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1345"
  },
  {
   "ingredient": "通心脆",
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.04,
   "niacin": 2.12,
@@ -5754,6 +6004,7 @@
  {
   "ingredient": "虾片",
   "carotene": 0.0,
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.0,
   "niacin": 0.4,
@@ -5762,6 +6013,7 @@
  },
  {
   "ingredient": "锅巴(豆香)",
+  "retinol": 107.0,
   "vitB1": 0.03,
   "vitB2": 0.04,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1349"
@@ -5769,6 +6021,7 @@
  {
   "ingredient": "海苔",
   "carotene": 9573.0,
+  "retinol": 0.0,
   "vitB1": 0.24,
   "vitB2": 0.93,
   "niacin": 5.98,
@@ -5777,6 +6030,7 @@
  },
  {
   "ingredient": "香菇片",
+  "retinol": 0.0,
   "vitB1": 0.54,
   "vitB2": 0.24,
   "vitC": 2.0,
@@ -5797,6 +6051,7 @@
  },
  {
   "ingredient": "怪味胡豆",
+  "retinol": 0.0,
   "vitB1": 0.08,
   "vitB2": 0.19,
   "niacin": 1.73,
@@ -5811,6 +6066,7 @@
  },
  {
   "ingredient": "夹心米果",
+  "retinol": 46.0,
   "vitB1": 0.03,
   "vitB2": 0.16,
   "niacin": 0.64,
@@ -5830,7 +6086,23 @@
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1360"
  },
  {
+  "ingredient": "果仁脆枣",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1361"
+ },
+ {
+  "ingredient": "空心脆枣",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1362"
+ },
+ {
+  "ingredient": "果冻(草莓水果冻)",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1363"
+ },
+ {
   "ingredient": "可口可乐",
+  "retinol": 0.0,
   "vitB1": 0.0,
   "vitB2": 0.0,
   "niacin": 0.0,
@@ -5848,17 +6120,20 @@
  },
  {
   "ingredient": "菠萝汁饮料(大湖牌)",
+  "retinol": 0.0,
   "vitB1": 0.05,
   "vitB2": 0.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1368"
  },
  {
   "ingredient": "苹果汁饮料(光明牌)",
+  "retinol": 0.0,
   "niacin": 0.03,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1369"
  },
  {
   "ingredient": "橙汁饮料(光明牌)",
+  "retinol": 0.0,
   "vitB1": 0.06,
   "vitB2": 0.02,
   "niacin": 0.21,
@@ -5867,17 +6142,20 @@
  },
  {
   "ingredient": "山楂果肉饮料",
+  "retinol": 0.0,
   "vitB2": 0.01,
   "vitC": 33.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1372"
  },
  {
   "ingredient": "酸枣果汁饮料",
+  "retinol": 0.0,
   "vitB2": 0.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1373"
  },
  {
   "ingredient": "西番莲汁饮料",
+  "retinol": 0.0,
   "vitB2": 0.01,
   "niacin": 0.17,
   "vitC": 12.0,
@@ -5885,14 +6163,21 @@
  },
  {
   "ingredient": "西柚汁饮料",
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.01,
   "vitC": 37.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1375"
  },
  {
+  "ingredient": "椰子汁饮料",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1376"
+ },
+ {
   "ingredient": "杏仁椰汁饮料",
   "carotene": 3.0,
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "niacin": 0.05,
@@ -5901,12 +6186,14 @@
  {
   "ingredient": "胡萝卜汁饮料",
   "carotene": 39.0,
+  "retinol": 0.0,
   "vitC": 1.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1378"
  },
  {
   "ingredient": "AD钙奶",
   "carotene": 28.0,
+  "retinol": 139.0,
   "vitB1": 0.03,
   "vitB2": 0.09,
   "niacin": 0.05,
@@ -5914,6 +6201,7 @@
  },
  {
   "ingredient": "健康快车奶饮料",
+  "retinol": 128.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1380"
@@ -5927,12 +6215,14 @@
  },
  {
   "ingredient": "核桃乳(儿童型)",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.02,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1382"
  },
  {
   "ingredient": "杏仁露",
+  "retinol": 0.0,
   "vitB1": 0.0,
   "niacin": 0.02,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1386"
@@ -5948,6 +6238,7 @@
  },
  {
   "ingredient": "可可粉",
+  "retinol": 22.0,
   "vitB1": 0.05,
   "vitB2": 0.16,
   "niacin": 1.4,
@@ -5955,6 +6246,7 @@
  },
  {
   "ingredient": "麦乳精",
+  "retinol": 113.0,
   "vitB1": 0.05,
   "vitB2": 0.3,
   "niacin": 0.7,
@@ -5962,6 +6254,7 @@
  },
  {
   "ingredient": "高乐高营养饮品",
+  "retinol": 1146.0,
   "vitB1": 1.12,
   "vitB2": 1.28,
   "niacin": 37.07,
@@ -5969,6 +6262,7 @@
  },
  {
   "ingredient": "果珍",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.01,
   "vitC": 285.0,
@@ -5976,6 +6270,7 @@
  },
  {
   "ingredient": "柠檬茶",
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.03,
   "niacin": 0.2,
@@ -5992,6 +6287,7 @@
  },
  {
   "ingredient": "咖啡粉",
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.07,
   "niacin": 28.17,
@@ -6007,6 +6303,7 @@
  },
  {
   "ingredient": "冰淇淋",
+  "retinol": 48.0,
   "vitB1": 0.01,
   "vitB2": 0.03,
   "niacin": 0.2,
@@ -6014,6 +6311,7 @@
  },
  {
   "ingredient": "雪糕(百乐宝)",
+  "retinol": 33.0,
   "vitB1": 0.05,
   "vitB2": 0.19,
   "niacin": 0.07,
@@ -6029,11 +6327,13 @@
  },
  {
   "ingredient": "花雕酒(16.5％)",
+  "retinol": 0.0,
   "vitC": 0.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1425"
  },
  {
   "ingredient": "伏特加",
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "niacin": 0.0,
@@ -6042,6 +6342,7 @@
  },
  {
   "ingredient": "威士忌",
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.0,
   "niacin": 0.05,
@@ -6067,6 +6368,7 @@
  {
   "ingredient": "马提尼酒(32%)",
   "carotene": 0.0,
+  "retinol": 0.0,
   "vitB1": 0.0,
   "vitB2": 0.0,
   "niacin": 0.04,
@@ -6083,6 +6385,7 @@
  },
  {
   "ingredient": "酸味威士忌(16.8%)",
+  "retinol": 0.0,
   "vitB1": 0.01,
   "vitB2": 0.01,
   "niacin": 0.02,
@@ -6137,6 +6440,7 @@
  },
  {
   "ingredient": "太妃糖",
+  "retinol": 79.0,
   "vitB1": 0.02,
   "vitB2": 0.14,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1462"
@@ -6203,6 +6507,7 @@
  },
  {
   "ingredient": "冰糖酸角",
+  "retinol": 0.0,
   "vitB1": 0.22,
   "vitB2": 0.04,
   "niacin": 0.23,
@@ -6211,6 +6516,7 @@
  {
   "ingredient": "甘草杏",
   "carotene": 596.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.02,
   "niacin": 0.8,
@@ -6218,22 +6524,26 @@
  },
  {
   "ingredient": "清凉杏肉",
+  "retinol": 0.0,
   "vitC": 0.9,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1476"
  },
  {
   "ingredient": "雪梅",
+  "retinol": 0.0,
   "vitB2": 0.04,
   "niacin": 0.65,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1477"
  },
  {
   "ingredient": "九制梅肉",
+  "retinol": 0.0,
   "vitB2": 0.07,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1478"
  },
  {
   "ingredient": "九制西梅",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.04,
   "niacin": 0.77,
@@ -6241,18 +6551,26 @@
  },
  {
   "ingredient": "九制应子",
+  "retinol": 0.0,
   "vitB1": 0.03,
   "vitB2": 0.03,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1480"
  },
  {
   "ingredient": "梅脯",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1481"
  },
  {
+  "ingredient": "阿胶枣",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1482"
+ },
+ {
   "ingredient": "黑贡枣",
+  "retinol": 0.0,
   "vitB1": 0.06,
   "vitB2": 0.12,
   "vitC": 14.0,
@@ -6260,16 +6578,19 @@
  },
  {
   "ingredient": "多味山楂",
+  "retinol": 0.0,
   "vitC": 51.0,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1484"
  },
  {
   "ingredient": "山楂脯",
+  "retinol": 0.0,
   "vitC": 6.3,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1485"
  },
  {
   "ingredient": "地瓜干",
+  "retinol": 0.0,
   "vitC": 23.8,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1486"
  },
@@ -6319,6 +6640,7 @@
  },
  {
   "ingredient": "黄豆酱油",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.15,
   "niacin": 1.13,
@@ -6370,12 +6692,14 @@
  },
  {
   "ingredient": "千岛沙拉酱",
+  "retinol": 41.0,
   "vitB1": 0.03,
   "vitB2": 0.06,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1535"
  },
  {
   "ingredient": "奶油攀司",
+  "retinol": 130.0,
   "vitB1": 0.08,
   "vitB2": 0.3,
   "niacin": 0.5,
@@ -6416,6 +6740,7 @@
  {
   "ingredient": "番茄沙司",
   "carotene": 472.0,
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.02,
   "niacin": 0.7,
@@ -6434,12 +6759,24 @@
  {
   "ingredient": "剁辣椒",
   "carotene": 1232.0,
+  "retinol": 0.0,
   "vitB2": 0.07,
   "niacin": 1.01,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1554"
  },
  {
+  "ingredient": "酱八宝菜",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1555"
+ },
+ {
+  "ingredient": "麻仁金丝",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1556"
+ },
+ {
   "ingredient": "腌大头菜",
+  "retinol": 0.0,
   "vitB1": 0.04,
   "vitB2": 0.2,
   "niacin": 1.65,
@@ -6447,13 +6784,20 @@
  },
  {
   "ingredient": "腌芥菜头",
+  "retinol": 0.0,
   "vitB1": 0.02,
   "vitB2": 0.03,
   "niacin": 0.43,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1558"
  },
  {
+  "ingredient": "腌韭菜花",
+  "retinol": 0.0,
+  "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1559"
+ },
+ {
   "ingredient": "腌萝卜条",
+  "retinol": 0.0,
   "vitB2": 0.01,
   "niacin": 0.12,
   "ref": "《中国食物成分表》(中疾控营养所) nlc foodinfo/1560"
@@ -6469,6 +6813,7 @@
  {
   "ingredient": "咖喱粉",
   "carotene": 690.0,
+  "retinol": 0.0,
   "vitB1": 0.41,
   "vitB2": 0.25,
   "niacin": 7.0,
