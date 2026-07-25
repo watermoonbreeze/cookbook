@@ -2,30 +2,27 @@
 
 > 交接唯一固定入口。触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落档+**覆盖**本文件+git 提交。
 > **维护约定（省 token）**：只保留当前状态·每次**全覆盖**·不堆历史明细（历史靠 git log + `SESSION_交接_历史.md`）·目标 ≤1 屏。
-> 更新时间：**2026-07-25 · 数据/参考资料 session 收尾 · 食材库505→1177 + 维生素/矿物质数据 + 膳食宝塔 + 健康科普/维生素页 + 权威方法论准则。全 push origin/master。**
+> 更新时间：**2026-07-25 · 算法·权威化重审 P0+P1 收尾（膳食宝塔权威真相源 + 色系墙评级对齐宝塔四层）。commit 481c643 已本地提交，未 push。**
 
-## 本 session 交付（数据/参考资料类·全 push·构建单测绿）
-- ✅ **食材库 505→1177 翻倍**：爬 nlc 全量中国成分表(1356条·17分类)→净增672入库(review=pending·营养=成分表一手)。忌口自动+抽样核(内脏/肠→痛风avoid·高嘌呤水产→limit·酒→酒精·**联网核实痛风指南2024**)。
-- ✅ **维生素+矿物质数据**：`ingredient_vitamins.json`(863·B1/B2/烟酸/维C/胡萝卜素) + `ingredient_minerals.json`(873·磷/镁/铁/锌/硒/铜/锰)·独立seed免迁移(待2b DB+展示)。
-- ✅ **体检①揪出并修数据bug**：`fix_nlc_fiber.py`——parse 曾误把 raw[11]灰分当膳食纤维(672全错)·真纤维在[13]·牛脑[10]是胆固醇。修:纤维106正+552删·补胆固醇197(覆盖484→681)·纤维>碳水残留0。**列映射定稿见食材库扩充doc**。
-- ✅ **膳食宝塔/餐盘/三餐分配 进「膳食参考依据」**(权威地基·全功能权威化的依据)。
-- ✅ **健康科普页 + 维生素小百科页**(我的·参考资料·据营养科学全书/生理学/DRIs·emoji配图·免责)。
-- ✅ **权威方法论优先准则**(CLAUDE.md·长期)：功能前先查权威资料有无现成方案·别自创。**数据来源真实**:只列真实用到的源(撤4空挂名·加DRIs/宝塔/营养科学全书)。
-- 📋 待办登记多项：全功能权威化重审(XL)·6项参考资料驱动提升·J22脂肪肝·维生素矿物质2b展示。
+## 本 session 交付（算法·权威化重审 P0+P1·构建单测双绿·已 commit 481c643 未 push）
+- ✅ **P0 权威真相源下沉**：shared 域层新建 `DietaryGuideline`（commonMain·纯 Kotlin）——膳食宝塔五层份量(`DAILY_AMOUNTS`) + 三餐能量分配 + 各餐结构期待(`MealEnergyShare.expectedLayers`) + 食物多样性/饮水，与 UI 层 `DietaryReference` 同源。给出 九大类→宝塔层映射(`LAYER_OF_GROUP`) + `coveredLayers()`。`DietaryGuidelineTest` 7 用例守护。**权威方法论准则落地：算法从此引用它、不再自创。**
+- ✅ **P1 色系墙均衡评级权威化**：`FoodGroup.nutritionLevel` 由自创三支柱 → **膳食宝塔四正向层覆盖度**（谷薯/蔬果/鱼禽肉蛋/奶豆坚果·覆盖几层即几级）。**0-4 输出与 label API 不变**→色系墙/餐食卡/今日卡/一周营养线/膳食报告 6 处消费端零改动。`FoodGroupNutritionLevelTest` 同步更新为宝塔层口径。可见影响：奶豆坚果成独立层→单顿正餐"营养优"变少(诚实·全天汇总照样达4)。
+- 验证：`:shared:testDebugUnitTest` + `:androidApp:assembleDebug` **均 BUILD SUCCESSFUL**。
 
 ## ⏭ 下一步
-- 【本类增量小项·✅已做完】维生素补视黄醇(维A·维E不在nlc列表省略)· 生命阶段膳食要点进膳食参考依据· cn_en批次4常见肉satFat候选。**本类(数据/参考资料)已无大块可做**。
-- 【🔴 换 session·最高价值】**全功能权威化重审**——3处自创对齐膳食宝塔:色系墙均衡/餐次差异化/推荐份量(算法会商·连J15/J17·地基已就位)。
-- 【off-type 换 session】维生素/矿物质 2b(DB列+.sqm迁移+营养表/维生素页展示)· 分页UI(库1177营养表恐卡)· 脂肪肝入口· USDA阶段2。
+- 【🔴 换 session·会商+UX】**P2 餐次差异化**：地基(`DietaryGuideline.expectedLayers`)已备，剩**消费侧**——推荐引擎 `MealCompositionScorer`(现零餐次差异·给每餐同等 STAPLE/荤素补分)按餐次差异化(早餐要主食+蛋白+奶/晚餐清淡) + per-meal 呈现。**待办点名"需算法会商+UX"→单开会商 session**(spawn algorithm_engineer + apple_ux_designer)。
+- 【🔴 换 session·L】**P3 推荐搭配份量对齐宝塔** + **J17 一周计划营养线统一**（抽共享营养规划器·连 J2/摄入建模·会商）。
+- 【off-type 队列】维生素/矿物质 2b 展示(DB列+.sqm+营养表/维生素页)· 库1177营养表分页UI· J22脂肪肝入口· USDA阶段2· J20盐"限量非忌口"详情口径。
 
 ## 先读清单
-1. 本文件 + `feature/待办总览.md`(数据/健康类 + 📚参考资料驱动提升 + J表)
-2. `feature/功能总线_权威方法论对照.md`(3处自创待换权威·全功能重审依据) + `feature/食材库扩充_阶段1_nlc全量.md`(管线+列映射定稿+经验)
-3. `CLAUDE.md`(**权威方法论优先准则** + 踩坑红线 + 透明/真实) + `context_memory/unattended_decisions.md`
+1. 本文件 + `feature/功能总线_权威方法论对照.md`（3处自创现状：色系墙✅已换 / 餐次·份量待会商 + 关键结论进度区）
+2. `feature/待办总览.md` 第50行「餐次差异化+三餐能量分配」（含 P0+P1 进度 + P2 消费侧待做）+ J17
+3. `shared/.../domain/DietaryGuideline.kt`（权威真相源·P2/P3 直接消费它）+ `FoodGroup.nutritionLevel`（P1 新口径）
+4. `CLAUDE.md`（**权威方法论优先准则** + 算法准则A/B + 踩坑红线 + 健康数据/透明/真实红线）
 
 ## 工作规则（用户已定·稳定）
-1. 🔴 **权威方法论优先**(功能前查权威资料·别自创·CLAUDE.md准则)· **数据来源真实**(只列真实用到的源)。
-2. 🔴 **一个 session 只做一类**·off-type 进待办·切类型=换 session。中文·深度·快速做完不反复问确认·过门禁+构建+单测。
-3. 🔴 构建看输出别信 exit code(grep BUILD SUCCESSFUL)。健康数据改动过 `:shared:testDebugUnitTest`。**temp/ 未 gitignore→提交显式 add·绝不 git add -A**。
-4. 🔴 健康数据红线：免责·联网核准列数据来源·忌口=规则非数据(指南原文人工核·别想当然过度·配忌口先按分类过滤+动物前缀防误报)·营养值不采信AI·成分表一手·nlc缺的(GI/嘌呤/饱脂)USDA/GI库补·补不上留pending。**列映射用极端值食材+物理约束(纤维≤碳水)验证防解析错**。
-5. 用户要才 push。爬政府站限速+断点续连+--max-seconds·分批即写即存。
+1. 🔴 **权威方法论优先**（功能前查权威·别自创·膳食结构走膳食宝塔=`DietaryGuideline`，同"阈值走国标"）· **数据来源真实**。
+2. 🔴 **一个 session 只做一类**·off-type 进待办·切类型=换 session·算法/健康改动过**算法+UX 会商门禁**别 rush solo。
+3. 🔴 构建看输出别信 exit code(grep BUILD SUCCESSFUL)。健康/算法数据改动过 `:shared:testDebugUnitTest`。**temp/ 未 gitignore→提交显式 add·绝不 git add -A**。
+4. 🔴 色系墙红线：**只看膳食结构、不关联热量/慢病**(P1 新口径仍守此)；健康文案守免责·非医嘱。
+5. 用户要才 push（现有 481c643 + 本次交接 commit 均**未 push**）。
