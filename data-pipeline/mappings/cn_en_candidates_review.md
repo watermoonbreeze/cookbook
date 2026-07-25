@@ -1,10 +1,10 @@
 # cn_en 映射候选 · 待核验清单
 
 > [AI生成] 半自动·英文候选在**本地USDA全库真实条目**核验·satFat=USDA(satFat/fat)×我方fat(≤fat)。
-> 可采40(高21/中19) · 🔴疑错配2 · 无对口SKIP14 · **只提案不改seed·你核验后再落**。
+> 可采46(高26/中20) · 🔴疑错配2 · 无对口SKIP15 · **只提案不改seed·你核验后再落**。
 > 核验重点：🟢直接采、🟡看一眼kcal是否离谱、🔴基本是选错食物建议弃、⚪本无对口。
 
-## 🟢 高置信(generic raw·可直接采)（21）
+## 🟢 高置信(generic raw·可直接采)（26）
 
 | 食材 | USDA条目 | 比例 | 我方fat | 建议satFat | kcal我/USDA |
 |---|---|---|---|---|---|
@@ -29,8 +29,13 @@
 | 空心菜 | Cabbage, chinese (pe-tsai), raw | 0.215 | 0.3 | **0.064** | 20/16.0 |
 | 菜心 | Broccoli, chinese, raw | 0.153 | 0.5 | **0.076** | 28/26.0 |
 | 蚕豆 | Broadbeans, immature seeds, raw | 0.23 | 0.4 | **0.092** | 111/72.0 |
+| 燕麦片 | Cereals ready-to-eat, POST, HONEY BUNCHES  | 0.122 | 6.7 | **0.82** | 381/399 |
+| 鸡胸脯肉 | Chicken, broiler or fryers, breast, skinle | 0.215 | 5.0 | **1.074** | 133/120 |
+| 鸡(均值) | Chicken, broilers or fryers, meat and skin | 0.285 | 9.4 | **2.683** | 167/215 |
+| 鹌鹑 | Quail, meat only, raw | 0.291 | 3.1 | **0.903** | 110/134 |
+| 鸽 | Squab, (pigeon), meat only, raw | 0.261 | 14.2 | **3.711** | 200/142 |
 
-## 🟡 中置信(cooked/species松·请核kcal)（19）
+## 🟡 中置信(cooked/species松·请核kcal)（20）
 
 | 食材 | USDA条目 | 比例 | 我方fat | 建议satFat | kcal我/USDA |
 |---|---|---|---|---|---|
@@ -53,12 +58,13 @@
 | 银耳 | Mushrooms, white, raw | 0.147 | 1.4 | **0.206** | 261/22.0⚠️92% |
 | 米线 | Rice noodles, dry | 0.273 | 0.9 | **0.246** | 356/364 |
 | 毛豆 | Edamame, frozen, prepared | 0.119 | 5.0 | **0.596** | 131/121 |
+| 山羊肉(冻) | Game meat, goat, raw | 0.307 | 24.5 | **7.53** | 290/109⚠️62% |
 
 ## 🔴 疑错配(kcal差>100%·基本选错食物)·建议SKIP复核（2）
 
 - 醋 → Salad dressing, home recipe, vinegar and o（kcal 我31/USDA449·差1348%）
 - 豌豆苗 → Peas, mature seeds, sprouted, raw（kcal 我34/USDA124·差265%）
 
-## ⚪ 无对口→SKIP留空(不编造·14)
+## ⚪ 无对口→SKIP留空(不编造·15)
 
-木耳、香菇、黑米、乌冬面、泥鳅、黑鱼、鸭爪、茶树菇、燕麦奶、红枣、荠菜、香椿、鸭血、花卷
+木耳、香菇、黑米、乌冬面、泥鳅、黑鱼、鸭爪、茶树菇、燕麦奶、红枣、荠菜、香椿、鸭血、花卷、兔肉

@@ -70,6 +70,15 @@ CANDIDATES = {
     "生蚝": ["mollusks", "oyster", "raw"],
     "鸭腿": ["duck", "meat", "raw"],
     "鹅肉": ["goose", "meat", "raw"],
+    # 批次4·新库672里干净常见肉(内脏/加工肉不映射·留pending)
+    "猪肉(肥瘦)": ["pork", "fresh", "composite", "raw"],
+    "鸡胸脯肉": ["chicken", "breast", "meat only", "raw"],
+    "鸡(均值)": ["chicken", "broilers", "meat and skin", "raw"],
+    "山羊肉(冻)": ["goat", "raw"],
+    "兔肉": ["rabbit", "domesticated", "meat only", "raw"],
+    "鹌鹑": ["quail", "meat", "raw"],
+    "鸽": ["squab", "raw"],
+    "牛肉(瘦)": ["beef", "loin", "separable lean only", "raw"],
     # 批次3·剩余可能有USDA对口的天然食材(蔬果/杂粮·多数预期SKIP)
     "韭菜": ["chives", "raw"],
     "红枣": ["jujube", "raw"],
