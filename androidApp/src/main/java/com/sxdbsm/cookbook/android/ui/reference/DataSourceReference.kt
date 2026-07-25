@@ -156,6 +156,11 @@ object DataSourceReference {
         DietaryRefSource("《中国居民膳食指南(2022)》", "", "中国营养学会", "2022"),
         DietaryRefSource("《中国食物成分表(标准版·第6版)》", "", "中国疾控中心营养与健康所", ""),
         DietaryRefSource("食物营养成分查询平台 nlc.chinanutri.cn", "", "中国疾控中心营养与健康所", ""),
+        // [AI生成] 2026-07-25:用户补充国内权威营养参考源(食材库大规模扩充所据)。
+        DietaryRefSource("《中国标准食物成分表》", "", "中国疾控中心营养与健康所", ""),
+        DietaryRefSource("《食物与健康——科学证据共识》", "", "中国营养学会", ""),
+        DietaryRefSource("《中国营养科学全书(第2版)》", "", "人民卫生出版社 · 杨月欣/葛可佑主编", "2019"),
+        DietaryRefSource("《中国居民膳食营养素参考摄入量(2023版)》及速查手册", "", "中国营养学会", "2023"),
         DietaryRefSource("USDA FoodData Central (fdc.nal.usda.gov)", "", "美国农业部", ""),
         DietaryRefSource("悉尼大学 GI 数据库 / 国际血糖指数表", "", "University of Sydney", "2008"),
         DietaryRefSource("《成人高尿酸血症与痛风食养指南(2024年版)》", "", "国家卫生健康委员会", "2024"),
