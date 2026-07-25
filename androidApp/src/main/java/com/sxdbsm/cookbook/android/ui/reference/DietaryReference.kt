@@ -48,8 +48,93 @@ object DietaryReference {
     private const val SRC_LIPID_GUIDE = "《中国血脂管理指南(2023年)》 · 中华医学会心血管病学分会等 · 2023"
     private const val SRC_GOUT_DIET = "WS/T 560-2017《高尿酸血症与痛风患者膳食指导》 · 原国家卫计委 · 2017"
     private const val SRC_GOUT_GUIDE = "《中国高尿酸血症与痛风诊疗指南(2019)》 · 中华医学会内分泌学分会 · 2019"
+    // [AI生成] 2026-07-25:平衡膳食结构(膳食宝塔/餐盘/三餐分配)权威来源·联网核实中国营养学会官方值。
+    private const val SRC_PAGODA = "《中国居民平衡膳食宝塔 / 餐盘(2022)》 · 中国营养学会 · 2022"
 
     val categories: List<DietaryRefCategory> = listOf(
+        // [AI生成] 2026-07-25:平衡膳食结构(权威膳食宝塔/餐盘/三餐分配)——作为色系墙均衡/推荐搭配/餐次分配的**权威真相源**
+        //   (权威方法论优先准则:算法引用此权威口径·非自创)。值据《中国居民平衡膳食宝塔(2022)》1600~2400kcal水平。
+        DietaryRefCategory(
+            title = "平衡膳食结构（膳食宝塔 · 三餐分配）",
+            intro = "一天各类食物大致吃多少、三餐怎么分——这是「均衡」的权威参照，色系墙评均衡、推荐搭配都以此为准。以下为成年人 1600~2400 kcal 水平推荐量。",
+            items = listOf(
+                DietaryRefItem(
+                    indicator = "谷薯类（第一层）",
+                    levels = listOf(
+                        DietaryRefLevel("谷类", "200~300 g/日（其中全谷物+杂豆 50~150 g）"),
+                        DietaryRefLevel("薯类", "50~100 g/日"),
+                    ),
+                    caliber = "每日推荐量（主食·能量主要来源）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_PAGODA,
+                ),
+                DietaryRefItem(
+                    indicator = "蔬菜、水果（第二层）",
+                    levels = listOf(
+                        DietaryRefLevel("蔬菜", "300~500 g/日（深色蔬菜占一半以上）"),
+                        DietaryRefLevel("水果", "200~350 g/日"),
+                    ),
+                    caliber = "每日推荐量（餐餐有蔬菜、天天有水果）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_PAGODA,
+                ),
+                DietaryRefItem(
+                    indicator = "鱼、禽、肉、蛋（第三层）",
+                    levels = listOf(DietaryRefLevel("动物性食物合计", "120~200 g/日（优先鱼禽、蛋和瘦肉适量）")),
+                    caliber = "每日推荐量（优质蛋白来源）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_PAGODA,
+                ),
+                DietaryRefItem(
+                    indicator = "奶、大豆、坚果（第四层）",
+                    levels = listOf(
+                        DietaryRefLevel("奶及奶制品", "相当于鲜奶 300~500 g/日"),
+                        DietaryRefLevel("大豆及坚果", "合计 25~35 g/日"),
+                    ),
+                    caliber = "每日推荐量（补钙、优质蛋白、健康脂肪）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_PAGODA,
+                ),
+                DietaryRefItem(
+                    indicator = "油、盐（第五层 · 限量）",
+                    levels = listOf(
+                        DietaryRefLevel("烹调油", "25~30 g/日"),
+                        DietaryRefLevel("食盐", "< 5 g/日"),
+                    ),
+                    caliber = "每日上限（少油少盐）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_PAGODA,
+                ),
+                DietaryRefItem(
+                    indicator = "三餐能量分配",
+                    levels = listOf(
+                        DietaryRefLevel("早餐", "占全天能量 25%~30%"),
+                        DietaryRefLevel("午餐", "30%~40%"),
+                        DietaryRefLevel("晚餐", "30%~35%"),
+                    ),
+                    caliber = "三餐规律、合理分配（早餐要吃好）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_GUIDE,
+                ),
+                DietaryRefItem(
+                    indicator = "食物多样",
+                    levels = listOf(
+                        DietaryRefLevel("每天", "≥ 12 种食物"),
+                        DietaryRefLevel("每周", "≥ 25 种食物"),
+                    ),
+                    caliber = "食物多样、合理搭配（平衡膳食的基础）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_GUIDE,
+                ),
+                DietaryRefItem(
+                    indicator = "饮水（成人）",
+                    levels = listOf(DietaryRefLevel("每日", "1500~1700 ml（约 7~8 杯，白开水/淡茶为主）")),
+                    caliber = "每日推荐（足量饮水）",
+                    appliesTo = listOf("一般人群"),
+                    source = SRC_GUIDE,
+                ),
+            ),
+        ),
         DietaryRefCategory(
             title = "钠 · 盐 · 钾（高血压）",
             intro = "限钠增钾、改善钠钾比，是高血压膳食的核心。",
