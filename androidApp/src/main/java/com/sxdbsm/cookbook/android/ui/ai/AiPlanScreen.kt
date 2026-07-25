@@ -146,6 +146,8 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
                     Spacer(Modifier.height(8.dp))
                     Text("仅为饮食建议参考，忌口与用量请以你的医嘱为准。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(PORTION_HINT, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp)) // [AI生成] 整份/全家分食口径注(避免综合值焦虑·与 AiRecommend 共用常量)
+                    // [AI生成] P2:餐次结构建议口径尾注(惯例口径·非国标·仅供参考)——统一放页脚,不逐餐重复。
+                    Text("餐次结构建议参考《中国居民膳食指南2022》三餐能量分配，为惯例口径、仅供参考。", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 4.dp))
                     Spacer(Modifier.height(16.dp))
                 }
             }
@@ -248,6 +250,14 @@ private fun DayCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                }
+                // [AI生成] P2:餐次结构建议(静态·权威 DietaryGuideline·惯例口径非医嘱)——餐次名下一行灰字,告知该餐次合理膳食结构,不判当前菜达没达(N8:不做"建议再加")。
+                com.sxdbsm.cookbook.domain.DietaryGuideline.mealKindOf(meal.mealName)?.let {
+                    Text(
+                        com.sxdbsm.cookbook.domain.DietaryGuideline.mealShareOf(meal.mealName).hint,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 meal.dishes.forEach { d ->
                     Spacer(Modifier.height(2.dp))

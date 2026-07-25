@@ -140,8 +140,10 @@ class PeriodPlannerTest {
     fun `偏营养风格_高嘌呤高GI菜被软降到最后`() {
         // 4 道干净全素菜 + 1 道命中高嘌呤/高GI的菜(id=5)，同 base、同素(荤素/主食不干扰)、5 选 4：
         //   偏营养风格开启慢病软降(-0.6×0.42)，命中菜应被挤出成唯一落选者。seed 固定确定性。
+        //   [AI修改] P2:flagged 用中性主料(料5·与 clean 同宝塔层)隔离慢病降权——避免"猪肝→荤"被午餐期待层补分抵消降权,
+        //   高GI/高嘌呤命中经显式参数注入(不依赖主料名),纯粹考验慢病软降机制。
         val clean = (1L..4L).map { dish(it, main = listOf("料$it")) }
-        val flagged = dish(5, main = listOf("猪肝"), highGi = listOf("白米饭"), highPurine = listOf("猪肝"))
+        val flagged = dish(5, main = listOf("料5"), highGi = listOf("白米饭"), highPurine = listOf("猪肝"))
         val plan = planner.plan(
             clean + flagged, days = 1, mealNames = listOf("中餐"), dishesMin = 4, dishesMax = 4,
             seed = 0, style = RecommendationStyle.NUTRITION,

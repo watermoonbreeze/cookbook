@@ -42,3 +42,16 @@ fun rememberCalorieNumberEnabled(): State<Boolean> {
         prefs.observeFlag(PreferenceKeys.CALORIE_NUMBER_ENABLED, default = PreferenceKeys.DEFAULT_CALORIE_NUMBER)
     }.collectAsStateWithLifecycle(PreferenceKeys.DEFAULT_CALORIE_NUMBER)
 }
+
+/**
+ * "餐次结构建议"开关的 Composable 读取(**default=开**)。[AI生成] P2
+ *
+ * 今日卡对"缺蔬菜/早餐缺蛋白"给一句浅灰下一步小字(T1 事后留痕·鼓励非评判·可关)。集中一处避免消费点重复样板。
+ */
+@Composable
+fun rememberMealStructureHintEnabled(): State<Boolean> {
+    val prefs = koinInject<PreferenceRepository>()
+    return remember(prefs) {
+        prefs.observeFlag(PreferenceKeys.MEAL_STRUCTURE_HINT_ENABLED, default = PreferenceKeys.DEFAULT_MEAL_STRUCTURE_HINT)
+    }.collectAsStateWithLifecycle(PreferenceKeys.DEFAULT_MEAL_STRUCTURE_HINT)
+}

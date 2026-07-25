@@ -1,7 +1,9 @@
 package com.sxdbsm.cookbook.ai
 
+import com.sxdbsm.cookbook.domain.DietaryGuideline.PagodaLayer
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * @File : MealCompositionScorerTest
@@ -19,7 +21,13 @@ class MealCompositionScorerTest {
         candMeat: Boolean, candStaple: Boolean,
         chosenMeat: Int, chosenVeg: Int, chosenHasStaple: Boolean,
         balanceFactor: Double = 1.0,
-    ) = MealCompositionScorer.compositionBonus(candMeat, candStaple, chosenMeat, chosenVeg, chosenHasStaple, balanceFactor)
+        candLayers: Set<PagodaLayer>? = null,
+        expectedLayers: Set<PagodaLayer>? = null,
+        coveredLayers: Set<PagodaLayer> = emptySet(),
+    ) = MealCompositionScorer.compositionBonus(
+        candMeat, candStaple, chosenMeat, chosenVeg, chosenHasStaple, balanceFactor,
+        candLayers, expectedLayers, coveredLayers,
+    )
 
     @Test
     fun 空餐不给荤素补分_守恒PeriodPlanner的isNotEmpty守卫() {
@@ -65,5 +73,95 @@ class MealCompositionScorerTest {
         // 周计划 f.balance 系数只作用荤素补分,主食补分不受缩放(与两处原实现一致)。
         val f = 1.6
         assertEquals(f * B + S, bonus(candMeat = false, candStaple = true, chosenMeat = 1, chosenVeg = 0, chosenHasStaple = false, balanceFactor = f), 1e-9)
+    }
+
+    // ============ P2 餐次差异化 ============
+    private val L = MealCompositionScorer.LAYER_FILL_BONUS // 0.5
+    private val O = MealCompositionScorer.OFF_LAYER_PENALTY // 0.3
+
+    @Test
+    fun candidateLayers_一道菜可覆盖多层() {
+        // 白菜(→蔬果层)+猪肉(→鱼禽肉蛋层):一道合炒菜覆盖两层,正是宝塔覆盖度语义。
+        val layers = MealCompositionScorer.candidateLayers(listOf("白菜", "猪肉"), isMeat = true, isStaple = false)
+        assertTrue(PagodaLayer.VEGETABLES_FRUITS in layers)
+        assertTrue(PagodaLayer.ANIMAL_FOODS in layers)
+    }
+
+    @Test
+    fun candidateLayers_classify全失败走布尔兜底且永不为空() {
+        // 主料录不出(空)时落 isMeat/isStaple 粗兜底,保证非空(空集会让缺层判断退化)。
+        assertEquals(setOf(PagodaLayer.ANIMAL_FOODS), MealCompositionScorer.candidateLayers(emptyList(), isMeat = true, isStaple = false))
+        assertEquals(setOf(PagodaLayer.GRAINS), MealCompositionScorer.candidateLayers(emptyList(), isMeat = false, isStaple = true))
+        assertEquals(setOf(PagodaLayer.VEGETABLES_FRUITS), MealCompositionScorer.candidateLayers(emptyList(), isMeat = false, isStaple = false))
+    }
+
+    @Test
+    fun 补缺口_候选能补期待但还缺的层则加分() {
+        val expected = setOf(PagodaLayer.GRAINS, PagodaLayer.VEGETABLES_FRUITS, PagodaLayer.ANIMAL_FOODS)
+        // 基线(旧分量):已选1荤1素+已含主食,素候选拿平衡补分 B、无主食分。两次仅 P2 分量不同。
+        val fills = bonus(
+            candMeat = false, candStaple = false, chosenMeat = 1, chosenVeg = 1, chosenHasStaple = true,
+            candLayers = setOf(PagodaLayer.VEGETABLES_FRUITS), expectedLayers = expected, coveredLayers = emptySet(),
+        )
+        val alreadyCovered = bonus(
+            candMeat = false, candStaple = false, chosenMeat = 1, chosenVeg = 1, chosenHasStaple = true,
+            candLayers = setOf(PagodaLayer.VEGETABLES_FRUITS), expectedLayers = expected, coveredLayers = setOf(PagodaLayer.VEGETABLES_FRUITS),
+        )
+        assertEquals(B + L, fills, 1e-9) // 缺蔬果→补分
+        assertEquals(B, alreadyCovered, 1e-9) // 已覆盖蔬果→不重复补(touchesExpected 仍 true 故不降)
+    }
+
+    @Test
+    fun 晚餐纯肉轻降_合炒菜不降() {
+        val dinner = setOf(PagodaLayer.GRAINS, PagodaLayer.VEGETABLES_FRUITS) // 晚餐期待:谷+蔬(不含鱼禽肉蛋)
+        val covered = setOf(PagodaLayer.GRAINS, PagodaLayer.VEGETABLES_FRUITS) // 已覆盖谷蔬,无缺口
+        // 基线:已选0荤1素+已含主食,荤候选拿平衡补分 B(0<=1)、无主食分。
+        val pureMeat = bonus(
+            candMeat = true, candStaple = false, chosenMeat = 0, chosenVeg = 1, chosenHasStaple = true,
+            candLayers = setOf(PagodaLayer.ANIMAL_FOODS), expectedLayers = dinner, coveredLayers = covered,
+        )
+        val stirFry = bonus(
+            candMeat = true, candStaple = false, chosenMeat = 0, chosenVeg = 1, chosenHasStaple = true,
+            candLayers = setOf(PagodaLayer.VEGETABLES_FRUITS, PagodaLayer.ANIMAL_FOODS), expectedLayers = dinner, coveredLayers = covered,
+        )
+        assertEquals(B - O, pureMeat, 1e-9) // 纯肉完全不碰期待层→轻降
+        assertEquals(B, stirFry, 1e-9) // 合炒菜碰了蔬果层→不降(晚餐不禁肉,禁的是整桌硬荤)
+        assertTrue(stirFry > pureMeat) // 晚餐合炒优于纯肉
+    }
+
+    @Test
+    fun 加餐空期待跳过P2_等价旧行为() {
+        // SNACK expectedLayers 为空→整体跳过 P2,与不传 candLayers 的旧行为一致。
+        val old = bonus(candMeat = true, candStaple = false, chosenMeat = 0, chosenVeg = 1, chosenHasStaple = true)
+        val snack = bonus(
+            candMeat = true, candStaple = false, chosenMeat = 0, chosenVeg = 1, chosenHasStaple = true,
+            candLayers = setOf(PagodaLayer.ANIMAL_FOODS), expectedLayers = emptySet(), coveredLayers = emptySet(),
+        )
+        assertEquals(old, snack, 1e-9)
+    }
+
+    @Test
+    fun 量级不碾压_锁定常量序防调参漂移() {
+        // 主食(0.9) > 荤素(0.7) > 补层(0.5) > 非期待层降(0.3):主食始终最优先,P2 是软信号不压基本盘。
+        assertTrue(O < L)
+        assertTrue(L < B)
+        assertTrue(B < S)
+    }
+
+    @Test
+    fun P2不影响主食最优先_补层不挤掉主食() {
+        // 首道主食(谷层)同时拿 STAPLE_BONUS + 补层分,仍应 > 单纯补层的非主食菜,守住"每餐尽量一道主食"。
+        val lunch = setOf(PagodaLayer.GRAINS, PagodaLayer.VEGETABLES_FRUITS, PagodaLayer.ANIMAL_FOODS)
+        val stapleFirst = bonus(
+            candMeat = false, candStaple = true, chosenMeat = 0, chosenVeg = 0, chosenHasStaple = false,
+            candLayers = setOf(PagodaLayer.GRAINS), expectedLayers = lunch, coveredLayers = emptySet(),
+        )
+        val vegFirst = bonus(
+            candMeat = false, candStaple = false, chosenMeat = 0, chosenVeg = 0, chosenHasStaple = false,
+            candLayers = setOf(PagodaLayer.VEGETABLES_FRUITS), expectedLayers = lunch, coveredLayers = emptySet(),
+        )
+        assertEquals(S + L, stapleFirst, 1e-9) // 空餐主食分照给 + 补谷层
+        assertEquals(L, vegFirst, 1e-9) // 空餐无荤素分,仅补蔬果层
+        assertTrue(stapleFirst > vegFirst)
     }
 }

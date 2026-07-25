@@ -58,4 +58,13 @@ class FeatureSettingsViewModel(
     fun setPantryHook(enabled: Boolean) {
         viewModelScope.launch { prefs.setFlag(PreferenceKeys.PANTRY_HOOK_ENABLED, enabled) }
     }
+
+    /** P2 餐次结构建议开关：**默认开**(用户可关)——今日卡"缺蔬菜/早餐缺蛋白"一句浅灰下一步小字。[AI生成] */
+    val mealStructureHintEnabled: StateFlow<Boolean> =
+        prefs.observeFlag(PreferenceKeys.MEAL_STRUCTURE_HINT_ENABLED, default = PreferenceKeys.DEFAULT_MEAL_STRUCTURE_HINT)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreferenceKeys.DEFAULT_MEAL_STRUCTURE_HINT)
+
+    fun setMealStructureHint(enabled: Boolean) {
+        viewModelScope.launch { prefs.setFlag(PreferenceKeys.MEAL_STRUCTURE_HINT_ENABLED, enabled) }
+    }
 }

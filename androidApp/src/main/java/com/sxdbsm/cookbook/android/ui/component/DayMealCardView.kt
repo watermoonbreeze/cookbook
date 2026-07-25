@@ -275,6 +275,41 @@ private fun MealSectionRow(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
+            // [AI生成] P2:餐次结构建议(阈值触发·仅"缺蔬菜/早餐缺蛋白"两类·鼓励非评判·浅灰·可关·T1事后留痕)——
+            //   只在"缺基础项、加一样就更好"时鼓励式补一句,不评判"吃多了"、不点病名、不弹框(晚餐"肉偏多"减法判定留待办)。
+            val structureHintOn by rememberMealStructureHintEnabled()
+            if (structureHintOn) {
+                val kind = com.sxdbsm.cookbook.domain.DietaryGuideline.mealKindOf(section.mealName)
+                val hasVeg = groups.any {
+                    it == com.sxdbsm.cookbook.domain.FoodGroup.Group.VEGETABLE ||
+                        it == com.sxdbsm.cookbook.domain.FoodGroup.Group.FRUIT ||
+                        it == com.sxdbsm.cookbook.domain.FoodGroup.Group.FUNGI
+                }
+                val hasProtein = groups.any {
+                    it == com.sxdbsm.cookbook.domain.FoodGroup.Group.EGG ||
+                        it == com.sxdbsm.cookbook.domain.FoodGroup.Group.DAIRY ||
+                        it == com.sxdbsm.cookbook.domain.FoodGroup.Group.BEAN ||
+                        it == com.sxdbsm.cookbook.domain.FoodGroup.Group.FISH ||
+                        it == com.sxdbsm.cookbook.domain.FoodGroup.Group.RED_MEAT ||
+                        it == com.sxdbsm.cookbook.domain.FoodGroup.Group.WHITE_MEAT
+                }
+                val isMainMeal = kind == com.sxdbsm.cookbook.domain.DietaryGuideline.MealKind.BREAKFAST ||
+                    kind == com.sxdbsm.cookbook.domain.DietaryGuideline.MealKind.LUNCH ||
+                    kind == com.sxdbsm.cookbook.domain.DietaryGuideline.MealKind.DINNER
+                val hint = when { // 缺蔬菜优先(适用所有正餐)→早餐缺蛋白;一处只出一条。
+                    isMainMeal && !hasVeg -> "加一样蔬菜，颜色更全"
+                    kind == com.sxdbsm.cookbook.domain.DietaryGuideline.MealKind.BREAKFAST && !hasProtein -> "配个蛋或杯奶，早餐更顶饱"
+                    else -> null
+                }
+                if (hint != null) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "· $hint",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
     }
 }

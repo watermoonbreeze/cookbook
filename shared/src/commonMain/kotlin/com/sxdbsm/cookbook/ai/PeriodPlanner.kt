@@ -5,6 +5,7 @@ import com.sxdbsm.cookbook.ai.model.PeriodPlan
 import com.sxdbsm.cookbook.ai.model.PlanDish
 import com.sxdbsm.cookbook.ai.model.PlannedDish
 import com.sxdbsm.cookbook.ai.model.PlannedMeal
+import com.sxdbsm.cookbook.domain.DietaryGuideline
 import com.sxdbsm.cookbook.domain.StapleFood
 import kotlin.random.Random
 
@@ -92,14 +93,18 @@ class PeriodPlanner {
                 val mHi = (range?.last ?: hi).coerceAtLeast(mLo)
                 val dishesThisMeal = if (mHi <= mLo) mLo else rnd.nextInt(mLo, mHi + 1)
                 val chosen = ArrayList<PlanDish>(dishesThisMeal)
+                // [AI生成] P2:餐次期待层每餐算一次(只依赖 mealName·候选无关)——外提出候选循环,避免 maxByOrNull 内逐候选重算。
+                val expectedLayers = DietaryGuideline.mealShareOf(mealName).expectedLayers
                 for (idx in 0 until dishesThisMeal) {
                     val pool = mealPool(shuffled, isBreakfastMeal, idx).ifEmpty { shuffled }
                     val needHealthy = healthAware && healthyPicked.toDouble() / (totalPicked + 1) < HEALTHY_TARGET
                     val avail = pool.filter { it !in chosen && (!needHealthy || it.isHealthy) }
                         .ifEmpty { pool.filter { it !in chosen } }
+                    // [AI生成] P2:本餐已覆盖层每 idx 算一次(依赖 chosen·候选无关)——外提出 maxByOrNull,避免逐候选重算 candidateLayers(classify 非零成本)。
+                    val coveredLayers = chosen.flatMap { MealCompositionScorer.candidateLayers(it.mainNames, it.isMeat, isStaple(it)) }.toSet()
                     // [AI修改] 分数 + 随机抖动：强信号(应季/健康)仍优先，同分菜每次"生成"换出不同组合。
                     val pick = avail.maxByOrNull {
-                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen, f, usedHeavyToday, chronicWeight) + (jitter[it.id] ?: 0.0)
+                        score(it, currentSeason, usedDishIds, usedMainCounts, usedNutrition, chosen, f, usedHeavyToday, chronicWeight, expectedLayers, coveredLayers) + (jitter[it.id] ?: 0.0)
                     } ?: break
                     chosen += pick
                     usedDishIds[pick.id] = (usedDishIds[pick.id] ?: 0) + 1
@@ -135,6 +140,8 @@ class PeriodPlanner {
         f: PlanFactors, // [AI生成] 推荐风格系数
         usedHeavyToday: Int = 0, // [AI生成] 当天已选重油菜数(重油族跨餐去重)
         chronicWeight: Double = 0.0, // [AI生成] D4:慢病软降权重(仅"偏营养"风格>0)
+        expectedLayers: Set<DietaryGuideline.PagodaLayer> = emptySet(), // [AI生成] P2:本餐次期待宝塔层(调用方每餐算一次·候选无关外提)
+        coveredLayers: Set<DietaryGuideline.PagodaLayer> = emptySet(), // [AI生成] P2:本餐已覆盖层(调用方每 idx 算一次·候选无关外提)
     ): Double {
         var s = BASE
         // 应季
@@ -147,10 +154,14 @@ class PeriodPlanner {
         //   scorer 内建"空餐不给荤素补分"守卫→等价原 if(mealChosen.isNotEmpty())；主食补分空餐照常→等价原实现(主食不受该守卫)。f.balance 只作用荤素。
         val meat = mealChosen.count { it.isMeat }
         val veg = mealChosen.size - meat
+        // [AI生成] P2:餐次差异化——本餐次期待层(权威 DietaryGuideline)+本餐已覆盖层(均由调用方外提算好·避免逐候选重算)→缺口补分/非期待层轻降(如晚餐纯肉靠后)。
         s += MealCompositionScorer.compositionBonus(
             candMeat = dish.isMeat, candStaple = isStaple(dish),
             chosenMeat = meat, chosenVeg = veg, chosenHasStaple = mealChosen.any { isStaple(it) },
             balanceFactor = f.balance,
+            candLayers = MealCompositionScorer.candidateLayers(dish.mainNames, dish.isMeat, isStaple(dish)),
+            expectedLayers = expectedLayers,
+            coveredLayers = coveredLayers,
         )
         // [AI生成] 用户#2:一餐同菜系不混搭(周计划)——与本餐已选任一道不同族(中西)→强罚;整体西式轻降权(中式优先)。
         if (mealChosen.any { !sameCuisineFamily(dish.cuisine, it.cuisine) }) s -= CUISINE_MIX_PENALTY

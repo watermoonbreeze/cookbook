@@ -521,3 +521,11 @@ fun PrimaryTabRow(
 - **可读性**：无 y 刻度下靠一行「怎么看」解读锚讲清纵向(`蛋白 · 每天克数，线越高那天吃得越多`·随 chip 换名)；空/少数据三态(整段该宏量无数据→兜底提示保留 chip 可切回 / 只记1天→孤立点+「只记了这一天，多记几天就能看出走势」 / 2~3天不连续→各自孤立点短段不跨空连)。免责由外层卡统一承载·不重复。
 - **数据层(shared·防漂移)**：`NutritionTotals.times(f)`(×share)；`DietReport.perDayNutrition: List<NutritionTotals?>?`(逐日个人营养·已×share·空天 null·长度=periodDays·家庭/无记录=null)·`aggregate()` 把逐日序列作**单一真相源**、`personal` 均值由它 filterNotNull 聚合(同源不漂移)·防漂移单测(逐日均值≈avgKcal)。**消费 `List<NutritionTotals?>` 即可·未新增 NutritionTrendPoint 类型**(复用 NutritionTotals·反过度设计)。
 - **反过度设计边界(不做)**：目标线/达标带、多线堆叠双轴、热量主轴、缩放游标网格、面积填充、家庭视角曲线、独立"营养趋势"卡、组件内 isPlan 布尔、月周聚合。**Step2 留后续**：tap 某天高亮+摘要、切换动效、6主题×深浅线色复核。落地样板 `NutritionTrendChart` + `DietReportScreen` 营养摄入卡。
+
+### 9.41 餐次结构建议：推荐页静态露 · 今日卡阈值露 · 不评判不弹框（P2 餐次差异化呈现）
+> [AI生成 2026-07-25] 餐次差异化(早/午/晚各餐膳食结构期待不同·权威 `DietaryGuideline`)的呈现层·apple_ux_designer 门禁出规范 + Google 质量门禁。算法侧后台按 `expectedLayers` 挑菜(T0 可查即可·不显性打分)。
+- **两处极克制显性触点·其余全后台**：①**推荐页(AI计划)**每餐名下一行**静态结构建议**(labelSmall 灰字·读 `DietaryGuideline.mealShareOf(mealName).hint`·`mealKindOf` 为 null 不显)——纯告知该餐次期待、**不判当前菜达没达**(N8:不做"建议再加")·+页脚统一口径尾注(惯例口径·非国标·仅供参考)。②**今日卡**(已记的一餐)仅命中**明确可改善的结构偏离**才补**一条**浅灰下一步小字。
+- **今日卡阈值门禁(只鼓励补基础项·绝不评判"吃多了")**：仅两类正向可行动偏离触发——任一正餐**缺蔬菜**(groups 无 VEG/FRUIT/FUNGI)→「加一样蔬菜，颜色更全」；早餐**缺优质蛋白**(无蛋奶豆+鱼禽肉)→「配个蛋或杯奶，早餐更顶饱」。**一处只出一条**(缺蔬优先)·浅灰 `onSurfaceVariant` labelSmall·**不用红黄·不点病名**·空餐不提示。
+- **减法/份量判定留待办**(易误判易说教)：晚餐"肉偏多/宜清淡"这类**减法**提示、每餐"结构达成度"打分/进度条、整周餐次达成汇总——**这一期都不做**。
+- **透明分级 T1**(事后留痕·可关)：新开关 `MEAL_STRUCTURE_HINT_ENABLED`(默认开·可在功能设置关)·`rememberMealStructureHintEnabled()`(与 `rememberPantryHookEnabled` 同族)。
+- **零新造彩色控件**：全复用 labelSmall+灰字；结构总体均衡仍靠**色系墙评级**(§P1 宝塔四层)不另造评级。落地样板 `AiPlanScreen.DayCard` + `DayMealCardView.MealSectionRow`。

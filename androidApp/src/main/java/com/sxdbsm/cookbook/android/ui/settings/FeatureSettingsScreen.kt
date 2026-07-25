@@ -50,6 +50,7 @@ fun FeatureSettingsScreen(
     val stepMode by vm.stepModeEnabled.collectAsStateWithLifecycle()
     val nutritionColor by vm.nutritionColorEnabled.collectAsStateWithLifecycle()
     val calorieNumber by vm.calorieNumberEnabled.collectAsStateWithLifecycle()
+    val mealStructureHint by vm.mealStructureHintEnabled.collectAsStateWithLifecycle()
     val pantryHook by vm.pantryHookEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -90,6 +91,14 @@ fun FeatureSettingsScreen(
                         "用量或营养缺失时为估算值，仅供参考、非医嘱。与营养色系独立，关闭则只看颜色不看数字。默认开启，可关闭。",
                     checked = calorieNumber,
                     onCheckedChange = vm::setCalorieNumber,
+                )
+                // [AI生成] P2:餐次结构建议开关——今日卡对"缺蔬菜/早餐缺蛋白"给一句鼓励式提示,可关。
+                SwitchRow(
+                    title = "餐次结构建议",
+                    subtitle = "记完一餐后，若缺蔬菜、或早餐缺蛋白，在今日卡给一句温和的补充建议" +
+                        "（如「加一样蔬菜，颜色更全」）。参考《中国居民膳食指南2022》三餐搭配，为惯例口径、仅供参考、非医嘱。默认开启，可关闭。",
+                    checked = mealStructureHint,
+                    onCheckedChange = vm::setMealStructureHint,
                 )
                 // [AI修改] 档案整合:家庭档案入口移到"我的→档案"顶层,这里不再重复(避免两处入口)。
                 // [AI生成] 分组级免责总说明(合规):健康评估均为公开营养公式估算,仅供日常参考,非医嘱。
