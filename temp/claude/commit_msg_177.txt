@@ -1,0 +1,11 @@
+[unattended] feat(运营#177): 记菜命中慢病结果处轻提示(③·全新)
+
+保存成功后若这餐命中当前查看成员已登记的慢病关注点，与保存反馈合并成一条 Snackbar 轻提示一次(T1 事后留痕)：服务性告知不焦虑、不阻断保存、不首页红点。
+
+- shared 判定归口(薄VM+准则B)：新增 MealHealthHintUseCase(gate 已登记病种+仅新增→忌口 avoid presence + 营养个人×share→取 Top-1)；NutritionLevel 加结构化 MealConcernKind + topNutritionConcernKind(与 evaluate 同阈值·防漂移)；4 单测覆盖 gate/MID档/各维度/Top-1 严重度。
+- androidApp：AddMealViewModel 保存成功同帧算 hint(仅 loadedFromDate==null 新增/复制·runCatching 降级不阻断)+一次性 careHint+消费；AddDayFoodScreen saveResultSnackbarText 映射定性句合并"已保存 · <句>"。
+- 门禁：apple_software_behavior(T1契约·不加DB列/不加开关)+apple_ux_designer(§9.38 合并一条·take Top-1·Short)+copywriter(定性句·落脚统一"可留意"·不点病名·不出数字)+Google质量(无阻断·采纳3建议)。
+- 守热量个人概念红线(只定性不显数字)；忌口带成员名中性告知归属(承认可能给别的家人吃)。构建+单测全绿·沉淀 §9.38。
+- 另：待办登记新点「AI推荐营养'整份·全家分食'口径说明」(避免综合值焦虑·本 UI session 下一项)。
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

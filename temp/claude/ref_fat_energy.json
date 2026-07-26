@@ -1,0 +1,193 @@
+[
+  {
+    "indicator": "脂肪供能比推荐范围（成人每日）",
+    "levels": [
+      {"label": "脂肪供能比下限", "value": 20, "unit": "%", "note": "占每日总能量下限"},
+      {"label": "脂肪供能比上限", "value": 35, "unit": "%", "note": "占每日总能量上限；成人4岁以上一般为20%~30%（DRIs），高脂血症食养指南给出20%~35%区间"}
+    ],
+    "caliber": "占每日膳食总能量的百分比（供能比）",
+    "source_full": "成人高脂血症食养指南（2023年版）；《中国居民膳食营养素参考摄入量（2023版）》",
+    "source_org": "国家卫生健康委员会办公厅 / 中国营养学会",
+    "source_no": "无标准号（卫健委食养指南）",
+    "year": "2023",
+    "clause": "食养指南营养建议：膳食脂肪供能比20%~35%",
+    "applies_to": ["一般", "高血脂"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "饱和脂肪酸供能比上限（成人每日）",
+    "levels": [
+      {"label": "一般人群上限", "value": 10, "unit": "%", "note": "饱和脂肪酸供能<总能量10%"},
+      {"label": "高胆固醇血症/高LDL人群上限", "value": 7, "unit": "%", "note": "血脂异常/高胆固醇者更严，<总能量7%"}
+    ],
+    "caliber": "饱和脂肪酸提供的能量占每日总能量的百分比",
+    "source_full": "成人高脂血症食养指南（2023年版）；中国血脂管理指南（2023年）",
+    "source_org": "国家卫生健康委员会办公厅；中华医学会心血管病学分会等（中华心血管病杂志2023;51(3)）",
+    "source_no": "无标准号",
+    "year": "2023",
+    "clause": "一般人群饱和脂肪酸供能比<10%；高胆固醇血症者<7%",
+    "applies_to": ["一般", "高血脂"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "膳食胆固醇每日摄入上限（成人）",
+    "levels": [
+      {"label": "高脂血症/一般控制", "value": 300, "unit": "mg/日", "note": "高脂血症人群每日胆固醇<300mg"},
+      {"label": "高胆固醇血症人群", "value": 200, "unit": "mg/日", "note": "高胆固醇血症者每日胆固醇<200mg"}
+    ],
+    "caliber": "每日膳食胆固醇摄入总量",
+    "source_full": "成人高脂血症食养指南（2023年版）；中国血脂管理指南（2023年）",
+    "source_org": "国家卫生健康委员会办公厅；中华医学会心血管病学分会等",
+    "source_no": "无标准号",
+    "year": "2023",
+    "clause": "每日胆固醇摄入量：高脂血症<300mg；高胆固醇血症<200mg",
+    "applies_to": ["高血脂"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "反式脂肪酸每日摄入上限（成人）",
+    "levels": [
+      {"label": "供能比上限", "value": 1, "unit": "%", "note": "反式脂肪酸供能<总能量1%，约≤2g/日"}
+    ],
+    "caliber": "反式脂肪酸供能占总能量百分比（约折合每日克数）",
+    "source_full": "中国血脂管理指南（2023年）；成人高脂血症食养指南（2023年版）",
+    "source_org": "中华医学会心血管病学分会等；国家卫生健康委员会办公厅",
+    "source_no": "无标准号",
+    "year": "2023",
+    "clause": "反式脂肪酸摄入量<总能量1%（每天不宜超过约2g）",
+    "applies_to": ["一般", "高血脂"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "膳食纤维每日推荐量（成人）",
+    "levels": [
+      {"label": "推荐摄入区间", "value": 25, "unit": "g/日", "note": "成人每日25~30g；DRIs 成人AI约25~30g（依能量水平）"},
+      {"label": "推荐上区间", "value": 30, "unit": "g/日", "note": "区间上限；高脂血症食养指南建议≥25g/日，来自全谷物/蔬果"}
+    ],
+    "caliber": "每日膳食纤维摄入总量",
+    "source_full": "《中国居民膳食营养素参考摄入量（2023版）》；成人高脂血症食养指南（2023年版）",
+    "source_org": "中国营养学会 / 国家卫生健康委员会办公厅",
+    "source_no": "无标准号",
+    "year": "2023",
+    "clause": "成人膳食纤维推荐每天25~30g",
+    "applies_to": ["一般", "高血脂"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "蛋白质每日推荐（成人）",
+    "levels": [
+      {"label": "供能比区间", "value": 15, "unit": "%", "note": "蛋白质供能比约10%~15%（一般成人）"},
+      {"label": "成年男性RNI（参考）", "value": 65, "unit": "g/日", "note": "DRIs 2023 成年男性约65g/日（轻体力活动）"},
+      {"label": "成年女性RNI（参考）", "value": 55, "unit": "g/日", "note": "DRIs 2023 成年女性约55g/日（轻体力活动）"}
+    ],
+    "caliber": "供能比及每日推荐摄入量（RNI，按性别/活动水平）",
+    "source_full": "《中国居民膳食营养素参考摄入量（2023版）》；中国居民膳食指南（2022）",
+    "source_org": "中国营养学会",
+    "source_no": "无标准号",
+    "year": "2023 / 2022",
+    "clause": "蛋白质供能比约10%~15%；成年男65g、女55g/日（数值口径以DRIs 2023原表为准）",
+    "applies_to": ["一般"],
+    "confidence": "pending"
+  },
+  {
+    "indicator": "成人每日能量参考摄入量（EER，轻/中体力活动）",
+    "levels": [
+      {"label": "成年男性（约）", "value": 2250, "unit": "kcal/日", "note": "科普口径约2250kcal（轻体力），中体力更高；确切分级值待核DRIs 2023原表"},
+      {"label": "成年女性（约）", "value": 1800, "unit": "kcal/日", "note": "科普口径约1800kcal（轻体力），部分口径女性18-49岁轻体力1700kcal；确切分级值待核"}
+    ],
+    "caliber": "每日能量需要量（EER），按性别与体力活动水平（轻/中）分级",
+    "source_full": "《中国居民膳食营养素参考摄入量（2023版）》",
+    "source_org": "中国营养学会",
+    "source_no": "无标准号",
+    "year": "2023",
+    "clause": "未取得DRIs 2023原表逐档确切EER数值（轻/中体力活动、男女各档），现值来自二手科普口径，需核对原表",
+    "applies_to": ["一般"],
+    "confidence": "pending"
+  },
+  {
+    "indicator": "GB 28050 营养素参考值NRV（每日，成人及4岁以上）",
+    "levels": [
+      {"label": "能量", "value": 8400, "unit": "kJ", "note": "约2000kcal"},
+      {"label": "蛋白质", "value": 60, "unit": "g", "note": "NRV=60g"},
+      {"label": "脂肪", "value": 60, "unit": "g", "note": "NRV≤60g（上限型，计算NRV%取60g）"},
+      {"label": "碳水化合物", "value": 300, "unit": "g", "note": "NRV=300g"},
+      {"label": "膳食纤维", "value": 25, "unit": "g", "note": "NRV=25g"},
+      {"label": "钠", "value": 2000, "unit": "mg", "note": "NRV=2000mg"},
+      {"label": "钾", "value": 2000, "unit": "mg", "note": "NRV=2000mg"},
+      {"label": "胆固醇", "value": 300, "unit": "mg", "note": "NRV≤300mg（上限型）"}
+    ],
+    "caliber": "预包装食品营养标签用NRV基准值（每日，适用4岁以上一般人群），标签以营养素含量÷NRV×100%计NRV%",
+    "source_full": "GB 28050-2011《食品安全国家标准 预包装食品营养标签通则》 附录A 表A.1",
+    "source_org": "中华人民共和国卫生部（现国家卫生健康委）",
+    "source_no": "GB 28050-2011",
+    "year": "2011",
+    "clause": "附录A 表A.1 营养素参考值（NRV）",
+    "applies_to": ["一般"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "GB 28050 含量声称阈值——脂肪（每100g/100mL）",
+    "levels": [
+      {"label": "低脂（固体）", "value": 3, "unit": "g/100g", "note": "脂肪≤3g/100g可声称低脂"},
+      {"label": "低脂（液体）", "value": 1.5, "unit": "g/100mL", "note": "脂肪≤1.5g/100mL可声称低脂"},
+      {"label": "无脂/脱脂", "value": 0.5, "unit": "g/100g或100mL", "note": "脂肪≤0.5g/100g(mL)可声称无脂/脱脂"}
+    ],
+    "caliber": "预包装食品每100g或每100mL的含量声称阈值",
+    "source_full": "GB 28050-2011《食品安全国家标准 预包装食品营养标签通则》 附录C 表C.1",
+    "source_org": "中华人民共和国卫生部",
+    "source_no": "GB 28050-2011",
+    "year": "2011",
+    "clause": "附录C 表C.1 能量和营养成分含量声称的要求（脂肪）",
+    "applies_to": ["一般", "高血脂"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "GB 28050 含量声称阈值——胆固醇（每100g/100mL）",
+    "levels": [
+      {"label": "低胆固醇（固体）", "value": 20, "unit": "mg/100g", "note": "胆固醇≤20mg/100g可声称低胆固醇；同时需满足饱和脂肪≤1.5g/100g且饱和脂肪供能≤10%"},
+      {"label": "低胆固醇（液体）", "value": 10, "unit": "mg/100mL", "note": "胆固醇≤10mg/100mL可声称低胆固醇"},
+      {"label": "无胆固醇", "value": 5, "unit": "mg/100g或100mL", "note": "胆固醇≤5mg/100g(mL)可声称无胆固醇"}
+    ],
+    "caliber": "预包装食品每100g或每100mL的含量声称阈值",
+    "source_full": "GB 28050-2011《食品安全国家标准 预包装食品营养标签通则》 附录C 表C.1",
+    "source_org": "中华人民共和国卫生部",
+    "source_no": "GB 28050-2011",
+    "year": "2011",
+    "clause": "附录C 表C.1 含量声称（胆固醇）",
+    "applies_to": ["高血脂"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "GB 28050 含量声称阈值——钠（每100g/100mL）",
+    "levels": [
+      {"label": "低钠", "value": 120, "unit": "mg/100g或100mL", "note": "钠≤120mg/100g(mL)可声称低钠"},
+      {"label": "极低钠", "value": 40, "unit": "mg/100g或100mL", "note": "钠≤40mg/100g(mL)可声称极低钠"},
+      {"label": "无钠", "value": 5, "unit": "mg/100g或100mL", "note": "钠≤5mg/100g(mL)可声称无钠"}
+    ],
+    "caliber": "预包装食品每100g或每100mL的含量声称阈值",
+    "source_full": "GB 28050-2011《食品安全国家标准 预包装食品营养标签通则》 附录C 表C.1",
+    "source_org": "中华人民共和国卫生部",
+    "source_no": "GB 28050-2011",
+    "year": "2011",
+    "clause": "附录C 表C.1 含量声称（钠）",
+    "applies_to": ["高血压", "一般"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "GB 28050 含量声称阈值——膳食纤维与蛋白质",
+    "levels": [
+      {"label": "膳食纤维来源（固体）", "value": 3, "unit": "g/100g", "note": "≥3g/100g或≥1.5g/100mL或≥1.5g/420kJ 可声称来源/含有"},
+      {"label": "高膳食纤维（固体）", "value": 6, "unit": "g/100g", "note": "≥6g/100g或≥3g/100mL或≥3g/420kJ 可声称高/富含"},
+      {"label": "蛋白质来源", "value": 6, "unit": "g/100g", "note": "≥6g/100g(≥10%NRV/100g)或≥3g/100mL或≥3g/420kJ 可声称来源/含有"},
+      {"label": "高蛋白/富含蛋白质", "value": 12, "unit": "g/100g", "note": "≥12g/100g(≥20%NRV/100g)或≥6g/100mL或≥6g/420kJ 可声称高蛋白"}
+    ],
+    "caliber": "预包装食品每100g/100mL/420kJ的含量声称阈值",
+    "source_full": "GB 28050-2011《食品安全国家标准 预包装食品营养标签通则》 附录C 表C.1",
+    "source_org": "中华人民共和国卫生部",
+    "source_no": "GB 28050-2011",
+    "year": "2011",
+    "clause": "附录C 表C.1 含量声称（膳食纤维、蛋白质）",
+    "applies_to": ["一般", "高血脂"],
+    "confidence": "verified"
+  }
+]

@@ -1,0 +1,252 @@
+diff --git a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyScreen.kt b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyScreen.kt
+index 10f6178..b227de5 100644
+--- a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyScreen.kt
++++ b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyScreen.kt
+@@ -221,18 +221,27 @@ private fun MemberCard(
+                 append(" · 饭量×${fmt(member.portionCoefficient)}")
+             }
+             Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) // [AI修改] UX走查H4:超长成员数据加 maxLines 防挤爆
+-            Text(
+-                if (target != null) "🔥 每日目标约 $target 千卡" else "填好身高·体重·年龄，自动算每日目标", // [AI修改] 文案:更自然(填好…自动算)
+-                style = MaterialTheme.typography.bodySmall,
+-                color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+-            )
+-            // [AI生成] 国标参照(WS/T 578.1-2017 按年龄段)——与上方个性估算并列,仅供参考·非医嘱。中老年国标口径通常更贴国人。
+-            if (driRef != null) {
++            if (member.isCalorieExempt) {
++                // [AI生成] A2:孕期/哺乳期不评热量(健康红线)——不显目标数字,给中性说明,让"标记孕哺→App 换行为"闭环可见·非医嘱不制造焦虑。
+                 Text(
+-                    "国标参照约 $driRef 千卡（据 WS/T 578.1-2017 · 仅供参考）",
++                    "孕期 / 哺乳期不按普通标准评估热量，具体请咨询医生或营养师",
+                     style = MaterialTheme.typography.bodySmall,
+                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                 )
++            } else {
++                Text(
++                    if (target != null) "🔥 每日目标约 $target 千卡" else "填好身高·体重·年龄，自动算每日目标", // [AI修改] 文案:更自然(填好…自动算)
++                    style = MaterialTheme.typography.bodySmall,
++                    color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
++                )
++                // [AI生成] 国标参照(WS/T 578.1-2017 按年龄段)——与上方个性估算并列,仅供参考·非医嘱。中老年国标口径通常更贴国人。
++                if (driRef != null) {
++                    Text(
++                        "国标参照约 $driRef 千卡（据 WS/T 578.1-2017 · 仅供参考）",
++                        style = MaterialTheme.typography.bodySmall,
++                        color = MaterialTheme.colorScheme.onSurfaceVariant,
++                    )
++                }
+             }
+             if (careNames.isNotEmpty()) {
+                 Spacer(Modifier.height(4.dp))
+@@ -291,6 +300,15 @@ private fun MemberEditorScreen(
+     androidx.compose.runtime.LaunchedEffect(gender, age) {
+         if (!coeffEdited) coeff = fmt(FamilyMember.defaultCoefficient(gender, age.toIntOrNull()))
+     }
++    // [AI生成] A2:生命阶段里"仅女性"的孕哺项(备孕/孕期/哺乳)。男性成员不显示这些项;切到男性时清理已勾选的残留——
++    //   否则残留的孕/哺 care 会让该(男性)成员仍被判"不评热量"(误 gate)。静默清理即可(该项已从男性视图隐藏·消失即反馈)。
++    val femaleOnlyStageKeywords = listOf("备孕", "孕期", "哺乳")
++    val femaleOnlyStageIds = careOptions.filter { opt -> femaleOnlyStageKeywords.any { opt.name.contains(it) } }.map { it.id }.toSet()
++    androidx.compose.runtime.LaunchedEffect(gender) {
++        if (gender == Gender.MALE.name && careIds.any { it in femaleOnlyStageIds }) {
++            careIds = careIds - femaleOnlyStageIds
++        }
++    }
+     val activityIndex = activities.indexOfFirst { it.name == activity }.coerceAtLeast(0)
+ 
+     // [AI生成] §9.26:三段(0资料/1健康/2忌口)——各段独立 ScrollState 在父级 remember,切段保活滚动位置。
+@@ -433,7 +451,9 @@ private fun MemberEditorScreen(
+                                 } else {
+                                     // [AI修改] 分组:慢病调理 / 生命阶段(用户 Q6)。生命阶段按名匹配人群分类(备孕/孕期/哺乳/婴幼儿/学龄…)。
+                                     val stageKeywords = listOf("备孕", "孕期", "哺乳", "婴幼儿", "学龄前", "学龄儿童")
++                                    // [AI生成] A2:孕哺(备孕/孕期/哺乳)仅女性成员显示;婴幼儿/学龄与性别无关照显。用 filter 收敛(禁 return@·SlotTable 红线)。
+                                     val stageOptions = careOptions.filter { opt -> stageKeywords.any { opt.name.contains(it) } }
++                                        .filter { opt -> gender == Gender.FEMALE.name || femaleOnlyStageKeywords.none { opt.name.contains(it) } }
+                                     val diseaseOptions = careOptions.filterNot { opt -> stageKeywords.any { opt.name.contains(it) } }
+                                     Text(
+                                         "健康状态（可多选；与忌口·调养挂钩·仅供参考·非医嘱）",
+@@ -458,6 +478,15 @@ private fun MemberEditorScreen(
+                                                     }
+                                                 }
+                                             }
++                                            // [AI生成] A2:生命阶段(女性)补说明,说清"标记孕哺→不按普通标准提醒热量·为什么·非医嘱"(让因果对用户可见·不吓唬)。
++                                            if (groupTitle == "生命阶段" && gender == Gender.FEMALE.name) {
++                                                Text(
++                                                    "孕期、哺乳期身体需要更多能量，标记后就不按普通标准提醒热量了。仅用于更贴心的推荐，非医嘱。",
++                                                    style = MaterialTheme.typography.bodySmall,
++                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
++                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
++                                                )
++                                            }
+                                         }
+                                     }
+                                 }
+diff --git a/shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/domain/model/CalorieTargetTest.kt b/shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/domain/model/CalorieTargetTest.kt
+index e6f9bcf..e7ef584 100644
+--- a/shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/domain/model/CalorieTargetTest.kt
++++ b/shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/domain/model/CalorieTargetTest.kt
+@@ -67,4 +67,30 @@ class CalorieTargetTest {
+         assertEquals(CalorieStatus.ON, CalorieTarget.status(1500.0, 0)) // 无有效目标→中性,不判达标
+         assertEquals(CalorieStatus.ON, CalorieTarget.status(1500.0, -100))
+     }
++
++    @Test
++    fun `A2_孕期哺乳期不评热量目标返null`() {
++        // 孕期/哺乳期热量需求有附加量,普通公式会误判"超标"→误导"吃少点"(健康红线)→不评(同未成年退化)。
++        val base = BodyMetrics(gender = Gender.FEMALE.name, heightCm = 165.0, weightKg = 58.0, age = 30, activity = ActivityLevel.MODERATE.name)
++        assertTrue(CalorieTarget.dailyTarget(base) != null, "普通成年女性可评")
++        assertNull(CalorieTarget.dailyTarget(base.copy(skipCalorieEval = true)), "孕期/哺乳期不评热量")
++        assertNull(DriEnergyReference.referenceKcal(base.copy(skipCalorieEval = true)), "国标参照同样不评")
++    }
++
++    @Test
++    fun `A2_CalorieExemptStage按care名称匹配_备孕不触发`() {
++        assertTrue(CalorieExemptStage.contains(listOf("孕期")))
++        assertTrue(CalorieExemptStage.contains(listOf("哺乳期")))
++        assertTrue(CalorieExemptStage.contains(listOf("高血压", "孕期")), "含孕期即触发")
++        assertTrue(!CalorieExemptStage.contains(listOf("备孕")), "备孕≠孕期,不触发不评")
++        assertTrue(!CalorieExemptStage.contains(listOf("高血压", "糖尿病")), "慢病不触发")
++        assertTrue(!CalorieExemptStage.contains(emptyList()), "无 care 不触发")
++    }
++
++    @Test
++    fun `A2_成员孕哺标志经toBodyMetrics透传到不评热量`() {
++        val member = FamilyMember(id = 1, name = "她", gender = Gender.FEMALE.name, heightCm = 165.0, weightKg = 58.0, age = 30, isCalorieExempt = true)
++        assertTrue(member.toBodyMetrics().skipCalorieEval, "isCalorieExempt→BodyMetrics.skipCalorieEval")
++        assertNull(CalorieTarget.dailyTarget(member.toBodyMetrics()), "孕哺成员经身体数据不评热量")
++    }
+ }
+diff --git a/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/FamilyRepository.kt b/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/FamilyRepository.kt
+index e8fd846..5cfdf5c 100644
+--- a/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/FamilyRepository.kt
++++ b/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/FamilyRepository.kt
+@@ -65,13 +65,14 @@ class FamilyRepository(
+     /** 监听全部家庭成员(含各自病种)。[AI生成] */
+     fun observeMembers(): Flow<List<FamilyMember>> =
+         q.selectAllFamilyMembers().asFlow().mapToList(ioDispatcher)
+-            .map { rows -> rows.map { toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus) } }
++            .map { rows -> val exempt = calorieExemptCareIds(); rows.map { toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus, exempt) } }
+             .flowOn(ioDispatcher)
+ 
+     /** 读取全部家庭成员(含各自病种)。[AI生成] */
+     suspend fun listMembers(): List<FamilyMember> = withContext(ioDispatcher) {
++        val exempt = calorieExemptCareIds()
+         q.selectAllFamilyMembers().executeAsList().map {
+-            toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus)
++            toModel(it.id, it.name, it.gender, it.height_cm, it.weight_kg, it.age, it.activity, it.portion_coefficient, it.is_self, it.is_focus, exempt)
+         }
+     }
+ 
+@@ -310,12 +311,23 @@ class FamilyRepository(
+ 
+     private fun toModel(
+         id: Long, name: String, gender: String, height: Double?, weight: Double?, age: Long?,
+-        activity: String, coeff: Double, isSelf: Long, isFocus: Long,
+-    ): FamilyMember = FamilyMember(
+-        id = id, name = name, gender = gender, heightCm = height, weightKg = weight, age = age?.toInt(),
+-        activity = activity, portionCoefficient = coeff, isSelf = isSelf == 1L, isFocus = isFocus == 1L,
+-        careCategoryIds = q.selectMemberCareIds(id).executeAsList(),
+-        avoidCategoryIds = q.selectMemberAvoidCategoryIds(id).executeAsList(), // [AI生成] v29:个人忌口分类回显
+-        avoidIngredientIds = q.selectMemberAvoidIngredientIds(id).executeAsList(), // [AI生成] 阶段4:个人忌口具体食材回显
+-    )
++        activity: String, coeff: Double, isSelf: Long, isFocus: Long, exemptCareIds: Set<Long>,
++    ): FamilyMember {
++        val careIds = q.selectMemberCareIds(id).executeAsList()
++        return FamilyMember(
++            id = id, name = name, gender = gender, heightCm = height, weightKg = weight, age = age?.toInt(),
++            activity = activity, portionCoefficient = coeff, isSelf = isSelf == 1L, isFocus = isFocus == 1L,
++            careCategoryIds = careIds,
++            avoidCategoryIds = q.selectMemberAvoidCategoryIds(id).executeAsList(), // [AI生成] v29:个人忌口分类回显
++            avoidIngredientIds = q.selectMemberAvoidIngredientIds(id).executeAsList(), // [AI生成] 阶段4:个人忌口具体食材回显
++            // [AI生成] A2:该成员是否标记孕期/哺乳期(生命阶段 care)→toBodyMetrics 透传→dailyTarget 不评热量。
++            isCalorieExempt = careIds.any { it in exemptCareIds },
++        )
++    }
++
++    /** 「生命阶段」中"不评热量"的 care 分类 id(孕期/哺乳期)。[AI生成] A2:复用已有 care 信号·非新字段·名称匹配同 CalorieExemptStage。 */
++    private fun calorieExemptCareIds(): Set<Long> =
++        q.selectCareCategories().executeAsList()
++            .filter { com.sxdbsm.cookbook.domain.model.CalorieExemptStage.contains(listOf(it.name)) }
++            .map { it.id }.toSet()
+ }
+diff --git a/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/HealthMetrics.kt b/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/HealthMetrics.kt
+index 3af7b0f..ad3be07 100644
+--- a/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/HealthMetrics.kt
++++ b/shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/HealthMetrics.kt
+@@ -1,6 +1,7 @@
+ package com.sxdbsm.cookbook.domain.model
+ 
+ import kotlinx.serialization.Serializable
++import kotlinx.serialization.Transient
+ import kotlin.math.roundToInt
+ 
+ /**
+@@ -39,6 +40,9 @@ data class BodyMetrics(
+     val weightKg: Double? = null,
+     val age: Int? = null,
+     val activity: String = ActivityLevel.MODERATE.name,
++    // [AI生成] A2 健康红线：孕期/哺乳期→不评热量。**派生态·不持久化**(@Transient)：由成员的「生命阶段」care 分类
++    //   (孕期/哺乳期)在 toBodyMetrics() 时置位，非用户直填、非偏好存储→prefs 反序列化恒 false(不影响自填身体数据)。
++    @Transient val skipCalorieEval: Boolean = false,
+ ) {
+     /** 数据是否齐全(可算目标)。 */
+     val complete: Boolean get() = heightCm != null && weightKg != null && age != null &&
+@@ -81,9 +85,12 @@ data class FamilyMember(
+     val avoidCategoryIds: List<Long> = emptyList(),
+     // [AI生成] 阶段4:个人忌口(按**具体食材**·加法)。存 ingredient id;推荐时与分类展开的食材并集进 avoid(含即命中)。默认空=老数据/未设。
+     val avoidIngredientIds: List<Long> = emptyList(),
++    // [AI生成] A2:是否处于不评热量的特殊生理时期(孕期/哺乳期)。**派生态·非 DB 列**——FamilyRepository 载入时按该成员
++    //   「生命阶段」care 分类名(孕期/哺乳期)解析置位(复用已拍板 care 信号·不新建字段)。默认 false。
++    val isCalorieExempt: Boolean = false,
+ ) {
+-    /** 该成员的身体数据(算每日目标热量用)。[AI生成] */
+-    fun toBodyMetrics(): BodyMetrics = BodyMetrics(gender = gender, heightCm = heightCm, weightKg = weightKg, age = age, activity = activity)
++    /** 该成员的身体数据(算每日目标热量用)。[AI生成] A2:透传"孕哺不评热量"标志→dailyTarget 统一 gate。 */
++    fun toBodyMetrics(): BodyMetrics = BodyMetrics(gender = gender, heightCm = heightCm, weightKg = weightKg, age = age, activity = activity, skipCalorieEval = isCalorieExempt)
+ 
+     companion object {
+         /** 按性别/年龄给饭量系数默认值：成年男1.2/成年女1.0/老人0.8/小孩0.5。[AI生成] */
+@@ -96,6 +103,18 @@ data class FamilyMember(
+     }
+ }
+ 
++/**
++ * 不评热量的特殊生理时期检测(孕期/哺乳期)。[AI生成] A2 健康红线。
++ * <p>
++ * 孕期/哺乳期热量需求有附加量，普通 Mifflin-St Jeor / 国标 EER 都会系统性低估、误判"超标"→误导"吃少点"。
++ * 信号复用成员「生命阶段」care 分类名(已拍板·`food_category` dimension=crowd·名称"孕期"/"哺乳期")——
++ * **不新建字段**。按关键词匹配("备孕"不含"孕期"→天然排除·与 [HealthCondition.fromCareName] 同范式)。
++ */
++object CalorieExemptStage {
++    /** care 分类名集合里是否含孕期/哺乳期(含即不评热量)。[AI生成] */
++    fun contains(careNames: Collection<String>): Boolean = careNames.any { it.contains("孕期") || it.contains("哺乳") }
++}
++
+ /** 当天热量相对目标的达标状态。[AI生成] */
+ enum class CalorieStatus(val label: String) { BELOW("偏低"), ON("达标"), ABOVE("超标") }
+ 
+@@ -117,9 +136,12 @@ object CalorieTarget {
+     private const val WEIGHT_MIN = 20.0
+     private const val WEIGHT_MAX = 300.0
+ 
+-    /** 每日目标热量(kcal)；数据不全 / 未成年 / 越界 返回 null(不评热量达标)。 */
++    /** 每日目标热量(kcal)；数据不全 / 未成年 / 越界 / 孕期哺乳期 返回 null(不评热量达标)。 */
+     fun dailyTarget(m: BodyMetrics): Int? {
+         if (!m.complete) return null
++        // [AI生成] A2 健康红线：孕期/哺乳期热量需求有附加量，普通公式会误判"超标"→误导"吃少点"。
++        //   同未成年/缺数据退化为 null(不评热量·不制造焦虑)，交由营养师/医生把关。
++        if (m.skipCalorieEval) return null
+         val w = m.weightKg!!
+         val h = m.heightCm!!
+         val a = m.age!!
+@@ -171,8 +193,10 @@ object DriEnergyReference {
+         intArrayOf(1500, 1750, -1),
+     )
+ 
+-    /** 国标参照能量(kcal)；缺年龄/未成年/离谱/该档国标未制定→null(不评·不外推)。[AI生成] */
++    /** 国标参照能量(kcal)；缺年龄/未成年/离谱/该档国标未制定/孕期哺乳期→null(不评·不外推)。[AI生成] */
+     fun referenceKcal(m: BodyMetrics): Int? {
++        // [AI生成] A2:孕期/哺乳期附加量不在此表(见类注)→不评·同 CalorieTarget 口径。
++        if (m.skipCalorieEval) return null
+         val a = m.age ?: return null
+         if (a < ADULT_AGE_MIN || a > AGE_MAX) return null
+         val band = when { a <= 49 -> 0; a <= 64 -> 1; a <= 79 -> 2; else -> 3 }

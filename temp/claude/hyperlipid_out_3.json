@@ -1,0 +1,107 @@
+[
+  {
+    "ingredient": "猪肝",
+    "saturatedFat": 1.17,
+    "cholesterol": 301,
+    "ref": "USDA FoodData Central - Pork, raw, liver, variety meats and by-products, fresh (nutritionvalue.org 换算100g): SFA 1.17g, 胆固醇 301mg",
+    "review": "verified"
+  },
+  {
+    "ingredient": "火腿",
+    "saturatedFat": 2,
+    "cholesterol": 60,
+    "ref": "USDA cured ham/luncheon meat 类概值(SFA约2g, 胆固醇约53-73mg取中); 火腿种类(金华火腿/西式火腿/火腿肠)差异大, 中国食物成分表未取到精确单值; 估算",
+    "review": "pending"
+  },
+  {
+    "ingredient": "鸡蛋",
+    "saturatedFat": 3.13,
+    "cholesterol": 372,
+    "ref": "USDA FoodData Central FDC 171287 - Egg, whole, raw, fresh (per 100g): SFA 3.13g, 胆固醇 372mg",
+    "review": "verified"
+  },
+  {
+    "ingredient": "酸奶",
+    "saturatedFat": 2.1,
+    "cholesterol": 13,
+    "ref": "USDA Standard Reference - Yogurt, whole milk, plain (nutritionvalue.org 换算100g): SFA 2.10g, 胆固醇 13mg; 全脂原味酸奶口径",
+    "review": "verified"
+  },
+  {
+    "ingredient": "鱿鱼",
+    "saturatedFat": 0.36,
+    "cholesterol": 224,
+    "ref": "USDA Mollusks, squid, mixed species, raw - 胆固醇 224mg 一致可靠(verified); SFA 各源约0.36g但热量/蛋白口径不一, SFA标pending",
+    "review": "pending"
+  },
+  {
+    "ingredient": "豆腐皮",
+    "saturatedFat": null,
+    "cholesterol": 0,
+    "ref": "植物制品胆固醇=0(verified); 豆腐皮/腐竹薄片饱和脂肪各源未给统一数值(总脂约15-25g/100g), SFA未查到权威单值",
+    "review": "pending"
+  },
+  {
+    "ingredient": "杏仁",
+    "saturatedFat": 3.8,
+    "cholesterol": 0,
+    "ref": "USDA FoodData Central FDC 170567 - Nuts, almonds (per 100g): SFA 3.8g, 胆固醇 0mg",
+    "review": "verified"
+  },
+  {
+    "ingredient": "南瓜子",
+    "saturatedFat": 8.66,
+    "cholesterol": 0,
+    "ref": "USDA - Seeds, pumpkin and squash seed kernels, dried (per 100g): SFA 8.66g, 胆固醇 0mg",
+    "review": "verified"
+  },
+  {
+    "ingredient": "奶粉",
+    "saturatedFat": 15,
+    "cholesterol": 85,
+    "ref": "USDA 全脂奶粉(whole milk powder)概值: SFA约15g, 胆固醇约85mg; 全脂/脱脂差异大, 未取到中国食物成分表精确单值; 估算",
+    "review": "pending"
+  },
+  {
+    "ingredient": "玉米油",
+    "saturatedFat": 13,
+    "cholesterol": 0,
+    "ref": "USDA FoodData Central - Corn oil (per 100g): SFA约13g, 胆固醇 0mg(植物油)",
+    "review": "verified"
+  },
+  {
+    "ingredient": "松子",
+    "saturatedFat": 4.9,
+    "cholesterol": 0,
+    "ref": "USDA - Nuts, pine nuts, dried (nutritionvalue.org 换算100g): SFA 4.9g, 胆固醇 0mg",
+    "review": "verified"
+  },
+  {
+    "ingredient": "猪舌头",
+    "saturatedFat": 6,
+    "cholesterol": 146,
+    "ref": "USDA Pork, fresh, variety meats and by-products, tongue, cooked, braised: SFA约6g, 胆固醇约146mg; 熟制口径, 生鲜可食部值略低; 估算",
+    "review": "pending"
+  },
+  {
+    "ingredient": "腊鸭腿",
+    "saturatedFat": null,
+    "cholesterol": null,
+    "ref": "腊鸭腿(腌腊鸭腿)无直接权威成分数据; 仅有鲜/烤鸭腿参考(带皮烤鸭腿约SFA10g/胆固醇114mg), 腌腊工艺后水分/脂肪含量变化大, 不外推, 均填null",
+    "review": "pending"
+  },
+  {
+    "ingredient": "脆豆腐",
+    "saturatedFat": 2.92,
+    "cholesterol": 0,
+    "ref": "USDA - Tofu, fried(油炸豆腐, 脆豆腐同类)(nutritionvalue.org 换算100g): SFA 2.92g, 胆固醇 0mg(植物制品)",
+    "review": "verified"
+  },
+  {
+    "ingredient": "山茶油",
+    "saturatedFat": 11.3,
+    "cholesterol": 0,
+    "ref": "胆固醇 0mg(植物油, verified); SFA来自山茶油脂肪酸研究文献(饱和脂肪酸约11-12%, 取11.3g/100g), 非权威成分表单值, SFA标pending",
+    "review": "pending"
+  }
+]

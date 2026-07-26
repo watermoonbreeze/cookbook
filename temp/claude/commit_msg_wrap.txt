@@ -1,0 +1,7 @@
+[unattended] docs(数据健康): ⑤智能剂量查证已实现关闭 + ⑥⑦入待确认 + 本轮收尾
+
+- ⑤菜品加食材智能默认剂量: 查证 SeasoningDefaults.GROUP_GRAMS 已实现(之前 session P2·非调料按 FoodGroup 分类经验默认)·待办未同步·标关闭零代码不重复造轮子
+- ⑥食材扩充(无边界)/⑦AI家常度列(迁移+几百菜主观家常度标注+产品口径决策) 需产品决策·入待确认队列
+- 数据健康 session 无人值守收尾: 实质推进5项(营养计算页/四项数据/忌口补漏/GI纤维复核/智能剂量查证)·待确认 Q1-Q4 待用户定
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

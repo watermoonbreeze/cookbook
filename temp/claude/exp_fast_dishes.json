@@ -1,0 +1,274 @@
+[
+  {
+    "code": "fast_noodle_egg",
+    "name": "方便面卧蛋",
+    "method": "煮",
+    "description": "一包方便面加个鸡蛋、几片青菜，五分钟填饱肚子。",
+    "ingredients": [
+      { "ingredient": "方便面", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "小白菜", "main": false, "quantity": 100, "unit": "g" }
+    ],
+    "steps": [
+      "水烧开下面饼，煮至散开。",
+      "打入一个鸡蛋卧着煮，加入洗净的小白菜。",
+      "面软后放入调料包（可只放半包减盐），拌匀出锅。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_luncheon_fried_rice",
+    "name": "午餐肉蛋炒饭",
+    "method": "炒",
+    "description": "隔夜饭配午餐肉丁和鸡蛋，一锅炒香。",
+    "ingredients": [
+      { "ingredient": "大米", "main": true, "quantity": 200, "unit": "g" },
+      { "ingredient": "午餐肉", "main": true, "quantity": 80, "unit": "g" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "青豆", "main": false, "quantity": 50, "unit": "g" },
+      { "ingredient": "葱", "main": false, "quantity": 1, "unit": "根" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "午餐肉切小丁，鸡蛋打散。",
+      "热油先炒鸡蛋盛出，下午餐肉丁煎香。",
+      "倒入米饭和青豆炒散，回锅鸡蛋，撒葱花炒匀即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_xiaolongbao_congee",
+    "name": "小笼包配白粥",
+    "method": "蒸",
+    "description": "速冻小笼包蒸一蒸，配一碗速食白粥，早餐省心。",
+    "ingredients": [
+      { "ingredient": "速冻小笼包", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "速食白粥", "main": true, "quantity": 200, "unit": "g" }
+    ],
+    "steps": [
+      "小笼包无需解冻，上汽后蒸 8 分钟。",
+      "速食白粥按包装冲泡或加热。",
+      "配一碟醋蘸食即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_tuna_salad",
+    "name": "金枪鱼蔬菜沙拉",
+    "method": "凉拌",
+    "description": "水浸金枪鱼配生菜西红柿，低脂高蛋白的快手一餐。",
+    "ingredients": [
+      { "ingredient": "金枪鱼罐头", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "生菜", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "西红柿", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "玉米什锦", "main": false, "quantity": 50, "unit": "g" },
+      { "ingredient": "橄榄油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "生菜撕小片，西红柿切块，玉米什锦焯熟沥干。",
+      "金枪鱼沥去汤汁铺在蔬菜上。",
+      "淋少许橄榄油拌匀即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_oatmeal_milk",
+    "name": "牛奶燕麦碗",
+    "method": "煮",
+    "description": "即食燕麦冲牛奶，加香蕉和坚果，营养早餐。",
+    "ingredients": [
+      { "ingredient": "即食燕麦片", "main": true, "quantity": 40, "unit": "g" },
+      { "ingredient": "牛奶", "main": true, "quantity": 200, "unit": "ml" },
+      { "ingredient": "香蕉", "main": false, "quantity": 1, "unit": "根" },
+      { "ingredient": "核桃", "main": false, "quantity": 20, "unit": "g" }
+    ],
+    "steps": [
+      "燕麦片倒入碗中，冲入温热牛奶焖 2 分钟。",
+      "香蕉切片、核桃掰碎铺面。",
+      "喜欢的话淋一点蜂蜜。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_chicken_breast_bowl",
+    "name": "即食鸡胸时蔬碗",
+    "method": "凉拌",
+    "description": "开袋即食鸡胸配西兰花和玉米，健身餐首选。",
+    "ingredients": [
+      { "ingredient": "即食鸡胸肉", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "西兰花", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "玉米什锦", "main": false, "quantity": 80, "unit": "g" },
+      { "ingredient": "橄榄油", "main": false, "quantity": 1, "unit": "少许" }
+    ],
+    "steps": [
+      "西兰花掰小朵焯水，玉米什锦一起焯熟。",
+      "即食鸡胸撕条或切片。",
+      "全部装碗，淋几滴橄榄油拌匀即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_beef_ball_soup",
+    "name": "牛肉丸青菜汤",
+    "method": "煮",
+    "description": "速冻牛肉丸下锅煮汤，加青菜和粉丝，暖胃快手。",
+    "ingredients": [
+      { "ingredient": "速冻牛肉丸", "main": true, "quantity": 6, "unit": "个" },
+      { "ingredient": "小白菜", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "粉丝", "main": false, "quantity": 50, "unit": "g" },
+      { "ingredient": "姜", "main": false, "quantity": 2, "unit": "片" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" }
+    ],
+    "steps": [
+      "水加姜片烧开，下牛肉丸煮至浮起。",
+      "放入泡软的粉丝和小白菜。",
+      "菜熟后加少许盐调味即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_baked_beans_toast",
+    "name": "茄汁黄豆吐司",
+    "method": "煮",
+    "description": "茄汁黄豆热一热浇在吐司上，英式快手早餐。",
+    "ingredients": [
+      { "ingredient": "茄汁黄豆", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "吐司", "main": true, "quantity": 2, "unit": "片" },
+      { "ingredient": "鸡蛋", "main": false, "quantity": 1, "unit": "个" }
+    ],
+    "steps": [
+      "茄汁黄豆倒入锅中小火加热。",
+      "吐司烤微脆，鸡蛋煎成溏心。",
+      "黄豆浇在吐司上，旁边配煎蛋即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_shrimp_egg_fried_rice",
+    "name": "虾仁蛋炒饭",
+    "method": "炒",
+    "description": "速冻虾仁配鸡蛋米饭，鲜香快手。",
+    "ingredients": [
+      { "ingredient": "速冻虾仁", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "大米", "main": true, "quantity": 200, "unit": "g" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "青豆", "main": false, "quantity": 50, "unit": "g" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" }
+    ],
+    "steps": [
+      "虾仁解冻沥干，鸡蛋打散。",
+      "热油炒蛋盛出，下虾仁炒至变色。",
+      "倒入米饭和青豆炒散，回锅鸡蛋，加盐炒匀即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_sardine_tofu",
+    "name": "沙丁鱼烧豆腐",
+    "method": "焖",
+    "description": "番茄沙丁鱼罐头连汁烧豆腐，补钙下饭。",
+    "ingredients": [
+      { "ingredient": "沙丁鱼罐头", "main": true, "quantity": 120, "unit": "g" },
+      { "ingredient": "豆腐", "main": true, "quantity": 200, "unit": "g" },
+      { "ingredient": "葱", "main": false, "quantity": 1, "unit": "根" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "豆腐切块，沙丁鱼连番茄汁备用。",
+      "豆腐入锅略煎，倒入沙丁鱼和汁小火焖 5 分钟。",
+      "淋少许生抽，撒葱花即可（罐头本身有咸味，少加盐）。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_dried_noodle_tomato",
+    "name": "西红柿挂面",
+    "method": "煮",
+    "description": "挂面煮软，浇上西红柿鸡蛋卤，家常一碗面。",
+    "ingredients": [
+      { "ingredient": "挂面", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "西红柿", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "葱", "main": false, "quantity": 1, "unit": "根" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" }
+    ],
+    "steps": [
+      "挂面煮熟捞出过水备用。",
+      "热油炒鸡蛋盛出，下西红柿块炒出汁。",
+      "回锅鸡蛋加水烧开、加盐，浇在挂面上撒葱花。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_granola_yogurt",
+    "name": "坚果麦片酸奶杯",
+    "method": "凉拌",
+    "description": "无糖酸奶铺坚果麦片和蓝莓，冰凉爽口。",
+    "ingredients": [
+      { "ingredient": "坚果麦片", "main": true, "quantity": 40, "unit": "g" },
+      { "ingredient": "无糖酸奶", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "蓝莓", "main": false, "quantity": 50, "unit": "g" }
+    ],
+    "steps": [
+      "杯底倒入无糖酸奶。",
+      "铺一层坚果麦片。",
+      "撒上蓝莓即可，现拌现吃保持麦片脆度。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_wonton_bowl",
+    "name": "紫菜虾皮馄饨",
+    "method": "煮",
+    "description": "速冻馄饨煮一碗，紫菜虾皮打底，鲜到掉眉毛。",
+    "ingredients": [
+      { "ingredient": "速冻馄饨", "main": true, "quantity": 12, "unit": "个" },
+      { "ingredient": "紫菜", "main": false, "quantity": 5, "unit": "g" },
+      { "ingredient": "虾皮", "main": false, "quantity": 5, "unit": "g" },
+      { "ingredient": "葱", "main": false, "quantity": 1, "unit": "根" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "碗中放紫菜、虾皮、葱花、生抽，冲入少量热汤化开。",
+      "水开下馄饨，煮至浮起飘约 1 分钟。",
+      "连汤盛入碗中即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_sausage_rice",
+    "name": "腊肠煲仔饭",
+    "method": "焖",
+    "description": "广式腊肠铺在米饭上焖熟，油香渗进米粒。",
+    "ingredients": [
+      { "ingredient": "大米", "main": true, "quantity": 200, "unit": "g" },
+      { "ingredient": "广式腊肠", "main": true, "quantity": 80, "unit": "g" },
+      { "ingredient": "上海青", "main": false, "quantity": 100, "unit": "g" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "米淘净加水，腊肠斜切片铺在米上。",
+      "焖煮至饭熟，焖锅期间焯熟上海青。",
+      "摆上青菜、淋少许生抽拌匀（腊肠偏咸，酌情减盐）。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "fast_babao_congee",
+    "name": "八宝粥配咸鸭蛋",
+    "method": "煮",
+    "description": "一罐八宝粥热一热，配半个咸鸭蛋，懒人早餐。",
+    "ingredients": [
+      { "ingredient": "八宝粥", "main": true, "quantity": 300, "unit": "g" },
+      { "ingredient": "咸鸭蛋", "main": false, "quantity": 1, "unit": "个" }
+    ],
+    "steps": [
+      "八宝粥倒入锅中加热，或连罐隔水温热。",
+      "咸鸭蛋煮熟切开。",
+      "配着吃，咸甜相宜（咸鸭蛋钠高，一次半个即可）。"
+    ],
+    "cuisine": "家常菜"
+  }
+]

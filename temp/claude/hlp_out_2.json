@@ -1,0 +1,17 @@
+[
+  {"ingredient":"香肠","saturatedFat":17.2,"cholesterol":88,"ref":"加工食品(广式香肠/腊肠)配方差异大。广式香肠总脂37.3g、MUFA16.6+PUFA3.5→SFA约17.2g;腊肠胆固醇88mg(HowToEat/燕芸坊·中国食物成分表)","review":"pending"},
+  {"ingredient":"大骨头","saturatedFat":4.7,"cholesterol":165,"ref":"以猪大排(带骨排骨,脂肪20.4g与参考一致)近似:SFA4.7g、胆固醇165mg(中国食物成分表·HowToEat)","review":"pending"},
+  {"ingredient":"鸭腿","saturatedFat":5.9,"cholesterol":94,"ref":"以鸭(均值)近似:脂肪19.7g、SFA占30.2%→约5.9g、胆固醇94mg(中国食物成分表·nlc.chinanutri.cn foodinfo/891)","review":"pending"},
+  {"ingredient":"咸鸭蛋","saturatedFat":4.4,"cholesterol":647,"ref":"脂肪12.7g、SFA占34.9%→约4.4g、胆固醇647mg(中国食物成分表·nlc.chinanutri.cn foodinfo/995)","review":"verified"},
+  {"ingredient":"干辣椒","saturatedFat":1.8,"cholesterol":0,"ref":"植物性胆固醇=0;干辣椒USDA整档SFA约2.5g/16g脂肪,按参考脂肪12g折算约1.8g(USDA/nutritiontable近似)","review":"pending"},
+  {"ingredient":"皮蛋","saturatedFat":3.4,"cholesterol":608,"ref":"脂肪10.7g、蛋类SFA约占32%→约3.4g(近似);胆固醇608mg(中国食物成分表·nlc.chinanutri.cn foodinfo/994)","review":"pending"},
+  {"ingredient":"香叶","saturatedFat":2.28,"cholesterol":0,"ref":"植物性胆固醇=0;月桂叶(bay leaf)SFA2.28g(USDA FoodData Central 170917)","review":"verified"},
+  {"ingredient":"猪心","cholesterol":151,"ref":"胆固醇151mg(中国食物成分表·HowToEat/foodwake);SFA中国成分表未检测→省略","review":"verified"},
+  {"ingredient":"毛豆","saturatedFat":0.6,"cholesterol":0,"ref":"植物性胆固醇=0;毛豆(edamame)SFA约0.6g/脂肪5g(USDA近似)","review":"pending"},
+  {"ingredient":"鸭胸肉","saturatedFat":1.0,"cholesterol":77,"ref":"去皮鸭胸肉SFA约1.0g、胆固醇77mg(USDA raw duck breast meat only)","review":"pending"},
+  {"ingredient":"冻豆腐","saturatedFat":0.5,"cholesterol":0,"ref":"植物性胆固醇=0;冻豆腐脂肪3.7g、豆制品SFA约占14%→约0.5g(近似)","review":"pending"},
+  {"ingredient":"薏米","cholesterol":0,"ref":"植物性胆固醇=0;SFA中国成分表未检测、多为不饱和脂肪→省略SFA不编造(nlc.chinanutri.cn foodinfo/311)","review":"pending"},
+  {"ingredient":"牛奶","saturatedFat":1.9,"cholesterol":12,"ref":"全脂牛奶脂肪约3.2g、SFA约1.9g、胆固醇约10-14mg取12(USDA whole milk 近似)","review":"pending"},
+  {"ingredient":"小鱼干","saturatedFat":2.0,"cholesterol":70,"ref":"以鳀鱼干(dried anchovy)近似:SFA约2.0g、胆固醇约60-85mg取70(USDA/foodstruct anchovy)","review":"pending"},
+  {"ingredient":"千张结","saturatedFat":2.3,"cholesterol":0,"ref":"植物性胆固醇=0;千张(豆腐皮)脂肪约16g、豆制品SFA约14%→约2.3g(近似)","review":"pending"}
+]

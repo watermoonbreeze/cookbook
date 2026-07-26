@@ -1,0 +1,5 @@
+existing=480 verified=104 added=104 merged_total=584
+skipped_duplicate(已有同食材+病种保留原)=0
+DROPPED_bad_name(0): []
+DROPPED_bad_cat_or_level(0): []
+added_by_category: {'care_gout': 19, 'care_hyperlipidemia': 28, 'care_hypertension': 39, 'care_diabetes': 18}

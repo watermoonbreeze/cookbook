@@ -1,0 +1,17 @@
+fix(健康数据): J8钠限量统一2024版(高血压2400→2000) + J12今日还缺诊断 + Q1藻类加固
+
+J8 钠版本一致性(据《中国高血压防治指南2024修订版》高血压钠<2g/d≈5g盐·与一般人群一并收紧·旧2400/6g过时):
+- SODIUM_HYPERTENSION_MG 2400→2000 + 6处文案(膳食参考依据/营养怎么算/健康状态参考/NutritionInterpreter注释/DishNutritionLine偏咸阈值800→667)
+- NutritionLevelEvaluator/InterpreterTest 占比断言重算(中档2000/2400→1600/2000·InterpreterTest占比100%→120%)·全绿
+- 修正高血压限钠不该宽于一般人群的矛盾(用户J8指出版本更新未同步)
+
+J12 今日"还缺"诊断(数据bug先写复现单测取真相):
+- 单测证实 classify 正确(白煮蛋/豆腐/娃娃菜/西兰花/胡萝卜/莲藕/藕 全部正确判蛋白/蔬菜)、有正确主料不误报、空主料→gaps=[]不提示
+- 根因在数据层:今日"还缺"只取 is_main 主料·用户简单菜/自建菜 is_main 标注让 mains 取不到能识别蛋白/蔬菜的名字
+- 设计缺陷=只看is_main主料太脆弱·待真机佐证+mains fallback(菜名/全食材)改进·复现单测留作回归
+
+Q1 藻类加固(据Google审建议):紫菜/海带存疑从严排除植物豁免(2024指南植物豁免主针对豆/菜/菌菇·藻类未必适用)·干紫菜高嘌呤仍判红·+单测
+
+:shared单测+androidApp构建全绿
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

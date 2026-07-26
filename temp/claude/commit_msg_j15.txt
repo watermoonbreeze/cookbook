@@ -1,0 +1,21 @@
+fix(健康数据): J15 今日营养"缺主食"误报修复(营养大类判定主料空则回退全食材) + J14-J21 反馈登记
+
+J15 根因(真机 adb pull 坐实):
+- 营养大类判定只取 is_main=1 主料;简单菜/自建菜/盖浇饭常全 is_main=0→mainIngredientNames 恒空→整类漏判
+- 07-24 午餐"大排饭"7配料全 is_main=0 且无米食材、晚餐"炒饭"糙米 is_main=0→全天误报"缺主食"
+- python 复现:当前 mains-only 全天{蛋,红肉,蔬菜}→缺[主食];修复后{奶,蛋,红肉,主食,蔬菜}→缺[]
+
+修法(纯纠错·只救原本零贡献的问题菜):
+- FoodGroup.classificationNames(mainNames,allNames)=mainNames.ifEmpty{allNames}——主料优先·空则回退全食材
+- well-labeled 菜保持主料口径(不被姜葱辅料充数·单测锁定);调料 classify 恒 null 不污染
+- DishMini 加 allIngredientNames(buildDishesByMealRecord 用 selectDishIngredientsByDishIds 填)
+- 今日卡 gaps/baseLevel + 色系墙 nutritionWall + DayMealCardView per-meal 三处同步口径
+- mains(仅主料)保留给痛风/GI 匹配不变(与"健康定性按主料判定"一致)
+- 3 复现单测(镜像07-24真机数据)+shared单测+androidApp构建全绿
+
+口径提示:色系墙历史上有 empty-mains 菜的日子颜色更准(原偏低)·纯纠错但视觉有变·建议 UX 扫一眼
+遗留:partial-mains(荤为主料·米非主料)靠 J14 补录主食食材根治;早餐无主食按餐次差异化未做(今日卡全天汇总已够)
+
+附:07-24 用户反馈 8 项登记 J14-J21(菜名解析自动加调料/补大米、采购入口移库存、一周计划营养统一、复制日期锁死bug、开源壁垒讨论、盐调养口径、吃了多少affordance) + 交接文件对齐真实状态
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

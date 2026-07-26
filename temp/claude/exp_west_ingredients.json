@@ -1,0 +1,146 @@
+[
+  {
+    "code": "mozzarella",
+    "name": "马苏里拉芝士",
+    "alias": "马苏里拉奶酪",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": ["dairy", "dairy_product", "protein_quality", "calcium_high", "sodium_high", "fat_high"]
+  },
+  {
+    "code": "parmesan",
+    "name": "帕玛森芝士",
+    "alias": "帕尔马干酪",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": ["dairy", "dairy_product", "protein_quality", "calcium_high", "sodium_high", "fat_high"]
+  },
+  {
+    "code": "cheddar",
+    "name": "车达芝士",
+    "alias": "切达奶酪",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": ["dairy", "dairy_product", "protein_quality", "calcium_high", "sodium_high", "fat_high"]
+  },
+  {
+    "code": "cream_cheese",
+    "name": "奶油奶酪",
+    "alias": "忌廉芝士",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": ["dairy", "dairy_product", "fat_high", "sodium_high"]
+  },
+  {
+    "code": "greek_yogurt",
+    "name": "希腊酸奶",
+    "alias": "希腊式酸奶",
+    "unit": "g",
+    "emoji": "🥛",
+    "categories": ["dairy", "dairy_fermented", "protein_quality", "calcium_high"]
+  },
+  {
+    "code": "basil",
+    "name": "罗勒",
+    "alias": "九层塔",
+    "unit": "g",
+    "emoji": "🌿",
+    "categories": ["seasoning", "seasoning_spice"]
+  },
+  {
+    "code": "oregano_dried",
+    "name": "干牛至",
+    "alias": "俄勒冈叶",
+    "unit": "g",
+    "emoji": "🌿",
+    "categories": ["seasoning", "seasoning_spice"]
+  },
+  {
+    "code": "thyme_dried",
+    "name": "干百里香",
+    "alias": "百里香",
+    "unit": "g",
+    "emoji": "🌿",
+    "categories": ["seasoning", "seasoning_spice"]
+  },
+  {
+    "code": "tomato_paste",
+    "name": "番茄膏",
+    "alias": "浓缩番茄酱",
+    "unit": "g",
+    "emoji": "🍅",
+    "categories": ["seasoning", "seasoning_sauce", "potassium_high"]
+  },
+  {
+    "code": "black_olive",
+    "name": "黑橄榄",
+    "alias": "油橄榄",
+    "unit": "g",
+    "emoji": "🫒",
+    "categories": ["fruit", "fat_high", "sodium_high"]
+  },
+  {
+    "code": "sweet_corn_canned",
+    "name": "甜玉米粒",
+    "alias": "罐装玉米粒",
+    "unit": "g",
+    "emoji": "🌽",
+    "categories": ["vegetable", "convenience", "convenience_canned"]
+  },
+  {
+    "code": "romaine",
+    "name": "罗马生菜",
+    "alias": "罗蔓",
+    "unit": "g",
+    "emoji": "🥬",
+    "categories": ["vegetable", "vegetable_leaf", "dark_vegetable", "fat_low", "sugar_low"]
+  },
+  {
+    "code": "arugula",
+    "name": "芝麻菜",
+    "alias": "火箭菜",
+    "unit": "g",
+    "emoji": "🥬",
+    "categories": ["vegetable", "vegetable_leaf", "dark_vegetable", "fat_low", "sugar_low"]
+  },
+  {
+    "code": "spaghetti_dry",
+    "name": "意面",
+    "alias": "干意大利面",
+    "unit": "g",
+    "emoji": "🍝",
+    "categories": ["staple", "staple_grain", "staple_grain_wheat", "staple_grain_product", "gi_medium"]
+  },
+  {
+    "code": "whole_wheat_pasta",
+    "name": "全麦意面",
+    "alias": "全麦意大利面",
+    "unit": "g",
+    "emoji": "🍝",
+    "categories": ["staple", "staple_grain", "staple_grain_wheat", "staple_grain_product", "whole_grain", "fiber_high"]
+  },
+  {
+    "code": "salami",
+    "name": "萨拉米香肠",
+    "alias": "意式萨拉米",
+    "unit": "g",
+    "emoji": "🥓",
+    "categories": ["meat", "meat_processed", "sodium_high", "fat_high"]
+  },
+  {
+    "code": "prosciutto",
+    "name": "帕尔马火腿",
+    "alias": "生火腿",
+    "unit": "g",
+    "emoji": "🥓",
+    "categories": ["meat", "meat_processed", "protein_quality", "sodium_high", "fat_high"]
+  },
+  {
+    "code": "dried_cranberry",
+    "name": "蔓越莓干",
+    "alias": "干蔓越莓",
+    "unit": "g",
+    "emoji": "🫐",
+    "categories": ["fruit", "fruit_dried", "gi_high"]
+  }
+]

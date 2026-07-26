@@ -1,0 +1,25 @@
+[
+  {
+    "code": "rice_flour_sticky",
+    "name": "粘米粉",
+    "alias": "籼米粉",
+    "unit": "g",
+    "emoji": "🍚",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "satay_sauce",
+    "name": "沙茶酱",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "seasoning",
+      "seasoning_sauce",
+      "seasoning_high_sodium"
+    ]
+  }
+]

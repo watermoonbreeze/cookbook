@@ -1,0 +1,17 @@
+[
+  {"ingredient":"五花肉","saturatedFat":10.4,"cholesterol":79,"ref":"中国食物成分表(猪肉肥瘦/五花肉 胆固醇79mg);饱和脂肪按肥瘦猪肉脂肪酸构成估","review":"pending"},
+  {"ingredient":"腊肉","saturatedFat":10.6,"cholesterol":123,"ref":"二手数据换算(腌腊猪肉 每85g 饱和脂肪9.0g/胆固醇约105mg 折算100g);非一手成分表","review":"pending"},
+  {"ingredient":"鸡腿","saturatedFat":2.4,"cholesterol":99,"ref":"中国食物成分表(鸡腿 胆固醇约99mg);饱和脂肪参考USDA鸡腿(去皮生)约2.3-2.8g","review":"pending"},
+  {"ingredient":"黄油","saturatedFat":51.0,"cholesterol":215,"ref":"USDA FDC(Butter, salted #173410 饱和脂肪51.4g/胆固醇215mg)","review":"verified"},
+  {"ingredient":"虾米","saturatedFat":null,"cholesterol":525,"ref":"中国食物成分表(虾米/海米 胆固醇525mg);饱和脂肪未报告(总脂肪仅2.6g)","review":"verified"},
+  {"ingredient":"扇贝","saturatedFat":0.1,"cholesterol":33,"ref":"USDA FDC(Scallop, raw 饱和脂肪约0.1g/胆固醇约33mg)","review":"pending"},
+  {"ingredient":"腐竹","saturatedFat":3.5,"cholesterol":0,"ref":"腐竹为豆制品胆固醇0(verified);饱和脂肪按大豆油脂肪酸构成(总脂肪约24-32g,饱和约15%)估","review":"pending"},
+  {"ingredient":"菜籽油","saturatedFat":7.0,"cholesterol":0,"ref":"菜籽油为植物油胆固醇0;饱和脂肪约7g(USDA/通行值)","review":"verified"},
+  {"ingredient":"方便面","saturatedFat":9.5,"cholesterol":0,"ref":"油炸方便面用植物油胆固醇0;饱和脂肪约9.5g(棕榈油油炸,随品牌波动)","review":"pending"},
+  {"ingredient":"青豆","saturatedFat":0.04,"cholesterol":0,"ref":"青豆(绿豌豆)为蔬菜胆固醇0;饱和脂肪极微(总脂肪约0.3g)","review":"verified"},
+  {"ingredient":"鸭腿","saturatedFat":null,"cholesterol":94,"ref":"鸭肉胆固醇约94-100mg(中国食物成分表/USDA鸭腿76-89mg区间);饱和脂肪随带皮与否差异大,未取权威值","review":"pending"},
+  {"ingredient":"大排","saturatedFat":7.0,"cholesterol":165,"ref":"中国食物成分表(猪大排 胆固醇165mg);饱和脂肪按总脂肪20.4g中约1/3估","review":"pending"},
+  {"ingredient":"咸鹅","saturatedFat":6.2,"cholesterol":91,"ref":"USDA FDC(Goose, meat and skin, roasted #172412 饱和脂肪6.2g/胆固醇91mg);咸鹅为腌制品仅可近似","review":"pending"},
+  {"ingredient":"大红肠","saturatedFat":11.0,"cholesterol":76,"ref":"二手香肠通行值(饱和脂肪约11g/胆固醇约76mg);随配方品牌波动,非一手成分表","review":"pending"},
+  {"ingredient":"橄榄菜","saturatedFat":null,"cholesterol":0,"ref":"橄榄菜为芥菜+橄榄油腌制植物性食品胆固醇0;饱和脂肪无权威成分表数据","review":"pending"}
+]

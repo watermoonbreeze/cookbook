@@ -1,0 +1,79 @@
+[
+ {
+  "ingredient": "啤酒",
+  "kcal": 28,
+  "protein": 0.4,
+  "fat": 0.0,
+  "carb": 6.5,
+  "fiber": 0.0,
+  "sodium": 0.4,
+  "potassium": 25,
+  "calcium": 7,
+  "purine": 8,
+  "ref": "中国疾控中心营养与健康所食物成分查询平台(啤酒4.3%青岛牌,能量117kJ≈28kcal);嘌呤为文献常见口径约5~10mg/100ml(非国标临界值)",
+  "review": "verified"
+ },
+ {
+  "ingredient": "葡萄酒",
+  "kcal": 43,
+  "protein": 0.1,
+  "carb": 10.5,
+  "sodium": 1.7,
+  "potassium": 27,
+  "calcium": 20,
+  "ref": "中国疾控中心营养与健康所食物成分查询平台(红葡萄酒,能量180kJ≈43kcal;干红略低于甜型)",
+  "review": "verified"
+ },
+ {
+  "ingredient": "白酒",
+  "kcal": 298,
+  "protein": 0.0,
+  "fat": 0.0,
+  "carb": 0.0,
+  "sodium": 7.6,
+  "ref": "中国食物成分表·蒸馏酒(白酒,酒精度高,能量几乎全部来自乙醇;薄荷食物库/成分表口径,298kcal对应高度白酒)",
+  "review": "verified"
+ },
+ {
+  "ingredient": "黄酒",
+  "kcal": 66,
+  "protein": 1.6,
+  "fat": 0.0,
+  "calcium": 41,
+  "ref": "中国食物成分表·发酵酒(黄酒),热量66kcal/蛋白1.6g/钙41mg;碳水随甜度差异大(干型低·甜型高),口径不定故省略",
+  "review": "pending"
+ },
+ {
+  "ingredient": "米酒",
+  "kcal": 91,
+  "protein": 1.6,
+  "fat": 0.2,
+  "calcium": 16,
+  "ref": "中国食物成分表·江米酒(米酒/甜酒),热量91kcal/蛋白1.6g/脂0.2g/钙16mg;碳水各库口径冲突(部分记0系遗漏)故省略",
+  "review": "pending"
+ },
+ {
+  "ingredient": "清酒",
+  "kcal": 134,
+  "protein": 0.5,
+  "fat": 0.0,
+  "carb": 5.0,
+  "fiber": 0.0,
+  "sodium": 2,
+  "potassium": 25,
+  "calcium": 3,
+  "cholesterol": 0,
+  "ref": "USDA FoodData Central·Sake(清酒),134kcal/蛋白0.5g/碳水5g;钠钾钙为USDA明细",
+  "review": "verified"
+ },
+ {
+  "ingredient": "酒酿",
+  "kcal": 100,
+  "protein": 2.6,
+  "fat": 0.2,
+  "carb": 22.4,
+  "fiber": 0.5,
+  "ref": "食物库·醪糟/甜酒酿(发酵糯米制品,营养大类=谷薯主食类);热量约80~120kcal·碳水20~25g因工艺原料而异,取常见DB值",
+  "review": "pending"
+ }
+]

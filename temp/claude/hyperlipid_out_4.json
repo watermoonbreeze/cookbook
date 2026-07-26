@@ -1,0 +1,17 @@
+[
+  {"ingredient":"猪蹄","saturatedFat":4.325,"cholesterol":192,"ref":"中国食物成分表(中国疾控中心营养与健康所)口径,经二手站点转述,饱和脂肪4.325g、胆固醇192mg/100g","review":"pending"},
+  {"ingredient":"午餐肉","saturatedFat":11,"cholesterol":62,"ref":"USDA FoodData Central: Luncheon meat, pork, canned (每100g 饱和脂肪约11g、胆固醇62mg)","review":"verified"},
+  {"ingredient":"鸭蛋","saturatedFat":3.7,"cholesterol":884,"ref":"USDA FoodData Central: Egg, duck, whole, fresh, raw (每100g 饱和脂肪3.7g、胆固醇884mg)","review":"verified"},
+  {"ingredient":"猪油","saturatedFat":39.2,"cholesterol":95,"ref":"USDA National Nutrient Database: Lard (每100g 饱和脂肪39.2g、胆固醇95mg)","review":"verified"},
+  {"ingredient":"墨鱼","saturatedFat":0.12,"cholesterol":112,"ref":"USDA FoodData Central: Mollusks, cuttlefish, mixed species, raw (每100g 饱和脂肪0.12g、胆固醇112mg)。中文成分表胆固醇约200-300mg偏高且区间模糊,采用USDA生品值","review":"verified"},
+  {"ingredient":"黄豆","saturatedFat":1.3,"cholesterol":0,"ref":"USDA FoodData Central: Soybeans, mature seeds, raw (每100g 饱和脂肪约1.3g、胆固醇0mg;植物性无胆固醇)","review":"verified"},
+  {"ingredient":"腰果","saturatedFat":7.8,"cholesterol":0,"ref":"USDA FoodData Central: Nuts, cashew nuts, raw (每100g 饱和脂肪7.8g、胆固醇0mg)","review":"verified"},
+  {"ingredient":"亚麻籽","saturatedFat":3.663,"cholesterol":0,"ref":"USDA FoodData Central: Seeds, flaxseed (每100g 饱和脂肪3.663g、胆固醇0mg)","review":"verified"},
+  {"ingredient":"葵花籽","saturatedFat":4.46,"cholesterol":0,"ref":"USDA FoodData Central: Seeds, sunflower seed kernels, dried (每100g 饱和脂肪4.46g、胆固醇0mg)","review":"verified"},
+  {"ingredient":"大豆油","saturatedFat":15.65,"cholesterol":0,"ref":"USDA FoodData Central: Oil, soybean (每100g 饱和脂肪约15.65g、胆固醇0mg;所有植物油无胆固醇)","review":"verified"},
+  {"ingredient":"芝麻酱","saturatedFat":8.065,"cholesterol":0,"ref":"USDA FoodData Central: Seeds, sesame butter, tahini (每100g 饱和脂肪8.065g、胆固醇0mg)","review":"verified"},
+  {"ingredient":"猪头肉","saturatedFat":null,"cholesterol":304,"ref":"唤醒食物(foodwake)转述中文成分表:胆固醇304mg/100g;该源未单列饱和脂肪(仅单不饱和21g/多不饱和4.4g),饱和脂肪缺权威值故填null","review":"pending"},
+  {"ingredient":"咸肉","saturatedFat":null,"cholesterol":72,"ref":"唤醒食物(foodwake)转述中文成分表:胆固醇72mg/100g、总脂肪36g;该源未单列饱和脂肪,故饱和脂肪填null","review":"pending"},
+  {"ingredient":"厚百叶","saturatedFat":2.84,"cholesterol":0,"ref":"中国食物成分表(chinanutri平台)豆腐皮/千张:总脂肪17.4g/100g、饱和脂肪酸占比16.3%→约2.84g;胆固醇未检出(植物性,记0)。饱和脂肪为按占比换算故pending","review":"pending"},
+  {"ingredient":"鱼油","saturatedFat":30.427,"cholesterol":521,"ref":"USDA FoodData Central: Fish oil, menhaden (每100g 饱和脂肪30.427g、胆固醇521mg;非氢化)","review":"verified"}
+]

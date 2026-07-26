@@ -1,0 +1,20 @@
+feat(权威化重审): 膳食宝塔权威真相源下沉+色系墙均衡评级对齐宝塔四层(P0+P1)
+
+全功能权威化重审第一批(权威方法论优先准则落地)：把膳食结构评估从自创口径
+改为引用《中国居民平衡膳食宝塔(2022)》权威结构，同"营养阈值走国标"。
+
+P0 · shared 域层新建 DietaryGuideline 权威真相源
+- 膳食宝塔五层份量(谷薯/蔬果/鱼禽肉蛋/奶豆坚果/油盐)、三餐能量分配、
+  各餐结构合理期待(expectedLayers)、食物多样性、饮水，与 UI 层 DietaryReference 同源。
+- 提供 九大类→宝塔层映射 + coveredLayers 覆盖度，供后续算法(色系墙/餐次/推荐份量)统一引用。
+- DietaryGuidelineTest 7 用例锁映射/覆盖度/三餐分配口径。
+
+P1 · FoodGroup.nutritionLevel 由"自创三支柱"改为"宝塔四正向层覆盖度"
+- 0空/1较单一/2尚可/3均衡/4营养优(四层齐·含奶豆坚果层)，让奶豆坚果成独立层(宝塔第四层)、更权威。
+- 保持 0-4 输出与 label API 不变，色系墙/餐食卡/今日卡/一周营养线/膳食报告 6 处消费端零改动。
+- FoodGroupNutritionLevelTest 同步更新为宝塔层口径。
+
+验证：:shared:testDebugUnitTest + :androidApp:assembleDebug 均 BUILD SUCCESSFUL。
+餐次差异化(P2)、推荐份量对齐宝塔(P3·连J17)待续。
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

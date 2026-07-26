@@ -1,0 +1,78 @@
+[
+  {
+    "indicator": "添加糖每日推荐上限",
+    "levels": [
+      {"label": "理想值", "value": 25, "unit": "g/天", "note": "最好控制在25g以下（对应<5%供能，龋齿等风险显著下降）"},
+      {"label": "上限", "value": 50, "unit": "g/天", "note": "每天摄入不超过50g（对应<10%供能）"}
+    ],
+    "caliber": "每日摄入量上限（成人；添加糖=人工加入食品的蔗糖、果糖等，不含天然存在于完整水果奶类中的糖）",
+    "source_full": "中国居民膳食指南（2022）——准则五「少盐少油，控糖限酒」",
+    "source_org": "中国营养学会",
+    "source_no": "",
+    "year": "2022",
+    "clause": "准则五 控糖：控制添加糖摄入量，每天不超过50g，最好控制在25g以下",
+    "applies_to": ["糖尿病", "三高", "肥胖", "龋齿"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "游离糖供能比上限（WHO）",
+    "levels": [
+      {"label": "强推荐上限", "value": 10, "unit": "%供能", "note": "游离糖摄入<总能量10%（strong recommendation）"},
+      {"label": "建议进一步降至", "value": 5, "unit": "%供能", "note": "<总能量5%（约25g/天，conditional recommendation，可获额外健康益处）"}
+    ],
+    "caliber": "游离糖占每日总能量摄入的百分比（free sugars=生产/烹调/食用时添加的单双糖 + 蜂蜜/糖浆/果汁及浓缩果汁中天然存在的糖）",
+    "source_full": "WHO Guideline: Sugars intake for adults and children",
+    "source_org": "World Health Organization (WHO)",
+    "source_no": "WHO/NMH/NHD/15.3",
+    "year": "2015",
+    "clause": "Recommendations：reduce free sugars intake to <10% of total energy (strong)；suggest further reduction to <5% (conditional)",
+    "applies_to": ["糖尿病", "肥胖", "龋齿"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "GB28050 糖含量声称阈值",
+    "levels": [
+      {"label": "无糖/不含糖", "value": 0.5, "unit": "g/100g 或 g/100ml", "note": "糖含量≤0.5g/100g（固体）或/100ml（液体）"},
+      {"label": "低糖", "value": 5, "unit": "g/100g 或 g/100ml", "note": "糖含量≤5g/100g（固体）或/100ml（液体）"}
+    ],
+    "caliber": "预包装食品「含量声称」阈值（每100g固体/每100ml液体；此处糖指单糖+双糖之和）",
+    "source_full": "GB 28050-2011《食品安全国家标准 预包装食品营养标签通则》——附录C 表C.1 能量和营养成分含量声称的要求和条件",
+    "source_org": "中华人民共和国卫生部",
+    "source_no": "GB 28050-2011",
+    "year": "2011",
+    "clause": "附录C 表C.1：无糖/不含糖 ≤0.5g/100g(固)或100mL(液)；低糖 ≤5g/100g(固)或100mL(液)",
+    "applies_to": ["糖尿病", "三高", "标签识别"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "GI血糖生成指数分级",
+    "levels": [
+      {"label": "低GI", "value": 55, "unit": "", "note": "GI ≤55（<55，低GI食物）"},
+      {"label": "中GI", "value": 69, "unit": "", "note": "GI 55~70（中等GI食物）"},
+      {"label": "高GI", "value": 70, "unit": "", "note": "GI ≥70（>70，高GI食物）"}
+    ],
+    "caliber": "食物固有分级（FAO/WHO国际口径：低≤55、中56-69、高≥70）；国内《中国2型糖尿病防治指南》采纳同一分级用于医学营养治疗",
+    "source_full": "中国2型糖尿病防治指南（2020年版）医学营养治疗章节（分级采纳 FAO/WHO 口径；测定方法见 WS/T 652-2019《食物血糖生成指数测定方法》）",
+    "source_org": "中华医学会糖尿病学分会（分级口径源自FAO/WHO；测定方法标准发布机构为国家卫生健康委员会）",
+    "source_no": "WS/T 652-2019（测定方法）",
+    "year": "2020",
+    "clause": "低GI<55、中等GI 55~70、高GI>70。注：WS/T 652-2019 仅规定GI「测定方法」，未含分级临界值；55/70分级为FAO/WHO国际通行口径并被国内糖尿病防治指南采纳",
+    "applies_to": ["糖尿病"],
+    "confidence": "verified"
+  },
+  {
+    "indicator": "碳水化合物供能比推荐范围",
+    "levels": [
+      {"label": "下限", "value": 50, "unit": "%供能", "note": "碳水化合物供能占总能量50%起"},
+      {"label": "上限", "value": 65, "unit": "%供能", "note": "碳水化合物供能占总能量65%止"}
+    ],
+    "caliber": "成人碳水化合物占每日膳食总能量的百分比范围（宏量营养素供能比：碳水50~65%、蛋白质10~15%、脂肪20~30%）",
+    "source_full": "中国居民膳食指南（2022）/《中国居民膳食营养素参考摄入量（DRIs）》——宏量营养素可接受范围（AMDR）",
+    "source_org": "中国营养学会",
+    "source_no": "",
+    "year": "2022",
+    "clause": "成人碳水化合物供能比适宜范围 50%~65%（AMDR）",
+    "applies_to": ["糖尿病", "三高", "一般人群"],
+    "confidence": "verified"
+  }
+]

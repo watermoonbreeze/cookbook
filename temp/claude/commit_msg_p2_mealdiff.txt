@@ -1,0 +1,20 @@
+feat(权威化重审P2): 餐次差异化推荐+呈现对齐膳食指南三餐能量分配
+
+算法核心(shared·引用权威真相源 DietaryGuideline·不自创):
+- MealCompositionScorer 加 candidateLayers 纯函数(FoodGroup.classify→宝塔层·永不空集)
+  + compositionBonus 餐次差异分支:①补缺口+0.5 ②晚餐纯肉轻降-0.3(收窄仅纯ANIMAL·
+  不误伤豆腐/豆浆/牛奶合炒菜)·默认参不传=旧行为(兼容开关)
+- PeriodPlanner/RecommendationOrchestrator 接餐次期待层(周计划精确餐名·单餐早/非早两档)
+- coveredLayers/expectedLayers 外提出候选循环(消除逐候选重算 classify 热点·Google审建议1)
+- 8 个 P2 单测(层判定/补缺口/晚餐纯肉/加餐跳过/量级锁序)·旧7用例验证兼容
+
+UI 呈现(androidApp·apple_ux 门禁·克制):
+- 推荐页每餐名下静态结构建议行(读 DietaryGuideline.hint)+页脚口径尾注(惯例口径非医嘱)
+- 今日卡"缺蔬菜/早餐缺蛋白"阈值提示(鼓励非评判·一处一条·浅灰·可关)
+- 新增 MEAL_STRUCTURE_HINT_ENABLED 开关(默认开·透明opt-out·功能设置可关)
+
+会商门禁全走:算法+Apple UX 会商→Google 质量终审无阻断项。
+验证::shared:testDebugUnitTest(481)+:androidApp:assembleDebug 均 BUILD SUCCESSFUL。
+文档:功能总线对照(餐次差异化→已权威化)+待办总览(P2完成+6项留待办)+UI方案§9.41范式。
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

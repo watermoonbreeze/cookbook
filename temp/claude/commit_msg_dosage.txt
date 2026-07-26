@@ -1,0 +1,26 @@
+[unattended] fix(菜品): 修加食材单位丢失(100个/无单位)+按分类智能默认克数+修复历史错单位数据
+
+问题(真机库证实·全为user自建菜):加食材到菜品时 gramUnit() 依赖异步加载的
+availableUnits,而菜名自动加食材(autoAddFromName)在另一 launch 竞速执行,units 未
+加载时 gramUnit() 返 null → 默认100g 落到食材计件默认单位(个/只)或 NULL → 详情显
+"青椒100.0个""肉丝100.0(无单位)"、营养按错单位折算。
+
+P1 修 race(NewDishViewModel):
+- 加 unitsReady(CompletableDeferred)+cachedGramUnit;units 加载完 complete+缓存"克"
+- autoAddFromName 开头 await 单位就绪;gramUnit() 兜底读 cachedGramUnit
+- 加食材 unitId=gram?.id(移除落到 ingredient.defaultUnitId 的错兜底=bug根因)
+- units 三个字典查询加 runCatching,异常也放行 unitsReady(防菜名推食材/餐次预选永挂)
+
+P2 智能默认克数(SeasoningDefaults):非调料食材由恒100g改为按 FoodGroup.classify 分类
+给经验默认(蛋50/菜150/奶200/肉150…惯例非权威·可改),判不出退100。更新单测。
+
+P4 数据修复(Cookbook.sq+PresetDataSeeder):幂等 UPDATE repairDishIngredientGram-
+UnitForDefault(quantity=100 且 unit 空/计件→gram),SEED_LOGIC_VERSION v9→v10。纯
+UPDATE 无 schema 迁移。真机库副本模拟:精确修10行/144合法行不动/幂等残留0。
+
+透明准则:changelog.json 加 v2 更新记录(告知用户修单位显示+分类默认克数)。
+
+门禁:google_quality_engineer 无阻断(2建议已收口)+独立 code-review。构建
+:shared:testDebugUnitTest + :androidApp:assembleDebug 均 BUILD SUCCESSFUL。
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>

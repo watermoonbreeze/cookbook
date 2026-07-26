@@ -1,0 +1,272 @@
+[
+  {
+    "code": "hb_shuizhu_dan",
+    "name": "白水煮蛋",
+    "method": "煮",
+    "description": "最省事的高蛋白早餐，一颗蛋补足一天开局。",
+    "ingredients": [
+      { "ingredient": "鸡蛋", "main": true, "quantity": 2, "unit": "个" }
+    ],
+    "steps": [
+      "鸡蛋凉水下锅，水量没过鸡蛋。",
+      "中火煮开后转小火再煮 6-8 分钟。",
+      "捞出过一下凉水，剥壳即食。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hb_niunai_yanmai",
+    "name": "牛奶燕麦粥",
+    "method": "煮",
+    "description": "温热顺滑的一碗，燕麦加牛奶饱腹又补钙。",
+    "ingredients": [
+      { "ingredient": "燕麦片", "main": true, "quantity": 40, "unit": "g" },
+      { "ingredient": "全脂牛奶", "main": true, "quantity": 250, "unit": "ml" },
+      { "ingredient": "蓝莓", "main": false, "quantity": 30, "unit": "g" }
+    ],
+    "steps": [
+      "牛奶倒入小锅加热至微沸。",
+      "下燕麦片搅匀，小火煮 3-5 分钟至浓稠。",
+      "盛碗后撒上蓝莓即可。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_greek_yogurt_bowl",
+    "name": "希腊酸奶水果杯",
+    "method": "凉拌",
+    "description": "高蛋白酸奶配水果坚果，无需开火的清爽早餐。",
+    "ingredients": [
+      { "ingredient": "希腊酸奶", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "格兰诺拉麦片", "main": true, "quantity": 30, "unit": "g" },
+      { "ingredient": "香蕉", "main": false, "quantity": 60, "unit": "g" },
+      { "ingredient": "蓝莓", "main": false, "quantity": 30, "unit": "g" }
+    ],
+    "steps": [
+      "希腊酸奶盛入碗中。",
+      "香蕉切片、蓝莓洗净铺在酸奶上。",
+      "撒一层格兰诺拉麦片即可享用。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_huasheng_jiang_toast",
+    "name": "花生酱吐司",
+    "method": "烤",
+    "description": "烤香的吐司抹上花生酱，两分钟搞定的能量早餐。",
+    "ingredients": [
+      { "ingredient": "白吐司", "main": true, "quantity": 70, "unit": "g" },
+      { "ingredient": "花生酱", "main": true, "quantity": 20, "unit": "g" }
+    ],
+    "steps": [
+      "吐司放入烤箱或面包机烤至微黄。",
+      "趁热均匀抹上花生酱即可。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_jidan_sanmingzhi",
+    "name": "鸡蛋三明治",
+    "method": "煎",
+    "description": "煎蛋加生菜番茄夹进吐司，营养均衡好带走。",
+    "ingredients": [
+      { "ingredient": "白吐司", "main": true, "quantity": 70, "unit": "g" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "生菜", "main": false, "quantity": 30, "unit": "g" },
+      { "ingredient": "西红柿", "main": false, "quantity": 40, "unit": "g" },
+      { "ingredient": "沙拉酱", "main": false, "quantity": 10, "unit": "g" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "平底锅少油煎一个全熟蛋。",
+      "吐司抹沙拉酱，铺生菜、番茄片和煎蛋。",
+      "盖上另一片吐司，对角切开即可。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_cheese_toast",
+    "name": "芝士烤吐司",
+    "method": "烤",
+    "description": "拉丝的马苏里拉铺在吐司上烤化，香浓暖胃。",
+    "ingredients": [
+      { "ingredient": "白吐司", "main": true, "quantity": 70, "unit": "g" },
+      { "ingredient": "马苏里拉奶酪", "main": true, "quantity": 40, "unit": "g" }
+    ],
+    "steps": [
+      "吐司上铺满马苏里拉奶酪碎。",
+      "放入烤箱 180 度烤 6-8 分钟至芝士融化微黄即可。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_bagel_cream_cheese",
+    "name": "奶油奶酪贝果",
+    "method": "烤",
+    "description": "贝果烤热抹上奶油奶酪，扎实耐饿的西式早餐。",
+    "ingredients": [
+      { "ingredient": "贝果", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "奶油奶酪", "main": true, "quantity": 30, "unit": "g" }
+    ],
+    "steps": [
+      "贝果横向剖开，切面朝上烤 3-4 分钟。",
+      "趁热厚厚抹一层奶油奶酪，合起即可。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_shouzhua_bing_dan",
+    "name": "手抓饼加蛋",
+    "method": "煎",
+    "description": "外脆内软的手抓饼裹上煎蛋，街头人气早餐在家做。",
+    "ingredients": [
+      { "ingredient": "手抓饼", "main": true, "quantity": 1, "unit": "片" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "生菜", "main": false, "quantity": 20, "unit": "g" },
+      { "ingredient": "甜面酱", "main": false, "quantity": 10, "unit": "g" }
+    ],
+    "steps": [
+      "平底锅小火将手抓饼煎至两面金黄、层次膨起。",
+      "饼推到一边，磕入鸡蛋摊开煎熟，把饼盖回蛋上翻面。",
+      "抹甜面酱、铺生菜，卷起对切即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hb_doufunao_xian",
+    "name": "咸豆腐脑",
+    "method": "蒸",
+    "description": "嫩滑豆腐脑浇上咸鲜卤汁，南北都爱的暖心早点。",
+    "ingredients": [
+      { "ingredient": "豆腐脑", "main": true, "quantity": 250, "unit": "g" },
+      { "ingredient": "木耳", "main": false, "quantity": 15, "unit": "g" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "淀粉", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "香菜", "main": false, "quantity": 5, "unit": "g" }
+    ],
+    "steps": [
+      "木耳泡发切碎，加生抽和清水煮开。",
+      "淀粉加水调匀勾芡成卤汁。",
+      "豆腐脑盛碗，浇上卤汁、撒香菜即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hb_doujiang_youtiao",
+    "name": "豆浆配油条",
+    "method": "炸",
+    "description": "国民早餐组合，温豆浆搭金黄油条最踏实。",
+    "ingredients": [
+      { "ingredient": "豆浆", "main": true, "quantity": 300, "unit": "ml" },
+      { "ingredient": "油条", "main": true, "quantity": 60, "unit": "g" }
+    ],
+    "steps": [
+      "豆浆加热至沸腾，晾到温热。",
+      "油条无需复炸可直接吃；若想更脆，180 度复炸 1 分钟。",
+      "豆浆配油条一起上桌。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hb_zhengdan",
+    "name": "牛奶蒸蛋",
+    "method": "蒸",
+    "description": "牛奶代水蒸出的蛋羹格外嫩滑，老人小孩都爱。",
+    "ingredients": [
+      { "ingredient": "鸡蛋", "main": true, "quantity": 2, "unit": "个" },
+      { "ingredient": "全脂牛奶", "main": true, "quantity": 120, "unit": "ml" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "少许" }
+    ],
+    "steps": [
+      "鸡蛋打散，加牛奶和盐搅匀后过筛去泡。",
+      "蛋液盖保鲜膜，水开后中小火蒸 10-12 分钟。",
+      "出锅点几滴生抽即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hb_yanmai_naixi",
+    "name": "燕麦拿铁",
+    "method": "煮",
+    "description": "黑咖啡兑燕麦奶，植物基的顺滑拿铁自己调。",
+    "ingredients": [
+      { "ingredient": "黑咖啡", "main": true, "quantity": 120, "unit": "ml" },
+      { "ingredient": "燕麦奶", "main": true, "quantity": 150, "unit": "ml" }
+    ],
+    "steps": [
+      "燕麦奶小火加热或打发出细腻奶泡。",
+      "黑咖啡倒入杯中，缓缓注入热燕麦奶即可。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_cornflakes_milk",
+    "name": "牛奶泡玉米片",
+    "method": "凉拌",
+    "description": "一碗玉米片浇上冰牛奶，孩子最爱的快手早餐。",
+    "ingredients": [
+      { "ingredient": "玉米片", "main": true, "quantity": 40, "unit": "g" },
+      { "ingredient": "全脂牛奶", "main": true, "quantity": 200, "unit": "ml" },
+      { "ingredient": "香蕉", "main": false, "quantity": 50, "unit": "g" }
+    ],
+    "steps": [
+      "玉米片倒入碗中。",
+      "浇上牛奶，摆几片香蕉即可，趁脆快吃。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_niupai_ougao",
+    "name": "欧包配奶酪",
+    "method": "烤",
+    "description": "微烤的欧包夹上切达奶酪，简单却有嚼劲。",
+    "ingredients": [
+      { "ingredient": "欧包", "main": true, "quantity": 80, "unit": "g" },
+      { "ingredient": "切达奶酪", "main": true, "quantity": 25, "unit": "g" },
+      { "ingredient": "生菜", "main": false, "quantity": 20, "unit": "g" }
+    ],
+    "steps": [
+      "欧包切片略烤热。",
+      "夹入切达奶酪片和生菜即可。"
+    ],
+    "cuisine": "西餐"
+  },
+  {
+    "code": "hb_jianbing_dan",
+    "name": "杂粮煎饼",
+    "method": "煎",
+    "description": "薄脆加鸡蛋的杂粮煎饼，卷起来就是一顿。",
+    "ingredients": [
+      { "ingredient": "杂粮煎饼", "main": true, "quantity": 1, "unit": "片" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "生菜", "main": false, "quantity": 20, "unit": "g" },
+      { "ingredient": "甜面酱", "main": false, "quantity": 10, "unit": "g" }
+    ],
+    "steps": [
+      "平底锅摊开煎饼，磕入鸡蛋抹匀煎至定型。",
+      "翻面抹甜面酱，铺生菜。",
+      "卷起对切装袋即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "hb_pipa_toast",
+    "name": "牛油果吐司",
+    "method": "烤",
+    "description": "烤脆的白吐司铺上牛油果和溏心蛋，网红健康早餐。",
+    "ingredients": [
+      { "ingredient": "白吐司", "main": true, "quantity": 70, "unit": "g" },
+      { "ingredient": "牛油果", "main": true, "quantity": 80, "unit": "g" },
+      { "ingredient": "鸡蛋", "main": true, "quantity": 1, "unit": "个" },
+      { "ingredient": "黑胡椒粉", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" }
+    ],
+    "steps": [
+      "吐司烤至酥脆，鸡蛋煮成溏心蛋剥壳。",
+      "牛油果压成泥抹在吐司上，撒盐和黑胡椒。",
+      "摆上切开的溏心蛋即可。"
+    ],
+    "cuisine": "西餐"
+  }
+]

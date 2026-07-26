@@ -1,0 +1,213 @@
+diff --git a/androidApp/src/main/java/com/sxdbsm/cookbook/android/di/AndroidModule.kt b/androidApp/src/main/java/com/sxdbsm/cookbook/android/di/AndroidModule.kt
+index 6e76608..6676511 100644
+--- a/androidApp/src/main/java/com/sxdbsm/cookbook/android/di/AndroidModule.kt
++++ b/androidApp/src/main/java/com/sxdbsm/cookbook/android/di/AndroidModule.kt
+@@ -76,6 +76,6 @@ val androidModule = module {
+     viewModel { com.sxdbsm.cookbook.android.ui.pairing.FreePairingViewModel(get(), get()) } // [AI生成] 食材自由搭配(离线规则)+存为菜品(get()=IngredientRepository)。
+     single { com.sxdbsm.cookbook.android.sync.SelectiveSyncBundler(get()) } // [AI生成] 选择性同步打包/合并。
+     viewModel { com.sxdbsm.cookbook.android.ui.sync.DeviceSyncViewModel(get(), get()) } // [AI修改] 双设备同传(整库替换/选择性合并)。
+-    viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置/偏好)。
++    viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置/偏好/§9.36 NutritionRepository 每菜营养)。
+     viewModel { com.sxdbsm.cookbook.android.ui.cook.CookModeViewModel(get()) } // [AI生成] D1:分步烹饪页薄 VM(数据访问收进 VM·F-Arch3)。
+ }
+diff --git a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanScreen.kt b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanScreen.kt
+index a2d2b5d..ee444cf 100644
+--- a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanScreen.kt
++++ b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanScreen.kt
+@@ -140,7 +140,7 @@ fun AiPlanBody(vm: AiPlanViewModel, modifier: Modifier = Modifier) {
+                         val d = com.sxdbsm.cookbook.util.DateTime.plusDays(s, day.dayIndex)
+                         "${d.monthNumber}月${d.dayOfMonth}日"
+                     }
+-                    DayCard(day, dateLabel)
++                    DayCard(day, dateLabel, state.nutritionByDishId)
+                 }
+                 item {
+                     Spacer(Modifier.height(8.dp))
+@@ -249,7 +249,11 @@ private fun NutritionLineCard(
+ }
+ 
+ @Composable
+-private fun DayCard(day: DayPlan, dateLabel: String? = null) {
++private fun DayCard(
++    day: DayPlan,
++    dateLabel: String? = null,
++    nutritionByDishId: Map<Long, com.sxdbsm.cookbook.android.ui.component.DishNutritionUi> = emptyMap(), // [AI生成] §9.36:每菜营养(整份热量+宏量·与AI推荐同款)
++) {
+     // [AI生成] 库存挂钩关→周期规划不显缺料/采购标注、缺料菜不变灰(与食历/详情同口径去噪)。
+     val pantryHookOn by com.sxdbsm.cookbook.android.ui.component.rememberPantryHookEnabled()
+     // [AI修改] P1 家族化(§9.35 R1)：灰卡 surfaceVariant→白卡 surface(与另两档结果卡同族)·卡内 14→16·卡间 Spacer(10)·卡头 primary→onSurface(强调色只给可交互)。
+@@ -293,6 +297,8 @@ private fun DayCard(day: DayPlan, dateLabel: String? = null) {
+                         if (d.reason.isNotBlank()) {
+                             Text("　${d.reason}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                         }
++                        // [AI生成] §9.36:每菜营养行(整份热量+宏量·热量数字受开关·钠偏高浅灰提示·缺数据"营养待完善")——与AI推荐逐菜同款。
++                        com.sxdbsm.cookbook.android.ui.component.DishNutritionLine(nutritionByDishId[d.id])
+                     }
+                     if (pantryHookOn && d.purchaseNames.isNotEmpty()) {
+                         // [AI修改] P1(§9.35 R6)：去装饰 emoji(纯文字标注·error 色保留=需注意信息)。
+diff --git a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanViewModel.kt b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanViewModel.kt
+index 8837e07..f713f92 100644
+--- a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanViewModel.kt
++++ b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanViewModel.kt
+@@ -11,6 +11,8 @@ import com.sxdbsm.cookbook.ai.PeriodPlanner
+ import com.sxdbsm.cookbook.ai.PlanOrchestrator
+ import com.sxdbsm.cookbook.ai.RecommendationDataSource
+ import com.sxdbsm.cookbook.ai.model.PeriodPlan
++import com.sxdbsm.cookbook.android.ui.component.DishNutritionUi
++import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
+ import com.sxdbsm.cookbook.data.repository.DayMealDraft
+ import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+ import com.sxdbsm.cookbook.domain.model.MealType
+@@ -33,6 +35,7 @@ class AiPlanViewModel(
+     aiRuntime: AiRuntime,
+     private val aiConfig: AiRuntimeConfig,
+     private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] 读写推荐风格(与AI推荐共用)
++    private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] §9.36:逐日卡每菜营养(整份热量+宏量·与AI推荐同款 DishNutritionLine)
+ ) : ViewModel() {
+ 
+     var state by mutableStateOf(AiPlanUiState())
+@@ -99,11 +102,17 @@ class AiPlanViewModel(
+                 }
+                 val nutritionLine = com.sxdbsm.cookbook.domain.WeeklyNutritionLineAggregator.aggregate(perDayMainNames)
+                 val nutritionAdvices = com.sxdbsm.cookbook.domain.NutritionLineAdvisor.advise(nutritionLine)
+-                PlanGenResult(annotatedPlan, ctx.season, ctx.healthAware, result.byAi, nutritionLine, nutritionAdvices)
++                // [AI生成] §9.36:批量查计划内每菜营养(去重全部 dishId·一次·无 N+1)·runCatching 兜底(失败→空→逐日卡静默不显·绝不中断计划)。
++                val dishIds = annotatedPlan.days.flatMap { it.meals }.flatMap { it.dishes }.map { it.id }.distinct()
++                val nutritionByDishId = runCatching {
++                    nutritionRepo.dishNutrition(dishIds).mapValues { (_, dn) -> dn.toDishNutritionUi() }
++                }.getOrDefault(emptyMap())
++                PlanGenResult(annotatedPlan, ctx.season, ctx.healthAware, result.byAi, nutritionLine, nutritionAdvices, nutritionByDishId)
+             }.onSuccess { r ->
+                 state = state.copy(
+                     loading = false, plan = r.plan, season = r.season, healthAware = r.healthAware,
+                     byAi = r.byAi, planStartDate = startDate, nutritionLine = r.nutritionLine, nutritionAdvices = r.nutritionAdvices,
++                    nutritionByDishId = r.nutritionByDishId,
+                 )
+             }.onFailure {
+                 state = state.copy(loading = false, error = "生成失败，请稍后再试")
+@@ -143,6 +152,7 @@ class AiPlanViewModel(
+         val byAi: Boolean,
+         val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine?,
+         val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice>,
++        val nutritionByDishId: Map<Long, DishNutritionUi>, // [AI生成] §9.36:逐日卡每菜营养
+     )
+ 
+     companion object {
+@@ -167,5 +177,6 @@ data class AiPlanUiState(
+     val recommendStyle: com.sxdbsm.cookbook.ai.RecommendationStyle = com.sxdbsm.cookbook.ai.RecommendationStyle.DEFAULT, // [AI生成] 推荐风格
+     val nutritionLine: com.sxdbsm.cookbook.domain.NutritionLine? = null, // [AI生成] P2:整周营养线(结构覆盖/缺口/均衡度)·概览卡用
+     val nutritionAdvices: List<com.sxdbsm.cookbook.domain.LineAdvice> = emptyList(), // [AI生成] P2:跨天补充建议
++    val nutritionByDishId: Map<Long, DishNutritionUi> = emptyMap(), // [AI生成] §9.36:逐日卡每菜营养(整份热量+宏量·null 视为无数据静默不显)
+     val error: String? = null,
+ )
+diff --git a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendScreen.kt b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendScreen.kt
+index e55e84a..d25a516 100644
+--- a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendScreen.kt
++++ b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendScreen.kt
+@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Check
+ import androidx.compose.ui.draw.alpha
+ import androidx.compose.ui.draw.clip
+ import com.sxdbsm.cookbook.android.ui.component.CapsuleButton
++import com.sxdbsm.cookbook.android.ui.component.DishNutritionLine
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Column
+ import androidx.compose.foundation.layout.Row
+@@ -648,28 +649,6 @@ private fun DishRow(item: DishItemUi, selected: Boolean, onToggle: () -> Unit, o
+     }
+ }
+ 
+-/**
+- * 每菜营养行(§9.36)：整份热量+三大宏量(热量数字受"热量数值显示"开关·关则只显宏量)；钠偏高另起浅灰"偏咸"行；缺数据"营养待完善"。[AI生成]
+- * 守红线:热量整份不折算·数字受开关·钠不点病名不用红·纯文字浅色无 emoji(§9.35)·免责复用页面底部。
+- */
+-@Composable
+-private fun DishNutritionLine(n: com.sxdbsm.cookbook.android.ui.ai.DishNutritionUi?) {
+-    if (n == null) return // 未算好/查询失败→静默不显(不中断推荐)
+-    val calorieOn by com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled()
+-    Spacer(Modifier.height(2.dp))
+-    if (!n.hasData) {
+-        Text("营养待完善", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+-        return
+-    }
+-    val macros = "蛋白 ${n.proteinG}g·脂肪 ${n.fatG}g·碳水 ${n.carbG}g"
+-    val main = (if (calorieOn && n.kcal != null) "整份约 ${n.kcal} 千卡 · " else "") + macros + (if (n.estimated) "（估算）" else "")
+-    Text(main, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+-    if (n.highSodium) {
+-        Spacer(Modifier.height(2.dp))
+-        Text("偏咸，注意用量", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+-    }
+-}
+-
+ @Composable
+ private fun LoadingBlock() {
+     Column(
+diff --git a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendViewModel.kt b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendViewModel.kt
+index cdaa449..1aa3260 100644
+--- a/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendViewModel.kt
++++ b/androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendViewModel.kt
+@@ -5,7 +5,8 @@ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.setValue
+ import androidx.lifecycle.ViewModel
+ import androidx.lifecycle.viewModelScope
+-import kotlin.math.roundToInt
++import com.sxdbsm.cookbook.android.ui.component.DishNutritionUi
++import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
+ import com.sxdbsm.cookbook.ai.AiRuntimeConfig
+ import com.sxdbsm.cookbook.ai.RecommendationDataSource
+ import com.sxdbsm.cookbook.ai.RecommendationOrchestrator
+@@ -282,7 +283,7 @@ class AiRecommendViewModel(
+         val byId = result.candidates.associateBy { it.id }
+         // [AI生成] §9.36:批量查每菜营养(≤10候选·一次·无 N+1)·runCatching 兜底(查询失败→空→静默不显·绝不中断推荐主流程)。
+         val nutritionUiById: Map<Long, DishNutritionUi> = runCatching {
+-            nutritionRepo.dishNutrition(result.candidates.map { it.id }).mapValues { (_, dn) -> dn.toNutritionUi() }
++            nutritionRepo.dishNutrition(result.candidates.map { it.id }).mapValues { (_, dn) -> dn.toDishNutritionUi() }
+         }.getOrDefault(emptyMap())
+         // [AI生成] 药膳一期·食补过滤(仅扁平列表)：**只把含药食同源食材的菜稳定排前**(正向排序偏好，非硬过滤/非罚分/不接慢病评级)。
+         //   命中不足不给死胡同：仍展示全部、按含量降序，并如实告知(降级排序)。分组(模型建议)路径不重排，保持搭配完整。
+@@ -327,21 +328,6 @@ class AiRecommendViewModel(
+         nutrition = nutrition, // [AI生成] §9.36:每菜营养(整份热量+宏量+钠提示·null=未算/无数据)
+     )
+ 
+-    /** [AI生成] §9.36:DishNutrition→展示 DTO(整份·四舍五入·无数据则各值 null·钠偏高提示·estimated 标"估算")。 */
+-    private fun com.sxdbsm.cookbook.domain.model.DishNutrition.toNutritionUi(): DishNutritionUi {
+-        // [AI修改] Google审🟡:有料但用量缺(resolveGrams 跳过)→热量恒0·此时算"营养待完善"而非显"整份约0千卡"(usable=有数据且热量>0)。
+-        val usable = hasData && totals.energyKcal > 0.0
+-        return DishNutritionUi(
+-            kcal = if (usable) totals.energyKcal.roundToInt() else null,
+-            proteinG = if (usable) totals.proteinG.roundToInt() else null,
+-            fatG = if (usable) totals.fatG.roundToInt() else null,
+-            carbG = if (usable) totals.carbG.roundToInt() else null,
+-            highSodium = usable && totals.sodiumMg >= SODIUM_HIGH_PER_DISH_MG,
+-            estimated = usable && !complete,
+-            hasData = usable,
+-        )
+-    }
+-
+     /** "最近吃过"标注文案。[AI生成] B2 */
+     private fun recentLabel(daysAgo: Int?): String = when {
+         daysAgo == null -> ""
+@@ -373,8 +359,6 @@ class AiRecommendViewModel(
+         private const val MEAL_COUNT = 3
+         private val MAX_ITEMS = com.sxdbsm.cookbook.ai.RecommendationOrchestrator.DISPLAY_BATCH // [AI修改] 每批 10 个，与 orchestrator 分批一致。
+         private const val RANDOM_ROTATION_BOUND = 1000 // 随机模式的随机轮转上界。
+-        // [AI生成] §9.36:单菜钠"偏咸"提示阈值≈高血压日限 2400mg 的 1/3(惯例·非精确·仅温和提醒不点病名)。
+-        private const val SODIUM_HIGH_PER_DISH_MG = 800.0
+     }
+ }
+ 
+@@ -410,15 +394,6 @@ data class DishItemUi(
+     val nutrition: DishNutritionUi? = null, // [AI生成] §9.36:每菜营养(整份热量+宏量+钠提示)·null=未算好/查询失败(静默不显)。
+ )
+ 
+-/** [AI生成] §9.36:推荐菜营养展示 DTO(整份·四舍五入的展示态·UI 不碰 domain DishNutrition)。 */
+-data class DishNutritionUi(
+-    val kcal: Int?, // 整份热量(千卡)·null=无数据(hasData=false)
+-    val proteinG: Int?, val fatG: Int?, val carbG: Int?, // 宏量(g)·同上
+-    val highSodium: Boolean = false, // 钠偏高→UI 显"偏咸，注意用量"(浅灰·不红·不点病名)
+-    val estimated: Boolean = false, // 部分料缺→UI 行尾"（估算）"
+-    val hasData: Boolean = false, // 整菜有无营养数据·false→UI 显"营养待完善"
+-)
+-
+ /** 模型给出的一套搭配方案(一餐组合)。[AI生成] H1：消费 orchestrator 的 MealSuggestion。 */
+ data class SuggestionGroupUi(
+     val reason: String, // 这套搭配的一句人话理由

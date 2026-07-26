@@ -1,0 +1,10 @@
+[unattended] feat(AI推荐): 营养/热量"整份·全家分食"口径注(避免综合值焦虑)
+
+用户提:AI推荐显示的千卡/营养素是整份/整套(全家总量)·看到综合值大易焦虑误以为一人份。加克制口径说明,泛指不折算人均数字(守热量个人概念红线·提醒家庭餐食分着吃)。
+
+- AiRecommend/AiPlan 页脚免责行旁加统一浅灰 PORTION_HINT「营养和热量是整桌的量，一家人分着吃就好」(internal const 共用·labelSmall+outline·恒显不随 CALORIE_NUMBER_ENABLED 开关)。
+- ⓘ推荐规则说明弹窗补「营养和热量怎么看」三条(整份=一整盘/整套=整桌全家/分着吃比整份少·不用担心)。
+- 门禁:copywriter(避免焦虑·安抚不吓唬·不出人均数字)·UX 免(纯文案+复用现有免责行位置无新交互)。构建绿·沉淀 §9.36。
+- 另:待办登记 3 新点(单位/剂量 bug + 加食材智能默认剂量→合并「食材剂量默认值」专项单开 session·"是否吃完影响摄入"多方会商单开 session)。
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

@@ -1,0 +1,13 @@
+staple=谷薯主食类
+vegetable=蔬菜类
+fungi_algae=菌藻类
+fruit=水果类
+meat=畜禽肉类
+aquatic=水产类
+egg=蛋类
+dairy=奶类
+soy_nut=大豆及坚果
+oil=油脂类
+seasoning=调味品
+convenience=方便食品
+other=其他

@@ -1,0 +1,15 @@
+[unattended] feat(记一餐): 餐次块简洁化四改 + 周计划营养卡文案通用化
+
+餐次 MealBlockCard 四改(§9.39·Google 质量门禁无阻断·构建绿):
+- ①低频操作(选组合/存组合/删本块)收进头部 ⋯ActionSheet(去按钮堆叠杂乱)
+- ②加菜按钮 添加菜品(主·primary accent)+AI推荐(次·中性) weight平分·空/非空块样式统一
+- ③展示区「已选N道」+菜格 与 操作区 用半透 hairline 分栏;空块只轻引导「还没加菜」+操作区(if/else 平衡分支·守 SlotTable 红线)
+- ④常吃 chips 归操作区首行
+- 零新组件·全复用 ActionSheet/MealDishGrid/FrequentDishChips·删无用 hasCombos 参数
+
+周计划营养卡(AiPlan/WeekPlan 共用 NutritionLineCard)文案通用化:
+- 「一周营养搭配」→「这份计划的营养搭配」、「一周合计」→「整套合计」(天数可变1~30·去时段硬编码)
+- 「这一周吃到了 X」→「这几天安排了 X」(口径bug:计划是未来餐没吃·"吃到了"是报告侧措辞·守诚实红线)
+- AiPlanScreen 空态去"这一周"硬编码
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>

@@ -1,0 +1,116 @@
+androidApp\src\main\java\com\sxdbsm\cookbook\android\kitchen\CookingTimerService.kt:122	🍳 烹饪计时进行中
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\addmeal\AddDayFoodScreen.kt:223	⚠ $warning
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendScreen.kt:329	🍳 做法：${group.cookingHint}
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:184	⛔忌口：${c.avoidNames.joinToString(
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:191	🕒 今天吃过
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:192	🕒 昨天吃过
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:193	🕒 ${daysAgo}天前吃过
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:200	⭐你常做
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:202	🥗补今日营养
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:203	⚠库存不足：${c.shortageNames.joinToString(
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:206	🛒还差：${c.missingNames.joinToString(
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:208	✓宜吃：${c.recommendHits.joinToString(
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:209	🧂做法建议：${c.cookingCautions.joinToString(
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\ai\AiRecommendViewModel.kt:211	⚠注意限量：${c.limitHits.joinToString(
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DayMealCardView.kt:137	🔥 ${focusName.ifBlank { 
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DayMealCardView.kt:139	🔥 ${focusName}约 $personalKcal 千卡
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DayMealCardView.kt:139	🔥 当天约 $personalKcal 千卡
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DayMealCardView.kt:142	🔥 全家当天约 $dayKcal 千卡
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DishMiniCard.kt:38	🍱
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DishRow.kt:60	🍱
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DishRow.kt:70	⭐ ${dish.name}
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DishRow.kt:133	🔥 ${dish.preference}
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\DishRow.kt:135	❤️ ${dish.preference}
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\EmptyState.kt:21	🍽
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:11	🍅
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:12	🥒
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:13	🥕
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:14	🥔
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:15	🥬
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:16	🧅
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:17	🧄
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:18	🌶
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:19	🍄
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:20	🍚
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:21	🍜
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:22	🥚
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:23	🥛
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:24	🫘
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:25	🥩
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:26	🍗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:27	🐟
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:28	🦐
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:29	🧂
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:30	🫒
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\FoodEmoji.kt:31	🥗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\ImagePickerButton.kt:163	🖼
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\IngredientCard.kt:249	✓
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\IngredientCard.kt:250	⚠
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\component\IngredientCard.kt:251	✕
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\cook\CookModeScreen.kt:160	🍳
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:69	⭐
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:69	☆
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:129	🍱
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:176	🍱
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:269	🍳
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:325	🥘 库存
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:327	🛒 需采购
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:328	⚠ 库存不足
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:333	🚫 不适合
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:334	⚠ 慎吃
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:335	✅ 推荐
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:336	💚 健康
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:341	🍖 嘌呤
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:344	📈 升糖
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:351	🍽 记录
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:353	🥗 营养
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishdetail\DishDetailScreen.kt:360	🔥 热量
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishes\DishesScreen.kt:233	🥗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishes\DishesScreen.kt:270	🥗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishes\DishesScreen.kt:309	⭐ 收藏置顶
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishes\DishesScreen.kt:452	🔎
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\dishes\DishesScreen.kt:463	🔎
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\family\FamilyScreen.kt:205	🔥 每日目标约 $target 千卡
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\family\FamilyStatsScreen.kt:105	🔥 ${stats.todayKcal} 千卡
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:63	🥬
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:64	🍲
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:65	🍽️
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:72	🎨
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:73	📊
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:74	👪
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:75	📚
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:82	✨
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:83	🧊
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:84	🎲
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\guide\FeatureGuideScreen.kt:85	🌈
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\home\HomeScreen.kt:124	🤖
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\home\HomeScreen.kt:203	🗓
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\home\HomeScreen.kt:224	📅
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\home\HomeScreen.kt:242	🔥热门/⏱最近
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\home\NutritionWall.kt:76	🔥 ${data.kcal} 千卡
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\pairing\FreePairingScreen.kt:76	🍅
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\DishPickerScreen.kt:227	🥗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientDetailSheet.kt:122	🥗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientDetailSheet.kt:156	🍳 做法
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientDetailSheet.kt:183	🩺 忌口 / 宜忌
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientDetailSheet.kt:198	🥗 属性
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientDetailSheet.kt:205	📋 处理与保存
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:347	🟢 推荐
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:348	🟡 限量
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:349	🔴 避免
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:502	🔎
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:531	🔎
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:897	🥗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:935	🍽️
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:936	🧊
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:937	🥗
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\picker\IngredientPickerScreen.kt:938	🔍
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\search\SearchScreen.kt:117	🔎
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\search\SearchScreen.kt:126	🔎
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\shopping\ShoppingListScreen.kt:93	🛒
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\shopping\ShoppingListScreen.kt:101	🛒
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\sync\DeviceSyncDialog.kt:103	✅ 已发送到另一台设备
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\sync\DeviceSyncDialog.kt:247	✅ 已导入并恢复，请重新打开应用生效
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\sync\DeviceSyncDialog.kt:251	⚠ 接收将用对方数据覆盖本机现有数据。
+androidApp\src\main\java\com\sxdbsm\cookbook\android\ui\timeline\FoodTimelineScreen.kt:134	📅
+---count 115---

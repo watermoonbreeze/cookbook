@@ -1,0 +1,107 @@
+[
+  {
+    "ingredient": "排骨",
+    "saturatedFat": 7.5,
+    "cholesterol": 80,
+    "ref": "USDA FoodData Central: Pork, raw, separable lean and fat, spareribs (饱和脂肪7.53g、胆固醇80mg/100g)",
+    "review": "verified"
+  },
+  {
+    "ingredient": "培根",
+    "saturatedFat": 14.4,
+    "cholesterol": 68,
+    "ref": "USDA: Pork, cured, bacon, raw（饱和脂肪约14-15g、胆固醇约68mg/100g；不同来源68-107mg）",
+    "review": "verified"
+  },
+  {
+    "ingredient": "鸭肉",
+    "saturatedFat": 13.2,
+    "cholesterol": 94,
+    "ref": "胆固醇94mg/100g来自中国食物成分表(鸭·均值, nlc.chinanutri.cn/fq/foodinfo/891)；饱和脂肪13.2g/100g来自USDA Duck, raw, meat and skin(中国表SFA仅给百分比30.2%)",
+    "review": "verified"
+  },
+  {
+    "ingredient": "奶酪",
+    "saturatedFat": 21.1,
+    "cholesterol": 105,
+    "ref": "USDA: Cheese, cheddar（饱和脂肪21.1g、胆固醇105mg/100g）；中国食物成分表干酪/乳酪仅列胆固醇(约70mg)未测饱和脂肪，故取USDA干酪代表值",
+    "review": "verified"
+  },
+  {
+    "ingredient": "蟹",
+    "saturatedFat": 0.2,
+    "cholesterol": 78,
+    "ref": "USDA: Crustaceans, raw, blue, crab（饱和脂肪约0.22g、胆固醇78mg/100g）",
+    "review": "verified"
+  },
+  {
+    "ingredient": "黄鳝",
+    "saturatedFat": 0.3,
+    "cholesterol": 126,
+    "ref": "中国食物成分表 鱼(黄鳝)[鳝鱼]（饱和脂肪0.3g、胆固醇126mg/100g，nlc.chinanutri.cn/fq/foodinfo/1008）",
+    "review": "verified"
+  },
+  {
+    "ingredient": "黑豆",
+    "saturatedFat": 2.5,
+    "cholesterol": 0,
+    "ref": "植物性食物，胆固醇0（中国食物成分表黑豆胆固醇未检测/为—）；饱和脂肪按SFA占总脂肪15.5%×总脂肪15.9g≈2.5g/100g换算，非直接测定值",
+    "review": "pending"
+  },
+  {
+    "ingredient": "橄榄油",
+    "saturatedFat": 13.8,
+    "cholesterol": 0,
+    "ref": "USDA: Olive oil（饱和脂肪13.81g/100g）；植物油胆固醇0",
+    "review": "verified"
+  },
+  {
+    "ingredient": "沙拉酱",
+    "saturatedFat": 11.7,
+    "cholesterol": 42,
+    "ref": "USDA: Salad dressing, regular, mayonnaise（饱和脂肪约11.7g、胆固醇约42mg/100g）",
+    "review": "verified"
+  },
+  {
+    "ingredient": "淡奶油",
+    "saturatedFat": 19.0,
+    "cholesterol": 111,
+    "ref": "USDA: Cream, fluid, light whipping（饱和脂肪约19g、胆固醇约111mg/100g）；品牌乳脂含量不同数值有别",
+    "review": "verified"
+  },
+  {
+    "ingredient": "千张",
+    "saturatedFat": 2.6,
+    "cholesterol": 0,
+    "ref": "植物性豆制品，胆固醇0（成分表未检测/为—）；饱和脂肪按SFA占总脂肪16.3%×总脂肪约16g≈2.6g/100g换算，非直接测定值",
+    "review": "pending"
+  },
+  {
+    "ingredient": "大骨头",
+    "saturatedFat": null,
+    "cholesterol": null,
+    "ref": "大骨(猪筒骨/汤骨)主体为骨与骨髓，无统一每100g可食部权威成分表口径，骨髓脂肪/胆固醇文献值离散(胆固醇约150-300mg)，未获可靠一手数据，省略",
+    "review": "pending"
+  },
+  {
+    "ingredient": "咸鸭",
+    "saturatedFat": 13.2,
+    "cholesterol": 94,
+    "ref": "无咸鸭/板鸭专项权威成分表；按鸭肉估算(饱和脂肪约13g来自USDA带皮鸭、胆固醇约94mg来自中国表鸭均值)，腌制加工后实际值可能偏移，仅供参考",
+    "review": "pending"
+  },
+  {
+    "ingredient": "油条",
+    "saturatedFat": null,
+    "cholesterol": 0,
+    "ref": "油条为植物性面团经植物油油炸，胆固醇约0(植物性)；饱和脂肪高度依赖所用油种与吸油量，成分表口径不一(约2g上下)，无稳定一手值故省略饱和脂肪",
+    "review": "pending"
+  },
+  {
+    "ingredient": "紫苏油",
+    "saturatedFat": 7.4,
+    "cholesterol": 0,
+    "ref": "植物油，胆固醇0；饱和脂肪按文献SFA约7%(棕榈酸+硬脂酸，6.7-11%区间)取约7.4g/100g，因品种/工艺变异较大",
+    "review": "pending"
+  }
+]

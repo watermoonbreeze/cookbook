@@ -1,0 +1,2475 @@
+[
+ {
+  "code": "jingjiang_rousi",
+  "name": "京酱肉丝",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "猪里脊切丝滑炒，甜面酱裹匀，咸香微甜、配葱丝解腻。",
+  "ingredients": [
+   {
+    "ingredient": "猪里脊",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "甜面酱",
+    "main": false,
+    "quantity": 2,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "淀粉",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "里脊切丝，加淀粉、少许盐抓匀腌 10 分钟。",
+   "热锅下油，肉丝滑散变色盛出。",
+   "锅留底油下姜蒜末，加甜面酱、生抽炒出酱香。",
+   "倒回肉丝翻匀裹酱，配葱丝装盘。"
+  ]
+ },
+ {
+  "code": "ganguo_huacai",
+  "name": "干锅花菜",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "花菜掰小朵干煸，配五花肉与青椒，咸香入味、干香微辣。",
+  "ingredients": [
+   {
+    "ingredient": "菜花",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "五花肉",
+    "main": true,
+    "quantity": 80,
+    "unit": "g"
+   },
+   {
+    "ingredient": "青椒",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "豆瓣酱",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "菜花掰小朵焯水沥干。",
+   "五花肉切片煸出油，下姜蒜、豆瓣酱炒香。",
+   "下菜花、青椒翻炒，加生抽调味。",
+   "大火收干水汽、炒至干香出锅。"
+  ]
+ },
+ {
+  "code": "xiaochao_rou",
+  "name": "小炒肉",
+  "method": "炒",
+  "cuisine": "湘菜",
+  "description": "五花肉配青椒爆炒，咸鲜微辣、下饭家常味。",
+  "ingredients": [
+   {
+    "ingredient": "五花肉",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "青椒",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "豆瓣酱",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "五花肉切薄片，青椒切块。",
+   "热锅煸香肉片逼出油脂。",
+   "下姜蒜、豆瓣酱炒香，加青椒翻炒。",
+   "淋生抽炒匀至断生出锅。"
+  ]
+ },
+ {
+  "code": "hupi_qingjiao",
+  "name": "虎皮青椒",
+  "method": "炒",
+  "cuisine": "川菜",
+  "description": "青椒煎出虎皮纹，酸香微辣、软嫩下饭。",
+  "ingredients": [
+   {
+    "ingredient": "青椒",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 3,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "青椒去蒂，用少油小火煎至两面起虎皮纹。",
+   "下蒜末爆香。",
+   "加生抽、醋、盐调味翻匀。",
+   "略焖片刻至软出锅。"
+  ]
+ },
+ {
+  "code": "suanrong_wawacai",
+  "name": "蒜蓉粉丝蒸娃娃菜",
+  "method": "蒸",
+  "cuisine": "家常菜",
+  "description": "娃娃菜铺粉丝，浇蒜蓉清蒸，清甜蒜香、清爽少油。",
+  "ingredients": [
+   {
+    "ingredient": "娃娃菜",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "粉丝",
+    "main": true,
+    "quantity": 50,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 4,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "粉丝泡软铺盘底，娃娃菜切条码上。",
+   "蒜末用热油激香，加生抽、盐调成蒜蓉汁。",
+   "蒜蓉汁淋在菜上。",
+   "上锅蒸 8 分钟至软出锅。"
+  ]
+ },
+ {
+  "code": "qingchao_shishu",
+  "name": "清炒时蔬",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "当季小白菜清炒，蒜香清淡、保留菜的清甜。",
+  "ingredients": [
+   {
+    "ingredient": "小白菜",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "小白菜洗净切段。",
+   "热锅下油爆香蒜末。",
+   "下菜大火快炒至断生。",
+   "加盐调味翻匀出锅。"
+  ]
+ },
+ {
+  "code": "baizhuo_caixin",
+  "name": "白灼菜心",
+  "method": "煮",
+  "cuisine": "粤菜",
+  "description": "菜心焯烫保翠绿，淋豉油热油，清鲜爽口。",
+  "ingredients": [
+   {
+    "ingredient": "菜心",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   }
+  ],
+  "steps": [
+   "水加少许油盐烧开，菜心焯烫至断生捞出摆盘。",
+   "生抽加少许水调成豉油汁淋上。",
+   "姜丝铺面。",
+   "浇一勺滚热油激香即成。"
+  ]
+ },
+ {
+  "code": "pai_huanggua",
+  "name": "拍黄瓜",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "黄瓜拍块拌蒜醋，脆爽开胃、消暑家常凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "黄瓜",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 3,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "黄瓜拍裂切块，加盐略腌沥水。",
+   "蒜切末。",
+   "加醋、生抽、芝麻油、蒜末拌匀。",
+   "静置片刻入味即可。"
+  ]
+ },
+ {
+  "code": "liangban_haidaisi",
+  "name": "凉拌海带丝",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "海带丝焯烫拌蒜醋，爽滑开胃、清淡少油。",
+  "ingredients": [
+   {
+    "ingredient": "海带",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 3,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "海带切丝焯水后过凉沥干。",
+   "蒜切末。",
+   "加醋、生抽、芝麻油、盐、蒜末拌匀。",
+   "冷藏片刻更爽口。"
+  ]
+ },
+ {
+  "code": "xihongshi_jidan_tang",
+  "name": "西红柿鸡蛋汤",
+  "method": "煮",
+  "cuisine": "家常菜",
+  "description": "番茄煮出红汤，淋蛋花，酸鲜暖胃、家常快手汤。",
+  "ingredients": [
+   {
+    "ingredient": "西红柿",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "淀粉",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "番茄切块炒出红汤，加水烧开。",
+   "淀粉加水调薄芡勾入。",
+   "蛋液缓缓淋入划出蛋花。",
+   "加盐调味、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "huangdou_zhuti_tang",
+  "name": "黄豆猪蹄汤",
+  "method": "炖",
+  "cuisine": "家常菜",
+  "description": "猪蹄配黄豆慢炖，汤白浓香、软糯滋补家常汤。",
+  "ingredients": [
+   {
+    "ingredient": "猪蹄",
+    "main": true,
+    "quantity": 400,
+    "unit": "g"
+   },
+   {
+    "ingredient": "黄豆",
+    "main": true,
+    "quantity": 80,
+    "unit": "g"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 2,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "黄豆提前泡发；猪蹄焯水去血沫。",
+   "猪蹄、黄豆、姜片入锅加足水。",
+   "大火烧开转小火炖 1.5 小时至软糯。",
+   "加盐调味、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "luobo_niunan_tang",
+  "name": "萝卜牛腩汤",
+  "method": "炖",
+  "cuisine": "家常菜",
+  "description": "牛腩配白萝卜慢炖，清甜软烂、暖身家常汤。",
+  "ingredients": [
+   {
+    "ingredient": "牛腩",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "白萝卜",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 2,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "牛腩切块焯水去血沫。",
+   "牛腩加姜、水炖 1 小时。",
+   "下白萝卜块再炖 30 分钟至软。",
+   "加盐调味、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "tudou_shao_ji",
+  "name": "土豆烧鸡",
+  "method": "焖",
+  "cuisine": "家常菜",
+  "description": "鸡腿配土豆红焖，酱香软糯、汤汁下饭家常菜。",
+  "ingredients": [
+   {
+    "ingredient": "鸡腿",
+    "main": true,
+    "quantity": 400,
+    "unit": "g"
+   },
+   {
+    "ingredient": "土豆",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 2,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "老抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "鸡腿切块焯水；土豆去皮切块。",
+   "热锅爆香葱姜蒜，下鸡块煸炒变色。",
+   "加生抽、老抽、盐和适量水，下土豆。",
+   "中小火焖 25 分钟至软糯、收汁出锅。"
+  ]
+ },
+ {
+  "code": "bocai_doufu_tang",
+  "name": "菠菜豆腐汤",
+  "method": "煮",
+  "cuisine": "家常菜",
+  "description": "菠菜配嫩豆腐煮汤，清爽利口、清淡暖胃家常汤。",
+  "ingredients": [
+   {
+    "ingredient": "菠菜",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "豆腐",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "菠菜焯水去草酸后切段；豆腐切块。",
+   "水加姜片烧开，下豆腐煮 5 分钟。",
+   "下菠菜略煮。",
+   "加盐、淋芝麻油出锅。"
+  ]
+ },
+ {
+  "code": "suanla_tang",
+  "name": "酸辣汤",
+  "method": "煮",
+  "cuisine": "川菜",
+  "description": "豆腐木耳勾芡成汤，酸辣开胃、暖身家常汤。",
+  "ingredients": [
+   {
+    "ingredient": "豆腐",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "木耳",
+    "main": false,
+    "quantity": 30,
+    "unit": "g"
+   },
+   {
+    "ingredient": "金针菇",
+    "main": false,
+    "quantity": 50,
+    "unit": "g"
+   },
+   {
+    "ingredient": "淀粉",
+    "main": false,
+    "quantity": 2,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 2,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "豆腐、木耳、金针菇切丝入水煮开。",
+   "加生抽、盐调味。",
+   "淀粉水勾芡至微稠，淋蛋液成蛋花。",
+   "关火加醋调出酸辣味出锅。"
+  ]
+ },
+ {
+  "code": "rousi_chaofan",
+  "name": "肉丝炒饭",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "米饭配肉丝鸡蛋同炒，粒粒分明、咸香一锅足。",
+  "ingredients": [
+   {
+    "ingredient": "大米",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "猪里脊",
+    "main": true,
+    "quantity": 80,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "大米煮成米饭放凉；里脊切丝。",
+   "热锅炒散蛋液盛出，滑炒肉丝。",
+   "下米饭炒散，回蛋。",
+   "加生抽、盐炒匀，撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "jiangyou_chaofan",
+  "name": "酱油炒饭",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "米饭裹酱油翻炒，鸡蛋提香，简单快手一碗足。",
+  "ingredients": [
+   {
+    "ingredient": "大米",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "老抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "米饭放凉备用。",
+   "热锅炒散蛋液，下米饭炒散。",
+   "淋生抽、少许老抽炒至上色均匀。",
+   "加盐、撒葱花翻匀出锅。"
+  ]
+ },
+ {
+  "code": "geda_tang",
+  "name": "疙瘩汤",
+  "method": "煮",
+  "cuisine": "家常菜",
+  "description": "面粉搅成小疙瘩下汤，配番茄鸡蛋，暖胃家常主食汤。",
+  "ingredients": [
+   {
+    "ingredient": "面粉",
+    "main": true,
+    "quantity": 120,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "西红柿",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "面粉边淋水边搅成小疙瘩。",
+   "番茄切块炒出红汤加水烧开。",
+   "下面疙瘩煮熟。",
+   "淋蛋液成蛋花，加盐、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "huntun",
+  "name": "馄饨",
+  "method": "煮",
+  "cuisine": "家常菜",
+  "description": "薄皮裹鲜肉虾仁，清汤下煮，皮滑馅鲜、暖身早餐。",
+  "ingredients": [
+   {
+    "ingredient": "饺子皮",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "猪肉末",
+    "main": true,
+    "quantity": 100,
+    "unit": "g"
+   },
+   {
+    "ingredient": "虾仁",
+    "main": false,
+    "quantity": 50,
+    "unit": "g"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "肉末、虾仁剁碎加葱姜末、盐、芝麻油拌成馅。",
+   "面皮包入馅料捏成馄饨。",
+   "水烧开下馄饨煮至浮起。",
+   "碗中放生抽、葱花，冲入原汤。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "baicai_jiaozi",
+  "name": "白菜猪肉饺子",
+  "method": "煮",
+  "cuisine": "家常菜",
+  "description": "白菜猪肉调馅包饺，皮薄馅足、家常团圆味。",
+  "ingredients": [
+   {
+    "ingredient": "饺子皮",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "猪肉末",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "白菜",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "白菜剁碎挤水，与肉末加葱姜、生抽、芝麻油、盐拌成馅。",
+   "面皮包入馅料捏成饺子。",
+   "水烧开下饺子，点两次凉水。",
+   "饺子浮起鼓胀即熟捞出。"
+  ]
+ },
+ {
+  "code": "zhurou_baozi",
+  "name": "猪肉包子",
+  "method": "蒸",
+  "cuisine": "家常菜",
+  "description": "发面裹鲜肉馅上笼蒸，松软多汁、经典早餐。",
+  "ingredients": [
+   {
+    "ingredient": "面粉",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "猪肉末",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "面粉和成光滑面团发至两倍大。",
+   "肉末加葱姜、生抽、盐搅成馅。",
+   "面团分剂擀皮包入馅料捏褶。",
+   "醒发后上锅蒸 15 分钟，关火焖 3 分钟。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "youtiao",
+  "name": "油条",
+  "method": "炸",
+  "cuisine": "家常菜",
+  "description": "面团下油锅炸至金黄蓬松，外酥里软、传统早点。",
+  "ingredients": [
+   {
+    "ingredient": "面粉",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 3,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "面粉加鸡蛋、盐、水和成软面团醒 1 小时。",
+   "面团擀条，两条叠压中间压一道。",
+   "油烧至六成热下面坯。",
+   "炸至金黄膨胀捞出沥油。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "jian_dan",
+  "name": "煎蛋",
+  "method": "煎",
+  "cuisine": "家常菜",
+  "description": "鸡蛋入锅煎香，边缘微焦、蛋黄溏心，快手早餐。",
+  "ingredients": [
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "平底锅热油。",
+   "打入鸡蛋小火煎。",
+   "撒少许盐。",
+   "煎至蛋白凝固、蛋黄合口味即出锅。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "hebao_dan",
+  "name": "荷包蛋",
+  "method": "煮",
+  "cuisine": "家常菜",
+  "description": "鸡蛋清水中煮成荷包状，清淡软嫩、暖胃早餐。",
+  "ingredients": [
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "水微开保持虾眼泡。",
+   "逐个打入鸡蛋不搅动。",
+   "小火煮至蛋白包住蛋黄成形。",
+   "加少许盐调味捞出。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "conghua_bing",
+  "name": "葱花饼",
+  "method": "煎",
+  "cuisine": "家常菜",
+  "description": "面团卷葱花烙饼，层次分明、葱香酥软家常主食。",
+  "ingredients": [
+   {
+    "ingredient": "面粉",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "葱",
+    "main": true,
+    "quantity": 2,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 2,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "面粉和成软面团醒 20 分钟。",
+   "擀薄抹油撒葱花盐，卷起盘圆再擀开。",
+   "平底锅小火烙至两面金黄。",
+   "出锅切块。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "shouzhua_bing",
+  "name": "手抓饼",
+  "method": "煎",
+  "cuisine": "家常菜",
+  "description": "面饼煎至层层酥脆，可夹蛋，外酥内软早餐。",
+  "ingredients": [
+   {
+    "ingredient": "面粉",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 2,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "面团擀薄抹油卷条盘圆再擀开。",
+   "平底锅刷油下饼煎。",
+   "打入鸡蛋铺开同煎。",
+   "煎至两面金黄、抓松出锅。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "jidan_bing",
+  "name": "鸡蛋饼",
+  "method": "煎",
+  "cuisine": "家常菜",
+  "description": "面糊摊薄饼加鸡蛋，柔软鲜香、快手营养早餐。",
+  "ingredients": [
+   {
+    "ingredient": "面粉",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "面粉加鸡蛋、水、盐、葱花调成稀面糊。",
+   "平底锅刷油倒入面糊摊薄。",
+   "小火煎至底面定型翻面。",
+   "两面金黄出锅切块。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "jiucai_hezi",
+  "name": "韭菜盒子",
+  "method": "煎",
+  "cuisine": "家常菜",
+  "description": "韭菜鸡蛋馅烙成金黄面盒，鲜香多汁、家常主食。",
+  "ingredients": [
+   {
+    "ingredient": "面粉",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "韭菜",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 2,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "面粉用温水和成软面团醒 20 分钟。",
+   "鸡蛋炒碎与韭菜末加盐、芝麻油拌成馅。",
+   "面团擀圆包馅捏成半月形。",
+   "平底锅小火煎至两面金黄。"
+  ],
+  "mealSlots": [
+   "BREAKFAST"
+  ]
+ },
+ {
+  "code": "qingjiao_chao_jidan",
+  "name": "青椒炒鸡蛋",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "青椒配滑蛋快炒，清香下饭、快手家常菜。",
+  "ingredients": [
+   {
+    "ingredient": "青椒",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 3,
+    "unit": "个"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "鸡蛋打散加少许盐；青椒切丝。",
+   "热锅炒蛋至凝固盛出。",
+   "下青椒炒至断生。",
+   "回蛋、加盐翻匀出锅。"
+  ]
+ },
+ {
+  "code": "sigua_chao_jidan",
+  "name": "丝瓜炒鸡蛋",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "丝瓜清甜配滑蛋，鲜嫩清淡、消暑家常菜。",
+  "ingredients": [
+   {
+    "ingredient": "丝瓜",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "鸡蛋",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "丝瓜去皮切滚刀块；鸡蛋炒熟盛出。",
+   "下蒜末爆香，放丝瓜翻炒出水。",
+   "回蛋同炒。",
+   "加盐调味炒匀出锅。"
+  ]
+ },
+ {
+  "code": "chao_qingcai",
+  "name": "炒青菜",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "油菜大火快炒，翠绿爽脆、蒜香清淡。",
+  "ingredients": [
+   {
+    "ingredient": "油菜",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "油菜洗净沥干。",
+   "热锅下油爆香蒜末。",
+   "下油菜大火快炒至变软。",
+   "加盐翻匀出锅。"
+  ]
+ },
+ {
+  "code": "qingchao_doumiao",
+  "name": "清炒豆苗",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "豌豆苗清炒，鲜嫩清甜、蒜香少油。",
+  "ingredients": [
+   {
+    "ingredient": "豌豆苗",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "豆苗洗净沥干。",
+   "热锅爆香蒜末。",
+   "下豆苗大火快炒至塌软。",
+   "加盐快速翻匀出锅。"
+  ]
+ },
+ {
+  "code": "hongshao_tudoukuai",
+  "name": "红烧土豆块",
+  "method": "焖",
+  "cuisine": "家常菜",
+  "description": "土豆块红烧收汁，软糯入味、酱香下饭。",
+  "ingredients": [
+   {
+    "ingredient": "土豆",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "老抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "土豆去皮切块。",
+   "热锅爆香葱姜蒜，下土豆煸炒。",
+   "加生抽、老抽、盐和适量水。",
+   "中小火焖至软糯、大火收汁出锅。"
+  ]
+ },
+ {
+  "code": "tudousi_chao_fentiao",
+  "name": "土豆丝炒粉条",
+  "method": "炒",
+  "cuisine": "家常菜",
+  "description": "土豆丝配粉条同炒，酸辣爽口、下饭快手。",
+  "ingredients": [
+   {
+    "ingredient": "土豆",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "粉条",
+    "main": true,
+    "quantity": 80,
+    "unit": "g"
+   },
+   {
+    "ingredient": "青椒",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "土豆切丝泡水；粉条泡软。",
+   "热锅爆香蒜末，下土豆丝、青椒丝翻炒。",
+   "加粉条、生抽、盐炒匀。",
+   "出锅前烹醋提香。"
+  ]
+ },
+ {
+  "code": "fentiao_dun_baicai",
+  "name": "粉条炖白菜",
+  "method": "炖",
+  "cuisine": "家常菜",
+  "description": "白菜粉条配五花肉同炖，汤汁浓郁、软糯暖身。",
+  "ingredients": [
+   {
+    "ingredient": "白菜",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "粉条",
+    "main": true,
+    "quantity": 80,
+    "unit": "g"
+   },
+   {
+    "ingredient": "五花肉",
+    "main": false,
+    "quantity": 80,
+    "unit": "g"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "五花肉切片煸香，下葱姜炒出味。",
+   "加白菜翻炒至软，倒入没过食材的水。",
+   "下泡软粉条炖 10 分钟。",
+   "加生抽、盐调味出锅。"
+  ]
+ },
+ {
+  "code": "luobo_dun_yangrou",
+  "name": "萝卜炖羊肉",
+  "method": "炖",
+  "cuisine": "家常菜",
+  "description": "羊肉配白萝卜慢炖，汤鲜肉烂、暖身冬季家常汤。",
+  "ingredients": [
+   {
+    "ingredient": "羊肉",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "白萝卜",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 3,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "羊肉切块焯水去膻沫。",
+   "羊肉加姜片、水炖 1 小时。",
+   "下白萝卜块再炖 30 分钟至软。",
+   "加盐调味、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "dun_niurou",
+  "name": "炖牛肉",
+  "method": "炖",
+  "cuisine": "家常菜",
+  "description": "牛肉配土豆慢炖，酱香软烂、下饭家常炖菜。",
+  "ingredients": [
+   {
+    "ingredient": "牛肉",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "土豆",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 2,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "牛肉切块焯水去血沫。",
+   "牛肉加姜、生抽、水炖 1 小时。",
+   "下土豆块再炖 30 分钟至软烂。",
+   "加盐调味、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "dun_paigu",
+  "name": "炖排骨",
+  "method": "炖",
+  "cuisine": "家常菜",
+  "description": "排骨配玉米慢炖，汤清味鲜、软糯脱骨家常汤。",
+  "ingredients": [
+   {
+    "ingredient": "排骨",
+    "main": true,
+    "quantity": 400,
+    "unit": "g"
+   },
+   {
+    "ingredient": "玉米",
+    "main": true,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 2,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "排骨焯水去血沫。",
+   "排骨、姜片入锅加足水炖 40 分钟。",
+   "下玉米段再炖 20 分钟。",
+   "加盐调味、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "donggua_tang",
+  "name": "冬瓜汤",
+  "method": "煮",
+  "cuisine": "家常菜",
+  "description": "冬瓜配虾皮煮清汤，清甜利口、消暑少油家常汤。",
+  "ingredients": [
+   {
+    "ingredient": "冬瓜",
+    "main": true,
+    "quantity": 300,
+    "unit": "g"
+   },
+   {
+    "ingredient": "虾皮",
+    "main": false,
+    "quantity": 10,
+    "unit": "g"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 1,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "冬瓜去皮去瓤切片。",
+   "水加姜片、虾皮烧开。",
+   "下冬瓜煮至透明软烂。",
+   "加盐、淋芝麻油、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "dun_yutang",
+  "name": "炖鱼汤",
+  "method": "炖",
+  "cuisine": "家常菜",
+  "description": "草鱼煎后炖成奶白汤，鲜美暖胃、家常鱼汤。",
+  "ingredients": [
+   {
+    "ingredient": "草鱼",
+    "main": true,
+    "quantity": 1,
+    "unit": "条"
+   },
+   {
+    "ingredient": "姜",
+    "main": false,
+    "quantity": 3,
+    "unit": "片"
+   },
+   {
+    "ingredient": "葱",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "花生油",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "草鱼处理干净切段，用油煎至两面微黄。",
+   "冲入开水，加姜片大火煮出奶白汤。",
+   "转小火炖 15 分钟。",
+   "加盐调味、撒葱花出锅。"
+  ]
+ },
+ {
+  "code": "zheng_yumi",
+  "name": "蒸玉米",
+  "method": "蒸",
+  "cuisine": "家常菜",
+  "description": "鲜玉米上锅清蒸，清甜软糯、低脂粗粮主食。",
+  "ingredients": [
+   {
+    "ingredient": "玉米",
+    "main": true,
+    "quantity": 2,
+    "unit": "根"
+   }
+  ],
+  "steps": [
+   "玉米去外叶留内层嫩皮。",
+   "冷水上锅。",
+   "大火蒸 15 分钟。",
+   "关火取出剥皮即食。"
+  ],
+  "mealSlots": [
+   "BREAKFAST",
+   "AFTERNOON_SNACK"
+  ]
+ },
+ {
+  "code": "liangban_xihongshi",
+  "name": "凉拌西红柿",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "番茄切片撒糖，清甜多汁、消暑快手凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "西红柿",
+    "main": true,
+    "quantity": 2,
+    "unit": "个"
+   },
+   {
+    "ingredient": "白糖",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   }
+  ],
+  "steps": [
+   "番茄洗净切片装盘。",
+   "均匀撒上白糖。",
+   "静置片刻出汁。",
+   "拌匀即可享用。"
+  ]
+ },
+ {
+  "code": "liangban_huashengmi",
+  "name": "凉拌花生米",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "花生米煮软拌蒜醋，配香菜，酸香开胃下酒小菜。",
+  "ingredients": [
+   {
+    "ingredient": "花生",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "香菜",
+    "main": false,
+    "quantity": 20,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "花生米煮或炸熟放凉。",
+   "香菜切段、蒜切末。",
+   "加醋、生抽、芝麻油、盐、蒜末。",
+   "拌匀撒香菜即可。"
+  ]
+ },
+ {
+  "code": "liangban_jinzhengu",
+  "name": "凉拌金针菇",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "金针菇焯烫拌蒜辣，爽滑开胃、清淡凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "金针菇",
+    "main": true,
+    "quantity": 200,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 3,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "小米辣",
+    "main": false,
+    "quantity": 1,
+    "unit": "个"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "金针菇去根焯水后过凉沥干。",
+   "蒜、小米辣切末。",
+   "加醋、生抽、芝麻油、盐、蒜末拌匀。",
+   "装盘即可。"
+  ]
+ },
+ {
+  "code": "liangban_qincai",
+  "name": "凉拌芹菜",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "芹菜焯烫配花生，清脆爽口、蒜香清淡凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "芹菜",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "花生",
+    "main": false,
+    "quantity": 50,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "芹菜切段焯水后过凉沥干。",
+   "花生煮熟；蒜切末。",
+   "加醋、芝麻油、盐、蒜末拌匀。",
+   "撒花生装盘。"
+  ]
+ },
+ {
+  "code": "liangban_douya",
+  "name": "凉拌豆芽",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "豆芽焯烫拌蒜醋，爽脆清淡、快手开胃凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "豆芽",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "豆芽焯水断生后过凉沥干。",
+   "蒜切末。",
+   "加醋、生抽、芝麻油、盐、蒜末。",
+   "拌匀装盘。"
+  ]
+ },
+ {
+  "code": "liangban_fuzhu",
+  "name": "凉拌腐竹",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "腐竹泡发配黄瓜拌蒜醋，爽口有嚼劲、清淡凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "腐竹",
+    "main": true,
+    "quantity": 100,
+    "unit": "g"
+   },
+   {
+    "ingredient": "黄瓜",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "腐竹泡软焯水切段；黄瓜切丝。",
+   "蒜切末。",
+   "加醋、生抽、芝麻油、盐、蒜末。",
+   "拌匀装盘。"
+  ]
+ },
+ {
+  "code": "liangban_haizhe",
+  "name": "凉拌海蜇",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "海蜇配黄瓜丝拌蒜醋，脆爽弹牙、清淡开胃凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "海蜇",
+    "main": true,
+    "quantity": 150,
+    "unit": "g"
+   },
+   {
+    "ingredient": "黄瓜",
+    "main": false,
+    "quantity": 1,
+    "unit": "根"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "海蜇泡去咸味切丝焯凉水；黄瓜切丝。",
+   "蒜切末。",
+   "加醋、芝麻油、盐、蒜末拌匀。",
+   "装盘即可。"
+  ]
+ },
+ {
+  "code": "liangban_lianou",
+  "name": "凉拌莲藕",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "莲藕焯烫拌蒜醋，脆嫩爽口、清淡开胃凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "莲藕",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 2,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "莲藕去皮切薄片焯水后过凉。",
+   "蒜切末。",
+   "加醋、盐、芝麻油、蒜末拌匀。",
+   "装盘即可。"
+  ]
+ },
+ {
+  "code": "liangban_jiangdou",
+  "name": "凉拌豆角",
+  "method": "凉拌",
+  "cuisine": "家常菜",
+  "description": "豇豆焯熟拌蒜醋，脆嫩爽口、清淡下饭凉菜。",
+  "ingredients": [
+   {
+    "ingredient": "豇豆",
+    "main": true,
+    "quantity": 250,
+    "unit": "g"
+   },
+   {
+    "ingredient": "大蒜",
+    "main": false,
+    "quantity": 3,
+    "unit": "瓣"
+   },
+   {
+    "ingredient": "醋",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "生抽",
+    "main": false,
+    "quantity": 1,
+    "unit": "勺"
+   },
+   {
+    "ingredient": "芝麻油",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   },
+   {
+    "ingredient": "盐",
+    "main": false,
+    "quantity": 1,
+    "unit": "少许"
+   }
+  ],
+  "steps": [
+   "豇豆切段焯熟后过凉沥干。",
+   "蒜切末。",
+   "加醋、生抽、芝麻油、盐、蒜末。",
+   "拌匀装盘。"
+  ]
+ }
+]

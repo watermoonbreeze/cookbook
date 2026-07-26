@@ -1,0 +1,57 @@
+[
+ {
+  "ingredient": "香菇",
+  "purine": 55,
+  "ref": "中国食物成分表(香菇鲜) / 嘌呤表"
+ },
+ {
+  "ingredient": "木耳",
+  "purine": 15,
+  "ref": "中国食物成分表(黑木耳干)"
+ },
+ {
+  "ingredient": "豆腐",
+  "purine": 68,
+  "ref": "中国食物成分表第6版·豆腐(均值)；嘌呤参考豆制品嘌呤表(68)"
+ },
+ {
+  "ingredient": "豆浆",
+  "purine": 28,
+  "ref": "中国食物成分表第6版·豆浆；嘌呤参考豆制品嘌呤表(63) ｜ satFat:USDA FDC SR Legacy"
+ },
+ {
+  "ingredient": "黄豆",
+  "purine": 190,
+  "ref": "中国食物成分表第6版·黄豆(大豆)；嘌呤参考痛风食物嘌呤表(干黄豆约190)"
+ },
+ {
+  "ingredient": "银耳",
+  "purine": 60,
+  "ref": "中国食物成分表(银耳,干) nlc.chinanutri.cn/fq/foodinfo/587.html;能量1092kJ/4.184≈261kcal;干品;膳食纤维取中国成分表不溶纤维值;泡发后重量大增"
+ },
+ {
+  "ingredient": "紫菜",
+  "purine": 35,
+  "ref": "中国食物成分表 紫菜(干) nlc.chinanutri.cn/fq/foodinfo/611；嘌呤为干紫菜高嘌呤参考值(约274mg) ｜ satFat:USDA FDC SR Legacy"
+ },
+ {
+  "ingredient": "芦笋",
+  "purine": 23,
+  "ref": "中国食物成分表(第6版) 芦笋，HowToEat/天天菜谱转载；嘌呤为芦笋中等参考值 ｜ satFat:USDA FDC SR Legacy"
+ },
+ {
+  "ingredient": "干香菇",
+  "purine": 214,
+  "ref": "《中国食物成分表》香菇(干)干重,foodwake.cn/food/352(热量264kcal/纤维31.6);嘌呤约214mg/100g干重(高嘌呤,《痛风食养指南2024》嘌呤表)"
+ },
+ {
+  "ingredient": "鸡毛蛋",
+  "purine": 90,
+  "ref": "近似值:鸡毛蛋=毛鸡蛋/旺鸡蛋(鸡胚死胎),非普通鸡蛋,无独立权威成分表条目;矿物质取鸡蛋近似"
+ },
+ {
+  "ingredient": "鱼油",
+  "purine": 0,
+  "ref": "纯动物油通式(≈902kcal/100g脂肪,USDA fish oil;富含EPA/DHA)"
+ }
+]

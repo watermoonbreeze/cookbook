@@ -1,0 +1,25 @@
+feat(权威化重审P3): 推荐份量对齐膳食宝塔·呈现补齐+营养线口径收敛(克数不做)
+
+会商算法+UX+产品拍板"呈现补齐+口径收敛",Google质量终审无阻断。权威化重审
+三大自创点(P1色系墙/P2餐次/P3份量)全部收官,全App统一到一套膳食宝塔结构口径。
+
+③ 口径收敛(shared·核心权威化):
+- NutritionLine 周计划营养线缺口口径 三支柱→膳食宝塔四正向层
+  (pillarGapDays→layerGapDays·GAP_PILLAR→GAP_LAYER·引用 DietaryGuideline 单一真相源)
+- 新增能力:识别"顿顿有肉却不喝奶不吃豆"的奶豆坚果缺层(原三支柱把鱼禽肉蛋+奶+豆混为一层)
+- balanceScore 连贯分分母 3→4(POSITIVE_LAYERS.size)·advise 显式按宝塔层序 tie-break(Google审🟡1)
+- 消灭"三支柱 vs 宝塔"并存漂移
+
+① 单餐入口补齐(androidApp):库存/随机推荐(AiRecommendScreen)结果区顶部补餐次结构建议行
+  (MealStructureHintRow·与 AiPlan 逐字同款·覆盖所有推荐入口)
+
+② 权威份量轻入口(androidApp):推荐页+周期计划页脚"各类每天吃多少 ›"(DailyAmountRefLink)
+  →膳食参考依据页(权威每日份量 DAILY_AMOUNTS 可达不喧宾)·MainScaffold wire 回调
+
+明确不做(会诊否决·数据不可靠+焦虑+免责红线):克数选菜、份量达标进度条、达成度%。
+权威每日克数份量只在参考页详列,高频推荐动线绝不铺克数。
+
+验证::shared:testDebugUnitTest(含新增"肉菜饭无奶豆→识别奶豆坚果缺层"核心测试)
+     +:androidApp:assembleDebug 均 BUILD SUCCESSFUL。Google质量终审无阻断。
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

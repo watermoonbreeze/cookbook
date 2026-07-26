@@ -1,0 +1,12 @@
+{
+  "topic": "鸡毛蛋/毛鸡蛋/活珠子(未成熟鸡胚蛋)——卫生安全口径",
+  "core_finding": "毛鸡蛋/活珠子=孵化中止的鸡胚(活珠子约孵12-13天、毛鸡蛋为孵化失败的死胚)。核心风险=【食品安全】而非营养/慢病：孵化温湿度利于沙门氏菌/大肠杆菌滋生，未彻底清洗+充分加热易致食物中毒；且『毛鸡蛋』属死因不明食品，按《动物防疫法》不得销售。孕妇/婴幼儿/免疫力低下者对沙门氏菌、李斯特菌等更敏感(孕妇李斯特菌感染风险为常人13-100倍，可致宫内感染/死胎/早产)——应避免此类未充分加热/来源不明的胚胎类食物。建议：给孕妇/婴幼儿相关 care 加 avoid 或 limit(附充分加热提示)；全人群可给『食品安全』提示但避免过度(充分煮熟的正规活珠子风险可控)。",
+  "structure_note": "现有 crowd_rules.json 仅含4类慢病(糖尿病/高尿酸/高血压/高血脂)，无孕妇/婴幼儿；孕婴人群规则在 ingredient_care_rules.json 用 care_pregnancy/care_infant/care_lactation/care_preschool 等 category 承载。故鸡毛蛋的孕婴安全规则应加进 ingredient_care_rules.json 对应 care 分类，不是 crowd_rules.json。",
+  "items": [
+    {"ingredient": "鸡毛蛋", "recommend": "孕妇：avoid(避免)", "crowd": "孕妇(care_pregnancy)", "level": "avoid", "confidence": "verified", "guideline_quote": "『没煮熟的贝类、鸡蛋……具有细菌或病毒感染的风险』；『孕妇李斯特菌感染风险是常人13-100倍，可导致严重宫内感染、死胎、早产』；毛鸡蛋/活珠子孵化过程易滋生沙门氏菌、大肠杆菌，未彻底加热易致食物中毒", "source": "《孕期妇女膳食指南》(2016/2022);香港卫生署『怀孕妈妈要避免进食的食物』;食品安全科普(沙门氏菌需71℃以上灭活)", "reason": "未成熟鸡胚+孵化环境易污染致病菌，孕妇对沙门氏/李斯特菌高度敏感→应避免。属卫生安全口径，非营养。"},
+    {"ingredient": "鸡毛蛋", "recommend": "婴幼儿：avoid(避免)", "crowd": "婴幼儿(care_infant)", "level": "avoid", "confidence": "verified", "guideline_quote": "婴幼儿免疫系统未发育完善，对沙门氏菌等致病菌抵抗力弱；此类胚胎蛋须充分加热且来源不明风险高", "source": "食品安全科普;婴幼儿喂养常识(避免生/半熟蛋及来源不明禽胚)", "reason": "婴幼儿对致病菌抵抗力弱，且鸡胚蛋非必要辅食、无独立营养优势(seed ref 已注『矿物质取鸡蛋近似、非独立权威条目』)→避免。"},
+    {"ingredient": "鸡毛蛋", "recommend": "学龄前/哺乳期：limit 或提示(倾向 avoid)", "crowd": "学龄前(care_preschool)/哺乳期(care_lactation)", "level": "limit(pending 是否升 avoid)", "confidence": "pending", "guideline_quote": "同上致病菌风险；哺乳期与学龄前对食品安全要求较高但无独立权威指南专门点名鸡毛蛋", "source": "食品安全通则;无专门指南原文点名→标 pending", "reason": "风险方向一致但缺针对性指南原文，保守标 pending，人工可参照孕婴口径决定 limit/avoid。"},
+    {"ingredient": "鸡毛蛋", "recommend": "全人群：食品安全提示(不做硬忌口)", "crowd": "全人群", "level": "无忌口·仅安全提示", "confidence": "verified", "guideline_quote": "『毛鸡蛋(死因不明食品)不得销售』(动物防疫法);沙门氏菌需71℃以上充分加热灭活;正规来源+彻底煮熟风险可控", "source": "《中华人民共和国动物防疫法》;食品安全科普", "reason": "对健康成人，充分煮熟的正规活珠子风险可控，不宜一刀切全人群忌口(会过度)。建议以【食品安全提示】呈现(『需彻底煮熟、来源要正规、免疫力低下者慎食』)，而非 avoid/limit 忌口标记。"}
+  ],
+  "summary": "【总体结论】鸡毛蛋/活珠子的问题是【食品安全(沙门氏菌/大肠杆菌/来源不明)】而非营养或慢病忌口。\n\n【建议纳入的 care(经指南支撑·verified)】①care_pregnancy=avoid、②care_infant=avoid——孕妇/婴幼儿对致病菌敏感，有孕期膳食指南『避免未煮熟蛋』+李斯特菌高风险原文支撑。\n\n【🟡 pending】care_preschool/care_lactation：风险方向一致但无针对性指南原文点名鸡毛蛋，保守标 pending，倾向 limit(或参孕婴升 avoid)交人工。\n\n【明确不该做的(避免过度)】不要给『全人群』加硬忌口(avoid/limit)——充分煮熟+正规来源的活珠子对健康成人风险可控。建议全人群仅以【食品安全提示】呈现(彻底煮熟/来源正规/免疫力低下者慎食)，符合『宁少勿过度』。\n\n【实现提醒】鸡毛蛋的孕婴规则应加进 ingredient_care_rules.json 的 care_pregnancy/care_infant 等分类(crowd_rules.json 只承载4类慢病)。"
+}

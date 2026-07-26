@@ -1,0 +1,21 @@
+[unattended] fix(菜品): A1修自建菜空用量配料(0营养)+查证关两项待办(dish_ingredient UNIQUE·RANDOM IN已修)
+
+A1 修 quantity=NULL 配料：真机库证实 8 行 user 自建菜配料 quantity=NULL(用户加
+食材没设量)→营养算 0。seeder 幂等修:新增 selectUserDishIngredientsWithNullQuantity
+(**仅 source='user'**·预设菜空量由 seedDishes 循环用 seed 正确值填、不能被分类默认抢填)
+→按食材名 SeasoningDefaults.defaultGramFor 分类默认克数(蛋50/菜150/奶200…)+
+fillDishIngredientQuantityIfNull(补 quantity+克单位)·SEED_LOGIC_VERSION v10→v11。
+真机库副本验证:精确命中8行/排除4行preset软删。加 PresetDataSeederTest A1 回归(鸡蛋
+空量→50g+克单位)。
+
+A2(查证·零代码):dish_ingredient(dish_id,ingredient_id) 确认有 uq_dish_ingredient
+UNIQUE 索引(CREATE TABLE 与真机库均有)→关待办 E 组悬案。
+
+C(查证·零代码):RANDOM 模式 IN 全食材展开 999 崩溃隐患**早已修**——RANDOM 走
+listAllDishMinis/selectAllDishesForRandom(无 IN)、Cookbook.sq:1145 注释含原理、
+pantryIds 仅内存 Set 判断不入 SQL IN、candidateIds≤DISH_PREFILTER_LIMIT(100)。
+先查证再改、不重复造轮子→关待办。
+
+构建 :shared:testDebugUnitTest BUILD SUCCESSFUL(含 A1 回归测试)。
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>

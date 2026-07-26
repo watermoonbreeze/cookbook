@@ -1,0 +1,3040 @@
+[
+{
+"name": "蓝莓",
+"unit": "克",
+"cats": [
+"fruit",
+"fruit_berry"
+]
+},
+{
+"name": "低脂牛奶",
+"unit": "毫升",
+"cats": [
+"dairy",
+"dairy_liquid",
+"protein_quality",
+"calcium_high",
+"nutrition_calcium_absorbable",
+"fat_low"
+]
+},
+{
+"name": "无糖酸奶",
+"unit": "毫升",
+"cats": [
+"dairy",
+"dairy_fermented",
+"protein_quality",
+"calcium_high",
+"nutrition_calcium_absorbable",
+"sugar_low"
+]
+},
+{
+"name": "鳕鱼",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_marine",
+"protein_quality"
+]
+},
+{
+"name": "蟹",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_crustacean",
+"purine_medium",
+"nutrition_zinc"
+]
+},
+{
+"name": "蛤蜊",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_bivalve",
+"purine_high",
+"nutrition_iron_heme",
+"nutrition_zinc"
+]
+},
+{
+"name": "杏仁",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_tree"
+]
+},
+{
+"name": "腰果",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_tree"
+]
+},
+{
+"name": "芝麻",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_seed",
+"calcium_high"
+]
+},
+{
+"name": "盐",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_savory",
+"sodium_high"
+]
+},
+{
+"name": "生抽",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_savory",
+"sodium_high"
+]
+},
+{
+"name": "老抽",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_savory",
+"sodium_high"
+]
+},
+{
+"name": "醋",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sweet_sour"
+]
+},
+{
+"name": "料酒",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_other"
+]
+},
+{
+"name": "蚝油",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_savory",
+"sodium_high"
+]
+},
+{
+"name": "豆瓣酱",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "白糖",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_sweet_sour"
+]
+},
+{
+"name": "姜",
+"unit": "片",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "葱",
+"unit": "段",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "大蒜",
+"unit": "瓣",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "辣椒",
+"unit": "个",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "花生油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high"
+]
+},
+{
+"name": "菜籽油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high"
+]
+},
+{
+"name": "橄榄油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high"
+]
+},
+{
+"name": "猪油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_animal",
+"fat_high"
+]
+},
+{
+"name": "藜麦",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_coarse",
+"whole_grain",
+"fiber_high",
+"gi_low",
+"nutrition_iron_non_heme"
+]
+},
+{
+"name": "鹰嘴豆",
+"unit": "克",
+"cats": [
+"staple",
+"staple_legume",
+"fiber_high",
+"gi_low"
+]
+},
+{
+"name": "芥蓝",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable",
+"nutrition_calcium_plant",
+"season_winter"
+]
+},
+{
+"name": "油麦菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"purine_low",
+"season_winter"
+]
+},
+{
+"name": "茼蒿",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable",
+"season_winter"
+]
+},
+{
+"name": "苋菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable",
+"potassium_high",
+"nutrition_calcium_plant",
+"nutrition_iron_non_heme"
+]
+},
+{
+"name": "香菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf"
+]
+},
+{
+"name": "芦笋",
+"unit": "根",
+"cats": [
+"vegetable",
+"purine_medium",
+"nutrition_vitamin_b",
+"season_spring"
+]
+},
+{
+"name": "樱桃",
+"unit": "克",
+"cats": [
+"fruit",
+"fruit_stone",
+"gi_low",
+"nutrition_vitamin_c"
+]
+},
+{
+"name": "红枣",
+"unit": "颗",
+"cats": [
+"fruit",
+"fruit_stone",
+"nutrition_vitamin_c"
+]
+},
+{
+"name": "荔枝",
+"unit": "颗",
+"cats": [
+"fruit",
+"fruit_tropical"
+]
+},
+{
+"name": "哈密瓜",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_melon",
+"potassium_high"
+]
+},
+{
+"name": "火腿",
+"unit": "片",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "香肠",
+"unit": "根",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high",
+"fat_high"
+]
+},
+{
+"name": "腊肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high",
+"fat_high"
+]
+},
+{
+"name": "猪蹄",
+"unit": "个",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork",
+"fat_high"
+]
+},
+{
+"name": "鸭血",
+"unit": "克",
+"cats": [
+"meat",
+"meat_offal",
+"nutrition_iron_heme",
+"fat_low"
+]
+},
+{
+"name": "鲤鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"purine_medium"
+]
+},
+{
+"name": "黄鳝",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"purine_medium"
+]
+},
+{
+"name": "沙丁鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_marine",
+"purine_high",
+"nutrition_omega3"
+]
+},
+{
+"name": "鱿鱼",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_cephalopod",
+"purine_high"
+]
+},
+{
+"name": "扇贝",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_bivalve",
+"purine_high",
+"nutrition_zinc"
+]
+},
+{
+"name": "生蚝",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_bivalve",
+"purine_high",
+"nutrition_zinc"
+]
+},
+{
+"name": "海参",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_other",
+"protein_quality",
+"purine_low",
+"fat_low"
+]
+},
+{
+"name": "虾皮",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_crustacean",
+"sodium_high",
+"calcium_high",
+"nutrition_calcium_absorbable"
+]
+},
+{
+"name": "咸鸭蛋",
+"unit": "个",
+"cats": [
+"egg",
+"egg_product",
+"sodium_high"
+]
+},
+{
+"name": "奶酪",
+"unit": "片",
+"cats": [
+"dairy",
+"dairy_product",
+"protein_quality",
+"calcium_high",
+"nutrition_calcium_absorbable",
+"fat_high",
+"sodium_high"
+]
+},
+{
+"name": "板栗",
+"unit": "颗",
+"cats": [
+"soy_nut",
+"nut_tree",
+"gi_medium"
+]
+},
+{
+"name": "南瓜子",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_seed",
+"fat_high",
+"nutrition_zinc"
+]
+},
+{
+"name": "亚麻籽",
+"unit": "勺",
+"cats": [
+"soy_nut",
+"nut_seed",
+"nutrition_omega3",
+"fiber_high",
+"fat_high"
+]
+},
+{
+"name": "芝麻油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high"
+]
+},
+{
+"name": "亚麻籽油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high",
+"nutrition_omega3"
+]
+},
+{
+"name": "蜂蜜",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sweet_sour",
+"gi_high"
+]
+},
+{
+"name": "鸡精",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_savory",
+"sodium_high"
+]
+},
+{
+"name": "大麦",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_wheat",
+"whole_grain",
+"fiber_high",
+"gi_low"
+]
+},
+{
+"name": "荠菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_wild",
+"dark_vegetable",
+"nutrition_calcium_plant",
+"season_spring"
+]
+},
+{
+"name": "香椿",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_wild",
+"dark_vegetable",
+"season_spring"
+]
+},
+{
+"name": "马兰头",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_wild",
+"dark_vegetable",
+"season_spring"
+]
+},
+{
+"name": "葡萄干",
+"unit": "克",
+"cats": [
+"fruit",
+"fruit_dried",
+"gi_high"
+]
+},
+{
+"name": "桂圆干",
+"unit": "颗",
+"cats": [
+"fruit",
+"fruit_dried",
+"gi_high"
+]
+},
+{
+"name": "兔肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_livestock_other",
+"protein_quality",
+"fat_low"
+]
+},
+{
+"name": "驴肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_livestock_other",
+"protein_quality",
+"fat_low"
+]
+},
+{
+"name": "鱼丸",
+"unit": "个",
+"cats": [
+"aquatic",
+"aquatic_processed",
+"sodium_high"
+]
+},
+{
+"name": "速冻水饺",
+"unit": "个",
+"cats": [
+"convenience",
+"convenience_frozen",
+"sodium_high"
+]
+},
+{
+"name": "汤圆",
+"unit": "个",
+"cats": [
+"convenience",
+"convenience_frozen",
+"gi_high"
+]
+},
+{
+"name": "方便面",
+"unit": "包",
+"cats": [
+"convenience",
+"convenience_instant",
+"sodium_high",
+"fat_high",
+"gi_high"
+]
+},
+{
+"name": "自热米饭",
+"unit": "盒",
+"cats": [
+"convenience",
+"convenience_instant",
+"sodium_high"
+]
+},
+{
+"name": "午餐肉",
+"unit": "片",
+"cats": [
+"convenience",
+"convenience_canned",
+"sodium_high",
+"fat_high"
+]
+},
+{
+"name": "鱼罐头",
+"unit": "罐",
+"cats": [
+"convenience",
+"convenience_canned",
+"sodium_high"
+]
+},
+{
+"name": "水果罐头",
+"unit": "罐",
+"cats": [
+"convenience",
+"convenience_canned",
+"gi_high"
+]
+},
+{
+"name": "料理包",
+"unit": "包",
+"cats": [
+"convenience",
+"convenience_prepared",
+"sodium_high",
+"fat_high"
+]
+},
+{
+"name": "番茄酱",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "甜面酱",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "沙拉酱",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"fat_high"
+]
+},
+{
+"name": "蒜薹",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_allium",
+"fiber_high",
+"season_spring"
+]
+},
+{
+"name": "茭白",
+"unit": "根",
+"cats": [
+"vegetable",
+"vegetable_aquatic",
+"fiber_high",
+"purine_low",
+"season_autumn"
+]
+},
+{
+"name": "荸荠",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_aquatic",
+"season_autumn"
+]
+},
+{
+"name": "牛腩",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_beef",
+"protein_quality",
+"fat_high"
+]
+},
+{
+"name": "羊排",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_mutton",
+"fat_high"
+]
+},
+{
+"name": "章鱼",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_cephalopod",
+"purine_high",
+"protein_quality"
+]
+},
+{
+"name": "海蜇",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_other",
+"protein_quality",
+"fat_low"
+]
+},
+{
+"name": "奶粉",
+"unit": "克",
+"cats": [
+"dairy",
+"dairy_product",
+"calcium_high",
+"protein_quality"
+]
+},
+{
+"name": "黄油",
+"unit": "克",
+"cats": [
+"oil",
+"oil_animal",
+"fat_high"
+]
+},
+{
+"name": "葵花籽",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_seed",
+"fat_high"
+]
+},
+{
+"name": "花椒",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "八角",
+"unit": "颗",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "桂皮",
+"unit": "块",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "孜然",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "胡椒",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "香叶",
+"unit": "片",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "五香粉",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "茶树菇",
+"unit": "克",
+"cats": [
+"fungi_algae",
+"fungi",
+"fiber_high",
+"purine_medium"
+]
+},
+{
+"name": "草菇",
+"unit": "克",
+"cats": [
+"fungi_algae",
+"fungi",
+"purine_medium"
+]
+},
+{
+"name": "蟹味菇",
+"unit": "克",
+"cats": [
+"fungi_algae",
+"fungi",
+"purine_medium"
+]
+},
+{
+"name": "猴头菇",
+"unit": "个",
+"cats": [
+"fungi_algae",
+"fungi",
+"fiber_high"
+]
+},
+{
+"name": "内酯豆腐",
+"unit": "盒",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality"
+]
+},
+{
+"name": "冻豆腐",
+"unit": "块",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality"
+]
+},
+{
+"name": "油豆腐",
+"unit": "个",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality",
+"fat_high"
+]
+},
+{
+"name": "青豆",
+"unit": "克",
+"cats": [
+"soy_nut",
+"soy_bean",
+"protein_quality",
+"fiber_high"
+]
+},
+{
+"name": "黄花鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_marine",
+"protein_quality",
+"purine_medium"
+]
+},
+{
+"name": "鲳鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_marine",
+"protein_quality",
+"purine_medium"
+]
+},
+{
+"name": "罗非鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"protein_quality",
+"purine_medium"
+]
+},
+{
+"name": "龙利鱼",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_marine",
+"protein_quality",
+"fat_low"
+]
+},
+{
+"name": "河虾",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_crustacean",
+"protein_quality",
+"purine_high",
+"nutrition_calcium_absorbable"
+]
+},
+{
+"name": "蛏子",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_bivalve",
+"purine_high",
+"nutrition_zinc"
+]
+},
+{
+"name": "田螺",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_other",
+"purine_high"
+]
+},
+{
+"name": "泥鳅",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"protein_quality",
+"purine_medium"
+]
+},
+{
+"name": "石榴",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_berry"
+]
+},
+{
+"name": "柿子",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_pome",
+"gi_medium"
+]
+},
+{
+"name": "无花果",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_berry",
+"fiber_high"
+]
+},
+{
+"name": "桑葚",
+"unit": "克",
+"cats": [
+"fruit",
+"fruit_berry",
+"nutrition_iron_non_heme"
+]
+},
+{
+"name": "山竹",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_tropical"
+]
+},
+{
+"name": "榴莲",
+"unit": "块",
+"cats": [
+"fruit",
+"fruit_tropical",
+"gi_medium",
+"fat_high"
+]
+},
+{
+"name": "椰子",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_tropical",
+"fat_high"
+]
+},
+{
+"name": "枇杷",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_pome"
+]
+},
+{
+"name": "皮蛋",
+"unit": "个",
+"cats": [
+"egg",
+"egg_product"
+]
+},
+{
+"name": "炼乳",
+"unit": "勺",
+"cats": [
+"dairy",
+"dairy_product",
+"gi_high"
+]
+},
+{
+"name": "淡奶油",
+"unit": "克",
+"cats": [
+"dairy",
+"dairy_product",
+"fat_high"
+]
+},
+{
+"name": "小麦",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_wheat",
+"whole_grain",
+"fiber_high"
+]
+},
+{
+"name": "玉米油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high"
+]
+},
+{
+"name": "大豆油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high"
+]
+},
+{
+"name": "秋葵",
+"unit": "根",
+"cats": [
+"vegetable",
+"vegetable_gourd_solanaceae",
+"vegetable_gourd",
+"fiber_high",
+"season_summer"
+]
+},
+{
+"name": "荷兰豆",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_fresh_bean",
+"season_spring"
+]
+},
+{
+"name": "芥菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable",
+"season_winter"
+]
+},
+{
+"name": "杨梅",
+"unit": "克",
+"cats": [
+"fruit",
+"fruit_berry"
+]
+},
+{
+"name": "李子",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_stone"
+]
+},
+{
+"name": "木瓜",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_tropical"
+]
+},
+{
+"name": "甘蔗",
+"unit": "段",
+"cats": [
+"fruit",
+"fruit_tropical",
+"gi_high"
+]
+},
+{
+"name": "口蘑",
+"unit": "克",
+"cats": [
+"fungi_algae",
+"fungi",
+"purine_medium"
+]
+},
+{
+"name": "鲍鱼",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_other",
+"protein_quality",
+"purine_high"
+]
+},
+{
+"name": "猪肚",
+"unit": "个",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "鹅蛋",
+"unit": "个",
+"cats": [
+"egg",
+"egg_fresh",
+"protein_quality"
+]
+},
+{
+"name": "蒸鱼豉油",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_savory",
+"sodium_high"
+]
+},
+{
+"name": "咖喱",
+"unit": "块",
+"cats": [
+"seasoning",
+"seasoning_spice",
+"sodium_high"
+]
+},
+{
+"name": "年糕",
+"unit": "块",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product",
+"gi_high"
+]
+},
+{
+"name": "米线",
+"unit": "把",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "豇豆",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_fresh_bean",
+"season_summer"
+]
+},
+{
+"name": "竹笋",
+"unit": "根",
+"cats": [
+"vegetable",
+"season_spring"
+]
+},
+{
+"name": "蒜苗",
+"unit": "根",
+"cats": [
+"vegetable",
+"vegetable_allium"
+]
+},
+{
+"name": "紫甘蓝",
+"unit": "颗",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable",
+"nutrition_vitamin_c"
+]
+},
+{
+"name": "彩椒",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_solanaceae",
+"nutrition_vitamin_c",
+"season_summer"
+]
+},
+{
+"name": "菜心",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "韭黄",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_allium"
+]
+},
+{
+"name": "豌豆苗",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "白玉菇",
+"unit": "克",
+"cats": [
+"fungi_algae",
+"fungi"
+]
+},
+{
+"name": "海鲜菇",
+"unit": "克",
+"cats": [
+"fungi_algae",
+"fungi"
+]
+},
+{
+"name": "猪肉末",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork"
+]
+},
+{
+"name": "牛腱",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_beef",
+"protein_quality"
+]
+},
+{
+"name": "鸡爪",
+"unit": "只",
+"cats": [
+"meat",
+"meat_poultry"
+]
+},
+{
+"name": "鸭腿",
+"unit": "只",
+"cats": [
+"meat",
+"meat_poultry"
+]
+},
+{
+"name": "培根",
+"unit": "片",
+"cats": [
+"meat",
+"meat_processed"
+]
+},
+{
+"name": "墨鱼",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_cephalopod"
+]
+},
+{
+"name": "花甲",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_bivalve"
+]
+},
+{
+"name": "黑鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater"
+]
+},
+{
+"name": "青口",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_bivalve"
+]
+},
+{
+"name": "千张",
+"unit": "张",
+"cats": [
+"soy_nut",
+"soy_product"
+]
+},
+{
+"name": "腐乳",
+"unit": "块",
+"cats": [
+"soy_nut",
+"soy_product"
+]
+},
+{
+"name": "粉条",
+"unit": "克",
+"cats": [
+"staple",
+"staple_tuber"
+]
+},
+{
+"name": "粉丝",
+"unit": "克",
+"cats": [
+"staple",
+"staple_legume"
+]
+},
+{
+"name": "河粉",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain_product"
+]
+},
+{
+"name": "饺子皮",
+"unit": "张",
+"cats": [
+"staple",
+"staple_grain_product"
+]
+},
+{
+"name": "莲子",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_seed"
+]
+},
+{
+"name": "松子",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_tree"
+]
+},
+{
+"name": "淀粉",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_other"
+]
+},
+{
+"name": "冰糖",
+"unit": "块",
+"cats": [
+"seasoning",
+"seasoning_sweet_sour"
+]
+},
+{
+"name": "红糖",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sweet_sour"
+]
+},
+{
+"name": "干辣椒",
+"unit": "个",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "香醋",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sweet_sour"
+]
+},
+{
+"name": "豆豉",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce"
+]
+},
+{
+"name": "芝麻酱",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce"
+]
+},
+{
+"name": "可乐",
+"unit": "毫升",
+"cats": [
+"other"
+]
+},
+{
+"name": "蛋白肉",
+"unit": "克",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality"
+]
+},
+{
+"name": "山药粉",
+"unit": "克",
+"cats": [
+"staple",
+"staple_tuber"
+]
+},
+{
+"name": "藕粉",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain_product"
+]
+},
+{
+"name": "玉米面",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_coarse",
+"whole_grain"
+]
+},
+{
+"name": "玉米糁",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_coarse",
+"whole_grain"
+]
+},
+{
+"name": "奇亚籽",
+"unit": "克",
+"cats": [
+"soy_nut",
+"nut_seed",
+"nutrition_omega3",
+"fiber_high"
+]
+},
+{
+"name": "米粉",
+"unit": "把",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "乌冬面",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "意大利面",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "刀削面",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "螺蛳粉",
+"unit": "包",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "粽子",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_rice",
+"gi_high"
+]
+},
+{
+"name": "吐司",
+"unit": "片",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "面筋",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product",
+"protein_quality"
+]
+},
+{
+"name": "炕馍",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "杂粮煎饼",
+"unit": "张",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product",
+"whole_grain"
+]
+},
+{
+"name": "卷饼",
+"unit": "张",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "百合",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_root"
+]
+},
+{
+"name": "上海青",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "鸡毛菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "杭白菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "大黑菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "板蓝根青菜",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "绿甘蓝",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_leaf"
+]
+},
+{
+"name": "菜苔",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"dark_vegetable"
+]
+},
+{
+"name": "菊花脑",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"vegetable_wild",
+"dark_vegetable"
+]
+},
+{
+"name": "艾蒿",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_wild"
+]
+},
+{
+"name": "苜蓿",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_wild",
+"dark_vegetable"
+]
+},
+{
+"name": "南瓜头",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf"
+]
+},
+{
+"name": "红薯梗",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf"
+]
+},
+{
+"name": "韭菜花",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_allium"
+]
+},
+{
+"name": "水芹",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_aquatic",
+"vegetable_leaf"
+]
+},
+{
+"name": "西芹",
+"unit": "把",
+"cats": [
+"vegetable",
+"vegetable_leaf"
+]
+},
+{
+"name": "贡菜",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_leaf"
+]
+},
+{
+"name": "瓠子",
+"unit": "根",
+"cats": [
+"vegetable",
+"vegetable_gourd",
+"purine_low",
+"season_summer"
+]
+},
+{
+"name": "佛手瓜",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_gourd"
+]
+},
+{
+"name": "菜瓜",
+"unit": "根",
+"cats": [
+"vegetable",
+"vegetable_gourd",
+"season_summer"
+]
+},
+{
+"name": "西瓜皮",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_gourd"
+]
+},
+{
+"name": "蚕豆",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_fresh_bean",
+"purine_medium",
+"season_spring"
+]
+},
+{
+"name": "豌豆",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_fresh_bean"
+]
+},
+{
+"name": "扁豆",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_fresh_bean",
+"season_summer"
+]
+},
+{
+"name": "干豆角",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_fresh_bean"
+]
+},
+{
+"name": "小葱",
+"unit": "根",
+"cats": [
+"seasoning",
+"seasoning_spice",
+"vegetable_allium"
+]
+},
+{
+"name": "干香菇",
+"unit": "克",
+"cats": [
+"fungi_algae",
+"fungi",
+"purine_medium"
+]
+},
+{
+"name": "鸡毛蛋",
+"unit": "个",
+"cats": [
+"egg",
+"egg_product"
+]
+},
+{
+"name": "牛油果",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_tropical",
+"fat_high"
+]
+},
+{
+"name": "油桃",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_stone"
+]
+},
+{
+"name": "人参果",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_melon"
+]
+},
+{
+"name": "冬枣",
+"unit": "克",
+"cats": [
+"fruit",
+"fruit_pome",
+"nutrition_vitamin_c"
+]
+},
+{
+"name": "丑橘",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_citrus",
+"nutrition_vitamin_c"
+]
+},
+{
+"name": "柠檬",
+"unit": "个",
+"cats": [
+"fruit",
+"fruit_citrus",
+"nutrition_vitamin_c"
+]
+},
+{
+"name": "蹄髈",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork",
+"fat_high"
+]
+},
+{
+"name": "后腿瘦肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork",
+"protein_quality"
+]
+},
+{
+"name": "扇子骨",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork"
+]
+},
+{
+"name": "大排",
+"unit": "块",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork"
+]
+},
+{
+"name": "大骨头",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork"
+]
+},
+{
+"name": "牛霖",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_beef",
+"protein_quality"
+]
+},
+{
+"name": "菲力",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_beef",
+"protein_quality",
+"fat_low"
+]
+},
+{
+"name": "西冷",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_beef",
+"protein_quality"
+]
+},
+{
+"name": "牛肉丸",
+"unit": "个",
+"cats": [
+"meat",
+"meat_processed"
+]
+},
+{
+"name": "肉丸",
+"unit": "个",
+"cats": [
+"meat",
+"meat_processed"
+]
+},
+{
+"name": "翅中",
+"unit": "个",
+"cats": [
+"meat",
+"meat_poultry",
+"protein_quality"
+]
+},
+{
+"name": "老母鸡",
+"unit": "只",
+"cats": [
+"meat",
+"meat_poultry"
+]
+},
+{
+"name": "鸭肫",
+"unit": "个",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "鸡胗",
+"unit": "个",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "鸭杂",
+"unit": "克",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "鸭肠",
+"unit": "克",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "猪心",
+"unit": "个",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "猪腰",
+"unit": "个",
+"cats": [
+"meat",
+"meat_offal",
+"purine_high"
+]
+},
+{
+"name": "猪舌头",
+"unit": "个",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "肥肠",
+"unit": "克",
+"cats": [
+"meat",
+"meat_offal",
+"fat_high"
+]
+},
+{
+"name": "猪耳朵",
+"unit": "个",
+"cats": [
+"meat",
+"meat_offal"
+]
+},
+{
+"name": "猪头肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_livestock",
+"meat_pork",
+"fat_high"
+]
+},
+{
+"name": "猪皮冻",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed"
+]
+},
+{
+"name": "猪血",
+"unit": "克",
+"cats": [
+"meat",
+"meat_offal",
+"nutrition_iron_heme",
+"fat_low"
+]
+},
+{
+"name": "牛血",
+"unit": "克",
+"cats": [
+"meat",
+"meat_offal",
+"nutrition_iron_heme"
+]
+},
+{
+"name": "鸭爪",
+"unit": "只",
+"cats": [
+"meat",
+"meat_poultry"
+]
+},
+{
+"name": "鸭头",
+"unit": "个",
+"cats": [
+"meat",
+"meat_poultry"
+]
+},
+{
+"name": "鸭脖",
+"unit": "根",
+"cats": [
+"meat",
+"meat_poultry"
+]
+},
+{
+"name": "鸭翅",
+"unit": "个",
+"cats": [
+"meat",
+"meat_poultry"
+]
+},
+{
+"name": "鸭胸肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_poultry",
+"protein_quality"
+]
+},
+{
+"name": "咸鹅",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "咸鸭",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "咸鸡",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "腊鸡",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "腊鸭腿",
+"unit": "只",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "咸肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "咸猪肝",
+"unit": "克",
+"cats": [
+"meat",
+"meat_offal",
+"sodium_high"
+]
+},
+{
+"name": "咸猪蹄",
+"unit": "个",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "咸鱼",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_processed",
+"sodium_high"
+]
+},
+{
+"name": "烤鸭",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed"
+]
+},
+{
+"name": "卤牛肉",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed"
+]
+},
+{
+"name": "大红肠",
+"unit": "根",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "火腿肠",
+"unit": "根",
+"cats": [
+"meat",
+"meat_processed",
+"sodium_high"
+]
+},
+{
+"name": "桂鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"protein_quality",
+"purine_medium"
+]
+},
+{
+"name": "青占鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"purine_medium"
+]
+},
+{
+"name": "鳊鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"purine_medium"
+]
+},
+{
+"name": "昂刺鱼",
+"unit": "条",
+"cats": [
+"aquatic",
+"aquatic_fish",
+"aquatic_fish_freshwater",
+"purine_medium"
+]
+},
+{
+"name": "小龙虾",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_crustacean",
+"purine_high"
+]
+},
+{
+"name": "对虾",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_crustacean",
+"protein_quality",
+"purine_high"
+]
+},
+{
+"name": "虾仁",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_crustacean",
+"protein_quality",
+"purine_high"
+]
+},
+{
+"name": "虾米",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_processed",
+"sodium_high",
+"purine_high"
+]
+},
+{
+"name": "虾糕",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_processed"
+]
+},
+{
+"name": "小鱼干",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_processed",
+"sodium_high"
+]
+},
+{
+"name": "梭子蟹",
+"unit": "只",
+"cats": [
+"aquatic",
+"aquatic_crustacean",
+"purine_high"
+]
+},
+{
+"name": "螺蛳",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_other",
+"purine_high"
+]
+},
+{
+"name": "油条",
+"unit": "根",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product",
+"fat_high"
+]
+},
+{
+"name": "小笼包",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "茶叶蛋",
+"unit": "个",
+"cats": [
+"egg",
+"egg_product"
+]
+},
+{
+"name": "素鸡",
+"unit": "克",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality"
+]
+},
+{
+"name": "脆豆腐",
+"unit": "块",
+"cats": [
+"soy_nut",
+"soy_product"
+]
+},
+{
+"name": "老豆腐",
+"unit": "块",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality"
+]
+},
+{
+"name": "厚百叶",
+"unit": "张",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality"
+]
+},
+{
+"name": "千张结",
+"unit": "克",
+"cats": [
+"soy_nut",
+"soy_product",
+"protein_quality"
+]
+},
+{
+"name": "鱼豆腐",
+"unit": "克",
+"cats": [
+"aquatic",
+"aquatic_processed"
+]
+},
+{
+"name": "馓子",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product",
+"fat_high"
+]
+},
+{
+"name": "雪菜",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"sodium_high"
+]
+},
+{
+"name": "酸菜",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"sodium_high"
+]
+},
+{
+"name": "榨菜",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_root",
+"sodium_high"
+]
+},
+{
+"name": "酸豆角",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_fresh_bean",
+"sodium_high"
+]
+},
+{
+"name": "橄榄菜",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"sodium_high"
+]
+},
+{
+"name": "萝卜干",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_root",
+"sodium_high"
+]
+},
+{
+"name": "咸菜",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_leaf",
+"sodium_high"
+]
+},
+{
+"name": "泡姜",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "泡椒",
+"unit": "个",
+"cats": [
+"seasoning",
+"seasoning_spice",
+"sodium_high"
+]
+},
+{
+"name": "糟辣椒",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "小米辣",
+"unit": "个",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "线椒",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_solanaceae"
+]
+},
+{
+"name": "二荆条",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_solanaceae"
+]
+},
+{
+"name": "螺丝椒",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_solanaceae"
+]
+},
+{
+"name": "樟树椒",
+"unit": "个",
+"cats": [
+"vegetable",
+"vegetable_solanaceae"
+]
+},
+{
+"name": "剁椒",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "辣椒酱",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "黄豆酱",
+"unit": "勺",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "酱豆",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_sauce",
+"sodium_high"
+]
+},
+{
+"name": "紫苏油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high",
+"nutrition_omega3"
+]
+},
+{
+"name": "山茶油",
+"unit": "勺",
+"cats": [
+"oil",
+"oil_plant",
+"fat_high"
+]
+},
+{
+"name": "鱼油",
+"unit": "粒",
+"cats": [
+"oil",
+"oil_animal",
+"nutrition_omega3"
+]
+},
+{
+"name": "黑胡椒粉",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "白胡椒粉",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "迷迭香",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "十三香",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "枸杞",
+"unit": "克",
+"cats": [
+"fruit",
+"fruit_dried"
+]
+},
+{
+"name": "陈皮",
+"unit": "克",
+"cats": [
+"seasoning",
+"seasoning_spice"
+]
+},
+{
+"name": "玫瑰花",
+"unit": "克",
+"cats": [
+"other"
+]
+},
+{
+"name": "菊花",
+"unit": "克",
+"cats": [
+"other"
+]
+},
+{
+"name": "大麦茶",
+"unit": "克",
+"cats": [
+"other"
+]
+},
+{
+"name": "玉米须",
+"unit": "克",
+"cats": [
+"other"
+]
+},
+{
+"name": "普洱茶",
+"unit": "克",
+"cats": [
+"other"
+]
+},
+{
+"name": "绿茶",
+"unit": "克",
+"cats": [
+"other"
+]
+},
+{
+"name": "蒲公英",
+"unit": "克",
+"cats": [
+"other"
+]
+},
+{
+"name": "菊粉",
+"unit": "克",
+"cats": [
+"other",
+"fiber_high"
+]
+},
+{
+"name": "干百合",
+"unit": "克",
+"cats": [
+"vegetable",
+"vegetable_root"
+]
+},
+{
+"name": "饺子",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "馄饨",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "蒸饺",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "三明治",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "青团",
+"unit": "个",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_rice",
+"gi_high"
+]
+},
+{
+"name": "凉皮",
+"unit": "克",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product"
+]
+},
+{
+"name": "紫燕百味鸡",
+"unit": "克",
+"cats": [
+"meat",
+"meat_processed"
+]
+},
+{
+"name": "苏打饼干",
+"unit": "块",
+"cats": [
+"staple",
+"staple_grain",
+"staple_grain_product",
+"convenience"
+]
+}
+]

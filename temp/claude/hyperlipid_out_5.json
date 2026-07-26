@@ -1,0 +1,107 @@
+[
+  {
+    "ingredient": "肥肠",
+    "saturatedFat": null,
+    "cholesterol": 137,
+    "ref": "中国食物成分表口径(唤醒食物foodwake、百度健康引中国食物成分表)：猪大肠 脂肪18.7g、胆固醇137mg/100g；饱和脂肪未见权威分项数据故填null",
+    "review": "pending"
+  },
+  {
+    "ingredient": "羊肉",
+    "saturatedFat": 8.83,
+    "cholesterol": 97,
+    "ref": "USDA FoodData Central / foodstruct(cooked lamb 100g)：饱和脂肪8.83g、胆固醇97mg；羊肉部位/生熟差异较大",
+    "review": "verified"
+  },
+  {
+    "ingredient": "咸鸭蛋",
+    "saturatedFat": null,
+    "cholesterol": null,
+    "ref": "仅查到咸鸭蛋脂肪约16.6%、鲜鸭蛋胆固醇高(USDA鸭蛋884mg)，咸鸭蛋专属饱和脂肪/胆固醇无一手权威分项数据，避免用鲜鸭蛋代填故填null",
+    "review": "pending"
+  },
+  {
+    "ingredient": "虾",
+    "saturatedFat": 0.1,
+    "cholesterol": 161,
+    "ref": "USDA/foodstruct 生虾(shrimp raw not previously frozen)100g：饱和脂肪0.1g、胆固醇161mg",
+    "review": "verified"
+  },
+  {
+    "ingredient": "带鱼",
+    "saturatedFat": null,
+    "cholesterol": 76,
+    "ref": "中国食物成分表口径(云健康食物库、foodwake)：带鱼 脂肪4.9g、胆固醇76mg/100g；饱和脂肪未见权威分项数据故填null",
+    "review": "pending"
+  },
+  {
+    "ingredient": "花生",
+    "saturatedFat": 6.83,
+    "cholesterol": 0,
+    "ref": "USDA FoodData Central 生花生(peanuts raw all types)100g：饱和脂肪6.834g；植物性胆固醇0",
+    "review": "verified"
+  },
+  {
+    "ingredient": "芝麻",
+    "saturatedFat": 7.0,
+    "cholesterol": 0,
+    "ref": "USDA/foodstruct 芝麻(sesame seeds whole dried)100g：饱和脂肪约7g；植物性胆固醇0",
+    "review": "verified"
+  },
+  {
+    "ingredient": "芝麻油",
+    "saturatedFat": 14.2,
+    "cholesterol": 0,
+    "ref": "USDA/foodstruct 芝麻油(sesame oil)100g：饱和脂肪约14.2g；植物油胆固醇0",
+    "review": "verified"
+  },
+  {
+    "ingredient": "孜然",
+    "saturatedFat": 1.54,
+    "cholesterol": 0,
+    "ref": "USDA FoodData Central 孜然(cumin seed)100g：饱和脂肪1.535g；植物性胆固醇0",
+    "review": "verified"
+  },
+  {
+    "ingredient": "鹅蛋",
+    "saturatedFat": 3.6,
+    "cholesterol": 852,
+    "ref": "USDA FoodData Central 生鹅蛋(egg goose whole fresh raw)100g：饱和脂肪约3.6g、胆固醇852mg",
+    "review": "verified"
+  },
+  {
+    "ingredient": "奇亚籽",
+    "saturatedFat": 3.33,
+    "cholesterol": 0,
+    "ref": "USDA FoodData Central 奇亚籽(chia seeds dried)100g：饱和脂肪3.33g；植物性胆固醇0",
+    "review": "verified"
+  },
+  {
+    "ingredient": "鸭头",
+    "saturatedFat": null,
+    "cholesterol": null,
+    "ref": "未查到鸭头(带皮头部)专属饱和脂肪/胆固醇一手权威数据；鸭肉代表值可参考但头部脂肪构成差异大，避免误代填故填null",
+    "review": "pending"
+  },
+  {
+    "ingredient": "咸猪蹄",
+    "saturatedFat": null,
+    "cholesterol": 192,
+    "ref": "猪蹄100g口径：胆固醇约192mg(唤醒食物/燕芸坊引成分表)、饱和脂肪约4.3g(二手估算，未见权威分项)；咸制品为二手且盐腌专属数据缺失，饱和脂肪填null、胆固醇标pending",
+    "review": "pending"
+  },
+  {
+    "ingredient": "千张结",
+    "saturatedFat": null,
+    "cholesterol": 0,
+    "ref": "千张(豆腐皮)为大豆制品，胆固醇0；脂肪以不饱和为主，饱和脂肪未见中国食物成分表权威分项数据故填null",
+    "review": "pending"
+  },
+  {
+    "ingredient": "迷迭香",
+    "saturatedFat": 7.37,
+    "cholesterol": 0,
+    "ref": "USDA FoodData Central 干迷迭香(rosemary dried)100g：饱和脂肪7.371g；植物性胆固醇0",
+    "review": "verified"
+  }
+]

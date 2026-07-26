@@ -1,0 +1,13 @@
+counts: ing=440 cats=130 dishes=516 nut=103 det=299 care=163 crowd=14
+cats[0]: {"code": "staple", "name": "谷薯主食类", "dimension": "general", "sort": 10, "icon": "🌾"}
+dishes[0]: {"code": "qingjiao_rousi", "name": "青椒炒肉丝", "method": "炒", "description": "家常下饭菜，青椒清脆、肉丝嫩滑。", "ingredients": [{"ingredient": "青椒", "main": true, "quantity": 200, "unit": "克"}, {"ingredient": "猪瘦肉", "main": true, "quantity": 150, "unit": "克"}, {"ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺"}, {"ingredient": "盐", "main": false, "quantity": 1, "unit": "少许"}, {"ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺"}, {"ingredient": "大蒜", "main": false, "quantity": 2, "unit": "瓣"}], "steps": ["青椒去蒂去籽切丝，猪瘦肉逆纹切丝，加少许生抽抓匀腌 10 分钟。", "热锅冷油，下肉丝滑散至变色盛出。", "锅内留底油爆香蒜末，下青椒丝大火快炒至断生。", "倒回
+nut[0]: {"ingredient": "大米", "kcal": 346, "protein": 7.4, "fat": 0.8, "carb": 77.9, "fiber": 0.7, "sodium": 3.8, "potassium": 103, "calcium": 13, "gi": 83, "purine": 18, "ref": "中国食物成分表第6版(整理)", "review": "pending"}
+det[0] keys: ['ingredient', 'commonMethods', 'prepTips', 'eatingNotes', 'storageTips', 'healthNote']
+care[0]: {"ingredient": "鸡蛋", "category": "care_gout", "level": "recommend", "reason": "低嘌呤优质蛋白，适合作为高尿酸人群日常蛋白来源之一。"}
+
+== DUP CHECKS ==
+ing dup code: {}
+ing dup name: {}
+cats keys sample: ['code', 'name', 'dimension', 'sort', 'icon']
+nut dup name: {}
+det keys sample: ['ingredient', 'commonMethods', 'prepTips', 'eatingNotes', 'storageTips', 'healthNote']

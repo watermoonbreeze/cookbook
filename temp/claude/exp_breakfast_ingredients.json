@@ -1,0 +1,263 @@
+[
+  {
+    "code": "whole_milk",
+    "name": "全脂牛奶",
+    "alias": "全脂鲜奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high"
+    ]
+  },
+  {
+    "code": "skim_milk",
+    "name": "脱脂牛奶",
+    "alias": "脱脂鲜奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "lactose_free_milk",
+    "name": "舒化奶",
+    "alias": "无乳糖牛奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "dairy",
+      "dairy_liquid",
+      "protein_quality",
+      "calcium_high"
+    ]
+  },
+  {
+    "code": "greek_yogurt_whole",
+    "name": "希腊酸奶",
+    "alias": "全脂希腊酸奶",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "dairy",
+      "dairy_fermented",
+      "protein_quality",
+      "calcium_high"
+    ]
+  },
+  {
+    "code": "greek_yogurt_nonfat",
+    "name": "脱脂希腊酸奶",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "dairy",
+      "dairy_fermented",
+      "protein_quality",
+      "fat_low",
+      "sugar_low"
+    ]
+  },
+  {
+    "code": "mozzarella",
+    "name": "马苏里拉奶酪",
+    "alias": "马苏里拉",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "protein_quality",
+      "calcium_high",
+      "fat_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "cheddar_cheese",
+    "name": "切达奶酪",
+    "alias": "车打芝士",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "protein_quality",
+      "calcium_high",
+      "fat_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "cream_cheese",
+    "name": "奶油奶酪",
+    "alias": "忌廉芝士",
+    "unit": "g",
+    "emoji": "🧀",
+    "categories": [
+      "dairy",
+      "dairy_product",
+      "fat_high"
+    ]
+  },
+  {
+    "code": "white_toast",
+    "name": "白吐司",
+    "alias": "白方包",
+    "unit": "g",
+    "emoji": "🍞",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "bagel",
+    "name": "贝果",
+    "alias": "百吉饼",
+    "unit": "个",
+    "emoji": "🥯",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high"
+    ]
+  },
+  {
+    "code": "sourdough_bread",
+    "name": "欧包",
+    "alias": "欧式面包",
+    "unit": "g",
+    "emoji": "🍞",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product"
+    ]
+  },
+  {
+    "code": "hand_grabbed_pancake",
+    "name": "手抓饼",
+    "unit": "片",
+    "emoji": "🫓",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "fat_high",
+      "convenience",
+      "convenience_frozen"
+    ]
+  },
+  {
+    "code": "instant_oatmeal",
+    "name": "燕麦片",
+    "alias": "即食燕麦",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_coarse",
+      "whole_grain",
+      "fiber_high",
+      "gi_medium"
+    ]
+  },
+  {
+    "code": "granola",
+    "name": "格兰诺拉麦片",
+    "alias": "烘焙燕麦脆",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "fiber_high"
+    ]
+  },
+  {
+    "code": "cornflakes",
+    "name": "玉米片",
+    "alias": "早餐玉米脆片",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high",
+      "sodium_high"
+    ]
+  },
+  {
+    "code": "peanut_butter",
+    "name": "花生酱",
+    "unit": "g",
+    "emoji": "🥜",
+    "categories": [
+      "soy_nut",
+      "nut_tree",
+      "fat_high",
+      "protein_quality"
+    ]
+  },
+  {
+    "code": "black_coffee",
+    "name": "黑咖啡",
+    "alias": "美式咖啡",
+    "unit": "ml",
+    "emoji": "☕",
+    "categories": [
+      "other"
+    ]
+  },
+  {
+    "code": "oat_milk",
+    "name": "燕麦奶",
+    "alias": "燕麦植物奶",
+    "unit": "ml",
+    "emoji": "🥛",
+    "categories": [
+      "other",
+      "staple_grain"
+    ]
+  },
+  {
+    "code": "tofu_pudding",
+    "name": "豆腐脑",
+    "alias": "豆花",
+    "unit": "g",
+    "emoji": "🥣",
+    "categories": [
+      "soy_nut",
+      "soy_product",
+      "protein_quality",
+      "fat_low"
+    ]
+  },
+  {
+    "code": "quick_frozen_bun",
+    "name": "花卷",
+    "unit": "个",
+    "emoji": "🍥",
+    "categories": [
+      "staple",
+      "staple_grain",
+      "staple_grain_product",
+      "gi_high"
+    ]
+  }
+]

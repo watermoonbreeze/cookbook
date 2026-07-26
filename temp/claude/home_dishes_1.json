@@ -1,0 +1,213 @@
+[
+  {
+    "code": "baicai_fensi_zhurou",
+    "name": "白菜粉丝炒肉末",
+    "method": "炒",
+    "description": "白菜软糯、粉丝吸味，肉末提香的家常下饭菜。",
+    "ingredients": [
+      { "ingredient": "白菜", "main": true, "quantity": 300, "unit": "g" },
+      { "ingredient": "粉丝", "main": true, "quantity": 80, "unit": "g" },
+      { "ingredient": "猪肉末", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "大蒜", "main": false, "quantity": 2, "unit": "瓣" }
+    ],
+    "steps": [
+      "白菜切片，粉丝用温水泡软，肉末备用。",
+      "热锅下油炒香蒜末，下肉末炒散至变色。",
+      "放入白菜炒软，加入泡好的粉丝翻炒。",
+      "加生抽和盐调味，炒至粉丝入味即可出锅。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "tudou_dun_niurou",
+    "name": "土豆炖牛肉",
+    "method": "炖",
+    "description": "牛肉软烂、土豆入味，暖胃管饱的经典炖菜。",
+    "ingredients": [
+      { "ingredient": "牛肉", "main": true, "quantity": 400, "unit": "g" },
+      { "ingredient": "土豆", "main": true, "quantity": 300, "unit": "g" },
+      { "ingredient": "胡萝卜", "main": false, "quantity": 100, "unit": "g" },
+      { "ingredient": "姜", "main": false, "quantity": 3, "unit": "片" },
+      { "ingredient": "生抽", "main": false, "quantity": 2, "unit": "勺" },
+      { "ingredient": "老抽", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "菜籽油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "牛肉切块焯水去血沫，土豆和胡萝卜切滚刀块。",
+      "热锅下油炒香姜片，下牛肉块翻炒，加生抽老抽上色。",
+      "加足量热水没过牛肉，大火烧开转小火炖约一小时。",
+      "放入土豆和胡萝卜继续炖至软烂，加盐调味收汁即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "xihongshi_dun_donggua",
+    "name": "西红柿炖冬瓜",
+    "method": "炖",
+    "description": "汤汁酸甜、冬瓜清爽，夏日开胃的家常汤菜。",
+    "ingredients": [
+      { "ingredient": "西红柿", "main": true, "quantity": 200, "unit": "g" },
+      { "ingredient": "冬瓜", "main": true, "quantity": 300, "unit": "g" },
+      { "ingredient": "葱", "main": false, "quantity": 1, "unit": "根" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "西红柿切块，冬瓜去皮切片。",
+      "热锅下油炒香葱段，下西红柿炒出红汤。",
+      "加适量清水烧开，放入冬瓜片炖至透明软烂。",
+      "加盐调味，撒葱花出锅。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "qingjiao_chao_douganl",
+    "name": "青椒炒豆干",
+    "method": "炒",
+    "description": "豆干嚼劲十足、青椒清香的下饭素炒。",
+    "ingredients": [
+      { "ingredient": "豆干", "main": true, "quantity": 250, "unit": "g" },
+      { "ingredient": "青椒", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "大蒜", "main": false, "quantity": 2, "unit": "瓣" }
+    ],
+    "steps": [
+      "豆干切条，青椒去籽切丝。",
+      "热锅下油爆香蒜末，下豆干条煸炒出香。",
+      "放入青椒丝大火快炒至断生。",
+      "加生抽和盐炒匀即可出锅。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "huluobo_chao_tudousi",
+    "name": "胡萝卜炒土豆丝",
+    "method": "炒",
+    "description": "两色相间、清爽脆口的家常素丝。",
+    "ingredients": [
+      { "ingredient": "土豆", "main": true, "quantity": 250, "unit": "g" },
+      { "ingredient": "胡萝卜", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "青椒", "main": false, "quantity": 50, "unit": "g" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "醋", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "土豆和胡萝卜去皮切丝，土豆丝泡水去淀粉后沥干。",
+      "热锅下油，下胡萝卜丝略炒。",
+      "放入土豆丝大火快炒，淋醋保持脆度。",
+      "加盐炒匀，出锅前放青椒丝点缀即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "xianggu_dun_jitui",
+    "name": "香菇炖鸡腿",
+    "method": "炖",
+    "description": "鸡肉鲜嫩、香菇入味的滋补家常炖菜。",
+    "ingredients": [
+      { "ingredient": "鸡腿", "main": true, "quantity": 400, "unit": "g" },
+      { "ingredient": "香菇", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "姜", "main": false, "quantity": 3, "unit": "片" },
+      { "ingredient": "生抽", "main": false, "quantity": 2, "unit": "勺" },
+      { "ingredient": "料酒", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "鸡腿剁块焯水，香菇泡发切块。",
+      "热锅下油炒香姜片，下鸡块翻炒至变色，烹入料酒。",
+      "加生抽和适量热水，放入香菇块烧开。",
+      "转小火炖约三十分钟，加盐调味收汁即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "qincai_chao_douganl",
+    "name": "芹菜炒豆干",
+    "method": "炒",
+    "description": "芹菜清香、豆干耐嚼的爽口家常小炒。",
+    "ingredients": [
+      { "ingredient": "芹菜", "main": true, "quantity": 250, "unit": "g" },
+      { "ingredient": "豆干", "main": true, "quantity": 150, "unit": "g" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "大蒜", "main": false, "quantity": 2, "unit": "瓣" }
+    ],
+    "steps": [
+      "芹菜择洗切段，豆干切条。",
+      "热锅下油爆香蒜末，下豆干煸炒。",
+      "放入芹菜段大火快炒至断生。",
+      "加生抽和盐炒匀出锅。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "douya_chao_jiucai",
+    "name": "豆芽炒韭菜",
+    "method": "炒",
+    "description": "豆芽爽脆、韭菜提香的快手素炒。",
+    "ingredients": [
+      { "ingredient": "豆芽", "main": true, "quantity": 250, "unit": "g" },
+      { "ingredient": "韭菜", "main": true, "quantity": 100, "unit": "g" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "生抽", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "豆芽洗净沥干，韭菜切段。",
+      "热锅下油，下豆芽大火快炒至微软。",
+      "放入韭菜段快速翻炒。",
+      "加生抽和盐炒匀，趁脆出锅。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "nanguo_dun_paigu",
+    "name": "南瓜排骨煲",
+    "method": "炖",
+    "description": "南瓜绵软回甜、排骨软烂的暖身炖菜。",
+    "ingredients": [
+      { "ingredient": "排骨", "main": true, "quantity": 400, "unit": "g" },
+      { "ingredient": "南瓜", "main": true, "quantity": 300, "unit": "g" },
+      { "ingredient": "姜", "main": false, "quantity": 3, "unit": "片" },
+      { "ingredient": "料酒", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" }
+    ],
+    "steps": [
+      "排骨焯水去血沫，南瓜去皮切块。",
+      "热锅下油炒香姜片，下排骨翻炒烹入料酒。",
+      "加足量热水烧开，小火炖约四十分钟。",
+      "放入南瓜块炖至绵软，加盐调味即可。"
+    ],
+    "cuisine": "家常菜"
+  },
+  {
+    "code": "sigua_chao_muer",
+    "name": "丝瓜炒木耳",
+    "method": "炒",
+    "description": "丝瓜滑嫩、木耳爽脆的清淡素炒。",
+    "ingredients": [
+      { "ingredient": "丝瓜", "main": true, "quantity": 300, "unit": "g" },
+      { "ingredient": "木耳", "main": true, "quantity": 50, "unit": "g" },
+      { "ingredient": "盐", "main": false, "quantity": 1, "unit": "少许" },
+      { "ingredient": "花生油", "main": false, "quantity": 1, "unit": "勺" },
+      { "ingredient": "大蒜", "main": false, "quantity": 2, "unit": "瓣" }
+    ],
+    "steps": [
+      "丝瓜去皮切滚刀块，木耳泡发撕小朵。",
+      "热锅下油爆香蒜末，下木耳翻炒。",
+      "放入丝瓜块炒至出水变软。",
+      "加盐调味，炒匀出锅。"
+    ],
+    "cuisine": "家常菜"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {"ingredient":"香肠","saturatedFat":null,"cholesterol":88,"ref":"胆固醇88mg/100g来自中国食物成分表(中国CDC营养与健康所)腊肠条目(nlc.chinanutri.cn/fq/foodinfo/816.html),脂肪48.3g;饱和脂肪该表未单列,USDA中式腊肠饱和脂肪口径不一(约7-17g)无可靠单值,故置空","review":"pending"},
+  {"ingredient":"鸡翅","saturatedFat":4.0,"cholesterol":111,"ref":"USDA(nutritionvalue.org/foodstruct)鸡翅带皮生:饱和脂肪约4g、胆固醇约111mg/100g","review":"verified"},
+  {"ingredient":"鹌鹑蛋","saturatedFat":3.56,"cholesterol":844,"ref":"USDA(nutritionvalue.org 172191)生鹌鹑蛋:饱和脂肪3.557g、胆固醇844mg/100g","review":"verified"},
+  {"ingredient":"对虾","saturatedFat":0.2,"cholesterol":150,"ref":"USDA生虾:饱和脂肪约0.2g/100g;胆固醇中国食物成分表对虾/明虾约150-193mg(取保守下限150),口径略有差异","review":"pending"},
+  {"ingredient":"三文鱼","saturatedFat":3.05,"cholesterol":59,"ref":"USDA SR(Fish,salmon,Atlantic,farmed,raw)饱和脂肪3.05g、胆固醇59mg/100g","review":"verified"},
+  {"ingredient":"核桃","saturatedFat":3.48,"cholesterol":0,"ref":"USDA(Nuts,english,walnuts)饱和脂肪3.483g、胆固醇0mg/100g","review":"verified"},
+  {"ingredient":"花生油","saturatedFat":16.9,"cholesterol":0,"ref":"USDA(Peanut oil)饱和脂肪16.9g、胆固醇0mg/100g","review":"verified"},
+  {"ingredient":"亚麻籽油","saturatedFat":9.0,"cholesterol":0,"ref":"USDA(Flaxseed oil)饱和脂肪约9g(9.0-9.4)、胆固醇0mg/100g","review":"verified"},
+  {"ingredient":"油豆腐","saturatedFat":null,"cholesterol":0,"ref":"植物性豆制品胆固醇0mg;油豆腐总脂肪约17.6g(FEHD香港食安中心/fatsecret),但油炸吸油后饱和脂肪随所用油而异、无权威单值,故饱和脂肪置空","review":"pending"},
+  {"ingredient":"鸡爪","saturatedFat":3.92,"cholesterol":84,"ref":"USDA(Chicken feet,boiled)饱和脂肪3.92g、胆固醇84mg/100g","review":"verified"},
+  {"ingredient":"扇子骨","saturatedFat":null,"cholesterol":null,"ref":"扇子骨为猪肩胛骨(带少量肉),骨肉复合体、无对应权威成分表条目;可食部按猪肩肉计则饱和脂肪/胆固醇随肥瘦比大幅波动,不猜,两项置空","review":"pending"},
+  {"ingredient":"鸭脖","saturatedFat":null,"cholesterol":94,"ref":"胆固醇94mg取自鸭肉代表值(howtoeat/中国食物成分表鸭)近似鸭脖,卤制会增钠糖油;鸭脖饱和脂肪无直接权威值,故置空","review":"pending"},
+  {"ingredient":"烤鸭","saturatedFat":9.67,"cholesterol":84,"ref":"USDA(Duck,domesticated,meat and skin,cooked,roasted)饱和脂肪9.67g、胆固醇约84mg/100g","review":"verified"},
+  {"ingredient":"馓子","saturatedFat":null,"cholesterol":0,"ref":"馓子为油炸面食,面粉本身胆固醇0mg;饱和脂肪取决于油炸用油、无权威单值(总脂肪约40-43g),故饱和脂肪置空","review":"pending"},
+  {"ingredient":"紫燕百味鸡","saturatedFat":null,"cholesterol":null,"ref":"品牌卤味成品,仅查到热量250kcal/脂肪15g/蛋白27g(miaofoods/fatsecret),无饱和脂肪与胆固醇的权威分项,不猜,两项置空","review":"pending"}
+]

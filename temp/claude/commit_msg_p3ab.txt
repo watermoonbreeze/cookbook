@@ -1,0 +1,18 @@
+feat(权威化重审P3-AB): 今日卡份量参考轻入口 + WeekPlan已排周缺层口径回归测试
+
+P3 同 session 追加(内聚·份量对齐呈现补齐的两个面):
+
+A 回归测试(shared):NutritionLineTest 补"已排周7天窗口(含空天)·肉菜饭常年无奶豆
+  →识别奶豆坚果缺层"场景,锁 WeekPlan/AiPlan 共享消费同一 aggregate/advise 的宝塔四层
+  口径回归(Google审🟡2)。未为纯透传断言从零搭 androidApp VM 测试架(反过度设计·
+  androidApp 无测试基础设施·聚合器已充分测)。
+
+B 今日卡份量轻入口(androidApp):HomeScreen todayCard 下方也挂"各类每天吃多少 ›"
+  (复用 AiRecommendScreen.DailyAmountRefLink·改 internal 跨包复用)→膳食参考依据页。
+  **不动6处共用的 DayMealCardView**(仅今日卡加·timeline/search/weekplan 等零影响·
+  遵"能力显隐由回调传入决定"红线):HomeScreen 加 onOpenDietaryReference 回调·
+  MainScaffold HOME 路由 wire→DIETARY_REFERENCE。
+
+验证::shared:testDebugUnitTest + :androidApp:assembleDebug 均 BUILD SUCCESSFUL。
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
