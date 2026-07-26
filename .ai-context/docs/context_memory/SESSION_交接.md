@@ -2,31 +2,33 @@
 
 > 交接唯一固定入口。触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落档+**覆盖**本文件+git 提交。
 > **维护约定（省 token）**：只保留当前状态·每次**全覆盖**·不堆历史明细（历史靠 git log + `SESSION_交接_历史.md`）·目标 ≤1 屏。
-> 更新时间：**2026-07-25 · 算法·权威化重审 P3 份量对齐（呈现补齐+口径收敛·克数不做）+ 同 session A+B 追加。全部双绿+Google终审无阻断+已提交(e51ee46/de87d7da/83202f8d)·未 push。权威化重审三大自创点(P1/P2/P3)全部收官。**
+> 更新时间：**2026-07-26 · 战略/交接 session（竞品三视角会诊 + 功能路径索引 + AI-交接文档 + 配置导出给 Codex）。均已提交·未 push。**
+> **🆕 交接给 Codex/新 AI：先读 `.ai-context/docs/AI-交接文档.md`（总入口·比本文更全）。**
 
-## 本 session 交付（算法·权威化重审 P3·会商算法+UX+产品拍板"呈现补齐+口径收敛"·Google终审无阻断·双绿·未提交）
-- ✅ **③ 口径收敛(shared·核心权威化)**：周计划营养线 `NutritionLine` 缺口口径从自创三支柱→**膳食宝塔四正向层**(`pillarGapDays→layerGapDays`·`GAP_PILLAR→GAP_LAYER`·引用 `DietaryGuideline` 单一真相源)。新增能力=识别"顿顿有肉却不喝奶不吃豆"的**奶豆坚果缺层**。`balanceScore` 连贯分分母 3→4(`POSITIVE_LAYERS.size`)。advise 显式按宝塔层序 tie-break(Google审🟡1·不依赖 Map 迭代序)。全 App 只剩一套宝塔结构口径(消灭三支柱 vs 宝塔漂移)。
-- ✅ **① 单餐入口补齐(androidApp)**：库存/随机推荐(`AiRecommendScreen`)结果区顶部补餐次结构建议行(`MealStructureHintRow`·与 AiPlan 逐字同款·选定具体餐次显·"全部"不显)——这就是"份量对齐覆盖所有推荐入口"。
-- ✅ **② 权威份量轻入口(androidApp)**：推荐页+周期计划页脚"各类每天吃多少 ›"(`DailyAmountRefLink`·文字跳转)→膳食参考依据页(权威 `DAILY_AMOUNTS` 可达不喧宾)。`MainScaffold` wire `onOpenDietaryReference`。
-- ✅ **A+B 同 session 追加**(P3 内聚·用户要求)：**A**=`NutritionLineTest` 补"已排周7天窗口(含空天)肉菜饭无奶豆→识别奶豆坚果缺层"场景测试(锁 WeekPlan/AiPlan 共享消费口径·Google审🟡2·不搭 androidApp VM 架=反过度设计)；**B**=今日卡下方也挂"各类每天吃多少"轻入口(HomeScreen todayCard 下·`DailyAmountRefLink` internal 跨包复用·**不动6处共用 DayMealCardView**·仅今日卡)。均双绿。
-- 🔴**明确不做**(会诊否决·数据不可靠+焦虑+免责红线)：克数选菜(C)、份量达标进度条/达成度%、减法说教。**权威每日克数份量只在参考页详列，高频推荐动线绝不铺克数。**
-- 验证：`:shared:testDebugUnitTest`(含新增"肉菜饭无奶豆→识别奶豆坚果缺层"核心测试)+`:androidApp:assembleDebug` **均 BUILD SUCCESSFUL**。Google 质量终审**无阻断项**(评"质量高于项目平均")。
-- 文档已更：`功能总线_权威方法论对照.md`(三自创点全✅)·`待办总览.md`第50行(P3完成+8项P2/P3留待办)·`苹果风格UI设计方案.md §9.42`·`周计划营养线方案.md`(P3口径收敛注)。
+## 本 session 交付（战略+工具+交接·均已提交·未 push）
+- ✅ **权威化重审 P0–P3 全收官**（前序·膳食宝塔权威化·`DietaryGuideline` 真相源·三自创点全换权威）。
+- ✅ **竞品全方位对比**（PM+运营+架构三视角会诊收敛）：`feature/核心竞争价值.md`、`feature/全方位竞品对比_侧重亮点深挖.md`（14维对比 + 该做/该补/该弃三张单）。竞品全空的五维交集=家庭×慢病×生命阶段×中式定量×决策闭环。
+- ✅ **功能路径索引**（`feature/../功能路径索引.md`·AI-terse·定位省 token）+ 全局 `~/.claude/CLAUDE.md` 加「功能路径索引规范」+ /myinit B4 步骤（适用所有项目）。
+- ✅ **摄入模型讨论落地**：餐食系数已归一化(share=系数÷在场和·总和恒100%·无"1.8"问题)·痛点纯在呈现→**改占比%呈现**方案入待办(数学零改·纯 UX 修·三维正交不冗余)。
+- ✅ **AI-交接文档** `.ai-context/docs/AI-交接文档.md`（Codex 接手总入口）+ **配置导出** `~/.claude-config-export-20260726_155826/`（22 agents/5 skills/5 commands/workflow/rules + Codex 迁移指南）。
 
-## ⏭ 下一步
-- 【提交状态·本 session 全部已提交·未 push】`e51ee46`(P3主体)+`de87d7da`(A+B追加)+`83202f8d`(青菜待办登记)。用户要才 push。
-- 【权威化重审已收官三大自创点】P1色系墙/P2餐次/P3份量 全✅。**剩 🟡 深化项**(对照文档·各单开 session·会商)：EER个人热量校准(DRIs)·生命阶段适配推荐(孕/老/儿)·食物多样性提示(12种/25种)·微量营养素评估扩展(铁钙维D)。
-- 【P2+P3 留待办·下轮·别过度设计】晚餐肉偏多减法·每餐结构达成度·整周达成汇总·今日卡加"各类每天吃多少"轻入口(需Home plumbing)·WeekPlan已排周缺层回归断言(Google审🟡2·低优)·单餐引入目标餐次名。
+## ⏭ 下一步（战略三张单·各单开 session 过门禁·别平均用力）
+- 🥇**P0 成员化健康红绿灯**（家庭×慢病"可感化"·三视角一致头号亮点·底座 IntakeCalculator+HealthRuleEngine 已成）→ 先出 UX+copywriter 交互规范。
+- 🥇**P0 引擎正向兑现到推荐质量**：①多成员折算贯穿推荐评估打分 ②忌口扩正向"推有利菜"（接待办 line·走权威方法论优先）。
+- 🥈**P1 生命阶段调养**：先做透一个场景（孕/老/儿挑1个·配权威食养指南 ref·被动发现）。
+- 🔧**餐食系数改占比%**（算法+UX 会诊·小改）·**条码扫描**（技术选型·补短板不追识菜）·**基础顺手度**（每迭代留配额）。
+- 详见 `待办总览.md` 顶部 2026-07-26 块 + `全方位竞品对比_侧重亮点深挖.md §六`。
 
 ## 先读清单
-1. 本文件 + `feature/功能总线_权威方法论对照.md`（三自创点全✅ + 进度区）
-2. `feature/待办总览.md` 第49-50行（权威化重审总纲 + P0~P3 全完成/🟡深化待做）
-3. `shared/.../domain/DietaryGuideline.kt`（权威真相源）+ `NutritionLine.kt`/`NutritionLineAdvisor.kt`（P3 口径收敛范式）+ `ai/MealCompositionScorer.kt`（P2 范式）
-4. `CLAUDE.md`（权威方法论优先准则 + 算法准则A/B + 踩坑红线 + 健康数据/透明/真实红线）
+1. **`AI-交接文档.md`**（新 AI 总入口·最全）+ 本文件
+2. `CLAUDE.md`（规范/门禁/踩坑红线/权威方法论优先/技术栈）
+3. `功能路径索引.md`（定位先查·省 token）
+4. `待办总览.md`（顶部 2026-07-26 战略三张单）+ `核心竞争价值.md`/`全方位竞品对比_侧重亮点深挖.md`
+5. `功能总线_权威方法论对照.md`（三自创点已✅）
 
 ## 工作规则（用户已定·稳定）
-1. 🔴 **权威方法论优先**（功能前查权威·别自创·膳食结构走膳食宝塔=`DietaryGuideline`）· **数据来源真实**。
-2. 🔴 **一个 session 聚焦一个内聚任务**（含数据+界面等多面·如 P3 算法+呈现是两面一起做·用户2026-07-25修正）·off-type 的**另一个任务**进待办·算法/健康改动过**算法+UX 会商门禁**+**Google 质量终审**(阻断必修)。
-3. 🔴 构建看输出别信 exit code(grep BUILD SUCCESSFUL)。健康/算法改动过 `:shared:testDebugUnitTest`。**temp/ 未 gitignore→提交显式 add·绝不 git add -A**。
-4. 🔴 色系墙红线：**只看膳食结构、不关联热量/慢病**；健康文案守免责·非医嘱·惯例口径标注。份量克数只在参考页、不进高频动线。
-5. 用户要才 push（现有 481c643+bac5dad+5950a00+7521c98 及本次 P3 均**未 push**）。
+1. 🔴 **权威方法论优先**（功能前查权威·别自创·膳食结构走 `DietaryGuideline`）·**数据来源真实**。
+2. 🔴 **一个 session 聚焦一个内聚任务**（含数据+界面等多面）·off-type 的另一个任务进待办·算法/健康改动过**算法+UX 会商 + Google 质量终审**(阻断必修)。
+3. 🔴 构建看输出别信 exit code(grep BUILD SUCCESSFUL)·健康/算法改动过 `:shared:testDebugUnitTest`·**temp/ 提交显式 add·绝不 git add -A**。
+4. 🔴 色系墙只看膳食结构不关联热量/慢病·健康文案守免责非医嘱惯例口径·份量克数只在参考页不进高频动线。
+5. 🔴 **定位先查功能路径索引**·增删改名文件同 commit 同步索引。用户要才 push。
