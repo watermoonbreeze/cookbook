@@ -6,7 +6,7 @@
 
 本项目为 Claude Code / Codex 双模式开发，**公共规范、经验、功能文档、上下文记忆统一存放在 `.ai-context/`**（说明见 `.ai-context/README.md`）：
 
-- **🧭 功能路径索引（定位先查它·省 token）**：`.ai-context/docs/功能路径索引.md` —— feature→文件路径映射。**用户提功能/需求时，先查本索引直接跳文件，别一上来 grep/glob 重找**。**维护触发（强制）**：新增/重命名/移动/删除 Screen·ViewModel·Repository·UseCase·Engine·真相源·领域模型·复用组件时，**与代码改动同一 commit 同步更新该索引**（增删改对应行/新分区/真相源速记表）；纯改文件内部实现（不动文件名与职责）不必更新。详细触发规则见该文件「🔧 维护触发」段。
+- **🧭 功能路径索引（定位先查它·省 token）**：`.ai-context/docs/功能路径索引.md` —— feature→文件路径映射（AI-terse 格式）。**用户提功能/需求时，先查本索引直接跳文件，别一上来 grep/glob 重找**；增/删/改名/移动 Screen·VM·Repo·UseCase·Engine·真相源·组件时**同 commit 同步维护**。规范细则见全局 `~/.claude/CLAUDE.md`「功能路径索引规范」。
 - **通用强制规则**：`.ai-context/rules/通用规则.md` —— 任务编排门禁、任务前快照、工程一致性、单元测试、AI 注释、构建环境等，**每次任务开始前遵守**
 - **经验手册**：`.ai-context/docs/experience/`（索引 `INDEX.md`，工程统一规范见 `09_工程统一规范.md`）
 - **功能/方案文档**：`.ai-context/docs/feature/`
