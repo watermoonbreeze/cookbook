@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FormatListNumbered
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -74,9 +76,11 @@ fun NewDishScreen(
     var tagInputOpen by remember { mutableStateOf(false) }
     var importPickerOpen by remember { mutableStateOf(false) }
     var ingredientPickerOpen by remember { mutableStateOf(false) }
+    var ingredientPickerAsMain by remember { mutableStateOf(false) } // [AI生成] 主料分级：记录本次打开 picker 的入口(主料组/其他食材组)
     var cookingMethodDialogOpen by remember { mutableStateOf(false) }
     var stepTemplateSheetOpen by remember { mutableStateOf(false) } // [AI生成] #2 "选择步骤"模板弹层开关
     var ingredientGroupSheetOpen by remember { mutableStateOf(false) } // [AI生成] B5 "配料组"弹层开关
+    var ingredientGroupAsMain by remember { mutableStateOf(false) } // [AI生成] 主料分级：记录配料组弹层的入口(主料组/其他食材组)
     var groupEditorOpen by remember { mutableStateOf(false) } // [AI生成] 需求2 全屏配料组编辑器开关
     var focusedStepIndex by remember { mutableStateOf<Int?>(null) } // [AI生成] #2 当前定位(聚焦)的步骤下标：模板插入到这一步
     var discardPromptOpen by remember { mutableStateOf(false) } // [AI生成] 有未保存改动时返回的"放弃更改?"守卫
@@ -194,63 +198,142 @@ fun NewDishScreen(
                 shape = MaterialTheme.shapes.medium, // [AI修改] 输入框圆角按新暖杏规范统一为 12dp。
             )
 
-            // [AI修改] 基调:食材=高频核心资产(营养/热量/推荐全靠它)·前移到菜名之后。标题右侧"配料组"入口(B5)。
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                FormFieldLabel("食材清单")
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = { vm.loadIngredientGroups(); ingredientGroupSheetOpen = true }) {
-                    Icon(Icons.Outlined.Category, contentDescription = null, modifier = Modifier.size(18.dp)) // [AI修改] 与"导入整菜/选择步骤"区分图标语义
-                    Spacer(Modifier.width(4.dp))
-                    Text("配料组")
-                }
-            }
-            // [AI修改] 菜名推食材改为"推出即自动加入"食材清单(库外标"待自建")，旧的点确认 chips 区已移除。
+            // [AI修改] 主料分级：食材清单按主料/非主料分组，主料组在上、星标可切换(§UX规范)。
+            FormFieldLabel("食材清单")
             OutlinedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.large,
-                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface), // [AI修改] 表单卡片按新规范使用白底内容卡片。
+                colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
             ) {
                 Column {
+                    val mainIngredients = state.ingredients.filter { it.isMain }
+                    val otherIngredients = state.ingredients.filter { !it.isMain }
+
                     if (state.ingredients.isEmpty()) {
+                        // 全空态：统一提示 + 两个添加按钮并排(主料/其他)
                         Text(
                             "还没加食材",
                             modifier = Modifier.padding(16.dp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                    } else {
-                        state.ingredients.forEach { ing ->
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                // [AI修改] 名字区三态：主名 + 别名(次要灰·去连字符) / 待自建(灰胶囊)。id≤0=库外占位=待自建。
-                                IngredientNameCell(
-                                    name = ing.ingredient.name,
-                                    alias = ing.ingredient.alias,
-                                    pendingCreate = ing.ingredient.id <= 0L,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                // [AI修改] #55：克数剂量 −N+(±5，最小0)。
-                                val grams = ing.quantity?.toInt() ?: 100
-                                GramStepper(grams = grams, onDelta = { d -> vm.changeIngredientGrams(ing.ingredient.id, d) }, onSet = { g -> vm.setIngredientGrams(ing.ingredient.id, g) })
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        ) {
+                            TextButton(onClick = { ingredientPickerAsMain = true; ingredientPickerOpen = true }) {
+                                Icon(Icons.Outlined.StarBorder, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(4.dp))
-                                IconButton(onClick = { vm.removeIngredient(ing.ingredient.id) }) {
-                                    Icon(Icons.Outlined.Close, contentDescription = "移除", modifier = Modifier.size(16.dp))
+                                Text("添加主料", color = MaterialTheme.colorScheme.primary)
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            TextButton(onClick = { ingredientPickerAsMain = false; ingredientPickerOpen = true }) {
+                                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("添加食材", color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    } else {
+                        // === 主料组 ===
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp, top = 8.dp),
+                        ) {
+                            Icon(Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(4.dp))
+                            Text("主料", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                            Spacer(Modifier.width(6.dp))
+                            Text("(${mainIngredients.size})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(Modifier.weight(1f))
+                            TextButton(onClick = { vm.loadIngredientGroups(); ingredientGroupAsMain = true; ingredientGroupSheetOpen = true }) {
+                                Icon(Icons.Outlined.Category, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("配料组")
+                            }
+                        }
+
+                        // 主料缺失提示(保存后触发·非阻断·琥珀色)
+                        if (state.mainMissingHint && mainIngredients.isEmpty()) {
+                            Text(
+                                "还没标主料，会影响推荐准确度",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = androidx.compose.ui.graphics.Color(0xFFE0A23C),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                            )
+                        }
+
+                        if (mainIngredients.isEmpty()) {
+                            // 主料组空态引导
+                            Text(
+                                "还没标主料",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                            )
+                            Text(
+                                "标一下能让推荐和营养判断更准",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 12.dp).padding(bottom = 4.dp),
+                            )
+                        } else {
+                            mainIngredients.forEach { ing ->
+                                IngredientRow(ing, vm)
+                                Divider()
+                            }
+                        }
+
+                        // 添加主料按钮
+                        TextButton(
+                            onClick = { ingredientPickerAsMain = true; ingredientPickerOpen = true },
+                            modifier = Modifier.padding(start = 4.dp),
+                        ) {
+                            Icon(Icons.Outlined.StarBorder, contentDescription = "添加主料", modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("添加主料", color = MaterialTheme.colorScheme.primary)
+                        }
+
+                        // === hairline 分隔(仅两组都有内容时显示) ===
+                        if (otherIngredients.isNotEmpty() && mainIngredients.isNotEmpty()) {
+                            Divider(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            )
+                        }
+
+                        // === 其他食材组(有非主料时才渲染·全主料不显示) ===
+                        if (otherIngredients.isNotEmpty()) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp, top = 4.dp),
+                            ) {
+                                Text("其他食材", style = MaterialTheme.typography.bodyLarge)
+                                Spacer(Modifier.width(6.dp))
+                                Text("(${otherIngredients.size})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(Modifier.weight(1f))
+                                TextButton(onClick = { vm.loadIngredientGroups(); ingredientGroupAsMain = false; ingredientGroupSheetOpen = true }) {
+                                    Icon(Icons.Outlined.Category, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("配料组")
                                 }
                             }
-                            Divider()
+                            otherIngredients.forEach { ing ->
+                                IngredientRow(ing, vm)
+                                Divider()
+                            }
+
+                            // 添加食材按钮
+                            TextButton(
+                                onClick = { ingredientPickerAsMain = false; ingredientPickerOpen = true },
+                                modifier = Modifier.padding(start = 4.dp),
+                            ) {
+                                Icon(Icons.Outlined.Add, contentDescription = "添加食材", modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("添加食材", color = MaterialTheme.colorScheme.primary)
+                            }
                         }
                     }
                 }
-            }
-            TextButton(
-                onClick = { ingredientPickerOpen = true },
-            ) {
-                Icon(Icons.Outlined.Add, contentDescription = null)
-                Spacer(Modifier.width(4.dp))
-                Text("添加食材", color = MaterialTheme.colorScheme.primary)
             }
 
             // [AI生成] v28：适合餐次(可见非必填·智能预选可增减)·基调:高频·食材后。固定 6 项 toggle 多选(实心=选中)，
@@ -421,8 +504,9 @@ fun NewDishScreen(
             onDismiss = { ingredientPickerOpen = false },
             onConfirm = { selected ->
                 // [AI修改] 已在菜中的食材静默跳过(不再弹"食材已存在"确认反模式)，只追加新增，已有用量/备注不覆盖。
+                // [AI修改] 主料分级：按入口(主料组/其他食材组)传递 isMain。
                 val existingIds = state.ingredients.map { it.ingredient.id }.toSet()
-                selected.filterNot { it.id in existingIds }.forEach { vm.addIngredient(it) }
+                selected.filterNot { it.id in existingIds }.forEach { vm.addIngredient(it, isMain = ingredientPickerAsMain) }
             },
         )
     }
@@ -469,7 +553,7 @@ fun NewDishScreen(
         IngredientGroupPickerDialog(
             groups = state.ingredientGroups,
             onApply = { group ->
-                vm.applyIngredientGroup(group)
+                vm.applyIngredientGroup(group, asMain = ingredientGroupAsMain) // [AI修改] 主料分级：按入口(主料组/其他食材组)决定
                 ingredientGroupSheetOpen = false
                 Toast.makeText(context, "已加入「${group.name}」的 ${group.items.size} 味配料", Toast.LENGTH_SHORT).show()
             },
@@ -570,6 +654,44 @@ private fun GramStepper(grams: Int, onDelta: (Int) -> Unit, onSet: (Int) -> Unit
             confirmButton = { TextButton(onClick = { onSet(text.toIntOrNull() ?: grams); editing = false }) { Text("确定") } },
             dismissButton = { TextButton(onClick = { editing = false }) { Text("取消") } },
         )
+    }
+}
+
+/**
+ * 食材行组件：名字区(含调料chip) + 主料星标 + 克数步进 + 移除。[AI生成] 主料分级
+ *
+ * 主料星标 44dp 热区，实心=主料(primary)、描边=非主料(onSurfaceVariant)，点击切换。
+ */
+@Composable
+private fun IngredientRow(ing: com.sxdbsm.cookbook.domain.model.DishIngredient, vm: NewDishViewModel) {
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IngredientNameCell(
+            name = ing.ingredient.name,
+            alias = ing.ingredient.alias,
+            pendingCreate = ing.ingredient.id <= 0L,
+            isSeasoning = !ing.isMain && vm.isSeasoningIngredient(ing.ingredient.id), // [AI修改] 仅在非主料组且分类为调味品/油脂类时显示调料chip
+            modifier = Modifier.weight(1f),
+        )
+        Spacer(Modifier.width(4.dp))
+        // 主料星标切换(44dp 热区 ≥ 无障碍触达标准)
+        IconButton(onClick = { vm.toggleMain(ing.ingredient.id) }, modifier = Modifier.size(44.dp)) {
+            Icon(
+                if (ing.isMain) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                contentDescription = if (ing.isMain) "主料，点击可取消" else "标为主料",
+                modifier = Modifier.size(20.dp),
+                tint = if (ing.isMain) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.width(4.dp))
+        val grams = ing.quantity?.toInt() ?: 100
+        GramStepper(grams = grams, onDelta = { d -> vm.changeIngredientGrams(ing.ingredient.id, d) }, onSet = { g -> vm.setIngredientGrams(ing.ingredient.id, g) })
+        Spacer(Modifier.width(4.dp))
+        IconButton(onClick = { vm.removeIngredient(ing.ingredient.id) }) {
+            Icon(Icons.Outlined.Close, contentDescription = "移除", modifier = Modifier.size(16.dp))
+        }
     }
 }
 
@@ -1088,16 +1210,17 @@ private fun Ingredient.displayNameText(): String =
     if (alias.isBlank()) name else "$name($alias)"
 
 /**
- * 食材行名字区：主名 + 别名(次要灰·退后一层) / 待自建(灰底小胶囊)。[AI生成] 菜名推食材·自动加入
+ * 食材行名字区：主名 + (调料chip) + 别名(次要灰·退后一层) / 待自建(灰底小胶囊)。[AI修改] 主料分级·调料chip
  *
- * 三态一眼可辨：待自建=有边界灰胶囊(保存时创建)；库内有别名=纯灰字别名(去掉旧"名-别名"连字符，
- * 防用户误把别名当新食材全名)；无别名=裸主名。别名(无边界灰字)与待自建(有边界灰胶囊)形态不同，防混淆。
+ * 四态一眼可辨：待自建=有边界灰胶囊(保存时创建)；调料=浅灰chip(仅非主料组·调味品/油脂类)；
+ * 库内有别名=纯灰字别名；无别名/非调料=裸主名。
  */
 @Composable
 private fun IngredientNameCell(
     name: String,
     alias: String,
     pendingCreate: Boolean,
+    isSeasoning: Boolean = false, // [AI生成] 主料分级：是否为调料(调味品/油脂类分类)，仅非主料组显示
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
@@ -1109,6 +1232,17 @@ private fun IngredientNameCell(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false), // 名字过长先省略，别把标注挤出去
         )
+        if (isSeasoning) {
+            Spacer(Modifier.width(5.dp))
+            Surface(shape = RoundedCornerShape(4.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)) {
+                Text(
+                    "调料",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
+                )
+            }
+        }
         if (pendingCreate) {
             Spacer(Modifier.width(6.dp))
             Surface(shape = RoundedCornerShape(4.dp), color = MaterialTheme.colorScheme.surfaceVariant) {

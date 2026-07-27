@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 /**
  * 新建/编辑菜品页 UI 状态。[AI修改]
  *
- * 同一个状态类同时支持“新建菜品”和“编辑菜品”：`editingId == null` 表示新建。
+ * 同一个状态类同时支持"新建菜品"和"编辑菜品"：`editingId == null` 表示新建。
  */
 data class NewDishUiState(
     val editingId: Long? = null,
@@ -59,6 +59,7 @@ data class NewDishUiState(
     val availableUnits: List<MeasurementUnit> = emptyList(), // [AI修改] 食材用量单位下拉列表。
     val stepTemplates: List<com.sxdbsm.cookbook.domain.model.StepTemplate> = emptyList(), // [AI生成] #2 "选择步骤"可套用的步骤模板(预设+自建)。
     val ingredientGroups: List<com.sxdbsm.cookbook.domain.model.IngredientGroup> = emptyList(), // [AI生成] B5 "配料组"可一键加入的常用食材组。
+    val mainMissingHint: Boolean = false, // [AI生成] 保存时有食材但0主料→内联提示(非阻断)，用户标任一主料后自动消失。
 )
 
 /**
@@ -84,7 +85,7 @@ class NewDishViewModel(
     private fun NewDishUiState.contentSig(): String = listOf(
         name.trim(), tags.sorted().toString(), cookingMethodId, cookingMethodNames.sorted().toString(),
         cookingMethodInput.trim(), cuisine, mealSlots.map { it.code }.sorted().toString(), specialNote.trim(), description.trim(), imagePath, thumbnailPath,
-        ingredients.map { it.ingredient.id to it.quantity }.toString(),
+        ingredients.map { it.ingredient.id to (it.quantity to it.isMain) }.toString(), // [AI修改] 纳入 isMain，切换主料标=有改动(§9.17未保存守卫)
         steps.map { it.text.trim() to it.imagePath }.toString(),
     ).toString()
 
@@ -356,6 +357,8 @@ class NewDishViewModel(
             .guessDetailed(dishName, cachedIngredientNames, methods)
             .filter { it.name !in existingNames }
         if (cands.isEmpty()) return
+        // [AI生成] 菜名推演命中的食材名集合——自动标为主料
+        val guessedNames = cands.map { it.name }.toSet()
         val gram = gramUnit()
         val toAdd = mutableListOf<DishIngredient>()
         val pendingNames = mutableListOf<String>()
@@ -364,11 +367,11 @@ class NewDishViewModel(
                 // [AI修改] 归一匹配：guesser 候选名已去空格，库名可能含内部空格(老库/手输)，按去空格名比对防漏配→误建。
                 val ing = runCatching { ingredientRepo.search(c.name) }.getOrDefault(emptyList())
                     .firstOrNull { it.name.replace(" ", "").trim() == c.name } ?: continue
-                toAdd += buildAutoDishIngredient(ing, gram)
+                toAdd += buildAutoDishIngredient(ing, gram, guessedNames)
             } else {
                 // 库外候选：占位负 id + 标记待自建；保存时按名 createUserIngredient 换真 id。
                 val placeholder = Ingredient(id = pendingIdSeq--, name = c.name)
-                toAdd += buildAutoDishIngredient(placeholder, gram)
+                toAdd += buildAutoDishIngredient(placeholder, gram, guessedNames)
                 pendingNames += c.name
             }
         }
@@ -387,13 +390,13 @@ class NewDishViewModel(
         }
     }
 
-    /** 构造一条自动加入的食材项(默认克数按调料/普通区分)。[AI生成] */
-    private fun buildAutoDishIngredient(ing: Ingredient, gram: MeasurementUnit?): DishIngredient {
+    /** 构造一条自动加入的食材项(默认克数按调料/普通区分，菜名命中的自动标主料)。[AI修改] */
+    private fun buildAutoDishIngredient(ing: Ingredient, gram: MeasurementUnit?, guessedNames: Set<String>): DishIngredient {
         val defaultGram = com.sxdbsm.cookbook.domain.SeasoningDefaults
             .defaultGramFor(ing.name, ing.id in seasoningIds).toDouble()
         return DishIngredient(
             ingredient = ing,
-            isMain = false,
+            isMain = ing.name in guessedNames, // [AI修改] 菜名推演命中→自动标主料
             quantity = defaultGram,
             // [AI修改] 默认克数必配"克"单位；不再落到食材计件默认单位(ing.defaultUnitId=个/只)——那会把"100克"显成"100个"、
             // 且营养按错单位折算(bug根因)。此路径 gram 恒非空(autoAddFromName 已 await 单位就绪)；
@@ -501,7 +504,7 @@ class NewDishViewModel(
     /**
      * 添加食材到当前菜品。[AI修改]
      */
-    fun addIngredient(ingredient: Ingredient, quantity: Double? = null) {
+    fun addIngredient(ingredient: Ingredient, quantity: Double? = null, isMain: Boolean = false) {
         if (_state.value.ingredients.any { it.ingredient.id == ingredient.id }) return
         // [AI修改] #55：新加食材默认剂量(克)，用户可用 −N+ 调整(±5，最小0)。配料组套用带来的克数优先(quantity)。
         // [AI修改] 调料按正常每菜用量给默认(盐3g/酱油10g…)，非调料按食物大类给经验默认(见 SeasoningDefaults)。
@@ -513,7 +516,7 @@ class NewDishViewModel(
         _state.value = _state.value.copy(
             ingredients = _state.value.ingredients + DishIngredient(
                 ingredient = ingredient,
-                isMain = false, // [AI修改] 当前版本暂不暴露/保存“主料”语义，后续再扩展原料/调味料分类。
+                isMain = isMain, // [AI修改] 主料分级：由调用方按入口(主料组/其他食材组)决定，默认 false(非主料)
                 quantity = quantity ?: defaultGram,
                 // [AI修改] 默认克数必配"克"单位；不再落到 ingredient.defaultUnitId(个/只)——避免"100克"显成"100个"、营养算错(bug根因)。gram 为 null 时留空单位由营养层兜。
                 unitName = gram?.name ?: "g",
@@ -543,12 +546,12 @@ class NewDishViewModel(
         }
     }
 
-    /** 套用配料组：把组内食材(按名解析/兜底建)加入食材清单(已存在的跳过)。[AI生成] B5 */
-    fun applyIngredientGroup(group: com.sxdbsm.cookbook.domain.model.IngredientGroup) {
+    /** 套用配料组：把组内食材(按名解析/兜底建)加入食材清单(已存在的跳过)。[AI修改] B5 + 主料分级 */
+    fun applyIngredientGroup(group: com.sxdbsm.cookbook.domain.model.IngredientGroup, asMain: Boolean = false) {
         viewModelScope.launch {
             group.items.forEach { item ->
                 val id = runCatching { ingredientRepo.createUserIngredient(item.name) }.getOrNull() ?: return@forEach
-                addIngredient(Ingredient(id = id, name = item.name), quantity = item.quantity) // [AI修改] 需求2：带过来克数
+                addIngredient(Ingredient(id = id, name = item.name), quantity = item.quantity, isMain = asMain) // [AI修改] 主料分级：按入口(主料组/其他食材组)决定
             }
         }
     }
@@ -606,6 +609,7 @@ class NewDishViewModel(
             ingredients = _state.value.ingredients.map {
                 if (it.ingredient.id == ingredientId) it.copy(isMain = !it.isMain) else it
             },
+            mainMissingHint = false, // [AI生成] 用户手动切换主料标→即时清除保存校验提示。
         )
     }
 
@@ -614,6 +618,9 @@ class NewDishViewModel(
             ingredients = _state.value.ingredients.filterNot { it.ingredient.id == ingredientId },
         )
     }
+
+    /** 某食材是否属于调料(调味品/油脂类分类)。[AI生成] 主料分级：供 UI 显示调料 chip。 */
+    fun isSeasoningIngredient(ingredientId: Long): Boolean = ingredientId in seasoningIds
 
     /**
      * 新增一个操作步骤。[AI生成]
@@ -746,6 +753,12 @@ class NewDishViewModel(
     fun save() {
         val s = _state.value
         if (s.name.isBlank() || s.loading) return
+        // [AI生成] 主料校验：有食材但0主料 → 设内联提示(非阻断)，用户标任一主料后自动消失。
+        if (s.ingredients.isNotEmpty() && s.ingredients.none { it.isMain }) {
+            _state.value = _state.value.copy(mainMissingHint = true)
+        } else {
+            _state.value = _state.value.copy(mainMissingHint = false)
+        }
         viewModelScope.launch {
             // [AI修改] D10：saving 标志用最新 _state.value 写回，不用启动前捕获的 s 快照。
             _state.value = _state.value.copy(saving = true)
