@@ -2,29 +2,30 @@
 
 > 交接唯一固定入口。触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落档+**覆盖**本文件+git 提交。
 > **维护约定（省 token）**：只保留当前状态·每次**全覆盖**·不堆历史明细（历史靠 git log + `SESSION_交接_历史.md`）·目标 ≤1 屏。
-> 更新时间：**2026-07-27 · 菜品编辑器主料分级 session**
+> 更新时间：**2026-07-27 · 成员红绿灯 Phase 2 session**
 
-## 本 session 交付（主料分级·已构建通过·待 commit）
+## 本 session 交付（成员化健康红绿灯 Phase 2·无人值守·全部完成）
 
-- ✅ **功能评估**：深入探查发现 `is_main` 字段早已存在于 DB/模型/查询中，但编辑器永远写 `false`（toggleMain() 存在但 UI 未接线）——本质是"半拉子工程收尾"而非新功能。
-- ✅ **方案决策**：推荐"二进制 isMain + 调料自动标签 + 两组 UI"替代用户最初提出的"主料/辅料/调料三分法"——辅料无独立消费者、调料由分类自动判定、零 schema 迁移。
-- ✅ **Apple UX 交互规范**：产出精确到 dp/sp 的分组布局、星标组件、调料 chip、按钮分流、空态全覆盖、保存非阻断校验的完整规范。
-- ✅ **编码实现**（2 文件 201+/54−）：
-  - VM：`addIngredient` +isMain、`buildAutoDishIngredient` +guessedNames（菜名命中=自动主料）、`applyIngredientGroup` +asMain、`toggleMain` 清 hint、`save()` 非阻断校验、`isSeasoningIngredient()`。
-  - UI：食材清单分"主料"/"其他食材"两组、★/☆ 星标 44dp 热区切换、调料自动灰色 chip、添加按钮分流、配料组继承角色、全空态/0主料/全主料全覆盖。
-- ✅ **构建+单测**：`:androidApp:assembleDebug` BUILD SUCCESSFUL + `:shared:testDebugUnitTest` 全绿。
+- ✅ **Phase 2-1 列表逐项徽章**（shared+androidApp 6文件）：DishPickerScreen 选菜列表每道菜旁8dp红/黄/绿小圆点，基于当前查看成员约束批量评估。缓存策略：成员约束只查一次+gatherConstraintsForMember + batch SQL loadDishIngredientInfo（免N+1）。无健康约束不显灯。
+- ✅ **Phase 2-2 详情全家并集补个人忌口**：DishDetailViewModel.computeInsights() avoid集并上family_member的avoidCategoryIds(展开)+avoidIngredientIds，修单成员场景全家并集行遗漏个人忌口的旧缺陷。
+- ✅ **Phase 2-3 成员名可点跳健康档案**：详情页 FamilyVerdictSection 成员名→primary色+clickable→MainScaffold→Family页面。
+- ✅ **构建+单测全绿**：`:androidApp:assembleDebug` BUILD SUCCESSFUL + `:shared:testDebugUnitTest` 全绿。
+- ✅ **git commit**：`0c14fc5f` [unattended] 10文件 166+/20−。
 
 ## ⏭ 下一步（可接续任务）
 
-- 🥇 **P0 成员化健康红绿灯**（家庭×慢病"可感化"·底座 IntakeCalculator+HealthRuleEngine 已成）→ 当前 session 的主料分级是铺垫（推荐引擎终于能拿到准确主料）。
-- 🥇 **P0 引擎正向兑现推荐质量**：主料分级已就绪，可在推荐评估中更准确使用主料信息（主料重复度、主料偏好等）。
-- 🔧 可快速验证本 session 改动的真机效果（新建菜品输"土豆牛腩"→土豆/牛腩自动标 ★ 主料）。
+- 🥇 **P0 引擎正向兑现推荐质量**（多成员忌口贯穿推荐评估打分+忌口引擎扩正向"推有利菜"·本次主料分级+列表徽章是铺垫）
+- 🥇 **P0 成员化红绿灯 Phase 3**（可考虑：①菜品列表页DishesScreen+推荐页AiRecommendScreen 也加徽章 ②GI/嘌呤定性纳入列表灯 ③记菜后逐道菜显灯 ④成员点击精确定位该成员编辑器）
+- 🔧 **真机验证 Phase 2**：选菜页→有健康档案成员→菜旁显红/黄/绿点；详情页→个人忌口也标红；点成员名→跳到家庭页
+- 🟡 **摄入模型占比%呈现**（纯UX修·内部仍存系数·呈现改用归一后占比%）
+- 🟡 **F#8 更新基础数据弹窗增量三**（启动弹窗+视觉+文案）
 
 ## 先读清单
 1. 本文件
 2. `CLAUDE.md`（规范/门禁/踩坑红线）
 3. `功能路径索引.md`（定位先查）
 4. `待办总览.md`（任务队列）
+5. `unattended_decisions.md`（本次自主决策明细）
 
 ## 工作规则（延续）
 1. 🔴 权威方法论优先 · 数据来源真实 · 营养免责非医嘱。
