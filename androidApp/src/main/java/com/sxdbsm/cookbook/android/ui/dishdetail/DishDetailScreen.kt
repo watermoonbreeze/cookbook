@@ -38,6 +38,7 @@ import com.sxdbsm.cookbook.android.ui.component.TagChip
 import com.sxdbsm.cookbook.android.ui.component.decodeImagePaths
 import com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import com.sxdbsm.cookbook.domain.model.MemberDishVerdict
@@ -59,6 +60,7 @@ fun DishDetailScreen(
     onStartCook: (Long) -> Unit = {}, // [AI生成] 进入分步烹饪
     onCopyDish: (Long) -> Unit = {}, // [AI生成] 预设菜"另存为我的菜"(复制后可改)
     onAddToMeal: (Long) -> Unit = {}, // [AI生成] 详情主CTA:把这道菜记到某餐(带入加餐流程预填)
+    onOpenMember: (Long) -> Unit = {}, // [AI生成] Phase 2 成员红绿灯:点成员名跳健康档案
     vm: DishDetailViewModel = koinViewModel(),
 ) {
     // [AI修改] 详情使用 Flow 订阅，菜品被编辑保存后这里能自动刷新。
@@ -193,7 +195,7 @@ fun DishDetailScreen(
             // [AI生成] 详情页健康信息按维度分工递进：对谁(红绿灯#1)→关键指标量(病种视角#3)→状态(库存/记录)。
             vm.insights?.let {
                 val showVerdicts = it.verdicts.size >= 2
-                if (showVerdicts) FamilyVerdictSection(it.verdicts) // 成员化红绿灯#1:对谁宜/不宜
+                if (showVerdicts) FamilyVerdictSection(it.verdicts, onOpenMember) // 成员化红绿灯#1:对谁宜/不宜 + Phase 2 点成员名跳健康档案
                 ConditionInsightsSection(it.conditionInsights) // 病种切换解读视角#3:整菜关键指标数值/定性
                 DishInsightsSection(it, suppressGlobalVerdict = showVerdicts)
             }
@@ -370,7 +372,7 @@ fun DishDetailScreen(
  * 视觉克制：只用 10dp 小色点承载红绿灯语义，文字温和不吓人，不铺整行底色。
  */
 @Composable
-private fun FamilyVerdictSection(verdicts: List<MemberDishVerdict>) {
+private fun FamilyVerdictSection(verdicts: List<MemberDishVerdict>, onOpenMember: (Long) -> Unit = {}) {
     val ext = ExtendedColorsHolder.current
     fun colorOf(l: TrafficLight) = when (l) {
         TrafficLight.RED -> ext.danger
@@ -396,7 +398,7 @@ private fun FamilyVerdictSection(verdicts: List<MemberDishVerdict>) {
         } else {
             ordered.forEachIndexed { i, v ->
                 if (i > 0) InsetDivider(startIndent = 44)
-                MemberVerdictRow(v, colorOf(v.light))
+                MemberVerdictRow(v, colorOf(v.light), onClick = { onOpenMember(v.memberId) })
             }
         }
     }
@@ -404,7 +406,7 @@ private fun FamilyVerdictSection(verdicts: List<MemberDishVerdict>) {
 
 /** 红绿灯单行：色点 + 名(定宽对齐) + 等级词(语义色) + 原因(灰字·省略号)。[AI生成] */
 @Composable
-private fun MemberVerdictRow(v: MemberDishVerdict, color: androidx.compose.ui.graphics.Color) {
+private fun MemberVerdictRow(v: MemberDishVerdict, color: androidx.compose.ui.graphics.Color, onClick: (() -> Unit)? = null) {
     val levelWord = when (v.light) {
         TrafficLight.RED -> "不宜"
         TrafficLight.YELLOW -> "留意"
@@ -416,15 +418,19 @@ private fun MemberVerdictRow(v: MemberDishVerdict, color: androidx.compose.ui.gr
     ) {
         Dot(color)
         Spacer(Modifier.width(14.dp))
-        Text(
-            v.memberName,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-            modifier = Modifier.width(64.dp),
-        )
+        // [AI生成] Phase 2:成员名可点击跳健康档案(chedvron暗示可点·下半行仍为"原因")
+        Column(modifier = Modifier.width(64.dp).then(
+            if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
+        )) {
+            Text(
+                v.memberName,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary, // [AI修改] Phase 2:可点击→主题色暗示 affordance
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+        }
         Text(levelWord, style = MaterialTheme.typography.bodyMedium, color = color)
         val reason = verdictReason(v)
         if (reason.isNotEmpty()) {

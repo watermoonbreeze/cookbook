@@ -219,6 +219,7 @@ fun DishPickerScreen(
                         items(state.dishes, key = { it.id }) { dish ->
                             DishRow(
                                 dish = dish,
+                                trafficLight = state.memberLights?.get(dish.id), // [AI生成] Phase 2 列表徽章:逐项红绿灯(无成员/无约束→null 不显)
                                 showCheckbox = multiSelect,
                                 checked = state.selected.any { it.id == dish.id },
                                 onCheckedChange = { vm.toggle(dish, multiSelect) },

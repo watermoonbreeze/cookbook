@@ -617,4 +617,25 @@ class DishRepository(private val db: CookbookDatabase) {
             )
         }
     }
+
+    /**
+     * 批量加载菜品配料信息（ingredientId + 是否主料）。[AI生成] Phase 2 成员红绿灯：列表徽章批量评估用。
+     *
+     * 复用已有 [selectDishIngredientsByDishIds] 查询，一次 IO 取多道菜的配料 ID/isMain，
+     * 供 [MemberDishHealthUseCase] 批量评估时免 N+1。空入参返空 map（守 SQLite IN 空列表守卫）。
+     */
+    suspend fun loadDishIngredientInfo(dishIds: List<Long>): Map<Long, List<DishIngredientInfo>> = withContext(ioDispatcher) {
+        if (dishIds.isEmpty()) return@withContext emptyMap()
+        q.selectDishIngredientsByDishIds(dishIds).executeAsList().groupBy(
+            { it.dish_id },
+            { DishIngredientInfo(ingredientId = it.ingredient_id, ingredientName = it.ingredient_name, isMain = it.is_main != 0L) },
+        )
+    }
 }
+
+/** 菜品配料轻量信息（批查用，避免逐菜 loadFullDish）。[AI生成] Phase 2 成员红绿灯：列表徽章批量评估。 */
+data class DishIngredientInfo(
+    val ingredientId: Long,
+    val ingredientName: String,
+    val isMain: Boolean,
+)

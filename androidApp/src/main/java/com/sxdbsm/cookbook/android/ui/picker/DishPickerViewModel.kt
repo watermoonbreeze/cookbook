@@ -6,8 +6,10 @@ import com.sxdbsm.cookbook.ai.MealSlot // [AI生成] v28:记一餐按当前餐�
 import com.sxdbsm.cookbook.android.ui.dishes.DishesSortTab // [AI生成] C深度:复用菜品页分类Tab枚举(最近/喜爱/菜系ALL/家庭)
 import com.sxdbsm.cookbook.android.ui.dishes.dishInitial // [AI生成] C深度:菜系/家庭档按拼音首字母排序
 import com.sxdbsm.cookbook.data.repository.DishRepository
+import com.sxdbsm.cookbook.data.repository.FamilyRepository // [AI生成] Phase 2 列表徽章:取当前查看成员
 import com.sxdbsm.cookbook.domain.model.Cuisines // [AI生成] C深度:菜系固定顺序
 import com.sxdbsm.cookbook.domain.model.DishMini
+import com.sxdbsm.cookbook.domain.model.TrafficLight // [AI生成] Phase 2 列表徽章:红绿灯色
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +39,8 @@ data class DishPickerUiState(
     val mealSlot: MealSlot? = null,
     val mealSlotOnly: Boolean = false,
     val mealSlotMatchCount: Int = 0, // 当前档下适合该餐次的菜数(toggle 标签显数)
+    // [AI生成] Phase 2 列表徽章:当前查看成员对每道菜的红绿灯色。null=未加载/无成员/无健康档案(不显点)。
+    val memberLights: Map<Long, TrafficLight>? = null,
 )
 
 /**
@@ -46,6 +50,8 @@ data class DishPickerUiState(
  */
 class DishPickerViewModel(
     private val dishRepo: DishRepository,
+    private val familyRepo: FamilyRepository? = null, // [AI生成] Phase 2 列表徽章:取当前查看成员(选填·无则无灯)
+    private val memberHealth: com.sxdbsm.cookbook.ai.MemberDishHealthUseCase? = null, // [AI生成] Phase 2 列表徽章:批量评估红绿灯
 ) : ViewModel() {
 
     private val _keyword = MutableStateFlow("") // [AI修改] 搜索关键词。
@@ -56,6 +62,7 @@ class DishPickerViewModel(
     private val _cuisineFilter = MutableStateFlow<String?>(null) // [AI生成] C深度:菜系筛选(仅菜系Tab生效)
     private val _pickerMealSlot = MutableStateFlow<MealSlot?>(null) // [AI生成] v28:当前餐次(记一餐传入,其他入口 null)
     private val _mealSlotOnly = MutableStateFlow(false) // [AI生成] v28:是否只看适合该餐次(可切"全部")
+    private val _memberLights = MutableStateFlow<Map<Long, TrafficLight>?>(null) // [AI生成] Phase 2 列表徽章:当前查看成员对各菜的红绿灯
     private var lastRefreshKeyword: String? = null
     private var searchJob: Job? = null // [AI修改] 搜索输入防抖任务；force 刷新不走延迟。
 
@@ -78,7 +85,7 @@ class DishPickerViewModel(
         PickerOpts(t, c, ms, only)
     }
 
-    val state: StateFlow<DishPickerUiState> = combine(listState, _excludeDishIds, viewOpts) { list, exclude, opts ->
+    val state: StateFlow<DishPickerUiState> = combine(listState, _excludeDishIds, viewOpts, _memberLights) { list, exclude, opts, lights ->
         val (tab, cuisine, mealSlot, mealSlotOnly) = opts
         val visible = list.dishes.filterNot { it.id in exclude }
         // [AI生成] C深度:菜系可选项从可见菜派生(去无菜的菜系),按 Cuisines.ALL 固定序;选中菜系若已无菜视为未选(自愈)。
@@ -119,10 +126,11 @@ class DishPickerViewModel(
             mealSlot = if (slotActive) mealSlot else null,
             mealSlotOnly = mealSlotOnly,
             mealSlotMatchCount = matchCount,
+            memberLights = lights, // [AI生成] Phase 2 列表徽章:当前查看成员的红绿灯
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DishPickerUiState())
 
-    init { refresh("", force = true) }
+    init { refresh("", force = true); evaluateMemberLights() }
 
     /**
      * 配置选择器的排除项和初始选中项。[AI修改]
@@ -189,6 +197,26 @@ class DishPickerViewModel(
             // [AI修改] 用户连续输入时只执行最后一次查询；force=true 的返回刷新保持立即执行。
             if (debounce && !force) delay(com.sxdbsm.cookbook.android.util.SearchDefaults.DEBOUNCE_MS)
             _dishes.value = dishRepo.searchDishes(keyword)
+            evaluateMemberLights() // [AI生成] Phase 2 列表徽章:菜品刷新后重评红绿灯(同协程·dish 已更新)
+        }
+    }
+
+    /** 加载当前查看成员的红绿灯（批量评估多菜对一人）。[AI生成] Phase 2 列表徽章。 */
+    private fun evaluateMemberLights() {
+        val fRepo = familyRepo ?: return
+        val mHealth = memberHealth ?: return
+        viewModelScope.launch {
+            val members = fRepo.listMembers()
+            // 取当前查看成员（优先 focus 集合首位，与 resolveViewing 口径一致）
+            val viewing = members.firstOrNull { it.isFocus } ?: members.firstOrNull()
+            if (viewing != null && (viewing.careCategoryIds.isNotEmpty() || viewing.avoidIngredientIds.isNotEmpty())) {
+                val dishIds = _dishes.value.map { it.id }
+                if (dishIds.isNotEmpty()) {
+                    _memberLights.value = mHealth.evaluateDishLightsForMember(dishIds, viewing)
+                }
+            } else {
+                _memberLights.value = null // 无健康约束→不显灯(降噪)
+            }
         }
     }
 }

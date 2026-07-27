@@ -19,11 +19,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.domain.model.DishMini
+import com.sxdbsm.cookbook.domain.model.TrafficLight // [AI生成] Phase 2 列表徽章:红绿灯色
 
 /**
  * DishesScreen 列表行 / DishPickerScreen 候选行 共用。[AI修改]
  *
  * @param dish 菜品
+ * @param trafficLight [AI生成] Phase 2 成员红绿灯：当前查看成员对该菜的适宜度色。null=不显(无成员/无健康约束)。
  * @param showCheckbox 是否显示多选框
  * @param checked 多选选中
  * @param onCheckedChange 多选回调
@@ -36,6 +38,7 @@ fun DishRow(
     dish: DishMini,
     modifier: Modifier = Modifier,
     preferenceRank: Int? = null,
+    trafficLight: TrafficLight? = null, // [AI生成] Phase 2 列表徽章:可选交通灯小圆点
     showCheckbox: Boolean = false,
     checked: Boolean = false,
     favorite: Boolean = false, // [AI生成] B1：收藏则菜名前显示 ⭐
@@ -65,8 +68,13 @@ fun DishRow(
         )
         Spacer(Modifier.width(12.dp))
 
+        // [AI生成] Phase 2 成员红绿灯:列表逐项小圆点(仅在有约束成员时显,克制不喧宾)
+        if (trafficLight != null) {
+            TrafficLightDot(trafficLight, Modifier.padding(end = 8.dp))
+        }
+
         Column(Modifier.weight(1f)) {
-            // [AI修改] 中间区域固定为“菜名在上、标签在下”，右侧评分/勾选控件单独靠右。
+            // [AI修改] 中间区域固定为”菜名在上、标签在下”，右侧评分/勾选控件单独靠右。
             Text(
                 text = if (favorite) "⭐ ${dish.name}" else dish.name, // [AI生成] B1：收藏菜名前置星标
                 style = MaterialTheme.typography.bodyLarge,
@@ -200,4 +208,25 @@ fun TagChip(text: String) {
             color = fg,
         )
     }
+}
+
+/**
+ * 交通灯小圆点（8dp·克制·供列表行逐项徽章用）。[AI生成] Phase 2 成员红绿灯。
+ *
+ * 仅靠颜色表意·必配文字等级词(列表场景省略文字靠位置+颜色暗示·详情页有完整归因)。
+ * 颜色从 ExtendedColors 取语义色(danger/warning/success)，与详情页红绿灯一致。
+ */
+@Composable
+fun TrafficLightDot(light: TrafficLight, modifier: Modifier = Modifier) {
+    val color = when (light) {
+        TrafficLight.RED -> com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder.current.danger
+        TrafficLight.YELLOW -> com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder.current.warning
+        TrafficLight.GREEN -> com.sxdbsm.cookbook.android.ui.theme.ExtendedColorsHolder.current.success
+    }
+    Box(
+        modifier = modifier
+            .size(8.dp)
+            .clip(CircleShape)
+            .background(color),
+    )
 }

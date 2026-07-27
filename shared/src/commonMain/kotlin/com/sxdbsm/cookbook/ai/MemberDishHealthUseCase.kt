@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.ai
 
+import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FamilyRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.NutritionRepository
@@ -7,6 +8,7 @@ import com.sxdbsm.cookbook.domain.HealthCondition
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.domain.model.FamilyMember
 import com.sxdbsm.cookbook.domain.model.MemberDishVerdict
+import com.sxdbsm.cookbook.domain.model.TrafficLight
 
 /**
  * @File : MemberDishHealthUseCase
@@ -25,6 +27,7 @@ class MemberDishHealthUseCase(
     private val familyRepo: FamilyRepository,
     private val ingredientRepo: IngredientRepository,
     private val nutritionRepo: NutritionRepository, // [AI生成] GI 全表由此只查一次共用(见 evaluate)
+    private val dishRepo: DishRepository, // [AI生成] Phase 2 列表徽章：批量取菜品配料信息(免逐菜 loadFullDish)
 ) {
 
     /**
@@ -58,4 +61,49 @@ class MemberDishHealthUseCase(
     /** 便捷：评估全部家庭成员。[AI生成] */
     suspend fun evaluateAllMembers(dish: Dish): List<MemberDishVerdict> =
         evaluate(dish, familyRepo.listMembers())
+
+    /**
+     * 批量评估多道菜对一位成员的交通灯颜色（仅返回灯色，不含归因名）。[AI生成] Phase 2 列表徽章。
+     *
+     * 与 [evaluate]（单菜→全员）正交：这里是**多菜→一人**。用于菜品列表（选菜/菜品库/推荐等）
+     * 每道菜旁显示一个小圆点，让用户在选菜时一眼看到"这道菜对当前查看者是否合适"。
+     *
+     * **缓存策略**：本方法内部对成员约束只查一次（[gatherConstraintsForMember]），
+     * 菜品配料信息走批量 SQL（[DishRepository.loadDishIngredientInfo]），免逐菜 loadFullDish N+1。
+     * **调用方**应在 dish 列表变化时重新调用，成员约束不变期间不需重复调用。
+     *
+     * **当前口径**：仅判忌口(红)+限量(黄)+安全(绿)，不做 GI/嘌呤定性（列表徽章空间小·详情页已有完整判定）。
+     * 忌口取病种+个人并集（含调料）、限量只取主料（门槛代理）。
+     *
+     * @return dishId → TrafficLight，未查到的 dishId 默认 GREEN。
+     */
+    suspend fun evaluateDishLightsForMember(
+        dishIds: List<Long>,
+        member: FamilyMember,
+    ): Map<Long, TrafficLight> {
+        if (dishIds.isEmpty()) return emptyMap()
+        // 1. 该成员约束只查一次（gatherConstraintsForMember 轻量·几条 SQL）
+        val rc = recoDataSource.gatherConstraintsForMember(member, skipGi = true)
+        val avoidIds = rc.constraints.avoidIngredientIds
+        val personalAvoidIds = rc.constraints.personalAvoidIngredientIds
+        val limitIds = rc.constraints.limitIngredientIds
+        val seasoningIds = ingredientRepo.seasoningIngredientIds()
+        // 2. 批量取全部菜的配料 ID + isMain（一条 SQL·免逐菜 loadFullDish N+1）
+        val ingredientsByDish = dishRepo.loadDishIngredientInfo(dishIds)
+        // 3. 逐菜判灯（纯内存 set 交运算）
+        return dishIds.associateWith { dishId ->
+            val ings = ingredientsByDish[dishId].orEmpty()
+            val hasAvoid = ings.any { (ingId, _, _) ->
+                (ingId in avoidIds && ingId !in seasoningIds) || ingId in personalAvoidIds
+            }
+            val hasLimit = ings.any { (ingId, _, isMain) ->
+                isMain && ingId in limitIds
+            }
+            when {
+                hasAvoid -> TrafficLight.RED
+                hasLimit -> TrafficLight.YELLOW
+                else -> TrafficLight.GREEN
+            }
+        }
+    }
 }

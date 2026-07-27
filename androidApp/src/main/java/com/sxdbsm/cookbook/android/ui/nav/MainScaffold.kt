@@ -453,6 +453,7 @@ fun MainScaffold(
                     onStartCook = { id -> nav.navigate(Routes.cookMode(id)) }, // [AI生成] 进入分步烹饪
                     onCopyDish = { id -> nav.navigate(Routes.copyDish(id)) }, // [AI生成] 预设菜"另存为我的菜"
                     onAddToMeal = { id -> nav.navigate(Routes.addMealWithDishes(listOf(id))) }, // [AI生成] 详情"记这道菜"→加餐流程预填
+                    onOpenMember = { _ -> nav.navigate(Routes.FAMILY) }, // [AI生成] Phase 2:点成员名→跳家庭档案页(二期可精确定位该成员)
                 )
             }
             composable(Routes.COOK_MODE) { entry ->

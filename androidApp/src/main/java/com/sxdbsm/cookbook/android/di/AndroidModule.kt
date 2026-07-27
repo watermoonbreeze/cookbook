@@ -57,7 +57,7 @@ val androidModule = module {
     viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 HealthProfileRepository(A-1) + RecommendationDataSource(阶段2 首页下一餐推荐卡)。
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
-    viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)+MemberDishHealthUseCase(成员化红绿灯)
+    viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)+MemberDishHealthUseCase(成员化红绿灯)+FamilyRepository(Phase 2 全家并集补个人忌口)
     viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get(), get(), get()) } // [AI修改] 追加收藏组合仓库(组合复用) + 阶段3-b Analytics(meal_logged) + 运营#177 ③ MealHealthHintUseCase(记菜命中慢病轻提示)。
     viewModel { TimelineViewModel(get()) }
@@ -66,7 +66,7 @@ val androidModule = module {
     viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get(), get(), get()) } // [AI修改] 家庭成员管理 + 阶段3-b Analytics + D1-2 IngredientRepository(忌口查名收进VM)
     viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyStatsViewModel(get(), get(), get()) } // [AI生成] 膳食统计
     viewModel { IngredientPickerViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 Pantry/HealthProfile/Nutrition 支持库存 Tab、忌口高亮、自定义营养录入。
-    viewModel { DishPickerViewModel(get()) }
+    viewModel { DishPickerViewModel(get(), get(), get()) } // [AI修改] Phase 2 列表徽章:加 FamilyRepository+MemberDishHealthUseCase 做选菜红绿灯
     viewModel { SearchViewModel(get(), get(), get()) }
     viewModel { AiRecommendViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] AI 推荐(取数层+编排器+AI配置+偏好+Analytics+§9.36 NutritionRepository 每菜营养)。
     viewModel { AiSettingsViewModel(get()) } // [AI生成] AI 设置(运行时配置)。

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
+import com.sxdbsm.cookbook.data.repository.FamilyRepository // [AI生成] Phase 2 详情页:全家并集补个人忌口(avoidIngredientIds+avoidCategoryIds展开)
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
@@ -31,6 +32,7 @@ class DishDetailViewModel(
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 营养估算
     private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] 库存挂钩开关(关则详情不显库存洞察)
     private val memberHealth: com.sxdbsm.cookbook.ai.MemberDishHealthUseCase, // [AI生成] 成员化红绿灯:逐成员评估本菜适宜度(商业#1)
+    private val familyRepo: FamilyRepository? = null, // [AI生成] Phase 2 详情页:全家并集补个人忌口(选填·老数据无 family 表不崩)
 ) : ViewModel() {
 
     var insights by mutableStateOf<DishInsights?>(null)
@@ -108,6 +110,16 @@ class DishDetailViewModel(
         val avoid = careIngredients.filter { it.adviceLevel == AdviceLevel.AVOID }.map { it.id }.toSet()
         val limit = careIngredients.filter { it.adviceLevel == AdviceLevel.LIMIT }.map { it.id }.toSet()
         val recommend = careIngredients.filter { it.adviceLevel == AdviceLevel.RECOMMEND }.map { it.id }.toSet()
+        // [AI生成] Phase 2:全家并集补个人忌口——把每位家庭成员的 avoidCategoryIds(展开为食材 id)+avoidIngredientIds 并入 avoid，
+        //   使单成员场景(verdicts.size<2)的"全家适宜性"行也能反映个人忌口(此前只有病种忌口·此处是漏网)。
+        val personalAvoidIds = if (familyRepo != null) {
+            val members = familyRepo.listMembers()
+            val catIds = members.flatMap { it.avoidCategoryIds }
+            val fromCats = if (catIds.isEmpty()) emptySet() else ingredientRepo.listByCategories(catIds).map { it.id }.toSet()
+            val fromDirect = members.flatMap { it.avoidIngredientIds }.toSet()
+            fromCats + fromDirect
+        } else emptySet()
+        val allAvoidIds = avoid + personalAvoidIds // 病种 care + 个人忌口并集
         val seasoningIds = ingredientRepo.seasoningIngredientIds() // [AI生成] B1 忌口从严:详情页忌口也放宽到非调料(主料+辅料)，需排除调料
 
         val stats = dishRepo.cookStats(dish.id)
@@ -121,7 +133,7 @@ class DishDetailViewModel(
 
         // [AI修改] B1 忌口从严(2026-07-19)：忌口(avoid)放宽到全部非调料(主料+辅料·含即命中)，与 HealthRuleEngine/gatherForPlan 一致；
         //   限量/调养仍守主料门槛(剂量占比·避免辅料误伤)。提为 val 以便 GI/嘌呤定性提示去重复用。
-        val avoidNames = dish.ingredients.filter { it.ingredient.id in avoid && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }.distinct()
+        val avoidNames = dish.ingredients.filter { it.ingredient.id in allAvoidIds && it.ingredient.id !in seasoningIds }.map { it.ingredient.name }.distinct()
         val limitNames = dish.ingredients.filter { it.isMain && it.ingredient.id in limit }.map { it.ingredient.name }.distinct()
         val recommendNames = dish.ingredients.filter { it.isMain && it.ingredient.id in recommend }.map { it.ingredient.name }.distinct()
 
