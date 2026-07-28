@@ -52,6 +52,8 @@ val sharedModule: Module = module {
     // [AI生成] AI 运行时配置(云/端/Key)；AiRuntime 具体实现由 androidModule 绑定 SwitchableAiRuntime。
     single { AiRuntimeConfig(get()) }
     single { RecommendationOrchestrator(get()) }
+    // [AI生成] K1 AI快捷输入记餐：入库编排 UseCase（shared 纯逻辑，调已有 Repo）
+    single { com.sxdbsm.cookbook.ai.meallog.AiMealRecorder(get(), get(), get()) }
     // [AI生成] 选择性同步：导出/合并导入 菜品/食材/库存/健康/收藏/餐食。
     single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     // [AI生成] 阶段3 匿名统计埋点抽象层：Analytics=同意闸门(默认关·App 启动读偏好 setEnabled、设置开关驱动)。

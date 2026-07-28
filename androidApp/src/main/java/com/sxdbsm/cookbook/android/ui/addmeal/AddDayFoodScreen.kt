@@ -96,6 +96,7 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /**
  * 添加餐食页面。[AI修改]
@@ -166,6 +167,7 @@ fun AddDayFoodScreen(
     var comboNameDraft by rememberSaveable { mutableStateOf("") }
     var aiTargetBlockId by rememberSaveable { mutableStateOf<Long?>(null) } // [AI生成] 记录哪个餐次块发起了 AI 推荐。
     var previewOpen by rememberSaveable { mutableStateOf(false) } // [AI生成] D保存预览:点"保存计划"先弹预览sheet,确认再存(仅计划态,实录高频不加确认=守少操作)
+    var aiSheetOpen by rememberSaveable { mutableStateOf(false) } // [AI生成] K1 AI快捷输入记餐 Sheet 开关
     val snackbar = remember { SnackbarHostState() } // [AI生成] A6：移除菜品撤销提示
     val scope = rememberCoroutineScope()
     // [AI生成] part1/审查建议1(§9.12 红线)：撤销 Snackbar **单 job 串行化**——连点多 chip/连续操作时，
@@ -233,6 +235,18 @@ fun AddDayFoodScreen(
             com.sxdbsm.cookbook.android.ui.component.AppTopBar(
                 title = "添加餐食",
                 onBack = requestBack, // [AI修改] §9.17：走未保存守卫
+                actions = {
+                    // [AI生成] K1 AI快捷输入记餐入口：✨ 按钮 + 文字，始终可见
+                    TextButton(onClick = { aiSheetOpen = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.AutoAwesome,
+                            contentDescription = "AI快捷记",
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("AI快捷记", style = MaterialTheme.typography.labelMedium)
+                    }
+                },
             )
         },
         // [AI修改] 家族化 P3(§9.13/基调§一.1):保存/主 CTA 永远在底部胶囊常驻。
@@ -552,6 +566,19 @@ fun AddDayFoodScreen(
                 }
             }
         }
+    }
+
+    // [AI生成] K1 AI快捷输入记餐 Sheet：始终可见，ViewModel 参数化传入空初始文本
+    if (aiSheetOpen) {
+        val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel { parametersOf("") }
+        com.sxdbsm.cookbook.android.ui.ai.AiMealInputSheet(
+            vm = aiVm,
+            onDismiss = { aiSheetOpen = false },
+            onSaved = { savedState ->
+                // AI 保存成功后，刷新当前页面以显示新记录
+                AppLogger.d("MealFlow", "AI meal saved: ${savedState.recordResult?.mealsSaved} meals, targetDate=${savedState.recordResult?.targetDate}")
+            },
+        )
     }
 }
 

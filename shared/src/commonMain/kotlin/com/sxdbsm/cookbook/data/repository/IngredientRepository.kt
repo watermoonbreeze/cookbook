@@ -95,6 +95,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
         categoryId: Long? = null,
         defaultUnitId: Long? = null,
         categoryIds: List<Long> = categoryId?.let { listOf(it) }.orEmpty(),
+        source: String = "user", // [AI生成] K1:AI快捷输入创建的食材标"ai"源，默认"user"保持向后兼容
     ): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
         // [AI修改] 同名即复用：新建前先按去空格的名字查已有食材，命中则直接返回其 id、不再新建重复行。
@@ -122,7 +123,7 @@ class IngredientRepository(private val db: CookbookDatabase) {
             thumbnail_path = thumbnailPath, // [AI生成] 新建食材时保存缩略图路径，列表优先展示。
             emoji = "🥗", // [AI生成] 用户自建食材没有 JSON 预置图标时先使用通用食物图标。
             default_unit_id = defaultUnitId,
-            source = "user",
+            source = source, // [AI修改] K1:支持 AI 创建的食材标"ai"源
             created_at = now,
         )
         val id = q.lastInsertId().executeAsOne()

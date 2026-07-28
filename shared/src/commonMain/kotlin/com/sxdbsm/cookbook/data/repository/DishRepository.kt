@@ -478,6 +478,7 @@ class DishRepository(private val db: CookbookDatabase) {
         steps: List<DishStep> = emptyList(),
         cuisine: String = "", // [AI生成] 菜系(可空)
         mealSlotCodes: List<String> = emptyList(), // [AI生成] v28：适合餐次 code(空则按菜名 Matcher 推断兜底)
+        source: String = "user", // [AI生成] K1:AI快捷输入创建的菜品标"ai"源，默认"user"保持向后兼容
     ): Long = withContext(ioDispatcher) {
         val now = DateTime.nowEpochSeconds()
         var dishId = id
@@ -493,7 +494,7 @@ class DishRepository(private val db: CookbookDatabase) {
                     description = description,
                     image_path = imagePath,
                     thumbnail_path = thumbnailPath,
-                    source = "user",
+                    source = source, // [AI修改] K1:支持 AI 创建的菜品标"ai"源
                     created_at = now,
                     updated_at = now,
                     cuisine = cuisine,
