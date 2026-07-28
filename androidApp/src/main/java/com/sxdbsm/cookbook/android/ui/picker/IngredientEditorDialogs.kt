@@ -301,12 +301,15 @@ internal fun IngredientEditorDialog(
             ui.allCategories.firstOrNull { it.parentId == null && it.name == e.value }?.let { Triple(e.key, e.value, it.id) }
         }
     }
-    // 预选：编辑现有食材优先用其已挂的顶层大类；否则按名猜(未手动改过时随名跟随)。
+    // 预选：编辑现有食材优先用其已挂的顶层大类；名称变更后以 classify(name) 为主（K10修复）。
     LaunchedEffect(name, ui.editorCategoryIds, groupOptions, ui.editorLoading) {
         if (ingredient != null && ui.editorLoading) return@LaunchedEffect
         if (groupTouched) return@LaunchedEffect
+        val fromName = com.sxdbsm.cookbook.domain.FoodGroup.classify(name)
         val existing = groupOptions.firstOrNull { (_, _, catId) -> catId in ui.editorCategoryIds }?.first
-        selectedGroup = existing ?: com.sxdbsm.cookbook.domain.FoodGroup.classify(name)
+        // [AI修改] K10:名称变更后以 classify(name) 为主跟随新名；未变时保留旧 DB 分类优先。
+        val nameChanged = ingredient != null && name.trim() != ingredient.name.trim()
+        selectedGroup = if (nameChanged) (fromName ?: existing) else (existing ?: fromName)
     }
     // [AI生成] 新建食材时按营养大类预选一个合理默认单位(蛋/水果→个、奶→ml、其余→g)，减少"每次记用量都要选单位"；用户可改。
     LaunchedEffect(selectedGroup, ui.availableUnits) {
