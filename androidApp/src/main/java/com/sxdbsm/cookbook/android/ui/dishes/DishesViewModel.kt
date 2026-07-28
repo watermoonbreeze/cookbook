@@ -25,15 +25,14 @@ enum class DishesSortTab { RECENT, FAVORITE, ALL, SLOT, HOME } // [AI修改] 202
 /**
  * 菜品页专属"餐次筛选"分类。[AI生成] 2026-07-19
  *
- * 用户诉求：菜品分类里把 上午餐/下午餐/加餐 用一个**统称「加餐」**代替，点它=显示所有属于上午/下午/加餐的菜。
- * **只在菜品页筛选/搜索这一处用**——不改 MealSlot 枚举、不改 meal_type、不动记一餐(记一餐仍保持上午餐/下午餐)。
- * 每个筛选项映射到底层 MealSlot 集合，"加餐"= {上午餐,下午餐}(命中任一即算)。ALL(全部)=空集=不筛。
+ * 每个筛选项映射到底层 MealSlot 集合。ALL(全部)=空集=不筛。
+ * [AI修改] K4：上午餐/下午餐已合并为 SNACK(加餐)，筛选项直接映射 MealSlot.SNACK。
  */
 enum class DishSlotFilter(val label: String, val slots: Set<MealSlot>) {
     ALL("全部", emptySet()),
     BREAKFAST("早餐", setOf(MealSlot.BREAKFAST)),
     LUNCH("中餐", setOf(MealSlot.LUNCH)),
-    SNACK("加餐", setOf(MealSlot.MORNING_SNACK, MealSlot.AFTERNOON_SNACK)), // 统称:上午/下午合并
+    SNACK("加餐", setOf(MealSlot.SNACK)), // [AI修改] K4：上午餐/下午餐已合并为 SNACK
     DINNER("晚餐", setOf(MealSlot.DINNER)),
     NIGHT("宵夜", setOf(MealSlot.NIGHT_SNACK)),
     ;
@@ -42,7 +41,7 @@ enum class DishSlotFilter(val label: String, val slots: Set<MealSlot>) {
     fun matches(dishSlots: List<MealSlot>): Boolean = slots.isEmpty() || dishSlots.any { it in slots }
 
     companion object {
-        // [AI生成] 纯餐次搜索词→菜品餐次筛(整词命中)。含统称"加餐"及其子词(上午餐/下午餐等都归"加餐")。
+        // [AI生成] K4：纯餐次搜索词→菜品餐次筛(整词命中)。"上午餐/下午餐"保留为搜索别名，都归 SNACK(加餐)。
         private val KEYWORDS: Map<String, DishSlotFilter> = mapOf(
             "早餐" to BREAKFAST, "早饭" to BREAKFAST,
             "午餐" to LUNCH, "中餐" to LUNCH, "午饭" to LUNCH,

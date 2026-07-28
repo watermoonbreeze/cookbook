@@ -19,12 +19,12 @@ import kotlin.test.assertTrue
  **/
 class DishMealSlotTest {
 
-    /** 建 6 个固定餐次(测试库 Schema.create 不含 seed，手动插)。[AI生成] */
+    /** 建 5 个固定餐次(测试库 Schema.create 不含 seed，手动插)。[AI修改] K4：去掉上午餐/下午餐，合并为 SNACK(加餐)。 */
     private fun seedMealTypes(db: com.sxdbsm.cookbook.db.CookbookDatabase) {
         val q = db.cookbookQueries
         listOf(
-            "BREAKFAST" to "早餐", "MORNING_SNACK" to "上午餐", "LUNCH" to "中餐",
-            "AFTERNOON_SNACK" to "下午餐", "DINNER" to "晚餐", "NIGHT_SNACK" to "宵夜",
+            "BREAKFAST" to "早餐", "LUNCH" to "中餐",
+            "DINNER" to "晚餐", "SNACK" to "加餐", "NIGHT_SNACK" to "宵夜",
         ).forEach { (code, name) -> q.insertMealType(code, name, "12:00", 1L, "preset") }
     }
 
@@ -34,14 +34,14 @@ class DishMealSlotTest {
         seedMealTypes(db)
         val repo = DishRepository(db)
 
-        // 显式给早餐+加餐(上午餐)两个餐次
+        // 显式给早餐+加餐两个餐次
         val id = repo.saveDish(
             id = 0L, name = "皮蛋瘦肉粥", cookingMethodId = null, specialNote = "", description = "",
             imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
-            cuisine = "家常菜", mealSlotCodes = listOf("BREAKFAST", "MORNING_SNACK"),
+            cuisine = "家常菜", mealSlotCodes = listOf("BREAKFAST", "SNACK"), // [AI修改] K4：MORNING_SNACK→SNACK
         )
         val loaded = repo.getDishById(id)!!
-        assertEquals(setOf(MealSlot.BREAKFAST, MealSlot.MORNING_SNACK), loaded.mealSlots.toSet())
+        assertEquals(setOf(MealSlot.BREAKFAST, MealSlot.SNACK), loaded.mealSlots.toSet())
     }
 
     @Test
@@ -69,7 +69,7 @@ class DishMealSlotTest {
         val id = repo.saveDish(
             id = 0L, name = "鸡蛋羹", cookingMethodId = null, specialNote = "", description = "",
             imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
-            cuisine = "家常菜", mealSlotCodes = listOf("BREAKFAST", "MORNING_SNACK", "DINNER"),
+            cuisine = "家常菜", mealSlotCodes = listOf("BREAKFAST", "SNACK", "DINNER"), // [AI修改] K4：MORNING_SNACK→SNACK
         )
         // 改为只留早餐
         repo.saveDish(

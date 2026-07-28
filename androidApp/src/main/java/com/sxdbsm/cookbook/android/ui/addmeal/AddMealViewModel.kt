@@ -240,8 +240,8 @@ class AddMealViewModel(
      * 新增一个餐食模块。[AI生成]
      */
     fun addMealBlock() {
-        // [AI修改] F6：默认取"下一个尚未添加"的餐次(按 mealTypes 顺序:早餐→上午餐→中餐→下午餐→晚餐→夜宵)，
-        // 而非每次都早餐。已有早餐→默认上午餐/中餐…全用完则回退第一个。
+        // [AI修改] F6+K4：默认取"下一个尚未添加"的餐次(按 mealTypes 顺序:早餐→中餐→晚餐→加餐→宵夜)，
+        // 而非每次都早餐。已有早餐→默认中餐…全用完则回退第一个。
         val usedTypeIds = _state.value.mealBlocks.map { it.mealTypeId }.toSet()
         val defaultType = _state.value.mealTypes.firstOrNull { it.id !in usedTypeIds }
             ?: _state.value.mealTypes.firstOrNull { it.code == "BREAKFAST" }
@@ -271,7 +271,7 @@ class AddMealViewModel(
     /**
      * 修改指定模块的餐次。[AI修改]
      *
-     * 固定餐次带出其默认时间；非固定餐次(如"加餐")默认取**当前时间**，用户想改再改——
+     * 固定餐次带出其默认时间(如"加餐"默认15:00)，用户想改再改——
      * [AI修改] A2：不再强制手动选时间才能保存(家庭多为"刚吃过/正在吃"，默认当前更顺手)。
      */
     fun setMealType(blockId: Long, mealTypeId: Long) {
@@ -376,14 +376,14 @@ class AddMealViewModel(
     /**
      * 餐次 code → 匿名统计餐次枚举(四值粗粒度·去标识化)。[AI生成] 阶段3-b
      *
-     * 项目餐次 code=BREAKFAST/MORNING_SNACK/LUNCH/AFTERNOON_SNACK/DINNER/NIGHT_SNACK。
-     * **上午餐/下午餐/夜宵在本项目语义上都是"加餐"**(与首页 DishSlotFilter SNACK={上午,下午} 一致)，故非三餐一律归 SNACK——这是刻意的项目语义、非疏漏。
+     * 项目餐次 code=BREAKFAST/LUNCH/DINNER/SNACK/NIGHT_SNACK(K4 后)。
+     * **SNACK/NIGHT_SNACK 均归"加餐"粗粒度统计**，非三餐一律归 SNACK。
      */
     private fun slotTagOf(code: String?): com.sxdbsm.cookbook.analytics.MealSlotTag = when (code) {
         "BREAKFAST" -> com.sxdbsm.cookbook.analytics.MealSlotTag.BREAKFAST
         "LUNCH" -> com.sxdbsm.cookbook.analytics.MealSlotTag.LUNCH
         "DINNER" -> com.sxdbsm.cookbook.analytics.MealSlotTag.DINNER
-        else -> com.sxdbsm.cookbook.analytics.MealSlotTag.SNACK // MORNING_SNACK/AFTERNOON_SNACK/NIGHT_SNACK/加餐 均=加餐
+        else -> com.sxdbsm.cookbook.analytics.MealSlotTag.SNACK // [AI修改] K4：SNACK/NIGHT_SNACK 均=加餐粗粒度统计
     }
 
     fun save() {

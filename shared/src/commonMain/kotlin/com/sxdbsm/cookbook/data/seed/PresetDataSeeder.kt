@@ -1,4 +1,4 @@
-package com.sxdbsm.cookbook.data.seed
+﻿package com.sxdbsm.cookbook.data.seed
 
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.FoodAttribute
@@ -26,8 +26,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
      *
      * 性能优化（2026-07-03）：
      * - 旧库 NULL 清洗只在首次执行一次（preferences 标记守卫），不再每次启动全表 UPDATE。
-     * - 字典类小表保持“表为空才写”。
-     * - 食材/分类/详情/调养等大批量补齐式内容改为“内容指纹守卫”：seed JSON 未变化时整段跳过，
+     * - 字典类小表保持"表为空才写"。
+     * - 食材/分类/详情/调养等大批量补齐式内容改为"内容指纹守卫"：seed JSON 未变化时整段跳过，
      *   避免每次启动重复覆写数百条记录；需要写入时整段包一个事务，把上千次独立 fsync 降为一次提交。
      */
     suspend fun seedIfNeeded() = withContext(Dispatchers.Default) {
@@ -48,8 +48,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         seedMeasurementUnits() // [AI修改] 每次启动幂等补齐预设单位(INSERT OR IGNORE)：老库也能拿到后加的 g/kg/ml 等。
         seedMeasurementUnitGrams() // [AI生成] 每次启动幂等补齐单位克当量(v19 新列，老库回填)。
         if (q.countCrowdTypes().executeAsOne() == 0L) seedCrowdTypes(now)
-        if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes()
-        ensureFlexibleSnackMealType() // [AI修改] 兼容旧库：补充“加餐”餐次，供添加餐食页按需手动选择时间。
+        if (q.countMealTypes().executeAsOne() == 0L) seedMealTypes() // [AI修改] K4：SNACK 已纳入 seedMealTypes，不再单补
         if (q.countDishTags().executeAsOne() == 0L) seedDishTags(now)
         seedStepTemplates(now) // [AI生成] #2 预设步骤模板：按名幂等补齐(缺则补，不覆盖用户改动)。
         seedIngredientGroups(now) // [AI生成] B5 预设配料组：按名幂等补齐。
@@ -113,9 +112,9 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     /**
      * 手动重置/更新基础数据。[AI生成]
      *
-     * 供“我的-更新基础数据”入口调用：强制忽略内容指纹，重新用内置（未来可替换为远程拉取的）JSON
+     * 供"我的-更新基础数据"入口调用：强制忽略内容指纹，重新用内置（未来可替换为远程拉取的）JSON
      * 补齐式覆写预设内容，把预设食材/分类/详情/调养规则刷新到最新。
-     * 语义为“刷新预设”而非“删除重建”：只做幂等 upsert，不删除任何行，因此用户自建数据、
+     * 语义为"刷新预设"而非"删除重建"：只做幂等 upsert，不删除任何行，因此用户自建数据、
      * 用户对预设食材的名称/图片修改、以及菜品对预设食材的引用关系都不受影响。
      *
      * @return 本次是否有内容写入（内容确有变化或强制刷新时为 true）。
@@ -171,8 +170,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     /**
      * 计算 seed 内容指纹。[AI生成]
      *
-     * 用各文件“长度 + 内容 hashCode”组合，长度参与降低碰撞概率；Kotlin 的 String.hashCode 跨平台稳定，
-     * 足以判断内容是否变化（最坏情况漏更新可由手动“更新基础数据”兜底）。
+     * 用各文件"长度 + 内容 hashCode"组合，长度参与降低碰撞概率；Kotlin 的 String.hashCode 跨平台稳定，
+     * 足以判断内容是否变化（最坏情况漏更新可由手动"更新基础数据"兜底）。
      */
     private fun fingerprintOf(vararg contents: String): String =
         contents.joinToString("|") { "${it.length}:${it.hashCode()}" }
@@ -194,7 +193,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
     /**
      * 补齐单位克当量（营养估算换算依据）。[AI生成]
      *
-     * grams 列为 v19 新增，老库单位为 NULL；每次 seed 按名幂等回填，供“1两/1斤/1毫升→克”折算。
+     * grams 列为 v19 新增，老库单位为 NULL；每次 seed 按名幂等回填，供"1两/1斤/1毫升→克"折算。
      * 计件单位(个/勺/片等)克当量为 null，留给食材 piece_gram。
      */
     private fun seedMeasurementUnitGrams() {
@@ -216,25 +215,18 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         }
     }
 
+    // [AI修改] K4：去掉上午餐/下午餐，合并为加餐(SNACK)。5 个固定餐次。
     private fun seedMealTypes() {
         val q = db.cookbookQueries
         listOf(
             Triple("BREAKFAST", "早餐", "07:30"),
-            Triple("MORNING_SNACK", "上午餐", "10:00"),
             Triple("LUNCH", "中餐", "12:00"),
-            Triple("AFTERNOON_SNACK", "下午餐", "15:00"),
             Triple("DINNER", "晚餐", "18:30"),
-            Triple("NIGHT_SNACK", "宵夜", "21:30"),
+            Triple("SNACK", "加餐", "15:00"), // [AI修改] K4：替代上午餐/下午餐，固定餐次
+            Triple("NIGHT_SNACK", "宵夜", "21:30")
         ).forEach { (code, name, time) ->
             q.insertMealType(code, name, time, 1, "preset")
         }
-    }
-
-    /**
-     * 确保存在用户可手动指定时间的“加餐”。[AI修改]
-     */
-    private fun ensureFlexibleSnackMealType() {
-        db.cookbookQueries.insertMealType("SNACK", "加餐", "23:59", 0, "preset")
     }
 
     private fun seedDishTags(now: Long) {
@@ -603,11 +595,11 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         // v9(2026-07-22)=食材属性标签体系(方案B)：ingredient_attributes.json 属性标签展开成 care(与人工合并·人工优先)·老库需跑一次拿属性生成的 care。
         // v10(2026-07-22)=修复历史"默认克数配错单位"数据：quantity=100 且单位空/计件 → 改"克"(详情"100.0个/无单位"·营养按错单位折算根因)·老库需跑一次修。
         // v11(2026-07-22)=A1:修复自建菜 quantity=NULL 配料(0营养)：按食材名分类补智能默认克数+克单位·仅 source='user'·老库需跑一次修。
-        private const val SEED_LOGIC_VERSION = "seedlogic-v11" // [AI修改] v11:修复自建菜空用量配料(selectUserDishIngredientsWithNullQuantity)
+        private const val SEED_LOGIC_VERSION = "seedlogic-v12" // [AI修改] v12:K4去掉上午餐/下午餐，合并为加餐(SNACK)
 
         // [AI生成] 计量单位 → 克当量(营养换算)：重量/体积单位给明确克当量；
         // 计件/模糊单位(个/片/勺/颗…/适量/少许)克当量留 null，改由食材 piece_gram 折算。
-        // 勺按“汤勺≈15g”粗估(多用于油盐酱)。dishes.json 引用完整性校验用 name 集合(见 unitNames())。
+        // 勺按"汤勺≈15g"粗估(多用于油盐酱)。dishes.json 引用完整性校验用 name 集合(见 unitNames())。
         // [AI修改] 常用单位统一英文符号(克→g/千克→kg/毫升→ml/升→L)；两/斤/个/勺等无通用英文的保留中文。
         val PRESET_MEASUREMENT_UNITS: List<Pair<String, Double?>> = listOf(
             "g" to 1.0, "kg" to 1000.0, "两" to 50.0, "斤" to 500.0, "ml" to 1.0, "L" to 1000.0,
@@ -796,7 +788,7 @@ private data class SeedDish(
     val cuisine: String = "", // [AI生成] 菜系(家常菜/川菜等)
     val ingredients: List<SeedDishIngredient> = emptyList(),
     val steps: List<String> = emptyList(),
-    // [AI生成] v28：适合餐次 code(BREAKFAST/MORNING_SNACK/LUNCH/AFTERNOON_SNACK/DINNER/NIGHT_SNACK)。空则按菜名 Matcher 推断。
+    // [AI生成] v28：适合餐次 code(BREAKFAST/LUNCH/DINNER/SNACK/NIGHT_SNACK)。空则按菜名 Matcher 推断。[AI修改] K4:MORNING/AFTERNOON_SNACK→SNACK。
     val mealSlots: List<String> = emptyList(),
 )
 

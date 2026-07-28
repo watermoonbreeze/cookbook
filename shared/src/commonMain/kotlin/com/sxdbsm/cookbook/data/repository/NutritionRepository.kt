@@ -163,8 +163,13 @@ class NutritionRepository(private val db: CookbookDatabase) {
      *
      * 用已有"有营养数据"的食材做近似同名匹配，命中不了按 classify 大类均值兜底，都不确定则不预填。
      * 纯参考估算（UI 标"请核对"），不写库、不覆盖用户；每 100g 口径。
+     *
+     * @param explicitGroup [AI生成] K7：用户手动选定的大类(null=自动 classify)。传了则用此做均值兜底而非 classify(name)，使营养跟随大类切换。
      */
-    suspend fun guessNutritionByName(name: String): com.sxdbsm.cookbook.domain.NutritionGuess = withContext(ioDispatcher) {
+    suspend fun guessNutritionByName(
+        name: String,
+        explicitGroup: com.sxdbsm.cookbook.domain.FoodGroup.Group? = null, // [AI生成] K7：大类跟随预估
+    ): com.sxdbsm.cookbook.domain.NutritionGuess = withContext(ioDispatcher) {
         val candidates = allIngredientNutrition()
             .filter { it.hasNutrition }
             .map { row ->
@@ -173,8 +178,7 @@ class NutritionRepository(private val db: CookbookDatabase) {
                     sodiumMg = row.sodium, potassiumMg = row.potassium, calciumMg = row.calcium, gi = row.gi, purineMg = row.purine,
                 )
             }
-        com.sxdbsm.cookbook.domain.NutritionGuesser.guess(
-            name, candidates, com.sxdbsm.cookbook.domain.FoodGroup.classify(name),
-        )
+        val group = explicitGroup ?: com.sxdbsm.cookbook.domain.FoodGroup.classify(name) // [AI修改] K7：手动大类优先
+        com.sxdbsm.cookbook.domain.NutritionGuesser.guess(name, candidates, group)
     }
 }

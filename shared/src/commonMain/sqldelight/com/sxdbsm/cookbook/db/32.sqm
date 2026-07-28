@@ -1,0 +1,28 @@
+-- [AI生成] K4：去掉上午餐/下午餐。餐次精简为 早餐/午餐/晚餐/加餐/宵夜 5 个。
+-- MORNING_SNACK(2) 和 AFTERNOON_SNACK(4) 软删，已有 meal_record + dish_meal_slot 数据迁移到 SNACK(加餐)。
+
+-- 1. 确保 SNACK 存在且 isFixed=1 + default_time 合理（老库可能只有 flexible 版或未曾 seed）。
+INSERT OR IGNORE INTO meal_type(code, name, default_time, is_fixed, source, status)
+VALUES ('SNACK', '加餐', '15:00', 1, 'preset', 1);
+
+-- 2. 同时把旧 flexible SNACK 行修正为固定餐次（老库 ensureFlexibleSnackMealType 插的 isFixed=0）。
+UPDATE meal_type SET is_fixed = 1, default_time = '15:00'
+WHERE code = 'SNACK' AND is_fixed = 0;
+
+-- 3. 软删 MORNING_SNACK 和 AFTERNOON_SNACK。
+UPDATE meal_type SET status = 0 WHERE code IN ('MORNING_SNACK', 'AFTERNOON_SNACK');
+
+-- 4. meal_record 迁移：上午餐/下午餐 → 加餐（按 code 找 SNACK 的 id）。
+UPDATE meal_record
+SET meal_type_id = (SELECT id FROM meal_type WHERE code = 'SNACK' AND status = 1)
+WHERE meal_type_id IN (SELECT id FROM meal_type WHERE code IN ('MORNING_SNACK', 'AFTERNOON_SNACK'));
+
+-- 5. dish_meal_slot 迁移：先 INSERT OR REPLACE 到 SNACK（若该菜已有 SNACK 则自然覆盖去重）……
+INSERT OR REPLACE INTO dish_meal_slot(dish_id, meal_type_id, status)
+SELECT dms.dish_id, (SELECT id FROM meal_type WHERE code = 'SNACK' AND status = 1), 1
+FROM dish_meal_slot dms
+WHERE dms.meal_type_id IN (SELECT id FROM meal_type WHERE code IN ('MORNING_SNACK', 'AFTERNOON_SNACK'));
+
+-- 6. ……再删掉旧的上午餐/下午餐关联行。
+DELETE FROM dish_meal_slot
+WHERE meal_type_id IN (SELECT id FROM meal_type WHERE code IN ('MORNING_SNACK', 'AFTERNOON_SNACK'));

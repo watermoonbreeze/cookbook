@@ -858,6 +858,17 @@ class IngredientPickerViewModel(
         }
     }
 
+    /** [AI生成] K7：按名+指定大类推演营养（用户切换大类时跟随重推，用选定大类做均值兜底而非 classify(name)）。 */
+    fun guessNutritionByGroup(name: String, group: String, onResult: (com.sxdbsm.cookbook.domain.NutritionGuess) -> Unit) {
+        if (name.isBlank()) return
+        val g = group.takeIf { it.isNotBlank() }?.let {
+            runCatching { com.sxdbsm.cookbook.domain.FoodGroup.Group.valueOf(it) }.getOrNull()
+        }
+        viewModelScope.launch {
+            runCatching { nutritionRepo.guessNutritionByName(name, explicitGroup = g) }.getOrNull()?.let(onResult)
+        }
+    }
+
     /** 按名推断自建食材属性标签(L2·保守·仅命中才推)，回调结果供 UI 预勾+提示确认。[AI生成] 自建食材双层判定 L3 */
     fun guessAttributes(name: String, onResult: (List<com.sxdbsm.cookbook.domain.FoodAttribute>) -> Unit) {
         if (name.isBlank()) { onResult(emptyList()); return }

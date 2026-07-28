@@ -132,6 +132,8 @@ internal fun IngredientEditorDialog(
     ) -> Unit,
     // [AI生成] 食材智能推演：按名推演营养(回调异步返回)，UI 据结果预填。默认 no-op(编辑既有食材不推)。
     onGuessNutrition: (String, (com.sxdbsm.cookbook.domain.NutritionGuess) -> Unit) -> Unit = { _, _ -> },
+    // [AI生成] K7：按名+指定大类推演营养（用户切换大类时跟随重推）。默认 no-op。
+    onGuessNutritionByGroup: (String, String, (com.sxdbsm.cookbook.domain.NutritionGuess) -> Unit) -> Unit = { _, _, _ -> },
     // [AI生成] L3：按名推断属性标签(回调返回)，UI 据结果预勾+提示确认。默认 no-op(编辑既有食材不推)。
     onGuessAttributes: (String, (List<FoodAttribute>) -> Unit) -> Unit = { _, _ -> },
 ) {
@@ -183,6 +185,8 @@ internal fun IngredientEditorDialog(
     var editedN by rememberSaveable(ingredient?.id, stateSaver = StringSetSaver) { mutableStateOf<Set<String>>(emptySet()) }
     var guessSource by remember(ingredient?.id) { mutableStateOf<com.sxdbsm.cookbook.domain.NutritionGuessSource?>(null) }
     var lastGuessedName by rememberSaveable(ingredient?.id) { mutableStateOf("") }
+    // [AI生成] K7：自动根据营养大类预估(默认勾选·取消=手动输入，不受大类变化影响)。
+    var autoGuessNutrition by rememberSaveable(ingredient?.id) { mutableStateOf(true) }
     fun markEdited(key: String) { editedN = editedN + key }
     /** 该字段是否"当前显示的是系统预填值"(未被用户改过且有值且本次有预填)——用于弱化视觉。 */
     fun guessedField(key: String, v: String): Boolean = guessSource != null && key !in editedN && v.isNotBlank()
@@ -254,6 +258,16 @@ internal fun IngredientEditorDialog(
         // [AI修改] 审查建议1：查询异步(不随本 effect 取消)，回来时名已变则丢弃(防慢查询回灌覆盖新名结果)。
         onGuessNutrition(n) { g -> if (name.trim() == n) applyGuess(g) }
         onGuessAttributes(n) { attrs -> if (name.trim() == n) applyGuessAttrs(attrs) }
+    }
+    // [AI生成] K7：营养大类切换时跟随重推(仅新建+自动预估开+用户手动选过大类·非初次自动预选)。
+    LaunchedEffect(selectedGroup, autoGuessNutrition) {
+        if (ingredient != null || !hydrated || !autoGuessNutrition || !groupTouched) return@LaunchedEffect
+        val n = name.trim()
+        if (n.isBlank()) return@LaunchedEffect
+        val g = selectedGroup?.name ?: return@LaunchedEffect
+        onGuessNutritionByGroup(n, g) { guess ->
+            if (name.trim() == n && selectedGroup?.name == g) applyGuess(guess)
+        }
     }
     // [AI生成] B-6：连续录入("保存并继续")支撑——聚焦名称框、记录本次意图与已存名(供 Toast)。
     val context = LocalContext.current
@@ -414,6 +428,7 @@ internal fun IngredientEditorDialog(
         nKcal = ""; nProtein = ""; nFat = ""; nCarb = ""; nFiber = ""; nSodium = ""
         nPotassium = ""; nCalcium = ""; nGi = ""; nPurine = ""; nPiece = ""
         editedN = emptySet(); guessSource = null; lastGuessedName = "" // [AI生成] 智能推演：复位后下一个食材重新推演
+        autoGuessNutrition = true // [AI生成] K7：复位恢复默认勾选
     }
     // [AI生成] B-6：监听"保存并继续"成功计数(continueSavedNonce)——本弹层触发过才复位+提示+聚焦(首帧初值不触发)。
     // 用 Toast 而非统一 Snackbar：全屏 Dialog 会遮住 MainScaffold 的共享 Snackbar 宿主(不可见)；此提示纯告知无跟进项(§9.12 允许)。
@@ -585,6 +600,16 @@ internal fun IngredientEditorDialog(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                     Spacer(Modifier.height(4.dp))
+                                }
+                                // [AI生成] K7：自动根据营养大类预估 Checkbox——默认勾选，取消后切换大类不再覆盖已填值。
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                    Checkbox(checked = autoGuessNutrition, onCheckedChange = { autoGuessNutrition = it })
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        "自动根据营养大类预估",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                                 // [AI修改] 智能推演：预填未改的字段弱化显示(guessed)，onValueChange 打脏标记(改过=用户值，推演不再覆盖)。单件克重已上移基础区。
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -6,18 +6,17 @@ package com.sxdbsm.cookbook.ai
  * @Author : SXD-AI
  * @Desc : 推荐餐次(与 meal_type 对应)及按菜名的适配规则
  * <p>
- * 库存/随机推荐可按餐次筛选：全部=不分餐次；早餐=轻食主食类；中/晚餐=正餐(排除纯饮品)；
- * 上午餐/下午餐/宵夜=偏轻的加餐。按菜名关键词启发式判定(菜品无餐次属性)，非精确、可后续细化。
+ * 库存/随机推荐可按餐次筛选：全部=不分餐次；早餐=轻食主食类；午/晚餐=正餐(排除纯饮品)；
+ * 加餐/宵夜=偏轻的加餐。按菜名关键词启发式判定(菜品无餐次属性)，非精确、可后续细化。
  * <p>
- * [AI生成] 推荐加餐次选择。
+ * [AI生成] 推荐加餐次选择。[AI修改] K4：去掉上午餐/下午餐，合并为"加餐"(SNACK)。
  **/
 enum class MealSlot(val code: String, val label: String) {
     ALL("", "全部"),
     BREAKFAST("BREAKFAST", "早餐"),
-    MORNING_SNACK("MORNING_SNACK", "上午餐"),
     LUNCH("LUNCH", "中餐"),
-    AFTERNOON_SNACK("AFTERNOON_SNACK", "下午餐"),
     DINNER("DINNER", "晚餐"),
+    SNACK("SNACK", "加餐"), // [AI修改] K4：替代上午餐/下午餐，合并为统称"加餐"
     NIGHT_SNACK("NIGHT_SNACK", "宵夜"),
     ;
 
@@ -56,14 +55,14 @@ object MealSlotMatcher {
     fun matches(slot: MealSlot, dishName: String): Boolean = when (slot) {
         MealSlot.ALL -> true
         MealSlot.BREAKFAST -> BREAKFAST.any { dishName.contains(it) }
-        MealSlot.MORNING_SNACK, MealSlot.AFTERNOON_SNACK, MealSlot.NIGHT_SNACK -> LIGHT.any { dishName.contains(it) }
+        MealSlot.SNACK, MealSlot.NIGHT_SNACK -> LIGHT.any { dishName.contains(it) } // [AI修改] K4：SNACK 替代 MORNING/AFTERNOON_SNACK
         MealSlot.LUNCH, MealSlot.DINNER -> DRINK_ONLY.none { dishName == it } // 正餐排除纯饮品，其余(炒/炖/红烧等)都算
     }
 
     // [AI生成] v28：所有可打标的具体餐次(不含 ALL)，供"默认推断器"遍历。
     private val REAL_SLOTS = listOf(
-        MealSlot.BREAKFAST, MealSlot.MORNING_SNACK, MealSlot.LUNCH,
-        MealSlot.AFTERNOON_SNACK, MealSlot.DINNER, MealSlot.NIGHT_SNACK,
+        MealSlot.BREAKFAST, MealSlot.LUNCH, MealSlot.DINNER,
+        MealSlot.SNACK, MealSlot.NIGHT_SNACK, // [AI修改] K4：SNACK 替代 MORNING/AFTERNOON_SNACK
     )
 
     /**

@@ -62,7 +62,7 @@ class MealSlotMatcherTest {
     @Test
     fun `加餐宵夜偏轻`() {
         assertTrue(MealSlotMatcher.matches(MealSlot.NIGHT_SNACK, "小米粥"))
-        assertTrue(MealSlotMatcher.matches(MealSlot.AFTERNOON_SNACK, "牛奶"))
-        assertFalse(MealSlotMatcher.matches(MealSlot.MORNING_SNACK, "红烧肉"), "红烧肉不算加餐轻食")
+        assertTrue(MealSlotMatcher.matches(MealSlot.SNACK, "牛奶")) // [AI修改] K4：SNACK 替代 AFTERNOON_SNACK
+        assertFalse(MealSlotMatcher.matches(MealSlot.SNACK, "红烧肉"), "红烧肉不算加餐轻食") // [AI修改] K4：SNACK 替代 MORNING_SNACK
     }
 }
