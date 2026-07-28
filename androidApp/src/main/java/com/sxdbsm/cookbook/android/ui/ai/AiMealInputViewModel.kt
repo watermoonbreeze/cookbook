@@ -96,7 +96,9 @@ class AiMealInputViewModel(
                 } else {
                     null // 无 Key → 直接走兜底
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                // [AI修改] R3修复:记录异常日志，让 AI 解析失败可诊断
+                com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "AI parse failed: ${e.message}", e)
                 null // AI 异常 → 走兜底
             }
 

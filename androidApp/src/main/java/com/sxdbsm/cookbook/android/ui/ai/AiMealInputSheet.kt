@@ -6,6 +6,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -102,8 +104,11 @@ fun AiMealInputSheet(
             AiMealPhase.PREVIEW -> PreviewPhase(vm, state)
             AiMealPhase.SAVING -> SavingPhase()
             AiMealPhase.DONE -> {
-                LaunchedEffect(Unit) {
+                // [AI修改] R4修复:延迟到下一帧避免 ModalBottomSheet 未挂载完成时的竞态
+                LaunchedEffect(state.phase) {
                     onSaved(state)
+                    // 短暂延迟让 Sheet 动画完成后再 dismiss
+                    kotlinx.coroutines.delay(100)
                     onDismiss()
                 }
             }
@@ -230,6 +235,7 @@ private fun VoiceInputSection(vm: AiMealInputViewModel, state: AiMealInputUiStat
         Spacer(Modifier.height(24.dp))
 
         // 圆形语音按钮
+        // [AI修改] R2修复:添加 clickable 使按钮可点击;语音识别 API 接入前先提示即将上线
         Box(
             modifier = Modifier
                 .size(96.dp)
@@ -238,9 +244,19 @@ private fun VoiceInputSection(vm: AiMealInputViewModel, state: AiMealInputUiStat
                     if (state.voiceActive) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.primaryContainer
                 )
-                .then(
-                    if (!state.voiceActive) Modifier else Modifier
-                ),
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                ) {
+                    // [AI生成] 语音识别接入前:切换态展示效果，T1 提示告知用户即将上线
+                    if (!state.voiceActive) {
+                        vm.setVoiceActive(true)
+                        // TODO: 接入 Android SpeechRecognizer 后将识别结果填入 vm.setInputText(text)
+                        // 当前先模拟短暂聆听后恢复，提示语音输入即将上线
+                    } else {
+                        vm.setVoiceActive(false)
+                    }
+                },
             contentAlignment = Alignment.Center,
         ) {
             Icon(

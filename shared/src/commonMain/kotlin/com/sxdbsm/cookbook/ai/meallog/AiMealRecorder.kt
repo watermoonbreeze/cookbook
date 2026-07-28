@@ -302,9 +302,10 @@ class AiMealRecorder(
         drafts: List<DayMealDraft>,
     ) {
         // 构建 (mealTypeId, dishName) → eaten_ratio 映射
+        // [AI修改] R1修复:按 index 对齐 parsed.meals 与 drafts（两者在 record() 中按序构建）
         val ratioMap = mutableMapOf<Pair<Long, String>, Double>()
-        for (meal in parsed.meals) {
-            val mealTypeId = drafts.firstOrNull()?.mealTypeId ?: continue
+        parsed.meals.forEachIndexed { index, meal ->
+            val mealTypeId = drafts.getOrNull(index)?.mealTypeId ?: return@forEachIndexed
             for (dish in meal.dishes) {
                 dish.eaten_ratio?.let { ratio ->
                     if (ratio != 1.0) {
