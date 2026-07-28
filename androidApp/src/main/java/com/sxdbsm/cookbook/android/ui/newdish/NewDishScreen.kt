@@ -301,7 +301,7 @@ fun NewDishScreen(
                             )
                         }
 
-                        // === 其他食材组(有非主料时才渲染·全主料不显示) ===
+                        // === 其他食材组(有非主料时才渲染列表·按钮始终可见) ===
                         if (otherIngredients.isNotEmpty()) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -321,16 +321,16 @@ fun NewDishScreen(
                                 IngredientRow(ing, vm)
                                 Divider()
                             }
+                        }
 
-                            // 添加食材按钮
-                            TextButton(
-                                onClick = { ingredientPickerAsMain = false; ingredientPickerOpen = true },
-                                modifier = Modifier.padding(start = 4.dp),
-                            ) {
-                                Icon(Icons.Outlined.Add, contentDescription = "添加食材", modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(4.dp))
-                                Text("添加食材", color = MaterialTheme.colorScheme.primary)
-                            }
+                        // [AI修改] K9:添加食材按钮移到 if 外部——即使尚无其他食材也要显示入口
+                        TextButton(
+                            onClick = { ingredientPickerAsMain = false; ingredientPickerOpen = true },
+                            modifier = Modifier.padding(start = 4.dp),
+                        ) {
+                            Icon(Icons.Outlined.Add, contentDescription = "添加食材", modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("添加食材", color = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
