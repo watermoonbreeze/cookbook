@@ -287,6 +287,12 @@ class DishRepository(private val db: CookbookDatabase) {
         val mainNamesByDish = q.selectMainIngredientNamesByDishIds(dishIds)
             .executeAsList()
             .groupBy({ it.dish_id }, { it.ingredient_name })
+        // [AI生成] 全部食材名(含非主料)：供营养大类判定的 main→all fallback。
+        //   修 is_main 全0/缺标的问题菜(水煮蛋等)在预览时因 allIngredientNames 空→groups 空→误报"缺蛋白"。
+        //   buildDishesByMealRecord 早已填充(J15修复)，此处补齐 buildDishMinis 侧(选菜器/预览/AI推荐)。
+        val allNamesByDish = q.selectDishIngredientsByDishIds(dishIds)
+            .executeAsList()
+            .groupBy({ it.dish_id }, { it.ingredient_name })
         // [AI生成] v28：批量取菜的存储餐次(dish_meal_slot)；未打标(老库/新自建未 seed)回退 MealSlotMatcher 推断，恒非空。
         val mealSlotsByDish = q.selectMealSlotCodesByDishIds(dishIds)
             .executeAsList()
@@ -306,6 +312,7 @@ class DishRepository(private val db: CookbookDatabase) {
                 tags = tagsByDish[source.id].orEmpty(),
                 preference = source.preference,
                 mainIngredientNames = mainNamesByDish[source.id].orEmpty(),
+                allIngredientNames = allNamesByDish[source.id].orEmpty(), // [AI生成] 全部食材名(含非主料)·供 fallback·修 is_main 全0误报
                 cookingMethodName = methodNames.firstOrNull(),
                 cookingMethodNames = methodNames,
                 source = source.source,

@@ -138,6 +138,7 @@ class DishPickerViewModel(
      * @param mealSlot [AI生成] v28:记一餐传入当前餐次→按餐次预筛(默认只看适合该餐次,可切"全部");其他入口传 null 不预筛。
      */
     fun configure(excludeDishIds: Set<Long>, initialSelected: List<DishMini>, mealSlot: MealSlot? = null) {
+        _keyword.value = "" // [AI生成] 每次打开选择器清空上次搜索词(否则加早餐搜了"蛋"→加午餐还带"蛋")
         _excludeDishIds.value = excludeDishIds
         _selected.value = initialSelected.filterNot { it.id in excludeDishIds }.distinctBy { it.id }
         // [AI修改] 只在餐次真正变化时重置"只看/全部"默认——避免勾选菜品触发的重配(excludeDishIds/initialSelected 变)把用户切的"全部"拉回"只看适合"(Google审查建议1)。

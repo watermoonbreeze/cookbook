@@ -6,20 +6,21 @@
 
 ## 本 session 交付
 
-- ✅ **K8 嘌呤数据驱动修复**（4文件+2新单测）：草鱼/炖鱼汤痛风红绿灯不一致——嘌呤评估从纯关键词改为数据驱动（与 GI 同模式）。`purineByName()` + `matchPurineByValue()` + `dishQualitativeHits` 加 `purineByName` 参数。构建+shared单测全绿。
-- ✅ **DB 拉取分析**：`temp/db/cookbook_20260728_201350.db`，坐实 K6 根因（`buildDishMinis` 缺 `allIngredientNames`）。
-- ✅ **真机待验证清单** 落地：`.ai-context/docs/feature/真机待验证清单.md`（49项，分类+验证方法+状态）。
-- ✅ **待办总览更新**：K1–K8 八项新需求写入。
+- ✅ **K8 嘌呤数据驱动修复**（4文件+2新单测）：草鱼/炖鱼汤痛风红绿灯不一致
+- ✅ **K3 搜索框不清空**（1行）：`DishPickerViewModel.configure()` 加 `_keyword.value = ""`
+- ✅ **K5 备注不显示**（小UI）：`MealSectionRow` 加 `section.note` 浅灰行
+- ✅ **K6 早餐提示误报**（加查询填充）：`buildDishMinis` 加 `allIngredientNames` 批量查询
+- ✅ **DB 拉取分析**：`temp/db/cookbook_20260728_201350.db`
+- ✅ **真机待验证清单**：`.ai-context/docs/feature/真机待验证清单.md`（49项·含图例）
+- ✅ **待办总览更新**：K1–K8 八项新需求写入
 
 ## ⏭ 下一步（可接续任务）
 
-- 🔧 **K3 搜索框不清空**（根因已定位·一行修）：`DishPickerViewModel.configure()` 加 `_keyword.value = ""`
-- 🔧 **K5 备注不显示**（根因已定位·小修）：`DayMealCardView.MealSectionRow` 加 `section.note` 渲染
-- 🔧 **K6 早餐提示误报**（根因已定位·需加查询）：`buildDishMinis` 加 `allIngredientNames` 查询填充
-- 🔧 **真机验证**：优先验 P1–P4（搜索/备注/早餐提示/草鱼灯），再验 Phase 2 红绿灯
+- 🔧 **真机验证 P1–P4**：草鱼灯/搜索清空/备注显示/早餐提示——四修复优先装包验证
+- 🔧 **真机验证 Phase 2 红绿灯 L1–L3**：列表徽章/个人忌口/成员名可点
 - 🟡 **K4 去掉上午/下午餐**（DB迁移+多文件·需规划）
-- 🟡 **K1 AI快捷输入**（方案已出·待评估）
-- 🟡 **K7 营养大类跟随预估**（食材编辑增强）
+- 🟡 **K1 AI快捷输入**（方案已出·待评估拍板）
+- 🟡 **K7 营养大类跟随预估**（食材编辑增强·UI类单开session）
 
 ## 先读清单
 1. 本文件

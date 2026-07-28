@@ -232,6 +232,17 @@ private fun MealSectionRow(
                 Text(groups.joinToString(" ") { it.emoji }, style = MaterialTheme.typography.bodyMedium)
             }
         }
+        // [AI生成] 备注：非空时在餐次名下方浅灰展示（原 Mealsection.note 字段已有但 UI 未消费）。
+        if (section.note.isNotBlank()) {
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = section.note,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+        }
         Spacer(Modifier.height(8.dp))
         if (section.dishes.isEmpty()) {
             Text(
