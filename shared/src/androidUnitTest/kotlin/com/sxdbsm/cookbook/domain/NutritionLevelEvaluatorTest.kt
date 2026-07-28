@@ -183,6 +183,72 @@ class NutritionLevelEvaluatorTest {
         assertTrue(dmPur.isEmpty(), "只登记糖尿病→不算嘌呤")
     }
 
+    // [AI生成] 嘌呤数据驱动补漏：草鱼 purine=140 不命中关键词但应"留意"
+    @Test
+    fun `详情页dishQualitativeHits_嘌呤数据驱动补漏草鱼`() {
+        val purineByName = mapOf("草鱼" to 140.0, "青菜" to 12.0, "鸡蛋" to 5.0)
+        val gi = emptyMap<String, Double>()
+
+        // 草鱼 purine=140 >= PURINE_CAUTION_MG(25) → 数值法命中；但不命中关键词(非内脏/浓汤/特定海鲜)
+        val (_, hiPur) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = listOf("草鱼", "青菜"),
+            conditions = setOf(HealthCondition.GOUT),
+            giByName = gi,
+            alreadyFlagged = emptySet(),
+            purineByName = purineByName,
+        )
+        assertEquals(listOf("草鱼"), hiPur, "草鱼 purine=140≥25 应被数值法命中(原关键词法漏网)")
+
+        // 青菜 purine=12 < 25 → 不命中
+        val (_, noHit) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = listOf("青菜"),
+            conditions = setOf(HealthCondition.GOUT),
+            giByName = gi,
+            alreadyFlagged = emptySet(),
+            purineByName = purineByName,
+        )
+        assertTrue(noHit.isEmpty(), "青菜 purine=12<25 不应命中")
+
+        // 关键词 + 数值并集：猪肝(关键词命中) + 草鱼(数值命中) → 两者都在
+        val (_, both) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = listOf("猪肝", "草鱼"),
+            conditions = setOf(HealthCondition.GOUT),
+            giByName = gi,
+            alreadyFlagged = emptySet(),
+            purineByName = purineByName,
+        )
+        assertEquals(setOf("猪肝", "草鱼"), both.toSet(), "关键词(猪肝) + 数值(草鱼) 并集")
+
+        // 未登记痛风 → 嘌呤不算(gate 仍生效)
+        val (_, noGout) = NutritionLevelEvaluator.dishQualitativeHits(
+            mainNames = listOf("草鱼"),
+            conditions = setOf(HealthCondition.HYPERTENSION),
+            giByName = gi,
+            alreadyFlagged = emptySet(),
+            purineByName = purineByName,
+        )
+        assertTrue(noGout.isEmpty(), "只登记高血压→不算嘌呤")
+    }
+
+    // [AI生成] matchPurineByValue 基础行为
+    @Test
+    fun `matchPurineByValue_按阈值过滤`() {
+        val purineByName = mapOf("草鱼" to 140.0, "鸡蛋" to 5.0, "豆腐" to 30.0)
+        assertEquals(
+            setOf("草鱼", "豆腐"),
+            NutritionLevelEvaluator.matchPurineByValue(listOf("草鱼", "鸡蛋", "豆腐"), purineByName).toSet(),
+            ">=25 命中"
+        )
+        // 自定义阈值
+        assertEquals(
+            listOf("草鱼"),
+            NutritionLevelEvaluator.matchPurineByValue(listOf("草鱼", "豆腐"), purineByName, threshold = 75.0),
+            ">=75 只有草鱼"
+        )
+        assertTrue(NutritionLevelEvaluator.matchPurineByValue(emptyList(), purineByName).isEmpty())
+        assertTrue(NutritionLevelEvaluator.matchPurineByValue(listOf("未知食材"), purineByName).isEmpty(), "无嘌呤数据→不命中")
+    }
+
     @Test
     fun `高血压钾充足_正向提示且不改级别`() {
         // 钾 3000mg / 3600 ≈ 83% ≥ 80% → 正向提示；钠正常→级别不降(钾只锦上添花)。

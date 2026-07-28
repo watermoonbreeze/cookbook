@@ -98,6 +98,20 @@ class NutritionRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 名→嘌呤 映射(仅含有 purine_mg 值的食材)。供痛风"高/中嘌呤"按主料名识别。[AI生成]
+     *
+     * 与 [giByName] 同模式：同名多形态取**较高**嘌呤值，偏保守(宁多勿漏)；key 去空格归一。
+     * 与 [NutritionLevelEvaluator.matchHighPurineFoods] 关键词互补——关键词覆盖 WS/T 560-2017 定性"应避免"类别，
+     * 实际嘌呤值补漏(如草鱼 purine=140 虽不命中关键词但应触发"留意")。
+     */
+    suspend fun purineByName(): Map<String, Double> = withContext(ioDispatcher) {
+        q.selectAllIngredientNutrition().executeAsList()
+            .mapNotNull { r -> r.purine_mg?.let { r.name.trim() to it } }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, v) -> v.max() }
+    }
+
+    /**
      * 批量估算多道菜的营养。[AI生成]
      *
      * @return dishId -> DishNutrition（含覆盖率/是否估算）。查询不到配料的菜返回空营养。

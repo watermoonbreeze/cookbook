@@ -106,6 +106,26 @@ object NutritionLevelEvaluator {
     fun matchHighPurineFoods(names: List<String>): List<String> =
         names.filter { n -> HIGH_PURINE_KEYWORDS.any { n.contains(it) } }.distinct()
 
+    // [AI生成] 中嘌呤留意阈值(mg/100g)：>=此值的主料对痛风成员触发"留意"黄灯。
+    //   与 [NutrientBands.PURINE_LOW](25mg) 口径一致——食材详情页的中嘌呤"留意"即此阈值。
+    //   草鱼 purine=140 在 25-150 区间→中嘌呤→应"留意"（原关键词法漏了它→全绿→本次补数据驱动）。
+    const val PURINE_CAUTION_MG = NutrientBands.PURINE_LOW
+
+    /**
+     * 从(主料)食材名按**实际嘌呤值**匹配中高嘌呤食物（与 [IngredientCrowdCare] 同口径，补 [matchHighPurineFoods] 关键词法的漏网鱼）。
+     * 去重。空=未命中/无嘌呤数据。[AI生成]
+     *
+     * @param names 主料食材名
+     * @param purineByName 名→嘌呤值映射(仅含有 purine_mg 的食材；key 已去空格归一)
+     * @param threshold 阈值 mg/100g，默认 [PURINE_CAUTION_MG] (25=低嘌呤上限)
+     */
+    fun matchPurineByValue(
+        names: List<String>,
+        purineByName: Map<String, Double>,
+        threshold: Double = PURINE_CAUTION_MG,
+    ): List<String> =
+        names.filter { n -> purineByName[n.trim()]?.let { it >= threshold } == true }.distinct()
+
     // [AI生成] P2 糖尿病：GI 分级 **FAO/WHO 口径**(低≤55/中/高≥70，非 WS/T 652-2019——该标准只规定测定方法)。
     //   与 P4 痛风不同，GI 有**已在库实测/惯例数值**(ingredient_nutrition.gi)，故按名查真实 gi 值判高GI，非关键词。
     const val GI_HIGH = 70.0
@@ -137,13 +157,19 @@ object NutritionLevelEvaluator {
         conditions: Set<HealthCondition>,
         giByName: Map<String, Double>,
         alreadyFlagged: Set<String>,
+        purineByName: Map<String, Double> = emptyMap(), // [AI生成] 嘌呤数据驱动补漏(与 GI 同模式·按实际数值判·补原关键词法漏网如草鱼)
     ): Pair<List<String>, List<String>> {
         // [AI修改] 审查建议1：去重两侧统一按 trim 归一比对(不依赖"调用方两侧都不 trim"的隐含前提，防日后一侧加归一致静默失效)。
         val flagged = alreadyFlagged.mapTo(mutableSetOf()) { it.trim() }
         val gi = if (HealthCondition.DIABETES in conditions)
             matchHighGiFoods(mainNames, giByName).filterNot { it.trim() in flagged } else emptyList()
-        val purine = if (HealthCondition.GOUT in conditions)
-            matchHighPurineFoods(mainNames).filterNot { it.trim() in flagged } else emptyList()
+        // [AI生成] 痛风嘌呤：关键词(WS/T 560-2017 定性"应避免"类别) + 实际嘌呤值(NutrientBands 中嘌呤阈值 25mg·补漏) 并集。
+        //   关键词法查内脏/浓汤/特定海鲜等高危类，数值法查草鱼等中嘌呤漏网鱼，两者互补不互替。
+        val purine = if (HealthCondition.GOUT in conditions) {
+            val byKeyword = matchHighPurineFoods(mainNames)
+            val byValue = matchPurineByValue(mainNames, purineByName)
+            (byKeyword + byValue).distinct().filterNot { it.trim() in flagged }
+        } else emptyList()
         return gi to purine
     }
 

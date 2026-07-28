@@ -51,6 +51,7 @@ data class MemberDishVerdict(
             conditions: Set<HealthCondition>,
             giByName: Map<String, Double>,
             seasoningIds: Set<Long>,
+            purineByName: Map<String, Double> = emptyMap(), // [AI生成] 嘌呤数据驱动补漏(与 giByName 同模式·按实际数值判)
         ): MemberDishVerdict {
             // 忌口:病种忌口(非调料·主+辅) ∪ 个人忌口(含调料·任意角色·含即命中)——与详情页/HealthRuleEngine 口径一致。
             val avoidNames = dish.ingredients
@@ -70,6 +71,7 @@ data class MemberDishVerdict(
                 conditions = conditions,
                 giByName = giByName,
                 alreadyFlagged = (avoidNames + limitNames).toSet(),
+                purineByName = purineByName, // [AI生成] 嘌呤数据驱动补漏(与 giByName 同模式)
             )
             val cautionNames = (highGi + highPurine).distinct()
             val light = when {

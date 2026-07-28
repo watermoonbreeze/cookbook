@@ -39,10 +39,15 @@ class MemberDishHealthUseCase(
     suspend fun evaluate(dish: Dish, members: List<FamilyMember>): List<MemberDishVerdict> {
         if (members.isEmpty()) return emptyList()
         val seasoningIds = ingredientRepo.seasoningIngredientIds()
-        // 先逐成员取约束(skipGi=true 不各查全表)；再仅当有糖尿病成员时把 GI 全表**只查一次**共用——
-        //   无糖尿病成员=0 次查询、有则 1 次(优于"每个糖尿病成员各查一次")。成员数少,N 条轻 SQL 可接受;列表页大批量再缓存化(Phase 2)。
+        // 先逐成员取约束(skipGi=true 不各查全表)；再仅当有糖尿病/痛风成员时把 GI/嘌呤全表**只查一次**共用——
+        //   无对应病种=0 次查询、有则 1 次(优于"每个成员各查一次")。成员数少,N 条轻 SQL 可接受;列表页大批量再缓存化(Phase 2)。
         val gathered = members.map { m -> m to recoDataSource.gatherConstraintsForMember(m, skipGi = true) }
-        val giByName = if (gathered.any { HealthCondition.DIABETES in it.second.conditions }) nutritionRepo.giByName() else emptyMap()
+        val hasDiabetic = gathered.any { HealthCondition.DIABETES in it.second.conditions }
+        val hasGout = gathered.any { HealthCondition.GOUT in it.second.conditions }
+        val giByName = if (hasDiabetic) nutritionRepo.giByName() else emptyMap()
+        // [AI生成] 嘌呤数据驱动补漏：与 giByName 同模式——全表只查一次、痛风成员共用。
+        //   补原 matchHighPurineFoods 关键词法漏网的中嘌呤食材(如草鱼 purine=140 不命中关键词但应留意)。
+        val purineByName = if (hasGout) nutritionRepo.purineByName() else emptyMap()
         return gathered.map { (m, rc) ->
             MemberDishVerdict.of(
                 dish = dish,
@@ -54,6 +59,7 @@ class MemberDishHealthUseCase(
                 conditions = rc.conditions,
                 giByName = giByName, // 共用;of() 内仅糖尿病成员的 conditions 会用到,非糖尿病成员传入无副作用
                 seasoningIds = seasoningIds,
+                purineByName = purineByName, // [AI生成] 嘌呤数据驱动补漏(与 giByName 同模式·仅痛风成员用到)
             )
         }
     }
