@@ -38,6 +38,9 @@ enum class InputMode { TEXT, VOICE }
 /** 处理阶段。[AI生成] */
 enum class AiMealPhase { INPUT, PARSING, PREVIEW, SAVING, DONE, ERROR }
 
+/** 语音识别状态。[AI生成] */
+enum class VoiceState { IDLE, LISTENING, PROCESSING, ERROR }
+
 /** UI 状态。[AI生成] */
 data class AiMealInputUiState(
     val inputText: String = "",
@@ -47,6 +50,12 @@ data class AiMealInputUiState(
     val recordResult: AiMealRecorder.RecordResult? = null,
     val errorMessage: String? = null,
     val voiceActive: Boolean = false,
+    /** [AI修改] K2 语音识别精确状态：IDLE/录音中/处理中/出错 */
+    val voiceState: VoiceState = VoiceState.IDLE,
+    /** [AI修改] K2 语音识别错误消息（仅 ERROR 态非空） */
+    val voiceError: String? = null,
+    /** [AI修改] K2 语音音量 dB 值（-10~10+，用于波形动画） */
+    val voiceRmsdB: Float = 0f,
     /** 新建的菜品名列表（供预览提示"已自动创建"）。[AI生成] */
     val newDishNames: List<String> = emptyList(),
     /** 目标日期（预览可调）。[AI生成] */
@@ -81,7 +90,61 @@ class AiMealInputViewModel(
         _state.update { it.copy(voiceActive = active) }
     }
 
-    /** 发送输入进行解析。[AI生成] */
+    /** [AI修改] K2 语音识别开始：长按按下时调用 */
+    fun onVoiceStart() {
+        _state.update { it.copy(voiceState = VoiceState.LISTENING, voiceActive = true, voiceError = null, voiceRmsdB = 0f) }
+    }
+
+    /** [AI修改] K2 语音音量变化：SpeechRecognizer onRmsChanged 回调 */
+    fun onVoiceRmsChanged(rmsdB: Float) {
+        _state.update { it.copy(voiceRmsdB = rmsdB) }
+    }
+
+    /** [AI修改] K2 语音识别处理中：松手后等待结果时调用 */
+    fun onVoiceProcessing() {
+        _state.update { it.copy(voiceState = VoiceState.PROCESSING, voiceActive = false) }
+    }
+
+    /** [AI修改] K2 语音识别完成：将识别结果追加到输入框 */
+    fun onVoiceResult(text: String) {
+        _state.update {
+            val current = it.inputText.trimEnd()
+            val appended = if (current.isBlank()) text else "$current $text"
+            it.copy(
+                inputText = appended,
+                voiceState = VoiceState.IDLE,
+                voiceActive = false,
+                voiceError = null,
+            )
+        }
+    }
+
+    /** [AI修改] K2 语音识别出错 */
+    fun onVoiceError(error: String) {
+        _state.update {
+            it.copy(
+                voiceState = VoiceState.ERROR,
+                voiceActive = false,
+                voiceError = error,
+            )
+        }
+    }
+
+    /** [AI修改] K2 清除语音错误状态（用户点 Snackbar 后或再次长按时） */
+    fun clearVoiceError() {
+        _state.update { it.copy(voiceState = VoiceState.IDLE, voiceError = null) }
+    }
+
+    /** [AI修改] K2 追加文本到输入框（粘贴用） */
+    fun appendText(text: String) {
+        _state.update {
+            val current = it.inputText.trimEnd()
+            val appended = if (current.isBlank()) text else "$current\n$text"
+            it.copy(inputText = appended, phase = AiMealPhase.INPUT, errorMessage = null)
+        }
+    }
+
+    /** 发送输入进行解析。[AI修改] K2：AI优先→新RuleMealParser兜底 */
     fun submit() {
         val text = _state.value.inputText.trim()
         if (text.isBlank()) return
@@ -89,24 +152,30 @@ class AiMealInputViewModel(
         _state.update { it.copy(phase = AiMealPhase.PARSING, errorMessage = null) }
 
         viewModelScope.launch {
-            val result = try {
-                // 先尝试 AI 解析
+            // 先尝试 AI 解析
+            val aiResult: AiMealParseResult? = try {
                 if (config.isModelReady()) {
                     parseWithAi(text)
-                } else {
-                    null // 无 Key → 直接走兜底
-                }
+                } else null
             } catch (e: Exception) {
-                // [AI修改] R3修复:记录异常日志，让 AI 解析失败可诊断
                 com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "AI parse failed: ${e.message}", e)
-                null // AI 异常 → 走兜底
+                null
             }
 
-            val parsed = result ?: AiMealParser.localFallback(
-                input = text,
-                today = DateTime.formatDate(DateTime.today()),
-                nowTime = DateTime.formatTime(DateTime.nowTime()),
-            )
+            // [AI修改] K2：AI失败→新RuleMealParser兜底（替代旧localFallback）
+            val parsed: AiMealParseResult = if (aiResult != null && aiResult.meals.isNotEmpty() && aiResult.meals.any { it.dishes.isNotEmpty() }) {
+                aiResult
+            } else {
+                // 用 RuleMealParser 解析，再转为旧 Schema（保持预览 UI 兼容）
+                val names = ingredientRepo.allActiveNames()
+                val dayMeals = com.sxdbsm.cookbook.ai.meallog.RuleMealParser.parse(text, names)
+                val firstDay = dayMeals.firstOrNull()
+                if (firstDay != null) {
+                    com.sxdbsm.cookbook.ai.meallog.SchemaMigration.toAiMealParseResult(firstDay)
+                } else {
+                    AiMealParseResult()
+                }
+            }
 
             if (parsed.meals.isEmpty() || parsed.meals.all { it.dishes.isEmpty() }) {
                 _state.update {

@@ -1,19 +1,28 @@
 package com.sxdbsm.cookbook.android.ui.ai
 
+import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -27,7 +36,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardVoice
+import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,6 +56,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,13 +66,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.ai.meallog.AiParsedMeal
-import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
+import com.sxdbsm.cookbook.ai.meallog.AiParsedDish
+import com.sxdbsm.cookbook.android.ai.VoiceRecognizer
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
 
@@ -117,16 +134,71 @@ fun AiMealInputSheet(
     }
 }
 
-/** 输入阶段：[AI生成] */
+/** 输入阶段：[AI修改] K2 重构布局：标题(i)+输入框+粘贴+语音按钮+发送（去掉Tab切换） */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
+    val context = LocalContext.current
+
+    // 剪贴板状态
+    val clipboard = remember { context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager }
+    var hasClip by remember { mutableStateOf(clipboard.hasPrimaryClip() && clipboard.primaryClip?.getItemAt(0)?.text?.isNotBlank() == true) }
+    // 监听剪贴板变化
+    DisposableEffect(clipboard) {
+        val listener = android.content.ClipboardManager.OnPrimaryClipChangedListener {
+            hasClip = clipboard.hasPrimaryClip() && clipboard.primaryClip?.getItemAt(0)?.text?.isNotBlank() == true
+        }
+        clipboard.addPrimaryClipChangedListener(listener)
+        onDispose { clipboard.removePrimaryClipChangedListener(listener) }
+    }
+
+    // 语音权限
+    var hasAudioPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+            } else true
+        )
+    }
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasAudioPermission = granted
+        if (granted) {
+            // 权限授予后开始录音
+            startVoiceRecognition(context, vm)
+        }
+    }
+
+    // VoiceRecognizer 实例（remember 保持生命周期）
+    val voiceRecognizer = remember { VoiceRecognizer(context.applicationContext) }
+    // 清理
+    DisposableEffect(Unit) {
+        onDispose { voiceRecognizer.destroy() }
+    }
+
+    // 说明弹窗
+    var showHelp by remember { mutableStateOf(false) }
+    if (showHelp) {
+        HelpSheet(onDismiss = { showHelp = false })
+    }
+
+    // [AI修改] K2 语音错误 Snackbar 处理
+    LaunchedEffect(state.voiceError) {
+        state.voiceError?.let { error ->
+            vm.clearVoiceError()
+            // Snackbar 由外层宿主处理，这里先通过 Toast 降级
+            android.widget.Toast.makeText(context, error, android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
             .padding(bottom = 32.dp),
     ) {
-        // 标题栏
+        // ── 标题栏（右侧 (i) 说明图标） ──
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -146,169 +218,372 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                     fontWeight = FontWeight.SemiBold,
                 )
             }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // 模式切换：文字 / 语音
-        SegmentedControl(
-            options = listOf("文字输入", "语音输入"),
-            selectedIndex = if (state.inputMode == InputMode.TEXT) 0 else 1,
-            onSelect = { idx ->
-                vm.setInputMode(if (idx == 0) InputMode.TEXT else InputMode.VOICE)
-            },
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        if (state.inputMode == InputMode.TEXT) {
-            TextInputSection(vm, state)
-        } else {
-            VoiceInputSection(vm, state)
-        }
-    }
-}
-
-/** 文字输入区。[AI生成] */
-@Composable
-private fun TextInputSection(vm: AiMealInputViewModel, state: AiMealInputUiState) {
-    // 输入框
-    OutlinedTextField(
-        value = state.inputText,
-        onValueChange = { vm.setInputText(it) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 120.dp, max = 200.dp),
-        placeholder = {
-            Text(
-                "用自然语言描述你今天吃了什么...\n如「中午吃了红烧肉和米饭，还喝了碗汤」",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            )
-        },
-        textStyle = MaterialTheme.typography.bodyMedium,
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(),
-    )
-
-    Spacer(Modifier.height(8.dp))
-
-    // 引导示例
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        var hintIdx by remember { mutableStateOf(0) }
-        Text(
-            text = "💡 ${EXAMPLE_HINTS[hintIdx % EXAMPLE_HINTS.size]}",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            modifier = Modifier.weight(1f),
-        )
-        TextButton(onClick = { hintIdx++ }) {
-            Text("换一个", style = MaterialTheme.typography.bodySmall)
-        }
-    }
-
-    Spacer(Modifier.height(16.dp))
-
-    // 发送按钮
-    Button(
-        onClick = { vm.submit() },
-        modifier = Modifier.fillMaxWidth(),
-        enabled = state.inputText.isNotBlank(),
-        shape = RoundedCornerShape(12.dp),
-    ) {
-        Icon(Icons.Outlined.Send, contentDescription = null, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(8.dp))
-        Text("发送", style = MaterialTheme.typography.labelLarge)
-    }
-}
-
-/** 语音输入区。[AI生成] */
-@Composable
-private fun VoiceInputSection(vm: AiMealInputViewModel, state: AiMealInputUiState) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Spacer(Modifier.height(24.dp))
-
-        // 圆形语音按钮
-        // [AI修改] R2修复:添加 clickable 使按钮可点击;语音识别 API 接入前先提示即将上线
-        Box(
-            modifier = Modifier
-                .size(96.dp)
-                .clip(CircleShape)
-                .background(
-                    if (state.voiceActive) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.primaryContainer
+            // (i) 说明图标
+            IconButton(onClick = { showHelp = true }, modifier = Modifier.size(40.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = "操作说明",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
                 )
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                ) {
-                    // [AI生成] 语音识别接入前:切换态展示效果，T1 提示告知用户即将上线
-                    if (!state.voiceActive) {
-                        vm.setVoiceActive(true)
-                        // TODO: 接入 Android SpeechRecognizer 后将识别结果填入 vm.setInputText(text)
-                        // 当前先模拟短暂聆听后恢复，提示语音输入即将上线
-                    } else {
-                        vm.setVoiceActive(false)
-                    }
-                },
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.KeyboardVoice,
-                contentDescription = if (state.voiceActive) "停止录音" else "开始录音",
-                tint = if (state.voiceActive) MaterialTheme.colorScheme.onPrimary
-                else MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(48.dp),
-            )
+            }
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(16.dp))
 
-        Text(
-            text = if (state.voiceActive) "正在聆听…轻点结束" else "轻点开始说话",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        if (state.inputText.isNotBlank()) {
-            Spacer(Modifier.height(16.dp))
+        // ── 输入框（右上角粘贴按钮 overlay） ──
+        Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = state.inputText,
                 onValueChange = { vm.setInputText(it) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 80.dp, max = 120.dp),
-                placeholder = { Text("语音识别结果…") },
+                    .heightIn(min = 120.dp, max = 200.dp),
+                placeholder = {
+                    Text(
+                        "用自然语言描述你吃了什么…\n如「中午吃了红烧肉和米饭，还喝了碗汤」",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    )
+                },
                 textStyle = MaterialTheme.typography.bodyMedium,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(),
             )
 
-            Spacer(Modifier.height(12.dp))
-
-            Button(
-                onClick = { vm.submit() },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Icon(Icons.Outlined.Send, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("发送")
+            // 粘贴按钮（有剪贴板内容时显示）
+            if (hasClip) {
+                TextButton(
+                    onClick = {
+                        val clipText = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
+                        if (clipText.isNotBlank()) {
+                            vm.appendText(clipText)
+                            // 粘贴后清空剪贴板
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("", ""))
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 8.dp, end = 12.dp),
+                ) {
+                    Text("📋 粘贴", style = MaterialTheme.typography.labelMedium)
+                }
             }
         }
 
-        // 语音识别说明
         Spacer(Modifier.height(16.dp))
+
+        // ── 居中圆形语音按钮（长按录音，松手停止）+ 波形条 ──
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // [AI修改] K2 语音波形条（录音中显示，仿微信样式）
+            if (state.voiceState == VoiceState.LISTENING) {
+                VoiceWaveformBars(rmsdB = state.voiceRmsdB)
+                Spacer(Modifier.height(12.dp))
+            }
+
+            // [AI修改] K2 长按语音按钮：pointerInput 检测长按→开始录音，松手→停止
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(
+                        when (state.voiceState) {
+                            VoiceState.LISTENING -> MaterialTheme.colorScheme.primary
+                            VoiceState.PROCESSING -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                            else -> MaterialTheme.colorScheme.primaryContainer
+                        }
+                    )
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                if (!hasAudioPermission) {
+                                    audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                    tryAwaitRelease()
+                                    return@detectTapGestures
+                                }
+                                val releasedBeforeLongPress = tryAwaitRelease()
+                                if (releasedBeforeLongPress) return@detectTapGestures
+                                // 长按触发 → 开始录音
+                                startVoiceRecognition(context, vm)
+                                tryAwaitRelease()
+                                // 松手 → 停止录音
+                                voiceRecognizer.stopListening()
+                                vm.onVoiceProcessing()
+                            },
+                        )
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                if (state.voiceState == VoiceState.LISTENING) {
+                    // 录音中动画：脉冲缩放外圈
+                    val pulse by rememberInfiniteTransition(label = "voicePulse").animateFloat(
+                        initialValue = 1f,
+                        targetValue = 1.12f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(400),
+                            repeatMode = RepeatMode.Reverse,
+                        ),
+                        label = "pulse",
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                            .graphicsLayer(scaleX = pulse, scaleY = pulse),
+                    )
+                }
+                Icon(
+                    imageVector = if (state.voiceState == VoiceState.LISTENING)
+                        Icons.Outlined.Mic
+                    else
+                        Icons.Outlined.KeyboardVoice,
+                    contentDescription = when (state.voiceState) {
+                        VoiceState.LISTENING -> "松手结束录音"
+                        VoiceState.PROCESSING -> "识别中…"
+                        else -> "长按开始说话"
+                    },
+                    tint = when (state.voiceState) {
+                        VoiceState.LISTENING -> MaterialTheme.colorScheme.onPrimary
+                        else -> MaterialTheme.colorScheme.onPrimaryContainer
+                    },
+                    modifier = Modifier.size(40.dp),
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            // 语音状态文字
+            Text(
+                text = when (state.voiceState) {
+                    VoiceState.IDLE -> "长按开始说话"
+                    VoiceState.LISTENING -> "正在聆听…松手结束"
+                    VoiceState.PROCESSING -> "识别中…"
+                    VoiceState.ERROR -> "识别失败，可重试"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = when (state.voiceState) {
+                    VoiceState.ERROR -> MaterialTheme.colorScheme.error
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        // ── 引导示例 ──
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            var hintIdx by remember { mutableStateOf(0) }
+            Text(
+                text = "💡 ${EXAMPLE_HINTS[hintIdx % EXAMPLE_HINTS.size]}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = { hintIdx++ }) {
+                Text("换一个", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        // ── 透明告知 ──
         Text(
-            text = "语音识别由系统提供，数据不经过第三方。\n也可手动编辑结果后再发送。",
+            text = "文字会发送给 AI 进行解析，仅用于本次记餐",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
         )
+
+        Spacer(Modifier.height(12.dp))
+
+        // ── 发送按钮 ──
+        Button(
+            onClick = { vm.submit() },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = state.inputText.isNotBlank(),
+            shape = RoundedCornerShape(12.dp),
+        ) {
+            Icon(Icons.Outlined.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("发送", style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+/** [AI修改] K2 启动语音识别：创建 VoiceRecognizer，设置回调，startListening */
+private fun startVoiceRecognition(context: Context, vm: AiMealInputViewModel) {
+    val recognizer = VoiceRecognizer(context.applicationContext)
+    vm.onVoiceStart()
+    val started = recognizer.startListening(object : VoiceRecognizer.Callback {
+        override fun onPartialResult(text: String) {
+            // 实时部分结果暂不频繁更新输入框（部分设备不支持），留最终结果
+        }
+
+        override fun onFinalResult(text: String) {
+            vm.onVoiceResult(text)
+            recognizer.destroy()
+        }
+
+        override fun onError(errorMsg: String) {
+            vm.onVoiceError(errorMsg)
+            recognizer.destroy()
+        }
+
+        override fun onBeginningOfSpeech() {
+            // 用户开始说话
+        }
+
+        override fun onRmsChanged(rmsdB: Float) {
+            vm.onVoiceRmsChanged(rmsdB)
+        }
+    })
+    if (!started) {
+        vm.onVoiceError("语音识别不可用")
+        recognizer.destroy()
+    }
+}
+
+/** [AI修改] K2 语音波形条（仿微信样式：5根竖条，随音量跳动） */
+@Composable
+private fun VoiceWaveformBars(rmsdB: Float) {
+    // rmsdB 典型范围 -10(安静)~10+(大声)，映射到 0.05~1.0 的高度系数
+    val level = (rmsdB + 10f).coerceIn(0f, 20f) / 20f  // 0~1
+    // 用动画平滑过渡
+    val animatedLevel by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = level.coerceIn(0.05f, 1f),
+        animationSpec = tween(80),
+        label = "waveLevel",
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 60.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // 5 根竖条：中间高、两边低（微信风格）+ 随机波动感
+        val barWeights = listOf(0.5f, 0.75f, 1f, 0.75f, 0.5f)
+        for (i in barWeights.indices) {
+            // 每根条的瞬时高度 = base × level
+            val barHeight = (animatedLevel * barWeights[i] * 24f + 4f).coerceIn(4f, 28f)
+            // 用次级随机因子模拟各条独立跳动（基于 rmsdB 的微扰）
+            val microJitter = ((rmsdB * 10).toInt() % 3 + i * 7) % 5 / 10f + 0.8f
+            val finalHeight = (barHeight * microJitter).coerceIn(4f, 28f)
+
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(finalHeight.dp)
+                    .padding(horizontal = 2.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)),
+            )
+        }
+    }
+}
+
+/** [AI修改] K2 操作说明弹窗 */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HelpSheet(onDismiss: () -> Unit) {
+    val helpSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = helpSheetState,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            // 标题
+            Text(
+                text = "怎么用 AI 快捷记一餐",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(20.dp))
+
+            // 文字输入
+            HelpSection(
+                title = "📝 文字输入",
+                content = "直接在输入框里描述你吃了什么，AI 会自动识别：\n" +
+                        "✅「中午吃了红烧肉和米饭，少放盐」\n" +
+                        "✅「早餐：两个鸡蛋、一碗小米粥」\n" +
+                        "✅「昨天晚饭：清蒸鲈鱼、炒青菜」\n" +
+                        "✅「加餐：一个苹果、一小把坚果」",
+            )
+            Spacer(Modifier.height(16.dp))
+
+            // 语音输入
+            HelpSection(
+                title = "🎤 语音输入",
+                content = "长按麦克风按钮说话，松手后语音自动转成文字填入输入框。\n" +
+                        "录音仅在本地识别，不上传语音文件。",
+            )
+            Spacer(Modifier.height(16.dp))
+
+            // 粘贴
+            HelpSection(
+                title = "📋 粘贴",
+                content = "复制了别处的菜单文字后，输入框右上角会出现「粘贴」按钮，一键填入。",
+            )
+            Spacer(Modifier.height(16.dp))
+
+            // AI 能识别什么
+            HelpSection(
+                title = "💬 AI 能识别什么",
+                content = "• 餐次：早餐/午餐/晚餐/加餐/宵夜\n" +
+                        "• 日期：今天/昨天/前天/明天\n" +
+                        "• 菜品：从菜名自动拆食材（如\"番茄炒蛋\"=>番茄+鸡蛋）\n" +
+                        "• 份量：一碗/两盘/三个/半份\n" +
+                        "• 吃多少：吃完/吃了一半/吃了少量\n" +
+                        "• 备注：少盐/少油/不要辣",
+            )
+            Spacer(Modifier.height(16.dp))
+
+            // 注意
+            HelpSection(
+                title = "⚠️ 注意",
+                content = "• 越具体越好，说清菜名和份量\n" +
+                        "• 新菜会自动创建，营养来自基础数据估算\n" +
+                        "• 发送前可编辑文字，发送后可预览确认再入库\n" +
+                        "• 语音和文字只在记餐时发送，不保存",
+            )
+        }
+    }
+}
+
+@Composable
+private fun HelpSection(title: String, content: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 22.sp,
+            )
+        }
     }
 }
 

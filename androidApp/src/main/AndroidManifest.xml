@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- [AI生成] AI 快捷输入记餐语音转文字：录音仅本地识别，不上传语音文件 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- [AI生成] AI 云端推荐需要联网调用 GLM API -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
