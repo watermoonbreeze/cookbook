@@ -141,6 +141,8 @@ data class DayMealJson(
     // 元信息
     val raw_input: String = "",              // 原始用户输入（可溯源）
     val parse_method: String = "",           // ai/rule/hybrid/ai_chat
+    // [AI生成] P2-1: K1b 健康评价(AI返回·可空·向后兼容)
+    val health_evaluation: HealthEvaluation? = null,
 )
 
 // ═══════════════════════════════════════════════════════════
@@ -217,4 +219,30 @@ data class FlatIngredientItem(
     val is_main: Boolean = true,            // 是否主料
     val food_group: String? = null,         // 营养大类
     val note: String = "",                  // 食材备注
+)
+
+// ═══════════════════════════════════════════════════════════
+// P2-1: K1b 健康评价（AI 返回·可空·向后兼容·免责）
+// ═══════════════════════════════════════════════════════════
+
+/** AI 返回的健康评价。[AI生成] P2-1 */
+@Serializable
+data class HealthEvaluation(
+    val perMember: List<MemberEval> = emptyList(),
+    val perMeal: List<MealEval> = emptyList(),
+    val overall: String = "",
+)
+
+/** 单成员评价。[AI生成] P2-1 */
+@Serializable
+data class MemberEval(
+    val memberRef: String = "",  // "成员1"/"张三"
+    val note: String = "",       // 评价文字·守免责
+)
+
+/** 单餐评价。[AI生成] P2-1 */
+@Serializable
+data class MealEval(
+    val mealRef: String = "",    // "早餐"/"午餐"/"晚餐"
+    val note: String = "",       // 评价文字·守免责
 )

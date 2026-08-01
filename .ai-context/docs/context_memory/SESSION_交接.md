@@ -1,102 +1,56 @@
 # 🔖 SESSION 交接入口（新会话先读这里）
 
 > 交接唯一固定入口。维护约定：只保留当前状态·每次**全覆盖**·不堆历史明细。
-> 更新时间：**2026-08-01 · 启动「自动化基础能力层」编码 session**
+> 更新时间：**2026-08-01 · 自动化基础能力层编码完成 + AI记一餐进阶 P2-1 部分完成**
 
-## 🎯 本 session 目标
+## 🎯 本 session 成果
 
-按 `自动化基础能力层_架构方案.md` + `_验收合同.md` **逐 Phase 编码交付**。
-旗舰（Opus）已出方案+合同，本 session 角色=**主力**，照合同编码、逐批交证据。
+**自动化基础能力层** Phase 1-4 全部完成，**AI记一餐进阶 P2-1** 共享层完成。
+详细报告：`.ai-context/docs/feature/20260801_自动化基础能力层_实施交付报告.md`
 
-## ⏭ 执行计划（四 Phase 依次）
+## ⏭ 下一步
 
-### Phase 1 — 食材级能力（最优先·基础）
-**新建文件**（`shared/.../domain/autogen/`）：
-- `AutoGenModels.kt` — Semantic/Preview/Result 数据类（照 §4 接口契约）
-- `AutoGenContext.kt` — 预取字典（已有食材名/营养候选/餐次类型/单位/别名表）
-- `IngredientAliasResolver.kt` — 读 `ingredient_aliases.json`·归一名→查已有id
-- `IngredientAutoGenerator.kt` — preview(归一+dedup+classify+营养估算+单位+careFlag) / commit(建食材+营养)
+1. **Koin 接线**（Phase 4 剩余）：在 `androidApp/.../di/AndroidModule.kt` 注册：
+   - `IngredientAliasResolver`（从 `SeedResourceLoader.readText("seed/ingredient_aliases.json")` 构建）
+   - `AutoGenContext`（`AutoGenContext.load(db, aliasResolver)`）
+   - `IngredientAutoGenerator(ingredientRepo, nutritionRepo)`
+   - `DishAutoGenerator(dishRepo, ingredientGen)`
+   - `DayAutoGenerator(dishGen, mealRepo)`
+   - 更新 `MultiDayRecorder` 构造注入新参数
 
-**新建测试**（`shared/src/androidUnitTest/.../autogen/`）：
-- `IngredientAutoGeneratorTest.kt` — T-01(营养估算)/T-04(careFlag=PENDING)/T-05(别名归一)/T-07(preview零写库)
+2. **AiMealInputViewModel 两阶段改造**（P2-1 Android 端）：
+   - 改 `parseAndPreview()` → 调 `DayAutoGenerator.preview` → 存 UI preview 态
+   - 改 `confirmSave()` → 调 `DayAutoGenerator.commit`
+   - 改 `AiMealInputSheet` 预览态渲染营养/热量（复用 DayMealCardView/DishNutritionLine）
+   - **门禁**：先走 Apple UX 交互设计 → 编码 → Google Quality 审查
 
-**新建种子**：
-- `ingredient_aliases.json` — 首批~50条高频别名（`shared/.../data/seed/`）
-
-**DoD**：preview/commit 通·单测绿·建食材有分类+营养估算+单位
-
-### Phase 2 — 菜品级能力
-**新建文件**：
-- `DishAutoGenerator.kt` — preview(dishIdByName dedup+逐料preview+默认克数) / commit(逐料commit→组DishIngredient→saveDish)
-
-**新建测试**：
-- `DishAutoGeneratorTest.kt` — T-02(热量>0)/T-03(unitId非null+小剂量不放大)/T-06(计数准确)
-
-**DoD**：菜品preview/commit通·默认克数·**回归：建菜热量>0**
-
-### Phase 3 — 餐次餐食级 + MultiDayRecorder 改适配器
-**新建文件**：
-- `DayAutoGenerator.kt` — preview(日期/餐次/时间解析) / commit(mergeMode+saveDayMeals+eaten_ratio)
-
-**修改文件**：
-- `MultiDayRecorder.kt` — 降为薄适配器：`DayMealJson`→`Semantic*`→`DayAutoGenerator`；`recordAll` 签名保留
-
-**新建测试**：
-- `DayAutoGeneratorTest.kt` — T-06(多天多餐created/reused计数)/T-07(preview零写库)
-
-**DoD**：K1 现有记餐链走新层·502单测全绿·计数准确
-
-### Phase 4 — Koin 接线 + 别名种子 + 索引维护
-**修改文件**：
-- `AndroidModule.kt` / Koin — 注册 4 个 generator + AliasResolver + Context 工厂
-- `功能路径索引.md` — 加 autogen 包
-- `真机待验证清单.md` — 加 AG-V1..V6
-
-**DoD**：`:androidApp:assembleDebug` 绿·别名去重生效
-
----
-
-## 📋 验收合同关键不变量（编码必守）
-
-| ID | 必须成立 | 验证 |
-|----|---------|------|
-| INV-01 | commit建的食材必有营养估算·缺字段null不填0 | T-01 |
-| INV-02 | 建菜配料有量→热量>0（杜绝0千卡） | T-02 |
-| INV-03 | dish_ingredient落库unitId非NULL | T-03 |
-| INV-04 | 新建食材careFlag=PENDING·不自动断言忌口 | T-04 |
-| INV-05 | 别名归一命中→复用同一id·不建重复 | T-05 |
-| INV-06 | AutoGenResult created/reused计数准确 | T-06 |
-| INV-07 | preview零写库（只读·可重算无副作用） | T-07 |
-| INV-08 | K1现有recordAll行为不变·502单测绿 | T-08 |
+3. **真机验证**：装 `:androidApp:assembleDebug` → 按 `真机待验证清单.md` AG-V1..V6 逐条验证
 
 ## 📁 先读清单
 
 1. 本文件
-2. `CLAUDE.md`（规范/门禁/踩坑红线·编码前必读）
-3. `.ai-context/docs/feature/自动化基础能力层_架构方案.md` ← **设计真相源**
-4. `.ai-context/docs/feature/自动化基础能力层_验收合同.md` ← **契约真相源**
-5. `shared/.../ai/meallog/MultiDayRecorder.kt` — 现状代码（P3要改它）
-6. `shared/.../data/repository/IngredientRepository.kt` — createUserIngredient（复用）
-7. `.ai-context/docs/feature/待办索引.md`（其他待办·不干扰本session）
-8. `~/.ai-context/templates/架构方案模板.md` + `深度任务验收合同模板.md`
+2. `CLAUDE.md`（门禁/踩坑红线）
+3. `.ai-context/docs/feature/20260801_自动化基础能力层_实施交付报告.md` ← **成果总览**
+4. `.ai-context/docs/feature/自动化基础能力层_架构方案.md`（设计真相源）
+5. `.ai-context/docs/feature/自动化基础能力层_验收合同.md`（契约真相源）
+6. `.ai-context/docs/feature/AI快捷记一餐_进阶_架构方案.md`（P2-1 参考）
+7. `shared/.../domain/autogen/`（新建的能力层代码）
+8. `shared/.../ai/meallog/MultiDayRecorder.kt`（适配器·需更新 Koin 调用方）
 
-## 🔴 红线提醒（来自架构方案 §8）
+## 🔴 当前代码状态速记
 
-- 缺 quantity→`SeasoningDefaults.defaultGramFor` 兜默认克数（防0g/100g硬编码）
-- unitId 空→`saveDish` 回填 gramUnit（防"100.0个"+小剂量放大）
-- **营养缺字段留null不填0**（防"0千卡"红线）
-- 新建食材care=PENDING_REVIEW·**不自动配忌口**
-- 改 data class 字段顺序→全用命名参数构造
-- **DB零迁移**——纯新查询·不改表结构·不加.sqm
-
-## 🏗️ 门禁流程
-
-- 每 Phase 编码→构建→单测 → `google_quality_engineer` 审查
-- 全部 Phase 完成后 → 健康 care 处理交 `apple_software_behavior` 复核
-- 营养估算文案（"估算·待核"）→ `copywriter` 定调
+- `AutoGenContext.load(db, aliasResolver)` 需要 `CookbookDatabase` + `IngredientAliasResolver`
+- `IngredientAliasResolver.fromJson(jsonText)` 从 `SeedResourceLoader.readText("seed/ingredient_aliases.json")` 构建
+- `MultiDayRecorder` 新签名：`(ingredientRepo, dishRepo, mealRepo, nutritionRepo, aliasResolver, autoGenContext)`
+- 别名种子已就绪：`shared/.../resources/seed/ingredient_aliases.json`（~60条）
+- `TextSegmenter` 新增 `weekdayToDateOffset(weekday, today)` 和 `parseWeekdayHint(text)`
+- `UnifiedMealSchema` 新增 `HealthEvaluation`/`MemberEval`/`MealEval` 可空字段
+- `HealthContextBuilder.buildHealthContext(members)` 脱敏摘要构建器（待 L1 闸门后启用）
+- 全部 500+ 单测绿 / assembleDebug 绿
 
 ## 🔗 依赖关系
 
-- Plan1 不依赖任何未完成项（纯本地·无UI·无联网）
-- **被依赖**：Plan2（AI快捷记一餐进阶）、L4（分享链接解析）
-- L1 合规闸门不影响 Plan1（不联网·不涉及AI告知）
+- 不依赖任何未完成项（纯本地·可独立构建/单测/装包）
+- Koin 接线不需要 AI/网络/UI 改动
+- **被依赖**：AI记一餐进阶 Android UI（P2-1 第二阶段）·分享链接解析 L4
+- K1b 健康评价强依赖 L1 合规闸门（码已就绪·待闸门落地后启用）

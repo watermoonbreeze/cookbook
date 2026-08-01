@@ -1,5 +1,7 @@
 package com.sxdbsm.cookbook.ai.meallog
 
+import kotlinx.datetime.LocalDate
+
 /**
  * @File : TextSegmenter
  * @Time : 2026/07/29
@@ -11,6 +13,7 @@ package com.sxdbsm.cookbook.ai.meallog
  * 纯函数，可单测。
  * <p>
  * [AI生成] K2 AI快捷输入记餐专项重构：多天分段层。
+ * [AI修改] 自动化基础能力层 P2-1：补 K1c weekday→date_offset 推算。
  **/
 
 /** 一个日期文本块。[AI生成] */
@@ -155,5 +158,42 @@ object TextSegmenter {
             weekdayHint.lowercase().contains("sun") -> 7
             else -> null
         }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // K1c: weekday → date_offset 推算（P2-1）
+    // ═══════════════════════════════════════════════════
+
+    /**
+     * 星期几 + today → 最近过去的该星期几的 date_offset。[AI生成] P2-1
+     *
+     * "今天周四说周三吃了"→ 周三在周四的 -1 天 → offset=-1。
+     * 注意：offset<=0（不说未来"下周一吃了"），取"最近的过去"。
+     *
+     * @param weekday ISO weekday (1=周一..7=周日)
+     * @param today 当前日期
+     * @return date_offset（负数或0）
+     */
+    fun weekdayToDateOffset(weekday: Int, today: LocalDate): Int {
+        val todayDow = today.dayOfWeek.ordinal + 1 // 1=Mon..7=Sun
+        val diff = todayDow - weekday
+        return if (diff >= 0) -diff else -(7 + diff) // 最近过去
+    }
+
+    /**
+     * 从中文文本解析星期几（"周三"/"上周五"/"礼拜天"等）。[AI生成] P2-1
+     *
+     * 只解析近过去/今天/昨天的口语表达，返回 ISO weekday (1=周一..7=周日)。
+     * "上周X"→按 -7 偏移但不改变 weekday 本身（偏移由上层处理）。
+     *
+     * @return ISO weekday (1-7) 或 null（解析不出）
+     */
+    fun parseWeekdayHint(text: String): Int? {
+        val t = text.trim()
+        // 先查"今天"/"昨天"/"前天"等绝对偏移词
+        if (t.contains("今天") || t == "今") return null // 今天=offset 0，上层按 date 处理
+        if (t.contains("昨天") || t.contains("昨日")) return null
+
+        return weekdayToIso(t)
     }
 }
