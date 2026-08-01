@@ -2,50 +2,48 @@
 
 > 交接唯一固定入口。触发词：「查看session继续/会话继续」→读本文件按"先读清单"补上下文、按"⏭下一步"接着干；「交接/保存session」→落档+**覆盖**本文件+git 提交。
 > **维护约定（省 token）**：只保留当前状态·每次**全覆盖**·不堆历史明细（历史靠 git log + `SESSION_交接_历史.md`）·目标 ≤1 屏。
-> 更新时间：**2026-07-31 · K2 AI快捷记餐专项重构·Phase1+2完成**
+> 更新时间：**2026-08-01 · 分享链接解析方案会商 + L1-L4 待办登记**
 
 ## 本 session 交付
 
-- ✅ **K2 Phase1 shared基础设施**（7新文件）：`UnifiedMealSchema`(四级+FlatMealJson)、`TextNormalizer`、`TextSegmenter`(方言全覆盖)、`RuleMealParser`(多餐分段+备注移除避坑)、`IngredientNameExtractor`(重构自DishNameIngredientGuesser)、`SchemaValidator`、`SchemaMigration`、`MultiDayRecorder`(3种MergeMode)
-- ✅ **K2 Phase2 接入+语音修复**（4文件）：`VoiceRecognizer`(SpeechRecognizer封装+长按+波形)、`AiMealInputSheet`(新布局·去Tab+粘贴+(i)说明+语音波形)、`AiMealInputViewModel`(RuleMealParser兜底+语音状态)、`AiMealPrompt`(重写·FlatMealJson示例+多场景+食材估量)
-- ✅ **AI角色→家庭健康营养师** + Manifest RECORD_AUDIO权限
-- ✅ **构建双绿·502单测全绿** + Git push远程
-- ✅ **专项方案文档** `20260729_AI快捷记餐专项重构方案.md`（含7点用户反馈补充）
+- ✅ **L1-L4 四项待办登记**：合规性（免责+AI弹窗）/ 脂肪肝App入口 / 全App自动化进阶 / 分享链接解析
+- ✅ **L4 六角色会商**（Apple-UX/产品/算法/架构/行为师/文案）→ 综合方案文档落地
+- ✅ **真实样本验证**：下厨房 `m.xiachufang.com/recipe/106889995/`（冬瓜丸子汤·innerText结构清晰·正则可解析）
+- ✅ **方案文档** `分享链接解析_方案设计.md`（DB设计/解析引擎JSON Schema/交互流程/透明分级/文件清单/Phase分期）
 
-## ⏭ 下一步（K1 系列·同一任务）
+## ⏭ 下一步
 
-| 编号 | 项 | 状态 | 要点 |
-|------|-----|------|------|
-| **K1a** | 预览页展示营养素+热量 | 🔄 | 复用 `DayMealCardView`+`DishNutritionLine` |
-| **K1b** | AI带入家庭健康档案做评价 | 🔄 | 脱敏摘要入参→逐成员评价→免责红线 |
-| **K1c** | 规则引擎星期偏移推算 | 🔄 | `TextSegmenter.weekdayToIso()`已有接口，待推算逻辑 |
-| K1d | Schema客户端/服务端双端兼容 | ⬜ | JSON Schema标准文件+入库流程文档 |
-| K1e | AI调用点语义→AI专用结构转换 | ⬜ | 3个调用点紧凑JSON省50-70% token |
-| K1f | AI食材入库轻量别名归一 | ⬜ | `ingredient_aliases.json` 50-100条映射·用户已批准 |
+**首要**：用户将方案文档交给其他模型评估，评估后可能调整方案细节。
 
-**建议优先做 K1a（UI·可感）+ K1b（AI核心价值），再做 K1c（算法补全）。**
+**方案确认后**：按 Phase1 编码（下厨房单源+预设解析+链接列表+存为菜品）：
+1. DB：33.sqm 迁移 → Cookbook.sq 加两表+查询 → ShareLinkRepository
+2. 解析引擎：`ParsedRecipe.kt` + `ParseConfig.kt` + `RecipeParser.kt`（shared·纯Kotlin正则·带单测）+ `xiachufang.json` 规则文件
+3. Android：`ShareReceiverActivity`(Manifest intent-filter) → `ParseSheet`(三态) → `LinkListScreen` → 横幅+红点
+4. 集成：存为菜品预填(复用 NewDishPrefillBus) → 数据来源页扩展
+
+**其他待办**：L1(合规)·L2(脂肪肝)·L3(自动化方案) 各单开 session 做。
 
 ## 设计决策（已确立·后续沿用）
 
-1. **AI 交互原则**：食材库不给AI（自主推断→入库校验新建）·健康档案给脱敏摘要（成员年龄/慢病/生命阶段）
-2. **AI Prompt 结构**：给AI的数据用紧凑短key JSON（省token），App内部用完整结构——`DomainStruct → AiStructCompact` 单向转换
-3. **入库校验**：`createUserIngredient` UNIQUE防重 + `source="ai"` 可编辑/删除 + 轻量别名归一
-4. **JSON Schema**：`FlatMealJson` 扁平格式为AI+服务端双端交换格式，`MultiDayJson`嵌套格式为App内部格式
-5. **透明准则**：语音T3系统权限·AI解析T2文字告知·自动创建T1 Snackbar撤销·粘贴T0
+1. **BottomSheet 替代 WebView 全页**：后台隐藏 WebView 加载+JS提取文本 → 用户只看到 Sheet 进度/结果
+2. **纯正则解析**：对 `innerText` 做正则提取（不用 CSS 选择器），JSON 预留 CSS 字段供 Phase2
+3. **图片下载绑定保存操作**：预览用远程URL → 用户点"存为菜品"时才下载本地
+4. **WebView 隐私 T2 弹框**：加载前告知"对方服务器会看到本次访问"
+5. **未解析提醒=首页横幅（非弹框）**：复用 §9.31 范式 + 链接图标红点
+6. **AI 解析=Phase2**：MVP 仅预设解析；AI 上线前必须先完成 L1 合规闸门
 
 ## 先读清单
 
 1. 本文件
 2. `CLAUDE.md`（规范/门禁/踩坑红线）
-3. `功能路径索引.md`（定位先查）
-4. `待办总览.md`（K1a-K1f 当前进度）
-5. `20260729_AI快捷记餐专项重构方案.md`（完整方案·含§十一用户反馈补充）
-6. `真机待验证清单.md`（V1-V7 K2语音修复待验）
+3. `.ai-context/docs/feature/分享链接解析_方案设计.md` ← **本次核心产出**
+4. `.ai-context/docs/feature/待办总览.md` §L 段（L1-L4 四项）
+5. `.ai-context/docs/功能路径索引.md`（定位先查）
 
 ## 工作规则（延续）
 
-1. 🔴 权威方法论优先 · 数据来源真实 · 营养免责非医嘱。
-2. 🔴 一个 session 聚焦一个内聚任务 · off-type 进待办。
-3. 🔴 定位先查功能路径索引 · 增删改名文件同 commit 同步索引。
-4. 🔴 每功能/bug修复必登记真机待验证清单（含分步操作步骤）。
-5. 🔴 色系墙只看膳食结构 · 热量数字默认开可关 · 健康文案守免责。
+1. 🔴 权威方法论优先 · 数据来源真实 · 营养免责非医嘱
+2. 🔴 一个 session 聚焦一个内聚任务 · off-type 进待办
+3. 🔴 定位先查功能路径索引 · 增删改名文件同 commit 同步索引
+4. 🔴 每功能/bug修复必登记真机待验证清单
+5. 🔴 色系墙只看膳食结构 · 热量数字默认开可关 · 健康文案守免责
