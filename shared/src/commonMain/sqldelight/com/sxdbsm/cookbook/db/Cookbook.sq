@@ -1299,6 +1299,10 @@ SELECT COUNT(*) FROM dish_ingredient;
 observeMealRecordDishRevision:
 SELECT IFNULL(SUM(eaten_ratio), 0.0) FROM meal_record_dish WHERE status = 1;
 
+-- [AI修改] J1：菜品表变化令牌。dish 表变更(改图片/名称等)时此查询重发→observeTimelineWindow 重跑 buildDayMealCards→首页菜品图即时刷新(修"编辑菜品图后返回图片没变")。纯新查询无需迁移。
+observeDishRevision:
+SELECT COUNT(*) FROM dish WHERE status = 1;
+
 -- [AI修改] 去掉 i.status=1 过滤：菜品要保留对失效食材的引用（灰显 + 失效原因），
 -- 只按 di.status=1 判断该引用本身是否有效。同时读出食材 status/reason 供 UI 判断灰显。
 selectIngredientsOfDish:

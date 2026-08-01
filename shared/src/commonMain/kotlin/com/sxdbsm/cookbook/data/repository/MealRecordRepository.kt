@@ -166,18 +166,22 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     fun observeTimelineWindow(start: LocalDate, end: LocalDate): Flow<List<DayMealCardData>> {
         val startDate = minOf(start, end)
         val endDate = maxOf(start, end)
-        // [AI修改] 并入"食用比例变化"+"菜配料变化"令牌：改 meal_record_dish(就地调 eaten_ratio)或 dish_ingredient(克数/配料)
-        //   只动 B 表，而 selectMealRecordsBetween 只监听 meal_record(A 表)→卡片停旧值(踩坑红线:改B表不触发A表Flow)。
-        //   令牌变化时 combine 重发→重跑 buildDayMealCards 读新 eaten_ratio→今日卡/"按实际吃了多少"弹层即时刷新(修"点了没反应·退出重进才生效")。
-        //   卡片内容(DishMini.eatenRatio)真变才与旧值不等→下游 stateIn 去重后才发 UI，无谓令牌抖动不刷屏。
+        // [AI修改] 并入"食用比例变化"+"菜配料变化"+"菜品变化"令牌：
+        //   改 meal_record_dish(就地调 eaten_ratio)或 dish_ingredient(克数/配料)只动 B 表，而 selectMealRecordsBetween 只监听 meal_record(A 表)→卡片停旧值。
+        //   改 dish(图片/名称)同理不触发 A 表→J1:菜品编辑图后返回首页图片不变。令牌变化时 combine 重发→重跑 buildDayMealCards 读新值。
+        //   卡片内容真变才与旧值不等→下游 stateIn 去重后才发 UI，无谓令牌抖动不刷屏。
+        //   [AI修改] J1:内层 combine 合并三个 B/C 表令牌→外层与 A 表记录 combine，破 kotlinx 1.7 combine 上限。
         return combine(
             q.selectMealRecordsBetween(
                 start = DateTime.formatDate(startDate),
                 end = DateTime.formatDate(endDate),
             ).asFlow().mapToList(ioDispatcher),
-            q.observeMealRecordDishRevision().asFlow().mapToOne(ioDispatcher),
-            q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher),
-        ) { records, _, _ -> records }
+            combine(
+                q.observeMealRecordDishRevision().asFlow().mapToOne(ioDispatcher),
+                q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher),
+                q.observeDishRevision().asFlow().mapToOne(ioDispatcher), // [AI修改] J1:菜品表变更令牌·改图片/名称等即时刷新首页卡
+            ) { _, _, _ -> },
+        ) { records, _ -> records }
             .map { records ->
                 buildDayMealCards(startDate, endDate, records)
             }

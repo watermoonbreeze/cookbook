@@ -1,0 +1,49 @@
+# 待办 · Bug 修复
+
+> 最后更新：2026-08-01
+> 图例：⬜待做 / 🔄进行中 / 🔨部分实现 / 📄方案待拍板 / ✅完成
+
+---
+
+## 🔴 高优先级
+
+| # | 状态 | 项 | 说明 |
+|---|------|-----|------|
+| J1 | ✅ | **菜品编辑后返回餐次·图片没变** | 2026-08-01 修：observeTimelineWindow 加 observeDishRevision 令牌→改菜图后即时刷新首页卡。 |
+| J18 | ✅ | **餐食卡"复制到"日期被锁死** | 2026-08-01 修：minSelectableDate 从 target(末次+1)改为 today，允许复制到今天及任意未来日。 |
+| K9 | ✅ | **有主料时其他食材不显示** | 已修："添加食材"按钮移到 if 外部，无论有无其他食材入口都可见。 |
+| K10 | ✅ | **改名后营养大类不跟随重新分类** | 已修：名称变更后以 FoodGroup.classify(name) 为主跟随新名。 |
+| J12 | ✅ | **今日营养"还缺"误报**（mains fallback） | 已修（J15）：classificationNames 主料空→回退全食材 + buildDishMinis/buildDishesByMealRecord 填 allIngredientNames。 |
+
+---
+
+## 🟡 中优先级
+
+| # | 状态 | 项 | 说明 |
+|---|------|-----|------|
+| J5 | ⬜ | **食历右上角日期→当前年份首餐~末餐** | 配合 J4 一起做，小调整。 |
+
+---
+
+## ⚪ 低优先级
+
+_暂无_
+
+---
+
+## ✅ 已归档
+
+| # | 状态 | 项 | 说明 |
+|---|------|-----|------|
+| I1 | ✅ | EatenAdjustSheet 交互失灵 | 2026-07-22 修：eaten_ratio 令牌下沉进 observeTimelineWindow + sheet 加 verticalScroll。 |
+| I2 | ✅ | 编辑加菜后"少量"消失 | 2026-07-22 修：saveDayMeals 加 mealUniformRatio，新菜继承整餐吃完度。 |
+| K3 | ✅ | 搜索框不清空 | configure() 内加 `_keyword.value = ""`。 |
+| K5 | ✅ | 备注不显示 | DayMealCardView 加 note 渲染。 |
+| K6 | ✅ | 早餐有蛋+奶仍提示缺 | buildDishMinis 加 allIngredientNames（同 J15 根因）。 |
+| K8 | ✅ | 草鱼/炖鱼汤痛风红绿灯不一致 | 4文件+2单测+构建全绿。 |
+| J8 | ✅ | 钠阈值版本一致性 bug | 2026-07-24 修：高血压钠 2400→2000mg（2024指南）+6处文案同步。 |
+| J15 | ✅ | 今日营养"缺主食"不合理 | 2026-07-24 修：mains fallback（主料空回退全食材）+餐次差异化。 |
+| — | ✅ | 菜品食材单位"100.0个"+营养按错单位 | 2026-07-22 修：saveDish 空单位回填"克"+小剂量调料放大。 |
+| — | ✅ | 自建分类挂食材保存后不显示 | 2026-07-14 修：reloadCurrentList 从 allCategories 找分类+保存后重建树。 |
+| — | ✅ | 食材/库存深挖3真bug | 2026-07-14 修：名称归一/幽灵库存/加份数事务。 |
+| — | ✅ | AI推荐页自动刷新 | 删 ON_RESUME DisposableEffect，刷新一律手动。 |

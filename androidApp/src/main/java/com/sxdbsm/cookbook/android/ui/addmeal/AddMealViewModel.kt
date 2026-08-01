@@ -500,7 +500,7 @@ class AddMealViewModel(
 
     private suspend fun loadCopyFrom(sourceDate: LocalDate) {
         // [AI修改] #2：复制的目标日期 = 当前**最新餐食日期 + 1**(接在整个食历之后)，而非源日期+1；
-        // 无餐食时退回源+1。同时设可选下限 minSelectableDate=target，弹框里 target 之前的日期都不能选。
+        // 无餐食时退回源+1。[AI修改] J18:minSelectableDate=today(允许复制到今天及以后·不再被未来计划餐锁死)。
         val today = DateTime.today()
         val latest = mealRepo.dateRange().second
         val target = if (latest != null) maxOf(DateTime.plusDays(latest, 1), today) else DateTime.plusDays(sourceDate, 1)
@@ -518,7 +518,7 @@ class AddMealViewModel(
             mealBlocks = finalBlocks,
             activeBlockId = finalBlocks.firstOrNull()?.id,
             isEditingExisting = false, // 复制是新建，日期可改
-            minSelectableDate = target, // target 之前(含所有已有餐食日期)不可选
+            minSelectableDate = today, // [AI修改] J18:放低到today——复制不锁死在"末次餐食之后"，允许用户复制到今天/明天/任意未来日
         )
         markBaseline() // [AI生成] 复制加载完成记基线
         AppLogger.d(TAG, "load copy-from: source=$sourceDate latest=$latest target=$target blocks=${finalBlocks.size}")
