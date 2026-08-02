@@ -8,9 +8,16 @@
 **自动化基础能力层** Phase 1-4 全部完成，**AI记一餐进阶 P2-1** 共享层完成。
 详细报告：`.ai-context/docs/feature/20260801_自动化基础能力层_实施交付报告.md`
 
+## ➕ 2026-08-02 待复核审核流程编码完成
+
+三视角会审（Apple UX × Google 质量 × Apple 行为）→ 方案采纳 Tab 栏动态追加模式 → 编码完成。
+详细：`.ai-context/docs/feature/20260802_待复核审核流程_三视角会审报告.md`
+真机验证：`真机待验证清单.md` RV-1~RV-4
+
 ## ⏭ 下一步
 
-1. **Koin 接线**（Phase 4 剩余）：在 `androidApp/.../di/AndroidModule.kt` 注册：
+1. **装包真机验证** RV-1~RV-4 + AG-V1~V6
+2. **Koin 接线**（Phase 4 剩余）：在 `androidApp/.../di/AndroidModule.kt` 注册：
    - `IngredientAliasResolver`（从 `SeedResourceLoader.readText("seed/ingredient_aliases.json")` 构建）
    - `AutoGenContext`（`AutoGenContext.load(db, aliasResolver)`）
    - `IngredientAutoGenerator(ingredientRepo, nutritionRepo)`

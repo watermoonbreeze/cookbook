@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -69,6 +70,9 @@ internal fun IngredientDetailSheet(
     onAddServings: ((Int) -> Unit)? = null, // [AI生成] 入库/加份数(累加)。
     onSetServings: ((Int) -> Unit)? = null, // [AI生成] 设置份数(减份数用)。
     onSaveAsDish: (() -> Unit)? = null, // [AI生成] 快速把该食材存成同名单食材菜品(即食品直接吃场景);传入才显示入口。
+    // [AI生成] P2-1 待复核审核
+    isPendingReview: Boolean = false,
+    onMarkReviewed: (() -> Unit)? = null,
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -283,6 +287,34 @@ internal fun IngredientDetailSheet(
                             onSetServings = onSetServings,
                             onRemove = onTogglePantry,
                         )
+                    }
+                    // [AI生成] P2-1 待复核审核：琥珀提示条 + 标记已复核按钮
+                    if (isPendingReview && onMarkReviewed != null) {
+                        Divider()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                Icons.Outlined.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "营养为自动估算·建议核对",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TextButton(onClick = onMarkReviewed) {
+                                Text("标记已复核", color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
                     }
                     // [AI生成] 快速"存为菜品"：即食品/直接吃的食材一步建成同名单食材菜品，便于记餐+算营养。
                     onSaveAsDish?.let { save ->

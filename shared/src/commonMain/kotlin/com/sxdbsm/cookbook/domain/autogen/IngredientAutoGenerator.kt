@@ -146,7 +146,7 @@ class IngredientAutoGenerator(
                             calciumMg = nutritionValues.calciumMg,
                             gi = nutritionValues.gi,
                             purineMg = nutritionValues.purineMg,
-                            ref = "自动估算·待核", // 标"估算"非权威（INV-09）
+                            ref = "自动估算", // 标"估算"非权威（INV-09）·复核状态见 review 字段
                         )
                     )
                 }

@@ -325,6 +325,21 @@ class IngredientRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * 待复核食材列表。[AI生成] P2-1
+     *
+     * 返回 source='auto' 且营养未复核（review=0 或 ref 含"待核"）的食材。
+     * 按创建时间倒序——最新自动生成的排前面。
+     */
+    suspend fun listPendingReview(): List<Ingredient> = withContext(ioDispatcher) {
+        q.selectPendingReviewIngredients(::mapIngredientRow).executeAsList()
+    }
+
+    /** 待复核食材数量（badge 红点用）。[AI生成] P2-1 */
+    suspend fun countPendingReview(): Long = withContext(ioDispatcher) {
+        q.countPendingReviewIngredients().executeAsOne()
+    }
+
+    /**
      * 编辑食材基础信息。[AI修改]
      *
      * 修复9要求预设和自建食材都可以编辑；删除仍只允许自建食材。

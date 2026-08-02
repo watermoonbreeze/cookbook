@@ -1795,6 +1795,32 @@ SELECT id FROM ingredient WHERE name = ? AND status = 1 LIMIT 1;
 selectActiveIngredientIdNames:
 SELECT id, name FROM ingredient WHERE status = 1;
 
+-- [AI生成] P2-1 待复核食材：source='auto' 且 nutrition review=0（autogen 自动生成·营养待人工复核）。
+-- 列序与 mapIngredientRow 一致（10 列：id/name/alias/pinyin/image_path/thumbnail_path/emoji/default_unit_id/source/created_at）。
+selectPendingReviewIngredients:
+SELECT i.id, i.name, i.alias, i.pinyin, i.image_path, i.thumbnail_path, i.emoji,
+       i.default_unit_id, i.source, i.created_at
+FROM ingredient i
+JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
+WHERE i.status = 1 AND i.source = 'auto' AND n.review = 0
+ORDER BY i.created_at DESC;
+
+-- [AI生成] 待复核食材数量（badge 用）。
+countPendingReviewIngredients:
+SELECT COUNT(*) FROM ingredient i
+JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
+WHERE i.status = 1 AND i.source = 'auto' AND n.review = 0;
+
+-- [AI生成] 标记食材营养为已复核（review=1）。
+markIngredientNutritionReviewed:
+UPDATE ingredient_nutrition SET review = 1, updated_at = :updated_at
+WHERE ingredient_id = :ingredient_id AND status = 1;
+
+-- [AI生成] 撤销已复核标记（review=0）。
+unmarkIngredientNutritionReviewed:
+UPDATE ingredient_nutrition SET review = 0, updated_at = :updated_at
+WHERE ingredient_id = :ingredient_id AND status = 1;
+
 -- [AI生成] 按一组名字取所有在库食材 id(库存推荐按名扩展匹配, 兼容同名不同 id 的历史重复食材)。
 selectIngredientIdsByNames:
 SELECT id FROM ingredient WHERE status = 1 AND name IN ?;

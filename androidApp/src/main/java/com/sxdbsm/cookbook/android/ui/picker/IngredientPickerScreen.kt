@@ -18,10 +18,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -251,10 +253,22 @@ fun IngredientPickerScreen(
                 androidx.compose.runtime.LaunchedEffect(pantryHookOn, ui.mainTab) {
                     if (!pantryHookOn && ui.mainTab == IngredientMainTab.PANTRY) vm.selectMainTab(IngredientMainTab.RECENT)
                 }
-                val visibleTabs = IngredientMainTab.values().filter { it != IngredientMainTab.PANTRY || pantryHookOn }
+                // [AI生成] P2-1：待复核 Tab 条件显隐 + Badge 数字
+                val visibleTabs = IngredientMainTab.values().filter {
+                    when {
+                        it == IngredientMainTab.PANTRY && !pantryHookOn -> false
+                        it.isConditional() && ui.pendingReviewCount == 0L -> false
+                        else -> true
+                    }
+                }
+                val tabLabels = visibleTabs.map { tab ->
+                    if (tab == IngredientMainTab.REVIEW && ui.pendingReviewCount > 0)
+                        "${tab.label} ${ui.pendingReviewCount}"
+                    else tab.label
+                }
                 // [AI修改] §9.18:主分类改共享件 PrimaryTabRow(与菜品页统一胶囊分段视觉);食材项数可变(≤6)→scrollable=true 横滚、项按内容宽。逻辑(selectMainTab/清详情)不动。
                 com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow(
-                    options = visibleTabs.map { it.label },
+                    options = tabLabels,
                     selectedIndex = visibleTabs.indexOf(ui.mainTab).coerceAtLeast(0),
                     onSelect = { idx ->
                         selectedIngredient = null
@@ -263,9 +277,27 @@ fun IngredientPickerScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
                     scrollable = true,
                 )
+                // [AI生成] P2-1 待复核 Tab 顶部说明条
+                if (ui.mainTab == IngredientMainTab.REVIEW && ui.pendingReviewIngredients.isNotEmpty()) {
+                    com.sxdbsm.cookbook.android.ui.component.InsetGroup(modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)) {
+                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Outlined.Info, contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "以下食材营养为自动估算·仅供参考·非医嘱·建议核对后使用",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
                 Row(Modifier.weight(1f).fillMaxWidth()) {
-                    // 左侧分类树（最近/库存平铺，无左树）
-                    if (ui.mainTab != IngredientMainTab.RECENT && ui.mainTab != IngredientMainTab.PANTRY) {
+                    // 左侧分类树（最近/库存/待复核平铺，无左树）
+                    if (ui.mainTab != IngredientMainTab.RECENT && ui.mainTab != IngredientMainTab.PANTRY && ui.mainTab != IngredientMainTab.REVIEW) {
                         LazyColumn(
                             modifier = Modifier
                                 .width(120.dp)
@@ -626,7 +658,13 @@ fun IngredientPickerScreen(
         content()
     }
 
+    val scope = rememberCoroutineScope() // [AI生成] P2-1 compose 协程作用域
     selectedIngredient?.let { ingredient ->
+        // [AI生成] P2-1：source="auto" 且 nutrition review=0 → 待复核
+        var isPendingReview by remember { mutableStateOf(false) }
+        LaunchedEffect(ingredient.id) {
+            isPendingReview = ingredient.source == "auto" && vm.isPendingReview(ingredient.id)
+        }
         IngredientDetailSheet(
             ingredient = ingredient,
             selected = ingredient.id in ui.selectedIds,
@@ -638,6 +676,22 @@ fun IngredientPickerScreen(
             crowdVerdicts = ui.detailCrowdVerdicts,
             dishMatches = ui.detailDishMatches,
             enabledCareCategoryIds = ui.enabledCareCategoryIds,
+            // [AI生成] P2-1 待复核标记
+            isPendingReview = isPendingReview,
+            onMarkReviewed = if (isPendingReview) {
+                {
+                    scope.launch {
+                        val ok = vm.markReviewed(ingredient.id)
+                        if (ok) {
+                            isPendingReview = false
+                            selectedIngredient = null
+                            appSnackbar?.showUndo("已将「${ingredient.name}」标记为已复核") {
+                                scope.launch { vm.undoReviewed(ingredient.id) }
+                            }
+                        }
+                    }
+                }
+            } else null,
             onDismiss = { selectedIngredient = null },
             // [AI修改] 高风险重构：仅选择场景传 onToggleSelection(非空→组件显选择按钮)，浏览场景传 null。
             onToggleSelection = if (selectionMode) {

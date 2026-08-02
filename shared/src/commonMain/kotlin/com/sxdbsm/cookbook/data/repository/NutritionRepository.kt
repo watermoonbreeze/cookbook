@@ -47,8 +47,15 @@ class NutritionRepository(private val db: CookbookDatabase) {
         }
     }
 
-    /** 写入/更新食材营养(自定义食材填的每100g值)。[AI生成] Item4 */
+    /** 写入/更新食材营养(自定义食材填的每100g值)。[AI生成] Item4
+     * [AI修改] P2-1：保护已复核标记——若当前 review=1 则保留，避免用户编辑食材后冲掉已复核状态。 */
     suspend fun upsertNutrition(n: IngredientNutrition) = withContext(ioDispatcher) {
+        // 查当前 review 值：若已为 1（已复核）则保留，不被 autogen 的 review=0 覆盖
+        val existingReview = run {
+            val existing = q.selectIngredientNutrition(n.ingredientId).executeAsOneOrNull()
+            existing?.review ?: 0L
+        }
+        val reviewValue = if (existingReview == 1L) 1L else if (n.review) 1L else 0L
         q.upsertIngredientNutrition(
             ingredient_id = n.ingredientId,
             energy_kcal = n.energyKcal,
@@ -65,13 +72,30 @@ class NutritionRepository(private val db: CookbookDatabase) {
             cholesterol_mg = n.cholesterolMg,
             piece_gram = n.pieceGram,
             ref = if (n.ref.isBlank()) "用户填写" else n.ref,
-            review = 0L,
+            review = reviewValue,
             updated_at = com.sxdbsm.cookbook.util.DateTime.nowEpochSeconds(),
         )
     }
 
     /** 是否有任何量化营养数据(用于"数据不全"提示)。[AI生成] */
     suspend fun hasNutrition(ingredientId: Long): Boolean = ingredientNutrition(ingredientId)?.hasAny == true
+
+    /** 标记食材营养为已复核。[AI生成] P2-1
+     * @return true 表示实际更新了一行，false 表示无匹配行（id 不存在或无营养数据）。 */
+    suspend fun markReviewed(ingredientId: Long): Boolean = withContext(ioDispatcher) {
+        val now = com.sxdbsm.cookbook.util.DateTime.nowEpochSeconds()
+        q.markIngredientNutritionReviewed(ingredient_id = ingredientId, updated_at = now)
+        val updated = q.selectIngredientNutrition(ingredientId).executeAsOneOrNull()
+        updated?.review == 1L
+    }
+
+    /** 撤销已复核标记。[AI生成] P2-1 */
+    suspend fun unmarkReviewed(ingredientId: Long): Boolean = withContext(ioDispatcher) {
+        val now = com.sxdbsm.cookbook.util.DateTime.nowEpochSeconds()
+        q.unmarkIngredientNutritionReviewed(ingredient_id = ingredientId, updated_at = now)
+        val updated = q.selectIngredientNutrition(ingredientId).executeAsOneOrNull()
+        updated?.review == 0L
+    }
 
     /** 全量食材+营养(左连，供"食材营养表"页)。[AI生成] */
     suspend fun allIngredientNutrition(): List<com.sxdbsm.cookbook.domain.model.IngredientNutritionRow> = withContext(ioDispatcher) {

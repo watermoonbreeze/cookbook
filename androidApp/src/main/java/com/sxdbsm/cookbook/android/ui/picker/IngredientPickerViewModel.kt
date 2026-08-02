@@ -40,6 +40,10 @@ enum class IngredientMainTab(val label: String) {
     NUTRITION("营养"),
     CARE("调养"),
     CUSTOM("家庭"), // [AI修改] 用户自建食材分类，命名与菜品"家庭"一致
+    REVIEW("待复核"), // [AI生成] P2-1：待复核食材审核——动态追加 Tab，count>0 时出现
+    ;
+    /** Tab 是否条件显隐（待复核 count=0 时隐藏）。[AI生成] */
+    fun isConditional(): Boolean = this == REVIEW
 }
 
 /**
@@ -89,6 +93,9 @@ data class IngredientPickerUiState(
     val searchCategoryName: String? = null, // [AI生成] 2026-07-19：搜索整词命中类目名时的类目(搜"蔬菜类"→出该类目全部食材·按类目筛模式·头部提示·不显新建行)。
     val highlightIngredientId: Long? = null, // [AI生成] 搜索跳转后在网格中高亮定位的食材。
     val enabledCareCategoryIds: Set<Long> = emptySet(), // [AI生成] 用户已启用的健康档案病种(care 分类 id)，详情忌口区置顶高亮。
+    // [AI生成] P2-1 待复核审核
+    val pendingReviewCount: Long = 0,
+    val pendingReviewIngredients: List<Ingredient> = emptyList(),
 )
 
 private const val ALL_CATEGORY_ID = -1L // [AI生成] 虚拟分类：当前主分类下全部。
@@ -114,7 +121,7 @@ class IngredientPickerViewModel(
     private var currentIngredientPage: Int = 1 // [AI生成] 当前食材分页页码。
 
     // [AI修改] ViewModel 创建后立即加载分类和全部食材，页面首屏可直接显示。
-    init { loadCategories(); loadAllIngredients(); loadUnits(); loadPantryIds(); loadHealthProfiles() }
+    init { loadCategories(); loadAllIngredients(); loadUnits(); loadPantryIds(); loadHealthProfiles(); loadPendingReviewCount() }
 
     /**
      * 监听已启用健康档案病种，供详情忌口区置顶高亮。[AI生成]
@@ -181,6 +188,23 @@ class IngredientPickerViewModel(
         if (current.mainTab == tab && !force) return
         searchJob?.cancel()
         viewModelScope.launch {
+            if (tab == IngredientMainTab.REVIEW) {
+                // 待复核 Tab：独立数据源，无分类树·平铺列表
+                val pending = ingredientRepo.listPendingReview()
+                _state.value = _state.value.copy(
+                    mainTab = tab,
+                    keyword = "",
+                    selectedCategoryId = null,
+                    tree = emptyList(),
+                    searchResults = emptyList(),
+                    searchCategoryName = null,
+                    highlightIngredientId = null,
+                    pendingReviewIngredients = pending,
+                    pendingReviewCount = pending.size.toLong(),
+                )
+                applyIngredientResult(pending.filterNot { it.id in _state.value.excludeIngredientIds }, resetPage = true)
+                return@launch
+            }
             val allCategories = current.allCategories.ifEmpty { categoryRepo.listAll() }
             val tops = allCategories.filter { it.parentId == null }
             val ingredients = loadAllForTab(tab, "")
@@ -833,6 +857,74 @@ class IngredientPickerViewModel(
         refreshPantryState()
     }
 
+    // ═══════════════════════════════════════════════════
+    // P2-1 待复核审核
+    // ═══════════════════════════════════════════════════
+
+    /** 加载待复核食材计数（Badge 用）。[AI生成] */
+    fun loadPendingReviewCount() {
+        viewModelScope.launch {
+            val count = ingredientRepo.countPendingReview()
+            _state.value = _state.value.copy(pendingReviewCount = count)
+        }
+    }
+
+    /** 标记食材为已复核。[AI生成]
+     * @return true 成功，false 食材无营养数据 */
+    suspend fun markReviewed(ingredientId: Long): Boolean {
+        val ok = nutritionRepo.markReviewed(ingredientId)
+        if (ok) {
+            // 刷新待复核计数和列表
+            loadPendingReviewCount()
+            if (_state.value.mainTab == IngredientMainTab.REVIEW) {
+                val pending = ingredientRepo.listPendingReview()
+                _state.value = _state.value.copy(
+                    pendingReviewIngredients = pending,
+                    pendingReviewCount = pending.size.toLong(),
+                )
+                applyIngredientResult(pending.filterNot { it.id in _state.value.excludeIngredientIds }, resetPage = true)
+            }
+        }
+        return ok
+    }
+
+    /** 撤销已复核标记。[AI生成] */
+    suspend fun undoReviewed(ingredientId: Long): Boolean {
+        val ok = nutritionRepo.unmarkReviewed(ingredientId)
+        if (ok) {
+            loadPendingReviewCount()
+            if (_state.value.mainTab == IngredientMainTab.REVIEW) {
+                val pending = ingredientRepo.listPendingReview()
+                _state.value = _state.value.copy(
+                    pendingReviewIngredients = pending,
+                    pendingReviewCount = pending.size.toLong(),
+                )
+                applyIngredientResult(pending.filterNot { it.id in _state.value.excludeIngredientIds }, resetPage = true)
+            }
+        }
+        return ok
+    }
+
+    /** 检查食材是否待复核（source=auto 且 nutrition review=0）。[AI生成] P2-1 */
+    suspend fun isPendingReview(ingredientId: Long): Boolean {
+        val ingredient = ingredientRepo.listPendingReview().find { it.id == ingredientId } ?: return false
+        val nutrition = nutritionRepo.ingredientNutrition(ingredientId)
+        return nutrition != null && !nutrition.review
+    }
+
+    /** 编辑保存后自动标记已复核。[AI生成] P2-1 用于 IngredientEditorDialog 的 onSave 回调尾调用 */
+    fun autoMarkReviewedIfNeeded(ingredientId: Long?) {
+        if (ingredientId == null || ingredientId <= 0) return
+        viewModelScope.launch {
+            // 仅 source=auto 且 review=0 时自动标记
+            val nutrition = nutritionRepo.ingredientNutrition(ingredientId)
+            if (nutrition != null && !nutrition.review) {
+                nutritionRepo.markReviewed(ingredientId)
+                loadPendingReviewCount()
+            }
+        }
+    }
+
     /** 刷新库存 id 集合 + 剩余份数(份数-今天及过去占用)。[AI生成] */
     private fun refreshPantryState() {
         viewModelScope.launch {
@@ -1101,6 +1193,7 @@ class IngredientPickerViewModel(
             IngredientMainTab.RECENT, IngredientMainTab.PANTRY -> this // [AI修改] 最近/库存保留全部来源。
             IngredientMainTab.CUSTOM -> filter { it.source == "user" }
             IngredientMainTab.GENERAL, IngredientMainTab.NUTRITION, IngredientMainTab.CARE -> filter { it.source != "user" }
+            IngredientMainTab.REVIEW -> this // [AI生成] P2-1 待复核：不过滤 source（本身已限定 source='auto'）
         }
 
     /**
@@ -1177,6 +1270,7 @@ class IngredientPickerViewModel(
                 .map { category ->
                     CategoryNode(category.copy(hasChildren = allCategories.any { it.parentId == category.id && it.source == "user" }), level = 1)
                 }
+            IngredientMainTab.REVIEW -> emptyList() // [AI生成] P2-1 待复核：无分类树
         }
 
     private fun List<FoodCategory>.filterForTab(tab: IngredientMainTab): List<FoodCategory> =
@@ -1186,6 +1280,7 @@ class IngredientPickerViewModel(
             IngredientMainTab.NUTRITION -> filter { it.matchesTab(tab) }
             IngredientMainTab.CARE -> filter { it.matchesTab(tab) }
             IngredientMainTab.CUSTOM -> filter { it.matchesTab(tab) }
+            IngredientMainTab.REVIEW -> emptyList() // [AI生成] P2-1 待复核：无分类过滤
         }
 
     private fun FoodCategory.matchesTab(tab: IngredientMainTab): Boolean =
@@ -1195,6 +1290,7 @@ class IngredientPickerViewModel(
             IngredientMainTab.NUTRITION -> dimension in nutritionDimensions
             IngredientMainTab.CARE -> dimension == "crowd" || crowdTypeId != null
             IngredientMainTab.CUSTOM -> source == "user"
+            IngredientMainTab.REVIEW -> false // [AI生成] P2-1 待复核：不按分类匹配
         }
 
     // [AI生成] 营养/调养顶部只显示真实标签节点，隐藏“健康饮食/人群分类”这类聚合根。
