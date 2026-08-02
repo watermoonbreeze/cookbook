@@ -4,6 +4,7 @@ import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.NutritionRepository
+import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.autogen.AutoGenContext
 import com.sxdbsm.cookbook.domain.autogen.DayAutoGenerator
 import com.sxdbsm.cookbook.domain.autogen.DishAutoGenerator
@@ -59,7 +60,7 @@ class MultiDayRecorder(
     private val mealRepo: MealRecordRepository,
     private val nutritionRepo: NutritionRepository,
     private val aliasResolver: IngredientAliasResolver,
-    private val autoGenContext: AutoGenContext, // [AI修改] Phase 3：预取字典由 DI 层注入
+    private val db: CookbookDatabase, // [AI修改] 每次 recordAll 新鲜 load AutoGenContext，避免 suspend 进 Koin + 确保字典反映最新 DB 状态
 ) {
     /**
      * 批量入库多天餐食。[AI修改] Phase 3：DayMealJson→Semantic*→DayAutoGenerator。
@@ -76,6 +77,9 @@ class MultiDayRecorder(
         @Suppress("UNUSED_PARAMETER") ingredientNames: List<String> = emptyList(),
         mergeMode: MergeMode = MergeMode.MERGE,
     ): MultiDayRecordResult = withContext(ioDispatcher) {
+        // 每次 recordAll 新鲜 load AutoGenContext（字典反映当前 DB 状态·避免 suspend 进 Koin）
+        val autoGenContext = AutoGenContext.load(db, aliasResolver)
+
         // 构建能力层
         val ingredientGen = IngredientAutoGenerator(ingredientRepo, nutritionRepo)
         val dishGen = DishAutoGenerator(dishRepo, ingredientGen)
