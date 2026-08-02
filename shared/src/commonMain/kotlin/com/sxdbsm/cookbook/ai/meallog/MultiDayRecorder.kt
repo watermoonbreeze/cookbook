@@ -6,6 +6,8 @@ import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.NutritionRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.autogen.AutoGenContext
+import com.sxdbsm.cookbook.domain.autogen.AutoGenPreview
+import com.sxdbsm.cookbook.domain.autogen.AutoGenResult
 import com.sxdbsm.cookbook.domain.autogen.DayAutoGenerator
 import com.sxdbsm.cookbook.domain.autogen.DishAutoGenerator
 import com.sxdbsm.cookbook.domain.autogen.IngredientAliasResolver
@@ -60,8 +62,78 @@ class MultiDayRecorder(
     private val mealRepo: MealRecordRepository,
     private val nutritionRepo: NutritionRepository,
     private val aliasResolver: IngredientAliasResolver,
-    private val db: CookbookDatabase, // [AI修改] 每次 recordAll 新鲜 load AutoGenContext，避免 suspend 进 Koin + 确保字典反映最新 DB 状态
+    private val db: CookbookDatabase, // [AI修改] 每次新鲜 load AutoGenContext，避免 suspend 进 Koin + 确保字典反映最新 DB 状态
 ) {
+
+    /** DayMealJson → SemanticDay 映射（供 recordAll / previewAll 共用）。[AI修改] */
+    private fun toSemanticDay(dayJson: DayMealJson): SemanticDay = SemanticDay(
+        date = dayJson.date,
+        dateOffset = dayJson.date_offset,
+        meals = dayJson.meals.map { mealJson ->
+            SemanticMeal(
+                mealTypeCode = mealJson.meal_type,
+                mealTime = mealJson.meal_time,
+                note = mealJson.note,
+                dishes = mealJson.dishes.map { dishRef ->
+                    val dishName = dishRef.name.ifBlank { dishRef.dish?.name ?: "" }
+                    val dishJson = dishRef.dish
+                    SemanticDish(
+                        name = dishName,
+                        ingredients = dishJson?.ingredients?.map { diJson ->
+                            val ingredientName = diJson.ref ?: diJson.food?.name ?: ""
+                            SemanticIngredient(
+                                name = ingredientName,
+                                quantity = diJson.quantity,
+                                unit = diJson.unit,
+                                isMain = diJson.is_main,
+                            )
+                        } ?: emptyList(),
+                        cookingMethods = dishJson?.cooking_methods ?: emptyList(),
+                        tags = dishJson?.tags ?: emptyList(),
+                        description = dishJson?.description ?: "",
+                        specialNote = dishJson?.special_note ?: "",
+                        eatenRatio = dishRef.eaten_ratio,
+                        source = dishJson?.source?.ifBlank { "ai" } ?: "ai",
+                    )
+                },
+            )
+        },
+    )
+
+    /** 构建能力层三件套（无上下文·用于 commit 阶段）。[AI修改] */
+    private fun buildDayGen(): DayAutoGenerator {
+        val ingredientGen = IngredientAutoGenerator(ingredientRepo, nutritionRepo)
+        val dishGen = DishAutoGenerator(dishRepo, ingredientGen)
+        return DayAutoGenerator(dishGen, mealRepo)
+    }
+
+    /**
+     * 只预览·零写库（P2-1 K1a：UI 确认前调用）。[AI修改]
+     *
+     * 解析 DayMealJson → SemanticDay → DayAutoGenerator.preview()，返回完整预览含营养估算。
+     */
+    suspend fun previewAll(
+        days: List<DayMealJson>,
+        today: LocalDate,
+    ): AutoGenPreview = withContext(ioDispatcher) {
+        val autoGenContext = AutoGenContext.load(db, aliasResolver)
+        val dayGen = buildDayGen()
+        val semanticDays = days.map { toSemanticDay(it) }
+        dayGen.preview(semanticDays, today, autoGenContext)
+    }
+
+    /**
+     * 提交预览结果入库（P2-1 K1a：用户确认后调用）。[AI修改]
+     *
+     * 接受 previewAll() 产出的 AutoGenPreview，执行 DayAutoGenerator.commit()。
+     */
+    suspend fun commitPreview(
+        preview: AutoGenPreview,
+        mergeMode: MergeMode = MergeMode.MERGE,
+    ): AutoGenResult = withContext(ioDispatcher) {
+        buildDayGen().commit(preview, mergeMode)
+    }
+
     /**
      * 批量入库多天餐食。[AI修改] Phase 3：DayMealJson→Semantic*→DayAutoGenerator。
      *
@@ -77,56 +149,10 @@ class MultiDayRecorder(
         @Suppress("UNUSED_PARAMETER") ingredientNames: List<String> = emptyList(),
         mergeMode: MergeMode = MergeMode.MERGE,
     ): MultiDayRecordResult = withContext(ioDispatcher) {
-        // 每次 recordAll 新鲜 load AutoGenContext（字典反映当前 DB 状态·避免 suspend 进 Koin）
-        val autoGenContext = AutoGenContext.load(db, aliasResolver)
-
-        // 构建能力层
-        val ingredientGen = IngredientAutoGenerator(ingredientRepo, nutritionRepo)
-        val dishGen = DishAutoGenerator(dishRepo, ingredientGen)
-        val dayGen = DayAutoGenerator(dishGen, mealRepo)
-
-        // DayMealJson → SemanticDay
-        val semanticDays = days.map { dayJson ->
-            SemanticDay(
-                date = dayJson.date,
-                dateOffset = dayJson.date_offset,
-                meals = dayJson.meals.map { mealJson ->
-                    SemanticMeal(
-                        mealTypeCode = mealJson.meal_type,
-                        mealTime = mealJson.meal_time,
-                        note = mealJson.note,
-                        dishes = mealJson.dishes.map { dishRef ->
-                            val dishName = dishRef.name.ifBlank { dishRef.dish?.name ?: "" }
-                            val dishJson = dishRef.dish
-                            SemanticDish(
-                                name = dishName,
-                                ingredients = dishJson?.ingredients?.map { diJson ->
-                                    val ingredientName = diJson.ref
-                                        ?: diJson.food?.name ?: ""
-                                    SemanticIngredient(
-                                        name = ingredientName,
-                                        quantity = diJson.quantity,
-                                        unit = diJson.unit,
-                                        isMain = diJson.is_main,
-                                    )
-                                } ?: emptyList(),
-                                cookingMethods = dishJson?.cooking_methods ?: emptyList(),
-                                tags = dishJson?.tags ?: emptyList(),
-                                description = dishJson?.description ?: "",
-                                specialNote = dishJson?.special_note ?: "",
-                                eatenRatio = dishRef.eaten_ratio,
-                                source = dishJson?.source?.ifBlank { "ai" } ?: "ai",
-                            )
-                        },
-                    )
-                },
-            )
-        }
-
         // 委托给能力层（skip preview→直接 commit·K1 无需确认页）
         // B2 修复：先 capture preview 取各天日期，再 commit，按实际日期构建逐天结果
-        val autoGenPreview = dayGen.preview(semanticDays, today, autoGenContext)
-        val result = dayGen.commit(preview = autoGenPreview, mergeMode = mergeMode)
+        val autoGenPreview = previewAll(days, today)
+        val result = buildDayGen().commit(preview = autoGenPreview, mergeMode = mergeMode)
 
         // 按 preview 中每天的实际日期构建 DayRecordResult（不再硬编码 today）
         // 总计数平均分配到各天（AutoGenResult 无逐天明细，此为最优近似）

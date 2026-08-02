@@ -78,6 +78,6 @@ val androidModule = module {
     viewModel { com.sxdbsm.cookbook.android.ui.sync.DeviceSyncViewModel(get(), get()) } // [AI修改] 双设备同传(整库替换/选择性合并)。
     viewModel { com.sxdbsm.cookbook.android.ui.ai.AiPlanViewModel(get(), get(), get(), get(), get(), get()) } // [AI生成] 周期规划(取数/餐食/AI运行时/AI配置/偏好/§9.36 NutritionRepository 每菜营养)。
     viewModel { com.sxdbsm.cookbook.android.ui.cook.CookModeViewModel(get()) } // [AI生成] D1:分步烹饪页薄 VM(数据访问收进 VM·F-Arch3)。
-    // [AI生成] K1 AI快捷输入记餐：参数化 VM（initialText 由调用方传入）
+    // [AI修改] K1 AI快捷输入记餐：参数化 VM（P2-1 K1a：第4个 get() 改为 MultiDayRecorder·支持 preview/commit 两阶段）
     viewModel { (initialText: String) -> com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel(initialText, get(), get(), get(), get()) }
 }
