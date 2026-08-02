@@ -124,23 +124,27 @@ class MultiDayRecorder(
         }
 
         // 委托给能力层（skip preview→直接 commit·K1 无需确认页）
-        val result = dayGen.commit(
-            preview = dayGen.preview(semanticDays, today, autoGenContext),
-            mergeMode = mergeMode,
-        )
+        // B2 修复：先 capture preview 取各天日期，再 commit，按实际日期构建逐天结果
+        val autoGenPreview = dayGen.preview(semanticDays, today, autoGenContext)
+        val result = dayGen.commit(preview = autoGenPreview, mergeMode = mergeMode)
 
-        // AutoGenResult → MultiDayRecordResult
+        // 按 preview 中每天的实际日期构建 DayRecordResult（不再硬编码 today）
+        // 总计数平均分配到各天（AutoGenResult 无逐天明细，此为最优近似）
+        val savedDays = autoGenPreview.days
+        val dayCount = savedDays.size.coerceAtLeast(1)
+        val dayResults = savedDays.map { dayPreview ->
+            DayRecordResult(
+                date = dayPreview.date,
+                mealsSaved = result.mealsSaved / dayCount,
+                dishesCreated = result.dishesCreated / dayCount,
+                ingredientsCreated = result.ingredientsCreated / dayCount,
+                ingredientNamesCreated = result.createdIngredientNames,
+                dishNamesCreated = result.createdDishNames,
+            )
+        }
+
         MultiDayRecordResult(
-            days = listOf(
-                DayRecordResult(
-                    date = today,
-                    mealsSaved = result.mealsSaved,
-                    dishesCreated = result.dishesCreated,
-                    ingredientsCreated = result.ingredientsCreated,
-                    ingredientNamesCreated = result.createdIngredientNames,
-                    dishNamesCreated = result.createdDishNames,
-                )
-            ),
+            days = dayResults,
             totalMealsSaved = result.mealsSaved,
             totalDishesCreated = result.dishesCreated,
             totalIngredientsCreated = result.ingredientsCreated,

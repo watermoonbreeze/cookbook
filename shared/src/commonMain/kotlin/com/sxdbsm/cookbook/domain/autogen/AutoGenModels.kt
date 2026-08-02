@@ -92,6 +92,8 @@ data class DishPreview(
     val source: String,
     /** 由营养估算×克数汇总·全缺料→null(显"营养待完善"非"约0") */
     val estimatedKcal: Double?,
+    /** 从 SemanticDish 透传·commit 后回填 eaten_ratio·null 或 1.0 跳过 */
+    val eatenRatio: Double? = null,
 )
 
 /** 餐次预览。[AI生成] */

@@ -92,8 +92,8 @@ class IngredientAutoGenerator(
         // 营养推演
         val guessedNutrition = NutritionGuesser.guess(normalized, ctx.nutritionCandidates, group)
 
-        // 默认克数：调料用小值、普通食材按大类
-        val isSeasoning = nameKey in ctx.seasoningNames || group == null
+        // 默认克数：调料用小值、普通食材按大类；group==null 仅代表未归类·不等于调料
+        val isSeasoning = nameKey in ctx.seasoningNames
         val defaultQty = SeasoningDefaults.defaultGramFor(normalized, isSeasoning).toDouble()
 
         IngredientPreview(

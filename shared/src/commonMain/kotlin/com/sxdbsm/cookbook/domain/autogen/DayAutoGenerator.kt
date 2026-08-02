@@ -115,30 +115,42 @@ class DayAutoGenerator(
         var daysSaved = 0
         var mealsSaved = 0
 
-        // dishName → dishId 跨天缓存（同菜只建一次）
+        // dishName → dishId 跨天缓存（同菜只建一次；统计与缓存分离避免 reused 漏计）
         val dishIdCache = mutableMapOf<String, Long>()
 
         for (day in preview.days) {
             val drafts = mutableListOf<DayMealDraft>()
+            // (mealTypeId, dishName) → eatenRatio：收集非 1.0 的食用比例，saveDayMeals 后回填
+            val eatenRatioMap = mutableMapOf<Pair<Long, String>, Double>()
 
             for (meal in day.meals) {
                 val dishIds = mutableListOf<Long>()
 
                 for (dish in meal.dishes) {
+                    val alreadyCached = dish.inputName in dishIdCache
                     val dishId = dishIdCache.getOrPut(dish.inputName) {
                         if (dish.resolution == ResolveKind.REUSE) {
-                            totalDishesReused++
                             dish.existingId ?: 0L
                         } else {
                             val id = dishGen.commit(dish)
-                            if (id > 0) {
-                                totalDishesCreated++
-                                createdDishNames.add(dish.inputName)
-                            }
+                            if (id > 0) createdDishNames.add(dish.inputName)
                             id
                         }
                     }
+                    // 统计：无论是否命中缓存，每次出现都计一次（B3 修复：统计与缓存解耦）
+                    if (dish.resolution == ResolveKind.REUSE || alreadyCached) {
+                        totalDishesReused++
+                    } else if (dishId > 0) {
+                        totalDishesCreated++
+                    }
+
                     if (dishId > 0) dishIds.add(dishId)
+
+                    // 收集 eaten_ratio（非 1.0 才需要回填）
+                    val ratio = dish.eatenRatio
+                    if (ratio != null && ratio != 1.0) {
+                        eatenRatioMap[meal.mealTypeId to dish.inputName] = ratio
+                    }
 
                     // 统计食材
                     for (ip in dish.ingredients) {
@@ -182,6 +194,19 @@ class DayAutoGenerator(
             if (recordIds.isNotEmpty()) {
                 daysSaved++
                 mealsSaved += mergedDrafts.size
+            }
+
+            // A1 修复：回填 eaten_ratio（参照 AiMealRecorder.backfillEatenRatios 实现）
+            if (eatenRatioMap.isNotEmpty()) {
+                val savedMeals = mealRepo.loadDayMealsForEdit(day.date)
+                for (savedMeal in savedMeals) {
+                    for (savedDish in savedMeal.dishes) {
+                        val ratio = eatenRatioMap[savedMeal.mealTypeId to savedDish.name]
+                        if (ratio != null) {
+                            mealRepo.setEatenRatio(savedMeal.mealRecordId, savedDish.id, ratio)
+                        }
+                    }
+                }
             }
         }
 

@@ -57,6 +57,7 @@ class DishAutoGenerator(
                 ingredients = emptyList(), // REUSE 不需要逐料展开
                 source = input.source,
                 estimatedKcal = null, // REUSE 不重算
+                eatenRatio = input.eatenRatio,
             )
         }
 
@@ -96,6 +97,7 @@ class DishAutoGenerator(
             ingredients = ingredientPreviews,
             source = input.source,
             estimatedKcal = estimatedKcal,
+            eatenRatio = input.eatenRatio,
         )
     }
 
