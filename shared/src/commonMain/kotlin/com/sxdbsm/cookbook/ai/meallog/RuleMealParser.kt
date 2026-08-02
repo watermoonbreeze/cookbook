@@ -355,10 +355,18 @@ object RuleMealParser {
         var t = text.trim()
         if (t.isEmpty()) return MealDishRefJson(name = text)
 
-        // 1. 括号说明→note
+        // 1. 括号内容→食材提示+note。[AI修改] "凉皮（黄瓜丝+绿豆芽）"→食材含黄瓜丝+绿豆芽
         var note = ""
+        val parenIngredients = mutableListOf<IngredientNameExtractor.ExtractedIngredient>()
         PAREN_NOTE.find(t)?.let { match ->
-            note = match.groupValues[1].trim()
+            val parenText = match.groupValues[1].trim()
+            // 括号内是食材说明（含+或、或纯中文≥2字）→拆为食材
+            if (parenText.any { it in setOf('+', '、', '，', ' ') } || parenText.length >= 2) {
+                val segments = parenText.split(Regex("""[+、， ]+""")).map { it.trim() }.filter { it.isNotBlank() }
+                parenIngredients.addAll(segments.map { IngredientNameExtractor.ExtractedIngredient(it, inLibrary = false) })
+            } else {
+                note = parenText  // 纯备注（如"加热""少盐"）
+            }
             t = t.replace(match.value, "").trim()
         }
 
@@ -387,8 +395,12 @@ object RuleMealParser {
         // 5. 烹饪方式提取（从菜名中识别做法关键词）
         val cookingMethods = extractCookingMethods(name)
 
-        // 6. 食材推演
-        val extracted = IngredientNameExtractor.extract(name, libraryNames)
+        // 6. 食材推演（IngredientNameExtractor + 括号食材合并）[AI修改]
+        val extracted = IngredientNameExtractor.extract(name, libraryNames).toMutableList()
+        // 合并括号内食材（去重·同名不重复）
+        for (pi in parenIngredients) {
+            if (extracted.none { it.name == pi.name }) extracted.add(pi)
+        }
         val dishJson = if (extracted.isNotEmpty()) {
             DishJson(
                 name = name,

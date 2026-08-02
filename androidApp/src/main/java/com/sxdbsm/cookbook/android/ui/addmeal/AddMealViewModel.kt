@@ -544,6 +544,14 @@ class AddMealViewModel(
     /**
      * 实际执行日期回填；调用方负责管理 loadJob，避免配置任务被自己取消。[AI生成]
      */
+    /** [AI修改] AI 记餐保存后触发重新加载当前日期的餐食 */
+    fun reloadAfterAiSave(date: LocalDate) {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            loadMealsForDateInternal(date)
+        }
+    }
+
     private suspend fun loadMealsForDateInternal(date: LocalDate) {
         AppLogger.d(TAG, "load meals begin: date=$date") // [AI生成] 记录数据库加载日期，排查未保存编辑被覆盖。
         val existingMeals = mealRepo.loadDayMealsForEdit(date)

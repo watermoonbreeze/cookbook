@@ -570,13 +570,14 @@ fun AddDayFoodScreen(
 
     // [AI生成] K1 AI快捷输入记餐 Sheet：始终可见，ViewModel 参数化传入空初始文本
     if (aiSheetOpen) {
-        val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel { parametersOf("") }
+        val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel { parametersOf("", state.date) }
         com.sxdbsm.cookbook.android.ui.ai.AiMealInputSheet(
             vm = aiVm,
             onDismiss = { aiSheetOpen = false },
             onSaved = { savedState ->
                 // AI 保存成功后，刷新当前页面以显示新记录
                 AppLogger.d("MealFlow", "AI meal saved: ${savedState.autoGenResult?.mealsSaved} meals, date=${savedState.targetDate}")
+                vm.reloadAfterAiSave(savedState.targetDate)
             },
         )
     }

@@ -69,6 +69,7 @@ data class AiMealInputUiState(
 
 class AiMealInputViewModel(
     private val initialText: String,
+    targetDate: LocalDate,  // [AI修改] 从食历当前日期传入，替代硬编码 _state.value.targetDate
     private val aiRuntime: AiRuntime,
     private val config: AiRuntimeConfig,
     private val recorder: MultiDayRecorder,
@@ -76,7 +77,7 @@ class AiMealInputViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        AiMealInputUiState(inputText = initialText)
+        AiMealInputUiState(inputText = initialText, targetDate = targetDate)
     )
     val state: StateFlow<AiMealInputUiState> = _state.asStateFlow()
 
@@ -180,7 +181,7 @@ class AiMealInputViewModel(
             }
 
             // Step 2: preview（含营养估算）
-            val today = DateTime.today()
+            val today = _state.value.targetDate
             try {
                 val preview = recorder.previewAll(days, today)
                 if (preview.days.isEmpty()) {
@@ -232,7 +233,7 @@ class AiMealInputViewModel(
         // 规则兜底
         com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput", "AI parse returned null/empty, fallback to RuleMealParser")
         val names = ingredientRepo.allActiveNames()
-        val ruleDays = RuleMealParser.parse(text, names, today = DateTime.today())
+        val ruleDays = RuleMealParser.parse(text, names, today = _state.value.targetDate)
         com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput",
             "RuleMealParser: ${ruleDays.size} day(s), ${ruleDays.sumOf { it.meals.size }} meal(s), ${ruleDays.sumOf { it.meals.sumOf { m -> m.dishes.size } }} dish(es)")
         return ruleDays
@@ -240,7 +241,7 @@ class AiMealInputViewModel(
 
     /** AI 解析·返回 DayMealJson 列表。[AI修改] 改用 parseToDayMealJsonList() 直接产出统一格式 */
     private suspend fun parseWithAi(text: String): List<DayMealJson>? {
-        val today = DateTime.today()
+        val today = _state.value.targetDate
         val now = DateTime.nowTime()
         val weekday = weekdayChinese(today.dayOfWeek)
         val request = AiMealPrompt.buildRequest(
