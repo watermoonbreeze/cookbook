@@ -16,7 +16,9 @@ import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.data.repository.ShoppingListRepository
 import com.sxdbsm.cookbook.data.repository.StepTemplateRepository
 import com.sxdbsm.cookbook.data.seed.PresetDataSeeder
+import com.sxdbsm.cookbook.data.seed.SeedResourceLoader
 import com.sxdbsm.cookbook.db.CookbookDatabase
+import com.sxdbsm.cookbook.domain.autogen.IngredientAliasResolver
 import com.sxdbsm.cookbook.platform.DatabaseDriverFactory
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -54,6 +56,10 @@ val sharedModule: Module = module {
     single { RecommendationOrchestrator(get()) }
     // [AI生成] K1 AI快捷输入记餐：入库编排 UseCase（shared 纯逻辑，调已有 Repo）
     single { com.sxdbsm.cookbook.ai.meallog.AiMealRecorder(get(), get(), get()) }
+    // [AI生成] K1f 别名归一·从 seed JSON 构建·静态不变·可单测
+    single { IngredientAliasResolver.fromJson(SeedResourceLoader.readText("seed/ingredient_aliases.json") ?: "{}") }
+    // [AI生成] 自动化基础能力层 Phase 1-4 入库适配器；AutoGenContext 在 recordAll 内按需 load（保持字典新鲜）
+    single { com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder(get(), get(), get(), get(), get(), get()) }
     // [AI生成] 选择性同步：导出/合并导入 菜品/食材/库存/健康/收藏/餐食。
     single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     // [AI生成] 阶段3 匿名统计埋点抽象层：Analytics=同意闸门(默认关·App 启动读偏好 setEnabled、设置开关驱动)。

@@ -75,11 +75,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.sxdbsm.cookbook.ai.meallog.AiParsedMeal
-import com.sxdbsm.cookbook.ai.meallog.AiParsedDish
 import com.sxdbsm.cookbook.android.ai.VoiceRecognizer
+import com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled
+import com.sxdbsm.cookbook.domain.autogen.DishPreview
+import com.sxdbsm.cookbook.domain.autogen.MealPreview
+import com.sxdbsm.cookbook.domain.autogen.ResolveKind
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
+import kotlin.math.roundToInt
 
 /**
  * @File : AiMealInputSheet
@@ -640,10 +643,17 @@ private fun ParsingPhase() {
     }
 }
 
-/** 预览确认阶段。[AI生成] */
+/** 预览确认阶段。[AI修改] P2-1 K1a+QA-B1：直接渲染 autoGenPreview 所有天/餐次，与 commit 范围完全一致。 */
 @Composable
 private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
-    val parsed = state.parsedResult ?: return
+    val preview = state.autoGenPreview ?: return
+
+    val newIngredientCount = remember(preview) {
+        preview.days.flatMap { it.meals }.flatMap { it.dishes }
+            .sumOf { dp -> dp.ingredients.count { it.resolution == ResolveKind.CREATE } }
+    }
+
+    val isMultiDay = preview.days.size > 1
 
     Column(
         modifier = Modifier
@@ -658,7 +668,7 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "确认这餐",
+                text = if (isMultiDay) "确认记录（${preview.days.size} 天）" else "确认这餐",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
             )
@@ -667,37 +677,45 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             }
         }
 
-        Spacer(Modifier.height(4.dp))
-
-        // 日期
-        Text(
-            text = "📅 ${state.targetDate}${weekdayLabel(state.targetDate)}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        if (!isMultiDay) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "📅 ${state.targetDate}${weekdayLabel(state.targetDate)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
 
         Spacer(Modifier.height(12.dp))
 
-        // 餐次卡片（可滚动）
+        // 餐次卡片（可滚动）—— 直接遍历 preview.days，与实际 commit 范围完全一致
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 350.dp)
+                .heightIn(max = 380.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            parsed.meals.forEach { meal ->
-                MealCard(meal)
+            preview.days.forEach { dayPreview ->
+                if (isMultiDay) {
+                    Text(
+                        text = "📅 ${dayPreview.date}${weekdayLabel(dayPreview.date)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 4.dp),
+                    )
+                }
+                dayPreview.meals.forEach { meal ->
+                    MealPreviewCard(meal)
+                }
             }
         }
 
         Spacer(Modifier.height(12.dp))
 
-        // 自动创建提示
-        val newDishes = parsed.meals.flatMap { it.dishes }.filter { dish ->
-            dish.ingredients.isNotEmpty()
-        }
-        if (newDishes.isNotEmpty()) {
+        // 新建食材提示
+        if (newIngredientCount > 0) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -706,7 +724,7 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                 shape = RoundedCornerShape(8.dp),
             ) {
                 Text(
-                    text = "💡 ${newDishes.size} 道菜含 AI 推断的食材（营养为估算值）",
+                    text = "将新建 $newIngredientCount 种食材，营养为估算值，可在食材管理中复核",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(12.dp),
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -739,9 +757,11 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     }
 }
 
-/** 单餐次卡片。[AI生成] */
+/** 单餐次卡片（基于能力层 MealPreview 直接渲染）。[AI修改] P2-1 K1a+QA-B1/B2 */
 @Composable
-private fun MealCard(meal: AiParsedMeal) {
+private fun MealPreviewCard(meal: MealPreview) {
+    val calorieOn by rememberCalorieNumberEnabled()
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -757,17 +777,15 @@ private fun MealCard(meal: AiParsedMeal) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = mealTypeLabel(meal.meal_type),
+                    text = mealTypeLabel(meal.mealTypeCode),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
-                meal.meal_time?.let {
-                    Text(
-                        text = "🕐 $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                Text(
+                    text = "🕐 ${meal.mealTime}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
             // 备注
@@ -782,36 +800,72 @@ private fun MealCard(meal: AiParsedMeal) {
 
             Spacer(Modifier.height(8.dp))
 
-            // 菜品列表
-            meal.dishes.forEach { dish ->
-                Row(
+            // 菜品列表（含热量 + 「新」标）—— 直接从 DishPreview 取，无 Map 查找
+            meal.dishes.forEach { dishPreview ->
+                val isNew = dishPreview.resolution == ResolveKind.CREATE
+                val kcal = dishPreview.estimatedKcal
+
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 2.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .padding(vertical = 3.dp),
                 ) {
-                    Text(
-                        text = dish.name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f),
-                    )
-                    // 份量
-                    if (dish.quantity != 1.0 || dish.quantity_unit != "份") {
-                        Text(
-                            text = "×${formatQuantity(dish.quantity)}${dish.quantity_unit}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    // 食用比例
-                    dish.eaten_ratio?.let { ratio ->
-                        if (ratio != 1.0) {
+                    // 第一行：菜名 + 「新」标 + 食用比例
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f),
+                        ) {
                             Text(
-                                text = " (${eatenLabel(ratio)})",
+                                text = dishPreview.inputName,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            if (isNew) {
+                                Spacer(Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                ) {
+                                    Text(
+                                        text = "新",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                                    )
+                                }
+                            }
+                        }
+                        // 食用比例
+                        val ratio = dishPreview.eatenRatio
+                        if (ratio != null && ratio != 1.0) {
+                            Text(
+                                text = "(${eatenLabel(ratio)})",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
+                    }
+
+                    // 第二行：热量（受开关）
+                    val kcalText = if (calorieOn && kcal != null && kcal > 0.0) {
+                        "整份约 ${kcal.roundToInt()} 千卡（估算）"
+                    } else if (kcal == null || kcal <= 0.0) {
+                        "营养待完善"
+                    } else {
+                        null
+                    }
+                    if (kcalText != null) {
+                        Text(
+                            text = kcalText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(top = 1.dp),
+                        )
                     }
                 }
             }

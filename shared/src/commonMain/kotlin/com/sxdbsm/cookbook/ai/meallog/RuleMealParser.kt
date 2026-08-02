@@ -1,6 +1,8 @@
 package com.sxdbsm.cookbook.ai.meallog
 
 import com.sxdbsm.cookbook.domain.IngredientNameExtractor
+import com.sxdbsm.cookbook.util.DateTime
+import kotlinx.datetime.LocalDate
 
 /**
  * @File : RuleMealParser
@@ -76,21 +78,23 @@ object RuleMealParser {
     // ═══════════════════════════════════════════════════
 
     /**
-     * 解析用户输入为 DayMealJson 列表。[AI生成]
+     * 解析用户输入为 DayMealJson 列表。[AI修改] K1c：加 today 参数，支持 weekday→date_offset 推算。
      *
      * @param input 用户原始输入文本（内部会先过 TextNormalizer）
      * @param libraryIngredientNames 库内食材名列表（供 IngredientNameExtractor 匹配）
+     * @param today 当前日期，用于 weekday→offset 推算（默认 DateTime.today()）
      * @return 至少 1 个 DayMealJson（最差返回空 meals 的占位对象）
      */
     fun parse(
         input: String,
         libraryIngredientNames: List<String> = emptyList(),
+        today: LocalDate = DateTime.today(),
     ): List<DayMealJson> {
         val normalized = TextNormalizer.normalize(input)
         if (normalized.isBlank()) return listOf(DayMealJson(raw_input = input, parse_method = "rule"))
 
         val dayBlocks = TextSegmenter.segment(normalized)
-        return dayBlocks.map { block -> parseDayBlock(block, libraryIngredientNames) }
+        return dayBlocks.map { block -> parseDayBlock(block, libraryIngredientNames, today) }
     }
 
     // ═══════════════════════════════════════════════════
@@ -100,9 +104,10 @@ object RuleMealParser {
     private fun parseDayBlock(
         block: RawDayBlock,
         libraryNames: List<String>,
+        today: LocalDate,
     ): DayMealJson {
-        // 提取日期偏移
-        val dateOffset = extractDateOffset(block)
+        // 提取日期偏移（K1c：优先相对日期词，其次 weekday hint）
+        val dateOffset = extractDateOffset(block, today)
 
         // 按餐次关键词分段
         val mealBlocks = splitByMealKeywords(block.text)
@@ -120,20 +125,29 @@ object RuleMealParser {
         )
     }
 
-    /** 从 RawDayBlock 提取日期偏移。[AI生成] */
-    private fun extractDateOffset(block: RawDayBlock): Int {
-        // 相对日期关键词
+    /**
+     * 从 RawDayBlock 提取日期偏移。[AI修改] K1c：优先相对词（昨天/前天等），兜底用 weekday hint 推算。
+     *
+     * 注意：weekday 只取"最近过去"（≤0），不取未来。
+     */
+    private fun extractDateOffset(block: RawDayBlock, today: LocalDate): Int {
+        // 优先：文本内相对日期关键词
         val text = block.text
-        return when {
-            Regex("""大前天""").containsMatchIn(text) -> -3
-            Regex("""前[天日]|前天|前儿|前日""").containsMatchIn(text) -> -2
-            Regex("""昨[天日]|昨儿|昨个|夜来|夜个""").containsMatchIn(text) -> -1
-            Regex("""今[天日]|今儿|今个""").containsMatchIn(text) -> 0
-            Regex("""明[天日]|明儿|明个|赶明""").containsMatchIn(text) -> 1
-            Regex("""后[天日]|后儿|赶后""").containsMatchIn(text) -> 2
-            Regex("""大后天""").containsMatchIn(text) -> 3
-            else -> 0
+        when {
+            Regex("""大前天""").containsMatchIn(text) -> return -3
+            Regex("""前[天日]|前天|前儿|前日""").containsMatchIn(text) -> return -2
+            Regex("""昨[天日]|昨儿|昨个|夜来|夜个""").containsMatchIn(text) -> return -1
+            Regex("""今[天日]|今儿|今个""").containsMatchIn(text) -> return 0
+            Regex("""明[天日]|明儿|明个|赶明""").containsMatchIn(text) -> return 1
+            Regex("""后[天日]|后儿|赶后""").containsMatchIn(text) -> return 2
+            Regex("""大后天""").containsMatchIn(text) -> return 3
         }
+        // 兜底：块的 weekday hint（TextSegmenter 已解析出"周三"/"礼拜五"等）
+        val weekdayIso = TextSegmenter.weekdayToIso(block.weekdayHint)
+        if (weekdayIso != null) {
+            return TextSegmenter.weekdayToDateOffset(weekdayIso, today)
+        }
+        return 0
     }
 
     // ═══════════════════════════════════════════════════

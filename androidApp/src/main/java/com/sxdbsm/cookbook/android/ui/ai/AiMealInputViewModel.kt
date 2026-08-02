@@ -7,18 +7,20 @@ import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.meallog.AiMealParseResult
 import com.sxdbsm.cookbook.ai.meallog.AiMealParser
 import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
-import com.sxdbsm.cookbook.ai.meallog.AiMealRecorder
+import com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder
+import com.sxdbsm.cookbook.ai.meallog.RuleMealParser
+import com.sxdbsm.cookbook.ai.meallog.SchemaMigration
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
+import com.sxdbsm.cookbook.domain.autogen.AutoGenPreview
+import com.sxdbsm.cookbook.domain.autogen.AutoGenResult
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.plus
 
 /**
  * @File : AiMealInputViewModel
@@ -26,10 +28,10 @@ import kotlinx.datetime.plus
  * @Author : SXD-AI
  * @Desc : AI 快捷输入记餐 ViewModel
  * <p>
- * 状态机：输入 → 解析中 → 预览 → 保存中 → 完成/错误。
- * 复用 SwitchableAiRuntime 调 AI；失败走本地规则兜底。
+ * 状态机：输入 → 解析中 → 预览(含营养估算) → 保存中 → 完成/错误。
+ * P2-1 K1a：接入 MultiDayRecorder.previewAll/commitPreview 两阶段，预览阶段可展示热量。
  * <p>
- * [AI生成] K1 AI快捷输入记餐：ViewModel 层。
+ * [AI修改] P2-1 K1a AI快捷输入记餐：两阶段 preview/commit 接入。
  **/
 
 /** 输入模式。[AI生成] */
@@ -41,13 +43,15 @@ enum class AiMealPhase { INPUT, PARSING, PREVIEW, SAVING, DONE, ERROR }
 /** 语音识别状态。[AI生成] */
 enum class VoiceState { IDLE, LISTENING, PROCESSING, ERROR }
 
-/** UI 状态。[AI生成] */
+/** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 作两阶段主键，PreviewPhase 直接渲染能力层产出。 */
 data class AiMealInputUiState(
     val inputText: String = "",
     val inputMode: InputMode = InputMode.TEXT,
     val phase: AiMealPhase = AiMealPhase.INPUT,
-    val parsedResult: AiMealParseResult? = null,
-    val recordResult: AiMealRecorder.RecordResult? = null,
+    /** [AI修改] P2-1 K1a：preview 阶段存能力层产出（含营养估算）。 */
+    val autoGenPreview: AutoGenPreview? = null,
+    /** [AI修改] P2-1 K1a：commit 结果（替代旧 AiMealRecorder.RecordResult）。 */
+    val autoGenResult: AutoGenResult? = null,
     val errorMessage: String? = null,
     val voiceActive: Boolean = false,
     /** [AI修改] K2 语音识别精确状态：IDLE/录音中/处理中/出错 */
@@ -66,7 +70,7 @@ class AiMealInputViewModel(
     private val initialText: String,
     private val aiRuntime: AiRuntime,
     private val config: AiRuntimeConfig,
-    private val recorder: AiMealRecorder,
+    private val recorder: MultiDayRecorder,
     private val ingredientRepo: IngredientRepository,
 ) : ViewModel() {
 
@@ -144,7 +148,11 @@ class AiMealInputViewModel(
         }
     }
 
-    /** 发送输入进行解析。[AI修改] K2：AI优先→新RuleMealParser兜底 */
+    /**
+     * 发送输入进行解析并产出预览。[AI修改] P2-1 K1a：解析后调 previewAll()，存 autoGenPreview。
+     *
+     * 流程：AI/规则解析 → DayMealJson 列表 → previewAll(含营养估算) → PREVIEW 态。
+     */
     fun submit() {
         val text = _state.value.inputText.trim()
         if (text.isBlank()) return
@@ -152,47 +160,72 @@ class AiMealInputViewModel(
         _state.update { it.copy(phase = AiMealPhase.PARSING, errorMessage = null) }
 
         viewModelScope.launch {
-            // 先尝试 AI 解析
-            val aiResult: AiMealParseResult? = try {
-                if (config.isModelReady()) {
-                    parseWithAi(text)
-                } else null
+            // Step 1: 解析 → DayMealJson 列表
+            val days = try {
+                parseToDayMealJsonList(text)
             } catch (e: Exception) {
-                com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "AI parse failed: ${e.message}", e)
-                null
+                com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "parse failed: ${e.message}", e)
+                emptyList()
             }
 
-            // [AI修改] K2：AI失败→新RuleMealParser兜底（替代旧localFallback）
-            val parsed: AiMealParseResult = if (aiResult != null && aiResult.meals.isNotEmpty() && aiResult.meals.any { it.dishes.isNotEmpty() }) {
-                aiResult
-            } else {
-                // 用 RuleMealParser 解析，再转为旧 Schema（保持预览 UI 兼容）
-                val names = ingredientRepo.allActiveNames()
-                val dayMeals = com.sxdbsm.cookbook.ai.meallog.RuleMealParser.parse(text, names)
-                val firstDay = dayMeals.firstOrNull()
-                if (firstDay != null) {
-                    com.sxdbsm.cookbook.ai.meallog.SchemaMigration.toAiMealParseResult(firstDay)
-                } else {
-                    AiMealParseResult()
-                }
-            }
-
-            if (parsed.meals.isEmpty() || parsed.meals.all { it.dishes.isEmpty() }) {
+            if (days.isEmpty() || days.all { day -> day.meals.isEmpty() || day.meals.all { it.dishes.isEmpty() } }) {
                 _state.update {
                     it.copy(
                         phase = AiMealPhase.ERROR,
                         errorMessage = "没能识别出菜品，试试更具体的描述？\n如「中午吃了红烧肉和米饭」",
                     )
                 }
-            } else {
+                return@launch
+            }
+
+            // Step 2: preview（含营养估算）
+            val today = DateTime.today()
+            try {
+                val preview = recorder.previewAll(days, today)
+                if (preview.days.isEmpty()) {
+                    _state.update {
+                        it.copy(
+                            phase = AiMealPhase.ERROR,
+                            errorMessage = "没能识别出可记录的菜品，请重新描述",
+                        )
+                    }
+                } else {
+                    _state.update {
+                        it.copy(
+                            phase = AiMealPhase.PREVIEW,
+                            autoGenPreview = preview,
+                            targetDate = preview.days.firstOrNull()?.date ?: today,
+                        )
+                    }
+                }
+            } catch (e: Exception) {
                 _state.update {
                     it.copy(
-                        phase = AiMealPhase.PREVIEW,
-                        parsedResult = parsed,
-                        targetDate = resolveTargetDate(parsed.date_offset),
+                        phase = AiMealPhase.ERROR,
+                        errorMessage = "预览生成失败：${e.message ?: "未知错误"}",
                     )
                 }
             }
+        }
+    }
+
+    /** 解析文本 → DayMealJson 列表（AI 优先，失败走规则兜底）。[AI修改] P2-1 K1a */
+    private suspend fun parseToDayMealJsonList(text: String): List<com.sxdbsm.cookbook.ai.meallog.DayMealJson> {
+        // 先尝试 AI 解析
+        val aiResult: AiMealParseResult? = try {
+            if (config.isModelReady()) parseWithAi(text) else null
+        } catch (e: Exception) {
+            com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "AI parse failed: ${e.message}", e)
+            null
+        }
+
+        return if (aiResult != null && aiResult.meals.isNotEmpty() && aiResult.meals.any { it.dishes.isNotEmpty() }) {
+            // AI 成功：转 DayMealJson 列表（单天）
+            listOf(SchemaMigration.toDayMealJson(aiResult))
+        } else {
+            // 规则兜底：RuleMealParser 直接返回 DayMealJson 列表（K1c：传 today 支持 weekday 偏移）
+            val names = ingredientRepo.allActiveNames()
+            RuleMealParser.parse(text, names, today = DateTime.today())
         }
     }
 
@@ -211,23 +244,20 @@ class AiMealInputViewModel(
         return response.getOrNull()?.let { AiMealParser.parse(it) }
     }
 
-    /** 确认保存。[AI生成] */
+    /**
+     * 确认保存。[AI修改] P2-1 K1a：读 autoGenPreview 调 commitPreview()。
+     */
     fun confirmSave() {
-        val parsed = _state.value.parsedResult ?: return
+        val preview = _state.value.autoGenPreview ?: return
         _state.update { it.copy(phase = AiMealPhase.SAVING) }
 
         viewModelScope.launch {
             try {
-                val names = ingredientRepo.allActiveNames()
-                val result = recorder.record(
-                    parsed = parsed,
-                    today = DateTime.today(),
-                    ingredientNames = names,
-                )
+                val result = recorder.commitPreview(preview)
                 _state.update {
                     it.copy(
                         phase = AiMealPhase.DONE,
-                        recordResult = result,
+                        autoGenResult = result,
                     )
                 }
             } catch (e: Exception) {
@@ -258,17 +288,6 @@ class AiMealInputViewModel(
     /** 设置目标日期（预览页调整）。[AI生成] */
     fun setTargetDate(date: LocalDate) {
         _state.update { it.copy(targetDate = date) }
-    }
-
-    /** 偏移 → 日期。[AI生成] */
-    private fun resolveTargetDate(offset: Int): LocalDate {
-        val today = DateTime.today()
-        return when (offset) {
-            -2 -> today.plus(DatePeriod(days = -2))
-            -1 -> today.plus(DatePeriod(days = -1))
-            1 -> today.plus(DatePeriod(days = 1))
-            else -> today
-        }
     }
 
     /** 星期几→中文。[AI生成] */

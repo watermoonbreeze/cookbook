@@ -576,7 +576,7 @@ fun AddDayFoodScreen(
             onDismiss = { aiSheetOpen = false },
             onSaved = { savedState ->
                 // AI 保存成功后，刷新当前页面以显示新记录
-                AppLogger.d("MealFlow", "AI meal saved: ${savedState.recordResult?.mealsSaved} meals, targetDate=${savedState.recordResult?.targetDate}")
+                AppLogger.d("MealFlow", "AI meal saved: ${savedState.autoGenResult?.mealsSaved} meals, date=${savedState.targetDate}")
             },
         )
     }
