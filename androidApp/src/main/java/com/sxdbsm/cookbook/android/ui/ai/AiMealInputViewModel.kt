@@ -19,10 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.plus
 
 /**
  * @File : AiMealInputViewModel
@@ -45,12 +43,11 @@ enum class AiMealPhase { INPUT, PARSING, PREVIEW, SAVING, DONE, ERROR }
 /** 语音识别状态。[AI生成] */
 enum class VoiceState { IDLE, LISTENING, PROCESSING, ERROR }
 
-/** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 替代 parsedResult 作两阶段主键；保留 parsedResult 供旧预览 UI 使用。 */
+/** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 作两阶段主键，PreviewPhase 直接渲染能力层产出。 */
 data class AiMealInputUiState(
     val inputText: String = "",
     val inputMode: InputMode = InputMode.TEXT,
     val phase: AiMealPhase = AiMealPhase.INPUT,
-    val parsedResult: AiMealParseResult? = null,
     /** [AI修改] P2-1 K1a：preview 阶段存能力层产出（含营养估算）。 */
     val autoGenPreview: AutoGenPreview? = null,
     /** [AI修改] P2-1 K1a：commit 结果（替代旧 AiMealRecorder.RecordResult）。 */
@@ -193,14 +190,9 @@ class AiMealInputViewModel(
                         )
                     }
                 } else {
-                    // parsedResult 由第一天第一餐反向兼容产出，用于预览 UI 的餐次/菜名展示
-                    val parsedForUi = days.firstOrNull()?.let {
-                        com.sxdbsm.cookbook.ai.meallog.SchemaMigration.toAiMealParseResult(it)
-                    }
                     _state.update {
                         it.copy(
                             phase = AiMealPhase.PREVIEW,
-                            parsedResult = parsedForUi,
                             autoGenPreview = preview,
                             targetDate = preview.days.firstOrNull()?.date ?: today,
                         )
@@ -231,9 +223,9 @@ class AiMealInputViewModel(
             // AI 成功：转 DayMealJson 列表（单天）
             listOf(SchemaMigration.toDayMealJson(aiResult))
         } else {
-            // 规则兜底：RuleMealParser 直接返回 DayMealJson 列表
+            // 规则兜底：RuleMealParser 直接返回 DayMealJson 列表（K1c：传 today 支持 weekday 偏移）
             val names = ingredientRepo.allActiveNames()
-            RuleMealParser.parse(text, names)
+            RuleMealParser.parse(text, names, today = DateTime.today())
         }
     }
 
@@ -296,17 +288,6 @@ class AiMealInputViewModel(
     /** 设置目标日期（预览页调整）。[AI生成] */
     fun setTargetDate(date: LocalDate) {
         _state.update { it.copy(targetDate = date) }
-    }
-
-    /** 偏移 → 日期。[AI生成] */
-    private fun resolveTargetDate(offset: Int): LocalDate {
-        val today = DateTime.today()
-        return when (offset) {
-            -2 -> today.plus(DatePeriod(days = -2))
-            -1 -> today.plus(DatePeriod(days = -1))
-            1 -> today.plus(DatePeriod(days = 1))
-            else -> today
-        }
     }
 
     /** 星期几→中文。[AI生成] */

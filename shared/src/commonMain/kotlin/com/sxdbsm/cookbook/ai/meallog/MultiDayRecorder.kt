@@ -149,10 +149,8 @@ class MultiDayRecorder(
         @Suppress("UNUSED_PARAMETER") ingredientNames: List<String> = emptyList(),
         mergeMode: MergeMode = MergeMode.MERGE,
     ): MultiDayRecordResult = withContext(ioDispatcher) {
-        // 委托给能力层（skip preview→直接 commit·K1 无需确认页）
-        // B2 修复：先 capture preview 取各天日期，再 commit，按实际日期构建逐天结果
         val autoGenPreview = previewAll(days, today)
-        val result = buildDayGen().commit(preview = autoGenPreview, mergeMode = mergeMode)
+        val result = commitPreview(autoGenPreview, mergeMode)
 
         // 按 preview 中每天的实际日期构建 DayRecordResult（不再硬编码 today）
         // 总计数平均分配到各天（AutoGenResult 无逐天明细，此为最优近似）

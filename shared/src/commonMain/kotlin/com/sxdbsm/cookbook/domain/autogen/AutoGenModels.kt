@@ -99,6 +99,7 @@ data class DishPreview(
 /** 餐次预览。[AI生成] */
 data class MealPreview(
     val mealTypeId: Long,
+    val mealTypeCode: String,
     val mealTime: String,
     val note: String,
     val dishes: List<DishPreview>,

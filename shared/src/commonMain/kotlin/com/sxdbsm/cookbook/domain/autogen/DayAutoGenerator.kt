@@ -68,9 +68,11 @@ class DayAutoGenerator(
                 }
 
                 if (dishPreviews.isNotEmpty()) {
+                    val mealTypeCode = ctx.mealTypes.firstOrNull { it.id == mealTypeId }?.code ?: "LUNCH"
                     mealPreviews.add(
                         MealPreview(
                             mealTypeId = mealTypeId,
+                            mealTypeCode = mealTypeCode,
                             mealTime = mealTime.toString(),
                             note = meal.note,
                             dishes = dishPreviews,
