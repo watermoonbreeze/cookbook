@@ -8,11 +8,12 @@ import kotlinx.serialization.json.Json
  * @Author : SXD-AI
  * @Desc : AI 快捷输入记餐的 JSON 解析 + 校验 + 本地规则兜底
  * <p>
- * 解析 AI 返回的 JSON → AiMealParseResult；失败/非法时走本地规则兜底。
- * 本地兜底覆盖 ~65-75% 典型家庭输入（"中午吃了红烧肉""鸡蛋、米饭""三个包子"等短句）。
+ * 解析 AI 返回的 JSON，优先扁平格式(FlatMealJson→DayMealJson)，回退旧嵌套格式(AiMealParseResult)。
+ * 失败/非法时返回 null，上层走 RuleMealParser 本地规则兜底。
  * 纯函数，无副作用，可单测。
  * <p>
- * [AI生成] K1 AI快捷输入记餐：Parser 层。
+ * [AI修改] 修复 AI 模式 Schema 不匹配：AI 输出 items(FlatMealJson) vs Parser 期望 meals(AiMealParseResult)
+ * → 新增 parseToDayMealJsonList() 优先尝试扁平格式。
  **/
 object AiMealParser {
 
@@ -22,19 +23,50 @@ object AiMealParser {
     }
 
     /**
-     * 解析 AI 响应文本。[AI生成]
+     * 解析 AI 响应 → DayMealJson 列表。[AI修改]
+     *
+     * 优先尝试当前 AI prompt 的扁平格式(FlatMealJson)，
+     * 回退尝试旧嵌套格式(AiMealParseResult)，两者都失败返回 null。
      *
      * @param aiResponse AI 返回的原始文本（期望是纯 JSON）
-     * @return 解析成功→result；失败→null（上层走兜底）
+     * @return 至少 1 个 DayMealJson；null=解析失败（上层走规则兜底）
+     */
+    fun parseToDayMealJsonList(aiResponse: String): List<DayMealJson>? {
+        val trimmed = aiResponse.trim()
+        if (trimmed.isEmpty()) return null
+        val jsonText = extractJson(trimmed)
+        if (jsonText.isBlank()) return null
+
+        // ① 优先：扁平格式 FlatMealJson（当前 AI prompt 的输出格式）
+        val flatResult = runCatching {
+            json.decodeFromString<FlatMealJson>(jsonText)
+        }.getOrNull()
+        if (flatResult != null && flatResult.items.isNotEmpty()) {
+            return FlatToDayMealConverter.convert(flatResult)
+        }
+
+        // ② 回退：旧嵌套格式 AiMealParseResult（向后兼容旧 prompt）
+        val oldResult = runCatching {
+            json.decodeFromString<AiMealParseResult>(jsonText)
+        }.getOrNull()
+        if (oldResult != null && oldResult.meals.isNotEmpty() && oldResult.meals.none { it.dishes.isEmpty() }) {
+            return listOf(SchemaMigration.toDayMealJson(oldResult))
+        }
+
+        return null
+    }
+
+    /**
+     * 解析 AI 响应 → AiMealParseResult（旧接口·保留兼容）。[AI生成]
+     *
+     * @deprecated 新代码建议用 parseToDayMealJsonList()
      */
     fun parse(aiResponse: String): AiMealParseResult? {
         val trimmed = aiResponse.trim()
         if (trimmed.isEmpty()) return null
-        // AI 有时会在 JSON 前后加 markdown 代码块标记，先剥离
         val jsonText = extractJson(trimmed)
         return runCatching {
             val result = json.decodeFromString<AiMealParseResult>(jsonText)
-            // 校验：至少有一餐 + 每餐至少一道菜
             if (result.meals.isEmpty() || result.meals.any { it.dishes.isEmpty() }) return null
             result
         }.getOrNull()
