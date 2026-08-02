@@ -1,76 +1,47 @@
-# 🔖 SESSION 交接入口（新会话先读这里）
+# 🔖 SESSION 交接入口
 
-> 交接唯一固定入口。维护约定：只保留当前状态·每次**全覆盖**。
-> 更新时间：**2026-08-02 · AI记一餐解析Bug排查完成·待修复**
-
----
-
-## 🎯 本次 Session 成果
-
-| 事项 | 状态 |
-|------|------|
-| 拉取真机数据库（`GCL0220212004523`）→ `temp/claude/phone_cookbook.db` | ✅ |
-| AI 记一餐解析全链路 Bug 排查 + 根因定位 | ✅ |
-| **排查报告**：`.ai-context/docs/feature/20260802_AI记一餐解析全链路错误_排查报告.md` | ✅ |
-| **修复方案**：`.claude/plans/velvet-finding-quill.md` | ✅ 已批准 |
-| 编码自查铁律提炼 → `~/.ai-context/knowledge/coding_selfcheck.md` | ✅ |
+> 更新时间：**2026-08-02 23:15** · 本轮 6 个 commit 全部推送
 
 ---
 
-## ⏭ 下一个 Session 做什么
+## 🎯 本次 Session 成果总览
 
-### 立即执行：修复 3 个 Bug（方案已批准·未动代码）
+| # | 内容 | Commit | 状态 |
+|---|------|--------|------|
+| 1 | 吃/喝动词剥离+软分隔修复 | `8b22f540` | ✅ |
+| 2 | EatDrinkStripper 类别化算法 | `8b22f540` | ✅ |
+| 3 | FlatToDayMealConverter 打通 AI | `382427b2` | ✅ |
+| 4 | CloudAi max_tokens 4096 | `fcee60bf` | ✅ |
+| 5 | 日期上下文+括号解析+刷新+Prompt 精简 | `ebf17efc` | ✅ |
+| 6 | 待办补充+真机验证清单 | 待提交 | ⬜ |
 
-| # | Bug | 文件 | 严重度 |
-|---|-----|------|--------|
-| **1** | 吃/喝动词未被剥离 → "吃了"成为菜名和食材 | `RuleMealParser.kt` | 🔴 阻断 |
-| **2** | `splitSoft()` 单字分隔词"和""跟"被 `couldBeDish` 误杀 | `RuleMealParser.kt` | 🔴 阻断 |
-| **3** | 语音 `VoiceRecognizer` 实例不匹配，松手永不停止 | `AiMealInputSheet.kt` | 🟡 建议 |
-
-**详细修复方案** 在排查报告 §五，代码级方案在 `velvet-finding-quill.md`。
-
-### 修复步骤
-
-1. **读排查报告** → `.ai-context/docs/feature/20260802_AI记一餐解析全链路错误_排查报告.md`（全文·含全链路追踪）
-2. **读修复方案** → `.claude/plans/velvet-finding-quill.md`
-3. **修改代码**（按方案 §五）：
-   - `shared/.../ai/meallog/RuleMealParser.kt`：+`removeEatingVerbs()` + 改 `splitSoft()`
-   - `androidApp/.../ui/ai/AiMealInputSheet.kt`：重构语音实例管理
-4. **加单测**：`"中午吃了红烧肉和米饭"` → 菜名"红烧肉""米饭"不含"吃了"；`"中午吃了土豆粉"` → 菜名"土豆粉"
-5. **构建验证**：`:shared:testDebugUnitTest` + `:androidApp:assembleDebug`
-6. **真机装包验证**：按排查报告 §七 逐条验证
+**累计改动**：`shared/` 10 文件 · `androidApp/` 4 文件 · 新增单测 62 条 · 3 个待办 + 2 个方案
 
 ---
 
-## 📁 先读清单（新 session 第一件事）
+## ⏭ 下一步
 
-1. **本文件**（已读）
-2. **排查报告** `.ai-context/docs/feature/20260802_AI记一餐解析全链路错误_排查报告.md` ← **必读**
-3. **修复方案** `.claude/plans/velvet-finding-quill.md`
-4. `CLAUDE.md`（门禁/红线）
-5. `shared/.../ai/meallog/RuleMealParser.kt`（Bug 1+2 所在地）
-6. `androidApp/.../ui/ai/AiMealInputSheet.kt`（Bug 3 所在地）
+### 立即：真机装包验证
 
----
+APK 已构建在 `androidApp/build/outputs/apk/debug/`。按 `真机待验证清单.md` **D1-D5** 优先验证，然后 F1-F4 核心解析。
 
-## 🔴 关键调试信息
+### 后续开发
 
-- **真机序列号**：`GCL0220212004523`（TAS-AN00 / HUAWEI）
-- **包名**：`com.sxdbsm.cookbook.android`
-- **DB 路径**：`/sdcard/Android/data/com.sxdbsm.cookbook.android/files/cookbook/db/cookbook.db`
-- **拉 DB 命令**：`export MSYS_NO_PATHCONV=1; adb pull /sdcard/Android/data/com.sxdbsm.cookbook.android/files/cookbook/db/cookbook.db temp/claude/phone_cookbook.db`
-- **脏数据**：ingredient 1207("吃了"), 1208("肉和米饭"), dish 774("吃了红烧肉和米饭"), dish 776("吃了土豆粉")
+| 优先级 | 事项 | 详见 |
+|--------|------|------|
+| 1 | 真机验证 D1-D5 + F1-F4 | 真机待验证清单.md |
+| 2 | API Key 测试按钮 | 待办 K1g |
+| 3 | 食材搜索按来源筛选 | 待办 K1h |
+| 4 | 临时成员+管饭开关（方案） | 待办 P1 |
+| 5 | AI Prompt Few-shot 示例 | `ai_meal_examples.md` → 待办 P2 |
+| 6 | 健康评价 K1b | 待办已有·需先 L1 合规闸门 |
 
 ---
 
-## 🔗 依赖关系
+## 📁 先读清单
 
-```
-本次排查 ✅
-    ↓
-修复 Bug 1+2+3（RuleMealParser + AiMealInputSheet）
-    ↓
-构建 + 单测 + 真机验证
-    ↓
-合并 → 继续 P2-1 K1a/K1c 剩余工作
-```
+1. 本文件
+2. `真机待验证清单.md`（D1-D5 + F1-F4）
+3. `CLAUDE.md`
+4. `待办总览.md`（K1g/K1h/P1/P2 新增）
+5. `ai_meal_examples.md`（示例菜单）
