@@ -64,7 +64,11 @@ class DayAutoGenerator(
                         warnings.add("${targetDate} ${ctx.mealTypes.firstOrNull { it.id == mealTypeId }?.name ?: "餐次"}: 跳过空菜名")
                         continue
                     }
-                    dishPreviews.add(dishGen.preview(dish, ctx))
+                    // 过滤空白食材名（防止上游解析/JSON 产生空名→落库空名食材）
+                    val validIngredients = dish.ingredients.filter { it.name.trim().isNotBlank() }
+                    val filteredDish = if (validIngredients.size != dish.ingredients.size)
+                        dish.copy(ingredients = validIngredients) else dish
+                    dishPreviews.add(dishGen.preview(filteredDish, ctx))
                 }
 
                 if (dishPreviews.isNotEmpty()) {

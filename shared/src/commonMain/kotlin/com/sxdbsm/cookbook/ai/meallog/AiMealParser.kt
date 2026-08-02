@@ -142,12 +142,16 @@ object AiMealParser {
         return splitSoft(body)
     }
 
-    /** 软分隔：按 "和""跟""还有" 拆分，两端都能独立成菜名才拆。[AI生成] */
+    /** 软分隔：按 "和""跟""还有" 拆分，两端都能独立成菜名才拆。[AI修改] 修复分隔词被当菜品+单字分隔词误杀 */
     private fun splitSoft(segment: String): List<AiParsedDish> {
         // 先尝试软分隔拆分
         val parts = segment.split(Regex("""(和|跟|还有)""")).map { it.trim() }.filter { it.isNotBlank() }
-        if (parts.size > 1 && parts.all { couldBeDishName(it) }) {
-            return parts.map { parseDish(it) }
+        if (parts.size >= 3) {
+            // 只检查偶数位（实际菜名），分隔词（奇数位）不参与检查也不建菜
+            val dishParts = parts.filterIndexed { i, _ -> i % 2 == 0 }
+            if (dishParts.all { couldBeDishName(it) }) {
+                return dishParts.map { parseDish(it) }
+            }
         }
         // 不拆分，整个是一道菜
         return listOf(parseDish(segment))

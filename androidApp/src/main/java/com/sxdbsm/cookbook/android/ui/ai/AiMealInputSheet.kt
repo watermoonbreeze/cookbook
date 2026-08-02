@@ -173,11 +173,11 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
         }
     }
 
-    // VoiceRecognizer 实例（remember 保持生命周期）
-    val voiceRecognizer = remember { VoiceRecognizer(context.applicationContext) }
+    // [AI修改] Bug修复：统一语音实例管理，避免 startVoiceRecognition 内新建实例导致松手 stop 到错误对象
+    var activeRecognizer by remember { mutableStateOf<VoiceRecognizer?>(null) }
     // 清理
     DisposableEffect(Unit) {
-        onDispose { voiceRecognizer.destroy() }
+        onDispose { activeRecognizer?.destroy() }
     }
 
     // 说明弹窗
@@ -310,10 +310,13 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                                 val releasedBeforeLongPress = tryAwaitRelease()
                                 if (releasedBeforeLongPress) return@detectTapGestures
                                 // 长按触发 → 开始录音
-                                startVoiceRecognition(context, vm)
+                                startVoiceRecognition(context, vm) { recognizer ->
+                                    activeRecognizer = recognizer
+                                }
                                 tryAwaitRelease()
-                                // 松手 → 停止录音
-                                voiceRecognizer.stopListening()
+                                // 松手 → 停止录音（现在正确停止的是 startVoiceRecognition 内启动的那个实例）
+                                activeRecognizer?.stopListening()
+                                activeRecognizer = null
                                 vm.onVoiceProcessing()
                             },
                         )
@@ -417,8 +420,12 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     }
 }
 
-/** [AI修改] K2 启动语音识别：创建 VoiceRecognizer，设置回调，startListening */
-private fun startVoiceRecognition(context: Context, vm: AiMealInputViewModel) {
+/** [AI修改] K2+Bug修复：统一语音实例管理，通过 onReady 回传实例给调用方 */
+private fun startVoiceRecognition(
+    context: Context,
+    vm: AiMealInputViewModel,
+    onReady: (VoiceRecognizer) -> Unit = {},
+) {
     val recognizer = VoiceRecognizer(context.applicationContext)
     vm.onVoiceStart()
     val started = recognizer.startListening(object : VoiceRecognizer.Callback {
@@ -444,7 +451,9 @@ private fun startVoiceRecognition(context: Context, vm: AiMealInputViewModel) {
             vm.onVoiceRmsChanged(rmsdB)
         }
     })
-    if (!started) {
+    if (started) {
+        onReady(recognizer)
+    } else {
         vm.onVoiceError("语音识别不可用")
         recognizer.destroy()
     }

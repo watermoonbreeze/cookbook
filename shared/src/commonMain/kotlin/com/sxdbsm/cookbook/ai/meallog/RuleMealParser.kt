@@ -51,7 +51,7 @@ object RuleMealParser {
 
     // 菜品分隔词
     private val HARD_SPLIT = Regex("""[,，、+\n]""")
-    private val SOFT_SPLIT = Regex("""(和|跟|还有|以及|加上|配上?|搭配|搭|就着|再来|外加|捎带|另|另外|还有一个|再加上)""")
+    private val SOFT_SPLIT = Regex("""(和|跟|还有|以及|加上|配上?|搭配|搭|就着|再来|外加|捎带|另|另外|还有一个|再加上|然后)""")
 
     // 份量+单位
     private val QUANTITY_UNIT = Regex("""^([一二两三四五六七八九十百半\\d]+\\.?\\d*)\\s*([个大碗盘碟只根片块勺份杯瓶盒袋笼屉][子]?)""")
@@ -59,7 +59,7 @@ object RuleMealParser {
     // 食用比例
     private val EATEN_PATTERNS = listOf(
         Regex("""(吃了?)?一半|剩[了]?一半|半份""") to 0.5,
-        Regex("""(吃了?)?大半|差不多""") to 0.75,
+        Regex("""(吃了?)?大半""") to 0.75,
         Regex("""少量|一点点|[一就]点[点]?|尝了?[一]?口|几口""") to 0.25,
     )
 
@@ -284,17 +284,21 @@ object RuleMealParser {
         return t.trim()
     }
 
-    /** 移除餐次关键词前缀。[AI生成] */
+    /** 移除餐次关键词前缀。[AI修改] Bug修复：增加吃/喝动词+日期词剥离 */
     private fun removeMealKeywordPrefix(text: String): String {
         var t = text
         for (splitter in MEAL_SPLITTERS) {
             for (kw in splitter.keywords) {
                 if (t.startsWith(kw)) {
                     t = t.removePrefix(kw).trimStart(' ', ':', '：', '-', '—', '~')
-                    return t
+                    break
                 }
             }
         }
+        // 剥离句首吃/喝动词（餐次词后紧跟的"吃了""喝了""刚吃"等噪声）
+        t = t.replace(Regex("""^(刚[刚才]?)?[吃喝尝试][了过的]?\s*"""), "")
+        // 剥离裸露日期/时间词（无餐次关键词时残留，如"昨天红烧肉"→"红烧肉"）
+        t = t.replace(Regex("""^(今天|今儿|今个|昨天|昨儿|昨个|前天|前儿|明天|明儿|后天|大前天|大后天)\s*"""), "")
         return t
     }
 
@@ -316,13 +320,23 @@ object RuleMealParser {
         return splitSoft(text).ifEmpty { listOf(text) }
     }
 
-    /** 软分隔：两端都能独立成菜名才拆。[AI生成] */
+    /** 软分隔：两端都能独立成菜名才拆。[AI修改] 用 findAll 显式切分，避免 Regex.split 捕获组跨平台差异。 */
     private fun splitSoft(text: String): List<String> {
-        val parts = SOFT_SPLIT.split(text).map { it.trim() }.filter { it.isNotBlank() }
-        if (parts.size >= 3 && parts.all { couldBeDish(it) }) {
-            // 提取奇数字段（实际菜品名，跳过软分隔词本身）
-            return parts.filterIndexed { i, _ -> i % 2 == 0 }
+        val matches = SOFT_SPLIT.findAll(text).toList()
+        if (matches.isEmpty()) return emptyList()
+
+        // 按分隔词位置手动切分
+        val parts = mutableListOf<String>()
+        var lastEnd = 0
+        for (m in matches) {
+            val before = text.substring(lastEnd, m.range.first).trim()
+            if (before.isNotBlank()) parts.add(before)
+            lastEnd = m.range.last + 1
         }
+        val after = text.substring(lastEnd).trim()
+        if (after.isNotBlank()) parts.add(after)
+
+        if (parts.size >= 2 && parts.all { couldBeDish(it) }) return parts
         return emptyList()
     }
 

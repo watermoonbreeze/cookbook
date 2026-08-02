@@ -102,7 +102,7 @@ class DishAutoGenerator(
     }
 
     /**
-     * 菜品入库：REUSE→返已有id；CREATE→逐料commit→组DishIngredient→saveDish。[AI生成]
+     * 菜品入库：REUSE→返已有id；CREATE→逐料commit→组DishIngredient→saveDish。[AI修改] B1修复：防commit retry重复创建。
      *
      * saveDish 内部已回填 unitId=null→gramUnit（INV-03）。
      */
@@ -112,6 +112,10 @@ class DishAutoGenerator(
                 preview.existingId ?: error("REUSE but existingId is null for ${preview.inputName}")
             }
             ResolveKind.CREATE -> {
+                // 防御 commit retry 重复创建：preview 缓存在 state 中，retry 仍为 CREATE
+                val existingId = dishRepo.dishIdByName(preview.inputName)
+                if (existingId != null) return@withContext existingId
+
                 // 逐料 commit
                 val dishIngredients = preview.ingredients.map { ip ->
                     val ingredientId = ingredientGen.commit(ip)

@@ -81,3 +81,4 @@ lint/tmp/
 scripts/data/reports/
 scripts/data/__pycache__/
 temp/db/
+temp/claude/
