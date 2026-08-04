@@ -7,6 +7,7 @@
 本项目为 Claude Code / Codex 双模式开发，**公共规范、经验、功能文档、上下文记忆统一存放在 `.ai-context/`**（说明见 `.ai-context/README.md`）：
 
 - **🧭 功能路径索引（定位先查它·省 token）**：`.ai-context/docs/功能路径索引.md` —— feature→文件路径映射（AI-terse 格式）。**用户提功能/需求时，先查本索引直接跳文件，别一上来 grep/glob 重找**；增/删/改名/移动 Screen·VM·Repo·UseCase·Engine·真相源·组件时**同 commit 同步维护**。规范细则见全局 `~/.claude/CLAUDE.md`「功能路径索引规范」。
+- **🗺️ 项目全景图（全局关联任务首读）**：`.ai-context/docs/projectReview/00_导读与索引.md` —— 本项目整体架构、方向、主流程、界面流转、算法、数据、AI/网络、参考资料与预设治理的唯一地图。涉及其中任一内容时，**先读本册并按阅读路径下钻**；实质改动后，同任务维护受影响分册、`05_诊断地图.md` 与功能路径索引。
 - **通用强制规则**：`.ai-context/rules/通用规则.md` —— 任务编排门禁、任务前快照、工程一致性、单元测试、AI 注释、构建环境等，**每次任务开始前遵守**
 - **经验手册**：`.ai-context/docs/experience/`（索引 `INDEX.md`，工程统一规范见 `09_工程统一规范.md`）
 - **功能/方案文档**：`.ai-context/docs/feature/`
