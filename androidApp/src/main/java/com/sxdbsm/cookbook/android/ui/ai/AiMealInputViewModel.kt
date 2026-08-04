@@ -7,11 +7,13 @@ import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.meallog.AiMealParseResult
 import com.sxdbsm.cookbook.ai.meallog.AiMealParser
 import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
+import com.sxdbsm.cookbook.ai.meallog.AiMealHealthAdvice
 import com.sxdbsm.cookbook.ai.meallog.DayMealJson
 import com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder
 import com.sxdbsm.cookbook.ai.meallog.RuleMealParser
 import com.sxdbsm.cookbook.ai.meallog.SchemaMigration
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
+import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.domain.autogen.AutoGenPreview
 import com.sxdbsm.cookbook.domain.autogen.AutoGenResult
 import com.sxdbsm.cookbook.util.DateTime
@@ -44,6 +46,17 @@ enum class AiMealPhase { INPUT, PARSING, PREVIEW, SAVING, DONE, ERROR }
 /** 语音识别状态。[AI生成] */
 enum class VoiceState { IDLE, LISTENING, PROCESSING, ERROR }
 
+/** AI 本次尝试的仅会话诊断；原始响应不写日志、不入库，重输/退出即清除。 [AI修改] */
+data class AiMealAttemptDiagnostic(
+    val stage: String,
+    val summary: String,
+    val responseLength: Int? = null,
+    val rawResponse: String? = null,
+)
+
+/** 本机事实与 AI 建议均仅随当前确认会话存在。 [AI生成] */
+data class HealthSafetyReport(val facts: List<String> = emptyList())
+
 /** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 作两阶段主键，PreviewPhase 直接渲染能力层产出。 */
 data class AiMealInputUiState(
     val inputText: String = "",
@@ -71,6 +84,12 @@ data class AiMealInputUiState(
     /** 有历史餐食时，必须先由用户显式确认才允许 MERGE 写入。 [AI修改] */
     val mergeConfirmationRequired: Boolean = false,
     val mergeConfirmed: Boolean = false,
+    val diagnostic: AiMealAttemptDiagnostic? = null,
+    val healthSafetyReport: HealthSafetyReport? = null,
+    val healthAdviceConsentPending: Boolean = false,
+    val healthAdviceLoading: Boolean = false,
+    val healthAdvice: String? = null,
+    val healthAdviceError: String? = null,
 )
 
 class AiMealInputViewModel(
@@ -80,6 +99,7 @@ class AiMealInputViewModel(
     private val config: AiRuntimeConfig,
     private val recorder: MultiDayRecorder,
     private val ingredientRepo: IngredientRepository,
+    private val healthRepo: HealthProfileRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -89,7 +109,7 @@ class AiMealInputViewModel(
 
     /** 设置输入文本。[AI生成] */
     fun setInputText(text: String) {
-        _state.update { it.copy(inputText = text, phase = AiMealPhase.INPUT, errorMessage = null) }
+        _state.update { it.copy(inputText = text, phase = AiMealPhase.INPUT, errorMessage = null, diagnostic = null) }
     }
 
     /** 切换输入模式。[AI生成] */
@@ -165,7 +185,7 @@ class AiMealInputViewModel(
         val text = _state.value.inputText.trim()
         if (text.isBlank()) return
 
-        _state.update { it.copy(phase = AiMealPhase.PARSING, errorMessage = null) }
+        _state.update { it.copy(phase = AiMealPhase.PARSING, errorMessage = null, diagnostic = null) }
 
         viewModelScope.launch {
             // Step 1: 解析 → DayMealJson 列表
@@ -207,6 +227,7 @@ class AiMealInputViewModel(
                             parseWarnings = (parsed.warnings + preview.warnings).distinct(),
                             mergeConfirmationRequired = preview.days.any { it.hasExisting },
                             mergeConfirmed = false,
+                            healthSafetyReport = buildHealthSafetyReport(preview),
                         )
                     }
                 }
@@ -217,6 +238,45 @@ class AiMealInputViewModel(
                         errorMessage = "预览生成失败：${e.message ?: "未知错误"}",
                     )
                 }
+            }
+        }
+    }
+
+    /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
+    private suspend fun buildHealthSafetyReport(preview: AutoGenPreview): HealthSafetyReport {
+        val enabled = healthRepo.listAll().filter { it.enabled }.map { it.crowdName }.distinct()
+        val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
+            .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
+        return HealthSafetyReport(buildList {
+            if (enabled.isNotEmpty()) add("已结合健康档案：${enabled.joinToString("、")}")
+            if (pendingIngredients > 0) add("本餐有 $pendingIngredients 种新食材，营养和适宜性待复核")
+            if (isEmpty()) add("未设置健康档案；可按个人情况核对本餐")
+        })
+    }
+
+    fun requestHealthAdvice() {
+        if (_state.value.autoGenPreview == null || _state.value.healthAdviceLoading) return
+        _state.update { it.copy(healthAdviceConsentPending = true, healthAdviceError = null) }
+    }
+
+    fun declineHealthAdvice() = _state.update { it.copy(healthAdviceConsentPending = false) }
+
+    fun confirmHealthAdvice() {
+        val preview = _state.value.autoGenPreview ?: return
+        _state.update { it.copy(healthAdviceConsentPending = false, healthAdviceLoading = true, healthAdviceError = null) }
+        viewModelScope.launch {
+            val profiles = healthRepo.listAll().filter { it.enabled }.map { it.crowdName }.distinct()
+            val healthSummary = profiles.ifEmpty { listOf("未设置具体健康档案") }.joinToString("、")
+            val mealSummary = preview.days.flatMap { it.meals }.flatMap { it.dishes }
+                .joinToString("、") { it.inputName }.take(500)
+            val result = aiRuntime.complete(AiMealHealthAdvice.request(healthSummary, mealSummary))
+            _state.update {
+                it.copy(
+                    healthAdviceLoading = false,
+                    healthAdvice = result.getOrNull()?.trim()?.takeIf(String::isNotBlank),
+                    healthAdviceError = result.exceptionOrNull()?.message?.take(120)
+                        ?: if (result.getOrNull().isNullOrBlank()) "暂时无法生成建议" else null,
+                )
             }
         }
     }
@@ -270,7 +330,9 @@ class AiMealInputViewModel(
         )
         val response = aiRuntime.complete(request)
         val rawText = response.getOrNull() ?: run {
-            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AI complete returned error")
+            val message = response.exceptionOrNull()?.message ?: "请求未返回结果"
+            _state.update { it.copy(diagnostic = AiMealAttemptDiagnostic("请求", message)) }
+            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AI complete returned error: $message")
             return null
         }
         // [AI修改] 饮食语义与模型响应均属敏感内容，日志仅保留结构化长度诊断。
@@ -278,7 +340,11 @@ class AiMealInputViewModel(
 
         val outcome = AiMealParser.parseOutcome(rawText, today)
         if (!outcome.isValid) {
-            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AI 结构化结果无效：${outcome.errors.joinToString()}")
+            val summary = outcome.errors.joinToString("；").ifBlank { "AI 返回不符合餐食结构" }
+            _state.update {
+                it.copy(diagnostic = AiMealAttemptDiagnostic("结构化校验", summary, rawText.length, rawText))
+            }
+            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AI 结构化结果无效：$summary")
             return null
         }
         return outcome

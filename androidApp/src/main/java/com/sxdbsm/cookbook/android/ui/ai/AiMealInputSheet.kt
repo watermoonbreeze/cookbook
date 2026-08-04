@@ -44,6 +44,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -662,6 +663,8 @@ private fun ParsingPhase() {
 @Composable
 private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     val preview = state.autoGenPreview ?: return
+    var showDiagnostic by remember { mutableStateOf(false) }
+    var showRawResponse by remember { mutableStateOf(false) }
 
     val newIngredientCount = remember(preview) {
         preview.days.flatMap { it.meals }.flatMap { it.dishes }
@@ -703,11 +706,19 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
 
         if (state.parseSourceMessage.isNotBlank()) {
             Spacer(Modifier.height(6.dp))
-            Text(
-                text = state.parseSourceMessage,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = state.parseSourceMessage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                state.diagnostic?.let {
+                    IconButton(onClick = { showDiagnostic = true }) {
+                        Icon(Icons.Outlined.Info, contentDescription = "查看解析详情")
+                    }
+                }
+            }
         }
 
         if (state.parseWarnings.isNotEmpty()) {
@@ -780,6 +791,35 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             }
         }
 
+        state.healthSafetyReport?.let { report ->
+            Spacer(Modifier.height(10.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Text("健康提示", style = MaterialTheme.typography.labelLarge)
+                    report.facts.forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
+                    Text("仅供参考，非医嘱", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        TextButton(onClick = vm::requestHealthAdvice, enabled = !state.healthAdviceLoading) {
+            Text(if (state.healthAdviceLoading) "正在生成建议…" else "查看建议")
+        }
+        state.healthAdvice?.let { advice ->
+            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp)) {
+                Column(Modifier.padding(12.dp)) {
+                    Text("本次建议", style = MaterialTheme.typography.labelLarge)
+                    Text(advice, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+        state.healthAdviceError?.let { Text("建议暂不可用：$it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
+
         Spacer(Modifier.height(16.dp))
 
         // 操作按钮
@@ -806,6 +846,42 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                 )
             }
         }
+    }
+
+    if (showDiagnostic) {
+        val diagnostic = state.diagnostic ?: return
+        AlertDialog(
+            onDismissRequest = { showDiagnostic = false; showRawResponse = false },
+            title = { Text("解析详情") },
+            text = {
+                Column {
+                    Text("阶段：${diagnostic.stage}")
+                    Text("原因：${diagnostic.summary}")
+                    diagnostic.responseLength?.let { Text("返回长度：$it") }
+                    if (showRawResponse && !diagnostic.rawResponse.isNullOrBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(diagnostic.rawResponse, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                if (!diagnostic.rawResponse.isNullOrBlank() && !showRawResponse) {
+                    TextButton(onClick = { showRawResponse = true }) { Text("查看原始返回") }
+                } else {
+                    TextButton(onClick = { showDiagnostic = false; showRawResponse = false }) { Text("关闭") }
+                }
+            },
+        )
+    }
+
+    if (state.healthAdviceConsentPending) {
+        AlertDialog(
+            onDismissRequest = vm::declineHealthAdvice,
+            title = { Text("生成本次建议？") },
+            text = { Text("将仅发送去标识化的健康档案标签和本餐菜名摘要，不发送姓名、原始输入、病史、体征、报告、用药或历史餐食。建议只在本次确认页展示，关闭后清除。") },
+            confirmButton = { TextButton(onClick = vm::confirmHealthAdvice) { Text("同意并生成") } },
+            dismissButton = { TextButton(onClick = vm::declineHealthAdvice) { Text("暂不生成") } },
+        )
     }
 }
 
