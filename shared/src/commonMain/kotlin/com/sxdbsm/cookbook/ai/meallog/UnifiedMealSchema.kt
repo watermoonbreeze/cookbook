@@ -179,7 +179,8 @@ data class MultiDayMetaJson(
  */
 @Serializable
 data class FlatMealJson(
-    val schema_version: String = "1.0",
+    // [AI修改] 未发布版本直接采用 V2；不保留旧协议迁移分支。
+    val schema_version: String = "2.0",
     val items: List<FlatMealItem> = emptyList(),
 )
 

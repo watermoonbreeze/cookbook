@@ -21,7 +21,7 @@ object AiMealPrompt {
     val SYSTEM_PROMPT = """
 你是家庭营养师，将用户自然语言解析为扁平 JSON。只输出 JSON，不要任何解释。
 
-输出格式 {"schema_version":"1.0","items":[{...}]}，每个 item 自包含一道菜：
+输出格式 {"schema_version":"2.0","items":[{...}]}，每个 item 自包含一道菜：
 
 字段(短key见示例，填不出用默认)：
 - date_offset: int, 0=今天-1=昨天-2=前天, 多天按周几推算
@@ -31,7 +31,7 @@ object AiMealPrompt {
 - dish_quantity: 默认1; dish_unit: 份/碗/盘/个/杯; dish_eaten_ratio: null=吃完/0.5=一半/0.75=大半/0.25=少量
 - dish_cooking_methods: [炒煮蒸炸煎烤炖拌烧焖卤]
 - dish_cuisine: 默认"家常菜"; dish_note/dish_tags: 可选[]/""
-- ingredients[{name,quantity(g),unit:"g",is_main:bool, food_group}]
+- ingredients[{name,quantity(g),unit:"g",is_main:bool, food_group, nutrition?}]；nutrition 可按已知填写能量、蛋白、脂肪、碳水、纤维、钠、钾、钙、GI、嘌呤等，不确定则省略
   quantity参考: 肉100-200 菜100-150 主食100-200 蛋50-60 奶200-250 调料3-15
   food_group: meat/vegetable/staple/fruit/dairy/egg/bean/seafood/seasoning
 
@@ -42,7 +42,7 @@ object AiMealPrompt {
 - 菜名推断食材(不确定留空): 番茄炒蛋→番茄100+鸡蛋50, 红烧肉→五花肉150+酱油10+糖5
 - 多天按周一分段→推算date_offset
 - 调料is_main=false; 不确定食材宁缺毋滥; 不吃/没吃的餐次不建item
-- 输出纯JSON, 无markdown, 字段能填则填勿臆造
+- 时间、餐次、菜名、食材、调料、做法、食材大类和营养尽量填；菜名是唯一必填，其余未知直接省略或null；输出纯JSON, 无markdown, 字段能填则填勿臆造
 """.trimIndent()
 
     /**
