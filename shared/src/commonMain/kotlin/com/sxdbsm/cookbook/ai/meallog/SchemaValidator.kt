@@ -1,5 +1,7 @@
 package com.sxdbsm.cookbook.ai.meallog
 
+import kotlinx.datetime.LocalDate
+
 /**
  * @File : SchemaValidator
  * @Time : 2026/07/29
@@ -64,9 +66,10 @@ object SchemaValidator {
     ) {
         val prefix = if (label.isNotBlank()) "$label " else ""
 
-        // 日期：date 或 date_offset 至少一个有效
-        if (day.date == null && day.date_offset == 0 && day.weekday == null) {
-            // 全空 = 默认今天（合法但不精确）
+        day.date?.takeIf { it.isNotBlank() }?.let { date ->
+            if (runCatching { LocalDate.parse(date.replace('/', '-')) }.isFailure) {
+                errors.add("${prefix}日期「$date」无效")
+            }
         }
 
         // 餐次至少有 1 个
@@ -78,6 +81,9 @@ object SchemaValidator {
         // 逐餐次校验
         for ((mi, meal) in day.meals.withIndex()) {
             val mealLabel = "${prefix}${mealLabel(meal.meal_type, mi)}"
+            if (meal.meal_type != null && meal.meal_type !in setOf("breakfast", "lunch", "dinner", "snack")) {
+                errors.add("$mealLabel 餐次类型无效")
+            }
             if (meal.dishes.isEmpty()) {
                 warnings.add("$mealLabel 没有识别到菜品")
                 continue
@@ -93,6 +99,9 @@ object SchemaValidator {
                 }
                 if (dishRef.quantity > 100) {
                     warnings.add("$mealLabel「${name}」份量偏大（${dishRef.quantity}），请确认")
+                }
+                dishRef.eaten_ratio?.let { ratio ->
+                    if (ratio <= 0.0 || ratio > 1.0) errors.add("$mealLabel「${name}」食用比例无效（$ratio）")
                 }
             }
         }

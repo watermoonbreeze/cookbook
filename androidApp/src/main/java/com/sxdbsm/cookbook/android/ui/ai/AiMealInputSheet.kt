@@ -710,6 +710,22 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             )
         }
 
+        if (state.parseWarnings.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Text("请确认以下解析提示", style = MaterialTheme.typography.labelLarge)
+                    state.parseWarnings.forEach { warning ->
+                        Text("• $warning", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+
         Spacer(Modifier.height(12.dp))
 
         // 餐次卡片（可滚动）—— 直接遍历 preview.days，与实际 commit 范围完全一致
@@ -727,6 +743,14 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 4.dp),
+                    )
+                }
+                if (dayPreview.hasExisting) {
+                    Text(
+                        text = "⚠ 当天已有餐食；确认后会保留原记录并将本次菜品合并追加。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(vertical = 4.dp),
                     )
                 }
@@ -775,7 +799,11 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
             ) {
-                Text("确认记下")
+                Text(
+                    if (state.mergeConfirmationRequired && !state.mergeConfirmed) "我已知晓，继续合并"
+                    else if (state.mergeConfirmationRequired) "确认合并记下"
+                    else "确认记下",
+                )
             }
         }
     }

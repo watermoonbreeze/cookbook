@@ -105,6 +105,8 @@ object RuleMealParser {
         if (days.size <= 1) return days
         val mondayOffset = targetDate.dayOfWeek.ordinal
         return days.map { day ->
+            // [AI修改] 显式绝对日期是 AI/用户语义真相，周锚点不得覆盖。
+            if (!day.date.isNullOrBlank()) return@map day
             val weekday = TextSegmenter.weekdayToIso(day.weekday) ?: return@map day
             day.copy(date = null, date_offset = weekday - 1 - mondayOffset)
         }

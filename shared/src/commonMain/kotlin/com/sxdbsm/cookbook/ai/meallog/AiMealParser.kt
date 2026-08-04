@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.ai.meallog
 
 import kotlinx.serialization.json.Json
+import kotlinx.datetime.LocalDate
 
 /**
  * @File : AiMealParser
@@ -17,6 +18,15 @@ import kotlinx.serialization.json.Json
  **/
 object AiMealParser {
 
+    /** AI 解析的结构化结果；警告必须传到预览，错误必须阻断写库。 [AI修改] */
+    data class ParseOutcome(
+        val days: List<DayMealJson> = emptyList(),
+        val warnings: List<String> = emptyList(),
+        val errors: List<String> = emptyList(),
+    ) {
+        val isValid: Boolean get() = errors.isEmpty() && days.isNotEmpty()
+    }
+
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
@@ -32,44 +42,32 @@ object AiMealParser {
      * @return 至少 1 个 DayMealJson；null=解析失败（上层走规则兜底）
      */
     fun parseToDayMealJsonList(aiResponse: String): List<DayMealJson>? {
+        val outcome = parseOutcome(aiResponse, LocalDate(1970, 1, 1))
+        return outcome.days.takeIf { outcome.isValid }
+    }
+
+    /** 解码→迁移/聚合→规范化→严格校验。 [AI修改] */
+    fun parseOutcome(aiResponse: String, fallbackDate: LocalDate): ParseOutcome {
         val trimmed = aiResponse.trim()
-        if (trimmed.isEmpty()) return null
+        if (trimmed.isEmpty()) return ParseOutcome(errors = listOf("AI 返回为空"))
         val jsonText = extractJson(trimmed)
-        if (jsonText.isBlank()) return null
+        if (jsonText.isBlank()) return ParseOutcome(errors = listOf("AI 返回中没有 JSON"))
 
         // ① 优先：扁平格式 FlatMealJson（当前 AI prompt 的输出格式）
         val flatResult = runCatching {
             json.decodeFromString<FlatMealJson>(jsonText)
         }.getOrNull()
         if (flatResult != null && flatResult.items.isNotEmpty()) {
-            return MealParseCanonicalizer.canonicalize(FlatToDayMealConverter.convert(flatResult))
+            val converted = FlatToDayMealConverter.convert(flatResult, fallbackDate)
+            return validate(MealParseCanonicalizer.canonicalize(converted.days), converted.warnings, converted.errors)
         }
 
-        // ② 回退：旧嵌套格式 AiMealParseResult（向后兼容旧 prompt）
-        val oldResult = runCatching {
-            json.decodeFromString<AiMealParseResult>(jsonText)
-        }.getOrNull()
-        if (oldResult != null && oldResult.meals.isNotEmpty() && oldResult.meals.none { it.dishes.isEmpty() }) {
-            return MealParseCanonicalizer.canonicalize(listOf(SchemaMigration.toDayMealJson(oldResult)))
-        }
-
-        return null
+        return ParseOutcome(errors = listOf("AI 返回不符合当前扁平餐食格式"))
     }
 
-    /**
-     * 解析 AI 响应 → AiMealParseResult（旧接口·保留兼容）。[AI生成]
-     *
-     * @deprecated 新代码建议用 parseToDayMealJsonList()
-     */
-    fun parse(aiResponse: String): AiMealParseResult? {
-        val trimmed = aiResponse.trim()
-        if (trimmed.isEmpty()) return null
-        val jsonText = extractJson(trimmed)
-        return runCatching {
-            val result = json.decodeFromString<AiMealParseResult>(jsonText)
-            if (result.meals.isEmpty() || result.meals.any { it.dishes.isEmpty() }) return null
-            result
-        }.getOrNull()
+    private fun validate(days: List<DayMealJson>, warnings: List<String>, errors: List<String>): ParseOutcome {
+        val validation = SchemaValidator.validate(MultiDayJson(days = days))
+        return ParseOutcome(days, (warnings + validation.warnings).distinct(), (errors + validation.errors).distinct())
     }
 
     /** 从可能含 markdown 代码块的文本中提取 JSON。[AI生成] */

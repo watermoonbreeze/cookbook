@@ -66,6 +66,11 @@ data class AiMealInputUiState(
     /** 目标日期（预览可调）。[AI生成] */
     val targetDate: LocalDate = DateTime.today(),
     val parseSourceMessage: String = "",
+    /** AI 结构化校验及预览产生的可见提示。 [AI修改] */
+    val parseWarnings: List<String> = emptyList(),
+    /** 有历史餐食时，必须先由用户显式确认才允许 MERGE 写入。 [AI修改] */
+    val mergeConfirmationRequired: Boolean = false,
+    val mergeConfirmed: Boolean = false,
 )
 
 class AiMealInputViewModel(
@@ -164,12 +169,13 @@ class AiMealInputViewModel(
 
         viewModelScope.launch {
             // Step 1: 解析 → DayMealJson 列表
-            val days = try {
+            val parsed = try {
                 parseToDayMealJsonList(text)
             } catch (e: Exception) {
                 com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "parse failed: ${e.message}", e)
-                emptyList()
+                ParsedDays(emptyList())
             }
+            val days = parsed.days
 
             if (days.isEmpty() || days.all { day -> day.meals.isEmpty() || day.meals.all { it.dishes.isEmpty() } }) {
                 _state.update {
@@ -198,6 +204,9 @@ class AiMealInputViewModel(
                             phase = AiMealPhase.PREVIEW,
                             autoGenPreview = preview,
                             targetDate = preview.days.firstOrNull()?.date ?: today,
+                            parseWarnings = (parsed.warnings + preview.warnings).distinct(),
+                            mergeConfirmationRequired = preview.days.any { it.hasExisting },
+                            mergeConfirmed = false,
                         )
                     }
                 }
@@ -213,9 +222,11 @@ class AiMealInputViewModel(
     }
 
     /** 解析文本 → DayMealJson 列表（AI 优先·扁平格式→规则兜底）。[AI修改] 接入 FlatToDayMealConverter + 诊断日志 */
-    private suspend fun parseToDayMealJsonList(text: String): List<com.sxdbsm.cookbook.ai.meallog.DayMealJson> {
+    private data class ParsedDays(val days: List<DayMealJson>, val warnings: List<String> = emptyList())
+
+    private suspend fun parseToDayMealJsonList(text: String): ParsedDays {
         // 先尝试 AI 解析
-        val aiDays: List<DayMealJson>? = try {
+        val aiResult: AiMealParser.ParseOutcome? = try {
             if (config.isModelReady()) parseWithAi(text) else {
                 com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput", "AI model not ready, fallback to rule")
                 null
@@ -225,11 +236,13 @@ class AiMealInputViewModel(
             null
         }
 
-        if (aiDays != null && aiDays.isNotEmpty()) {
+        if (aiResult != null && aiResult.isValid) {
+            val aiDays = aiResult.days
             _state.update { it.copy(parseSourceMessage = "本次结果：AI 解析") }
             com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput",
                 "AI parsed ${aiDays.size} day(s), ${aiDays.sumOf { it.meals.size }} meal(s), ${aiDays.sumOf { it.meals.sumOf { m -> m.dishes.size } }} dish(es)")
-            return RuleMealParser.anchorMultiDayPlan(aiDays, _state.value.targetDate)
+            // [AI修改] AI 的完整日期已在共享解析层锚定，不能再被 weekday 规则覆盖。
+            return ParsedDays(aiDays, aiResult.warnings)
         }
 
         // 规则兜底
@@ -241,11 +254,11 @@ class AiMealInputViewModel(
         val ruleDays = RuleMealParser.parse(text, names, today = _state.value.targetDate)
         com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput",
             "RuleMealParser: ${ruleDays.size} day(s), ${ruleDays.sumOf { it.meals.size }} meal(s), ${ruleDays.sumOf { it.meals.sumOf { m -> m.dishes.size } }} dish(es)")
-        return ruleDays
+        return ParsedDays(ruleDays)
     }
 
     /** AI 解析·返回 DayMealJson 列表。[AI修改] 改用 parseToDayMealJsonList() 直接产出统一格式 */
-    private suspend fun parseWithAi(text: String): List<DayMealJson>? {
+    private suspend fun parseWithAi(text: String): AiMealParser.ParseOutcome? {
         val today = _state.value.targetDate
         val now = DateTime.nowTime()
         val weekday = weekdayChinese(today.dayOfWeek)
@@ -260,15 +273,15 @@ class AiMealInputViewModel(
             com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AI complete returned error")
             return null
         }
-        // 截断日志（防止超长 JSON 撑爆 logcat）
-        val preview = if (rawText.length > 300) rawText.take(300) + "…" else rawText
-        com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput", "AI raw response: $preview")
+        // [AI修改] 饮食语义与模型响应均属敏感内容，日志仅保留结构化长度诊断。
+        com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput", "AI response received, length=${rawText.length}")
 
-        val days = AiMealParser.parseToDayMealJsonList(rawText)
-        if (days == null) {
-            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AiMealParser.parseToDayMealJsonList returned null (flat & legacy both failed)")
+        val outcome = AiMealParser.parseOutcome(rawText, today)
+        if (!outcome.isValid) {
+            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AI 结构化结果无效：${outcome.errors.joinToString()}")
+            return null
         }
-        return days
+        return outcome
     }
 
     /**
@@ -276,6 +289,10 @@ class AiMealInputViewModel(
      */
     fun confirmSave() {
         val preview = _state.value.autoGenPreview ?: return
+        if (_state.value.mergeConfirmationRequired && !_state.value.mergeConfirmed) {
+            _state.update { it.copy(mergeConfirmed = true) }
+            return
+        }
         _state.update { it.copy(phase = AiMealPhase.SAVING) }
 
         viewModelScope.launch {
