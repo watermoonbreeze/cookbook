@@ -14,6 +14,7 @@ import com.sxdbsm.cookbook.ai.meallog.RuleMealParser
 import com.sxdbsm.cookbook.ai.meallog.SchemaMigration
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
+import com.sxdbsm.cookbook.data.repository.FamilyRepository
 import com.sxdbsm.cookbook.domain.autogen.AutoGenPreview
 import com.sxdbsm.cookbook.domain.autogen.AutoGenResult
 import com.sxdbsm.cookbook.util.DateTime
@@ -100,6 +101,7 @@ class AiMealInputViewModel(
     private val recorder: MultiDayRecorder,
     private val ingredientRepo: IngredientRepository,
     private val healthRepo: HealthProfileRepository,
+    private val familyRepo: FamilyRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -244,7 +246,7 @@ class AiMealInputViewModel(
 
     /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
     private suspend fun buildHealthSafetyReport(preview: AutoGenPreview): HealthSafetyReport {
-        val enabled = healthRepo.listAll().filter { it.enabled }.map { it.crowdName }.distinct()
+        val enabled = healthSummaryLabels()
         val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
             .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
         return HealthSafetyReport(buildList {
@@ -265,8 +267,7 @@ class AiMealInputViewModel(
         val preview = _state.value.autoGenPreview ?: return
         _state.update { it.copy(healthAdviceConsentPending = false, healthAdviceLoading = true, healthAdviceError = null) }
         viewModelScope.launch {
-            val profiles = healthRepo.listAll().filter { it.enabled }.map { it.crowdName }.distinct()
-            val healthSummary = profiles.ifEmpty { listOf("未设置具体健康档案") }.joinToString("、")
+            val healthSummary = healthSummaryLabels().ifEmpty { listOf("未设置具体健康档案") }.joinToString("、")
             val mealSummary = preview.days.flatMap { it.meals }.flatMap { it.dishes }
                 .joinToString("、") { it.inputName }.take(500)
             val result = aiRuntime.complete(AiMealHealthAdvice.request(healthSummary, mealSummary))
@@ -279,6 +280,18 @@ class AiMealInputViewModel(
                 )
             }
         }
+    }
+
+    /** 仅输出匿名成员序号与病种/生命阶段标签；绝不发送姓名或 ID。 [AI修改] */
+    private suspend fun healthSummaryLabels(): List<String> {
+        val namesById = healthRepo.listAllCrowdTypes().associate { it.id to it.name }
+        val members = familyRepo.listMembers()
+        val memberLabels = members.mapIndexedNotNull { index, member ->
+            member.careCategoryIds.mapNotNull(namesById::get).distinct().takeIf { it.isNotEmpty() }
+                ?.let { "成员${index + 1}:${it.joinToString("·")}" }
+        }
+        val legacy = healthRepo.listAll().filter { it.enabled }.map { it.crowdName }
+        return (memberLabels + legacy).distinct()
     }
 
     /** 解析文本 → DayMealJson 列表（AI 优先·扁平格式→规则兜底）。[AI修改] 接入 FlatToDayMealConverter + 诊断日志 */
