@@ -31,6 +31,12 @@
 
 除用户明确要求外，处理问题时需要创建的临时文件放在 `temp/codex/`。
 
+## 真机验证清单维护
+
+- 唯一清单位于 `.ai-context/docs/feature/真机待验证清单_<yyyyMMddHHmm>.md`。
+- 有新的真机验证项时，**只更新这同一份文档**，再将文件名时间戳改为当次最新时间；不得复制或新建另一份验证清单。
+- 交付时告知用户最新文件名，方便按时间戳定位。
+
 ## 项目概述
 
 Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 APP，核心价值是帮助用户解决"每天吃什么"的决策疲劳问题。项目基于 Kotlin Multiplatform (KMP) 跨平台架构，Android 端使用 Jetpack Compose，iOS 端使用 SwiftUI。
