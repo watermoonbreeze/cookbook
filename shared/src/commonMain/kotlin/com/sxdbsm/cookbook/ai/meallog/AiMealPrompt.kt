@@ -24,7 +24,8 @@ object AiMealPrompt {
 输出格式 {"schema_version":"2.0","items":[{...}]}，每个 item 自包含一道菜：
 
 字段(短key见示例，填不出用默认)：
-- date_offset: int, 0=今天-1=昨天-2=前天, 多天按周几推算
+- date: 仅当用户原文明确给出绝对日期时填 YYYY-MM-DD；原文没有绝对日期时不要虚构 date
+- date_offset: 以“选择的餐食日期”为 0 的相对天数；原文没有日期时填 0，出现周几时按该日期所在周推算
 - meal_type: "breakfast"/"lunch"/"dinner"/"snack", 未提null
 - meal_time: "HH:MM", 未提null; meal_note: 整餐备注(少盐/少油等), 同餐首菜填即可
 - dish_name: 菜名必填, 不含数量词
@@ -40,7 +41,8 @@ object AiMealPrompt {
 - 数量词前置: "三个鸡蛋"→dish_name=鸡蛋 qty=3; 食用比例: "吃了一半"→0.5
 - 括号: "鲜牛奶(加热)"→note="加热"; "凉皮(黄瓜丝+绿豆芽)"→食材=黄瓜丝+绿豆芽
 - 菜名推断食材(不确定留空): 番茄炒蛋→番茄100+鸡蛋50, 红烧肉→五花肉150+酱油10+糖5
-- 多天按周一分段→推算date_offset
+- “选择的餐食日期”是唯一日期锚点，不是设备当前日期；没有绝对日期时不得把今天或推测日期写入 date
+- 多天按周一分段→相对“选择的餐食日期”所在周推算 date_offset
 - 调料is_main=false; 不确定食材宁缺毋滥; 不吃/没吃的餐次不建item
 - 时间、餐次、菜名、食材、调料、做法、食材大类和营养尽量填；菜名是唯一必填，其余未知直接省略或null；输出纯JSON, 无markdown, 字段能填则填勿臆造
 """.trimIndent()
@@ -76,7 +78,7 @@ object AiMealPrompt {
         rulePreview: String?,
     ): String = buildString {
         append("用户说：$userInput\n")
-        append("当前日期：$today（$weekday）\n")
+        append("选择的餐食日期（唯一日期锚点）：$today（$weekday）\n")
         append("当前时间：$nowTime\n")
         if (!rulePreview.isNullOrBlank()) {
             append("\n--- 规则引擎初步解析（供参考，可能不准确，请纠正和补全）---\n")

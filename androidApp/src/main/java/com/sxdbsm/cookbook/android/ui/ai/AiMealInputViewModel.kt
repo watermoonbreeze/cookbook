@@ -10,6 +10,7 @@ import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
 import com.sxdbsm.cookbook.ai.meallog.AiMealHealthAdvice
 import com.sxdbsm.cookbook.ai.meallog.DayMealJson
 import com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder
+import com.sxdbsm.cookbook.ai.meallog.MealDateAnchorPolicy
 import com.sxdbsm.cookbook.ai.meallog.RuleMealParser
 import com.sxdbsm.cookbook.ai.meallog.SchemaMigration
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
@@ -225,7 +226,8 @@ class AiMealInputViewModel(
                         it.copy(
                             phase = AiMealPhase.PREVIEW,
                             autoGenPreview = preview,
-                            targetDate = preview.days.firstOrNull()?.date ?: today,
+                            // [AI修改] targetDate 是添加页传入的日期锚点，预览首日不可反向改写它。
+                            targetDate = today,
                             parseWarnings = (parsed.warnings + preview.warnings).distinct(),
                             mergeConfirmationRequired = preview.days.any { it.hasExisting },
                             mergeConfirmed = false,
@@ -310,12 +312,16 @@ class AiMealInputViewModel(
         }
 
         if (aiResult != null && aiResult.isValid) {
-            val aiDays = aiResult.days
+            val anchorResult = MealDateAnchorPolicy.apply(text, _state.value.targetDate, aiResult.days)
+            val aiDays = anchorResult.days
             _state.update { it.copy(parseSourceMessage = "本次结果：AI 解析") }
             com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput",
                 "AI parsed ${aiDays.size} day(s), ${aiDays.sumOf { it.meals.size }} meal(s), ${aiDays.sumOf { it.meals.sumOf { m -> m.dishes.size } }} dish(es)")
             // [AI修改] AI 的完整日期已在共享解析层锚定，不能再被 weekday 规则覆盖。
-            return ParsedDays(aiDays, aiResult.warnings)
+            return ParsedDays(
+                aiDays,
+                (aiResult.warnings.filterNot { it.contains("未给出日期") } + listOfNotNull(anchorResult.warning)).distinct(),
+            )
         }
 
         // 规则兜底
@@ -327,7 +333,8 @@ class AiMealInputViewModel(
         val ruleDays = RuleMealParser.parse(text, names, today = _state.value.targetDate)
         com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput",
             "RuleMealParser: ${ruleDays.size} day(s), ${ruleDays.sumOf { it.meals.size }} meal(s), ${ruleDays.sumOf { it.meals.sumOf { m -> m.dishes.size } }} dish(es)")
-        return ParsedDays(ruleDays)
+        val anchorResult = MealDateAnchorPolicy.apply(text, _state.value.targetDate, ruleDays)
+        return ParsedDays(anchorResult.days, listOfNotNull(anchorResult.warning))
     }
 
     /** AI 解析·返回 DayMealJson 列表。[AI修改] 改用 parseToDayMealJsonList() 直接产出统一格式 */
@@ -397,7 +404,8 @@ class AiMealInputViewModel(
     /** 重新输入。[AI生成] */
     fun reset() {
         _state.update {
-            AiMealInputUiState(inputText = it.inputText) // 保留用户文字
+            // [AI修改] 修改后重新解析也必须保留添加页选择的日期，不能退回设备当天。
+            AiMealInputUiState(inputText = it.inputText, targetDate = it.targetDate)
         }
     }
 

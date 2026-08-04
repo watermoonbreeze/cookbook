@@ -676,6 +676,8 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            // [AI修改] 预览内容可能包含多餐、提示和建议；由整页承接滚动，不能只滚餐次列表而裁掉操作区。
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp)
             .padding(bottom = 32.dp),
     ) {
@@ -739,12 +741,10 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
 
         Spacer(Modifier.height(12.dp))
 
-        // 餐次卡片（可滚动）—— 直接遍历 preview.days，与实际 commit 范围完全一致
+        // [AI修改] 由外层统一滚动，确保餐次后的建议和确认操作均可达。
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 380.dp)
-                .verticalScroll(rememberScrollState()),
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             preview.days.forEach { dayPreview ->
