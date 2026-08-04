@@ -148,4 +148,16 @@ class RuleMealParserRegressionTest {
                 "宫保鸡丁不应被拆分，实际: $name")
         }
     }
+
+    @Test
+    fun `括号内加号不拆菜且提取配料`() {
+        val result = RuleMealParser.parse("晚饭 凉皮（黄瓜丝+绿豆芽）+番茄炒蛋", today = today)
+        val dishes = result.single().meals.single().dishes
+
+        assertEquals(listOf("凉皮", "番茄炒蛋"), dishes.map { it.name })
+        assertEquals(
+            listOf("黄瓜丝", "绿豆芽"),
+            dishes.first().dish?.ingredients?.mapNotNull { it.food?.name },
+        )
+    }
 }

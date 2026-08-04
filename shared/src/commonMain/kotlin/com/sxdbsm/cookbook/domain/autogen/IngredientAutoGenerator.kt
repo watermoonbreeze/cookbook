@@ -127,7 +127,7 @@ class IngredientAutoGenerator(
                 val id = ingredientRepo.createUserIngredient(
                     name = preview.normalizedName,
                     categoryId = preview.categoryId,
-                    source = "auto", // autogen 建的标 auto 源·隐含估算
+                    source = "ai", // [AI修改] 自动生成食材与 AI 自动菜品统一标记为 ai。
                 )
 
                 // 写入营养估算（缺字段留 null 不填 0）

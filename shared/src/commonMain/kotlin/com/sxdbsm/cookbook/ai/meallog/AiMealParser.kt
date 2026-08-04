@@ -42,7 +42,7 @@ object AiMealParser {
             json.decodeFromString<FlatMealJson>(jsonText)
         }.getOrNull()
         if (flatResult != null && flatResult.items.isNotEmpty()) {
-            return FlatToDayMealConverter.convert(flatResult)
+            return MealParseCanonicalizer.canonicalize(FlatToDayMealConverter.convert(flatResult))
         }
 
         // ② 回退：旧嵌套格式 AiMealParseResult（向后兼容旧 prompt）
@@ -50,7 +50,7 @@ object AiMealParser {
             json.decodeFromString<AiMealParseResult>(jsonText)
         }.getOrNull()
         if (oldResult != null && oldResult.meals.isNotEmpty() && oldResult.meals.none { it.dishes.isEmpty() }) {
-            return listOf(SchemaMigration.toDayMealJson(oldResult))
+            return MealParseCanonicalizer.canonicalize(listOf(SchemaMigration.toDayMealJson(oldResult)))
         }
 
         return null
@@ -166,7 +166,8 @@ object AiMealParser {
             .trim()
 
         // 硬分隔
-        val hardSplit = body.split(Regex("""[、，,+]""")).map { it.trim() }.filter { it.isNotBlank() }
+        // [AI修改] 与规则解析共用顶层切分，配料括号中的“+”不得拆成菜品。
+        val hardSplit = MealParseCanonicalizer.splitTopLevel(body, "、，,+")
         if (hardSplit.size > 1) {
             return hardSplit.flatMap { splitSoft(it) }
         }

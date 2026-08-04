@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
  * @Desc : 食材自动生成器单测——T-01(营养估算)/T-03(单位)/T-04(careFlag)/T-05(别名归一)/T-07(preview零写库)/T-08(commit落库)
  * <p>
  * [AI修改] A2 修复：createContext/createGenerator 改为共享同一 DB 实例，保证 preview 与 commit 操作
- * 在同一库上执行，commit 测试能真实验证 source="auto"（INV-07）和 ref="自动估算"（INV-05）。
+ * 在同一库上执行，commit 测试能真实验证 source="ai"（INV-07）和 ref="自动估算"（INV-05）。
  **/
 class IngredientAutoGeneratorTest {
 
@@ -188,11 +188,11 @@ class IngredientAutoGeneratorTest {
         val id = generator.commit(preview)
         assertTrue(id > 0, "commit 应返回有效食材 id")
 
-        // INV-07：source="auto"（A2 修复前此断言失效，因写的是另一个 DB）
+        // INV-07：自动生成实体统一标记为 AI。
         val q = db.cookbookQueries
         val row = q.selectIngredientById(id).executeAsOneOrNull()
         assertNotNull(row, "食材应已写入 DB")
-        assertEquals("auto", row.source, "自动生成食材 source 必须为 auto (INV-07)")
+        assertEquals("ai", row.source, "自动生成食材 source 必须为 ai (INV-07)")
 
         // INV-05：ref="自动估算"（selectIngredientNutrition 按 ingredient_id 查）
         val nutrition = q.selectIngredientNutrition(id).executeAsOneOrNull()

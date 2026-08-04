@@ -930,7 +930,7 @@ fun IngredientPickerScreen(
 private fun Ingredient.toSelectionItem() = com.sxdbsm.cookbook.android.ui.component.SelectionItem(
     id = id,
     title = displayNameText(),
-    subtitle = if (source == "user") "家庭" else "预设",
+    subtitle = if (source == "preset") "预设" else if (source == "ai") "家庭 · AI 创建" else "家庭",
     emoji = emoji.ifBlank { null },
 )
 
@@ -995,7 +995,7 @@ private fun SearchResultsPanel(
                     // [AI修改] 左：食材名 +（预设/家庭）。
                     Text(ing.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
                     Text(
-                        "（${if (ing.source == "user") "家庭" else "预设"}）",
+                        "（${if (ing.source == "preset") "预设" else if (ing.source == "ai") "家庭 · AI 创建" else "家庭"}）",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f),

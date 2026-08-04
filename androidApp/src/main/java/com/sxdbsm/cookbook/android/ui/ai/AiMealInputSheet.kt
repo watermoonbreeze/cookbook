@@ -545,7 +545,13 @@ private fun HelpSheet(onDismiss: () -> Unit) {
             // 粘贴
             HelpSection(
                 title = "📋 粘贴",
-                content = "复制了别处的菜单文字后，输入框右上角会出现「粘贴」按钮，一键填入。",
+                content = "可长按输入框使用系统的复制、粘贴菜单；右上角「粘贴」按钮仍可一键填入剪贴板内容。",
+            )
+            Spacer(Modifier.height(16.dp))
+
+            HelpSection(
+                title = "🗓️ 多天菜单模板",
+                content = "本周菜单\n周一\n早饭：大包（素馅）+ 纯牛奶 + 小黄瓜\n午饭：沙县\n晚饭：凉皮（配料：黄瓜丝、绿豆芽）+ 番茄青椒炒鸡蛋虾仁 + 苹果\n\n菜与菜用 + 分隔；一道菜的配料写在（）内。模板能提高准确率，发送后仍请在预览确认。",
             )
             Spacer(Modifier.height(16.dp))
 
@@ -691,6 +697,15 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             Text(
                 text = "📅 ${state.targetDate}${weekdayLabel(state.targetDate)}",
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
+        if (state.parseSourceMessage.isNotBlank()) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = state.parseSourceMessage,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }

@@ -65,6 +65,7 @@ data class AiMealInputUiState(
     val newDishNames: List<String> = emptyList(),
     /** 目标日期（预览可调）。[AI生成] */
     val targetDate: LocalDate = DateTime.today(),
+    val parseSourceMessage: String = "",
 )
 
 class AiMealInputViewModel(
@@ -225,12 +226,16 @@ class AiMealInputViewModel(
         }
 
         if (aiDays != null && aiDays.isNotEmpty()) {
+            _state.update { it.copy(parseSourceMessage = "本次结果：AI 解析") }
             com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput",
                 "AI parsed ${aiDays.size} day(s), ${aiDays.sumOf { it.meals.size }} meal(s), ${aiDays.sumOf { it.meals.sumOf { m -> m.dishes.size } }} dish(es)")
-            return aiDays
+            return RuleMealParser.anchorMultiDayPlan(aiDays, _state.value.targetDate)
         }
 
         // 规则兜底
+        val fallbackReason = if (config.isModelReady()) "AI 响应无有效结果" else "AI 未配置或不可用"
+        // [AI修改] AI 降级不能静默，否则用户无法判断预览的可靠性与修正方向。
+        _state.update { it.copy(parseSourceMessage = "本次结果：规则解析（$fallbackReason）") }
         com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput", "AI parse returned null/empty, fallback to RuleMealParser")
         val names = ingredientRepo.allActiveNames()
         val ruleDays = RuleMealParser.parse(text, names, today = _state.value.targetDate)

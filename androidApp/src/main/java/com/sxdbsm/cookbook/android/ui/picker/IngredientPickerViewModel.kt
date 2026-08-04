@@ -1191,7 +1191,7 @@ class IngredientPickerViewModel(
     private fun List<Ingredient>.filterForTabSource(tab: IngredientMainTab): List<Ingredient> =
         when (tab) {
             IngredientMainTab.RECENT, IngredientMainTab.PANTRY -> this // [AI修改] 最近/库存保留全部来源。
-            IngredientMainTab.CUSTOM -> filter { it.source == "user" }
+            IngredientMainTab.CUSTOM -> filter { it.source != "preset" }
             IngredientMainTab.GENERAL, IngredientMainTab.NUTRITION, IngredientMainTab.CARE -> filter { it.source != "user" }
             IngredientMainTab.REVIEW -> this // [AI生成] P2-1 待复核：不过滤 source（本身已限定 source='auto'）
         }
@@ -1289,7 +1289,7 @@ class IngredientPickerViewModel(
             IngredientMainTab.GENERAL -> dimension == "general" && crowdTypeId == null
             IngredientMainTab.NUTRITION -> dimension in nutritionDimensions
             IngredientMainTab.CARE -> dimension == "crowd" || crowdTypeId != null
-            IngredientMainTab.CUSTOM -> source == "user"
+            IngredientMainTab.CUSTOM -> source != "preset"
             IngredientMainTab.REVIEW -> false // [AI生成] P2-1 待复核：不按分类匹配
         }
 

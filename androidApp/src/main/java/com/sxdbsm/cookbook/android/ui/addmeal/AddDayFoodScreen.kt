@@ -145,6 +145,7 @@ fun AddDayFoodScreen(
     onBack: () -> Unit,
     onAddNewDish: () -> Unit,
     onOpenDish: (Long) -> Unit = {}, // [AI生成] F1：点餐次里的菜进详情
+    onOpenWeekPlan: (LocalDate) -> Unit = {},
     copyFromDate: LocalDate? = null, // [AI生成] F8：食历复制来源日期→预填新建草稿
     editDate: LocalDate? = null,
     createdDishId: Long? = null,
@@ -575,9 +576,11 @@ fun AddDayFoodScreen(
             vm = aiVm,
             onDismiss = { aiSheetOpen = false },
             onSaved = { savedState ->
-                // AI 保存成功后，刷新当前页面以显示新记录
-                AppLogger.d("MealFlow", "AI meal saved: ${savedState.autoGenResult?.mealsSaved} meals, date=${savedState.targetDate}")
-                vm.reloadAfterAiSave(savedState.targetDate)
+                val savedDays = savedState.autoGenPreview?.days.orEmpty()
+                AppLogger.d("MealFlow", "AI meal saved: ${savedState.autoGenResult?.mealsSaved} meals, days=${savedDays.map { it.date }}")
+                // [AI修改] 多天已跨出当前编辑语境，关闭本页并按实际最早日期打开周计划；单天才原地刷新。
+                if (savedDays.size > 1) onOpenWeekPlan(savedDays.minOf { it.date })
+                else vm.reloadAfterAiSave(savedDays.firstOrNull()?.date ?: savedState.targetDate)
             },
         )
     }

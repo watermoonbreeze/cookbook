@@ -42,7 +42,6 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             }
             q.upsertPreference(PreferenceKeys.SEED_LEGACY_SANITIZED, "1", now)
         }
-
         // 字典类小表：表为空才写入。
         if (q.countCookingMethods().executeAsOne() == 0L) seedCookingMethods(now)
         seedMeasurementUnits() // [AI修改] 每次启动幂等补齐预设单位(INSERT OR IGNORE)：老库也能拿到后加的 g/kg/ml 等。

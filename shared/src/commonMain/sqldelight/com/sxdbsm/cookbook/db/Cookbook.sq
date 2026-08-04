@@ -810,18 +810,18 @@ WHERE id = :id AND status = 1;
 deleteUserIngredient:
 UPDATE ingredient
 SET status = 0, reason = :reason
-WHERE id = :id AND source = 'user';
+WHERE id = :id AND source != 'preset';
 
 -- [AI生成] 恢复失效的自定义食材：清空失效原因、置回有效。
 restoreUserIngredient:
 UPDATE ingredient
 SET status = 1, reason = ''
-WHERE id = ? AND source = 'user';
+WHERE id = ? AND source != 'preset';
 
 -- [AI生成] 彻底删除自定义食材（回收站硬删）：仅限用户自建；被引用的 dish_ingredient 关系随外键级联删除。
 hardDeleteUserIngredient:
 DELETE FROM ingredient
-WHERE id = ? AND source = 'user';
+WHERE id = ? AND source != 'preset';
 
 -- [AI生成] 回收站：列出失效的自定义食材，供恢复/彻底删除。
 selectInactiveUserIngredients:
@@ -1802,14 +1802,15 @@ SELECT i.id, i.name, i.alias, i.pinyin, i.image_path, i.thumbnail_path, i.emoji,
        i.default_unit_id, i.source, i.created_at
 FROM ingredient i
 JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
-WHERE i.status = 1 AND i.source = 'auto' AND n.review = 0
+WHERE i.status = 1 AND i.source = 'ai' AND n.review = 0
 ORDER BY i.created_at DESC;
 
 -- [AI生成] 待复核食材数量（badge 用）。
 countPendingReviewIngredients:
 SELECT COUNT(*) FROM ingredient i
 JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
-WHERE i.status = 1 AND i.source = 'auto' AND n.review = 0;
+WHERE i.status = 1 AND i.source = 'ai' AND n.review = 0;
+
 
 -- [AI生成] 标记食材营养为已复核（review=1）。
 markIngredientNutritionReviewed:

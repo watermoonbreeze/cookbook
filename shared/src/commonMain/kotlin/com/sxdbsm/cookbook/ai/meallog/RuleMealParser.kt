@@ -50,7 +50,6 @@ object RuleMealParser {
     )
 
     // 菜品分隔词
-    private val HARD_SPLIT = Regex("""[,，、+\n]""")
     private val SOFT_SPLIT = Regex("""(和|跟|还有|以及|加上|配上?|搭配|搭|就着|再来|外加|捎带|另|另外|还有一个|再加上|然后)""")
 
     // 份量+单位
@@ -94,7 +93,21 @@ object RuleMealParser {
         if (normalized.isBlank()) return listOf(DayMealJson(raw_input = input, parse_method = "rule"))
 
         val dayBlocks = TextSegmenter.segment(normalized)
-        return dayBlocks.map { block -> parseDayBlock(block, libraryIngredientNames, today) }
+        val days = dayBlocks.map { block -> parseDayBlock(block, libraryIngredientNames, today) }
+        return MealParseCanonicalizer.canonicalize(anchorMultiDayPlan(days, today))
+    }
+
+    /**
+     * 多天菜单不是历史回忆：星期必须落在目标日所在周，不能沿用“最近过去”算法。
+     * [AI修改] 这是此前生成代码把周二/周三写到上周的根因；单天仍保留补记语义。
+     */
+    fun anchorMultiDayPlan(days: List<DayMealJson>, targetDate: LocalDate): List<DayMealJson> {
+        if (days.size <= 1) return days
+        val mondayOffset = targetDate.dayOfWeek.ordinal
+        return days.map { day ->
+            val weekday = TextSegmenter.weekdayToIso(day.weekday) ?: return@map day
+            day.copy(date = null, date_offset = weekday - 1 - mondayOffset)
+        }
     }
 
     // ═══════════════════════════════════════════════════
@@ -309,7 +322,8 @@ object RuleMealParser {
     /** 拆分菜品。[AI生成] */
     private fun splitDishes(text: String): List<String> {
         // 硬分隔
-        val hardParts = text.split(HARD_SPLIT).map { it.trim() }.filter { it.isNotBlank() }
+        // [AI修改] 仅在顶层拆菜，括号内的“+”属于配料而不是另一道菜。
+        val hardParts = MealParseCanonicalizer.splitTopLevel(text, ",，、+\n")
         if (hardParts.size > 1) {
             return hardParts.flatMap { part ->
                 val softParts = splitSoft(part)
@@ -322,7 +336,9 @@ object RuleMealParser {
 
     /** 软分隔：两端都能独立成菜名才拆。[AI修改] 用 findAll 显式切分，避免 Regex.split 捕获组跨平台差异。 */
     private fun splitSoft(text: String): List<String> {
-        val matches = SOFT_SPLIT.findAll(text).toList()
+        val matches = SOFT_SPLIT.findAll(text)
+            .filter { MealParseCanonicalizer.isTopLevel(text, it.range.first) }
+            .toList()
         if (matches.isEmpty()) return emptyList()
 
         // 按分隔词位置手动切分
@@ -438,5 +454,67 @@ object RuleMealParser {
     private fun chineseNumToDouble(s: String): Double {
         CHINESE_NUM_MAP[s]?.let { return it }
         return s.toDoubleOrNull() ?: 1.0
+    }
+}
+
+/**
+ * AI 与规则解析共用的结果整理入口。
+ * [AI生成] 在入库前统一清理空白字段并固定 AI 创建实体的来源，避免两条路径语义漂移。
+ */
+internal object MealParseCanonicalizer {
+    fun canonicalize(days: List<DayMealJson>): List<DayMealJson> = days.map { day ->
+        day.copy(
+            meals = day.meals.map { meal ->
+                meal.copy(
+                    dishes = meal.dishes.mapNotNull { dish ->
+                        val name = (dish.dish?.name ?: dish.ref ?: dish.name).trim()
+                        if (name.isBlank()) null else dish.copy(
+                            name = name,
+                            ref = dish.ref?.trim()?.takeIf { it.isNotEmpty() },
+                            dish = dish.dish?.copy(
+                                name = dish.dish.name.trim(),
+                                source = "ai",
+                                ingredients = dish.dish.ingredients.map { ingredient ->
+                                    ingredient.copy(food = ingredient.food?.copy(
+                                        name = ingredient.food.name.trim(),
+                                        source = "ai",
+                                    ))
+                                },
+                            ),
+                        )
+                    },
+                )
+            },
+        )
+    }
+
+    /** 按顶层分隔符切分；不完整括号保持原文，避免丢失用户输入。 */
+    fun splitTopLevel(text: String, separators: String): List<String> {
+        val parts = mutableListOf<String>()
+        var start = 0
+        var depth = 0
+        text.forEachIndexed { index, char ->
+            when (char) {
+                '(', '（' -> depth++
+                ')', '）' -> if (depth > 0) depth--
+                else -> if (depth == 0 && char in separators) {
+                    text.substring(start, index).trim().takeIf { it.isNotEmpty() }?.let(parts::add)
+                    start = index + 1
+                }
+            }
+        }
+        text.substring(start).trim().takeIf { it.isNotEmpty() }?.let(parts::add)
+        return parts
+    }
+
+    fun isTopLevel(text: String, index: Int): Boolean {
+        var depth = 0
+        text.take(index).forEach { char ->
+            when (char) {
+                '(', '（' -> depth++
+                ')', '）' -> if (depth > 0) depth--
+            }
+        }
+        return depth == 0
     }
 }

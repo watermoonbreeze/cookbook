@@ -409,6 +409,12 @@ fun MainScaffold(
                         nav.navigate(Routes.newDish())
                     },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) }, // [AI生成] F1：餐次里点菜进详情
+                    onOpenWeekPlan = { targetDate ->
+                        // [AI修改] 多天 AI 记餐保存后离开编辑页，避免只刷新首日而掩盖其他天。
+                        nav.navigate(Routes.weekPlanFrom(DateTime.formatDate(targetDate))) {
+                            popUpTo(Routes.ADD_MEAL) { inclusive = true }
+                        }
+                    },
                     copyFromDate = copyFrom, // [AI生成] F8：复制来源→预填新建草稿
                     editDate = date,
                     presetDishIds = presetDishIds,

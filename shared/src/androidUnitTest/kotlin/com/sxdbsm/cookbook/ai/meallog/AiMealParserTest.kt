@@ -157,4 +157,11 @@ class AiMealParserTest {
         val result = AiMealParser.localFallback("晚上吃了牛肉面")
         assertEquals("dinner", result.meals[0].meal_type)
     }
+
+    @Test
+    fun `本地兜底括号内加号不拆菜`() {
+        val result = AiMealParser.localFallback("晚饭 凉皮（黄瓜丝+绿豆芽）+番茄炒蛋")
+
+        assertEquals(listOf("凉皮（黄瓜丝+绿豆芽）", "番茄炒蛋"), result.meals.single().dishes.map { it.name })
+    }
 }
