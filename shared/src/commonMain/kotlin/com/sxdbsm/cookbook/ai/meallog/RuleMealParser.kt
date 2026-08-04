@@ -64,6 +64,9 @@ object RuleMealParser {
 
     // 括号备注
     private val PAREN_NOTE = Regex("""[（(]([^）)]+)[）)]""")
+    // 时间必须在切菜前移除；否则“晚上七点半”会落入菜名。
+    private val EXPLICIT_TIME = Regex("""(?:(凌晨|早上|上午|中午|下午|晚上|傍晚|夜里|夜间)\s*)?(\d{1,2}|[一二三四五六七八九十两]+)(?::|点|时)(\d{1,2}|[一二三四五六七八九十两]+|半)?(?:分)?""")
+    private val LEADING_ABSOLUTE_DATE = Regex("""^(?:\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}月\d{1,2}[日号]|[一二三四五六七八九十两〇零]+月[一二三四五六七八九十两〇零]+[日号])\s*""")
 
     // 中文数字
     private val CHINESE_NUM_MAP = mapOf(
@@ -131,8 +134,10 @@ object RuleMealParser {
             parseMealBlock(mealText, index, libraryNames)
         }
 
+        val absoluteDate = resolveAbsoluteDate(block.dateHint, today)
         return DayMealJson(
-            date_offset = dateOffset,
+            date = absoluteDate?.toString(),
+            date_offset = if (absoluteDate == null) dateOffset else 0,
             weekday = block.weekdayHint,
             meals = meals,
             raw_input = block.text,
@@ -195,8 +200,15 @@ object RuleMealParser {
         matches.sortBy { it.start }
         val merged = mutableListOf<MatchPos>()
         for (m in matches) {
-            if (merged.isEmpty() || m.start >= merged.last().end) {
-                merged.add(m)
+            val previous = merged.lastOrNull()
+            if (previous == null || m.start >= previous.end) {
+                // “晚上七点半晚饭”是一个晚餐块，不可被两个同类关键词切成两餐。
+                val between = previous?.let { text.substring(it.end, m.start).trim() }.orEmpty()
+                if (previous != null && previous.mealType == m.mealType && EXPLICIT_TIME.matches(between)) {
+                    merged[merged.lastIndex] = previous.copy(end = m.end)
+                } else {
+                    merged.add(m)
+                }
             }
         }
 
@@ -231,13 +243,15 @@ object RuleMealParser {
     ): MealJson {
         val mealType = extractMealType(text) ?: inferMealTypeByOrder(index)
 
-        val time = defaultMealTime(mealType)
+        val time = extractExplicitMealTime(text) ?: defaultMealTime(mealType)
 
         // 提取备注并从文本中移除（避坑：备注不再被误拆为菜品）
         val note = extractMealNote(text)
         var cleanText = removeMealNote(text)
 
         // 去掉餐次关键词本身
+        cleanText = removeMealKeywordPrefix(cleanText)
+        cleanText = cleanText.replace(EXPLICIT_TIME, "").trim()
         cleanText = removeMealKeywordPrefix(cleanText)
 
         // 拆菜品
@@ -279,6 +293,24 @@ object RuleMealParser {
         else -> null
     }
 
+    /** 解析常见显式时刻，如 12:30、晚上七点半；解析失败仍交由餐次默认时间。 [AI修改] */
+    private fun extractExplicitMealTime(text: String): String? {
+        val match = EXPLICIT_TIME.find(text) ?: return null
+        var hour = parseNumber(match.groupValues[2]) ?: return null
+        val minuteToken = match.groupValues[3]
+        val minute = when (minuteToken) {
+            "" -> 0
+            "半" -> 30
+            else -> parseNumber(minuteToken) ?: return null
+        }
+        if (minute !in 0..59 || hour !in 0..23) return null
+        when (match.groupValues[1]) {
+            "下午", "晚上", "傍晚", "夜里", "夜间" -> if (hour in 1..11) hour += 12
+            "中午" -> if (hour in 1..10) hour += 12
+        }
+        return "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+    }
+
     /** 提取整餐备注。[AI生成] */
     private fun extractMealNote(text: String): String {
         val notes = mutableListOf<String>()
@@ -302,19 +334,50 @@ object RuleMealParser {
     /** 移除餐次关键词前缀。[AI修改] Bug修复：增加吃/喝动词+日期词剥离 */
     private fun removeMealKeywordPrefix(text: String): String {
         var t = text
-        for (splitter in MEAL_SPLITTERS) {
-            for (kw in splitter.keywords) {
-                if (t.startsWith(kw)) {
-                    t = t.removePrefix(kw).trimStart(' ', ':', '：', '-', '—', '~')
-                    break
+        var removed: Boolean
+        do {
+            removed = false
+            for (splitter in MEAL_SPLITTERS) {
+                for (kw in splitter.keywords) {
+                    if (t.startsWith(kw)) {
+                        t = t.removePrefix(kw).trimStart(' ', ':', '：', '-', '—', '~')
+                        removed = true
+                        break
+                    }
                 }
+                if (removed) break
             }
-        }
+        } while (removed)
         // 剥离句首吃/喝动词上下文（类别化迭代贪心·EatDrinkStripper）
         t = EatDrinkStripper.strip(t)
         // 剥离裸露日期/时间词（无餐次关键词时残留，如"昨天红烧肉"→"红烧肉"）
         t = t.replace(Regex("""^(今天|今儿|今个|昨天|昨儿|昨个|前天|前儿|明天|明儿|后天|大前天|大后天)\s*"""), "")
+        t = t.replace(LEADING_ABSOLUTE_DATE, "")
         return t
+    }
+
+    /** 日期块中的显式日期优先于 weekday/相对词；无年份时取目标日期所在年。 [AI修改] */
+    private fun resolveAbsoluteDate(dateHint: String?, today: LocalDate): LocalDate? {
+        val hint = dateHint?.trim().orEmpty()
+        if (hint.isBlank()) return null
+        val parts = Regex("""^(?:(\d{4})[-/])?([^月/-]+)[月/-]([^日号]+)""").find(hint)?.groupValues ?: return null
+        val year = parts[1].toIntOrNull() ?: today.year
+        val month = parseNumber(parts[2]) ?: return null
+        val day = parseNumber(parts[3]) ?: return null
+        return runCatching { LocalDate(year, month, day) }.getOrNull()
+    }
+
+    private fun parseNumber(raw: String): Int? {
+        raw.toIntOrNull()?.let { return it }
+        val digits = mapOf('零' to 0, '〇' to 0, '一' to 1, '二' to 2, '两' to 2, '三' to 3, '四' to 4, '五' to 5, '六' to 6, '七' to 7, '八' to 8, '九' to 9)
+        if (raw == "十") return 10
+        if ('十' in raw) {
+            val split = raw.split('十')
+            val tens = split[0].takeIf { it.isNotBlank() }?.let { token -> token.singleOrNull()?.let(digits::get) } ?: 1
+            val ones = split.getOrNull(1)?.takeIf { it.isNotBlank() }?.let { token -> token.singleOrNull()?.let(digits::get) } ?: 0
+            return tens * 10 + ones
+        }
+        return digits[raw.singleOrNull()]
     }
 
     // ═══════════════════════════════════════════════════

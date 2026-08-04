@@ -41,4 +41,14 @@ class AiMealParserTest {
         assertTrue(outcome.warnings.isNotEmpty())
         assertEquals(targetDate.toString(), outcome.days.single().date)
     }
+
+    @Test
+    fun `可选字段为null不应使有效菜品降级`() {
+        val outcome = AiMealParser.parseOutcome(
+            """{"items":[{"date":"2026-08-15","meal_type":"lunch","meal_note":null,"dish_name":"红烧肉","dish_note":null,"dish_cuisine":null,"dish_tags":null,"dish_cooking_methods":null,"ingredients":null}]}""",
+            targetDate,
+        )
+        assertTrue(outcome.isValid, "可选 null 应回退默认值，不应丢弃整餐：${outcome.errors}")
+        assertEquals("红烧肉", outcome.days.single().meals.single().dishes.single().name)
+    }
 }

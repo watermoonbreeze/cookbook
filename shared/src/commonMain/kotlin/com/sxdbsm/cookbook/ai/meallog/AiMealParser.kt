@@ -30,6 +30,8 @@ object AiMealParser {
     private val json = Json {
         ignoreUnknownKeys = true
         isLenient = true
+        // [AI修改] LLM 常把可选字段写为 null；有默认值的非空字段应回退默认值，不能令整份餐食失效。
+        coerceInputValues = true
     }
 
     /**

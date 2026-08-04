@@ -134,6 +134,18 @@ class RuleMealParserRegressionTest {
         }
     }
 
+    @Test
+    fun `中文日期和显式时间不成为菜名且日期时间正确`() {
+        val result = RuleMealParser.parse("八月十五号晚上七点半晚饭糖醋排骨和米饭", today = today)
+        val day = result.single()
+        assertEquals("2026-08-15", day.date)
+        val meal = day.meals.single()
+        assertEquals("19:30", meal.meal_time)
+        meal.dishes.map { it.dish?.name ?: it.name }.forEach { name ->
+            assertTrue(!name.contains("八月十五号") && !name.contains("七点半"), "日期时间不能成为菜名：$name")
+        }
+    }
+
     // ═══════════════════════════════════════════════════
     // 不该拆的保持不拆
     // ═══════════════════════════════════════════════════
@@ -156,7 +168,7 @@ class RuleMealParserRegressionTest {
 
         assertEquals(listOf("凉皮", "番茄炒蛋"), dishes.map { it.name })
         assertEquals(
-            listOf("黄瓜丝", "绿豆芽"),
+            listOf("凉皮", "黄瓜丝", "绿豆芽"),
             dishes.first().dish?.ingredients?.mapNotNull { it.food?.name },
         )
     }

@@ -97,6 +97,14 @@ class TextSegmenterTest {
     }
 
     @Test
+    fun `中文数字日期行→提取并剥离日期`() {
+        val blocks = TextSegmenter.segment("八月十五号午餐红烧肉和米饭")
+        assertEquals(1, blocks.size)
+        assertEquals("八月十五号", blocks[0].dateHint)
+        assertEquals("午餐红烧肉和米饭", blocks[0].text)
+    }
+
+    @Test
     fun `多天分段`() {
         val input = """
             周一

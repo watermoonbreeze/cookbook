@@ -33,7 +33,8 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
         }
         // [AI修改] max_tokens 使用 request 传入值（由 AiMealPrompt 等调用方控制），多天菜单需要 4096+。安全帽 256..8192。
         val body = GlmProtocol.buildRequestBody(model.model, request.system, request.user, request.temperature, jsonMode = model.supportsJsonMode, maxTokens = request.maxTokens.coerceIn(256, 8192))
-        AppLogger.d("CloudAi", "req[${model.id}] endpoint=${model.endpoint} body=$body") // [AI生成] 请求日志(prompt只含食材/约束标签/候选菜名,无敏感健康档案)。
+        // [AI修改] 请求可能含饮食与健康语义；日志只保留非内容元数据。
+        AppLogger.d("CloudAi", "req[${model.id}] endpoint=${model.endpoint} payloadBytes=${body.toByteArray().size}")
         var lastError: Throwable? = null
         repeat(MAX_ATTEMPTS) { attempt ->
             val result = runCatching { postOnce(model.endpoint, key, body) }
@@ -76,7 +77,8 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
             val code = conn.responseCode
             val stream = if (code in 200..299) conn.inputStream else conn.errorStream
             val text = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
-            AppLogger.d("CloudAi", "http=$code cost=${System.currentTimeMillis() - started}ms resp=$text") // [AI修改] 深挖：记状态/耗时/原始响应。
+            // [AI修改] 原始模型响应仅可在当前 UI 会话按需查看，绝不能写入日志。
+            AppLogger.d("CloudAi", "http=$code cost=${System.currentTimeMillis() - started}ms responseBytes=${text.toByteArray().size}")
             if (code !in 200..299) throw IOException("HTTP $code")
             return GlmProtocol.parseContent(text) ?: throw IOException("empty content")
         } finally {
