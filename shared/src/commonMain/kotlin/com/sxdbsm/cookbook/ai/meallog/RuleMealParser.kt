@@ -49,7 +49,7 @@ object RuleMealParser {
         ).sortedByDescending { it.length }),
     )
 
-    // 菜品分隔词
+    // 菜品分隔词：规则模板约定顶层菜品只用逗号；括号内的逗号/+ /、是食材分隔，必须由括号深度保护。
     private val SOFT_SPLIT = Regex("""(和|跟|还有|以及|加上|配上?|搭配|搭|就着|再来|外加|捎带|另|另外|还有一个|再加上|然后)""")
 
     // 份量+单位
