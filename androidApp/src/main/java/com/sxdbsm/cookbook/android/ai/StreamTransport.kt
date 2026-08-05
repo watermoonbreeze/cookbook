@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.android.ai
 
 import com.sxdbsm.cookbook.ai.GlmProtocol
 import com.sxdbsm.cookbook.android.util.AppLogger
+import kotlinx.coroutines.CancellationException
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -13,7 +14,7 @@ import java.net.URL
  * @File : StreamTransport
  * @Time : 2026/08/05
  * @Author : SXD-AI
- * @Desc : AF-13: 每请求独立 call，无全局连接状态。
+ * @Desc : AF-13/15/16: 每请求独立 call；取消标记三处检查；非取消 IO 安全包装。
  */
 
 data class SseStreamResult(
@@ -63,11 +64,21 @@ internal interface StreamCall {
     fun cancel()
 }
 
-/** transport 可抛出的安全异常：只含状态码和安全文案，不含 body。 */
+/**
+ * AF-16: 安全 transport 异常。
+ *
+ * - [httpStatus] nullable：非 2xx 时必有；IO 失败（超时/重置/读失败）为 null。
+ * - [code] 稳定错误码。
+ * - [retryable] 供 Runtime 判定是否首帧重试。
+ * - message 只含安全文案，绝不含原始 body/输入/Key。
+ */
 class StreamTransportException(
-    val httpStatus: Int,
-    code: String,
-) : IOException("HTTP $httpStatus $code")
+    val httpStatus: Int?,
+    val code: String,
+    val retryable: Boolean,
+) : IOException(code) {
+    override val message: String get() = if (httpStatus != null) "HTTP $httpStatus $code" else code
+}
 
 internal class HttpUrlStreamTransport : StreamTransport {
     override fun newCall(request: StreamHttpRequest): StreamCall =
@@ -80,7 +91,12 @@ internal class HttpUrlStreamCall(
     @Volatile
     private var connection: HttpURLConnection? = null
 
+    // AF-15: 每 call 私有取消标记；cancel() 先置位再 disconnect。
+    @Volatile
+    private var cancelled = false
+
     override suspend fun execute(onDelta: suspend (String) -> Unit): SseStreamResult {
+        checkNotCancelled("before connect")
         val started = System.currentTimeMillis()
         val conn = (URL(request.endpoint).openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
@@ -93,23 +109,36 @@ internal class HttpUrlStreamCall(
         }
         connection = conn
         try {
+            checkNotCancelled("before write body")
             conn.outputStream.use { it.write(request.body.toByteArray(Charsets.UTF_8)) }
+            checkNotCancelled("before read response")
             val code = conn.responseCode
             if (code !in 200..299) {
                 AppLogger.debugLong("CloudAiRaw", "stream http[$code] errorLength",
                     conn.errorStream?.bufferedReader(Charsets.UTF_8)?.use { "${it.readText().length} bytes" }.orEmpty())
-                throw StreamTransportException(code, "STREAM_HTTP_ERROR")
+                throw StreamTransportException(code, "STREAM_HTTP_ERROR", retryable = true)
             }
             val result = readSseStream(conn.inputStream, onDelta)
             AppLogger.i("CloudAi", "stream http=$code cost=${System.currentTimeMillis() - started}ms chars=${result.totalChars} finish=${result.finishReason}")
             return result
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: IOException) {
+            // AF-16: 非取消网络 IO 失败统一安全包装
+            if (e is StreamTransportException) throw e
+            throw StreamTransportException(httpStatus = null, code = "STREAM_IO_ERROR", retryable = true)
         } finally {
             connection = null
             conn.disconnect()
         }
     }
 
+    private fun checkNotCancelled(phase: String) {
+        if (cancelled) throw CancellationException("call cancelled at $phase")
+    }
+
     override fun cancel() {
+        cancelled = true
         connection?.disconnect()
     }
 }

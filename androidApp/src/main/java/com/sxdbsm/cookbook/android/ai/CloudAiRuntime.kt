@@ -105,7 +105,8 @@ class CloudAiRuntime internal constructor(
                 activeCall.set(call)
                 try {
                     val result = call.execute { delta ->
-                        if (delta.isNotEmpty()) {
+                        // AF-15: 仅在当前协程仍活跃时发射 Delta
+                        if (delta.isNotEmpty() && coroutineContext.isActive) {
                             hasDelta = true
                             totalChars += delta.length
                             channel.send(LlmStreamEvent.Delta(delta)) // 步骤3
@@ -113,11 +114,19 @@ class CloudAiRuntime internal constructor(
                     }
                     finishReason = result.finishReason
                     break
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    // AF-15: 取消必须重抛，绝不转 Failed
+                    throw e
                 } catch (e: StreamTransportException) {
-                    AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1}: ${e.httpStatus}")
-                    // 步骤5: 首帧后失败 -> Failed(false), 不重试
-                    if (hasDelta || attempt == MAX_ATTEMPTS - 1) {
-                        channel.send(LlmStreamEvent.Failed(message = "HTTP ${e.httpStatus} STREAM_ERROR", retryable = !hasDelta))
+                    // AF-16: 仅按安全类型 + hasDelta 判定重试
+                    AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1}: ${e.code}")
+                    if (hasDelta || attempt == MAX_ATTEMPTS - 1 || !e.retryable) {
+                        val safeMessage = if (e.httpStatus != null) {
+                            "HTTP ${e.httpStatus} ${e.code}"
+                        } else {
+                            e.code // STREAM_IO_ERROR
+                        }
+                        channel.send(LlmStreamEvent.Failed(message = safeMessage, retryable = !hasDelta))
                         channel.close()
                         return@launch
                     }
@@ -131,12 +140,18 @@ class CloudAiRuntime internal constructor(
                     }
                     return@launch
                 } finally {
-                    activeCall.compareAndSet(call, null)
+                    // AF-15: 取消路径（isActive=false）保留 activeCall 供 awaitClose cancel；
+                    // 正常/失败路径才清空（compare-and-set 不误清后续 attempt 的 call）。
+                    if (coroutineContext.isActive) {
+                        activeCall.compareAndSet(call, null)
+                    }
                 }
             }
             // 步骤4: 正常结束
-            channel.send(LlmStreamEvent.Completed(finishReason = finishReason ?: "unknown", totalChars = totalChars))
-            channel.close()
+            if (channel.isActive) {
+                channel.send(LlmStreamEvent.Completed(finishReason = finishReason ?: "unknown", totalChars = totalChars))
+                channel.close()
+            }
         }
 
         // 步骤7: awaitClose 取消活跃 call
