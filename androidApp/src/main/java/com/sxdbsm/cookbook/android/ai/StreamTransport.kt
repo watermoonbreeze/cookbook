@@ -87,6 +87,10 @@ internal class HttpUrlStreamTransport : StreamTransport {
 
 internal class HttpUrlStreamCall(
     private val request: StreamHttpRequest,
+    // AF-21: 仅可测试性而引入的 internal 默认连接工厂；生产行为不变，不暴露到 Koin/公开 API。
+    private val connectionFactory: (String) -> HttpURLConnection = {
+        URL(it).openConnection() as HttpURLConnection
+    },
 ) : StreamCall {
     @Volatile
     private var connection: HttpURLConnection? = null
@@ -98,7 +102,7 @@ internal class HttpUrlStreamCall(
     override suspend fun execute(onDelta: suspend (String) -> Unit): SseStreamResult {
         checkNotCancelled("before connect")
         val started = System.currentTimeMillis()
-        val conn = (URL(request.endpoint).openConnection() as HttpURLConnection).apply {
+        val conn = connectionFactory(request.endpoint).apply {
             requestMethod = "POST"
             connectTimeout = 15000
             readTimeout = 60000

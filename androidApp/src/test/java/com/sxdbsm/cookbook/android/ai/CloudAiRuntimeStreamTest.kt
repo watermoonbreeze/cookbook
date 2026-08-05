@@ -6,15 +6,25 @@ import com.sxdbsm.cookbook.ai.LlmRequest
 import com.sxdbsm.cookbook.ai.LlmStreamEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -396,5 +406,94 @@ class CloudAiRuntimeStreamTest {
         assertFalse(HttpUrlStreamCall.isHttpRetryable(401))
         assertFalse(HttpUrlStreamCall.isHttpRetryable(403))
         assertFalse(HttpUrlStreamCall.isHttpRetryable(404))
+    }
+
+    // ════════════════════ AF-21: 真实连接 read 中被 disconnect 打断 ════════════════════
+
+    @Test
+    fun `AF-21 read被disconnect打断时cancel抛CancellationException`() = runBlocking {
+        val blockOnRead = CountDownLatch(1)
+        val releaseRead = CountDownLatch(1)
+        val sseLine = "data: {\"choices\":[{\"delta\":{\"content\":\"X\"}}]}\n"
+        val fakeConn = BlockingHttpURLConnection(
+            BlockingSseInputStream(sseLine, blockOnRead, releaseRead),
+            releaseRead,
+        )
+        val call = HttpUrlStreamCall(
+            StreamHttpRequest(endpoint = "https://example.com", apiKey = "key", body = "{}"),
+            connectionFactory = { fakeConn },
+        )
+
+        // 启动 execute（Default 线程，避免阻塞 runBlocking 事件循环），等待 read 已阻塞
+        val deferred = async(Dispatchers.Default) { call.execute { } }
+        assertTrue("read 应进入阻塞", blockOnRead.await(3, TimeUnit.SECONDS))
+
+        // 在 read 阻塞时 cancel → cancelled=true + fakeConn.disconnect() → releaseRead.countDown()
+        call.cancel()
+
+        // read 抛 IOException("socket closed") → catch(IOException) 检查 cancelled → 抛 CancellationException
+        val thrown = try {
+            deferred.await()
+            null
+        } catch (e: CancellationException) {
+            e
+        }
+        assertNotNull("必须抛 CancellationException 而非 StreamTransportException", thrown)
+        // 网络真实发生：output 写过、response read 已进入
+        assertTrue("output 应写过一次", fakeConn.outputWrites.get() >= 1)
+        assertTrue("response code 应已读取", fakeConn.responseCodeReads.get() >= 1)
+    }
+}
+
+// ============================================================
+// AF-21: Blocking HttpURLConnection 夹具
+// ============================================================
+
+/** 首行 SSE 数据后阻塞 read；releaseRead 释放后抛 IOException("socket closed")。 */
+private class BlockingSseInputStream(
+    private val firstLine: String,
+    private val blockOnRead: CountDownLatch,
+    private val releaseRead: CountDownLatch,
+) : InputStream() {
+    private val bytes = firstLine.toByteArray(Charsets.UTF_8)
+    private var index = 0
+    private var lineDone = false
+
+    override fun read(): Int {
+        if (!lineDone) {
+            if (index < bytes.size) return bytes[index++].toInt() and 0xFF
+            lineDone = true
+        }
+        // 首行发完，通知测试"已阻塞"，等待 disconnect 释放
+        blockOnRead.countDown()
+        try {
+            releaseRead.await()
+        } catch (e: InterruptedException) {
+            throw IOException("socket closed")
+        }
+        throw IOException("socket closed")
+    }
+}
+
+/** 测试用 HttpURLConnection：200 + SSE input；disconnect() 释放 read。 */
+private class BlockingHttpURLConnection(
+    private val blockingInput: BlockingSseInputStream,
+    private val releaseRead: CountDownLatch,
+) : HttpURLConnection(URL("https://example.com")) {
+    val outputWrites = AtomicInteger(0)
+    val responseCodeReads = AtomicInteger(0)
+
+    override fun connect() {}
+    override fun disconnect() { releaseRead.countDown() }
+    override fun usingProxy() = false
+    override fun getResponseCode(): Int {
+        responseCodeReads.incrementAndGet()
+        return 200
+    }
+    override fun getErrorStream(): InputStream? = null
+    override fun getInputStream(): InputStream = blockingInput
+    override fun getOutputStream(): OutputStream {
+        outputWrites.incrementAndGet()
+        return ByteArrayOutputStream()
     }
 }
