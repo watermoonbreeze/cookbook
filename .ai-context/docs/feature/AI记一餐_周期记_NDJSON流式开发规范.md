@@ -189,8 +189,8 @@
 
 | 批次 | 实施范围 | 完成门槛 |
 |---|---|---|
-| B1 协议 ⚠️ 五审未通过 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过 | `35a18c8e` 已采用单来源 fallback；AF-18 的日期精确断言与既有 B1 回归被削弱/删除，必须按落地方案 §7.6 恢复。 |
-| B2 Runtime ⚠️ 五审未通过 | `AiRuntime.stream`、DeepSeek SSE、finish reason、取消保障 | Runtime 单测 + 全量 0 失败 | `35a18c8e` 的 config/call 抽象正确；AF-15~17 仍存在取消竞态、真实 IO 不重试与伪测试证据，必须按落地方案 §7.6 修复。 |
+| B1 协议 ✅ 六审通过 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过 | `5100ac33` 已恢复 T-01~T-08、AF-03/05/08 及周期隔离回归；D-01~D-08 均做 key/date/meal_id 精确断言。 |
+| B2 Runtime ⚠️ 七审未通过 | `AiRuntime.stream`、DeepSeek SSE、finish reason、取消保障 | Runtime 单测 + 全量 0 失败 | AF-19/20 的生产逻辑已正确；AF-21 尚未让真实 `HttpUrlStreamCall` 覆盖 disconnect→IOException→CancellationException 分支，唯一依据为落地方案 §7.8。 |
 | B3 会话 | 新状态机、generation、事件缓冲、局部 `previewAll`、确认/规则降级边界 | ViewModel 单测证明 I-01/I-02/I-03/I-04 |
 | B4 输入 UI | 快速记/周期记、日期段、200 字限制、恢复和清空规则 | Compose/人工验证；无保存副作用 |
 | B5 确认 UI | 渐进卡片、进度、截断/失败诊断、最终重排、部分确认 | 真机能看到增量与失败尾部 |

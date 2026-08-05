@@ -423,6 +423,45 @@ private fun resolveWholeJsonFallbackDay(
 
 **五审申请材料：** commit ID；AF-15~18 对照表；R-01~R-05、D-01~D-08、恢复回归的测试名与结果；三条构建/测试命令的非缓存输出摘要；本批 Token 台账。未满足前 B3 继续禁止开始。
 
+### 7.7 六审未关闭项（2026-08-05，提交 `5100ac33`）
+
+> 结论：**B1 通过；B2 不通过，B3 继续阻断。** `5100ac33` 已完成 AF-15~18：parser 27 条回归和 D-01~D-08 的字段断言恢复，取消前检查、IO 安全错误类型与 Runtime 测试夹具均有实质改进。剩余问题都在生产 HTTP transport 的取消/重试边界，本节 AF-19/20 是唯一修复依据。
+
+| ID | 阻断问题与定位 | 固定修复要求 | 必须新增的证据 |
+|---|---|---|---|
+| AF-19 | **用户取消造成的 `IOException` 仍会被包装为可重试网络失败。** `HttpUrlStreamCall.cancel()` 先置 `cancelled=true` 再 `disconnect()` 是正确的，但阻塞在 output/response/SSE read 时 `disconnect()` 常以 `IOException` 返回；当前 `catch (e: IOException)` 未先检查 `cancelled`，会抛 `StreamTransportException(STREAM_IO_ERROR)`。Runtime 因 job 已取消通常不会把它展示出来，但仍可能记录 `AppLogger.w`，并且 transport 合同本身错误地将用户取消定义为网络失败。定位：`StreamTransport.kt` 124~129。 | 在 `catch (e: IOException)` 的第一行检查 `cancelled`：为 true 时抛 `CancellationException`；仅未取消的 IO 才安全包装为 `StreamTransportException`。保持“取消异常不记录 warning/error、不重试、不发终态”。不得依赖 Runtime 的 job 取消来掩盖 transport 的错误分类。 | 新增 `DisconnectDuringRead` fake：进入阻塞 read 后由 `cancel()` 释放并抛原始 `IOException`。取消 collector 后断言只创建一个 call、collector 无事件、没有 Failed/Completed；并以可观察 logger sink 或 transport 单测证明该路径转为 `CancellationException`，非 `STREAM_IO_ERROR`。 |
+| AF-20 | **HTTP 失败全部标为 retryable，且终态 `retryable` 忽略安全类型。** `HttpUrlStreamCall` 对任何非 2xx 都传 `retryable=true`，会让 400/401/403 等确定性客户端错误无意义重试；Runtime 终态又使用 `retryable = !hasDelta`，即使 `e.retryable=false` 也会向 UI 声称可重试。定位：`StreamTransport.kt` 116~129、`CloudAiRuntime.kt` 123~130。 | 固定 HTTP 重试分类：仅 `408`、`429`、`500..599` 为 retryable；其余 4xx 为 false。Runtime 的 `Failed.retryable` 必须为 `!hasDelta && e.retryable`。状态码、稳定码、UI 文案仍只使用安全字段；不改变首帧成功、首帧 IO 重试与首帧后失败规则。 | 新增 R-02c：首帧 HTTP 400 → 仅一个 call、一个 `Failed("HTTP 400 STREAM_HTTP_ERROR", retryable=false)`、无 Completed。新增 R-02d：首帧 HTTP 503 → 两个不同 call 后可成功；验证重试分类不是“所有 HTTP 都重试”。 |
+
+**DeepSeek 六审实施顺序：**
+
+1. 只改 `StreamTransport.kt`：先在 IOException catch 前按取消标记重抛 `CancellationException`，再加入固定 HTTP retryability 函数；不改 parser、DI、Prompt、UI 或数据库。
+2. 只改 `CloudAiRuntime.kt` 的 terminal `retryable` 赋值，改为 `!hasDelta && e.retryable`；不新增第二套错误类型。
+3. 只扩展 `CloudAiRuntimeStreamTest.kt`：加入 `DisconnectDuringRead`、R-02c、R-02d。禁止删减已经通过的 R/D/parser 回归。
+4. 运行当前 commit 的 Runtime 精确测试、shared 全量测试和 Android Debug 构建；提交 XML 中测试数/失败数及命令输出。AF-19/20 均通过后才可申请 B2 定向复审。
+
+### 7.8 七审未关闭项（2026-08-05，提交 `07b3f499`）
+
+> 结论：**B2 生产逻辑符合 AF-19/20，但验收不通过，B3 继续阻断。** 代码已在 IO catch 前检查 `cancelled`，HTTP 分类和 terminal retryable 也正确；但 AF-19 新 fake 在 `cancelled=true` 时自行抛出 `CancellationException`，没有让真实 `HttpUrlStreamCall` 进入其 `catch(IOException)`。现有真实 call 测试也仅覆盖“execute 前已取消”，不是 read 被 disconnect 打断。本节 AF-21 是唯一收尾项。
+
+| ID | 阻断问题与定位 | 固定修复要求 | 必须新增的证据 |
+|---|---|---|
+| AF-21 | **AF-19 的关键生产分支未被测试。** `DisconnectDuringRead` fake 在取消后直接抛 `CancellationException`，因此 Runtime 测试不会执行 `HttpUrlStreamCall.execute()` 的 `catch (e: IOException) { if (cancelled) ... }`；`HttpUrlStreamCall cancel后execute` 又在请求启动前取消。定位：`CloudAiRuntimeStreamTest.kt` 96~102、333~346；生产分支：`StreamTransport.kt` 127~133。 | 仅为可测试性增加一个**internal、默认生产实现不变**的 connection factory 构造参数：`HttpUrlStreamCall(request, connectionFactory = { URL(it).openConnection() as HttpURLConnection })`。`HttpUrlStreamTransport.newCall()` 保持无参默认 factory。不得将 factory 加到 Koin、公开 API 或 Runtime。测试用 `BlockingHttpURLConnection` 注入该 factory：成功提供 200/SSE input；input read 通过 latch 通知“已阻塞”，`disconnect()` 释放 latch 后 input 必须抛原始 `IOException("socket closed")`。 | `HttpUrlStreamCall` 直接测试：启动 `execute()` → 等待 read 已阻塞 → `cancel()` → 结果**必须**为 `CancellationException`，不是 `StreamTransportException`；同时断言 output 写过一次、response read 已进入。保留现有 Runtime 取消测试，证明该异常向上不产生 Delta/Failed/Completed。 |
+
+**AF-21 固定实现骨架：**
+
+```kotlin
+internal class HttpUrlStreamCall(
+    private val request: StreamHttpRequest,
+    private val connectionFactory: (String) -> HttpURLConnection = {
+        URL(it).openConnection() as HttpURLConnection
+    },
+) : StreamCall
+```
+
+生产代码将原 `URL(request.endpoint).openConnection()` 替换为 `connectionFactory(request.endpoint)`，其余网络行为不改。测试内的 `BlockingHttpURLConnection` 只实现本次用到的 `outputStream`、`responseCode`、`inputStream`、`disconnect()` 以及 `HttpURLConnection` 抽象方法；read 用 `CountDownLatch` 阻塞，`disconnect()` 后由 read 明确抛 `IOException`。禁止使用端口 `1`、真实公网、sleep、随机端口或 fake 自行抛 `CancellationException` 来替代该证据。
+
+完成后运行 Runtime 精确测试、shared 全量测试和 Android Debug 构建；提交当前 XML 测试数与命令输出。AF-21 通过即 B2 通过，允许申请 B3 开始前的最终定向复审。
+
 ## 八、B1/B2 质量评分与 Token 记账
 
 ### 8.1 本次质量评分
