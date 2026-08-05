@@ -1,6 +1,6 @@
 # AI记一餐：周期记 + NDJSON 流式 B3 会话实施蓝图
 
-> 状态：`BLOCKED`；提交 `ada6748f` 复审仍发现 AF-B3-R2-01~05，必须先完成本文 §9 的 B3.2 冻结修复，才可再次申请验收；不得开始 B4。
+> 状态：`BLOCKED`；提交 `38cae283` 的 B3.2 三轮复审仍发现 AF-B3-R3-01~05，必须先完成本文 §10 的 B3.3 冻结修复，才可再次申请验收；不得开始 B4。
 > 必读：`experience/12_多模型协作与实施蓝图规范.md`、`AI记一餐_周期记_NDJSON流式开发规范.md`、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §7.9。
 > 基线：`b37ace6f`（B1/B2 代码）与 `36e35689`（B1/B2 八审记录）。
 
@@ -159,3 +159,31 @@ B4 将替换“仅构造 quick segment”的输入构造步骤为周期 segments
 ### 9.1 放行
 
 仅当 AF-B3-R2-01~05 全部关闭、T-B3-01~09 均有直接测试、§8.3 三命令均有本次成功输出时，B3 才可标为 `ACCEPTED` 并开始 B4。否则保持 `BLOCKED`。
+
+## 10. B3.3 三轮复审修复蓝图（唯一执行依据）
+
+> 复审基线：`38cae283`。本节覆盖此前文字中与下列事项冲突的内容。
+> 唯一允许改动：`androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputViewModel.kt`、`androidApp/src/test/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputViewModelStreamTest.kt`、`shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealSessionTest.kt`、B3 台账/开发规范。不得改 shared 生产代码、UI、port 接口、DI、Repository、数据库、Gradle、B1/B2 或其他生产文件。
+
+| ID | Owner | When | Input | Do | Must not | Evidence |
+|---|---|---|---|---|---|---|
+| AF-B3-R3-01 | 编码模型 | `useRuleFallback()` 从 ERROR 启动至 `parseRule/preview` 任一挂起点恢复后，或用户调用 `dismissError()`、编辑、改日期、reset、submit 时 | 调用开始时的 `generationId`、`inputText`、`targetDate` 快照；既有 `generationJob` | 仅当 `state.phase==ERROR && state.autoGenPreview==null && state.generationId!=null` 时启动。把该 coroutine 赋给既有 `generationJob`；捕获 `fallbackGenerationId`。`parseRule()` 返回后、`preview()` 返回后、规则空结果写 ERROR 前、普通异常写 ERROR 前均调用 `isCurrentGeneration(fallbackGenerationId)`；false 立即静默 return。单独 `catch (CancellationException) { throw e }` 位于普通 `catch` 前。`dismissError()` 必须改为调用既有 `invalidateGenerationToInput(current.inputText, current.targetDate)`，不保留仅改 phase 的分支。 | 不新增 Job 字段、Mutex、Flow、port 方法、fallback 状态或 UI；不把取消转为 ERROR/诊断；不改规则解析、日期锚定或提交语义。 | 新增 `T-B3-07a`：受控 port 的 `parseRule` 进入 `CompletableDeferred` gate 后，调用 `setInputText`；释放 gate 后断言 `phase=INPUT`、`generationId=null`、`autoGenPreview=null`、`previewCount=0`，且没有 ERROR。再以同一 gate 覆盖 `dismissError()`；两例均无 `delay`/轮询。 |
+| AF-B3-R3-02 | 编码模型 | `handleSessionSnapshot()` 的 preview 成功路径计算健康摘要时 | 已返回的 `preview` 与当前 `generationId` | 删除 `healthSummaryProvider` 字段和测试中的赋值。将 `buildHealthSafetyReport(preview)` 恢复为基线 `d45e9aa7` 的私有函数体：直接调用 `healthSummaryLabels()`，无 provider、无 try/catch 降级。仍在当前 `try` 内先取得 `safetyReport`，其恢复后立刻调用 `isCurrentGeneration(generationId)`；仅 current 时一次性写入既有 preview 状态与 `healthSafetyReport=safetyReport`。 | 不新增健康建议/健康摘要接口、测试 seam、后台 launch、异常吞没或新的 UI 行为；不修改 health repository。 | `rg -n "healthSummaryProvider" AiMealInputViewModel.kt AiMealInputViewModelStreamTest.kt` 无匹配；`AiMealSessionPort` 仍严格只含 `preview/commit/parseRule`。既有 T-B3-03/05/07/08 继续使用三方法 port；Android 定向测试通过。 |
+| AF-B3-R3-03 | 编码模型 | 替换 T-B3-06/T-B3-08，并补 ERROR+已有 preview 的 fallback 拒绝证据时 | 既有 `RecordingRuntime`、`SpySessionPort`、`Channel`、`CompletableDeferred`、`NonCancellable` | 仅修改 `AiMealInputViewModelStreamTest`。替换 T-B3-06：A 先送合法 meal/dish 并进入 `preview` gate；A 挂起期间调用 `submit()` 启动 B，B 完成到 `PREVIEW_READY`；释放 A 后断言 B 的 `generationId`、phase、preview、segmentStates 不变，且无 ERROR。替换 T-B3-08：port 第一轮 preview 立即返回 `hasExisting=true` 的实例 P；第一次 `confirmSave()` 仅确认 merge；随后发送 A 的 `Completed`，使 final preview 进入第二轮 gate；第二次 `confirmSave()` 在该 gate 挂起时提交 P 并进入 SAVING/DONE；释放旧 final preview 后断言仍为 SAVING/DONE、`commitCount==1` 且 `lastCommittedPreview === P`。新增“首个 PARTIAL preview 成功、final preview 抛异常”的 fake，使状态为 `ERROR` 但仍保留 preview；调用 `useRuleFallback()` 后精确断言 `parseRuleCount==0`。gate port 每次 preview 只能计数一次。 | 不新增生产 seam/mock 框架；不保留旧的“流已完全结束后才保存”用例作为 T-B3-08；不得用编辑替代 A→B；不得用 sleep、delay、轮询或私有 reducer 直调。 | `T-B3-06`、`T-B3-08` 测试名保留且各自包含上述 gate 断言；ERROR+preview 拒绝 fallback 有独立断言；`rg -n "delay\\(|Thread.sleep" androidApp/src/test/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputViewModelStreamTest.kt` 无匹配。 |
+| AF-B3-R3-04 | 编码模型 | 验证 `nextSegment()` 的 FAILED 门控时 | 逆序声明的两个 InputSegment `[ordinal=1, ordinal=0]` 与新的 `StreamingMealSession` | 仅扩展 `StreamingMealSessionTest` 的 T-B3-02，新增独立 session：首取 ordinal=0；其状态仍为 STREAMING 时 `nextSegment()==null`；对首段调用 `onFailed` 后，下一次才返回 ordinal=1。保留已有 Completed 门控断言和乱序声明。 | 不修改 `StreamingMealSession`、mapper、parser 或 ViewModel；不以第二段失败替代“首段失败才推进”的断言。 | T-B3-02 同时精确覆盖 Completed 与 Failed 两条推进前置条件；shared 定向测试通过。 |
+| AF-B3-R3-05 | 编码模型 | AF-B3-R3-01~04 全部完成后申请验收时 | 无并行 Gradle 任务的终端；当前 commit | 按 §10.2 顺序串行执行三条命令，并以实际结果更新台账。命令超时、无输出、失败、仅历史 XML、仅 `UP-TO-DATE` 或旧 temp 日志均记为无证据。 | 不并行 Gradle；不编辑/清理用户 `temp/`；不预填“0 failures”或“BUILD SUCCESSFUL”。 | 三条当次命令均成功，且当前输出可定位到本 commit；否则 B3 保持 BLOCKED。 |
+
+### 10.1 固定测试夹具
+
+1. `GatedPreviewPort` 必须把创建 preview 对象与计数放在一个 override 中；禁止先递增再调用会再次递增的 `super.preview()`。
+2. `T-B3-07a` 的 fake 只能阻塞 `parseRule`，并用既有三方法 port 记录 `previewCount`；测试不得直接构造或回写 ViewModel state。
+3. T-B3-08 的第二轮 preview 由 A 的 `Completed` 触发 `isFinal=true`；即使 `lastPreviewDays` 相同，现有 `!isFinal` 去重条件也必须让 final preview 真实进入 gate。测试中不得用额外 dish 或已经完成的流替代此时序。
+
+### 10.2 放行与证据
+
+1. AF-B3-R3-01~05 全部关闭，且 T-B3-01~09 仍各有直接测试，才可提交验收。
+2. 在**没有其他 Gradle 任务**时按此顺序运行并保留本次输出：
+   `scripts\\build-cli.bat :shared:testDebugUnitTest --rerun-tasks`；
+   `scripts\\build-cli.bat :androidApp:testDebugUnitTest --tests com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest --rerun-tasks`；
+   `scripts\\build-cli.bat :androidApp:assembleDebug --rerun-tasks`。
+3. 本轮 `:androidApp:testDebugUnitTest --tests ... --rerun-tasks` 在 124.1 秒无输出后超时，且无 test-results，因此不是通过证据。三条命令均当次成功后才可把 B3 标为 `ACCEPTED`；否则一律 `BLOCKED`，不得开始 B4。
