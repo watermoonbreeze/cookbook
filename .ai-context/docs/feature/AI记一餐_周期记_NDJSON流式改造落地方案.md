@@ -1,7 +1,7 @@
 # AI记一餐：周期记 + NDJSON流式改造落地方案
 
 > 日期：2026-08-05  
-> 状态：B1/B2 已实现但复审不通过，待按“七、验收问题反馈”修复；B3 不得开始。
+> 状态：B1/B2 已完成八审并通过；B3 可按开发规范开始实施。
 > 目标：解决一周餐食整体 JSON 被截断、整体 schema 失败导致有效内容不可用、确认页等待时间长的问题。
 > 全景图挂钩：`projectReview/21_AI与网络请求策略（专属）.md` §“周期记 + NDJSON 流式解析”；`projectReview/08_决策记录.md` D-16；`projectReview/05_诊断地图.md` AI 长输入条目；`.ai-context/docs/功能路径索引.md` AI快捷输入记餐行。
 > 实施基线：`AI记一餐_周期记_NDJSON流式开发规范.md`（接口契约、状态机、分批与验收门禁）。
@@ -461,6 +461,19 @@ internal class HttpUrlStreamCall(
 生产代码将原 `URL(request.endpoint).openConnection()` 替换为 `connectionFactory(request.endpoint)`，其余网络行为不改。测试内的 `BlockingHttpURLConnection` 只实现本次用到的 `outputStream`、`responseCode`、`inputStream`、`disconnect()` 以及 `HttpURLConnection` 抽象方法；read 用 `CountDownLatch` 阻塞，`disconnect()` 后由 read 明确抛 `IOException`。禁止使用端口 `1`、真实公网、sleep、随机端口或 fake 自行抛 `CancellationException` 来替代该证据。
 
 完成后运行 Runtime 精确测试、shared 全量测试和 Android Debug 构建；提交当前 XML 测试数与命令输出。AF-21 通过即 B2 通过，允许申请 B3 开始前的最终定向复审。
+
+### 7.9 八审结论（2026-08-05，提交 `b37ace6f`）
+
+> 结论：**通过，B1/B2 放行，允许开始 B3。** AF-21 已按 §7.8 的固定骨架关闭，没有引入第二套 transport 或扩大生产 API。
+
+| 验收项 | 复审结果 | 可核查证据 |
+|---|---|---|
+| production seam | 通过 | `HttpUrlStreamCall` 仅新增 internal 默认 `connectionFactory`；`HttpUrlStreamTransport`、Koin 与 Runtime 的生产入口不变。 |
+| 阻塞读链路 | 通过 | `BlockingHttpURLConnection` 提供 200/SSE input；首行后 `BlockingSseInputStream` 以 latch 阻塞真实 `read()`。 |
+| 取消分类 | 通过 | 测试依次执行 `execute()`、等待 read 阻塞、`cancel()`、`disconnect()` 释放、input 抛原始 `IOException`；生产 `catch(IOException)` 据 `cancelled` 抛出 `CancellationException`，而非 `StreamTransportException`。 |
+| 请求已实际进入 | 通过 | AF-21 断言 body 已写入、response code 已读取；并保留既有 Runtime 取消事件验证。 |
+
+本次复核实际执行 `scripts\\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ai.CloudAiRuntimeStreamTest"`（成功）及 `scripts\\build-cli.bat :androidApp:assembleDebug`（成功）。AF-21 仅改 Android transport 与其测试，B1 shared parser 的既有 27 条回归未改动；B3 仍必须遵守开发规范的 I-01 至 I-07，不得顺带改写已通过的 B1/B2 契约。
 
 ## 八、B1/B2 质量评分与 Token 记账
 
