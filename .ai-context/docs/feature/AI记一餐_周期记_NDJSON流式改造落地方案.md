@@ -28,17 +28,36 @@
 每行一个 JSON 对象，示例：
 
 ```jsonl
-{"type":"meal","date":"2026-08-13","slot":"lunch","time":"12:00"}
-{"type":"dish","date":"2026-08-13","slot":"lunch","name":"番茄炒蛋","cooking_method":"炒"}
-{"type":"ingredient","dish":"番茄炒蛋","name":"番茄","role":"主料","food_group":"蔬菜类","nutrients":["维生素C","钾"]}
-{"type":"ingredient","dish":"番茄炒蛋","name":"鸡蛋","role":"主料","food_group":"蛋类","nutrients":["蛋白质"]}
-{"type":"warning","message":"未识别具体份量，按默认份量预估"}
-{"type":"done"}
+{"type":"meal","segment_id":"week-2026-08-17-day1","meal_id":"2026-08-17|breakfast","date":"2026-08-17","slot":"breakfast","time":"08:00"}
+{"type":"dish","segment_id":"week-2026-08-17-day1","meal_id":"2026-08-17|breakfast","dish_id":"2026-08-17|breakfast|d1","name":"鸡蛋饼","cooking_method":"煎"}
+{"type":"ingredient","segment_id":"week-2026-08-17-day1","meal_id":"2026-08-17|breakfast","dish_id":"2026-08-17|breakfast|d1","name":"鸡蛋","role":"主料","food_group":"蛋类","nutrients":["蛋白质"]}
+{"type":"ingredient","segment_id":"week-2026-08-17-day1","meal_id":"2026-08-17|breakfast","dish_id":"2026-08-17|breakfast|d1","name":"面粉","role":"主料","food_group":"谷薯类","nutrients":["碳水化合物"]}
+{"type":"warning","segment_id":"week-2026-08-17-day1","meal_id":"2026-08-17|breakfast","message":"未识别具体份量，按默认份量预估"}
+{"type":"done","segment_id":"week-2026-08-17-day1"}
 ```
 
 硬门槛：至少能提取一个合法菜名。日期、餐次、时间、食材、调料、做法、营养大类和营养元素都尽量填，不强制。
 
-### 3.2 兼容整体 JSON
+### 3.2 事件关联键与归属校验
+
+NDJSON 不能只靠行顺序关联，必须用稳定父子键保证“同一天同一餐”的菜品和食材不会被打散。
+
+硬规则：
+
+- `segment_id`：请求分段键，标识该事件来自哪一天/哪段输入。周期记按天分段时，格式建议为 `week-{anchorDate}-day{index}`。本地用它校验“本段输出不能越界写到其他段”，除非用户原文明确给了绝对日期。
+- `meal_id`：餐次父键，格式建议为 `{date}|{slot}`。所有 `dish/ingredient/warning` 事件必须携带 `meal_id`；本地以 `meal_id` 聚合餐次，不以“上一行 meal”作为唯一依据。
+- `dish_id`：菜品父键，格式建议为 `{meal_id}|d{index}`。所有 `ingredient/seasoning/cooking_step` 事件必须携带 `dish_id`。
+- `meal` 事件必须包含 `date + slot + meal_id`；`dish` 事件必须包含 `meal_id + dish_id + name`；`ingredient` 事件必须包含 `dish_id + name`。
+- 行顺序只作展示优化和容错参考，不能作为最终归属真相源。
+
+归属校验：
+
+- `dish.meal_id` 找不到父餐次时：若同事件有合法 `date+slot`，本地可创建对应 `meal` 并记录 warning；否则该菜进入“待确认/未归属”，不能静默挂到最近餐次。
+- `ingredient.dish_id` 找不到父菜品时：若能通过同事件的 `dish_name + meal_id` 精确命中唯一菜品，可容错挂接并记录 warning；否则该食材进入该段诊断，不能静默挂到最近菜品。
+- 同一 `dish_id` 出现在多个 `meal_id` 下：视为协议冲突，保留先到合法归属，后续冲突事件进诊断。
+- 同一 `segment_id` 输出的 `date` 若偏离该段锚点，必须经过 `MealDateAnchorPolicy` 复核；无绝对日期时不允许模型把周一早餐改到周二晚餐。
+
+### 3.3 兼容整体 JSON
 
 解析顺序：
 
@@ -47,7 +66,9 @@
 3. 将对象/数组规范化为与 NDJSON 同一套内部事件。
 4. 只要能提取合法菜名，就进入确认页并显示警告；不得因“不是扁平格式”直接拒绝。
 
-### 3.3 截断处理
+整体 JSON 兼容时也必须先生成 `segment_id/meal_id/dish_id` 再进入同一归属校验流程，不能绕过父子键校验。
+
+### 3.4 截断处理
 
 - `finish_reason=length` 必须显示明确诊断：“模型输出被截断”。
 - 截断前已完整解析的事件保留为可确认内容。
