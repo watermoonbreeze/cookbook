@@ -56,15 +56,17 @@ object AiMealParser {
         if (jsonText.isBlank()) return ParseOutcome(errors = listOf("AI 返回中没有 JSON"))
 
         // ① 优先：扁平格式 FlatMealJson（当前 AI prompt 的输出格式）
-        val flatResult = runCatching {
+        val flatDecode = runCatching {
             json.decodeFromString<FlatMealJson>(jsonText)
-        }.getOrNull()
+        }
+        val flatResult = flatDecode.getOrNull()
         if (flatResult != null && flatResult.items.isNotEmpty()) {
             val converted = FlatToDayMealConverter.convert(flatResult, fallbackDate)
             return validate(MealParseCanonicalizer.canonicalize(converted.days), converted.warnings, converted.errors)
         }
 
-        return ParseOutcome(errors = listOf("AI 返回不符合当前扁平餐食格式"))
+        val flatError = flatDecode.exceptionOrNull()?.message?.take(500)
+        return ParseOutcome(errors = listOf("AI 返回不符合当前扁平餐食格式${flatError?.let { ": $it" }.orEmpty()}"))
     }
 
     private fun validate(days: List<DayMealJson>, warnings: List<String>, errors: List<String>): ParseOutcome {

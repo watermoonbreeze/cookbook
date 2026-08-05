@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.android.util
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.sxdbsm.cookbook.platform.CookbookStorage
 import java.io.File
@@ -21,6 +22,7 @@ import java.util.concurrent.Executors
  * [AI生成] 任务5要求预测试期间可导出多日日志，因此新增本地文件日志工具。
  **/
 object AppLogger {
+    private const val LONG_LOG_CHUNK_SIZE = 3000
     private val executor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "cookbook-file-logger").apply { isDaemon = true }
     } // [AI生成] 单线程顺序写文件，避免多处日志同时写入导致内容交错。
@@ -88,8 +90,14 @@ object AppLogger {
     }.getOrDefault("")
 
     fun d(tag: String, message: String) {
+        if (!isDebuggable()) return
         Log.d(tag, message)
         write("D", tag, message, null)
+    }
+
+    fun i(tag: String, message: String) {
+        Log.i(tag, message)
+        write("I", tag, message, null)
     }
 
     fun w(tag: String, message: String) {
@@ -100,6 +108,23 @@ object AppLogger {
     fun e(tag: String, message: String, throwable: Throwable? = null) {
         if (throwable == null) Log.e(tag, message) else Log.e(tag, message, throwable)
         write("E", tag, message, throwable)
+    }
+
+    /**
+     * Debug 包专用长文本日志。[AI修改]
+     *
+     * 原始 AI 请求/响应包含饮食与健康语义，只允许 debuggable 包输出；按块落日志，避免
+     * logcat 单行截断导致真机排查时看不到具体坏在哪个字段。
+     */
+    fun debugLong(tag: String, label: String, content: String) {
+        if (!isDebuggable()) return
+        val normalized = content.ifBlank { "<blank>" }
+        val total = ((normalized.length - 1) / LONG_LOG_CHUNK_SIZE) + 1
+        d(tag, "$label BEGIN length=${normalized.length} chunks=$total")
+        normalized.chunked(LONG_LOG_CHUNK_SIZE).forEachIndexed { index, chunk ->
+            d(tag, "$label chunk=${index + 1}/$total $chunk")
+        }
+        d(tag, "$label END")
     }
 
     /**
@@ -116,7 +141,7 @@ object AppLogger {
                 append(params.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}=${it.value}" })
             }
         }
-        d("AppEvent", text)
+        i("AppEvent", text)
     }
 
     private fun write(level: String, tag: String, message: String, throwable: Throwable?) {
@@ -131,6 +156,11 @@ object AppLogger {
     private fun writeSync(level: String, tag: String, message: String, throwable: Throwable?) {
         val context = appContext ?: return
         runCatching { writeLine(context, level, tag, message, throwable) }
+    }
+
+    private fun isDebuggable(): Boolean {
+        val context = appContext ?: return false
+        return (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
     }
 
     private fun writeLine(context: Context, level: String, tag: String, message: String, throwable: Throwable?) {

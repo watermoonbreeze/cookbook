@@ -34,7 +34,8 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
         // [AI修改] max_tokens 使用 request 传入值（由 AiMealPrompt 等调用方控制），多天菜单需要 4096+。安全帽 256..8192。
         val body = GlmProtocol.buildRequestBody(model.model, request.system, request.user, request.temperature, jsonMode = model.supportsJsonMode, maxTokens = request.maxTokens.coerceIn(256, 8192))
         // [AI修改] 请求可能含饮食与健康语义；日志只保留非内容元数据。
-        AppLogger.d("CloudAi", "req[${model.id}] endpoint=${model.endpoint} payloadBytes=${body.toByteArray().size}")
+        AppLogger.i("CloudAi", "req[${model.id}] endpoint=${model.endpoint} payloadBytes=${body.toByteArray().size}")
+        AppLogger.debugLong("CloudAiRaw", "complete[${model.id}] requestBody", body)
         var lastError: Throwable? = null
         repeat(MAX_ATTEMPTS) { attempt ->
             val result = runCatching { postOnce(model.endpoint, key, body) }
@@ -51,7 +52,8 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
         val key = config.currentCloudApiKey()
         if (key.isBlank()) return@withContext Result.failure(IllegalStateException("${model.vendorName} API Key 未配置"))
         val body = GlmProtocol.buildChatRequestBody(model.model, request.messages, request.temperature, jsonMode = model.supportsJsonMode, maxTokens = request.maxTokens.coerceIn(256, 8192))
-        AppLogger.d("CloudAi", "chat[${model.id}] msgs=${request.messages.size}") // 仅记条数,不记对话内容(可能含家庭健康信息)。
+        AppLogger.i("CloudAi", "chat[${model.id}] msgs=${request.messages.size}") // 仅记条数,不记对话内容(可能含家庭健康信息)。
+        AppLogger.debugLong("CloudAiRaw", "chat[${model.id}] requestBody", body)
         var lastError: Throwable? = null
         repeat(MAX_ATTEMPTS) { attempt ->
             val result = runCatching { postOnce(model.endpoint, key, body) }
@@ -78,7 +80,8 @@ class CloudAiRuntime(private val config: AiRuntimeConfig) : AiRuntime {
             val stream = if (code in 200..299) conn.inputStream else conn.errorStream
             val text = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
             // [AI修改] 原始模型响应仅可在当前 UI 会话按需查看，绝不能写入日志。
-            AppLogger.d("CloudAi", "http=$code cost=${System.currentTimeMillis() - started}ms responseBytes=${text.toByteArray().size}")
+            AppLogger.i("CloudAi", "http=$code cost=${System.currentTimeMillis() - started}ms responseBytes=${text.toByteArray().size}")
+            AppLogger.debugLong("CloudAiRaw", "http[$code] responseBody", text)
             if (code !in 200..299) throw IOException("HTTP $code")
             return GlmProtocol.parseContent(text) ?: throw IOException("empty content")
         } finally {

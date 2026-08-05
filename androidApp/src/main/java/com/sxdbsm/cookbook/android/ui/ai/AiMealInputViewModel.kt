@@ -348,6 +348,13 @@ class AiMealInputViewModel(
             weekday = weekday,
             nowTime = DateTime.formatTime(now),
         )
+        com.sxdbsm.cookbook.android.util.AppLogger.i(
+            "AiMealInput",
+            "AI meal request: targetDate=$today weekday=$weekday inputLength=${text.length} maxTokens=${request.maxTokens}",
+        )
+        com.sxdbsm.cookbook.android.util.AppLogger.debugLong("AiMealRaw", "mealInput", text)
+        com.sxdbsm.cookbook.android.util.AppLogger.debugLong("AiMealRaw", "systemPrompt", request.system)
+        com.sxdbsm.cookbook.android.util.AppLogger.debugLong("AiMealRaw", "userPrompt", request.user)
         val response = aiRuntime.complete(request)
         val rawText = response.getOrNull() ?: run {
             val message = response.exceptionOrNull()?.message ?: "请求未返回结果"
@@ -358,8 +365,11 @@ class AiMealInputViewModel(
         // [AI修改] 饮食语义与模型响应均属敏感内容，日志仅保留结构化长度诊断。
         com.sxdbsm.cookbook.android.util.AppLogger.d("AiMealInput", "AI response received, length=${rawText.length}")
 
+        com.sxdbsm.cookbook.android.util.AppLogger.debugLong("AiMealRaw", "modelContent", rawText)
         val outcome = AiMealParser.parseOutcome(rawText, today)
         if (!outcome.isValid) {
+            com.sxdbsm.cookbook.android.util.AppLogger.debugLong("AiMealRaw", "parseErrors", outcome.errors.joinToString("\n").ifBlank { "<none>" })
+            com.sxdbsm.cookbook.android.util.AppLogger.debugLong("AiMealRaw", "parseWarnings", outcome.warnings.joinToString("\n").ifBlank { "<none>" })
             val summary = outcome.errors.joinToString("；").ifBlank { "AI 返回不符合餐食结构" }
             _state.update {
                 it.copy(diagnostic = AiMealAttemptDiagnostic("结构化校验", summary, rawText.length, rawText))
@@ -367,6 +377,13 @@ class AiMealInputViewModel(
             com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "AI 结构化结果无效：$summary")
             return null
         }
+        com.sxdbsm.cookbook.android.util.AppLogger.debugLong(
+            "AiMealRaw",
+            "normalizedDays",
+            outcome.days.joinToString("\n") { day ->
+                "${day.date} ${day.meals.joinToString { meal -> "${meal.meal_type}:${meal.dishes.joinToString { dish -> dish.name }}" }}"
+            },
+        )
         return outcome
     }
 
