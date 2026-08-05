@@ -29,11 +29,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.datetime.LocalDate
 import org.junit.Assert.assertEquals
@@ -56,12 +56,11 @@ class AiMealInputViewModelStreamTest {
     private val mealJson = """{"type":"meal","segment_id":"$quickSegId","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}"""
     private val dishJson = """{"type":"dish","segment_id":"$quickSegId","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"番茄炒蛋"}"""
 
-    private fun runVmTest(block: suspend TestScope.() -> Unit) = runTest {
-        // Unconfined：send 后 receive 同步处理，避免 Standard 队列推进时序。
-        val dispatcher = UnconfinedTestDispatcher(testScheduler)
-        Dispatchers.setMain(dispatcher)
+    private fun runVmTest(block: suspend () -> Unit) {
+        // runBlocking 真实时间：buildHealthSafetyReport 的真实 DB IO 能完成，StateFlow.first 真实等待。
+        Dispatchers.setMain(UnconfinedTestDispatcher())
         try {
-            block()
+            runBlocking { block() }
         } finally {
             Dispatchers.resetMain()
         }
@@ -115,16 +114,37 @@ class AiMealInputViewModelStreamTest {
         }
     }
 
-    /** R2-04: preview 挂起的 port——previewEntered 通知进入，previewRelease 释放。 */
-    private class GatedPreviewPort : SpySessionPort() {
+    /**
+     * R3-03: 可配置 preview 挂起/抛异常的 port——单次计数，不调 super.preview。
+     * gateOnPreview：第 N 次 preview 进入 gate（0=从不）；failOnPreview：第 N 次 preview 抛异常（0=不抛）。
+     */
+    private class GatedPreviewPort(
+        private val existingFlag: Boolean = false,
+        private val gateOnPreview: Int = 0,
+        private val failOnPreview: Int = 0,
+    ) : SpySessionPort() {
         val previewEntered = CompletableDeferred<Unit>()
         val previewRelease = CompletableDeferred<Unit>()
 
         override suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview {
             previewCount++
-            previewEntered.complete(Unit)
-            withContext(kotlinx.coroutines.NonCancellable) { previewRelease.await() }
-            return super.preview(days, targetDate)
+            if (previewCount == failOnPreview) {
+                throw IllegalStateException("final preview failed")
+            }
+            if (previewCount == gateOnPreview) {
+                previewEntered.complete(Unit)
+                withContext(kotlinx.coroutines.NonCancellable) { previewRelease.await() }
+            }
+            return AutoGenPreview(
+                days = days.map { day ->
+                    DayPreview(
+                        date = runCatching { LocalDate.parse(day.date!!) }.getOrElse { targetDate },
+                        meals = emptyList(),
+                        hasExisting = existingFlag,
+                    )
+                },
+                warnings = emptyList(),
+            )
         }
     }
 
@@ -159,15 +179,12 @@ class AiMealInputViewModelStreamTest {
             ingredientRepo, DishRepository(db), MealRecordRepository(db), NutritionRepository(db),
             IngredientAliasResolver(emptyMap()), db,
         )
-        val vm = AiMealInputViewModel(
+        return AiMealInputViewModel(
             initialText = text, targetDate = targetDate,
             aiRuntime = aiRuntime, config = AiRuntimeConfig(prefs), recorder = recorder,
             ingredientRepo = ingredientRepo,
             healthRepo = HealthProfileRepository(db), familyRepo = FamilyRepository(db, prefs),
         )
-        // R2-02: 测试注入空健康摘要，避免真实 healthRepo/familyRepo 的 Dispatchers.IO 跨线程访问内存 driver。
-        vm.healthSummaryProvider = { emptyList() }
-        return vm
     }
 
     @Test
@@ -183,8 +200,9 @@ class AiMealInputViewModelStreamTest {
         assertEquals(0, spy.previewCount)
         assertTrue(vm.state.value.isGenerating)
 
-        // 再送 dish → PARTIAL_READY + preview 一次 + 无 commit
+        // 再送 dish → PARTIAL_READY + preview 一次 + 无 commit（first 等 buildHealthSafetyReport 完成）
         channel.send(LlmStreamEvent.Delta("$dishJson\n"))
+        vm.state.first { it.phase == AiMealPhase.PARTIAL_READY || it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
         assertEquals(1, spy.previewCount)
         assertEquals(AiMealPhase.PARTIAL_READY, vm.state.value.phase)
         assertTrue("未 Completed 不得 PREVIEW_READY", vm.state.value.phase != AiMealPhase.PREVIEW_READY)
@@ -292,32 +310,37 @@ class AiMealInputViewModelStreamTest {
     }
 
     @Test
-    fun `T-B3-06 新submit取消旧generation 旧事件不污染新会话`() = runVmTest {
-        val gateA = CompletableDeferred<Unit>()
+    fun `T-B3-06 A进preview gate时submit启动B 释放A后B不变无ERROR`() = runVmTest {
+        val channelA = Channel<LlmStreamEvent>(Channel.UNLIMITED)
         val callCount = AtomicInteger(0)
         val runtime = object : AiRuntime {
             override suspend fun complete(request: LlmRequest): Result<String> = Result.success("")
             override fun stream(request: LlmRequest): Flow<LlmStreamEvent> {
                 val idx = callCount.incrementAndGet()
                 return if (idx == 1) {
-                    flow { gateA.await(); emit(LlmStreamEvent.Delta("$mealJson\n$dishJson\n")); emit(LlmStreamEvent.Completed("stop", 0)) }
+                    channelA.receiveAsFlow() // gen A 由 channel 控制
                 } else {
                     flow { emit(LlmStreamEvent.Delta("$mealJson\n$dishJson\n")); emit(LlmStreamEvent.Completed("stop", 0)) }
                 }
             }
         }
-        val spy = SpySessionPort()
+        val port = GatedPreviewPort(gateOnPreview = 1)
         val vm = createVm(runtime)
-        vm.replaceSessionPortForTest(spy)
-        vm.submit() // gen A 阻塞
-        vm.submit() // gen B 立即完成
-        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+        vm.replaceSessionPortForTest(port)
+        vm.submit() // gen A
 
+        // A 送合法 meal/dish → 进入 preview gate
+        channelA.send(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
+        port.previewEntered.await()
+
+        // A 挂起时启动 B → B 立即完成
+        vm.submit()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
         assertEquals("meal-2", vm.state.value.generationId)
         assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
 
-        // 释放 A → 不污染 B
-        gateA.complete(Unit)
+        // 释放 A → A generation 失效，不污染 B
+        port.previewRelease.complete(Unit)
         vm.state.first { it.generationId == "meal-2" && (it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR) }
         assertEquals("meal-2", vm.state.value.generationId)
         assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
@@ -325,17 +348,14 @@ class AiMealInputViewModelStreamTest {
 
     @Test
     fun `T-B3-06a preview挂起时编辑 旧A不写新会话且无ERROR`() = runVmTest {
-        val gateA = CompletableDeferred<Unit>()
-        val runtime = RecordingRuntime(
-            streamFactory = { flow { gateA.await(); emit(LlmStreamEvent.Delta("$mealJson\n$dishJson\n")); emit(LlmStreamEvent.Completed("stop", 0)) } },
-        )
-        val port = GatedPreviewPort()
-        val vm = createVm(runtime)
+        val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
+        val port = GatedPreviewPort(gateOnPreview = 1)
+        val vm = createVm(channelRuntime(channel))
         vm.replaceSessionPortForTest(port)
-        vm.submit() // gen A 流阻塞 gateA
+        vm.submit() // gen A 开始
 
-        // 释放 A 流 → A 进入 preview 挂起
-        gateA.complete(Unit)
+        // 送 meal+dish → A 进入 preview gate
+        channel.send(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
         port.previewEntered.await()
 
         // 编辑 → 新会话（invalidate 取消 A job + INPUT）
@@ -350,36 +370,67 @@ class AiMealInputViewModelStreamTest {
     }
 
     @Test
-    fun `T-B3-08 两次MERGE确认 commit恰一次 保存后旧事件不干扰`() = runVmTest {
+    fun `T-B3-08 两轮preview 保存时提交第一轮P 释放final preview后仍DONE`() = runVmTest {
         val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
-        val spy = SpySessionPort(hasExisting = true)
+        val port = GatedPreviewPort(existingFlag = true, gateOnPreview = 2)
         val vm = createVm(channelRuntime(channel))
-        vm.replaceSessionPortForTest(spy)
+        vm.replaceSessionPortForTest(port)
         vm.submit()
-        channel.send(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
-        channel.send(LlmStreamEvent.Completed("stop", 0))
-        channel.close()
-        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
-        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
-        assertTrue(vm.state.value.mergeConfirmationRequired)
 
-        // 第一次：仅置 mergeConfirmed
+        // 第一轮 preview（不 gate）返回 P → PARTIAL_READY + hasExisting
+        channel.send(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
+        vm.state.first { it.phase == AiMealPhase.PARTIAL_READY || it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+        assertEquals(AiMealPhase.PARTIAL_READY, vm.state.value.phase)
+        assertTrue(vm.state.value.mergeConfirmationRequired)
+        val firstPreviewP = vm.state.value.autoGenPreview
+
+        // 第一次 confirmSave：仅确认 merge，不 commit
         vm.confirmSave()
         assertTrue(vm.state.value.mergeConfirmed)
-        assertEquals(0, spy.commitCount)
+        assertEquals(0, port.commitCount)
 
-        // 第二次：SAVING + commit 一次；R2-04 断言 commit 收到对象与确认时 autoGenPreview 同一实例
-        val previewAtConfirm = vm.state.value.autoGenPreview
+        // 发送 Completed → 流结束（close）→ 第二轮 preview（final）进入 gate 挂起
+        channel.send(LlmStreamEvent.Completed("stop", 0))
+        channel.close()
+        port.previewEntered.await()
+        // 第二轮 gate 挂起：phase 仍 PARTIAL_READY
+
+        // 第二次 confirmSave：在 gate 挂起时提交第一轮 P → SAVING/DONE
         vm.confirmSave()
-        assertEquals(1, spy.commitCount)
+        vm.state.first { it.phase == AiMealPhase.DONE || it.phase == AiMealPhase.ERROR }
         assertEquals(AiMealPhase.DONE, vm.state.value.phase)
-        assertTrue("commit 必须收到确认时同一 preview 实例", spy.lastCommittedPreview === previewAtConfirm)
+        assertEquals(1, port.commitCount)
+        assertTrue("commit 必须收到第一轮 preview 同一实例", port.lastCommittedPreview === firstPreviewP)
 
-        // 第三次：重复调用 0 次（DONE 直接 return）
-        vm.confirmSave()
-        assertEquals(1, spy.commitCount)
+        // 释放 final preview → A 已失效，不离开 DONE
+        port.previewRelease.complete(Unit)
+        vm.state.first { it.phase == AiMealPhase.DONE || it.phase == AiMealPhase.SAVING || it.phase == AiMealPhase.ERROR }
+        assertEquals(AiMealPhase.DONE, vm.state.value.phase)
+        assertEquals(1, port.commitCount)
+    }
 
-        // 等后台 buildHealthSafetyReport 完成，避免 test 结束后 IO resume fatal
-        vm.state.first { it.healthSafetyReport != null }
+    @Test
+    fun `T-B3-08b ERROR但保留preview时 useRuleFallback拒绝`() = runVmTest {
+        val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
+        // 第一轮 preview 成功，第二轮（final）抛异常 → ERROR 但保留第一轮 preview
+        val port = GatedPreviewPort(existingFlag = false, failOnPreview = 2)
+        val vm = createVm(channelRuntime(channel))
+        vm.replaceSessionPortForTest(port)
+        vm.submit()
+
+        channel.send(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
+        vm.state.first { it.phase == AiMealPhase.PARTIAL_READY || it.phase == AiMealPhase.ERROR }
+        assertEquals(AiMealPhase.PARTIAL_READY, vm.state.value.phase)
+
+        channel.send(LlmStreamEvent.Completed("stop", 0))
+        channel.close()
+        vm.state.first { it.phase == AiMealPhase.ERROR }
+        assertEquals(AiMealPhase.ERROR, vm.state.value.phase)
+        assertTrue("ERROR 仍保留 preview", vm.state.value.autoGenPreview != null)
+
+        // 带 preview 的 ERROR：useRuleFallback 必须拒绝（0 次）
+        vm.useRuleFallback()
+        assertEquals(0, port.parseRuleCount)
+        assertEquals(AiMealPhase.ERROR, vm.state.value.phase)
     }
 }

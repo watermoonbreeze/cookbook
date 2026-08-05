@@ -151,6 +151,22 @@ class StreamingMealSessionTest {
         // Failed 后终态，无更多段
         session.onFailed("s-2", "HTTP 500")
         assertNull(session.nextSegment())
+
+        // R3-04: 独立 session 验证 Failed 门控——首段 STREAMING 时 null，onFailed 后才取下一段
+        val request2 = StreamingMealRequest(
+            segments = listOf(
+                seg("b-2", LocalDate(2026, 8, 6), "周二", 1),
+                seg("b-1", LocalDate(2026, 8, 5), "周一", 0),
+            ),
+            generationId = "g2",
+            weekAnchor = LocalDate(2026, 8, 3),
+        )
+        val session2 = StreamingMealSession(request2)
+        assertEquals("b-1", session2.nextSegment()?.segmentId)
+        assertNull(session2.nextSegment(), "STREAMING 中不得推进")
+        // 首段 onFailed 后，下一次才返回 ordinal=1
+        session2.onFailed("b-1", "HTTP 500")
+        assertEquals("b-2", session2.nextSegment()?.segmentId)
     }
 
     @Test

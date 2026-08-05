@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -366,7 +367,12 @@ class AiMealInputViewModel(
         val frozenDate = session.request.segments.firstOrNull()?.targetDate ?: _state.value.targetDate
         try {
             val preview = sessionPort.preview(snap.days, frozenDate)
-            // AF-B3-R2-01: preview 挂起后再次比对 generation，旧 A 不写新会话。
+            // AF-B3-R3-01: preview 挂起后先比对 generation，旧 A 直接返回（不跑健康摘要）。
+            if (!isCurrentGeneration(generationId)) return
+            // AF-B3-R3-02: 健康摘要 NonCancellable 避免保存取消 job 时 IO fatal；恢复后再次比对。
+            val safetyReport = withContext(kotlinx.coroutines.NonCancellable) {
+                buildHealthSafetyReport(preview)
+            }
             if (!isCurrentGeneration(generationId)) return
             lastPreviewDays = snap.days
             _state.update {
@@ -378,14 +384,8 @@ class AiMealInputViewModel(
                     parseWarnings = snap.diagnostics.map { it.message },
                     mergeConfirmationRequired = preview.days.any { it.hasExisting },
                     mergeConfirmed = false,
+                    healthSafetyReport = safetyReport,
                 )
-            }
-            // 健康摘要独立后台计算，不阻塞 phase/preview；完成后仍须比对 generation。
-            viewModelScope.launch {
-                val hr = runCatching { buildHealthSafetyReport(preview) }.getOrElse { HealthSafetyReport() }
-                if (isCurrentGeneration(generationId)) {
-                    _state.update { it.copy(healthSafetyReport = hr) }
-                }
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
@@ -414,19 +414,25 @@ class AiMealInputViewModel(
      */
     fun useRuleFallback() {
         val state = _state.value
-        // AF-B3-05: 仅 ERROR 且当前无合法 preview 时允许规则降级。
-        if (state.phase != AiMealPhase.ERROR || state.autoGenPreview != null) return
-        viewModelScope.launch {
-            val text = state.inputText
+        // AF-B3-R3-01: 仅 ERROR && 无合法 preview && generationId 非空时启动；赋给既有 generationJob。
+        if (state.phase != AiMealPhase.ERROR || state.autoGenPreview != null || state.generationId == null) return
+        val fallbackGenerationId = state.generationId
+        val fallbackText = state.inputText
+        val fallbackDate = state.targetDate
+
+        generationJob?.cancel()
+        generationJob = viewModelScope.launch {
             try {
-                val result = sessionPort.parseRule(text, state.targetDate)
+                val result = sessionPort.parseRule(fallbackText, fallbackDate)
+                if (!isCurrentGeneration(fallbackGenerationId)) return@launch
                 if (result.days.isEmpty() || result.days.all { it.meals.isEmpty() || it.meals.all { m -> m.dishes.isEmpty() } }) {
                     _state.update {
                         it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析也未能识别出菜品，请重新描述")
                     }
                     return@launch
                 }
-                val preview = sessionPort.preview(result.days, state.targetDate)
+                val preview = sessionPort.preview(result.days, fallbackDate)
+                if (!isCurrentGeneration(fallbackGenerationId)) return@launch
                 _state.update {
                     it.copy(
                         phase = AiMealPhase.PREVIEW_READY,
@@ -438,7 +444,10 @@ class AiMealInputViewModel(
                         isGenerating = false,
                     )
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
+                if (!isCurrentGeneration(fallbackGenerationId)) return@launch
                 com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "rule fallback failed: ${e.message}", e)
                 _state.update {
                     it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析失败：${e.message ?: "未知错误"}")
@@ -453,22 +462,16 @@ class AiMealInputViewModel(
         return if (mondayOffset == 0) date else date.minus(DatePeriod(days = mondayOffset))
     }
 
-    // B3.2 R2-02: 健康摘要提供者 seam——默认走真实 healthRepo/familyRepo，测试注入空避免 DB 跨线程。
-    internal var healthSummaryProvider: suspend () -> List<String> = { healthSummaryLabels() }
-
     /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
-    private suspend fun buildHealthSafetyReport(preview: AutoGenPreview): HealthSafetyReport = try {
-        val enabled = healthSummaryProvider()
+    private suspend fun buildHealthSafetyReport(preview: AutoGenPreview): HealthSafetyReport {
+        val enabled = healthSummaryLabels()
         val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
             .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
-        HealthSafetyReport(buildList {
+        return HealthSafetyReport(buildList {
             if (enabled.isNotEmpty()) add("已结合健康档案：${enabled.joinToString("、")}")
             if (pendingIngredients > 0) add("本餐有 $pendingIngredients 种新食材，营养和适宜性待复核")
             if (isEmpty()) add("未设置健康档案；可按个人情况核对本餐")
         })
-    } catch (e: Exception) {
-        com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "buildHealthSafetyReport failed: ${e.javaClass.simpleName}")
-        HealthSafetyReport()
     }
 
     fun requestHealthAdvice() {
@@ -653,11 +656,9 @@ class AiMealInputViewModel(
         invalidateGenerationToInput(_state.value.inputText, _state.value.targetDate)
     }
 
-    /** 从错误恢复。[AI生成] */
+    /** 从错误恢复。[AI修改] R3-01: 走 invalidate，取消进行中 generation。 */
     fun dismissError() {
-        _state.update {
-            it.copy(phase = AiMealPhase.INPUT, errorMessage = null)
-        }
+        invalidateGenerationToInput(_state.value.inputText, _state.value.targetDate)
     }
 
     /** 设置目标日期（预览页调整）。[AI修改] B3.1 AF-B3-03: 日期变更取消进行中 generation。 */
