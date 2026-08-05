@@ -235,6 +235,17 @@ SAVING → DONE
 
 **DeepSeek 三审修复范围：** 只处理 AF-10 至 AF-12、必要的既有测试与台账修订；更新本节和开发规范的批次状态。完成后提交“当前 commit 的”shared、androidApp Runtime 测试和 Android 构建证据，再申请复审。继续禁止 B3。
 
+### 7.4 四审未关闭项（2026-08-05，提交 `62347448`）
+
+> 结论：**仍不通过，B3 继续阻断。** 默认 transport 已增加 `cancelActive()`，HTTP 错误 body 已移出 Release 消息；但自动化证据并未验证 Runtime 合同，日期锚定实现也会错归周期段。不得将 B1/B2 标记为通过。
+
+| ID | 未关闭问题与定位 | 最小修复要求 | 必须新增的自动化证据 |
+|---|---|---|---|
+| AF-13 | **AF-10 的 Runtime 测试仍是伪覆盖。** `CloudAiRuntimeStreamTest` 未构造 `CloudAiRuntime`、未注入 fake `StreamTransport`、未 collect Flow；所谓取消测试创建未使用的 pipe/writer，最终断言 `cancelled || !cancelled` 恒为真。为测试而将 `AiRuntimeConfig` 改为 `open` 也没有实际使用。 | 用真实 `CloudAiRuntime.stream()` 加 fake config/transport 做端到端测试；删除恒真断言、未使用的 pipe/thread 和无效测试代码。若 `AiRuntimeConfig.open` 不再是实际测试所需，恢复原有封装；若保留，测试必须真正使用替代配置。 | 正常、首帧前重试、首帧后 `Delta→Failed(false)`、取消阻塞 transport 四类均通过 `collect/toList` 或带超时的 Job 验证；取消用例断言 `cancelActive()` 被调用一次、阻塞执行被解除且没有终态/晚到事件。 |
+| AF-14 | **AF-12 的日期锚定仍会错段且未使用修正日期。** `findSegmentForDateWithPolicy()` 遍历每个 segment 时，只要修正日期落在整个周期范围就立刻返回当前（通常第一个）segment；其返回值只有 segmentId，调用方继续用原始 `dateStr` 建 `meal_id`，没有使用 `MealDateAnchorPolicy` 的修正日期。`sourceInput` 始终传 `null`，新增测试也没有星期场景，绝对日期测试不校验最终 date/meal/segment。 | 将策略结果建模为 `ResolvedSegment(segmentId, correctedDate)`；合成 meal/dish 必须使用 `correctedDate`。周期记通过 `segments.first { it.targetDate == correctedDate }` 精确选段，禁止“落在范围内就取当前段”。快速记/用户原文含绝对日期时，明确保留来源 segment 与绝对日期的映射规则并以策略结果判断。删除未使用的 `sourceInput`，或传入真实来源输入。 | 周期两段：第二天结果必须只进入第二段；整体对象/数组各验证绝对日期、星期、无日期三条 D-15 规则，断言 `SegmentDraft` key、`MealDraftNode.date`、`meal_id` 均为预期值；禁止仅断言“有诊断或有 segment”。 |
+
+**DeepSeek 四审修复范围：** 只处理 AF-13 与 AF-14、删除无效测试/无必要测试开放面、补相应测试和当前 commit 的执行证据。完成前继续禁止 B3。
+
 ## 八、B1/B2 质量评分与 Token 记账
 
 ### 8.1 本次质量评分
