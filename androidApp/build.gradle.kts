@@ -111,4 +111,7 @@ dependencies {
 
     // [AI修改] AF-06: Runtime 流式行为测试
     testImplementation("junit:junit:4.13.2")
+    // [AI修改] B3: ViewModel 会话测试——内存 SQLite + 协程 Main dispatcher
+    testImplementation(libs.sqldelight.sqlite.driver)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 }

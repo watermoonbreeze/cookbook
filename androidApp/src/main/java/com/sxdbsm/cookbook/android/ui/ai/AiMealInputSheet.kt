@@ -121,8 +121,8 @@ fun AiMealInputSheet(
     ) {
         when (state.phase) {
             AiMealPhase.INPUT -> InputPhase(vm, state)
-            AiMealPhase.PARSING -> ParsingPhase()
-            AiMealPhase.PREVIEW -> PreviewPhase(vm, state)
+            // [AI修改] B3: PARSING→GENERATING；PREVIEW→PARTIAL_READY/PREVIEW_READY（同一容器）
+            AiMealPhase.GENERATING, AiMealPhase.PARTIAL_READY, AiMealPhase.PREVIEW_READY -> PreviewPhase(vm, state)
             AiMealPhase.SAVING -> SavingPhase()
             AiMealPhase.DONE -> {
                 // [AI修改] R4修复:延迟到下一帧避免 ModalBottomSheet 未挂载完成时的竞态

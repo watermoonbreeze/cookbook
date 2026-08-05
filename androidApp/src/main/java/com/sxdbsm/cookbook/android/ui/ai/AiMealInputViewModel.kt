@@ -4,28 +4,36 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.ai.AiRuntime
 import com.sxdbsm.cookbook.ai.AiRuntimeConfig
+import com.sxdbsm.cookbook.ai.LlmStreamEvent
 import com.sxdbsm.cookbook.ai.meallog.AiMealParseResult
 import com.sxdbsm.cookbook.ai.meallog.AiMealParser
 import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
 import com.sxdbsm.cookbook.ai.meallog.AiMealHealthAdvice
 import com.sxdbsm.cookbook.ai.meallog.DayMealJson
+import com.sxdbsm.cookbook.ai.meallog.InputSegment
 import com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder
 import com.sxdbsm.cookbook.ai.meallog.MealDateAnchorPolicy
 import com.sxdbsm.cookbook.ai.meallog.RuleMealParser
 import com.sxdbsm.cookbook.ai.meallog.SchemaMigration
+import com.sxdbsm.cookbook.ai.meallog.StreamSegmentState
+import com.sxdbsm.cookbook.ai.meallog.StreamingMealRequest
+import com.sxdbsm.cookbook.ai.meallog.StreamingMealSession
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.FamilyRepository
 import com.sxdbsm.cookbook.domain.autogen.AutoGenPreview
 import com.sxdbsm.cookbook.domain.autogen.AutoGenResult
 import com.sxdbsm.cookbook.util.DateTime
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 
 /**
  * @File : AiMealInputViewModel
@@ -42,8 +50,8 @@ import kotlinx.datetime.LocalDate
 /** 输入模式。[AI生成] */
 enum class InputMode { TEXT, VOICE }
 
-/** 处理阶段。[AI生成] */
-enum class AiMealPhase { INPUT, PARSING, PREVIEW, SAVING, DONE, ERROR }
+/** 处理阶段。[AI修改] B3: 唯一状态机 INPUT→GENERATING→PARTIAL_READY→PREVIEW_READY→SAVING→DONE；删除 PARSING/PREVIEW。 */
+enum class AiMealPhase { INPUT, GENERATING, PARTIAL_READY, PREVIEW_READY, SAVING, DONE, ERROR }
 
 /** 语音识别状态。[AI生成] */
 enum class VoiceState { IDLE, LISTENING, PROCESSING, ERROR }
@@ -64,6 +72,12 @@ data class AiMealInputUiState(
     val inputText: String = "",
     val inputMode: InputMode = InputMode.TEXT,
     val phase: AiMealPhase = AiMealPhase.INPUT,
+    /** [AI修改] B3: 当前 generation 标识；会话只读。 */
+    val generationId: String? = null,
+    /** [AI修改] B3: 各分段状态；会话只读。 */
+    val segmentStates: Map<String, StreamSegmentState> = emptyMap(),
+    /** [AI修改] B3: 生成中标记（GENERATING/PARTIAL_READY 为 true）。 */
+    val isGenerating: Boolean = false,
     /** [AI修改] P2-1 K1a：preview 阶段存能力层产出（含营养估算）。 */
     val autoGenPreview: AutoGenPreview? = null,
     /** [AI修改] P2-1 K1a：commit 结果（替代旧 AiMealRecorder.RecordResult）。 */
@@ -110,8 +124,16 @@ class AiMealInputViewModel(
     )
     val state: StateFlow<AiMealInputUiState> = _state.asStateFlow()
 
-    /** 设置输入文本。[AI生成] */
+    // [AI修改] B3: 当前 generation 的流收集 Job；新 generation 前 cancel 旧 Job。
+    private var generationJob: Job? = null
+    // [AI修改] B3: generation 单调递增序号。
+    private var generationCounter = 0
+    // [AI修改] B3: 最近一次 preview 的 days，避免相同内容重复调用 previewAll。
+    private var lastPreviewDays: List<DayMealJson>? = null
+
+    /** 设置输入文本。[AI修改] B3: 编辑即新会话，取消进行中 generation。 */
     fun setInputText(text: String) {
+        generationJob?.cancel()
         _state.update { it.copy(inputText = text, phase = AiMealPhase.INPUT, errorMessage = null, diagnostic = null) }
     }
 
@@ -180,70 +202,181 @@ class AiMealInputViewModel(
     }
 
     /**
-     * 发送输入进行解析并产出预览。[AI修改] P2-1 K1a：解析后调 previewAll()，存 autoGenPreview。
+     * 发送输入进行流式解析并产出预览。[AI修改] B3: 冻结 session → 顺序收集 stream → session → previewAll。
      *
-     * 流程：AI/规则解析 → DayMealJson 列表 → previewAll(含营养估算) → PREVIEW 态。
+     * 只构造 quick segment（B4 将替换为周期 segments）；不改 session/mapper/Runtime 合同。
      */
     fun submit() {
         val text = _state.value.inputText.trim()
         if (text.isBlank()) return
 
-        _state.update { it.copy(phase = AiMealPhase.PARSING, errorMessage = null, diagnostic = null) }
+        val targetDate = _state.value.targetDate
+        val generationId = "meal-${++generationCounter}"
+        val request = StreamingMealRequest(
+            segments = listOf(
+                InputSegment(segmentId = "quick-$targetDate", targetDate = targetDate, inputText = text, ordinal = 0),
+            ),
+            generationId = generationId,
+            weekAnchor = startOfWeek(targetDate),
+        )
+        val session = StreamingMealSession(request)
 
+        // 新 generation 前取消旧 Job（旧会话后到事件不再喂入）
+        generationJob?.cancel()
+        lastPreviewDays = null
+        _state.update {
+            it.copy(
+                phase = AiMealPhase.GENERATING,
+                generationId = generationId,
+                isGenerating = true,
+                segmentStates = session.snapshot().segmentStates,
+                errorMessage = null,
+                diagnostic = null,
+                autoGenPreview = null,
+                autoGenResult = null,
+                parseSourceMessage = "",
+                mergeConfirmationRequired = false,
+                mergeConfirmed = false,
+            )
+        }
+
+        generationJob = viewModelScope.launch {
+            var segment = session.nextSegment()
+            while (segment != null && _state.value.generationId == generationId) {
+                val seg = segment
+                val llmRequest = AiMealPrompt.buildStreamingRequest(listOf(seg))
+                // 顺序收集当前段流；流结束（Completed/Failed 后 close）返回。
+                aiRuntime.stream(llmRequest).collect { event ->
+                    when (event) {
+                        is LlmStreamEvent.Delta -> session.onDelta(seg.segmentId, event.text)
+                        is LlmStreamEvent.Completed -> {
+                            session.onCompleted(seg.segmentId, event.finishReason)
+                            handleSessionSnapshot(session, generationId, isFinal = false)
+                        }
+                        is LlmStreamEvent.Failed -> {
+                            session.onFailed(seg.segmentId, event.message)
+                            handleSessionSnapshot(session, generationId, isFinal = false)
+                        }
+                    }
+                }
+                if (_state.value.generationId != generationId) return@launch
+                segment = session.nextSegment()
+            }
+            // 全部段终态：最终重算 preview 或进入 ERROR
+            if (_state.value.generationId == generationId) {
+                handleSessionSnapshot(session, generationId, isFinal = true)
+            }
+        }
+    }
+
+    /**
+     * B3: 将 session 快照落为 UI 状态。[AI修改]
+     *
+     * - 无合法餐食且非 final：仅更新进度/诊断，不调 preview。
+     * - 有合法餐食：PARTIAL_READY（生成中）或 PREVIEW_READY（final）；相同 days 不重复 preview。
+     * - 无合法餐食且 final：ERROR，不自动调用规则 parser。
+     */
+    private suspend fun handleSessionSnapshot(session: StreamingMealSession, generationId: String, isFinal: Boolean) {
+        if (_state.value.generationId != generationId) return
+        val snap = session.snapshot()
+        if (!snap.hasValidMeals && !isFinal) {
+            _state.update {
+                it.copy(segmentStates = snap.segmentStates, isGenerating = true)
+            }
+            return
+        }
+        if (!snap.hasValidMeals) {
+            _state.update {
+                it.copy(
+                    phase = AiMealPhase.ERROR,
+                    errorMessage = "没能识别出菜品，试试更具体的描述？\n如「中午吃了红烧肉和米饭」",
+                    segmentStates = snap.segmentStates,
+                    isGenerating = false,
+                )
+            }
+            return
+        }
+        // 相同 days 不重复调用 previewAll
+        if (!isFinal && lastPreviewDays == snap.days && _state.value.autoGenPreview != null) {
+            _state.update {
+                it.copy(phase = AiMealPhase.PARTIAL_READY, segmentStates = snap.segmentStates, isGenerating = true)
+            }
+            return
+        }
+        val targetDate = _state.value.targetDate
+        try {
+            val preview = recorder.previewAll(snap.days, targetDate)
+            lastPreviewDays = snap.days
+            _state.update {
+                it.copy(
+                    phase = if (isFinal) AiMealPhase.PREVIEW_READY else AiMealPhase.PARTIAL_READY,
+                    autoGenPreview = preview,
+                    segmentStates = snap.segmentStates,
+                    isGenerating = !isFinal,
+                    parseWarnings = snap.diagnostics.map { it.message },
+                    mergeConfirmationRequired = preview.days.any { it.hasExisting },
+                    mergeConfirmed = false,
+                    healthSafetyReport = buildHealthSafetyReport(preview),
+                )
+            }
+        } catch (e: Exception) {
+            com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "preview failed: ${e.message}", e)
+            _state.update {
+                it.copy(
+                    phase = AiMealPhase.ERROR,
+                    errorMessage = "预览生成失败：${e.message ?: "未知错误"}",
+                    isGenerating = false,
+                )
+            }
+        }
+    }
+
+    /**
+     * B3: 唯一允许调用 RuleMealParser 的显式动作。[AI修改]
+     *
+     * 仅当 phase=ERROR 且当前 generation 无合法餐食时执行；产物标记"规则解析"。
+     * B5 再接可见按钮，B3 不新增 UI。
+     */
+    fun useRuleFallback() {
+        val state = _state.value
+        if (state.phase != AiMealPhase.ERROR) return
         viewModelScope.launch {
-            // Step 1: 解析 → DayMealJson 列表
-            val parsed = try {
-                parseToDayMealJsonList(text)
-            } catch (e: Exception) {
-                com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "parse failed: ${e.message}", e)
-                ParsedDays(emptyList())
-            }
-            val days = parsed.days
-
-            if (days.isEmpty() || days.all { day -> day.meals.isEmpty() || day.meals.all { it.dishes.isEmpty() } }) {
-                _state.update {
-                    it.copy(
-                        phase = AiMealPhase.ERROR,
-                        errorMessage = "没能识别出菜品，试试更具体的描述？\n如「中午吃了红烧肉和米饭」",
-                    )
-                }
-                return@launch
-            }
-
-            // Step 2: preview（含营养估算）
-            val today = _state.value.targetDate
+            val text = state.inputText
             try {
-                val preview = recorder.previewAll(days, today)
-                if (preview.days.isEmpty()) {
+                val names = ingredientRepo.allActiveNames()
+                val ruleDays = RuleMealParser.parse(text, names, today = state.targetDate)
+                val anchorResult = MealDateAnchorPolicy.apply(text, state.targetDate, ruleDays)
+                if (anchorResult.days.isEmpty() || anchorResult.days.all { it.meals.isEmpty() || it.meals.all { m -> m.dishes.isEmpty() } }) {
                     _state.update {
-                        it.copy(
-                            phase = AiMealPhase.ERROR,
-                            errorMessage = "没能识别出可记录的菜品，请重新描述",
-                        )
+                        it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析也未能识别出菜品，请重新描述")
                     }
-                } else {
-                    _state.update {
-                        it.copy(
-                            phase = AiMealPhase.PREVIEW,
-                            autoGenPreview = preview,
-                            // [AI修改] targetDate 是添加页传入的日期锚点，预览首日不可反向改写它。
-                            targetDate = today,
-                            parseWarnings = (parsed.warnings + preview.warnings).distinct(),
-                            mergeConfirmationRequired = preview.days.any { it.hasExisting },
-                            mergeConfirmed = false,
-                            healthSafetyReport = buildHealthSafetyReport(preview),
-                        )
-                    }
+                    return@launch
                 }
-            } catch (e: Exception) {
+                val preview = recorder.previewAll(anchorResult.days, state.targetDate)
                 _state.update {
                     it.copy(
-                        phase = AiMealPhase.ERROR,
-                        errorMessage = "预览生成失败：${e.message ?: "未知错误"}",
+                        phase = AiMealPhase.PREVIEW_READY,
+                        autoGenPreview = preview,
+                        parseSourceMessage = "本次结果：规则解析",
+                        parseWarnings = listOfNotNull(anchorResult.warning),
+                        mergeConfirmationRequired = preview.days.any { it.hasExisting },
+                        mergeConfirmed = false,
+                        isGenerating = false,
                     )
+                }
+            } catch (e: Exception) {
+                com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "rule fallback failed: ${e.message}", e)
+                _state.update {
+                    it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析失败：${e.message ?: "未知错误"}")
                 }
             }
         }
+    }
+
+    /** 目标日期所在周的周一。 */
+    private fun startOfWeek(date: LocalDate): LocalDate {
+        val mondayOffset = date.dayOfWeek.ordinal // Mon=0
+        return if (mondayOffset == 0) date else date.minus(DatePeriod(days = mondayOffset))
     }
 
     /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
@@ -418,8 +551,9 @@ class AiMealInputViewModel(
         }
     }
 
-    /** 重新输入。[AI生成] */
+    /** 重新输入。[AI修改] B3: 取消进行中 generation。 */
     fun reset() {
+        generationJob?.cancel()
         _state.update {
             // [AI修改] 修改后重新解析也必须保留添加页选择的日期，不能退回设备当天。
             AiMealInputUiState(inputText = it.inputText, targetDate = it.targetDate)
