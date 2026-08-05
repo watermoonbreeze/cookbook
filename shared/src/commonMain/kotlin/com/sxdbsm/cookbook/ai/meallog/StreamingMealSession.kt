@@ -42,8 +42,8 @@ class StreamingMealSession(
         fallbackDate = request.segments.firstOrNull()?.targetDate ?: request.weekAnchor,
     )
 
-    /** 仅非空分段，按 ordinal 顺序。 */
-    private val orderedSegments = request.segments.filter { !it.isBlank }
+    /** 仅非空分段，按 ordinal 升序。 */
+    private val orderedSegments = request.nonBlankSegments.sortedBy { it.ordinal }
 
     private var currentIndex = -1
     private val segmentStates = linkedMapOf<String, StreamSegmentState>()
@@ -52,9 +52,20 @@ class StreamingMealSession(
 
     val generationId: String get() = request.generationId
 
-    /** 返回下一段应请求的 segment；无更多段返回 null。 */
+    /**
+     * 返回下一段应请求的 segment；无更多段返回 null。
+     *
+     * 仅在尚未开始，或当前状态为 COMPLETED/FAILED 时返回下一段；
+     * CANCELLED 后永远返回 null。
+     */
     fun nextSegment(): InputSegment? {
         if (cancelled) return null
+        // 当前段尚未终态（STREAMING）时不得推进
+        val current = orderedSegments.getOrNull(currentIndex)
+        if (current != null) {
+            val curState = segmentStates[current.segmentId]
+            if (curState == StreamSegmentState.STREAMING || curState == StreamSegmentState.PENDING) return null
+        }
         val next = currentIndex + 1
         if (next >= orderedSegments.size) return null
         currentIndex = next

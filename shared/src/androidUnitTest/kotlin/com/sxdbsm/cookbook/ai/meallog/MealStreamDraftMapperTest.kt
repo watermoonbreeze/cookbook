@@ -119,6 +119,57 @@ class MealStreamDraftMapperTest {
     }
 
     @Test
+    fun `AF-B3-06 两个segment同date和mealId两dish合并为一个meal`() {
+        val segments = listOf(
+            seg("s-1", LocalDate(2026, 8, 5), "周三", 0),
+            seg("s-2", LocalDate(2026, 8, 5), "周三", 1),
+        )
+        val draft = MealStreamDraft(segments = mapOf(
+            "s-1" to SegmentDraft("s-1", meals = mapOf(
+                "2026-08-05|lunch" to MealDraftNode("2026-08-05|lunch", "2026-08-05", "lunch",
+                    dishes = mapOf("2026-08-05|lunch|d1" to dish("2026-08-05|lunch|d1", "米饭"))),
+            )),
+            "s-2" to SegmentDraft("s-2", meals = mapOf(
+                "2026-08-05|lunch" to MealDraftNode("2026-08-05|lunch", "2026-08-05", "lunch",
+                    dishes = mapOf("2026-08-05|lunch|d2" to dish("2026-08-05|lunch|d2", "青菜"))),
+            )),
+        ))
+        val days = MealStreamDraftMapper.toDayMealJson(draft, segments)
+
+        // 只产一个 day、一个 meal，两 dish 都保留
+        assertEquals(1, days.size)
+        val meals = days.single().meals
+        assertEquals(1, meals.size)
+        assertEquals(listOf("米饭", "青菜"), meals.single().dishes.map { it.name })
+        // raw_input 取 ordinal 最小 segment
+        assertEquals("周三", days.single().raw_input)
+    }
+
+    @Test
+    fun `AF-B3-06 乱序map输入不改变结果`() {
+        val segments = listOf(
+            seg("s-1", LocalDate(2026, 8, 5), "周三", 0),
+            seg("s-2", LocalDate(2026, 8, 6), "周四", 1),
+        )
+        // 反向构造 map 顺序
+        val draft = MealStreamDraft(segments = linkedMapOf(
+            "s-2" to SegmentDraft("s-2", meals = mapOf(
+                "2026-08-06|dinner" to MealDraftNode("2026-08-06|dinner", "2026-08-06", "dinner",
+                    dishes = mapOf("2026-08-06|dinner|d1" to dish("2026-08-06|dinner|d1", "面条"))),
+            )),
+            "s-1" to SegmentDraft("s-1", meals = mapOf(
+                "2026-08-05|lunch" to MealDraftNode("2026-08-05|lunch", "2026-08-05", "lunch",
+                    dishes = mapOf("2026-08-05|lunch|d1" to dish("2026-08-05|lunch|d1", "米饭"))),
+            )),
+        ))
+        val days = MealStreamDraftMapper.toDayMealJson(draft, segments)
+
+        // 日期仍按 ordinal 驱动排序：08-05 在前
+        assertEquals(listOf("2026-08-05", "2026-08-06"), days.map { it.date })
+        assertEquals("周三", days[0].raw_input)
+    }
+
+    @Test
     fun `T09 无名称dish不生成meal`() {
         val segments = listOf(seg("s-1", LocalDate(2026, 8, 5), "周三", 0))
         val draft = MealStreamDraft(segments = mapOf(

@@ -1,7 +1,5 @@
 package com.sxdbsm.cookbook.ai.meallog
 
-import kotlinx.datetime.LocalDate
-
 /**
  * @File : MealStreamDraftMapper
  * @Time : 2026/08/05
@@ -32,45 +30,57 @@ internal object MealStreamDraftMapper {
         segments: List<InputSegment>,
     ): List<DayMealJson> {
         val knownSegmentIds = segments.map { it.segmentId }.toSet()
-        val segmentById = segments.associateBy { it.segmentId }
 
-        // date(string) -> (餐次按 meal_id 去重, 来源 segment 的 inputText)
-        data class DayAgg(val meals: MutableMap<String, MealJson> = linkedMapOf(), var sourceInput: String = "")
+        // date(string) -> day 聚合：mealId -> (餐次元信息, dishId -> dishNode)
+        data class MealAgg(
+            val slot: String,
+            val time: String?,
+            val note: String?,
+            val dishes: MutableMap<String, DishDraftNode> = linkedMapOf(),
+        )
+        data class DayAgg(
+            val meals: MutableMap<String, MealAgg> = linkedMapOf(),
+            var sourceInput: String = "",
+        )
         val byDate = linkedMapOf<String, DayAgg>()
 
-        for (draftSeg in draft.segments.values) {
-            if (draftSeg.segmentId !in knownSegmentIds) continue
-            val sourceInput = segmentById[draftSeg.segmentId]?.inputText.orEmpty()
+        // AF-B3-06: 按 request segments 的 ordinal 顺序遍历已知 segmentId。
+        for (seg in segments.sortedBy { it.ordinal }) {
+            if (seg.segmentId !in knownSegmentIds) continue
+            val draftSeg = draft.segments[seg.segmentId] ?: continue
             for (mealNode in draftSeg.meals.values) {
-                val dishes = mealNode.dishes.values
-                    .filter { !it.name.isBlank() }
-                    .sortedBy { it.dishId }
-                if (dishes.isEmpty()) continue
-
-                val dateStr = mealNode.date
-                val agg = byDate.getOrPut(dateStr) { DayAgg() }
-                agg.sourceInput = sourceInput
-                agg.meals[mealNode.mealId] = toMealJson(mealNode, dishes)
+                val nonBlankDishes = mealNode.dishes.values.filter { !it.name.isBlank() }
+                if (nonBlankDishes.isEmpty()) continue
+                // ordinal 最小段首次创建该 day 时回填 raw_input
+                val agg = byDate.getOrPut(mealNode.date) {
+                    DayAgg().also { it.sourceInput = seg.inputText }
+                }
+                val mealAgg = agg.meals.getOrPut(mealNode.mealId) {
+                    MealAgg(mealNode.slot, mealNode.time, mealNode.note)
+                }
+                // 同 date+mealId：按 dishId 合并，不覆盖
+                for (dish in nonBlankDishes) {
+                    mealAgg.dishes[dish.dishId] = dish
+                }
             }
         }
 
         return byDate.map { (dateStr, agg) ->
             DayMealJson(
                 date = dateStr,
-                meals = agg.meals.values.sortedBy { SLOT_ORDER[it.meal_type] ?: 99 },
+                meals = agg.meals.map { (_, mealAgg) ->
+                    MealJson(
+                        meal_type = mealAgg.slot,
+                        meal_time = mealAgg.time,
+                        note = mealAgg.note.orEmpty(),
+                        dishes = mealAgg.dishes.values.sortedBy { it.dishId }.map(::toDishRef),
+                    )
+                }.sortedBy { SLOT_ORDER[it.meal_type] ?: 99 },
                 raw_input = agg.sourceInput,
                 parse_method = "ai",
             )
         }.sortedBy { it.date }
     }
-
-    private fun toMealJson(mealNode: MealDraftNode, dishes: List<DishDraftNode>): MealJson =
-        MealJson(
-            meal_type = mealNode.slot,
-            meal_time = mealNode.time,
-            note = mealNode.note.orEmpty(),
-            dishes = dishes.map(::toDishRef),
-        )
 
     private fun toDishRef(dish: DishDraftNode): MealDishRefJson = MealDishRefJson(
         name = dish.name,

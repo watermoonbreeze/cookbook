@@ -67,6 +67,26 @@ data class AiMealAttemptDiagnostic(
 /** 本机事实与 AI 建议均仅随当前确认会话存在。 [AI生成] */
 data class HealthSafetyReport(val facts: List<String> = emptyList())
 
+/** B3.1-PORT-01: 规则降级结果。[AI修改] */
+internal data class RuleFallbackResult(
+    val days: List<DayMealJson>,
+    val warning: String?,
+)
+
+/**
+ * B3.1-PORT-01: 会话对外端口——preview/commit/规则解析。
+ *
+ * 默认实现逐字复用现有 previewAll/commitPreview/RuleMealParser 链路；
+ * 测试通过 [AiMealInputViewModel.replaceSessionPortForTest] 注入 spy。
+ */
+internal interface AiMealSessionPort {
+    suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview
+    suspend fun commit(preview: AutoGenPreview): AutoGenResult
+    suspend fun parseRule(input: String, targetDate: LocalDate): RuleFallbackResult
+    /** B3.1 seam: 健康档案摘要（仅会话展示）。测试 spy 返回空。 */
+    suspend fun healthReport(preview: AutoGenPreview): HealthSafetyReport
+}
+
 /** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 作两阶段主键，PreviewPhase 直接渲染能力层产出。 */
 data class AiMealInputUiState(
     val inputText: String = "",
@@ -131,10 +151,72 @@ class AiMealInputViewModel(
     // [AI修改] B3: 最近一次 preview 的 days，避免相同内容重复调用 previewAll。
     private var lastPreviewDays: List<DayMealJson>? = null
 
-    /** 设置输入文本。[AI修改] B3: 编辑即新会话，取消进行中 generation。 */
+    // [AI修改] B3.1-PORT-01: 会话端口（测试可替换）。
+    private var sessionPort: AiMealSessionPort = DefaultSessionPort(recorder, ingredientRepo, healthRepo, familyRepo)
+
+    /** 仅测试使用：替换会话端口为 spy。[AI修改] */
+    internal fun replaceSessionPortForTest(port: AiMealSessionPort) {
+        sessionPort = port
+    }
+
+    private class DefaultSessionPort(
+        private val recorder: MultiDayRecorder,
+        private val ingredientRepo: IngredientRepository,
+        private val healthRepo: HealthProfileRepository,
+        private val familyRepo: FamilyRepository,
+    ) : AiMealSessionPort {
+        override suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview =
+            recorder.previewAll(days, targetDate)
+
+        override suspend fun commit(preview: AutoGenPreview): AutoGenResult =
+            recorder.commitPreview(preview)
+
+        override suspend fun parseRule(input: String, targetDate: LocalDate): RuleFallbackResult {
+            val names = ingredientRepo.allActiveNames()
+            val ruleDays = RuleMealParser.parse(input, names, today = targetDate)
+            val anchorResult = MealDateAnchorPolicy.apply(input, targetDate, ruleDays)
+            return RuleFallbackResult(anchorResult.days, anchorResult.warning)
+        }
+
+        override suspend fun healthReport(preview: AutoGenPreview): HealthSafetyReport = try {
+            val namesById = healthRepo.listAllCrowdTypes().associate { it.id to it.name }
+            val members = familyRepo.listMembers()
+            val memberLabels = members.mapIndexedNotNull { index, member ->
+                member.careCategoryIds.mapNotNull(namesById::get).distinct().takeIf { it.isNotEmpty() }
+                    ?.let { "成员${index + 1}:${it.joinToString("·")}" }
+            }
+            val legacy = healthRepo.listAll().filter { it.enabled }.map { it.crowdName }
+            val enabled = (memberLabels + legacy).distinct()
+            val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
+                .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
+            HealthSafetyReport(buildList {
+                if (enabled.isNotEmpty()) add("已结合健康档案：${enabled.joinToString("、")}")
+                if (pendingIngredients > 0) add("本餐有 $pendingIngredients 种新食材，营养和适宜性待复核")
+                if (isEmpty()) add("未设置健康档案；可按个人情况核对本餐")
+            })
+        } catch (e: Exception) {
+            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "healthReport failed: ${e.javaClass.simpleName}")
+            HealthSafetyReport()
+        }
+    }
+
+    /** 设置输入文本。[AI修改] B3.1 AF-B3-03: 编辑即新会话，取消进行中 generation。 */
     fun setInputText(text: String) {
+        invalidateGenerationToInput(text, _state.value.targetDate)
+    }
+
+    /** 原子失效进行中 generation 并回到 INPUT 态。[AI修改] */
+    private fun invalidateGenerationToInput(nextInput: String, nextDate: LocalDate) {
         generationJob?.cancel()
-        _state.update { it.copy(inputText = text, phase = AiMealPhase.INPUT, errorMessage = null, diagnostic = null) }
+        generationJob = null
+        lastPreviewDays = null
+        _state.update {
+            AiMealInputUiState(
+                inputText = nextInput,
+                targetDate = nextDate,
+                inputMode = it.inputMode,
+            )
+        }
     }
 
     /** 切换输入模式。[AI生成] */
@@ -162,18 +244,11 @@ class AiMealInputViewModel(
         _state.update { it.copy(voiceState = VoiceState.PROCESSING, voiceActive = false) }
     }
 
-    /** [AI修改] K2 语音识别完成：将识别结果追加到输入框 */
+    /** [AI修改] K2 语音识别完成：将识别结果追加到输入框。B3.1: 结果即新会话。 */
     fun onVoiceResult(text: String) {
-        _state.update {
-            val current = it.inputText.trimEnd()
-            val appended = if (current.isBlank()) text else "$current $text"
-            it.copy(
-                inputText = appended,
-                voiceState = VoiceState.IDLE,
-                voiceActive = false,
-                voiceError = null,
-            )
-        }
+        val current = _state.value.inputText.trimEnd()
+        val appended = if (current.isBlank()) text else "$current $text"
+        invalidateGenerationToInput(appended, _state.value.targetDate)
     }
 
     /** [AI修改] K2 语音识别出错 */
@@ -192,13 +267,11 @@ class AiMealInputViewModel(
         _state.update { it.copy(voiceState = VoiceState.IDLE, voiceError = null) }
     }
 
-    /** [AI修改] K2 追加文本到输入框（粘贴用） */
+    /** [AI修改] K2 追加文本到输入框（粘贴用）。B3.1: 追加即新会话。 */
     fun appendText(text: String) {
-        _state.update {
-            val current = it.inputText.trimEnd()
-            val appended = if (current.isBlank()) text else "$current\n$text"
-            it.copy(inputText = appended, phase = AiMealPhase.INPUT, errorMessage = null)
-        }
+        val current = _state.value.inputText.trimEnd()
+        val appended = if (current.isBlank()) text else "$current\n$text"
+        invalidateGenerationToInput(appended, _state.value.targetDate)
     }
 
     /**
@@ -248,7 +321,11 @@ class AiMealInputViewModel(
                 // 顺序收集当前段流；流结束（Completed/Failed 后 close）返回。
                 aiRuntime.stream(llmRequest).collect { event ->
                     when (event) {
-                        is LlmStreamEvent.Delta -> session.onDelta(seg.segmentId, event.text)
+                        is LlmStreamEvent.Delta -> {
+                            // AF-B3-01: 每 Delta 后立即 snapshot/preview（lastPreviewDays 去重）。
+                            session.onDelta(seg.segmentId, event.text)
+                            handleSessionSnapshot(session, generationId, isFinal = false)
+                        }
                         is LlmStreamEvent.Completed -> {
                             session.onCompleted(seg.segmentId, event.finishReason)
                             handleSessionSnapshot(session, generationId, isFinal = false)
@@ -260,6 +337,12 @@ class AiMealInputViewModel(
                     }
                 }
                 if (_state.value.generationId != generationId) return@launch
+                // AF-B3-02: 流返回但当前段仍未终态（STREAMING）→ 记为异常结束。
+                if (session.currentSegmentId() == seg.segmentId &&
+                    _state.value.generationId == generationId) {
+                    session.onFailed(seg.segmentId, "STREAM_ENDED_WITHOUT_TERMINAL")
+                    handleSessionSnapshot(session, generationId, isFinal = false)
+                }
                 segment = session.nextSegment()
             }
             // 全部段终态：最终重算 preview 或进入 ERROR
@@ -303,10 +386,12 @@ class AiMealInputViewModel(
             }
             return
         }
-        val targetDate = _state.value.targetDate
+        // AF-B3-03: preview date 取 session/request 冻结日期，不读可变 UI date。
+        val frozenDate = session.request.segments.firstOrNull()?.targetDate ?: _state.value.targetDate
         try {
-            val preview = recorder.previewAll(snap.days, targetDate)
+            val preview = sessionPort.preview(snap.days, frozenDate)
             lastPreviewDays = snap.days
+            // 先同步更新 phase/preview，healthReport 单独异步补，避免挂起阻塞 UI 状态。
             _state.update {
                 it.copy(
                     phase = if (isFinal) AiMealPhase.PREVIEW_READY else AiMealPhase.PARTIAL_READY,
@@ -316,9 +401,10 @@ class AiMealInputViewModel(
                     parseWarnings = snap.diagnostics.map { it.message },
                     mergeConfirmationRequired = preview.days.any { it.hasExisting },
                     mergeConfirmed = false,
-                    healthSafetyReport = buildHealthSafetyReport(preview),
                 )
             }
+            val healthReport = sessionPort.healthReport(preview)
+            _state.update { it.copy(healthSafetyReport = healthReport) }
         } catch (e: Exception) {
             com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "preview failed: ${e.message}", e)
             _state.update {
@@ -339,26 +425,25 @@ class AiMealInputViewModel(
      */
     fun useRuleFallback() {
         val state = _state.value
-        if (state.phase != AiMealPhase.ERROR) return
+        // AF-B3-05: 仅 ERROR 且当前无合法 preview 时允许规则降级。
+        if (state.phase != AiMealPhase.ERROR || state.autoGenPreview != null) return
         viewModelScope.launch {
             val text = state.inputText
             try {
-                val names = ingredientRepo.allActiveNames()
-                val ruleDays = RuleMealParser.parse(text, names, today = state.targetDate)
-                val anchorResult = MealDateAnchorPolicy.apply(text, state.targetDate, ruleDays)
-                if (anchorResult.days.isEmpty() || anchorResult.days.all { it.meals.isEmpty() || it.meals.all { m -> m.dishes.isEmpty() } }) {
+                val result = sessionPort.parseRule(text, state.targetDate)
+                if (result.days.isEmpty() || result.days.all { it.meals.isEmpty() || it.meals.all { m -> m.dishes.isEmpty() } }) {
                     _state.update {
                         it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析也未能识别出菜品，请重新描述")
                     }
                     return@launch
                 }
-                val preview = recorder.previewAll(anchorResult.days, state.targetDate)
+                val preview = sessionPort.preview(result.days, state.targetDate)
                 _state.update {
                     it.copy(
                         phase = AiMealPhase.PREVIEW_READY,
                         autoGenPreview = preview,
                         parseSourceMessage = "本次结果：规则解析",
-                        parseWarnings = listOfNotNull(anchorResult.warning),
+                        parseWarnings = listOfNotNull(result.warning),
                         mergeConfirmationRequired = preview.days.any { it.hasExisting },
                         mergeConfirmed = false,
                         isGenerating = false,
@@ -377,18 +462,6 @@ class AiMealInputViewModel(
     private fun startOfWeek(date: LocalDate): LocalDate {
         val mondayOffset = date.dayOfWeek.ordinal // Mon=0
         return if (mondayOffset == 0) date else date.minus(DatePeriod(days = mondayOffset))
-    }
-
-    /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
-    private suspend fun buildHealthSafetyReport(preview: AutoGenPreview): HealthSafetyReport {
-        val enabled = healthSummaryLabels()
-        val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
-            .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
-        return HealthSafetyReport(buildList {
-            if (enabled.isNotEmpty()) add("已结合健康档案：${enabled.joinToString("、")}")
-            if (pendingIngredients > 0) add("本餐有 $pendingIngredients 种新食材，营养和适宜性待复核")
-            if (isEmpty()) add("未设置健康档案；可按个人情况核对本餐")
-        })
     }
 
     fun requestHealthAdvice() {
@@ -521,19 +594,36 @@ class AiMealInputViewModel(
     }
 
     /**
-     * 确认保存。[AI修改] P2-1 K1a：读 autoGenPreview 调 commitPreview()。
+     * 确认保存。[AI修改] B3.1-PORT/AF-B3-05：仅 PARTIAL_READY/PREVIEW_READY 可保存；
+     * 第二次 MERGE 确认前把当前 AutoGenPreview 存入局部不可变值，再取消 generation 并原子清会话。
      */
     fun confirmSave() {
-        val preview = _state.value.autoGenPreview ?: return
-        if (_state.value.mergeConfirmationRequired && !_state.value.mergeConfirmed) {
+        val cur = _state.value
+        // AF-B3-05: 仅可预览阶段可保存；SAVING/DONE/ERROR 重复调用直接 return。
+        if (cur.phase != AiMealPhase.PARTIAL_READY && cur.phase != AiMealPhase.PREVIEW_READY) return
+        val preview = cur.autoGenPreview ?: return
+
+        if (cur.mergeConfirmationRequired && !cur.mergeConfirmed) {
             _state.update { it.copy(mergeConfirmed = true) }
             return
         }
-        _state.update { it.copy(phase = AiMealPhase.SAVING) }
+
+        // 局部不可变 preview；先冻结，再取消 generation 并原子清会话状态。
+        val frozenPreview = preview
+        generationJob?.cancel()
+        generationJob = null
+        _state.update {
+            it.copy(
+                phase = AiMealPhase.SAVING,
+                generationId = null,
+                isGenerating = false,
+            )
+        }
+        lastPreviewDays = null
 
         viewModelScope.launch {
             try {
-                val result = recorder.commitPreview(preview)
+                val result = sessionPort.commit(frozenPreview)
                 _state.update {
                     it.copy(
                         phase = AiMealPhase.DONE,
@@ -551,13 +641,9 @@ class AiMealInputViewModel(
         }
     }
 
-    /** 重新输入。[AI修改] B3: 取消进行中 generation。 */
+    /** 重新输入。[AI修改] B3.1: 取消进行中 generation，保留添加页日期。 */
     fun reset() {
-        generationJob?.cancel()
-        _state.update {
-            // [AI修改] 修改后重新解析也必须保留添加页选择的日期，不能退回设备当天。
-            AiMealInputUiState(inputText = it.inputText, targetDate = it.targetDate)
-        }
+        invalidateGenerationToInput(_state.value.inputText, _state.value.targetDate)
     }
 
     /** 从错误恢复。[AI生成] */
@@ -567,9 +653,9 @@ class AiMealInputViewModel(
         }
     }
 
-    /** 设置目标日期（预览页调整）。[AI生成] */
+    /** 设置目标日期（预览页调整）。[AI修改] B3.1 AF-B3-03: 日期变更取消进行中 generation。 */
     fun setTargetDate(date: LocalDate) {
-        _state.update { it.copy(targetDate = date) }
+        invalidateGenerationToInput(_state.value.inputText, date)
     }
 
     /** 星期几→中文。[AI生成] */
