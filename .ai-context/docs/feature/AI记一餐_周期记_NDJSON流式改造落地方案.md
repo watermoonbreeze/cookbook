@@ -171,6 +171,58 @@ SAVING → DONE
 2. 不得借修复保留新的旧协议入口、旧状态机或双轨 UI；B3 只基于修正后的 `AiRuntime.stream + StreamingMealParser` 实现。
 3. 此次复审中，缓存态 shared 测试和 Android Debug 构建均显示通过；强制重跑 shared 测试在 120 秒命令上限内超时，**不得将其视为新的测试通过证据**。修复后须在可完成的环境中给出非缓存测试结果。
 
+### 7.1 二审未关闭项（2026-08-05，提交 `4a0a61c9`）
+
+> 结论：**仍不通过，B3 继续阻断。** 本次修复已改善未知 segment、非法 slot、逐帧发送和同键合并，但以下问题仍违反既有 AF 合同或缺少必需证据。
+
+| ID | 未关闭问题与定位 | 最小修复要求 | 必须新增的自动化证据 |
+|---|---|---|---|
+| AF-06 | **AF-01/AF-02 的异常终态和取消仍错误。** `CloudAiRuntime.stream()` 在首个 Delta 之后发生 `IOException/Exception` 时仅 `break`，循环后仍发送 `Completed`（`CloudAiRuntime.kt` 155-180），把异常伪装成正常结束；`job.join()` 先等待阻塞读取结束（183），取消收集时不能依赖稍后的 `awaitClose` 来及时 `disconnect()`。本提交也没有 `CloudAiRuntime` 行为测试。 | 首帧后异常必须保留已发 Delta，再发送一次 `Failed(retryable=false)` 并关闭，绝不能发送 Completed。删除 producer 内阻塞 `job.join()`；由 `awaitClose` 立即取消 job、关闭输入流并断开当前连接，连接引用须能跨线程安全读取。为 HTTP/SSE 读取抽出可替换的 transport 或使用本地测试服务，禁止只测 `GlmProtocol`。 | 验证两个 SSE data 帧先后可见且完成后 collect 返回；首帧后 IOException = Delta + Failed、无 Completed、请求次数为 1；首帧前 IOException 才重试 1 次；取消收集可在阻塞读取期间断开连接且不再出事件。 |
+| AF-07 | **AF-04 的整体 JSON 规范化仍会丢菜或跨段错挂。** Flat 路径对同日期同餐次的每个 item 固定生成 `dish_id=...|d1`（`StreamingMealParser.kt` 523-539），后项覆盖/合并前项；找不到目标日期段时 `findSegmentForDate()` 回退到第一个 segment（587-592），却保留原日期，仍会跨段污染，且没有调用 `MealDateAnchorPolicy`。 | 对每个 `(segment_id,date,slot)` 维护递增菜品序号，确保同餐多菜得到不同 `dish_id`。没有精确目标 segment 时不得任意映射到第一段；必须按该段原文和 `MealDateAnchorPolicy` 修正/拒绝并记录诊断。整体对象与数组都走同一规则。 | Flat 同日同餐两道菜必须保留两条不同 dish；周期记返回不属于任何输入段的日期不得写进任一段；绝对日期、星期、无日期三类 fallback 均证明 D-15 生效。 |
+| AF-08 | **严格协议与容错入口未完整闭环。** `dish_id` 正则接受 `d0`（196），不满足正整数；虽已新增 `dish_name` 字段，但 NDJSON Prompt 没有要求 ingredient/seasoning 在缺 `dish_id` 时携带它，唯一补挂路径无法由模型稳定触发。 | `dish_id` 只接受 `d1` 及以上；更新 NDJSON Prompt，明确“缺/错 dish_id 时必须同时提供 dish_name，且仅用于唯一补挂”，并保持无唯一命中即拒绝。 | 覆盖 `d0`、`d00`、跨 meal 的 dish_id 均拒绝；Prompt 断言包含 `dish_name` 容错字段和约束；唯一/零/多候选补挂三种结果均覆盖。 |
+| AF-09 | **交付证据与 Token 台账缺失。** 提交新增的根因文档未按第八节模板记录本批模型版本、调用次数、实际 Token（或“不可取得”）、测试命令与结果；`temp/test_output.txt` 还保留旧的 18 测试中 2 失败记录，不能作为本提交成功证据。 | 在同批 context-memory 快照或提交说明写完整台账；临时输出只能辅助，正式证据必须是针对当前 commit 的测试报告。无法取得平台 Token 时逐字段写“不可取得”，不得估算。 | 提供当前 commit 的非缓存 shared 测试、Android 构建输出摘要，以及完整台账。 |
+
+### 7.2 DeepSeek 修复执行单（只做 AF-06 至 AF-09）
+
+**范围边界：** 只允许修改 `CloudAiRuntime` 及其最小可测试 transport seam、`StreamingMealParser`、`NdjsonEvents`、`AiMealPrompt`、对应单测/测试配置和本方案指定的台账。禁止开始 B3、修改 ViewModel/UI/数据库、保留第二套流式实现或引入无关依赖升级。
+
+#### 步骤 1：先修 AF-06，Runtime 终态只能四选一
+
+`callbackFlow` 内启动 IO 子 job 后不得 `job.join()` 阻塞 producer；立即注册 `awaitClose`，在取消时取消 job、关闭当前输入流并 `disconnect()` 当前连接。当前活动连接的引用必须线程安全，且每次重试都替换/清理旧连接。
+
+| 场景 | 允许事件序列 | 重试 | 最终动作 |
+|---|---|---|---|
+| `[DONE]` 或正常 EOF | `Delta* → Completed` | 不重试 | `close()` 一次 |
+| 第一个 Delta 前的可重试 IO 失败 | 第一次不发终态；第二次失败后 `Failed(retryable=true)` | 最多 1 次 | `close()` 一次 |
+| 已发至少一个 Delta 后 IO/解析失败 | `Delta* → Failed(retryable=false)` | 禁止 | `close()` 一次；**不得发 Completed** |
+| 收集者取消 | 不再发送终态 | 禁止 | 立即取消 job、关闭流、断开 HTTP |
+
+缺 API Key 也只能发 `Failed(retryable=false) → close()`。无服务端 finish reason 的正常结束必须是 `Completed(finishReason="unknown")`。
+
+为 Runtime 增加可替换的本地 transport/连接工厂，避免真实联网测试；不要把餐食语义放入 Runtime。新增独立 Runtime 单测，证明逐帧、自然结束、首帧前重试、首帧后失败、取消断连五类行为。若 Android App 模块尚无单测 source set/dependency，只补最小必要测试配置并实际运行注册后的测试任务；`assembleDebug` 不能替代 Runtime 单测。
+
+#### 步骤 2：修 AF-07，整体 JSON 必须不丢菜、不跨段
+
+1. 在整体 JSON 规范化时，按 `(segment_id, date, slot)` 为 dish 分配 `d1..dN`，同餐每个原始菜品必须得到不同 `dish_id`。
+2. 仅当日期精确命中已发送 `InputSegment.targetDate` 时才映射该 segment；不能命中时，先按该 segment 原文调用 `MealDateAnchorPolicy` 得到修正日期，仍不能得到唯一归属则拒绝并诊断。禁止回退到 `segments.first()`。
+3. Flat 对象和 MultiDay 数组都必须走上述映射与同一个 `processLine()` 校验入口。
+4. 新增测试：同日同餐两菜均保留；周期记返回输入段外日期不污染任何段；绝对日期、星期、无日期三类 fallback 都满足 D-15。
+
+#### 步骤 3：修 AF-08，协议、Prompt、解析三处同步
+
+1. `dish_id` 数字部分仅接受 `[1-9][0-9]*`；`d0`、`d00`、跨 `meal_id` 均拒绝。
+2. 在 `NDJSON_SYSTEM_PROMPT` 的 `ingredient`/`seasoning` 事件定义和规则中加入 `dish_name`：只在 `dish_id` 缺失或无效时提供，解析器只允许同 `meal_id` 下唯一菜名命中时补挂；零/多候选一律诊断拒绝。
+3. 新增 Prompt 断言及上述所有正负解析用例；不以手写测试数据绕过 Prompt 契约。
+
+#### 步骤 4：完成 AF-09 台账与复审包
+
+1. 在既有 `.ai-context/docs/context_memory/2026-08-05_AI记一餐周期记NDJSON流式改造.md` 追加本批台账，不新建并行交接入口。
+2. 按第 8.2 节填写模型/version、调用次数、input/cached-input/output/reasoning/total-billed Token；平台不显示的字段写“不可取得”，禁止估算。
+3. 提交当前 commit 的非缓存 shared 测试和 Android 构建摘要；Runtime 新增测试所在模块也必须给出实际测试命令与结果。临时文件 `temp/*.txt` 不作为正式证据，也不提交。
+4. 提交前执行 `git diff --check`，提交内容仅包含本步骤的代码、测试和必要 `.ai-context` 文档；提交说明列出关闭的 AF 编号。
+
+**再次申请复审的最小材料：** commit ID、AF-06~09 对照表、测试文件清单、逐条命令/结果、台账路径。任何一项缺失都不进入 B3。
+
 ## 八、B1/B2 质量评分与 Token 记账
 
 ### 8.1 本次质量评分
