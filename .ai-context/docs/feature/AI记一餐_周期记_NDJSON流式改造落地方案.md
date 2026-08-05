@@ -1,7 +1,7 @@
 # AI记一餐：周期记 + NDJSON流式改造落地方案
 
 > 日期：2026-08-05  
-> 状态：已拍板，待下个干净 session 实施  
+> 状态：B1/B2 已实现但复审不通过，待按“七、验收问题反馈”修复；B3 不得开始。
 > 目标：解决一周餐食整体 JSON 被截断、整体 schema 失败导致有效内容不可用、确认页等待时间长的问题。
 > 全景图挂钩：`projectReview/21_AI与网络请求策略（专属）.md` §“周期记 + NDJSON 流式解析”；`projectReview/08_决策记录.md` D-16；`projectReview/05_诊断地图.md` AI 长输入条目；`.ai-context/docs/功能路径索引.md` AI快捷输入记餐行。
 > 实施基线：`AI记一餐_周期记_NDJSON流式开发规范.md`（接口契约、状态机、分批与验收门禁）。
@@ -153,7 +153,75 @@ SAVING → DONE
 - `androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputSheet.kt`
 - `androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddDayFoodScreen.kt`
 
-## 七、验收红线
+## 七、验收问题反馈（2026-08-05，B1/B2 复审）
+
+> 结论：**不通过，禁止进入 B3。** 2026-08-05 已复审提交 `fe253f70`（B1）与 `e078649e`（B2）。项目可编译，但实现未满足流式与归属契约；本节列出的项必须在同一修复批次完成代码、单测和构建证据后，再申请定向复审。
+
+| ID | 阻断问题与定位 | 最小修复要求 | 必须新增的自动化证据 |
+|---|---|---|---|
+| AF-01 | **Runtime 不是逐帧流式且 Flow 不结束。** `CloudAiRuntime.stream()` 调用 `streamOnce()` 累积完全部正文后才发送一个 `Delta`，因此确认页不能随 SSE 到达渐进展示；成功、失败分支随后 `awaitClose {}` 而未 `close()`，普通 `collect` 无法自然结束。无服务端 `finish_reason` 时还错误补为 `stop`，违反“未知为 `unknown`”。 | 将 SSE 读取改为“每个非空 `delta.content` 立即发一个 `LlmStreamEvent.Delta`”；`[DONE]` 或正常 EOF 后只发一次 `Completed` 并关闭 Flow；无 `finish_reason` 传 `unknown`。`complete` 的模拟流同样只能在确知语义时用 `stop`，否则用 `unknown`。 | 用可控 SSE 输入验证：两个 data 帧产生两个按序 Delta，且 Delta 在流结束前可被收集；`[DONE]` 后只出现一次 Completed，`collect/toList` 正常返回；无 finish reason 时为 `unknown`；空 delta 不上抛。 |
+| AF-02 | **取消与“收到正文后不重试”未成立。** 当前 `hasAnyContent` 仅在 `streamOnce()` 正常返回后赋值；读取中已经收到正文再抛异常时仍会被误判为“无内容”并重试。连接对象局部且 `awaitClose` 没有取消/断开正在阻塞的 HTTP 读取，不满足取消收集必须取消 HTTP。 | 将“已收到正文”的状态与连接/输入流生命周期暴露给流控制层；首个正文后发生网络错误必须保留此前 Delta、发一次 Failed、不得第二次请求。`awaitClose`/协程取消必须关闭输入流并 `disconnect()`，不得遗留脱离收集者的读取任务。 | 覆盖：首个 Delta 后 IOException 仅请求一次且 Failed 的 `retryable=false`；首帧前 IOException 才允许重试一次；取消收集后连接被关闭且不再发事件；失败流也自然结束。 |
+| AF-03 | **B1 归属校验会污染草稿。** `StreamingMealParser.processLine()` 对未知 `segment_id` 仅记 warning 后仍继续创建该 segment；`meal` 的非法 `slot` 仅 warning 后仍接收；`dish_id={meal_id}|d{正整数}` 未校验，`dish` 补建父节点时也未验证 `meal_id/date/slot/dish_id` 的一致关系。这违反“精确匹配、非法归属不可进入预览”。 | 未知 segment、非法 slot、非法 meal_id/dish_id、父键不一致均只产生诊断并拒绝事件，不得创建 segment/meal/dish。父餐次补建仅允许同一 dish 事件的合法 `date + slot` 与 `meal_id`、`dish_id` 同时精确一致；否则进入未归属诊断。 | 覆盖未知 segment 不出现在 `draft.segments`；四个非法 slot 均以外值被拒绝；错误 dish_id/错误 meal_id 不创建节点；合法 dish 先到补建仍可通过。 |
+| AF-04 | **整体 JSON fallback 绕过新协议归属链。** `tryWholeJsonFallback()` 直接把旧 `FlatMealJson/MultiDayJson` 转成 `fallback-day{n}` 草稿，既不映射已发送 `segment_id`，也未走相同的父子键、日期锚点和冲突校验，违背本方案 §3.3 第 3-4 步及规范 §4.1/§4.4。 | 整体对象/数组 JSON 必须先规范化为本次 `InputSegment` 的 NDJSON 等价内部事件，生成稳定 `segment_id/meal_id/dish_id`，再复用同一个归属校验入口；转换后的日期必须走 `MealDateAnchorPolicy`。不得产生不在本次请求内的 `fallback-*` segment。 | 对象与数组各覆盖：结果仅归入已发送 segment；无效日期/冲突父键被拒绝；日期锚点规则生效；可提取合法菜名时仍形成可预览草稿并有兼容诊断。 |
+| AF-05 | **同键合并与细节容错不完整。** 同一 `dish_id` 的后到事件会整节点替换，而非“最新非空字段覆盖”；ingredient/seasoning 未按规范名去重合并；规范要求的 `dish_name + meal_id` 唯一补挂路径没有协议字段和实现。 | 为 dish、ingredient、seasoning 定义明确的规范化键与字段合并规则；增加 `dish_name`（或在已确认的等价字段中明确来源）并只在同餐唯一命中时补挂，同时写 warning。不能确定归属的一律诊断，不得猜测。 | 覆盖 dish 同键部分更新保留原有字段与子项；重复食材/调料合并不重复展示；唯一命中补挂成功并有 warning，多候选/零候选被拒绝。 |
+
+**修复交付要求：**
+
+1. 先完成 AF-01 至 AF-05 及其测试，再运行 `scripts\\build-cli.bat :shared:testDebugUnitTest` 和 `scripts\\build-cli.bat :androidApp:assembleDebug`，提交实际输出摘要。
+2. 不得借修复保留新的旧协议入口、旧状态机或双轨 UI；B3 只基于修正后的 `AiRuntime.stream + StreamingMealParser` 实现。
+3. 此次复审中，缓存态 shared 测试和 Android Debug 构建均显示通过；强制重跑 shared 测试在 120 秒命令上限内超时，**不得将其视为新的测试通过证据**。修复后须在可完成的环境中给出非缓存测试结果。
+
+## 八、B1/B2 质量评分与 Token 记账
+
+### 8.1 本次质量评分
+
+> 复审对象：`fe253f70`（B1）+ `e078649e`（B2）。得分：**52/100，不可进入下一批。** 分数用于定位改进，不替代 AF-01 至 AF-05 的逐项验收。
+
+| 维度 | 分值 | 得分 | 依据 |
+|---|---:|---:|---|
+| 架构与分层 | 20 | 16 | 类型和模块位置基本正确；Runtime/Parser 边界清楚。 |
+| 协议与数据正确性 | 25 | 10 | `segment_id`、slot、父子键及整体 JSON fallback 未严格遵循归属契约。 |
+| 流式与协程可靠性 | 20 | 5 | 未逐帧发 Delta、Flow 不自然结束、取消与首帧后失败重试错误。 |
+| 测试与可验证性 | 20 | 12 | 已有 parser/SSE 协议测试，但缺少真实流生命周期、取消、越段和 fallback 同链测试。 |
+| 可维护性与文档 | 15 | 9 | KDoc 和类型较完整；实现与验收基线有脱节。 |
+
+### 8.2 修复批次必须附带的 Token 台账
+
+每个 DeepSeek 修复批次的提交说明或同批 `.ai-context/docs/context_memory/` 快照必须附带下表。**只能填写模型平台实际显示的数值；平台未提供则写“不可取得”，严禁按代码行数、字符数或主观估计代填。**
+
+| 字段 | 必填内容 |
+|---|---|
+| 范围 | 本次关闭的 AF 编号、起止 commit、模型和模型版本。 |
+| 调用量 | 调用次数；输入 Token、缓存输入 Token、输出 Token、推理 Token、总计费 Token。平台没有的字段写“不可取得”。 |
+| 交付 | 修改文件、代码/测试增删行、实际运行的测试和构建命令、每项结果。 |
+| 质量 | 首轮复审结果（通过/不通过）；未关闭 AF；若返工，记录返工调用次数和返工 Token。 |
+| 时间 | 开始/结束时间及人工介入次数，仅作效率辅助指标。 |
+
+格式示例：
+
+```text
+模型：DeepSeek <version>
+范围：AF-01, AF-02；<baseCommit>..HEAD
+调用：3 次；input=<平台值>；cached_input=<平台值/不可取得>；output=<平台值>；reasoning=<平台值/不可取得>；total_billed=<平台值/不可取得>
+交付：<files>；tests=<命令 + 结果>；build=<命令 + 结果>
+质量：首轮复审=<通过/不通过>；未关闭=<AF 列表或无>；返工=<次数/Token 或不可取得>
+时间：<开始>..<结束>；人工介入=<次数>
+```
+
+### 8.3 多模型模式的比较口径
+
+本轮没有“由架构模型独立实现 B1/B2”的同条件样本，且平台未暴露双方实际 Token，因此**目前不能判断是否节省 Token**。当前可确认的价值是：架构复审已在 B3 前阻断 5 类基础缺陷，避免错误扩散到 UI 和写库链路。
+
+后续以一个完整修复批次为单位记录并比较：
+
+1. `总计费 Token / 已关闭 AF 数`。
+2. `总计费 Token / 最终通过批次数`。
+3. 首轮复审通过率。
+4. `返工 Token / 实现 Token`。
+
+只有同等范围、同等验收门槛下，才可将“DeepSeek 实现 + 架构复审”的总 Token 与单模型实现进行比较；代码行数仅是交付规模，不能当作 Token 或成本。
+
+## 九、验收红线
 
 - AI 返回非扁平但可提取菜名时，必须规范化进入确认页。
 - `finish_reason=length` 必须可见，且不丢弃已完整解析内容。
