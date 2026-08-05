@@ -31,6 +31,7 @@ data class NdjsonLine(
     val note: String? = null,
     // dish 事件字段
     val dish_id: String? = null,
+    val dish_name: String? = null, // [AI修改] AF-05: ingredient 事件中携带的所属菜品名，用于 dish_name+meal_id 唯一补挂
     val name: String? = null,
     val cooking_method: String? = null,
     val quantity: Double? = null,

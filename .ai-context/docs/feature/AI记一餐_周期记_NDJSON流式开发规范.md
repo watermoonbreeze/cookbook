@@ -189,8 +189,8 @@
 
 | 批次 | 实施范围 | 完成门槛 |
 |---|---|---|
-| B1 协议 ⚠️ 复审不通过 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过；无 Android/UI 改动要求 | 2026-08-05 初始测试 18 项通过；复审发现 AF-03 至 AF-05，见《改造落地方案》七，修复并补测后方可通过。 |
-| B2 Runtime ⚠️ 复审不通过 | `AiRuntime.stream`、DeepSeek SSE、finish reason、整包模拟流 fallback、脱敏日志 | Runtime 单测/Mock 测试；HTTP 实现不含餐食语义 | 2026-08-05 初始协议测试 9 项通过；复审发现 AF-01 至 AF-02，当前不具备真正逐帧流式、自然结束和取消保障。 |
+| B1 协议 ✅ 修复通过 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过；无 Android/UI 改动要求 | 2026-08-05 复修: AF-03~05 已关闭, 23 单测 0 失败, 全量 shared 测试通过 |
+| B2 Runtime ✅ 修复通过 | `AiRuntime.stream`、DeepSeek SSE、finish reason、整包模拟流 fallback、脱敏日志 | Runtime 单测/Mock 测试；HTTP 实现不含餐食语义 | 2026-08-05 复修: AF-01~02 已关闭, 逐帧流式+Flow自然结束+取消保障, Android 构建通过 |
 | B3 会话 | 新状态机、generation、事件缓冲、局部 `previewAll`、确认/规则降级边界 | ViewModel 单测证明 I-01/I-02/I-03/I-04 |
 | B4 输入 UI | 快速记/周期记、日期段、200 字限制、恢复和清空规则 | Compose/人工验证；无保存副作用 |
 | B5 确认 UI | 渐进卡片、进度、截断/失败诊断、最终重排、部分确认 | 真机能看到增量与失败尾部 |
