@@ -526,8 +526,8 @@ class StreamingMealParser(
 
         for (item in flat.items) {
             val resolvedDate = resolveDateFromItem(item)
-            val segId = findSegmentForDateOrReject(resolvedDate)
-                ?: continue // AF-07: 无法映射则拒绝，不回退到第一段
+            val segId = findSegmentForDateWithPolicy(resolvedDate, item.weekday, item.date_offset, null)
+                ?: continue
             val slot = item.meal_type ?: "lunch"
             val dateStr = resolvedDate ?: fallbackDate.toString()
             val mealId = "$dateStr|$slot"
@@ -564,8 +564,8 @@ class StreamingMealParser(
 
         for (day in multi.days) {
             val dateStr = day.date ?: fallbackDate.toString()
-            val segId = findSegmentForDateOrReject(dateStr)
-                ?: continue // AF-07: 不可映射则拒绝
+            val segId = findSegmentForDateWithPolicy(dateStr, day.weekday, day.date_offset, null)
+                ?: continue
             for (meal in day.meals) {
                 val slot = meal.meal_type ?: "lunch"
                 val mealId = "$dateStr|$slot"
@@ -598,16 +598,49 @@ class StreamingMealParser(
         return fallbackDate.toString()
     }
 
-    /** AF-07: 精确匹配日期到 segment，不匹配则拒绝（不回退到第一段）。[AI修改] */
-    private fun findSegmentForDateOrReject(dateStr: String?): String? {
-        if (dateStr == null) return null
-        val date = runCatching { LocalDate.parse(dateStr.replace('/', '-')) }.getOrNull() ?: return null
-        val matched = segments.find { it.targetDate == date }?.segmentId
-        if (matched == null) {
-            orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.ERROR, null, null, null,
-                "整体 JSON 日期「$dateStr」无法映射到任何输入分段，已拒绝"))
+    /** AF-12: 通过 MealDateAnchorPolicy 修正日期后映射 segment。[AI修改] */
+    private fun findSegmentForDateWithPolicy(
+        rawDate: String?, rawWeekday: String?, rawOffset: Int, sourceInput: String?,
+    ): String? {
+        // 构建临时 DayMealJson 供 policy 消费
+        val tempDay = DayMealJson(date = rawDate, date_offset = rawOffset, weekday = rawWeekday)
+        val tempDays = listOf(tempDay)
+
+        // 尝试每个已知 segment 的 targetDate + inputText 调用 policy
+        for (seg in segments) {
+            val input = sourceInput ?: seg.inputText
+            val policyResult = MealDateAnchorPolicy.apply(input, seg.targetDate, tempDays)
+            val correctedDay = policyResult.days.firstOrNull() ?: continue
+
+            // policy 修正后得到日期
+            val correctedDate = correctedDay.date?.let {
+                runCatching { LocalDate.parse(it.replace('/', '-')) }.getOrNull()
+            } ?: seg.targetDate
+
+            // 修正后日期匹配该 segment
+            if (correctedDate == seg.targetDate ||
+                (rawOffset != 0 && correctedDate == seg.targetDate.plus(DatePeriod(days = rawOffset)))) {
+                if (policyResult.warning != null) {
+                    orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.WARNING, seg.segmentId, null, null,
+                        "整体 JSON 日期锚定: ${policyResult.warning}"))
+                }
+                return seg.segmentId
+            }
+
+            // 周期记场景：日期在 segment 的目标范围内
+            if (correctedDate in segments.first().targetDate..segments.last().targetDate) {
+                if (policyResult.warning != null) {
+                    orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.WARNING, seg.segmentId, null, null,
+                        "整体 JSON 日期锚定: ${policyResult.warning}"))
+                }
+                return seg.segmentId
+            }
         }
-        return matched
+
+        // 所有 segment 都匹配不上 → 拒绝
+        orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.ERROR, null, null, null,
+            "整体 JSON 日期「${rawDate ?: "offset=$rawOffset"}」无法通过日期锚定策略映射到任何输入分段，已拒绝"))
+        return null
     }
 
     private fun escapeJson(s: String): String = s

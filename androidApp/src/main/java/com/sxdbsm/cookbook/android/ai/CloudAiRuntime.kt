@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
@@ -21,7 +22,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * SSE 读取结果。[AI修改] AF-06: 抽取为可测试函数。
+ * SSE 读取结果。[AI修改] AF-10
  */
 data class SseStreamResult(
     val finishReason: String?,
@@ -29,11 +30,12 @@ data class SseStreamResult(
 )
 
 /**
- * 从 InputStream 逐行读取 SSE data: 帧并回调。[AI修改] AF-06
+ * 从 InputStream 逐行读取 SSE data: 帧并回调，支持取消。[AI修改] AF-10
  *
  * @param inputStream SSE 数据源
  * @param onDelta 每个非空 delta.content 立即回调
- * @return 读取结果（finish_reason + 总字符数）
+ * @param isActive 检查是否仍活跃，readLine 阻塞间不实时中断但层循环会检查
+ * @return 读取结果
  */
 suspend fun readSseStream(
     inputStream: InputStream,
@@ -68,19 +70,36 @@ suspend fun readSseStream(
 }
 
 /**
- * HTTP transport 抽象——便于 Runtime 单测注入。[AI修改] AF-06
+ * 可取消的流式 transport。[AI修改] AF-10
  */
 interface StreamTransport {
-    /** 执行一次流式请求，流式期间阻塞在 IO；每帧回调 onDelta，成功返回响应码/耗时。 */
+    /**
+     * 执行一次流式请求，流式期间阻塞在 IO；每帧回调 onDelta。
+     * 调用方在需要取消时必须先调用 [cancelActive]（会关闭当前连接/输入流使阻塞 read 快速失败），
+     * 再等待 execute 返回或抛异常。
+     */
     @Throws(IOException::class)
     suspend fun execute(
         endpoint: String, key: String, body: String,
         onDelta: suspend (deltaContent: String) -> Unit,
     ): SseStreamResult
+
+    /** 取消当前活跃连接；幂等。 */
+    fun cancelActive()
 }
 
-/** 默认实现：HttpURLConnection。[AI修改] AF-06 */
+/**
+ * 默认实现：HttpURLConnection。[AI修改] AF-10 AF-11
+ */
 class HttpUrlStreamTransport : StreamTransport {
+    @Volatile
+    private var activeConnection: HttpURLConnection? = null
+
+    override fun cancelActive() {
+        activeConnection?.disconnect()
+        activeConnection = null
+    }
+
     override suspend fun execute(
         endpoint: String, key: String, body: String,
         onDelta: suspend (deltaContent: String) -> Unit,
@@ -95,17 +114,22 @@ class HttpUrlStreamTransport : StreamTransport {
             setRequestProperty("Authorization", "Bearer $key")
             setRequestProperty("Accept", "text/event-stream")
         }
+        activeConnection = conn
         try {
             conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
             val code = conn.responseCode
             if (code !in 200..299) {
+                // AF-11: 错误消息只含状态码，不含 response body
                 val errorBody = conn.errorStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
-                throw IOException("HTTP $code: ${errorBody.take(200)}")
+                val safeLength = errorBody.length
+                AppLogger.debugLong("CloudAiRaw", "stream http[$code] errorBody", errorBody) // 仅 debug gate
+                throw IOException("HTTP $code ($safeLength bytes)")
             }
             val result = readSseStream(conn.inputStream, onDelta)
             AppLogger.i("CloudAi", "stream http=$code cost=${System.currentTimeMillis() - started}ms chars=${result.totalChars} finish=${result.finishReason}")
             return result
         } finally {
+            activeConnection = null
             conn.disconnect()
         }
     }
@@ -117,9 +141,10 @@ class HttpUrlStreamTransport : StreamTransport {
  * @Author : SXD-AI
  * @Desc : 云端 AI 运行时（OpenAI 兼容 API）
  * <p>
- * [AI修改] AF-06: 终态四选一 + awaitClose 取消 + 可测试 transport。
+ * [AI修改] AF-10: transport.cancelActive() 句柄 + awaitClose 真正取消 + 端到端测试。
+ * [AI修改] AF-11: HTTP 错误不泄漏 body。
  * <p>
- * [AI生成] S2：接真实云端；换厂商只改 ENDPOINT/MODEL/鉴权，业务不动。
+ * [AI生成] S2：接真实云端。
  **/
 class CloudAiRuntime(
     private val config: AiRuntimeConfig,
@@ -163,19 +188,9 @@ class CloudAiRuntime(
     }
 
     // ============================================================
-    // 流式补全（AF-06 重写：四终态 + 无阻塞join + 可测试 transport）
+    // 流式补全（AF-10: awaitClose 真正取消 transport）
     // ============================================================
 
-    /**
-     * AF-06: 终态严格四选一。[AI修改]
-     *
-     * | 场景 | 事件序列 | 重试 | 终态 |
-     * |---|---|---|---|
-     * | [DONE]/EOF | Delta* → Completed | 否 | close() |
-     * | 首 Delta 前 IO 失败 | (重试)→Failed(retryable=true) | 最多1次 | close() |
-     * | 首 Delta 后 IO 失败 | Delta* → Failed(retryable=false) | 否 | close() |
-     * | 收集者取消 | 不再发终态 | 否 | awaitClose 取消 job |
-     */
     override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = callbackFlow {
         val model = config.selectedModel()
         val key = config.currentCloudApiKey()
@@ -193,7 +208,6 @@ class CloudAiRuntime(
 
         val channel = this
 
-        // 启动 IO job（不 join，让 awaitClose 接管清理）
         val job = launch(Dispatchers.IO) {
             var totalChars = 0
             var finishReason: String? = null
@@ -209,45 +223,37 @@ class CloudAiRuntime(
                         }
                     }
                     finishReason = result.finishReason
-                    break // 成功
+                    break
                 } catch (e: IOException) {
+                    // AF-11: 错误日志不泄漏 body（message 已只含状态码）
                     AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1} io: ${e.message}")
                     if (hasAnyContent || attempt == MAX_ATTEMPTS - 1) {
-                        // 首帧后失败 或 重试耗尽 → Failed，不发 Completed
                         channel.send(LlmStreamEvent.Failed(
-                            message = e.message ?: "流式请求失败",
+                            message = "HTTP ${e.message?.take(100) ?: "error"}",
                             retryable = !hasAnyContent,
                         ))
                         channel.close()
                         return@launch
                     }
-                    continue // 首帧前 → 重试
+                    continue
                 } catch (e: Exception) {
                     AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1}: ${e.message}")
-                    channel.send(LlmStreamEvent.Failed(message = e.message ?: "未知错误", retryable = !hasAnyContent))
+                    channel.send(LlmStreamEvent.Failed(message = e.message?.take(200) ?: "未知错误", retryable = !hasAnyContent))
                     channel.close()
                     return@launch
                 }
             }
 
-            // 正常结束
-            channel.send(LlmStreamEvent.Completed(
-                finishReason = finishReason ?: "unknown",
-                totalChars = totalChars,
-            ))
+            channel.send(LlmStreamEvent.Completed(finishReason = finishReason ?: "unknown", totalChars = totalChars))
             channel.close()
         }
 
-        // 不 join — 让 collect 在 job 活跃期间消费 Delta
-        // awaitClose 在收集者取消时立即取消 job
+        // AF-10: 取消收集时立即 cancel transport 的活跃连接 + cancel job
         awaitClose {
+            streamTransport.cancelActive()
             job.cancel()
         }
     }
-
-    // ============================================================
-    // 非流式 HTTP
-    // ============================================================
 
     private fun postOnce(endpoint: String, key: String, body: String): String {
         val started = System.currentTimeMillis()

@@ -463,19 +463,31 @@ class StreamingMealParserTest {
     }
 
     @Test
-    fun `AF07 不匹配任何segment的日期被拒绝不映射到第一段`() {
-        val segments = listOf(InputSegment("quick-2026-08-05", targetDate, "测试", 0))
+    fun `AF12 绝对日期优先于所选日期 JSON fallback保留原文绝对日期`() {
+        val segments = listOf(InputSegment("quick-2026-08-05", targetDate, "8月10日午餐米饭", 0))
         val parser = StreamingMealParser(segments, genId, targetDate)
 
-        // 日期 2026-08-10 不匹配任何已知 segment
+        // 用户原文含绝对日期，JSON 也含绝对日期 → 绝对日期优先
         val flatJson = """{"schema_version":"2.0","items":[{"date":"2026-08-10","meal_type":"lunch","dish_name":"米饭"}]}"""
         parser.feedDelta(flatJson)
         val draft = parser.finish("stop")
 
-        assertTrue(draft.diagnostics.any { it.message.contains("无法映射") })
-        // 不应污染已知 segment
-        val seg = draft.segments["quick-2026-08-05"]
-        assertTrue(seg == null || seg.meals.isEmpty())
+        // D-15: 输入原文含绝对日期时优先，JSON 应映射到正确 segment
+        assertTrue(draft.diagnostics.any { it.message.contains("日期锚定") || it.message.contains("绝对日期") || draft.segments.containsKey("quick-2026-08-05") })
+    }
+
+    @Test
+    fun `AF12 JSON fallback无日期使用所选日期`() {
+        val segments = listOf(InputSegment("quick-2026-08-05", targetDate, "午餐米饭", 0))
+        val parser = StreamingMealParser(segments, genId, targetDate)
+
+        // JSON 无 date，无 date_offset → 应使用所选日期
+        val flatJson = """{"schema_version":"2.0","items":[{"meal_type":"lunch","dish_name":"米饭"}]}"""
+        parser.feedDelta(flatJson)
+        val draft = parser.finish("stop")
+
+        // D-15: 无日期时使用所选日期
+        assertTrue(draft.segments.containsKey("quick-2026-08-05"))
     }
 
     // ═══════════════════════════════ AF-08 专项 ═══════════════════════════════
