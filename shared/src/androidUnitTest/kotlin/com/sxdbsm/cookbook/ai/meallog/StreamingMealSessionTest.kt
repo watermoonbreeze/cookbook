@@ -119,6 +119,69 @@ class StreamingMealSessionTest {
     }
 
     @Test
+    fun `T-B3-02 逆序ordinal声明 首取ordinal0 终态前二次nextSegment为null`() {
+        // 声明顺序为 ordinal=1/0（逆序），必须按 ordinal 升序取段
+        val request = StreamingMealRequest(
+            segments = listOf(
+                seg("s-2", LocalDate(2026, 8, 6), "周二", 1),
+                seg("s-1", LocalDate(2026, 8, 5), "周一", 0),
+            ),
+            generationId = "g1",
+            weekAnchor = LocalDate(2026, 8, 3),
+        )
+        val session = StreamingMealSession(request)
+
+        // 首取必须 ordinal=0
+        val first = session.nextSegment()
+        assertEquals("s-1", first?.segmentId)
+
+        // 当前段 STREAMING 时再次取段为 null
+        assertNull(session.nextSegment(), "STREAMING 中不得取下一段")
+
+        // Completed 前再次取段仍为 null（同段未推进）
+        assertNull(session.nextSegment())
+
+        // 标 Completed 后才能取 ordinal=1
+        session.onCompleted("s-1", "stop")
+        val second = session.nextSegment()
+        assertEquals("s-2", second?.segmentId)
+
+        // 第二段 STREAMING 时取段为 null
+        assertNull(session.nextSegment())
+        // Failed 后终态，无更多段
+        session.onFailed("s-2", "HTTP 500")
+        assertNull(session.nextSegment())
+    }
+
+    @Test
+    fun `T-B3-04 第一段合法第二段失败 保留前缀且isTerminal`() {
+        val request = StreamingMealRequest(
+            segments = listOf(
+                seg("s-1", LocalDate(2026, 8, 5), "周一午餐米饭", 0),
+                seg("s-2", LocalDate(2026, 8, 6), "周二晚餐面条", 1),
+            ),
+            generationId = "g1",
+            weekAnchor = LocalDate(2026, 8, 3),
+        )
+        val session = StreamingMealSession(request)
+        session.nextSegment() // s-1
+        session.onDelta("s-1", """{"type":"meal","segment_id":"s-1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        session.onDelta("s-1", """{"type":"dish","segment_id":"s-1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"米饭"}""" + "\n")
+        session.onCompleted("s-1", "stop")
+
+        session.nextSegment() // s-2
+        session.onFailed("s-2", "HTTP 500 STREAM_HTTP_ERROR")
+
+        val snap = session.snapshot()
+        // 合法前缀保留：days 含 first dish
+        assertTrue(snap.hasValidMeals)
+        assertTrue(snap.isTerminal)
+        assertEquals("米饭", snap.days.single().meals.single().dishes.single().name)
+        // 第二段失败诊断
+        assertTrue(snap.diagnostics.any { it.message.contains("HTTP 500") })
+    }
+
+    @Test
     fun `generationId透传`() {
         val request = StreamingMealRequest(
             segments = listOf(seg("s-1", LocalDate(2026, 8, 5), "周一", 0)),

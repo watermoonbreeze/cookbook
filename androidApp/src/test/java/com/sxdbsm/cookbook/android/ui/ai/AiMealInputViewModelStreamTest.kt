@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -66,12 +67,13 @@ class AiMealInputViewModelStreamTest {
         }
     }
 
-    /** 会话端口 spy：记录调用次数与入参。 */
-    private class SpySessionPort(private val hasExisting: Boolean = false) : AiMealSessionPort {
+    /** 会话端口 spy：记录调用次数与入参（R2-04 记录 commit 实例）。 */
+    private open class SpySessionPort(private val hasExisting: Boolean = false) : AiMealSessionPort {
         var previewCount = 0
         var commitCount = 0
         var parseRuleCount = 0
         val previewDates = mutableListOf<LocalDate>()
+        var lastCommittedPreview: AutoGenPreview? = null
 
         override suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview {
             previewCount++
@@ -90,6 +92,7 @@ class AiMealInputViewModelStreamTest {
 
         override suspend fun commit(preview: AutoGenPreview): AutoGenResult {
             commitCount++
+            lastCommittedPreview = preview
             return AutoGenResult(1, 1, 0, 0, 0, 0, emptyList(), emptyList())
         }
 
@@ -110,9 +113,31 @@ class AiMealInputViewModelStreamTest {
                 warning = null,
             )
         }
+    }
 
-        override suspend fun healthReport(preview: AutoGenPreview): HealthSafetyReport =
-            HealthSafetyReport()
+    /** R2-04: preview 挂起的 port——previewEntered 通知进入，previewRelease 释放。 */
+    private class GatedPreviewPort : SpySessionPort() {
+        val previewEntered = CompletableDeferred<Unit>()
+        val previewRelease = CompletableDeferred<Unit>()
+
+        override suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview {
+            previewCount++
+            previewEntered.complete(Unit)
+            withContext(kotlinx.coroutines.NonCancellable) { previewRelease.await() }
+            return super.preview(days, targetDate)
+        }
+    }
+
+    /** R2-04: 记录每个 LlmRequest 的 runtime。 */
+    private class RecordingRuntime(
+        private val streamFactory: () -> Flow<LlmStreamEvent>,
+    ) : AiRuntime {
+        val requests = mutableListOf<LlmRequest>()
+        override suspend fun complete(request: LlmRequest): Result<String> = Result.success("")
+        override fun stream(request: LlmRequest): Flow<LlmStreamEvent> {
+            requests.add(request)
+            return streamFactory()
+        }
     }
 
     private fun channelRuntime(channel: Channel<LlmStreamEvent>): AiRuntime = object : AiRuntime {
@@ -134,12 +159,15 @@ class AiMealInputViewModelStreamTest {
             ingredientRepo, DishRepository(db), MealRecordRepository(db), NutritionRepository(db),
             IngredientAliasResolver(emptyMap()), db,
         )
-        return AiMealInputViewModel(
+        val vm = AiMealInputViewModel(
             initialText = text, targetDate = targetDate,
             aiRuntime = aiRuntime, config = AiRuntimeConfig(prefs), recorder = recorder,
             ingredientRepo = ingredientRepo,
             healthRepo = HealthProfileRepository(db), familyRepo = FamilyRepository(db, prefs),
         )
+        // R2-02: 测试注入空健康摘要，避免真实 healthRepo/familyRepo 的 Dispatchers.IO 跨线程访问内存 driver。
+        vm.healthSummaryProvider = { emptyList() }
+        return vm
     }
 
     @Test
@@ -205,6 +233,7 @@ class AiMealInputViewModelStreamTest {
         assertEquals(AiMealPhase.ERROR, vm.state.value.phase)
         assertEquals(0, spy.previewCount)
         assertEquals("不自动调用规则解析", 0, spy.parseRuleCount)
+        assertEquals(0, spy.commitCount)
     }
 
     @Test
@@ -228,30 +257,38 @@ class AiMealInputViewModelStreamTest {
     }
 
     @Test
-    fun `T-B3-01 编辑文本取消generation 后到事件不污染`() = runVmTest {
+    fun `T-B3-01 request冻结字段 编辑与改日期均失效generation`() = runVmTest {
         val gate = CompletableDeferred<Unit>()
-        val runtime = object : AiRuntime {
-            override suspend fun complete(request: LlmRequest): Result<String> = Result.success("")
-            override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = flow {
-                gate.await()
-                emit(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
-                emit(LlmStreamEvent.Completed("stop", 0))
-            }
-        }
+        val runtime = RecordingRuntime(
+            streamFactory = { flow { gate.await(); emit(LlmStreamEvent.Delta("$mealJson\n$dishJson\n")); emit(LlmStreamEvent.Completed("stop", 0)) } },
+        )
         val spy = SpySessionPort()
-        val vm = createVm(runtime)
+        val vm = createVm(runtime, text = "中午吃了番茄炒蛋")
         vm.replaceSessionPortForTest(spy)
         vm.submit()
+
+        // R2-04: 第一请求的 user 含原始 input 与冻结 targetDate
+        val firstRequest = runtime.requests.first()
+        assertTrue(firstRequest.user.contains("中午吃了番茄炒蛋"))
+        assertTrue(firstRequest.user.contains("2026-08-05"))
+        assertEquals("meal-1", vm.state.value.generationId)
 
         // 编辑 → INPUT + 取消 generation
         vm.setInputText("改成别的")
         assertEquals(AiMealPhase.INPUT, vm.state.value.phase)
+        assertNull(vm.state.value.generationId)
 
         // 释放 A 事件 → job 已取消，不更新 state
         gate.complete(Unit)
         assertEquals(AiMealPhase.INPUT, vm.state.value.phase)
         assertNull(vm.state.value.autoGenPreview)
         assertEquals(0, spy.previewCount)
+
+        // R2-04: 改日期同样失效
+        vm.submit()
+        vm.setTargetDate(LocalDate(2026, 8, 6))
+        assertEquals(AiMealPhase.INPUT, vm.state.value.phase)
+        assertNull(vm.state.value.generationId)
     }
 
     @Test
@@ -287,6 +324,32 @@ class AiMealInputViewModelStreamTest {
     }
 
     @Test
+    fun `T-B3-06a preview挂起时编辑 旧A不写新会话且无ERROR`() = runVmTest {
+        val gateA = CompletableDeferred<Unit>()
+        val runtime = RecordingRuntime(
+            streamFactory = { flow { gateA.await(); emit(LlmStreamEvent.Delta("$mealJson\n$dishJson\n")); emit(LlmStreamEvent.Completed("stop", 0)) } },
+        )
+        val port = GatedPreviewPort()
+        val vm = createVm(runtime)
+        vm.replaceSessionPortForTest(port)
+        vm.submit() // gen A 流阻塞 gateA
+
+        // 释放 A 流 → A 进入 preview 挂起
+        gateA.complete(Unit)
+        port.previewEntered.await()
+
+        // 编辑 → 新会话（invalidate 取消 A job + INPUT）
+        vm.setInputText("改成别的")
+        assertEquals(AiMealPhase.INPUT, vm.state.value.phase)
+        assertNull(vm.state.value.generationId)
+
+        // 释放 A 的 preview → handleSessionSnapshot 检查 generation 失败 → 不写 A 状态/ERROR
+        port.previewRelease.complete(Unit)
+        vm.state.first { it.phase == AiMealPhase.INPUT }
+        assertNull(vm.state.value.autoGenPreview)
+    }
+
+    @Test
     fun `T-B3-08 两次MERGE确认 commit恰一次 保存后旧事件不干扰`() = runVmTest {
         val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
         val spy = SpySessionPort(hasExisting = true)
@@ -305,13 +368,18 @@ class AiMealInputViewModelStreamTest {
         assertTrue(vm.state.value.mergeConfirmed)
         assertEquals(0, spy.commitCount)
 
-        // 第二次：SAVING + commit 一次
+        // 第二次：SAVING + commit 一次；R2-04 断言 commit 收到对象与确认时 autoGenPreview 同一实例
+        val previewAtConfirm = vm.state.value.autoGenPreview
         vm.confirmSave()
         assertEquals(1, spy.commitCount)
         assertEquals(AiMealPhase.DONE, vm.state.value.phase)
+        assertTrue("commit 必须收到确认时同一 preview 实例", spy.lastCommittedPreview === previewAtConfirm)
 
         // 第三次：重复调用 0 次（DONE 直接 return）
         vm.confirmSave()
         assertEquals(1, spy.commitCount)
+
+        // 等后台 buildHealthSafetyReport 完成，避免 test 结束后 IO resume fatal
+        vm.state.first { it.healthSafetyReport != null }
     }
 }

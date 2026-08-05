@@ -119,10 +119,11 @@ class MealStreamDraftMapperTest {
     }
 
     @Test
-    fun `AF-B3-06 两个segment同date和mealId两dish合并为一个meal`() {
+    fun `AF-B3-06 R2-05 两个segment同date和mealId两dish合并 逆序声明 raw_input取ordinal0`() {
+        // 声明顺序逆序：s-2(ordinal=1, late) 在前，s-1(ordinal=0, early) 在后
         val segments = listOf(
-            seg("s-1", LocalDate(2026, 8, 5), "周三", 0),
-            seg("s-2", LocalDate(2026, 8, 5), "周三", 1),
+            seg("s-2", LocalDate(2026, 8, 5), "late", 1),
+            seg("s-1", LocalDate(2026, 8, 5), "early", 0),
         )
         val draft = MealStreamDraft(segments = mapOf(
             "s-1" to SegmentDraft("s-1", meals = mapOf(
@@ -141,8 +142,8 @@ class MealStreamDraftMapperTest {
         val meals = days.single().meals
         assertEquals(1, meals.size)
         assertEquals(listOf("米饭", "青菜"), meals.single().dishes.map { it.name })
-        // raw_input 取 ordinal 最小 segment
-        assertEquals("周三", days.single().raw_input)
+        // R2-05: raw_input 取 ordinal 最小 segment 的 inputText = "early"
+        assertEquals("early", days.single().raw_input)
     }
 
     @Test

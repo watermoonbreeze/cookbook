@@ -83,8 +83,6 @@ internal interface AiMealSessionPort {
     suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview
     suspend fun commit(preview: AutoGenPreview): AutoGenResult
     suspend fun parseRule(input: String, targetDate: LocalDate): RuleFallbackResult
-    /** B3.1 seam: 健康档案摘要（仅会话展示）。测试 spy 返回空。 */
-    suspend fun healthReport(preview: AutoGenPreview): HealthSafetyReport
 }
 
 /** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 作两阶段主键，PreviewPhase 直接渲染能力层产出。 */
@@ -151,8 +149,8 @@ class AiMealInputViewModel(
     // [AI修改] B3: 最近一次 preview 的 days，避免相同内容重复调用 previewAll。
     private var lastPreviewDays: List<DayMealJson>? = null
 
-    // [AI修改] B3.1-PORT-01: 会话端口（测试可替换）。
-    private var sessionPort: AiMealSessionPort = DefaultSessionPort(recorder, ingredientRepo, healthRepo, familyRepo)
+    // [AI修改] B3.1-PORT-01: 会话端口（测试可替换）；B3.2 R2-02 回退为严格三方法。
+    private var sessionPort: AiMealSessionPort = DefaultSessionPort(recorder, ingredientRepo)
 
     /** 仅测试使用：替换会话端口为 spy。[AI修改] */
     internal fun replaceSessionPortForTest(port: AiMealSessionPort) {
@@ -162,8 +160,6 @@ class AiMealInputViewModel(
     private class DefaultSessionPort(
         private val recorder: MultiDayRecorder,
         private val ingredientRepo: IngredientRepository,
-        private val healthRepo: HealthProfileRepository,
-        private val familyRepo: FamilyRepository,
     ) : AiMealSessionPort {
         override suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview =
             recorder.previewAll(days, targetDate)
@@ -176,27 +172,6 @@ class AiMealInputViewModel(
             val ruleDays = RuleMealParser.parse(input, names, today = targetDate)
             val anchorResult = MealDateAnchorPolicy.apply(input, targetDate, ruleDays)
             return RuleFallbackResult(anchorResult.days, anchorResult.warning)
-        }
-
-        override suspend fun healthReport(preview: AutoGenPreview): HealthSafetyReport = try {
-            val namesById = healthRepo.listAllCrowdTypes().associate { it.id to it.name }
-            val members = familyRepo.listMembers()
-            val memberLabels = members.mapIndexedNotNull { index, member ->
-                member.careCategoryIds.mapNotNull(namesById::get).distinct().takeIf { it.isNotEmpty() }
-                    ?.let { "成员${index + 1}:${it.joinToString("·")}" }
-            }
-            val legacy = healthRepo.listAll().filter { it.enabled }.map { it.crowdName }
-            val enabled = (memberLabels + legacy).distinct()
-            val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
-                .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
-            HealthSafetyReport(buildList {
-                if (enabled.isNotEmpty()) add("已结合健康档案：${enabled.joinToString("、")}")
-                if (pendingIngredients > 0) add("本餐有 $pendingIngredients 种新食材，营养和适宜性待复核")
-                if (isEmpty()) add("未设置健康档案；可按个人情况核对本餐")
-            })
-        } catch (e: Exception) {
-            com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "healthReport failed: ${e.javaClass.simpleName}")
-            HealthSafetyReport()
         }
     }
 
@@ -360,7 +335,8 @@ class AiMealInputViewModel(
      * - 无合法餐食且 final：ERROR，不自动调用规则 parser。
      */
     private suspend fun handleSessionSnapshot(session: StreamingMealSession, generationId: String, isFinal: Boolean) {
-        if (_state.value.generationId != generationId) return
+        // AF-B3-R2-01: 唯一 generation 谓词。
+        if (!isCurrentGeneration(generationId)) return
         val snap = session.snapshot()
         if (!snap.hasValidMeals && !isFinal) {
             _state.update {
@@ -390,8 +366,9 @@ class AiMealInputViewModel(
         val frozenDate = session.request.segments.firstOrNull()?.targetDate ?: _state.value.targetDate
         try {
             val preview = sessionPort.preview(snap.days, frozenDate)
+            // AF-B3-R2-01: preview 挂起后再次比对 generation，旧 A 不写新会话。
+            if (!isCurrentGeneration(generationId)) return
             lastPreviewDays = snap.days
-            // 先同步更新 phase/preview，healthReport 单独异步补，避免挂起阻塞 UI 状态。
             _state.update {
                 it.copy(
                     phase = if (isFinal) AiMealPhase.PREVIEW_READY else AiMealPhase.PARTIAL_READY,
@@ -403,9 +380,17 @@ class AiMealInputViewModel(
                     mergeConfirmed = false,
                 )
             }
-            val healthReport = sessionPort.healthReport(preview)
-            _state.update { it.copy(healthSafetyReport = healthReport) }
+            // 健康摘要独立后台计算，不阻塞 phase/preview；完成后仍须比对 generation。
+            viewModelScope.launch {
+                val hr = runCatching { buildHealthSafetyReport(preview) }.getOrElse { HealthSafetyReport() }
+                if (isCurrentGeneration(generationId)) {
+                    _state.update { it.copy(healthSafetyReport = hr) }
+                }
+            }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
+            if (!isCurrentGeneration(generationId)) return
             com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "preview failed: ${e.message}", e)
             _state.update {
                 it.copy(
@@ -416,6 +401,10 @@ class AiMealInputViewModel(
             }
         }
     }
+
+    /** AF-B3-R2-01: 当前 generation 谓词。 */
+    private fun isCurrentGeneration(generationId: String): Boolean =
+        _state.value.generationId == generationId
 
     /**
      * B3: 唯一允许调用 RuleMealParser 的显式动作。[AI修改]
@@ -462,6 +451,24 @@ class AiMealInputViewModel(
     private fun startOfWeek(date: LocalDate): LocalDate {
         val mondayOffset = date.dayOfWeek.ordinal // Mon=0
         return if (mondayOffset == 0) date else date.minus(DatePeriod(days = mondayOffset))
+    }
+
+    // B3.2 R2-02: 健康摘要提供者 seam——默认走真实 healthRepo/familyRepo，测试注入空避免 DB 跨线程。
+    internal var healthSummaryProvider: suspend () -> List<String> = { healthSummaryLabels() }
+
+    /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
+    private suspend fun buildHealthSafetyReport(preview: AutoGenPreview): HealthSafetyReport = try {
+        val enabled = healthSummaryProvider()
+        val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
+            .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
+        HealthSafetyReport(buildList {
+            if (enabled.isNotEmpty()) add("已结合健康档案：${enabled.joinToString("、")}")
+            if (pendingIngredients > 0) add("本餐有 $pendingIngredients 种新食材，营养和适宜性待复核")
+            if (isEmpty()) add("未设置健康档案；可按个人情况核对本餐")
+        })
+    } catch (e: Exception) {
+        com.sxdbsm.cookbook.android.util.AppLogger.w("AiMealInput", "buildHealthSafetyReport failed: ${e.javaClass.simpleName}")
+        HealthSafetyReport()
     }
 
     fun requestHealthAdvice() {
