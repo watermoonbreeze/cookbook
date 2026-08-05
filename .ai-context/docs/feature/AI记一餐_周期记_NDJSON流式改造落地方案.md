@@ -466,6 +466,8 @@ internal class HttpUrlStreamCall(
 
 > 结论：**通过，B1/B2 放行，允许开始 B3。** AF-21 已按 §7.8 的固定骨架关闭，没有引入第二套 transport 或扩大生产 API。
 
+> B3 唯一实施依据：`AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`。该蓝图按长期协作规范冻结类型、真相源、状态机、时序、allowlist 和 T-B3-01~09；编码模型不得以本节“允许开始 B3”自行推导实现。
+
 | 验收项 | 复审结果 | 可核查证据 |
 |---|---|---|
 | production seam | 通过 | `HttpUrlStreamCall` 仅新增 internal 默认 `connectionFactory`；`HttpUrlStreamTransport`、Koin 与 Runtime 的生产入口不变。 |

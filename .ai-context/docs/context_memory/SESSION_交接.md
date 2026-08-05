@@ -1,7 +1,7 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-05 15:20**
-> 当前状态：AI 记一餐 V2 追加验证通过；周期记 + NDJSON 流式大改的 B1/B2 均已八审通过，B3 可开始。
+> 更新时间：**2026-08-05 21:28**
+> 当前状态：AI 记一餐 V2 追加验证通过；周期记 + NDJSON 流式大改的 B1/B2 均已八审通过，B3 仅可按已冻结的会话实施蓝图开始。
 
 ---
 
@@ -51,6 +51,7 @@
 ### 任务：AI 记一餐大改 · 周期记 + NDJSON 流式解析
 
 > 2026-08-05 架构基线已补齐：实施必须先读 `feature/AI记一餐_周期记_NDJSON流式开发规范.md`，按 B1 至 B6 分批交付；当前无老版本，禁止旧协议兼容、数据迁移与双轨状态。`b37ace6f` 已以注入阻塞 `HttpURLConnection` 覆盖 `disconnect→IOException→CancellationException`，B1/B2 八审通过；下一步只可按 B3 会话状态机范围实施，不得回退或重构已通过的 transport/parser 契约。
+> 多模型治理已升级：任何编码模型先读 `experience/12_多模型协作与实施蓝图规范.md`；架构模型冻结类型、真相源、状态机、时序、测试和 allowlist，编码模型遇缺口写 `Q-<批次>-NN` 并停止。B3 唯一执行文件为 `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`。
 > 跨模型上下文已审计：首次接手先读 `.ai-context/PROJECT.md`；根 `docs/` 历史资料已迁入 `feature/_archive/legacy_root_docs/`，不得作为当前依据；真机只认时间戳最新的唯一清单。
 
 先读：

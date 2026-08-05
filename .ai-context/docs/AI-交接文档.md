@@ -10,6 +10,8 @@
 4. `.ai-context/docs/context_memory/SESSION_交接.md`：唯一当前会话状态和下一步。
 5. `.ai-context/docs/功能路径索引.md`：确定功能对应的代码路径。
 
+编码/修复/重构任务在读取对应 feature 文档前，必须再读 `.ai-context/docs/experience/12_多模型协作与实施蓝图规范.md`：架构模型冻结决策，编码模型只能执行 `BLUEPRINT_READY` 蓝图；遇到缺口写 `Q-<批次>-NN` 并停止，不得临场发挥。当前 B3 只认 `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`。
+
 之后按需进入 `projectReview/`、`feature/`、`experience/`。不要把日期快照、`_archive/`、旧待办统计或代码近旁说明当作当前状态。
 
 ## 项目速览

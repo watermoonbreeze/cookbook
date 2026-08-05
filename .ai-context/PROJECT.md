@@ -25,6 +25,7 @@
 
 - AI 记一餐的实施唯一基线：`docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md`。
 - 对应产品方案：`docs/feature/AI记一餐_周期记_NDJSON流式改造落地方案.md`。
+- B3 会话唯一实施蓝图：`docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`；任何编码模型实施前还必须读 `docs/experience/12_多模型协作与实施蓝图规范.md`。
 - 规则与反查：`docs/projectReview/21_AI与网络请求策略（专属）.md`、`08_决策记录.md` D-15/D-16、`05_诊断地图.md`。
 - 真机验证只认 `docs/feature/真机待验证清单_<yyyyMMddHHmm>.md` 中时间最新的一份；当前为 `真机待验证清单_202608051156.md`。
 
