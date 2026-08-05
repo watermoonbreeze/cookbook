@@ -1,7 +1,6 @@
 package com.sxdbsm.cookbook.android.ai
 
 import com.sxdbsm.cookbook.ai.AiRuntime
-import com.sxdbsm.cookbook.ai.AiRuntimeConfig
 import com.sxdbsm.cookbook.ai.GlmProtocol
 import com.sxdbsm.cookbook.ai.LlmChatRequest
 import com.sxdbsm.cookbook.ai.LlmRequest
@@ -14,165 +13,45 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
-
-/**
- * SSE 读取结果。[AI修改] AF-10
- */
-data class SseStreamResult(
-    val finishReason: String?,
-    val totalChars: Int,
-)
-
-/**
- * 从 InputStream 逐行读取 SSE data: 帧并回调，支持取消。[AI修改] AF-10
- *
- * @param inputStream SSE 数据源
- * @param onDelta 每个非空 delta.content 立即回调
- * @param isActive 检查是否仍活跃，readLine 阻塞间不实时中断但层循环会检查
- * @return 读取结果
- */
-suspend fun readSseStream(
-    inputStream: InputStream,
-    onDelta: suspend (deltaContent: String) -> Unit,
-): SseStreamResult {
-    val reader = BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8))
-    var finishReason: String? = null
-    var totalChars = 0
-
-    reader.use { r ->
-        var line: String?
-        while (r.readLine().also { line = it } != null) {
-            val currentLine = line ?: break
-            if (currentLine.isEmpty()) continue
-            if (!currentLine.startsWith("data:")) continue
-
-            val dataContent = currentLine.removePrefix("data:").trimStart()
-            val chunk = GlmProtocol.parseSseLine(dataContent)
-
-            if (chunk.isDone) break
-
-            if (chunk.finishReason != null) finishReason = chunk.finishReason
-
-            if (chunk.deltaContent.isNotEmpty()) {
-                totalChars += chunk.deltaContent.length
-                onDelta(chunk.deltaContent)
-            }
-        }
-    }
-
-    return SseStreamResult(finishReason = finishReason, totalChars = totalChars)
-}
-
-/**
- * 可取消的流式 transport。[AI修改] AF-10
- */
-interface StreamTransport {
-    /**
-     * 执行一次流式请求，流式期间阻塞在 IO；每帧回调 onDelta。
-     * 调用方在需要取消时必须先调用 [cancelActive]（会关闭当前连接/输入流使阻塞 read 快速失败），
-     * 再等待 execute 返回或抛异常。
-     */
-    @Throws(IOException::class)
-    suspend fun execute(
-        endpoint: String, key: String, body: String,
-        onDelta: suspend (deltaContent: String) -> Unit,
-    ): SseStreamResult
-
-    /** 取消当前活跃连接；幂等。 */
-    fun cancelActive()
-}
-
-/**
- * 默认实现：HttpURLConnection。[AI修改] AF-10 AF-11
- */
-class HttpUrlStreamTransport : StreamTransport {
-    @Volatile
-    private var activeConnection: HttpURLConnection? = null
-
-    override fun cancelActive() {
-        activeConnection?.disconnect()
-        activeConnection = null
-    }
-
-    override suspend fun execute(
-        endpoint: String, key: String, body: String,
-        onDelta: suspend (deltaContent: String) -> Unit,
-    ): SseStreamResult {
-        val started = System.currentTimeMillis()
-        val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply {
-            requestMethod = "POST"
-            connectTimeout = 15000
-            readTimeout = 60000
-            doOutput = true
-            setRequestProperty("Content-Type", "application/json")
-            setRequestProperty("Authorization", "Bearer $key")
-            setRequestProperty("Accept", "text/event-stream")
-        }
-        activeConnection = conn
-        try {
-            conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
-            val code = conn.responseCode
-            if (code !in 200..299) {
-                // AF-11: 错误消息只含状态码，不含 response body
-                val errorBody = conn.errorStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
-                val safeLength = errorBody.length
-                AppLogger.debugLong("CloudAiRaw", "stream http[$code] errorBody", errorBody) // 仅 debug gate
-                throw IOException("HTTP $code ($safeLength bytes)")
-            }
-            val result = readSseStream(conn.inputStream, onDelta)
-            AppLogger.i("CloudAi", "stream http=$code cost=${System.currentTimeMillis() - started}ms chars=${result.totalChars} finish=${result.finishReason}")
-            return result
-        } finally {
-            activeConnection = null
-            conn.disconnect()
-        }
-    }
-}
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * @File : CloudAiRuntime
- * @Time : 2026/07/08
- * @Author : SXD-AI
+ * @Time : 2026/07/08 · AF-13 重写 2026-08-05
  * @Desc : 云端 AI 运行时（OpenAI 兼容 API）
- * <p>
- * [AI修改] AF-10: transport.cancelActive() 句柄 + awaitClose 真正取消 + 端到端测试。
- * [AI修改] AF-11: HTTP 错误不泄漏 body。
- * <p>
- * [AI生成] S2：接真实云端。
- **/
-class CloudAiRuntime(
-    private val config: AiRuntimeConfig,
-    private val streamTransport: StreamTransport = HttpUrlStreamTransport(),
+ */
+class CloudAiRuntime internal constructor(
+    private val requestConfig: CloudAiRequestConfig,
+    private val transport: StreamTransport = HttpUrlStreamTransport(),
 ) : AiRuntime {
 
     override suspend fun complete(request: LlmRequest): Result<String> = withContext(Dispatchers.IO) {
-        val model = config.selectedModel()
-        val key = config.currentCloudApiKey()
+        val model = requestConfig.selectedModel()
+        val key = requestConfig.apiKeyForSelectedModel()
         if (key.isBlank()) {
             return@withContext Result.failure(IllegalStateException("${model.vendorName} API Key 未配置"))
         }
         val body = GlmProtocol.buildRequestBody(model.model, request.system, request.user, request.temperature, jsonMode = model.supportsJsonMode, maxTokens = request.maxTokens.coerceIn(256, 8192))
-        AppLogger.i("CloudAi", "req[${model.id}] endpoint=${model.endpoint} payloadBytes=${body.toByteArray().size}")
+        AppLogger.i("CloudAi", "req[${model.id}] payloadBytes=${body.toByteArray().size}")
         AppLogger.debugLong("CloudAiRaw", "complete[${model.id}] requestBody", body)
         var lastError: Throwable? = null
         repeat(MAX_ATTEMPTS) { attempt ->
             val result = runCatching { postOnce(model.endpoint, key, body) }
             result.onSuccess { return@withContext Result.success(it) }
             lastError = result.exceptionOrNull()
-            AppLogger.w("CloudAi", "[${model.id}] attempt ${attempt + 1} failed: ${lastError?.message}")
+            if (lastError !is StreamTransportException) {
+                AppLogger.w("CloudAi", "[${model.id}] attempt ${attempt + 1} failed: ${lastError?.javaClass?.simpleName}")
+            }
         }
         Result.failure(lastError ?: IOException("unknown"))
     }
 
     override suspend fun chat(request: LlmChatRequest): Result<String> = withContext(Dispatchers.IO) {
-        val model = config.selectedModel()
-        val key = config.currentCloudApiKey()
+        val model = requestConfig.selectedModel()
+        val key = requestConfig.apiKeyForSelectedModel()
         if (key.isBlank()) return@withContext Result.failure(IllegalStateException("${model.vendorName} API Key 未配置"))
         val body = GlmProtocol.buildChatRequestBody(model.model, request.messages, request.temperature, jsonMode = model.supportsJsonMode, maxTokens = request.maxTokens.coerceIn(256, 8192))
         AppLogger.i("CloudAi", "chat[${model.id}] msgs=${request.messages.size}")
@@ -182,75 +61,87 @@ class CloudAiRuntime(
             val result = runCatching { postOnce(model.endpoint, key, body) }
             result.onSuccess { return@withContext Result.success(it) }
             lastError = result.exceptionOrNull()
-            AppLogger.w("CloudAi", "chat[${model.id}] attempt ${attempt + 1} failed: ${lastError?.message}")
+            if (lastError !is StreamTransportException) {
+                AppLogger.w("CloudAi", "chat[${model.id}] attempt ${attempt + 1} failed: ${lastError?.javaClass?.simpleName}")
+            }
         }
         Result.failure(lastError ?: IOException("unknown"))
     }
 
     // ============================================================
-    // 流式补全（AF-10: awaitClose 真正取消 transport）
+    // AF-13: 固定终态顺序（§7.5.3）
     // ============================================================
 
     override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = callbackFlow {
-        val model = config.selectedModel()
-        val key = config.currentCloudApiKey()
+        val model = requestConfig.selectedModel()
+        val key = requestConfig.apiKeyForSelectedModel()
+        // 步骤1: 空key立即Failed
         if (key.isBlank()) {
             send(LlmStreamEvent.Failed(message = "${model.vendorName} API Key 未配置", retryable = false))
             close()
             return@callbackFlow
         }
-        val body = GlmProtocol.buildStreamRequestBody(
-            model = model.model, system = request.system, user = request.user,
-            temperature = request.temperature, maxTokens = request.maxTokens.coerceIn(256, 8192),
+        val httpRequest = StreamHttpRequest(
+            endpoint = model.endpoint,
+            apiKey = key,
+            body = GlmProtocol.buildStreamRequestBody(
+                model = model.model, system = request.system, user = request.user,
+                temperature = request.temperature, maxTokens = request.maxTokens.coerceIn(256, 8192),
+            ),
         )
-        AppLogger.i("CloudAi", "stream[${model.id}] payloadBytes=${body.toByteArray().size}")
-        AppLogger.debugLong("CloudAiRaw", "stream[${model.id}] requestBody", body)
+        AppLogger.i("CloudAi", "stream[${model.id}] payloadBytes=${httpRequest.body.toByteArray().size}")
+        AppLogger.debugLong("CloudAiRaw", "stream[${model.id}] requestBody", httpRequest.body)
 
+        // 步骤2: AtomicReference<StreamCall?>
+        val activeCall = AtomicReference<StreamCall?>(null)
         val channel = this
+        var hasDelta = false
+        var totalChars = 0
+        var finishReason: String? = null
 
         val job = launch(Dispatchers.IO) {
-            var totalChars = 0
-            var finishReason: String? = null
-            var hasAnyContent = false
-
             for (attempt in 0 until MAX_ATTEMPTS) {
+                val call = transport.newCall(httpRequest)
+                activeCall.set(call)
                 try {
-                    val result = streamTransport.execute(model.endpoint, key, body) { delta ->
+                    val result = call.execute { delta ->
                         if (delta.isNotEmpty()) {
-                            hasAnyContent = true
+                            hasDelta = true
                             totalChars += delta.length
-                            channel.send(LlmStreamEvent.Delta(delta))
+                            channel.send(LlmStreamEvent.Delta(delta)) // 步骤3
                         }
                     }
                     finishReason = result.finishReason
                     break
-                } catch (e: IOException) {
-                    // AF-11: 错误日志不泄漏 body（message 已只含状态码）
-                    AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1} io: ${e.message}")
-                    if (hasAnyContent || attempt == MAX_ATTEMPTS - 1) {
-                        channel.send(LlmStreamEvent.Failed(
-                            message = "HTTP ${e.message?.take(100) ?: "error"}",
-                            retryable = !hasAnyContent,
-                        ))
+                } catch (e: StreamTransportException) {
+                    AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1}: ${e.httpStatus}")
+                    // 步骤5: 首帧后失败 -> Failed(false), 不重试
+                    if (hasDelta || attempt == MAX_ATTEMPTS - 1) {
+                        channel.send(LlmStreamEvent.Failed(message = "HTTP ${e.httpStatus} STREAM_ERROR", retryable = !hasDelta))
                         channel.close()
                         return@launch
                     }
                     continue
                 } catch (e: Exception) {
-                    AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1}: ${e.message}")
-                    channel.send(LlmStreamEvent.Failed(message = e.message?.take(200) ?: "未知错误", retryable = !hasAnyContent))
-                    channel.close()
+                    // 步骤5: 非transport异常只记类型，不泄漏message
+                    if (!channel.isClosedForSend) {
+                        AppLogger.w("CloudAi", "stream[${model.id}] non-transport: ${e.javaClass.simpleName}")
+                        channel.send(LlmStreamEvent.Failed(message = "STREAM_ERROR", retryable = false))
+                        channel.close()
+                    }
                     return@launch
+                } finally {
+                    activeCall.compareAndSet(call, null)
                 }
             }
-
+            // 步骤4: 正常结束
             channel.send(LlmStreamEvent.Completed(finishReason = finishReason ?: "unknown", totalChars = totalChars))
             channel.close()
         }
 
-        // AF-10: 取消收集时立即 cancel transport 的活跃连接 + cancel job
+        // 步骤7: awaitClose 取消活跃 call
         awaitClose {
-            streamTransport.cancelActive()
+            activeCall.getAndSet(null)?.cancel()
             job.cancel()
         }
     }

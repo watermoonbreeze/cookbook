@@ -19,6 +19,7 @@ import com.sxdbsm.cookbook.ai.MockAiRuntime
 import com.sxdbsm.cookbook.ai.SwitchableAiRuntime
 import com.sxdbsm.cookbook.android.ai.CloudAiRuntime
 import com.sxdbsm.cookbook.android.ai.OnDeviceAiRuntime
+import com.sxdbsm.cookbook.android.ai.PreferenceCloudAiRequestConfig
 import com.sxdbsm.cookbook.platform.BackupManager
 import com.sxdbsm.cookbook.platform.DatabaseDriverFactory
 import org.koin.android.ext.koin.androidContext
@@ -40,8 +41,8 @@ val androidModule = module {
     single { com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefillBus() } // [AI生成] 新建菜品预填(搜索点此新建/食材组成菜品)总线。
     single { com.sxdbsm.cookbook.android.ui.ingredients.IngredientCreateBus() } // [AI生成] 首页搜索"新建食材"按名开编辑器总线。
 
-    // [AI生成] AI 运行时切换框架：按 AiRuntimeConfig 路由到 Mock/云端/端侧；加端侧只需扩这里的映射。
-    single { CloudAiRuntime(get()) }
+    // [AI修改] AF-13: CloudAiRuntime 改为通过 CloudAiRequestConfig adapter 注入
+    single { CloudAiRuntime(PreferenceCloudAiRequestConfig(get())) }
     single { OnDeviceAiRuntime() }
     single<AiRuntime> {
         SwitchableAiRuntime(

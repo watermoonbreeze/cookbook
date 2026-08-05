@@ -24,13 +24,13 @@ enum class AiRuntimeType {
     }
 }
 
-/** AI 运行时配置（偏好存储读写；Key 只存本机）。[AI修改] AF-10: open 允许测试覆盖 */
-open class AiRuntimeConfig(private val prefs: PreferenceRepository) {
+/** AI 运行时配置（偏好存储读写；Key 只存本机）。[AI修改] AF-13: 恢复 final */
+class AiRuntimeConfig(private val prefs: PreferenceRepository) {
     suspend fun activeType(): AiRuntimeType = AiRuntimeType.from(prefs.get(KEY_TYPE))
     suspend fun setActiveType(type: AiRuntimeType) = prefs.set(KEY_TYPE, type.name)
 
-    /** 当前选中的云端模型。[AI修改] AF-10: open 允许测试匿名子类覆盖 */
-    open suspend fun selectedModel(): CloudModel = CloudModels.byId(prefs.get(KEY_MODEL_ID))
+    /** 当前选中的云端模型。[AI生成] */
+    suspend fun selectedModel(): CloudModel = CloudModels.byId(prefs.get(KEY_MODEL_ID))
     suspend fun setSelectedModelId(id: String) = prefs.set(KEY_MODEL_ID, id)
 
     /** 某厂商的 key（同厂多模型共用）；默认厂商兼容迁移旧的单一 key。[AI生成] */
@@ -43,8 +43,8 @@ open class AiRuntimeConfig(private val prefs: PreferenceRepository) {
     }
     suspend fun setVendorApiKey(vendor: String, key: String) = prefs.set(vendorKey(vendor), key.trim())
 
-    /** 当前选中模型对应厂商的 key。[AI修改] AF-10: open 允许测试覆盖 */
-    open suspend fun currentCloudApiKey(): String = vendorApiKey(selectedModel().vendor)
+    /** 当前选中模型对应厂商的 key。[AI生成] */
+    suspend fun currentCloudApiKey(): String = vendorApiKey(selectedModel().vendor)
 
     /** 是否已具备真实模型能力（云端且选中模型的厂商已填 Key）。[AI生成] */
     suspend fun isModelReady(): Boolean = when (activeType()) {

@@ -60,6 +60,10 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    // [AI修改] AF-13: Runtime 单测需要 mock Android Log
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {

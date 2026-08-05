@@ -469,178 +469,126 @@ class StreamingMealParser(
 
     // ═══════════════════════════════ 整体 JSON 回退（AF-04 重写） ═══════════════════════════════
 
+    // ============================================================
+    // 整体 JSON fallback（AF-14: §7.5.5 单来源，不跨段猜测）
+    // ============================================================
+
     /**
-     * AF-04: 整体 JSON fallback 必须先规范化为 NDJSON 等价事件，复用同一归属校验链。[AI修改]
-     *
-     * 1. 解析 FlatMealJson/MultiDayJson → 生成 NdjsonLine 事件列表
-     * 2. 每条事件分配本批次已知 segment_id（按日期映射到 InputSegment.targetDate）
-     * 3. 统一生成 meal_id/dish_id 父子键
-     * 4. 逐条 feed 进 processLine()，复用同一归属校验
+     * AF-14: 整体 JSON fallback 仅接受单一 owner segment。
+     * 周期记每段独立请求→独立 parser，不能跨段推断来源。
      */
     private fun tryWholeJsonFallback() {
         val raw = allRawText.toString().trim()
-        if (raw.isEmpty()) {
-            jsonFallbackErrors = listOf("AI 返回为空")
+        if (raw.isEmpty()) { jsonFallbackErrors = listOf("AI 返回为空"); return }
+
+        // AF-14: segments.size != 1 → 拒绝
+        if (segments.size != 1) {
+            orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.ERROR, null, null, null,
+                "whole_json_fallback_requires_single_segment: 整体 JSON fallback 仅支持单一来源 segment，当前有 ${segments.size} 个"))
+            return
+        }
+        val ownerSegment = segments.single()
+
+        // 解析为 DayMealJson（FlatMealJson 或 MultiDayJson）
+        val rawDays = parseWholeJsonToDays(raw)
+        if (rawDays.isEmpty()) {
+            jsonFallbackErrors = listOf("AI 返回不符合任何已知格式")
             return
         }
 
-        val syntheticLines = buildSyntheticNdjsonLines(raw)
-        if (syntheticLines.isEmpty()) {
-            jsonFallbackErrors = listOf("AI 返回不符合任何已知格式（NDJSON/FlatMealJson/MultiDayJson）")
-            return
-        }
+        orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.WARNING, ownerSegment.segmentId, null, null,
+            "未检测到 NDJSON 事件，已按整体 JSON 格式规范化"))
 
-        orphanDiagnostics.add(
-            StreamDiagnostic(DiagnosticLevel.WARNING, null, null, null,
-                "未检测到 NDJSON 事件，已按整体 JSON 格式规范化后重新校验")
-        )
-
-        // 将合成事件逐行喂入同一 processLine 管道
-        for (syntheticLine in syntheticLines) {
-            processLine(syntheticLine)
+        // 逐 day 调用 D-15 策略
+        for ((di, rawDay) in rawDays.withIndex()) {
+            val resolved = resolveWholeJsonFallbackDay(ownerSegment, rawDay) ?: continue
+            buildSyntheticLinesFromResolvedDay(resolved, di)
         }
     }
 
-    /** AF-04: 从整体 JSON 构建合成 NdjsonLine 列表，逐一喂入归属校验链。[AI修改] */
-    private fun buildSyntheticNdjsonLines(raw: String): List<String> {
-        // 尝试 FlatMealJson
+    /** AF-14: 值对象——策略修正后的单天 fallback 结果。 */
+    private data class ResolvedFallbackDay(
+        val segmentId: String,
+        val correctedDate: LocalDate,
+        val day: DayMealJson,
+    )
+
+    /** AF-14: 对单个 rawDay 调用 MealDateAnchorPolicy，计算修正日期并归属 owner segment。 */
+    private fun resolveWholeJsonFallbackDay(
+        ownerSegment: InputSegment,
+        rawDay: DayMealJson,
+    ): ResolvedFallbackDay? {
+        val policyResult = MealDateAnchorPolicy.apply(
+            ownerSegment.inputText,
+            ownerSegment.targetDate,
+            listOf(rawDay),
+        )
+        val correctedDay = policyResult.days.firstOrNull() ?: return null
+
+        // 解析修正日期
+        val correctedDate: LocalDate = if (!correctedDay.date.isNullOrBlank()) {
+            runCatching { LocalDate.parse(correctedDay.date!!.replace('/', '-')) }.getOrNull()
+                ?: run {
+                    orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.ERROR, ownerSegment.segmentId, null, null,
+                        "fallback day ${correctedDay.date} 无效"))
+                    return null
+                }
+        } else if (correctedDay.date_offset != 0) {
+            ownerSegment.targetDate.plus(DatePeriod(days = correctedDay.date_offset))
+        } else {
+            ownerSegment.targetDate
+        }
+
+        if (policyResult.warning != null) {
+            orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.WARNING, ownerSegment.segmentId, null, null,
+                "fallback 日期锚定: ${policyResult.warning}"))
+        }
+
+        return ResolvedFallbackDay(
+            segmentId = ownerSegment.segmentId,
+            correctedDate = correctedDate,
+            day = correctedDay,
+        )
+    }
+
+    /** AF-14: 从 ResolvedFallbackDay 生成合成 NdjsonLine 并喂入同链。修正日期同时用于 preview key/date/meal_id。 */
+    private fun buildSyntheticLinesFromResolvedDay(resolved: ResolvedFallbackDay, dayIndex: Int) {
+        val dateStr = resolved.correctedDate.toString()
+        val segId = resolved.segmentId
+        val dishIndexByMeal = mutableMapOf<String, Int>()
+
+        for (meal in resolved.day.meals) {
+            val slot = meal.meal_type ?: "lunch"
+            val mealId = "$dateStr|$slot"
+            if (mealId !in dishIndexByMeal) {
+                processLine("""{"type":"meal","segment_id":"$segId","meal_id":"$mealId","date":"$dateStr","slot":"$slot"}""")
+            }
+            for (dishRef in meal.dishes) {
+                val dishName = dishRef.name.ifBlank { dishRef.dish?.name ?: "未命名" }
+                val dishIdx = dishIndexByMeal.getOrPut(mealId) { 0 } + 1
+                dishIndexByMeal[mealId] = dishIdx
+                val dishId = "$mealId|d$dishIdx"
+                processLine("""{"type":"dish","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(dishName)}"}""")
+                for (ing in dishRef.dish?.ingredients ?: emptyList()) {
+                    val ingName = ing.ref ?: ing.food?.name ?: ""
+                    processLine("""{"type":"ingredient","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(ingName)}","quantity":${ing.quantity}}""")
+                }
+            }
+        }
+    }
+
+    /** AF-14: 解析整体 JSON → List<DayMealJson>。先 Flat，再 MultiDay。 */
+    private fun parseWholeJsonToDays(raw: String): List<DayMealJson> {
         val flatResult = runCatching { json.decodeFromString<FlatMealJson>(raw) }.getOrNull()
         if (flatResult != null && flatResult.items.isNotEmpty()) {
-            return buildLinesFromFlatMeal(flatResult)
+            val converted = FlatToDayMealConverter.convert(flatResult, fallbackDate)
+            return converted.days
         }
-
-        // 尝试 MultiDayJson
         val multiResult = runCatching { json.decodeFromString<MultiDayJson>(raw) }.getOrNull()
         if (multiResult != null && multiResult.days.isNotEmpty()) {
-            return buildLinesFromMultiDay(multiResult)
+            return multiResult.days
         }
-
         return emptyList()
-    }
-
-    /** AF-07: FlatMealJson item → 映射到本次已发送 segment，同餐多菜递增 dish_id。[AI修改] */
-    private fun buildLinesFromFlatMeal(flat: FlatMealJson): List<String> {
-        val lines = mutableListOf<String>()
-        // AF-07: 按 mealKey 递增 dish 序号
-        val dishIndexByMeal = mutableMapOf<String, Int>()
-
-        for (item in flat.items) {
-            val resolvedDate = resolveDateFromItem(item)
-            val segId = findSegmentForDateWithPolicy(resolvedDate, item.weekday, item.date_offset, null)
-                ?: continue
-            val slot = item.meal_type ?: "lunch"
-            val dateStr = resolvedDate ?: fallbackDate.toString()
-            val mealId = "$dateStr|$slot"
-
-            // 只有首次遇到该 mealId 才发 meal 事件
-            if (mealId !in dishIndexByMeal) {
-                lines.add("""{"type":"meal","segment_id":"$segId","meal_id":"$mealId","date":"$dateStr","slot":"$slot"}""")
-            }
-
-            // AF-07: 递增 dish_id
-            val dishIdx = dishIndexByMeal.getOrPut(mealId) { 0 } + 1
-            dishIndexByMeal[mealId] = dishIdx
-            val dishId = "$mealId|d$dishIdx"
-
-            val dishLine = buildString {
-                append("""{"type":"dish","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(item.dish_name)}"""")
-                if (item.dish_cooking_methods.isNotEmpty()) append(""","cooking_method":"${item.dish_cooking_methods.first()}"""")
-                if (item.dish_quantity != 1.0) append(""","quantity":${item.dish_quantity}""")
-                append("}")
-            }
-            lines.add(dishLine)
-
-            for (ing in item.ingredients) {
-                lines.add("""{"type":"ingredient","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(ing.name)}","quantity":${ing.quantity}}""")
-            }
-        }
-        return lines
-    }
-
-    /** AF-07: MultiDayJson → 同链映射，递增 dish_id。[AI修改] */
-    private fun buildLinesFromMultiDay(multi: MultiDayJson): List<String> {
-        val lines = mutableListOf<String>()
-        val dishIndexByMeal = mutableMapOf<String, Int>()
-
-        for (day in multi.days) {
-            val dateStr = day.date ?: fallbackDate.toString()
-            val segId = findSegmentForDateWithPolicy(dateStr, day.weekday, day.date_offset, null)
-                ?: continue
-            for (meal in day.meals) {
-                val slot = meal.meal_type ?: "lunch"
-                val mealId = "$dateStr|$slot"
-                if (mealId !in dishIndexByMeal) {
-                    lines.add("""{"type":"meal","segment_id":"$segId","meal_id":"$mealId","date":"$dateStr","slot":"$slot"}""")
-                }
-                for (dishRef in meal.dishes) {
-                    val dishName = dishRef.name.ifBlank { dishRef.dish?.name ?: "未命名" }
-                    val dishIdx = dishIndexByMeal.getOrPut(mealId) { 0 } + 1
-                    dishIndexByMeal[mealId] = dishIdx
-                    val dishId = "$mealId|d$dishIdx"
-                    lines.add("""{"type":"dish","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(dishName)}"}""")
-                    for (ing in dishRef.dish?.ingredients ?: emptyList()) {
-                        val ingName = ing.ref ?: ing.food?.name ?: ""
-                        lines.add("""{"type":"ingredient","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(ingName)}","quantity":${ing.quantity}}""")
-                    }
-                }
-            }
-        }
-        return lines
-    }
-
-    private fun resolveDateFromItem(item: FlatMealItem): String? {
-        if (!item.date.isNullOrBlank()) return item.date
-        if (item.date_offset != 0) {
-            return runCatching {
-                fallbackDate.plus(DatePeriod(days = item.date_offset)).toString()
-            }.getOrNull()
-        }
-        return fallbackDate.toString()
-    }
-
-    /** AF-12: 通过 MealDateAnchorPolicy 修正日期后映射 segment。[AI修改] */
-    private fun findSegmentForDateWithPolicy(
-        rawDate: String?, rawWeekday: String?, rawOffset: Int, sourceInput: String?,
-    ): String? {
-        // 构建临时 DayMealJson 供 policy 消费
-        val tempDay = DayMealJson(date = rawDate, date_offset = rawOffset, weekday = rawWeekday)
-        val tempDays = listOf(tempDay)
-
-        // 尝试每个已知 segment 的 targetDate + inputText 调用 policy
-        for (seg in segments) {
-            val input = sourceInput ?: seg.inputText
-            val policyResult = MealDateAnchorPolicy.apply(input, seg.targetDate, tempDays)
-            val correctedDay = policyResult.days.firstOrNull() ?: continue
-
-            // policy 修正后得到日期
-            val correctedDate = correctedDay.date?.let {
-                runCatching { LocalDate.parse(it.replace('/', '-')) }.getOrNull()
-            } ?: seg.targetDate
-
-            // 修正后日期匹配该 segment
-            if (correctedDate == seg.targetDate ||
-                (rawOffset != 0 && correctedDate == seg.targetDate.plus(DatePeriod(days = rawOffset)))) {
-                if (policyResult.warning != null) {
-                    orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.WARNING, seg.segmentId, null, null,
-                        "整体 JSON 日期锚定: ${policyResult.warning}"))
-                }
-                return seg.segmentId
-            }
-
-            // 周期记场景：日期在 segment 的目标范围内
-            if (correctedDate in segments.first().targetDate..segments.last().targetDate) {
-                if (policyResult.warning != null) {
-                    orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.WARNING, seg.segmentId, null, null,
-                        "整体 JSON 日期锚定: ${policyResult.warning}"))
-                }
-                return seg.segmentId
-            }
-        }
-
-        // 所有 segment 都匹配不上 → 拒绝
-        orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.ERROR, null, null, null,
-            "整体 JSON 日期「${rawDate ?: "offset=$rawOffset"}」无法通过日期锚定策略映射到任何输入分段，已拒绝"))
-        return null
     }
 
     private fun escapeJson(s: String): String = s
