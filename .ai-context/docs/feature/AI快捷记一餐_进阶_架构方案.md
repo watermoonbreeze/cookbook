@@ -12,7 +12,7 @@
 | 依赖前置 | **强依赖** `自动化基础能力层`（preview/commit·营养估算）；**K1b(健康评价)强依赖 L1 合规闸门**（云端 AI 发脱敏数据前的不可绕过弹窗） |
 | 被依赖 | L3 全 App 自动化·对话式记餐 |
 | 关联验收合同 | `AI快捷记一餐_进阶_验收合同.md` |
-| 关联待测试验证 | `真机待验证清单.md` K1-V1..V5 |
+| 关联待测试验证 | 时间戳最新的 `真机待验证清单_<yyyyMMddHHmm>.md` 中 K1-V1..V5 |
 | 状态 | 📄待拍板 |
 
 ## 1. 目标与范围 🔴
@@ -136,7 +136,7 @@ fun confirmSave()                             // → DayAutoGenerator.commit →
 
 **修改**：`AiMealInputViewModel.kt`、`AiMealInputSheet.kt`、`TextSegmenter.kt`、`AiMealPrompt.kt`、`UnifiedMealSchema.kt`、`AiMealRecorder.kt`/`MultiDayRecorder.kt`(适配器·随 Plan 1 P3)。
 
-**同步维护**：`功能路径索引.md`、`真机待验证清单.md` K1-V1..V5。
+**同步维护**：`功能路径索引.md`、时间戳最新的 `真机待验证清单_<yyyyMMddHHmm>.md` 中 K1-V1..V5。
 
 ## 7. 分阶段实施 🔴
 

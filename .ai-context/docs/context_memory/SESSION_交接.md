@@ -1,7 +1,7 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-05 11:56**  
-> 当前状态：AI 记一餐 V2 追加验证通过；小优化已实现待推送；下个干净 session 开始“周期记 + NDJSON 流式大改”。
+> 更新时间：**2026-08-05 14:03**
+> 当前状态：AI 记一餐 V2 追加验证通过；周期记 + NDJSON 流式大改已有可执行规范，跨模型项目上下文入口已收敛，待 DeepSeek 按批实现。
 
 ---
 
@@ -9,7 +9,7 @@
 
 ### 1. AI 记一餐 V2 追加验证
 
-用户已确认：**V2 追加整体没问题，可以了**。
+用户已确认：**V2 追加整体没问题，可以了**。2026-08-05 补充：V2-1～V2-17 整组真机验证通过，清单已标记。
 
 已推送提交：
 
@@ -37,21 +37,32 @@
 - 真机清单追加 V2-17，文件已更新时间戳：`feature/真机待验证清单_202608051156.md`。
 - 本地构建已通过：`scripts\build-cli.bat :androidApp:assembleDebug` → `BUILD SUCCESSFUL`。
 
+### 3. 跨模型项目上下文收敛
+
+- 新增 `.ai-context/PROJECT.md`：所有模型的首读顺序、事实优先级、当前任务和资料分层。
+- 重写 `docs/AI-交接文档.md`，并同步 `AGENTS.md`、`CLAUDE.md`、`.ai-context/README.md`、项目地图和待办入口。
+- 根 `docs/` 的 5 份历史资料迁入 `feature/_archive/legacy_root_docs/`；根目录不再保留项目知识双源。
+- 旧无时间戳真机清单已归档；当前唯一清单是 `feature/真机待验证清单_202608051156.md`。
+
 ---
 
 ## 二、下个 session 的主任务
 
 ### 任务：AI 记一餐大改 · 周期记 + NDJSON 流式解析
 
+> 2026-08-05 架构基线已补齐：实施必须先读 `feature/AI记一餐_周期记_NDJSON流式开发规范.md`，按 B1 至 B6 分批交付；当前无老版本，禁止旧协议兼容、数据迁移与双轨状态。
+> 跨模型上下文已审计：首次接手先读 `.ai-context/PROJECT.md`；根 `docs/` 历史资料已迁入 `feature/_archive/legacy_root_docs/`，不得作为当前依据；真机只认时间戳最新的唯一清单。
+
 先读：
 
-1. 本文件
-2. `feature/AI记一餐_周期记_NDJSON流式改造落地方案.md`
-3. `projectReview/21_AI与网络请求策略（专属）.md`
-4. `projectReview/08_决策记录.md` 的 D-13～D-16
-5. `projectReview/05_诊断地图.md` 的 AI 记餐条目
-6. `.ai-context/docs/功能路径索引.md` 的 AI 快捷输入记餐行
-7. 最新真机清单：`feature/真机待验证清单_202608051156.md`
+1. `.ai-context/PROJECT.md`
+2. `feature/AI记一餐_周期记_NDJSON流式开发规范.md`
+3. `feature/AI记一餐_周期记_NDJSON流式改造落地方案.md`
+4. `projectReview/21_AI与网络请求策略（专属）.md`
+5. `projectReview/08_决策记录.md` 的 D-13～D-16
+6. `projectReview/05_诊断地图.md` 的 AI 记餐条目
+7. `.ai-context/docs/功能路径索引.md` 的 AI 快捷输入记餐行
+8. 最新真机清单：`feature/真机待验证清单_202608051156.md`
 
 ### 已拍板目标
 
@@ -109,6 +120,7 @@
 本轮新增重点：
 
 - V2-17：同一日期误关重开保留输入/预览；切换日期清空；保存后同日再开为空会话。
+- V2 追加整组：已通过，不需要下个 session 重复验证。
 
 ---
 
@@ -122,6 +134,8 @@
 - `context_memory/SESSION_交接.md`
 - `context_memory/SESSION_交接_历史.md`
 - experience 相关总结文件
+- `.ai-context/PROJECT.md`、`docs/AI-交接文档.md`、`.ai-context/README.md`
+- 项目地图、待办/经验入口和 `feature/_archive/legacy_root_docs/` 的本轮文档收敛变更
 
 仍存在既有无关未提交文件，不要混入：
 

@@ -42,7 +42,7 @@
 
 Cookbook 是一款面向慢性病（三高、痛风等）患者的饮食规划 APP，核心价值是帮助用户解决"每天吃什么"的决策疲劳问题。项目基于 Kotlin Multiplatform (KMP) 跨平台架构，Android 端使用 Jetpack Compose，iOS 端使用 SwiftUI。
 
-MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单）已完成，当前处于**功能扩展与打磨阶段**（食材体系、厨房小助手、搜索等已落地）。详细规划见 `docs/` 目录和 `.ai-context/docs/feature/`。
+MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单）已完成，当前处于**功能扩展与打磨阶段**（食材体系、厨房小助手、搜索等已落地）。项目状态与详细规划统一见 `.ai-context/PROJECT.md`、`.ai-context/docs/projectReview/` 和 `.ai-context/docs/feature/`。
 
 ## 技术栈
 
@@ -84,11 +84,9 @@ macOS/Linux 使用 `./scripts/build-cli.sh <任务>`。直接 `./gradlew` 依赖
 
 ## 规划文档
 
-- `docs/菜谱功能.md` — 原始需求描述
-- `docs/产品规划方案.md` — 完整产品规划（MVP → 一期 → 二期）
-- `docs/MVP开发规划.md` — MVP 详细开发任务、数据模型、页面设计
-- `docs/技术栈与主题风格.md` — 技术选型与 Material3 主题配色规范
-- `.ai-context/docs/feature/` — 实施方案（MVP 实施、数据库设计、食材体系重构、端侧 AI、UI 控件命名清单等）
+- `.ai-context/PROJECT.md` — 跨模型首读、当前状态与真相优先级
+- `.ai-context/docs/projectReview/00_导读与索引.md` — 当前项目全景与阅读路径
+- `.ai-context/docs/feature/` — 当前实施方案、待办与验收；历史原始需求/规划见 `feature/_archive/legacy_root_docs/`
 
 ## 工程一致性要求
 
