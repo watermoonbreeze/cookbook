@@ -223,6 +223,18 @@ SAVING → DONE
 
 **再次申请复审的最小材料：** commit ID、AF-06~09 对照表、测试文件清单、逐条命令/结果、台账路径。任何一项缺失都不进入 B3。
 
+### 7.3 三审未关闭项（2026-08-05，提交 `f98c3a50`）
+
+> 结论：**仍不通过，B3 继续阻断。** AF-08 的 `d0` 拒绝和 Prompt 补充、AF-09 的台账格式可接受；但 AF-06 与 AF-07 尚未真正关闭，并发现 I-06 日志红线违规。不得在本轮将 B1/B2 标记为“通过”。
+
+| ID | 未关闭问题与定位 | 最小修复要求 | 必须新增的自动化证据 |
+|---|---|---|---|
+| AF-10 | **AF-06 取消保障仍未实现，Runtime 测试没有测 Runtime。** `HttpUrlStreamTransport.execute()` 将 `HttpURLConnection` 局部封装；`CloudAiRuntime.awaitClose` 仅 `job.cancel()`，无法在 `BufferedReader.readLine()` 阻塞时主动关闭连接/输入流。新增 `CloudAiRuntimeStreamTest` 只测试 `readSseStream` 和 transport 构造，未创建 `CloudAiRuntime`、未注入 fake transport，也未覆盖 Delta→Failed、重试或取消。 | transport 必须显式提供当前执行的取消/关闭能力（例如 `cancelActive()` 或可关闭的执行句柄）；`awaitClose` 必须调用它并等待资源释放。`CloudAiRuntime.stream()` 通过 fake/blocking transport 做端到端单测，不得再以 reader 辅助函数测试代替。 | 正常：两 Delta 后仅一个 Completed 且 collect 返回；首 Delta 后异常：Delta→Failed(false)，无 Completed、请求 1 次；首帧前 IOException：仅重试 1 次；阻塞 transport：取消 collect 后 transport 收到取消、HTTP/输入流关闭、后续不发事件。 |
+| AF-11 | **I-06 隐私红线：Release 日志和 UI 错误可泄漏服务端响应。** `HttpUrlStreamTransport` 将 `errorBody.take(200)` 拼进 `IOException`；`CloudAiRuntime` 再把 `e.message` 写入 `AppLogger.w` 并传给 `Failed`。`AppLogger.w` 在非 debug 包也写 logcat 与本地文件，因此服务端 body 可能落入 Release 日志。 | HTTP 失败只保留状态码、稳定错误码和安全短文案；不得把 error body 放入 Throwable message、`Failed.message` 或任何 `i/w/e` 日志。原始 body 若确有 Debug 排查价值，只能受现有 debug gate 保护并留在当次会话，不写 Release 文件日志。 | 伪造包含饮食文本/Key 样式字符串的 HTTP 错误 body，断言 `Failed` 与 Release 可记录字段均不包含该字符串；状态码和安全错误码仍可用于诊断。 |
+| AF-12 | **AF-07 仍绕过 D-15 日期锚定。** `findSegmentForDateOrReject()` 对不等于 `InputSegment.targetDate` 的日期直接拒绝，未依据该段 `inputText` 调用 `MealDateAnchorPolicy`。这把“用户原文含绝对日期时绝对日期优先”错误地变成拒绝，且没有星期/无日期的 fallback 覆盖。 | 整体 JSON 规范化前，针对每个候选结果和其来源 `InputSegment.inputText` 调用 `MealDateAnchorPolicy`；绝对日期、星期、无日期分别按 D-15 修正后再归属。仅在策略后仍不能唯一归属时拒绝并诊断；禁止以 `targetDate` 精确相等替代策略。 | 对整体对象和数组各覆盖：原文绝对日期优先、星期映射到所选周、无日期使用所选日期；每项证明不会跨 segment 污染且保留诊断/修正信息。 |
+
+**DeepSeek 三审修复范围：** 只处理 AF-10 至 AF-12、必要的既有测试与台账修订；更新本节和开发规范的批次状态。完成后提交“当前 commit 的”shared、androidApp Runtime 测试和 Android 构建证据，再申请复审。继续禁止 B3。
+
 ## 八、B1/B2 质量评分与 Token 记账
 
 ### 8.1 本次质量评分

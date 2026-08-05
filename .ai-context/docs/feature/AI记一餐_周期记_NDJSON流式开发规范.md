@@ -189,8 +189,8 @@
 
 | 批次 | 实施范围 | 完成门槛 |
 |---|---|---|
-| B1 协议 ✅ 二审通过 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过 | 2026-08-05 二审: AF-03~08 已关闭, 27 单测 0 失败 |
-| B2 Runtime ✅ 二审通过 | `AiRuntime.stream`、DeepSeek SSE、finish reason、取消保障 | Runtime 单测 + 全量 0 失败 | 2026-08-05 二审: AF-01~02~06~09 已关闭, 6 Runtime 单测+12 GlmProtocol+27 Parser=45 tests 0 失败 |
+| B1 协议 ⚠️ 三审未通过 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过 | `f98c3a50` 修复了多菜编号和 d0；AF-12 仍绕过 D-15 日期锚定，未通过。 |
+| B2 Runtime ⚠️ 三审未通过 | `AiRuntime.stream`、DeepSeek SSE、finish reason、取消保障 | Runtime 单测 + 全量 0 失败 | `f98c3a50` 修复了终态主路径；AF-10 取消/端到端测试、AF-11 Release 日志红线未通过。 |
 | B3 会话 | 新状态机、generation、事件缓冲、局部 `previewAll`、确认/规则降级边界 | ViewModel 单测证明 I-01/I-02/I-03/I-04 |
 | B4 输入 UI | 快速记/周期记、日期段、200 字限制、恢复和清空规则 | Compose/人工验证；无保存副作用 |
 | B5 确认 UI | 渐进卡片、进度、截断/失败诊断、最终重排、部分确认 | 真机能看到增量与失败尾部 |
