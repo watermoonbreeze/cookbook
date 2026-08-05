@@ -118,7 +118,7 @@ class CloudAiRuntime internal constructor(
                     // AF-15: 取消必须重抛，绝不转 Failed
                     throw e
                 } catch (e: StreamTransportException) {
-                    // AF-16: 仅按安全类型 + hasDelta 判定重试
+                    // AF-16/20: 仅按安全类型 + hasDelta + e.retryable 判定重试
                     AppLogger.w("CloudAi", "stream[${model.id}] attempt ${attempt + 1}: ${e.code}")
                     if (hasDelta || attempt == MAX_ATTEMPTS - 1 || !e.retryable) {
                         val safeMessage = if (e.httpStatus != null) {
@@ -126,7 +126,8 @@ class CloudAiRuntime internal constructor(
                         } else {
                             e.code // STREAM_IO_ERROR
                         }
-                        channel.send(LlmStreamEvent.Failed(message = safeMessage, retryable = !hasDelta))
+                        // AF-20: 终态 retryable 必须同时满足"首帧前"与"transport 认为可重试"
+                        channel.send(LlmStreamEvent.Failed(message = safeMessage, retryable = !hasDelta && e.retryable))
                         channel.close()
                         return@launch
                     }

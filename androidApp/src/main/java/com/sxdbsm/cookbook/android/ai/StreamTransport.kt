@@ -116,7 +116,8 @@ internal class HttpUrlStreamCall(
             if (code !in 200..299) {
                 AppLogger.debugLong("CloudAiRaw", "stream http[$code] errorLength",
                     conn.errorStream?.bufferedReader(Charsets.UTF_8)?.use { "${it.readText().length} bytes" }.orEmpty())
-                throw StreamTransportException(code, "STREAM_HTTP_ERROR", retryable = true)
+                // AF-20: 仅 408/429/5xx 可重试；其余 4xx 确定性失败不重试
+                throw StreamTransportException(code, "STREAM_HTTP_ERROR", retryable = isHttpRetryable(code))
             }
             val result = readSseStream(conn.inputStream, onDelta)
             AppLogger.i("CloudAi", "stream http=$code cost=${System.currentTimeMillis() - started}ms chars=${result.totalChars} finish=${result.finishReason}")
@@ -124,6 +125,9 @@ internal class HttpUrlStreamCall(
         } catch (e: CancellationException) {
             throw e
         } catch (e: IOException) {
+            // AF-19: 用户取消造成的 IOException（disconnect 常见）必须优先转为取消，
+            // 不得包装为可重试网络失败。
+            if (cancelled) throw CancellationException("call cancelled during IO", e)
             // AF-16: 非取消网络 IO 失败统一安全包装
             if (e is StreamTransportException) throw e
             throw StreamTransportException(httpStatus = null, code = "STREAM_IO_ERROR", retryable = true)
@@ -140,5 +144,11 @@ internal class HttpUrlStreamCall(
     override fun cancel() {
         cancelled = true
         connection?.disconnect()
+    }
+
+    companion object {
+        /** AF-20: 固定 HTTP 重试分类——仅 408/429/5xx 可重试；其余 4xx 确定性失败。 */
+        internal fun isHttpRetryable(code: Int): Boolean =
+            code == 408 || code == 429 || code in 500..599
     }
 }

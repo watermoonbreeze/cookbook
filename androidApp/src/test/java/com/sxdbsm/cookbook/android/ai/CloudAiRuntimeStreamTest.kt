@@ -30,7 +30,7 @@ private class FakeRequestConfig : CloudAiRequestConfig {
 private enum class Script {
     /** 正常：发 deltas → 返回 finishReason */
     Complete,
-    /** 首帧前失败（模拟 IO/HTTP 错误，retryable） */
+    /** 首帧前失败（模拟 IO/HTTP 错误） */
     FailBeforeDelta,
     /** 首帧后失败：发 deltas 再抛 */
     DeltaThenFail,
@@ -38,12 +38,17 @@ private enum class Script {
     BlockUntilCancelled,
     /** cancel 在建连前到达：bodyWritten/responseRead 必须为 false */
     CancelBeforeConnect,
+    /** AF-19: 阻塞 read 中 cancel() 释放并抛原始 IOException（模拟 disconnect），
+     *  生产 StreamTransport 的 cancelled 检查应转 CancellationException。 */
+    DisconnectDuringRead,
 }
 
 private class ScriptedStreamCall(
     val script: Script,
     val deltas: List<String>,
     val finishReason: String?,
+    /** AF-20: 指定 HTTP 状态码（FailBeforeDelta/DeltaThenFail 用，null=IO 错误） */
+    val httpErrorStatus: Int? = null,
     /** 可选注入的异常；null 时按 script 抛默认安全异常 */
     val injectedThrowable: Throwable? = null,
 ) : StreamCall {
@@ -64,14 +69,16 @@ private class ScriptedStreamCall(
             }
             Script.FailBeforeDelta -> {
                 bodyWritten = true
-                throw injectedThrowable
-                    ?: StreamTransportException(httpStatus = null, code = "STREAM_IO_ERROR", retryable = true)
+                throw injectedThrowable ?: httpErrorStatus?.let {
+                    StreamTransportException(it, "STREAM_HTTP_ERROR", HttpUrlStreamCall.isHttpRetryable(it))
+                } ?: StreamTransportException(httpStatus = null, code = "STREAM_IO_ERROR", retryable = true)
             }
             Script.DeltaThenFail -> {
                 bodyWritten = true
                 for (d in deltas) onDelta(d)
-                throw injectedThrowable
-                    ?: StreamTransportException(httpStatus = 500, code = "STREAM_HTTP_ERROR", retryable = false)
+                throw injectedThrowable ?: httpErrorStatus?.let {
+                    StreamTransportException(it, "STREAM_HTTP_ERROR", HttpUrlStreamCall.isHttpRetryable(it))
+                } ?: StreamTransportException(httpStatus = 500, code = "STREAM_HTTP_ERROR", retryable = false)
             }
             Script.BlockUntilCancelled -> {
                 entered.complete(Unit)
@@ -85,6 +92,14 @@ private class ScriptedStreamCall(
                 released.await()
                 if (cancelled.get()) throw CancellationException("cancelled before connect")
                 return SseStreamResult(finishReason = null, totalChars = 0)
+            }
+            Script.DisconnectDuringRead -> {
+                entered.complete(Unit)
+                released.await()
+                // AF-19: 模拟 disconnect 抛出的原始 IOException；
+                // 生产 StreamTransport 的 catch(IOException) 会先检查 cancelled 转 CancellationException
+                if (cancelled.get()) throw CancellationException("call cancelled during IO")
+                throw IOException("socket closed")
             }
         }
     }
@@ -104,6 +119,7 @@ private class ScriptedStreamTransport(
     private val callScripts: List<Pair<Script, List<String>?>>,
     private val finishReason: String? = "stop",
     private val injectedThrowable: Throwable? = null,
+    private val httpErrorStatus: Int? = null,
 ) : StreamTransport {
     val createdCalls = mutableListOf<ScriptedStreamCall>()
     val firstCallCreated = CompletableDeferred<ScriptedStreamCall>()
@@ -115,6 +131,7 @@ private class ScriptedStreamTransport(
             script = script,
             deltas = deltas ?: emptyList(),
             finishReason = finishReason,
+            httpErrorStatus = httpErrorStatus,
             injectedThrowable = injectedThrowable,
         )
         createdCalls.add(call)
@@ -284,5 +301,100 @@ class CloudAiRuntimeStreamTest {
         assertFalse(failed.message.contains("sk-live-abcdef123456"))
         assertFalse(failed.message.contains("HTTP 500 server error"))
         assertFalse(failed.message.contains("患者"))
+    }
+
+    // ════════════════════ AF-19: 取消期间的 IOException 转取消 ════════════════════
+
+    @Test
+    fun `AF-19 DisconnectDuringRead 取消后无事件无终态只一个call`() = runBlocking {
+        val transport = ScriptedStreamTransport(listOf(Script.DisconnectDuringRead to null))
+        val runtime = CloudAiRuntime(FakeRequestConfig(), transport)
+        val externalEvents = mutableListOf<LlmStreamEvent>()
+
+        withTimeout(5000) {
+            val collectJob = launch {
+                runtime.stream(LlmRequest("sys", "usr")).collect { externalEvents.add(it) }
+            }
+            val call = transport.firstCallCreated.await()
+            call.entered.await()
+            // 取消 collector → awaitClose → call.cancel()（disconnect 模拟 IOException）
+            collectJob.cancel()
+            collectJob.join()
+        }
+
+        val call = transport.createdCalls.first()
+        // 只创建一个 call；取消不算网络失败
+        assertEquals(1, transport.createdCalls.size)
+        assertEquals("取消后不得有 Failed/Completed/Delta", 0, externalEvents.size)
+        assertTrue("cancel 应被调用", call.cancelCount.get() >= 1)
+    }
+
+    @Test
+    fun `AF-19 真实HttpUrlStreamCall cancel后execute抛CancellationException非IO`() = runBlocking {
+        val call = HttpUrlStreamCall(
+            StreamHttpRequest(endpoint = "http://127.0.0.1:1", apiKey = "k", body = "{}"),
+        )
+        call.cancel() // 建连前取消
+        try {
+            call.execute { }
+            throw AssertionError("应抛出 CancellationException")
+        } catch (e: CancellationException) {
+            // 预期：取消后 execute 抛 CancellationException，而非 STREAM_IO_ERROR
+        } catch (e: StreamTransportException) {
+            throw AssertionError("取消不应被包装为 STREAM_IO_ERROR: ${e.code}")
+        }
+    }
+
+    // ════════════════════ AF-20: HTTP 重试分类 ════════════════════
+
+    @Test
+    fun `R-02c 首帧HTTP 400 只一个call Failed retryable等于false 无Completed`() = runBlocking {
+        val transport = ScriptedStreamTransport(
+            listOf(Script.FailBeforeDelta to null),
+            httpErrorStatus = 400,
+        )
+        val runtime = CloudAiRuntime(FakeRequestConfig(), transport)
+        val events = collectToList(runtime.stream(LlmRequest("sys", "usr")))
+
+        // 精确：仅 Failed("HTTP 400 STREAM_HTTP_ERROR", retryable=false)，无 Delta/Completed
+        assertEquals(1, events.size)
+        val f = events[0] as LlmStreamEvent.Failed
+        assertEquals("HTTP 400 STREAM_HTTP_ERROR", f.message)
+        assertFalse("400 确定性失败不可重试", f.retryable)
+        assertEquals(0, events.filterIsInstance<LlmStreamEvent.Completed>().size)
+        assertEquals(1, transport.createdCalls.size)
+    }
+
+    @Test
+    fun `R-02d 首帧HTTP 503 重试后第二个call成功`() = runBlocking {
+        // 第一 call: 503 (retryable)；第二 call: Complete
+        val transport = ScriptedStreamTransport(
+            listOf(
+                Script.FailBeforeDelta to null,
+                Script.Complete to listOf("A"),
+            ),
+            httpErrorStatus = 503,
+        )
+        val runtime = CloudAiRuntime(FakeRequestConfig(), transport)
+        val events = collectToList(runtime.stream(LlmRequest("sys", "usr")))
+
+        // 最终 Delta(A), Completed；无 Failed；两个不同 call
+        assertEquals(listOf("A"), events.filterIsInstance<LlmStreamEvent.Delta>().map { it.text })
+        assertEquals(1, events.filterIsInstance<LlmStreamEvent.Completed>().size)
+        assertEquals(0, events.filterIsInstance<LlmStreamEvent.Failed>().size)
+        assertEquals(2, transport.createdCalls.size)
+        assertTrue(transport.createdCalls[0] !== transport.createdCalls[1])
+    }
+
+    @Test
+    fun `AF-20 isHttpRetryable 分类正确`() {
+        assertTrue(HttpUrlStreamCall.isHttpRetryable(408))
+        assertTrue(HttpUrlStreamCall.isHttpRetryable(429))
+        assertTrue(HttpUrlStreamCall.isHttpRetryable(500))
+        assertTrue(HttpUrlStreamCall.isHttpRetryable(503))
+        assertFalse(HttpUrlStreamCall.isHttpRetryable(400))
+        assertFalse(HttpUrlStreamCall.isHttpRetryable(401))
+        assertFalse(HttpUrlStreamCall.isHttpRetryable(403))
+        assertFalse(HttpUrlStreamCall.isHttpRetryable(404))
     }
 }
