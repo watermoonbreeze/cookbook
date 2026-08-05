@@ -1,6 +1,6 @@
 # AI记一餐：周期记 + NDJSON 流式 B3 会话实施蓝图
 
-> 状态：`BLOCKED`；提交 `d45e9aa7` 首轮复审发现 AF-B3-01~07，必须先完成本文 §8 的 B3.1 冻结修复，才可再次申请验收；不得开始 B4。
+> 状态：`BLOCKED`；提交 `ada6748f` 复审仍发现 AF-B3-R2-01~05，必须先完成本文 §9 的 B3.2 冻结修复，才可再次申请验收；不得开始 B4。
 > 必读：`experience/12_多模型协作与实施蓝图规范.md`、`AI记一餐_周期记_NDJSON流式开发规范.md`、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §7.9。
 > 基线：`b37ace6f`（B1/B2 代码）与 `36e35689`（B1/B2 八审记录）。
 
@@ -143,3 +143,19 @@ B4 将替换“仅构造 quick segment”的输入构造步骤为周期 segments
 2. 运行 `scripts\\build-cli.bat :shared:testDebugUnitTest`、`scripts\\build-cli.bat :androidApp:testDebugUnitTest --tests com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest`、`scripts\\build-cli.bat :androidApp:assembleDebug`；提交本次输出，不使用 UP-TO-DATE 或历史 XML 作为唯一证据。
 3. 更新 B3 台账为“复审中”，列出 AF 关闭映射、allowlist diff 和唯一真机清单的 B3 状态；本轮不新增 B4/B5 真机项。
 4. 任一 AF、T、命令或 allowlist 不满足，结论只能是 `BLOCKED`，不得开始 B4。
+
+## 9. B3.2 二轮复审修复蓝图（唯一执行依据）
+
+> 复审基线：`ada6748f`。本节覆盖 §8 的冲突内容；仅允许修改 `AiMealInputViewModel.kt`、`StreamingMealSessionTest.kt`、`AiMealInputViewModelStreamTest.kt`、`MealStreamDraftMapperTest.kt` 与 B3 台账/开发规范。**不得改 Gradle、Mapper、Session 生产代码、UI、B1/B2、DI、Repository 或数据库。**
+
+| AF | 违反项与定位 | 固定修复 | 必须新增/替换的证据 | 禁止扩大范围 |
+|---|---|---|---|---|
+| AF-B3-R2-01 | INV-B3-06；`handleSessionSnapshot()` 的 `port.preview()` 与健康摘要是挂起点，恢复后和 `catch(Exception)` 回写前没有再次比对 generation；取消会被当成 ERROR。 | 定义唯一私有谓词 `isCurrentGeneration(generationId) = _state.value.generationId == generationId`。`preview()` 返回后、恢复原 ViewModel 私有健康摘要后、以及普通异常写 ERROR 前都先调用该谓词；false 立即 return。单独 `catch (CancellationException) { throw e }`，排在 `catch (Exception)` 前。 | T-B3-06a：spy port 的 `preview` 通过 `CompletableDeferred` 进入、`withContext(NonCancellable)` 等待释放；A 已进入 preview 时执行编辑/提交 B/确认保存之一，再释放 A。断言 INPUT/B/SAVING-DONE 保持不变，旧 A 不得写 phase、preview、segmentStates 或 ERROR。 | 不新增 Job、Mutex、Flow 或状态；不把取消转换为诊断/失败。 |
+| AF-B3-R2-02 | §8.1 B3.1-PORT-01；`AiMealSessionPort` 多出 `healthReport`，并把既有健康摘要移入 port 且吞异常，超出冻结三方法和 B3 非目标。 | `AiMealSessionPort` 严格只保留 `preview/commit/parseRule`；删除 `healthReport` 方法、DefaultSessionPort 中的健康仓储字段/实现与测试 fake 实现。将健康摘要代码恢复为 ViewModel 原有私有 `buildHealthSafetyReport(preview)`，其既有行为不改。 | `rg -n "healthReport" AiMealInputViewModel.kt AiMealInputViewModelStreamTest.kt` 无匹配；既有 T-B3-03/05/07/08 仅通过三方法 port 继续通过。 | 不新增健康建议测试、接口或异常降级。 |
+| AF-B3-R2-03 | INV-B3-02/05、T-B3-02、T-B3-04；现有 reducer 测试没有乱序 ordinal、终态前二次 `nextSegment()==null`，且无“合法前缀+后段失败”用例。 | **只扩展 `StreamingMealSessionTest`。** T-B3-02 使用声明列表 `[ordinal=1, ordinal=0]`：首取必须 ordinal=0；在其 `Completed` 和 `Failed` 前分别断言再次取段为 null；标 Failed 后才取 ordinal=1。另以 first 合法 meal/dish→Completed、second Failed 构造 T-B3-04，断言 final snapshot `hasValidMeals=true`、`isTerminal=true`、days 保留 first dish、diagnostics 含 second failure。 | 上述两个测试直接标注 `T-B3-02` / `T-B3-04`；不以 quick ViewModel 单段用例替代。 | 不修改 Session/Parser/Mapper 生产代码，不新增多段 ViewModel 输入。 |
+| AF-B3-R2-04 | T-B3-01/05/06/08；当前 VM 用例未记录 request 冻结字段、未覆盖日期失效/preview 挂起竞态，未证明保存后旧工作不能改写；T-B3-05 未断言 commit=0。 | **只扩展 `AiMealInputViewModelStreamTest`。** Runtime spy 记录每个 `LlmRequest`；T-B3-01 断言第一请求的 user 含原始 input 与冻结 targetDate，且提交后 UI generation 为 `meal-1`；随后 `setTargetDate` 与编辑均使旧 generation 无效。T-B3-05 增加 `commitCount=0`。T-B3-06 用 R2-01 的 preview gate 覆盖 A→B；T-B3-08 用同一 gate 覆盖保存开始后释放旧 A，断言不离开 SAVING/DONE，且 `commit` 收到的对象与确认时 `autoGenPreview` 是同一实例。ERROR 但人为保留 preview 时 `useRuleFallback()` 调用数必须为 0。 | 所有异步边界只用 `runTest`、`StateFlow.first`、`Channel`、`CompletableDeferred`、`NonCancellable` gate；无 `delay`/轮询。 | 不修改生产 API 或加入 mock 框架。 |
+| AF-B3-R2-05 | T-B3-09 与 §8.3 当前证据；raw_input 测试两段输入相同，无法证明最小 ordinal 归属；二轮本地非缓存 Android 定向命令未取得可采信输出。 | `MealStreamDraftMapperTest` 的同日同 meal 测试改为 ordinal=1 的输入文本 `late` 与 ordinal=0 的 `early`，声明顺序仍逆序，精确断言 `raw_input="early"`。在无并行 Gradle 任务时重新运行 §8.3 三条命令，保留本次控制台结果。 | T-B3-09 的 raw_input 直接断言；`shared:testDebugUnitTest`、Android ViewModel 指定测试、`androidApp:assembleDebug` 全部本次成功，且 test task 不是唯一 `UP-TO-DATE` 证据。 | 不清理/修改用户 `temp/`，不把 XML/commit message 当证据。 |
+
+### 9.1 放行
+
+仅当 AF-B3-R2-01~05 全部关闭、T-B3-01~09 均有直接测试、§8.3 三命令均有本次成功输出时，B3 才可标为 `ACCEPTED` 并开始 B4。否则保持 `BLOCKED`。
