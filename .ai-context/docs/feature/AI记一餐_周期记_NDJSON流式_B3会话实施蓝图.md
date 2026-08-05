@@ -1,6 +1,6 @@
 # AI记一餐：周期记 + NDJSON 流式 B3 会话实施蓝图
 
-> 状态：`BLUEPRINT_READY`；B1/B2 已通过，B3 只可按本蓝图实施。
+> 状态：`BLOCKED`；提交 `d45e9aa7` 首轮复审发现 AF-B3-01~07，必须先完成本文 §8 的 B3.1 冻结修复，才可再次申请验收；不得开始 B4。
 > 必读：`experience/12_多模型协作与实施蓝图规范.md`、`AI记一餐_周期记_NDJSON流式开发规范.md`、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §7.9。
 > 基线：`b37ace6f`（B1/B2 代码）与 `36e35689`（B1/B2 八审记录）。
 
@@ -18,6 +18,7 @@
 | `androidApp/.../ui/ai/AiMealInputViewModel.kt` | 替换提交编排与主阶段；保存/健康建议既有契约只做必要编译适配。 |
 | `androidApp/.../ui/ai/AiMealInputSheet.kt` | 只做新阶段到既有容器的编译适配；不得新增 B5 视觉和交互。 |
 | `androidApp/.../ui/ai/*StreamTest.kt`（新） | ViewModel 的流事件、代际、取消和降级测试。 |
+| `androidApp/build.gradle.kts` | **B3.1 唯一例外**：仅保留 `testImplementation(libs.sqldelight.sqlite.driver)` 与 `testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")`，只供 Android ViewModel 单测的内存 DB/受控 dispatcher；不得改动其他依赖、版本、插件或构建配置。 |
 | `.ai-context/docs/...` | 更新 B3 台账、状态与真机项。 |
 
 **禁止修改：** `AiRuntime`、`CloudAiRuntime`、`StreamTransport`、Koin/DI、`AiMealPrompt`、`StreamingMealParser`、B1/B2 已有测试、Repository、SQLDelight、Gradle、依赖版本。任何确有必要的例外先提交 `Q-B3`，不得先改代码。
@@ -112,3 +113,33 @@ B4 将替换“仅构造 quick segment”的输入构造步骤为周期 segments
 ## 7. 交付与放行
 
 编码模型交付时必须给出：allowlist diff、T-B3-01~09 对照表、当前 commit 的 shared test/Android ViewModel 定向 test/Android Debug build 输出、未完成真机项和全部 Q-B3。任一 T 未通过、无当前证据、出现未授权文件或自行补的 UI 行为，B3 一律不放行 B4。
+
+## 8. B3.1 首轮复审修复蓝图（唯一执行依据）
+
+> 复审基线：`d45e9aa7`。本节覆盖前文与下列事项冲突的旧描述；其余范围、类型和禁止项不变。编码模型只做本节列出的机械修改，不得更改 B1/B2、DI、Repository、数据库或 B4/B5 UI。
+
+### 8.1 固定测试 seam
+
+| ID | Owner | When | Input | Do | Must not | Evidence |
+|---|---|---|---|---|---|---|
+| B3.1-PORT-01 | 编码模型 | 修改 ViewModel 前 | 现有 `MultiDayRecorder`、`RuleMealParser`、`IngredientRepository` | 只在 `AiMealInputViewModel.kt` 新增 `internal data class RuleFallbackResult(val days: List<DayMealJson>, val warning: String?)`、`internal interface AiMealSessionPort { suspend fun preview(days: List<DayMealJson>, targetDate: LocalDate): AutoGenPreview; suspend fun commit(preview: AutoGenPreview): AutoGenResult; suspend fun parseRule(input: String, targetDate: LocalDate): RuleFallbackResult }` 与 `internal fun replaceSessionPortForTest(port: AiMealSessionPort)`；默认 port 必须逐字复用现有 `previewAll`、`commitPreview`、`allActiveNames -> RuleMealParser.parse -> MealDateAnchorPolicy.apply` 链路。 | 不改 `MultiDayRecorder`/`RuleMealParser`，不进 Koin，不改公开 ViewModel 构造器，不新增生产 fallback。 | T-B3-03/05/07/08 通过 port 精确记录 preview、commit、规则解析调用。 |
+| B3.1-PORT-02 | 编码模型 | 修改 Gradle | 现有 `d45e9aa7` 依赖 diff | 保留 §1 写明的两个 testImplementation；测试统一用 `runTest`、受控 dispatcher、`Channel`/`CompletableDeferred` 或 `StateFlow.first`。 | 不再添加任何依赖；不得使用 `delay`、轮询、真实网络、随机端口。 | `rg -n "delay\\(|Thread.sleep" androidApp/src/test/java/.../AiMealInputViewModelStreamTest.kt` 无匹配。 |
+
+### 8.2 AF 闭环：唯一最小修复
+
+| AF | 违反项与定位 | 固定修复 | 必须新增/替换的证据 | 禁止扩大范围 |
+|---|---|---|---|---|
+| AF-B3-01 | INV-B3-03/04；`AiMealInputViewModel.kt` 的 `Delta` 分支只 `onDelta`，未调用 snapshot/preview。 | 每个 `Delta` 先 `session.onDelta(segmentId, text)`，再立即 `handleSessionSnapshot(session, generationId, isFinal=false)`；沿用 `lastPreviewDays` 去重。 | T-B3-03：受控 flow 先送 meal，断言 `preview=0`；再送 dish，断言 `PARTIAL_READY`、`preview=1`、`commit=0`，随后不得发送 Completed 前进入 `PREVIEW_READY`。 | 不新增 phase、buffer 或 parser。 |
+| AF-B3-02 | INV-B3-02/05；`StreamingMealSession.nextSegment()` 未排序、未要求前段终态；ViewModel 在无 terminal 的 flow 返回后仍推进。 | `orderedSegments = request.nonBlankSegments.sortedBy(InputSegment::ordinal)`；`nextSegment()` 仅在尚未开始，或当前状态为 `COMPLETED/FAILED` 时返回下一段，`CANCELLED` 永远返回 null。每段 `collect` 返回后，若当前状态仍为 `STREAMING`，调用 `session.onFailed(segmentId, "STREAM_ENDED_WITHOUT_TERMINAL")` 后才取下一段。 | T-B3-02：输入声明顺序为 ordinal=1/0；第一次必须取 ordinal=0；其 `Completed/Failed` 前再次 `nextSegment()` 为 null；终态后才为下一段。另测无 terminal 的 flow：记录 Failed 诊断，才允许下一段，且不提前 `PREVIEW_READY`。 | 不让 session 持有 Runtime/Job，不改 B1 parser。 |
+| AF-B3-03 | INV-B3-01/06；`setInputText()` 留旧 generation，`setTargetDate()` 不取消，且 preview 使用可变 UI 日期。 | 新增唯一私有 `invalidateGenerationToInput(nextInput, nextDate)`：先 `generationJob?.cancel()`，再原子清空 `generationId/segmentStates/autoGenPreview/lastPreviewDays` 并令 `isGenerating=false, phase=INPUT`；`setInputText`、`appendText`、`onVoiceResult`、reset、日期变更均调用它。`handleSessionSnapshot` 的 preview date 取 session/request 冻结日期，不得读可变 UI date。 | T-B3-01/T-B3-06：spy 捕获首次 request 的 input/date/generation；编辑或改日期后释放 A 的 Delta/Completed/Failed，断言状态仍是 INPUT/new generation、A Job cancelled、无 preview/commit。 | 不为取消写 ERROR/Completed，不新增全局 Job。 |
+| AF-B3-04 | §5 第 6 步；`GENERATING` 被交给 `PreviewPhase`，其 preview=null 时直接 return。 | `AiMealInputSheet` 固定为 `GENERATING -> ParsingPhase()`；仅 `PARTIAL_READY/PREVIEW_READY -> PreviewPhase()`。 | Android Debug build；新增最小 Compose/状态分派断言，或在验收台账记录人工检查：生成初期显示既有解析容器，合法 dish 后显示既有预览。 | 不新增按钮、文案、布局、B5 交互。 |
+| AF-B3-05 | INV-B3-07/08；`confirmSave()` 未限制 phase，`useRuleFallback()` 未排除已有 preview。 | `confirmSave()` 只接受 `PARTIAL_READY/PREVIEW_READY`，第一次 MERGE 只置确认；第二次先把当前 `AutoGenPreview` 存入局部不可变值，再 `generationJob.cancel()` 并原子设 `generationId=null,isGenerating=false,phase=SAVING`，最后只对该局部值调用 `port.commit`；SAVING/DONE/ERROR 的重复调用直接 return。`useRuleFallback()` 同时要求 `phase=ERROR && autoGenPreview==null`。 | T-B3-08：existing preview 第一次只置 `mergeConfirmed`，第二次 `commit(currentAutoGenPreview)` 恰一次，第三次 0 次；保存开始后释放旧 Delta/Completed 仍保持 SAVING/DONE；另测带 preview 的 ERROR 调用 fallback 为 0。 | 不改既有 MERGE 文案或写库语义。 |
+| AF-B3-06 | §3.2 第 6 条；`MealStreamDraftMapper.kt` 对同 `meal_id` 直接赋值覆盖，且未按 segment ordinal 驱动。 | 先按 request segments 的 ordinal 遍历已知 `segmentId`；同 date+mealId 合并 dish map（key=`dishId`），再统一转换为一个 `MealJson`，dish 排序仍按 `dishId`。`raw_input` 取该 day 第一个有合法餐次的 ordinal 最小 segment。 | T-B3-09 增加两个已知 segment 同 date+mealId、不同 dish：只产一个 meal 且两 dish 都保留；另断言乱序 map 不改变结果和 raw_input。 | 不生成 fallback ID，不改日期锚定。 |
+| AF-B3-07 | §1 allowlist、§6/7；依赖在未等待 Q-B3 时已加入，且测试用 `delay` 与弱断言。 | 依赖例外已由本文 §1/§8.1 追认，编码模型不得再变更 Gradle；删除全部 `delay` 测试路径，按 T-B3-01~09 重建因果证据。 | 交付时逐项列 T-B3-01~09 的测试名、精确断言、当前命令与结果；不能再用“70 tests 0 failures”代替。 | 不新增第三方 mock 框架、接口或测试端口。 |
+
+### 8.3 B3.1 放行判定
+
+1. 上表 AF-B3-01~07 全部关闭，且所有 T-B3-01~09 各有一个可直接定位的自动化用例。
+2. 运行 `scripts\\build-cli.bat :shared:testDebugUnitTest`、`scripts\\build-cli.bat :androidApp:testDebugUnitTest --tests com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest`、`scripts\\build-cli.bat :androidApp:assembleDebug`；提交本次输出，不使用 UP-TO-DATE 或历史 XML 作为唯一证据。
+3. 更新 B3 台账为“复审中”，列出 AF 关闭映射、allowlist diff 和唯一真机清单的 B3 状态；本轮不新增 B4/B5 真机项。
+4. 任一 AF、T、命令或 allowlist 不满足，结论只能是 `BLOCKED`，不得开始 B4。

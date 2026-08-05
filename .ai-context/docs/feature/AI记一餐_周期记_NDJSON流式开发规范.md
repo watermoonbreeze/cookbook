@@ -191,7 +191,7 @@
 |---|---|---|
 | B1 协议 ✅ 六审通过 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过 | `5100ac33` 已恢复 T-01~T-08、AF-03/05/08 及周期隔离回归；D-01~D-08 均做 key/date/meal_id 精确断言。 |
 | B2 Runtime ✅ 八审通过 | `AiRuntime.stream`、DeepSeek SSE、finish reason、取消保障 | Runtime 单测 + 全量 0 失败 | `b37ace6f` 以 internal 默认 connection factory 和阻塞 `HttpURLConnection` 直接覆盖 `disconnect → IOException → CancellationException` 生产分支；Runtime 定向测试与 Android Debug 构建均通过。 |
-| B3 会话 ✅ 待复审 | 新状态机、generation、事件缓冲、局部 `previewAll`、确认/规则降级边界 | 必须逐项执行 `AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md` 的 INV-B3-01~08、T-B3-01~09；未通过不得开始 B4。 | 2026-08-05 已实施：mapper+session+ViewModel 会话链；70 测试 0 失败；有 Q-B3（androidApp 测试依赖）。待 B3 定向复审。 |
+| B3 会话 ⛔ B3.1 修复中 | 新状态机、generation、事件缓冲、局部 `previewAll`、确认/规则降级边界 | 必须逐项执行 `AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md` 的 §8、INV-B3-01~08、T-B3-01~09；未通过不得开始 B4。 | `d45e9aa7` 首审阻断：Delta 未产生 partial preview、串行/代际/保存封口不完整、生成态空白、mapper 覆盖与测试因果不合格。AF-B3-01~07 的唯一修复路径已冻结于 B3 蓝图 §8。 |
 | B4 输入 UI | 快速记/周期记、日期段、200 字限制、恢复和清空规则 | Compose/人工验证；无保存副作用 |
 | B5 确认 UI | 渐进卡片、进度、截断/失败诊断、最终重排、部分确认 | 真机能看到增量与失败尾部 |
 | B6 收尾 | 文档、唯一真机清单、构建、单测、审查 | 全部自动验证和人工清单完成 |
