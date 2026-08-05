@@ -85,7 +85,7 @@ data class DishesUiState(
     val favoriteCount: Int = 0, // [AI生成] 喜爱 Tab 菜品数(已评分 preference>0)
     val allCount: Int = 0, // [AI生成] 全部 Tab 菜品数
     val slotCount: Int = 0, // [AI生成] 2026-07-19:餐次 Tab 菜品数(当前餐次分堆筛后)
-    val homeCount: Int = 0, // [AI生成] 家庭 Tab 菜品数(自建 source=user)
+    val homeCount: Int = 0, // [AI修改] 家庭 Tab 菜品数(非预设 source!=preset，含自建/AI/后续来源)
     val searchResults: List<DishMini> = emptyList(), // [AI生成] 搜索关键字的原始结果(不受 Tab/菜系筛选)，供搜索弹框展示
     val favoriteIds: Set<Long> = emptySet(), // [AI生成] B1：收藏菜品 id(列表置顶+★标记)
     val selectedMealSlot: DishSlotFilter = DishSlotFilter.ALL, // [AI修改] v28→2026-07-19:二级餐次筛选栏当前选中(统称版,ALL=全部)
@@ -174,7 +174,7 @@ class DishesViewModel(
         // [AI生成] 最近(updated_at DESC)、喜爱(已评分按 preference DESC)各取前 30；全部/家庭展示所有。计数与各 Tab 展示一致。
         val favorites = filtered.filter { it.preference > 0 }.sortedByDescending { it.preference }.take(LIST_LIMIT)
         val recentList = filtered.take(LIST_LIMIT)
-        val userDishes = filtered.filter { it.source == "user" } // [AI生成] 家庭=用户自建菜品
+        val userDishes = filtered.filter { it.source != "preset" } // [AI修改] 家庭=非预设菜品，AI 自动创建也要归入家庭分类。
         val listForTab = when (tab) {
             DishesSortTab.RECENT -> recentList
             DishesSortTab.FAVORITE -> favorites

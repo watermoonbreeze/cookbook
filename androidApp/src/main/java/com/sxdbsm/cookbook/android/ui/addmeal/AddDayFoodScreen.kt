@@ -169,6 +169,7 @@ fun AddDayFoodScreen(
     var aiTargetBlockId by rememberSaveable { mutableStateOf<Long?>(null) } // [AI生成] 记录哪个餐次块发起了 AI 推荐。
     var previewOpen by rememberSaveable { mutableStateOf(false) } // [AI生成] D保存预览:点"保存计划"先弹预览sheet,确认再存(仅计划态,实录高频不加确认=守少操作)
     var aiSheetOpen by rememberSaveable { mutableStateOf(false) } // [AI生成] K1 AI快捷输入记餐 Sheet 开关
+    var aiSheetOpenNonce by rememberSaveable { mutableStateOf(0) } // [AI修改] AI Sheet 每次打开使用新 key，避免复用旧目标日期/已完成状态。
     val snackbar = remember { SnackbarHostState() } // [AI生成] A6：移除菜品撤销提示
     val scope = rememberCoroutineScope()
     // [AI生成] part1/审查建议1(§9.12 红线)：撤销 Snackbar **单 job 串行化**——连点多 chip/连续操作时，
@@ -238,7 +239,10 @@ fun AddDayFoodScreen(
                 onBack = requestBack, // [AI修改] §9.17：走未保存守卫
                 actions = {
                     // [AI生成] K1 AI快捷输入记餐入口：✨ 按钮 + 文字，始终可见
-                    TextButton(onClick = { aiSheetOpen = true }) {
+                    TextButton(onClick = {
+                        aiSheetOpenNonce += 1
+                        aiSheetOpen = true
+                    }) {
                         Icon(
                             imageVector = Icons.Outlined.AutoAwesome,
                             contentDescription = "AI快捷记",
@@ -571,7 +575,9 @@ fun AddDayFoodScreen(
 
     // [AI生成] K1 AI快捷输入记餐 Sheet：始终可见，ViewModel 参数化传入空初始文本
     if (aiSheetOpen) {
-        val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel { parametersOf("", state.date) }
+        val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel(
+            key = "ai-meal-${state.date}-$aiSheetOpenNonce", // [AI修改] 日期切换后重新打开必须重新注入 targetDate。
+        ) { parametersOf("", state.date) }
         com.sxdbsm.cookbook.android.ui.ai.AiMealInputSheet(
             vm = aiVm,
             onDismiss = { aiSheetOpen = false },

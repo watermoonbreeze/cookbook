@@ -692,9 +692,6 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
             )
-            TextButton(onClick = { vm.reset() }) {
-                Text("重新输入")
-            }
         }
 
         if (!isMultiDay) {
@@ -854,7 +851,11 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             onDismissRequest = { showDiagnostic = false; showRawResponse = false },
             title = { Text("解析详情") },
             text = {
-                Column {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
+                ) {
                     Text("阶段：${diagnostic.stage}")
                     Text("原因：${diagnostic.summary}")
                     diagnostic.responseLength?.let { Text("返回长度：$it") }
