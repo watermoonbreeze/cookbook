@@ -246,6 +246,183 @@ SAVING → DONE
 
 **DeepSeek 四审修复范围：** 只处理 AF-13 与 AF-14、删除无效测试/无必要测试开放面、补相应测试和当前 commit 的执行证据。完成前继续禁止 B3。
 
+### 7.5 AF-13/14 锁定实现蓝图（2026-08-05，替代开放式修复）
+
+> 本节是 AF-13/14 唯一实施依据，优先级高于 7.4 中可能引发自由发挥的措辞。DeepSeek **不得**自行新增第二套 transport、日期归属或测试抽象；只按以下固定类型和顺序实现。除列出的文件外，不改 UI、ViewModel、shared 数据库、Prompt 内容、依赖版本或 Git 历史。完成前 B3 继续禁止开始。
+
+#### 7.5.1 目标与不可变约束
+
+| ID | 不可变约束 | 验收判定 |
+|---|---|---|
+| L-01 | 一个 `CloudAiRuntime.stream()` 调用拥有一个独立的、可取消的 HTTP call；不同流之间不共享 `activeConnection`。 | 两个 call 的取消不会互相断开；实现中 `HttpUrlStreamTransport` 不再保存跨请求连接状态。 |
+| L-02 | Runtime 的测试依赖必须可伪造，生产偏好配置不可为了测试而 `open`。 | `AiRuntimeConfig` 恢复为 final；测试只构造 fake config provider 和 fake transport。 |
+| L-03 | `callbackFlow` 在正常、失败、取消三种路径均只结束一次；取消不是失败终态。 | 取消后 fake call 收到一次 `cancel()`，collector 没有 `Completed`、`Failed` 或晚到 `Delta`。 |
+| L-04 | 整体 JSON fallback 没有可证明来源时宁可拒绝，绝不猜测跨日期/跨 segment 归属。 | 多 segment fallback 仅产生诊断、不产生 `SegmentDraft`；周期记按“一段一请求一 parser”调用。 |
+| L-05 | D-15 的策略输出必须同时决定预览段归属和实际餐食日期。 | `SegmentDraft` key、`MealDraftNode.date`、`meal_id` 都来自同一个 `correctedDate`。 |
+| L-06 | Release 可见错误/日志只含稳定错误码、HTTP 状态和安全短文案。 | 服务端 body、异常 message、输入文本、Key 均不进入 `Failed.message` 或 `i/w/e` 日志。 |
+
+#### 7.5.2 AF-13 固定抽象：配置、call 与 transport
+
+**文件责任固定如下。** 现有 `CloudAiRuntime.kt` 可以保留 SSE 读取工具，但把下列类型放在同一 `ai` package；不要引入 Repository、ViewModel、`Any`、Map 或新的 DI 框架。
+
+| 文件 | 必须负责 | 禁止负责 |
+|---|---|---|
+| `androidApp/.../ai/CloudAiRequestConfig.kt`（新建） | 将生产 `AiRuntimeConfig` 适配为 Runtime 所需的 model/key 查询。 | HTTP、SSE、偏好存储细节以外的业务逻辑。 |
+| `androidApp/.../ai/StreamTransport.kt`（新建） | `StreamTransport`、每请求 `StreamCall`、HTTP 实现、只暴露安全 transport 异常。 | `AiRuntime` 事件、UI 状态、全局可取消连接。 |
+| `androidApp/.../ai/CloudAiRuntime.kt` | 请求组装、重试、`AiStreamEvent` 发射、以当前 call 取消 `callbackFlow`。 | 连接字段、原始错误 body、测试专用分支。 |
+| `androidApp/.../di/AndroidModule.kt`（现有实际 Koin 文件） | 仅将生产 adapter 注入 `CloudAiRuntime`。 | 测试 fake 或业务决策。 |
+| `androidApp/src/test/.../ai/CloudAiRuntimeStreamTest.kt` | `CloudAiRuntime.stream()` 端到端合同测试和确定性 fake。 | pipe、真实网络、sleep 轮询、恒真断言。 |
+
+**类型与签名锁定。** 名称、职责和可见性不得自行替换；允许因现有包名做必要 import 调整。
+
+```kotlin
+internal interface CloudAiRequestConfig {
+    suspend fun selectedModel(): CloudModel
+    suspend fun apiKeyForSelectedModel(): String
+}
+
+internal class PreferenceCloudAiRequestConfig(
+    private val delegate: AiRuntimeConfig
+) : CloudAiRequestConfig
+
+internal interface StreamTransport {
+    fun newCall(request: StreamHttpRequest): StreamCall
+}
+
+internal interface StreamCall {
+    suspend fun execute(onDelta: suspend (String) -> Unit): SseStreamResult
+    fun cancel()
+}
+
+internal data class StreamHttpRequest(
+    val endpoint: String,
+    val apiKey: String,
+    val body: String
+)
+```
+
+`StreamHttpRequest` 只承载已经组装完成的 HTTP 参数。`CloudAiRequestConfig` 的生产 adapter 直接委托现有 `AiRuntimeConfig`；**恢复并保持 `AiRuntimeConfig` 为 final，删除为测试加入的 `open`。** `CloudAiRuntime` 构造函数固定接收 `CloudAiRequestConfig` 与 `StreamTransport`；现有 `complete/chat` 如仍需要 model/key，同样只经 `CloudAiRequestConfig` 读取。Koin 中创建 `PreferenceCloudAiRequestConfig(get())` 后传入 Runtime。不得在测试中构造、继承或 mock `AiRuntimeConfig`。
+
+`HttpUrlStreamTransport.newCall()` 每次返回一个新的私有 `HttpUrlStreamCall`。只有该 call 内部允许有：
+
+```kotlin
+@Volatile private var connection: HttpURLConnection? = null
+```
+
+其固定行为为：`execute()` 建连后赋值，完成/异常的 `finally` 中清空并 `disconnect()`；`cancel()` 只对本 call 当前连接执行 `disconnect()`，可重复调用但没有全局副作用。删除旧的 `StreamTransport.cancelActive()`、删除 `HttpUrlStreamTransport.activeConnection`，也删除所有调用点。禁止以 singleton/transport 字段保存“当前请求”。
+
+HTTP 非 2xx 时 transport 只能抛出包含 `httpStatus`、稳定 `code`、安全文案的 `StreamTransportException`；原始 `errorBody` 不得放入 Throwable message。若保留 debug 排障，必须使用既有 debug gate 且只记录长度/哈希，不记录正文。`CloudAiRuntime` 捕获未知异常时也只转换为固定错误码与安全文案，日志仅记录异常类型和错误码，不能拼接 `e.message`。
+
+#### 7.5.3 AF-13 固定运行顺序与终态规则
+
+`CloudAiRuntime.stream()` 只可按以下顺序组织；可抽成私有函数，但不得改变顺序或引入第二个 producer/job：
+
+1. 从 `CloudAiRequestConfig` 读取 model/key；空 key 直接发一个 `Failed(retryable=false)` 再关闭，不创建 call。
+2. 创建 `AtomicReference<StreamCall?> activeCall`；每次重试都 `transport.newCall(request)`，再将该 call 写入 reference。不得重用前一次 call。
+3. 执行 call 时，`onDelta` 只在当前 coroutine 未取消时发 `Delta`；首个非空 Delta 后设置 `hasDelta=true`。
+4. 正常返回时，仅发一个 `Completed(finishReason)`，再关闭 channel。
+5. 首帧前的可重试 transport 失败可按既有上限重试；首帧后失败或不可重试失败仅发一个 `Failed(retryable=false)`，再关闭 channel。重试前清空 reference；每个 attempt 的 `finally` 用 compare-and-set 清除自己的 call，不能清掉后续 attempt。
+6. `CancellationException` 必须重新抛出，不转换为 `Failed`，不记录 warning/error 日志。
+7. `awaitClose` 固定执行 `activeCall.getAndSet(null)?.cancel()` 后取消执行 job。取消发生后禁止补发任何终态或 Delta。
+
+禁止在 `awaitClose` 外调用无归属的 transport 取消方法；禁止 catch-all 后继续向已经关闭的 channel 发送事件；禁止将“用户取消”表示为 HTTP 失败。
+
+#### 7.5.4 AF-13 固定测试夹具和用例
+
+测试不连接网络、不使用 `PipedInputStream`、线程、`Thread.sleep` 或“只验证 fake 自己”的断言。测试文件中必须在同一 package 实现：
+
+```kotlin
+private class FakeRequestConfig(...) : CloudAiRequestConfig
+private class ScriptedStreamTransport(...) : StreamTransport
+private class ScriptedStreamCall(...) : StreamCall
+```
+
+`ScriptedStreamCall` 只支持四种预定义 script：`Complete(deltas, finishReason)`、`FailBeforeDelta`、`DeltaThenFail(deltas)`、`BlockUntilCancelled`。其 `cancel()` 必须可观察地计数并解除 `BlockUntilCancelled` 的挂起；解除后若 runtime 已取消，`execute()` 不得自行制造 Delta。测试通过 `runBlocking + withTimeout`（或工程已存在的 coroutine test 调度器）真正 collect `CloudAiRuntime.stream()`，并至少覆盖下表。断言要对事件序列、次数和 call 状态作精确比较，不能只断言“非空”。
+
+| 用例 | script | 必须断言 |
+|---|---|---|
+| R-01 正常 | `Complete(["A", "B"], "stop")` | 事件严格为 `Delta(A), Delta(B), Completed(stop)`；无 Failed；只创建一个 call。 |
+| R-02 首帧前重试 | 第一次 `FailBeforeDelta`，第二次 `Complete(["A"], "stop")` | 创建两个不同 call；最终仅 `Delta(A), Completed(stop)`；没有第一次失败事件。 |
+| R-03 首帧后失败 | `DeltaThenFail(["A"])` | 严格为 `Delta(A), Failed(retryable=false)`；没有 Completed；不创建第二个 call。 |
+| R-04 取消阻塞 call | `BlockUntilCancelled`，collector 启动并确认 call 已进入执行后取消 job | `cancelCount == 1`；阻塞已解除；collector 正常结束且事件为空；取消后没有晚到事件/终态。 |
+| R-05 脱敏失败 | 伪造含饮食文本和 Key 样式字串的失败 | `Failed.message`、可记录的错误字段均不含原串；包含稳定错误码或 HTTP 状态。 |
+
+R-04 的同步点必须来自 fake 的 `CompletableDeferred`/latch（例如 `entered.await()`），而不是时间猜测。原先 `cancelled || !cancelled`、未使用 pipe、未 collect 的测试代码必须删除。
+
+#### 7.5.5 AF-14 固定归属模型：单来源 fallback，不做跨段猜测
+
+这次修复不再尝试以“日期落在整个周期范围”推断来源。周期记架构已经规定**每个 `InputSegment` 串行发起一个独立请求，并为该请求创建一个 parser**；因此整体 JSON fallback 的唯一安全来源就是当前 parser 所属 segment。
+
+`StreamingMealParser` 可以继续保存 `segments: List<InputSegment>` 以兼容 NDJSON 的显式 `segment_id` 校验，但 `tryWholeJsonFallback()` 固定遵循：
+
+1. `segments.size != 1`：追加 `whole_json_fallback_requires_single_segment` 诊断并返回；不得创建任何 `SegmentDraft`、meal、dish，也不得按 range/first/last/最近日期匹配。
+2. `segments.size == 1`：该唯一 `ownerSegment` 是 fallback 的来源，调用 `MealDateAnchorPolicy.apply(ownerSegment.inputText, ownerSegment.targetDate, listOf(rawDay))`。
+3. 从策略返回的唯一 `DayMealJson` 得到 `correctedDate`：有 `date` 时解析该 date；否则以 `ownerSegment.targetDate + date_offset` 物化。日期无效则诊断并拒绝该 day。
+4. 创建 `ResolvedFallbackDay(segmentId = ownerSegment.segmentId, correctedDate = correctedDate, day = correctedDay)`；该值对象是 fallback 后续组装唯一输入。
+5. `SegmentDraft` 的 key 使用 `ownerSegment.segmentId`；`MealDraftNode.date`、`meal_id = "${correctedDate}|${slot}"` 以及其下 dish/ingredient 父键全部使用同一个 `correctedDate`。禁止继续读取原始 `dateStr`。
+
+在 parser 内新增如下纯值对象/私有纯函数即可，**不**新增跨 segment resolver，**不**保留 `findSegmentForDateWithPolicy()`，也不保留从未真实传入的 `sourceInput`：
+
+```kotlin
+private data class ResolvedFallbackDay(
+    val segmentId: String,
+    val correctedDate: LocalDate,
+    val day: DayMealJson
+)
+
+private fun resolveWholeJsonFallbackDay(
+    ownerSegment: InputSegment,
+    rawDay: DayMealJson
+): ResolvedFallbackDay?
+```
+
+绝对日期场景中 `segmentId` 仍是发起请求的来源 segment，而 meal 的 `date/meal_id` 是用户绝对日期；二者不同是合法且刻意的。星期场景按 `MealDateAnchorPolicy` 映射到 owner 目标日期所在周；无日期场景落到 owner 的目标日期。NDJSON 路径仍按事件中的显式 `segment_id` 做精确校验，不能借 fallback 放宽。
+
+#### 7.5.6 AF-14 固定测试矩阵
+
+删除现有“有诊断或有 segment 即通过”一类弱断言。所有 fallback 测试必须同时断言：`SegmentDraft` key、`MealDraftNode.date`、`meal_id`；整体对象和数组各跑一遍。固定夹具为两个周期 segment（例如 `s-1=2026-08-05`、`s-2=2026-08-06`），但整体 fallback 每次只向 parser 传单个 owner segment。
+
+| 用例 | owner 输入 / 原始 day | 必须断言 |
+|---|---|---|
+| D-01 绝对日期，对象 | `s-1` 输入含“8月10日”，day.date=`2026-08-10` | key=`s-1`，meal date/meal_id 均为 `2026-08-10`。 |
+| D-02 绝对日期，数组 | 同 D-01 的数组外壳 | 与 D-01 完全相同。 |
+| D-03 星期，对象 | `s-1` 的所选周输入含星期描述，day 以 weekday/date_offset 表示 | key=`s-1`，date/meal_id 为该周正确星期，非模型原始错误日期。 |
+| D-04 星期，数组 | 同 D-03 的数组外壳 | 与 D-03 完全相同。 |
+| D-05 无日期，对象 | `s-2` 输入无绝对日期/星期，day.date 给出其他日期或为空 | key=`s-2`，date/meal_id 均为 `2026-08-06`。 |
+| D-06 无日期，数组 | 同 D-05 的数组外壳 | 与 D-05 完全相同。 |
+| D-07 多段 fallback 拒绝 | parser 传入 `[s-1, s-2]`，返回完整对象或数组 | 没有 preview 节点；有 `whole_json_fallback_requires_single_segment` 诊断；绝不落入 `s-1` 或 `s-2`。 |
+| D-08 NDJSON 第二段归属 | 显式 `segment_id=s-2` 的合法事件 | 只进入 `s-2`；这是对“第二天不能落入第一段”的独立证明。 |
+
+#### 7.5.7 DeepSeek 交付清单（逐项照做）
+
+1. 先按 7.5.2 完成抽象收敛，删除 `AiRuntimeConfig.open`、`cancelActive()` 和错误的范围归属函数；不要先补 UI 或只补测试。
+2. 再按 7.5.3 写 Runtime，按 7.5.5 写 fallback；所有生产代码只调用锁定接口。
+3. 最后按 7.5.4 与 7.5.6 完成测试；测试失败时修生产实现，不降低断言、不改测试为“有任意事件即可”。
+4. 执行当前 commit 的 `scripts\\build-cli.bat :shared:testDebugUnitTest`、Runtime 所在模块的精确 test task、`scripts\\build-cli.bat :androidApp:assembleDebug`；提交命令、通过/失败、耗时和测试类名。超时/缓存结果必须如实标记，不能写为通过。
+5. 更新本节 AF-13/14 状态和 `.ai-context/docs/context_memory/2026-08-05_AI记一餐周期记NDJSON流式改造.md` 的实际 Token/调用台账；未取得字段写“不可取得”。
+6. 提交范围仅限 AF-13/14 的生产代码、测试和上述证据文档。提交说明格式：`fix: close AF-13 AF-14 runtime contract and fallback date anchoring`。提交后提供 commit ID、R-01~R-05/D-01~D-08 对照表和命令输出摘要，再申请定向复审。
+
+### 7.6 五审未关闭项（2026-08-05，提交 `35a18c8e`）
+
+> 结论：**不通过，B3 继续阻断。** `35a18c8e` 正确引入 `CloudAiRequestConfig`、每请求 `StreamCall` 并将 fallback 收敛为单来源，说明 §7.5 的抽象方向成立；但取消路径仍把取消当普通异常处理，真实 IO 失败不走首帧重试，测试又以弱断言和删除既有回归用例替代了验收证据。本节是 AF-15~18 唯一修复依据。
+
+| ID | 阻断问题与定位 | 固定修复要求 | 必须新增/恢复的证据 |
+|---|---|---|---|
+| AF-15 | **取消合同未兑现且存在建连竞态。** `CloudAiRuntime.stream()` 的 `catch (e: Exception)` 位于取消异常之后，`CancellationException` 会被转换为 `Failed`；Delta 的 `send()` 被取消时也会落入该分支。`HttpUrlStreamCall.cancel()` 在 `connection` 尚未赋值时只是空操作，随后 `execute()` 仍可建连、写请求并读流。定位：`CloudAiRuntime.kt` 107~133、`StreamTransport.kt` 80~114。 | `CloudAiRuntime` 必须在所有失败 catch 前 `catch (e: CancellationException) { throw e }`；Delta 回调发射前检查协程活跃状态。`HttpUrlStreamCall` 新增每 call 私有取消标记，`cancel()` 先置位再 disconnect；`execute()` 在连接赋值后、写 body 前、读响应前检查该标记，已取消则抛 `CancellationException`，不得访问网络。保留 `awaitClose` 的“call.cancel → job.cancel”顺序。 | 新增“**cancel 在 execute 建连前到达**” fake call，用可观察的 `bodyWritten`/`responseRead` 断言均为 false；R-04 收集真实 Flow 到外部列表，取消后断言列表为空、无终态、`cancelCount==1`、job 已结束。 |
+| AF-16 | **真实网络 IO 错误不会重试。** `HttpUrlStreamCall.execute()` 只将非 2xx 转为 `StreamTransportException`；超时、连接重置、读失败等 `IOException` 被 Runtime 的 generic catch 直接 `Failed(STREAM_ERROR)`，绕过“首帧前可重试”。定位：`StreamTransport.kt` 83~109、`CloudAiRuntime.kt` 116~132。 | transport 统一把非取消的网络 `IOException` 转为安全 `StreamTransportException`；该异常必须有 nullable `httpStatus`、稳定 `code` 和可判定 retryable，Throwable message 不含原始 body/输入/Key。Runtime 仅根据该安全类型和 `hasDelta` 判定重试；无 HTTP 状态时 UI 文案显示 `STREAM_IO_ERROR`，不得拼 `HTTP null`。 | R-02 改为第一 call 抛“安全 IO 失败”（无 HTTP 状态），第二 call 成功；精确断言创建两个不同 call、无首轮 Failed。再加首帧前连续两次 IO 失败，只产生一个安全 Failed，且不含原始异常字符串。 |
+| AF-17 | **R-01~R-05 仍非充分行为证据。** 测试没有记录 `newCall()` 次数，R-01/R-02/R-03 的“一个/两个/不重试”只在名称中；R-04 在取消后直接返回字面量 `emptyList()`，没有检查 collector 实际收到的事件；R-05 只伪造了已安全的 `StreamTransportException`，没有证明 Runtime 会剥离原始异常内容。定位：`CloudAiRuntimeStreamTest.kt` 32~42、107~125、143~181。 | `ScriptedStreamTransport` 固定保存 `createdCalls: MutableList<ScriptedStreamCall>`；R-01 精确断言 1，R-02 精确断言 2 且实例不同，R-03 精确断言 1。R-04 只能断言真实 collector 写入的外部事件列表，禁止返回固定空列表。R-05 必须让 fake call 抛包含饮食文本与 Key 样式字串的 generic `IOException`，断言 `Failed` 与 Release 可写字段均不含原串。 | R-01~R-05 全部保留；每条测试断言事件完整顺序、call 数量和终态次数。禁止 `isEmpty()` 来自字面量、禁止只断言某一类事件的 filter 结果。 |
+| AF-18 | **AF-14 的日期证据不完整，并删除了既有 B1 回归。** D-03/D-04 只断言有 segment，未断言星期映射后的 `date/meal_id`；D-02/D-05/D-06 没有同时检查 `MealDraftNode.date`；无日期用例使用缺失 date，不能证明模型给出错误日期会被覆盖。与此同时 `StreamingMealParserTest` 从原有约 30 条缩减为 16 条，删除 T-03/T-04/T-06/T-07、归属隔离、调料/步骤、唯一 `dish_name` 补挂等既有风险用例。定位：`StreamingMealParserTest.kt` 85~168 及本提交对该文件的删除。 | D-01~D-06 每条同时断言 segment key、`MealDraftNode.date`、`meal_id`。D-03/D-04 的 target 为 2026-08-05（周三），原始模型 date=2026-08-10 时结果必须为 2026-08-05；D-05/D-06 同样传错误原始 date=2026-08-10，结果必须为 owner target 2026-08-06。恢复所有因本批替换而删除、且仍适用于新单来源 fallback 的既有回归测试；若某测试语义因“多段 fallback 必拒绝”改变，只更新该断言并保留测试目的。 | D-01~D-08 按 §7.5.6 的精确字段断言；恢复后 `StreamingMealParserTest` 必须覆盖 T-01~T-08、AF-03/04/05/07/08 的正反路径，不得以减少测试数换取绿灯。提交复审时给出“恢复/变更的旧用例 → 新测试名”映射表。 |
+
+**DeepSeek 五审实施顺序（禁止自行变更）：**
+
+1. 先完成 AF-15：为每 call 加取消标记和三处取消检查；Runtime 显式重抛 `CancellationException`。此步骤不改日期代码。
+2. 完成 AF-16：将非取消 `IOException` 统一安全包装，调整 Runtime 的安全失败格式与首帧重试；不得把原始 exception message 放回日志/UI。
+3. 重建 `ScriptedStreamTransport` 夹具后一次完成 AF-17 的 R-01~R-05。先让这些测试能证明错误实现会失败，再修改生产代码；测试不使用真实网络、pipe、sleep 或固定返回值。
+4. 完成 AF-18：先恢复被删除的测试，再加严 D-01~D-06；只在测试证明确有错误时改 parser，保持 §7.5 的单来源模型不变。
+5. 运行当前 commit 的 shared test、`CloudAiRuntimeStreamTest` 精确 task 和 Android Debug 构建；同时提供测试 XML 中的测试数/失败数与实际命令输出。任一项缺失或超时不能标记通过。
+
+**五审申请材料：** commit ID；AF-15~18 对照表；R-01~R-05、D-01~D-08、恢复回归的测试名与结果；三条构建/测试命令的非缓存输出摘要；本批 Token 台账。未满足前 B3 继续禁止开始。
+
 ## 八、B1/B2 质量评分与 Token 记账
 
 ### 8.1 本次质量评分
