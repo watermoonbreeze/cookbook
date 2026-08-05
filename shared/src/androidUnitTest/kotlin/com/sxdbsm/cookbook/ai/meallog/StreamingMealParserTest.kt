@@ -442,6 +442,67 @@ class StreamingMealParserTest {
         assertTrue(seg.meals["2026-08-05|lunch"]!!.dishes["2026-08-05|lunch|d1"]!!.warnings.any { it == "米饭未给份量" })
     }
 
+    // ═══════════════════════════════ AF-07 专项 ═══════════════════════════════
+
+    @Test
+    fun `AF07 同日同餐多道菜保留不同dish_id`() {
+        val segments = listOf(InputSegment("quick-2026-08-05", targetDate, "测试", 0))
+        val parser = StreamingMealParser(segments, genId, targetDate)
+
+        val flatJson = """{"schema_version":"2.0","items":[{"date":"2026-08-05","meal_type":"lunch","dish_name":"米饭"},{"date":"2026-08-05","meal_type":"lunch","dish_name":"青菜"}]}"""
+        parser.feedDelta(flatJson)
+        val draft = parser.finish("stop")
+
+        val meal = draft.segments["quick-2026-08-05"]?.meals?.get("2026-08-05|lunch")
+        assertNotNull(meal)
+        assertEquals(2, meal!!.dishes.size)
+        // 两道菜应有不同的 dish_id
+        val dishIds = meal.dishes.keys
+        assertTrue(dishIds.any { it.endsWith("d1") })
+        assertTrue(dishIds.any { it.endsWith("d2") })
+    }
+
+    @Test
+    fun `AF07 不匹配任何segment的日期被拒绝不映射到第一段`() {
+        val segments = listOf(InputSegment("quick-2026-08-05", targetDate, "测试", 0))
+        val parser = StreamingMealParser(segments, genId, targetDate)
+
+        // 日期 2026-08-10 不匹配任何已知 segment
+        val flatJson = """{"schema_version":"2.0","items":[{"date":"2026-08-10","meal_type":"lunch","dish_name":"米饭"}]}"""
+        parser.feedDelta(flatJson)
+        val draft = parser.finish("stop")
+
+        assertTrue(draft.diagnostics.any { it.message.contains("无法映射") })
+        // 不应污染已知 segment
+        val seg = draft.segments["quick-2026-08-05"]
+        assertTrue(seg == null || seg.meals.isEmpty())
+    }
+
+    // ═══════════════════════════════ AF-08 专项 ═══════════════════════════════
+
+    @Test
+    fun `AF08 dish_id等于d0被拒绝`() {
+        val segments = listOf(InputSegment("quick-2026-08-05", targetDate, "测试", 0))
+        val parser = StreamingMealParser(segments, genId, targetDate)
+
+        parser.feedDelta("""{"type":"meal","segment_id":"quick-2026-08-05","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        parser.feedDelta("""{"type":"dish","segment_id":"quick-2026-08-05","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d0","name":"米饭"}""" + "\n")
+        val draft = parser.finish("stop")
+
+        val dishes = draft.segments["quick-2026-08-05"]?.meals?.get("2026-08-05|lunch")?.dishes ?: emptyMap()
+        assertEquals(0, dishes.size)
+        assertTrue(draft.diagnostics.any { it.message.contains("格式无效") })
+    }
+
+    @Test
+    fun `AF08 NDJSON Prompt包含dish_name容错字段`() {
+        val prompt = AiMealPrompt.NDJSON_SYSTEM_PROMPT
+        // dish_name 应出现在 ingredient 事件定义中
+        assertTrue(prompt.contains("dish_name"))
+        // 规则必须提及缺 dish_id 时提供 dish_name
+        assertTrue(prompt.contains("缺 dish_id") || prompt.contains("无法提供正确的 dish_id"))
+    }
+
     @Test
     fun `空Delta不改变状态`() {
         val segments = listOf(InputSegment("quick-2026-08-05", targetDate, "测试", 0))

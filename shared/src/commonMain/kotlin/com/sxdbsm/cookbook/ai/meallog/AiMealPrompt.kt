@@ -32,8 +32,8 @@ object AiMealPrompt {
 输出事件类型（type 字段必填）：
 - {"type":"meal","segment_id":"<段ID>","meal_id":"<日期>|<餐次>","date":"YYYY-MM-DD","slot":"breakfast/lunch/dinner/snack","time":"HH:MM","note":"备注"}
 - {"type":"dish","segment_id":"<段ID>","meal_id":"<日期>|<餐次>","dish_id":"<meal_id>|d<序号>","name":"菜名","cooking_method":"做法","quantity":1,"unit":"份","eaten_ratio":null,"note":""}
-- {"type":"ingredient","segment_id":"<段ID>","meal_id":"...","dish_id":"...","name":"食材名","role":"主料/辅料","food_group":"meat/vegetable/staple/...","quantity":100,"unit":"g","is_main":true,"nutrients":["蛋白质"]}
-- {"type":"seasoning","segment_id":"<段ID>","meal_id":"...","dish_id":"...","name":"盐","quantity":3,"unit":"g"}
+- {"type":"ingredient","segment_id":"<段ID>","meal_id":"...","dish_id":"...","dish_name":"所属菜名(缺dish_id时必填)","name":"食材名","role":"主料/辅料","food_group":"meat/vegetable/staple/...","quantity":100,"unit":"g","is_main":true,"nutrients":["蛋白质"]}
+- {"type":"seasoning","segment_id":"<段ID>","meal_id":"...","dish_id":"...","dish_name":"所属菜名(缺dish_id时必填)","name":"盐","quantity":3,"unit":"g"}
 - {"type":"warning","segment_id":"<段ID>","meal_id":"...","dish_id":"...","message":"诊断信息"}
 - {"type":"advice","segment_id":"<段ID>","meal_id":"...","message":"健康建议"}
 - {"type":"done","segment_id":"<段ID>","summary":"该段完成摘要"}
@@ -48,6 +48,7 @@ object AiMealPrompt {
 - 食材用量参考：肉100-200g 菜100-150g 主食100-200g 蛋50-60g 奶200-250g 调料3-15g
 - food_group: meat/vegetable/staple/fruit/dairy/egg/bean/seafood/seasoning
 - 不确定的字段省略不填，不编造；菜名是唯一必填
+- ingredient/seasoning 的 dish_id 必须引用已输出的 dish 的 dish_id；当无法提供正确的 dish_id 时，必须同时提供 dish_name（该食材所属的菜品名），用于同一 meal 内按菜品名唯一补挂；无唯一命中即诊断拒绝
 - 输出 done 事件标记该段完成
 - 逗号顿号加号换行→必拆菜；做法词(炒煮蒸)是菜名一部分不拆
 """.trimIndent()

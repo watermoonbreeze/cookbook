@@ -104,4 +104,7 @@ dependencies {
     //   合规:UMConfigure.init 延迟到用户同意后(见 UmengAnalyticsSink)。
     implementation("com.umeng.umsdk:common:latest.release")
     implementation("com.umeng.umsdk:asms:latest.release")
+
+    // [AI修改] AF-06: Runtime 流式行为测试
+    testImplementation("junit:junit:4.13.2")
 }

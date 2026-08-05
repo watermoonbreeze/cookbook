@@ -193,7 +193,8 @@ class StreamingMealParser(
 
     // ═══════════════════════════════ Dish ═══════════════════════════════
 
-    private val DISH_ID_PATTERN = Regex("""^(.+)\|d(\d+)$""")
+    // AF-08: d1 及以上（正整数），d0/d00 拒绝
+    private val DISH_ID_PATTERN = Regex("""^(.+)\|d([1-9]\d*)$""")
 
     private fun handleDishEvent(line: NdjsonLine) {
         val mealId = line.meal_id ?: run {
@@ -517,18 +518,30 @@ class StreamingMealParser(
         return emptyList()
     }
 
-    /** FlatMealJson item → 映射到本次已发送 segment 的 NDJSON 行。[AI修改] */
+    /** AF-07: FlatMealJson item → 映射到本次已发送 segment，同餐多菜递增 dish_id。[AI修改] */
     private fun buildLinesFromFlatMeal(flat: FlatMealJson): List<String> {
         val lines = mutableListOf<String>()
+        // AF-07: 按 mealKey 递增 dish 序号
+        val dishIndexByMeal = mutableMapOf<String, Int>()
+
         for (item in flat.items) {
             val resolvedDate = resolveDateFromItem(item)
-            val segId = findSegmentForDate(resolvedDate) ?: segments.firstOrNull()?.segmentId ?: return emptyList()
+            val segId = findSegmentForDateOrReject(resolvedDate)
+                ?: continue // AF-07: 无法映射则拒绝，不回退到第一段
             val slot = item.meal_type ?: "lunch"
             val dateStr = resolvedDate ?: fallbackDate.toString()
             val mealId = "$dateStr|$slot"
-            val dishId = "$mealId|d1"
 
-            lines.add("""{"type":"meal","segment_id":"$segId","meal_id":"$mealId","date":"$dateStr","slot":"$slot"}""")
+            // 只有首次遇到该 mealId 才发 meal 事件
+            if (mealId !in dishIndexByMeal) {
+                lines.add("""{"type":"meal","segment_id":"$segId","meal_id":"$mealId","date":"$dateStr","slot":"$slot"}""")
+            }
+
+            // AF-07: 递增 dish_id
+            val dishIdx = dishIndexByMeal.getOrPut(mealId) { 0 } + 1
+            dishIndexByMeal[mealId] = dishIdx
+            val dishId = "$mealId|d$dishIdx"
+
             val dishLine = buildString {
                 append("""{"type":"dish","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(item.dish_name)}"""")
                 if (item.dish_cooking_methods.isNotEmpty()) append(""","cooking_method":"${item.dish_cooking_methods.first()}"""")
@@ -538,31 +551,32 @@ class StreamingMealParser(
             lines.add(dishLine)
 
             for (ing in item.ingredients) {
-                val ingLine = buildString {
-                    append("""{"type":"ingredient","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(ing.name)}"""")
-                    if (ing.food_group != null) append(""","food_group":"${ing.food_group}"""")
-                    append(""","quantity":${ing.quantity}""")
-                    append("}")
-                }
-                lines.add(ingLine)
+                lines.add("""{"type":"ingredient","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(ing.name)}","quantity":${ing.quantity}}""")
             }
         }
         return lines
     }
 
-    /** MultiDayJson → 映射到本次已发送 segment 的 NDJSON 行。[AI修改] */
+    /** AF-07: MultiDayJson → 同链映射，递增 dish_id。[AI修改] */
     private fun buildLinesFromMultiDay(multi: MultiDayJson): List<String> {
         val lines = mutableListOf<String>()
-        for ((dayIdx, day) in multi.days.withIndex()) {
+        val dishIndexByMeal = mutableMapOf<String, Int>()
+
+        for (day in multi.days) {
             val dateStr = day.date ?: fallbackDate.toString()
-            val segId = findSegmentForDate(dateStr) ?: segments.getOrNull(dayIdx)?.segmentId ?: return emptyList()
-            for ((mealIdx, meal) in day.meals.withIndex()) {
+            val segId = findSegmentForDateOrReject(dateStr)
+                ?: continue // AF-07: 不可映射则拒绝
+            for (meal in day.meals) {
                 val slot = meal.meal_type ?: "lunch"
                 val mealId = "$dateStr|$slot"
-                lines.add("""{"type":"meal","segment_id":"$segId","meal_id":"$mealId","date":"$dateStr","slot":"$slot"}""")
-                for ((dishIdx, dishRef) in meal.dishes.withIndex()) {
+                if (mealId !in dishIndexByMeal) {
+                    lines.add("""{"type":"meal","segment_id":"$segId","meal_id":"$mealId","date":"$dateStr","slot":"$slot"}""")
+                }
+                for (dishRef in meal.dishes) {
                     val dishName = dishRef.name.ifBlank { dishRef.dish?.name ?: "未命名" }
-                    val dishId = "$mealId|d${dishIdx + 1}"
+                    val dishIdx = dishIndexByMeal.getOrPut(mealId) { 0 } + 1
+                    dishIndexByMeal[mealId] = dishIdx
+                    val dishId = "$mealId|d$dishIdx"
                     lines.add("""{"type":"dish","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(dishName)}"}""")
                     for (ing in dishRef.dish?.ingredients ?: emptyList()) {
                         val ingName = ing.ref ?: ing.food?.name ?: ""
@@ -584,11 +598,16 @@ class StreamingMealParser(
         return fallbackDate.toString()
     }
 
-    private fun findSegmentForDate(dateStr: String?): String? {
+    /** AF-07: 精确匹配日期到 segment，不匹配则拒绝（不回退到第一段）。[AI修改] */
+    private fun findSegmentForDateOrReject(dateStr: String?): String? {
         if (dateStr == null) return null
         val date = runCatching { LocalDate.parse(dateStr.replace('/', '-')) }.getOrNull() ?: return null
-        return segments.find { it.targetDate == date }?.segmentId
-            ?: segments.firstOrNull()?.segmentId
+        val matched = segments.find { it.targetDate == date }?.segmentId
+        if (matched == null) {
+            orphanDiagnostics.add(StreamDiagnostic(DiagnosticLevel.ERROR, null, null, null,
+                "整体 JSON 日期「$dateStr」无法映射到任何输入分段，已拒绝"))
+        }
+        return matched
     }
 
     private fun escapeJson(s: String): String = s
