@@ -1,5 +1,9 @@
 package com.sxdbsm.cookbook.ai
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+
 /**
  * @File : AiRuntime
  * @Time : 2026/07/08
@@ -9,7 +13,7 @@ package com.sxdbsm.cookbook.ai
  * 业务层只依赖本接口，不关心背后是云端 API 还是端侧小模型。切换实现不动业务代码——
  * 首轮 CloudAiRuntime(免费云端)，后续 OnDeviceAiRuntime(端侧隐私版)。
  * <p>
- * [AI生成] S1：把“模型怎么来”隔离到接口后，Orchestrator 面向接口编排。
+ * [AI修改] B1 周期记+NDJSON流式改造：增加 stream() 流式方法 + LlmStreamEvent 事件类型。
  **/
 interface AiRuntime {
     /** 单轮补全：输入系统/用户提示，输出模型原始文本（期望是 JSON）。失败返回 Result.failure。[AI生成] */
@@ -28,6 +32,39 @@ interface AiRuntime {
             .joinToString("\n") { (if (it.role == LlmRole.USER) "用户: " else "助手: ") + it.content }
         return complete(LlmRequest(system = system, user = convo, temperature = request.temperature, maxTokens = request.maxTokens))
     }
+
+    /**
+     * 流式补全：返回冷 Flow，收集才发网络；取消收集必须取消 HTTP。[AI生成] B1
+     *
+     * 默认实现：调 complete() 把完整响应封装为单个 Delta + Completed（不支持流式的运行时 fallback）。
+     * 云端实现 override 本方法接 SSE 逐 chunk 发 Delta。
+     */
+    fun stream(request: LlmRequest): Flow<LlmStreamEvent> = flow {
+        val result = complete(request)
+        result.fold(
+            onSuccess = { text ->
+                if (text.isNotEmpty()) emit(LlmStreamEvent.Delta(text))
+                emit(LlmStreamEvent.Completed(finishReason = "stop", totalChars = text.length))
+            },
+            onFailure = { e ->
+                emit(LlmStreamEvent.Failed(message = e.message ?: "未知错误", retryable = true))
+            },
+        )
+    }
+}
+
+// ============================================================
+// 流式事件（B1 新增）
+// ============================================================
+
+/** 流式响应事件。[AI生成] B1 */
+sealed class LlmStreamEvent {
+    /** 模型正文增量文本。[AI生成] */
+    data class Delta(val text: String) : LlmStreamEvent()
+    /** 流正常结束。[AI生成] */
+    data class Completed(val finishReason: String, val totalChars: Int) : LlmStreamEvent()
+    /** 流出错。[AI生成] */
+    data class Failed(val message: String, val httpStatus: Int? = null, val retryable: Boolean = false) : LlmStreamEvent()
 }
 
 /** 一次模型请求。[AI生成] */
@@ -54,9 +91,18 @@ data class LlmChatRequest(
 /**
  * Mock 运行时：默认返回空 → Orchestrator 走规则兜底；测试可注入固定 JSON 验证模型链路。[AI生成]
  *
- * S1 用它把“规则候选 → 模型组合”的全链路跑通，不联网、不花钱。
+ * S1 用它把"规则候选 → 模型组合"的全链路跑通，不联网、不花钱。
+ * [AI修改] B1 增加 stream()：把 cannedResponse 模拟为单 Delta + Completed。
  */
 class MockAiRuntime(private val cannedResponse: String? = null) : AiRuntime {
     override suspend fun complete(request: LlmRequest): Result<String> =
         Result.success(cannedResponse ?: "")
+
+    override fun stream(request: LlmRequest): Flow<LlmStreamEvent> {
+        val text = cannedResponse ?: ""
+        return flowOf(
+            LlmStreamEvent.Delta(text),
+            LlmStreamEvent.Completed(finishReason = "stop", totalChars = text.length),
+        )
+    }
 }

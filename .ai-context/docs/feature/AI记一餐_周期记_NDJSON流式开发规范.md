@@ -189,7 +189,7 @@
 
 | 批次 | 实施范围 | 完成门槛 |
 |---|---|---|
-| B1 协议 | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过；无 Android/UI 改动要求 |
+| B1 协议 ✅ | `InputSegment`、NDJSON 事件、行缓冲、整体 JSON 规范化、归属/日期校验、Prompt token/字段 | Shared 单测通过；无 Android/UI 改动要求 | 2026-08-05: 18 单测 0 失败，T-01~T-08 全覆盖 |
 | B2 Runtime | `AiRuntime.stream`、DeepSeek SSE、finish reason、整包模拟流 fallback、脱敏日志 | Runtime 单测/Mock 测试；HTTP 实现不含餐食语义 |
 | B3 会话 | 新状态机、generation、事件缓冲、局部 `previewAll`、确认/规则降级边界 | ViewModel 单测证明 I-01/I-02/I-03/I-04 |
 | B4 输入 UI | 快速记/周期记、日期段、200 字限制、恢复和清空规则 | Compose/人工验证；无保存副作用 |
