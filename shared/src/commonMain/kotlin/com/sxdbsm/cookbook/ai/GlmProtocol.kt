@@ -85,6 +85,63 @@ object GlmProtocol {
             .choices.firstOrNull()?.message?.content?.takeIf { it.isNotBlank() }
     }.getOrNull()
 
+    // ============================================================
+    // 流式 SSE（B2 新增）
+    // ============================================================
+
+    /** 组装流式 chat/completions 请求体 JSON。[AI生成] B2 */
+    fun buildStreamRequestBody(
+        model: String,
+        system: String,
+        user: String,
+        temperature: Double,
+        maxTokens: Int? = null,
+    ): String {
+        val disableThinking = model.startsWith("glm-4.5") || model.startsWith("glm-4.6")
+        return json.encodeToString(
+            ChatRequest.serializer(),
+            ChatRequest(
+                model = model,
+                temperature = temperature,
+                messages = listOf(ChatMessage("system", system), ChatMessage("user", user)),
+                stream = true,
+                thinking = if (disableThinking) Thinking("disabled") else null,
+                max_tokens = maxTokens,
+            ),
+        )
+    }
+
+    /** SSE data: 行解析结果。[AI生成] B2 */
+    data class SseChunk(
+        val deltaContent: String = "",
+        val finishReason: String? = null,
+        val isDone: Boolean = false,
+    )
+
+    /** 解析单行 SSE data: 行 → SseChunk。[AI生成] B2 */
+    fun parseSseLine(dataLine: String): SseChunk {
+        // [DONE] 标记
+        if (dataLine.trim() == "[DONE]") return SseChunk(isDone = true)
+
+        return runCatching {
+            val chunk = json.decodeFromString(SseResponse.serializer(), dataLine)
+            val choice = chunk.choices.firstOrNull()
+            SseChunk(
+                deltaContent = choice?.delta?.content ?: "",
+                finishReason = choice?.finish_reason,
+            )
+        }.getOrElse { SseChunk() }
+    }
+
+    @Serializable
+    private data class SseResponse(val choices: List<SseChoice> = emptyList())
+
+    @Serializable
+    private data class SseChoice(val delta: SseDelta? = null, val finish_reason: String? = null)
+
+    @Serializable
+    private data class SseDelta(val content: String? = null)
+
     @Serializable
     private data class ChatRequest(
         val model: String,
@@ -93,6 +150,7 @@ object GlmProtocol {
         val response_format: ResponseFormat? = null, // [AI生成] R3:JSON 强约束(仅支持的模型带);null 不序列化。
         val thinking: Thinking? = null, // [AI生成] 修超时:GLM-4.5/4.6 关闭默认动态思考(省token/降延迟/防JSON截断);null 不序列化(他厂/老模型无此字段)。
         val max_tokens: Int? = null, // [AI生成] 显式输出上限,防话痨截断+延迟可预期;null 不序列化。
+        val stream: Boolean? = null, // [AI生成] B2: true=流式;null 不序列化(旧请求兼容)。
     )
 
     @Serializable
