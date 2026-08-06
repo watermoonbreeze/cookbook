@@ -1,8 +1,8 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-06 16:00**
-> 当前状态：**B3.4 四视角联合复审修复完成 + 两轮终审通过**；B1/B2/B3 代码处于可交付质量；**待架构模型团队审核全部三层代码**后进入 B4。
-> 末位提交：`d94e7d8f`
+> 更新时间：**2026-08-06 18:30**
+> 当前状态：**架构模型终审已完成**（google_architecture_engineer + apple_architect 双视角审查 B1+B2+B3 全量代码，逐条代码验证）；发现 **3 项 🔴 阻断（AF-ARCH-01~03）+ 6 项 🟡 建议（S1~S6）**，结论 **BLOCKED——须先关闭 AF-ARCH-01~03 才能起草 B4 实施蓝图**。完整审核结论见 `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md` §11；B1 侧交叉记录见 `feature/AI记一餐_周期记_NDJSON流式改造落地方案.md` §7.10。
+> 末位提交：`d94e7d8f`（代码未改动，本次为纯审核，仅改文档）
 
 ---
 
@@ -65,64 +65,26 @@ Total:   642 tests, 0 failures
 
 ---
 
-## 二、⚠️ 架构模型审核任务（下个 session 主任务）
+## 二、✅ 架构模型审核已完成 → ⚠️ 下个 session 主任务：修复 AF-ARCH-01~03
 
-### 任务：由架构模型角色审核 B1 + B2 + B3 全部代码
+### 本次（2026-08-06）已完成
 
-> **代码已全部完成且经过四视角联合审查 + 两轮终审，但尚未由项目架构师角色（Google 架构 + Apple 架构）做最终的完整代码审核。**
-> B4 周期记多段流**不可开始**，直到架构模型审核通过。
+由 `google_architecture_engineer` + `apple_architect` 双视角并行审查 B1+B2+B3 全部代码（优先 B3），每条结论均由架构模型逐行读代码验证后收敛，写入 `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md` §11。**未改动任何生产代码，纯审核。**
 
-### 审核要求
+**结论：BLOCKED。** 3 项 🔴 阻断 + 6 项 🟡 建议（S1~S6，需 B4 蓝图起草时逐条显式处理）+ 一批 ⚪ 死代码建议。详见蓝图 §11.2~§11.4，此处只列须做的事：
 
-**审核范围**：B1（协议层）+ B2（Runtime）+ B3（会话层）全部代码
+| AF | 一句话 | 改动范围 |
+|---|---|---|
+| **AF-ARCH-01** | `done` 事件协议契约缺口：prompt 要求每段输出 `done`，parser 未处理，落入 else 产出"未知事件类型「done」"警告，**现在每次成功生成都会展示给用户**（当前生产缺陷，非仅 B4 前瞻）。 | 仅 `StreamingMealParser.kt`（B1）+ 单测，加一个 `"done" -> {}` 分支。 |
+| **AF-ARCH-02** | `StreamingMealSession` 构造时建**唯一**parser 服务全部 segments，`tryWholeJsonFallback` 却要求 `segments.size==1` 才回退——B3 恒 1 段被掩盖，B4 多段会致 fallback 永久失效、截断标记跨段互相覆盖、fallback 日期错锚。 | 仅 `StreamingMealSession.kt`（B3）+ 单测，parser 改按 segmentId 惰性创建（不引入接口，只改构造时机）。 |
+| **AF-ARCH-03** | `AiMealPrompt.buildStreamingRequest` 同时支持"单段"与"多段合一请求"两条矛盾路径，当前仅靠调用方隐式选择维持一致——这是 **B4 蓝图必须先冻结的决策**（推荐"N 请求×1 段"，与 AF-ARCH-02 一致），非独立修复批次。 | 归入 B4 蓝图第 1 步，届时需把 `AiMealPrompt.kt` 纳入 B4 allowlist。 |
 
-**审核角色**（按 CLAUDE.md 门禁规则）：
-1. **`google_architecture_engineer`** — 架构规范、模块边界、依赖方向、可扩展性、技术债
-2. **`apple_architect`** — 简洁性、平台惯用法、API 人体工学、反过度设计
-3. **`google_quality_engineer`** — 正确性/并发/性能/可读性/错误处理（终审）
-4. **`apple_quality_engineer`** — 边界情况/健壮性/感知性能/优雅降级（终审）
+**下一步（按顺序）**：
+1. 找编码模型按蓝图 §11.2 表格逐项关闭 AF-ARCH-01、AF-ARCH-02（各自独立小批次，allowlist 见表格，附新增单测证据）。
+2. 两项关闭并复验（`:shared:testDebugUnitTest` 0 失败）后，起草 B4 实施蓝图时：把 AF-ARCH-03 的决策写入蓝图 §1/§不变量表；把 §11.3 的 S1~S6 逐条显式处理（接受方案或不采纳理由都要写）。
+3. 蓝图 §11.6 全部满足后，把 B3 蓝图状态由 `BLOCKED` 改 `ACCEPTED`，才可开始 B4 编码。
 
-**审核方式**：多 agent 并行 → 综合 → 按发现分级（🔴阻断/🟡建议/⚪可选）→ 修复 → 复验 → 放行
-
-### 审核文件清单
-
-| 层 | 文件 | 当前状态 |
-|----|------|---------|
-| **B1 协议** | `shared/.../ai/meallog/NdjsonEvents.kt` | B3.4 清理（删除 DoneEvent/done/summary） |
-| | `shared/.../ai/meallog/StreamingMealParser.kt` | B3.4 清理（删除 jsonFallbackDays/buildDraftFromJsonFallback） |
-| | `shared/.../ai/meallog/InputSegment.kt` 等 | B1 八审通过 |
-| | `shared/.../ai/AiRuntime.kt` | B1 八审通过 |
-| **B2 Runtime** | `androidApp/.../ai/CloudAiRuntime.kt` | B2 八审通过 |
-| | `androidApp/.../ai/StreamTransport.kt` | B2 八审通过 |
-| | `androidApp/.../ai/CloudAiRequestConfig.kt` | B2 八审通过 |
-| **B3 会话** | `shared/.../ai/meallog/MealStreamDraftMapper.kt` | B3.4 清理 |
-| | `shared/.../ai/meallog/StreamingMealSession.kt` | B3.4 清理 |
-| | `androidApp/.../ui/ai/AiMealInputViewModel.kt` | B3.4 修复 |
-| | `androidApp/.../ui/ai/AiMealInputSheet.kt` | B3.4 修复 |
-
-### 已有审查结论（供架构模型参考）
-
-以下为 B3.4 修复完成后 Google 质量 + Apple 质量两视角的终审结论，架构模型审核时可直接引用已验证通过的项，聚焦架构层面：
-
-**Google 质量终审通过项**：
-- ✅ 状态机转换清晰（7 态 + 完整转换图）
-- ✅ `isCurrentGeneration` 守卫贯穿所有挂起点
-- ✅ `CancellationException` 在 6 处正确重抛
-- ✅ 所有状态变更在主线程序列化（无并发竞态）
-- ✅ 测试覆盖核心并发场景（10 条 ViewModel + 8 条 Session + 7 条 Mapper）
-- ✅ 死代码删除经全仓 grep 验证零残留
-
-**Apple 质量终审通过项**：
-- ✅ 边界场景全覆盖（连点重试/连点关闭/SAVING dismiss/健康摘要异常/AI 流异常/generation 过期）
-- ✅ `.copy()` 粘性字段自动继承（`voiceState`/`inputMode`/`newDishNames` 等）
-- ✅ 降级路径完备（AI 失败→诊断→规则→重试；健康摘要失败不影响预览）
-
-**架构模型应聚焦的未审维度**：
-- B4 多段流扩展性验证（`while(segment.nextSegment())` 循环能否支撑 7 天周期记？）
-- `StreamingMealSession` 与 `StreamingMealParser` 的耦合度（Session 直接 new Parser，不可注入）
-- `AiMealSessionPort` 三方法接口是否够 B4 用？
-- `AiMealInputViewModel` 职责边界（680→~480 行删后仍偏多，B4 前是否拆分？）
-- B1/B2 层是否还有不可达死代码残留？
+**不要**：跳过 AF-ARCH-01/02 直接写 B4 蓝图（AF-ARCH-02 不修，B4 的多段 fallback/截断从设计上就是错的，返工成本远高于现在改）。
 
 ---
 
@@ -141,12 +103,13 @@ Total:   642 tests, 0 failures
 | 文件 | 角色 | 状态 |
 |------|------|:--:|
 | `shared/.../ai/meallog/MealStreamDraftMapper.kt` | 纯 mapper | ✅ 清理 |
-| `shared/.../ai/meallog/StreamingMealSession.kt` | reducer | ✅ 清理 |
-| `shared/.../ai/meallog/StreamingMealParser.kt` | parser | ✅ 清理 |
-| `shared/.../ai/meallog/NdjsonEvents.kt` | 事件类型 | ✅ 清理 |
-| `androidApp/.../ai/CloudAiRuntime.kt` | Runtime | ⬜ 待审 |
-| `androidApp/.../ai/StreamTransport.kt` | transport | ⬜ 待审 |
-| `androidApp/.../ai/CloudAiRequestConfig.kt` | config adapter | ⬜ 待审 |
+| `shared/.../ai/meallog/StreamingMealSession.kt` | reducer | 🔧 架构审待修 AF-ARCH-02 |
+| `shared/.../ai/meallog/StreamingMealParser.kt` | parser | 🔧 架构审待修 AF-ARCH-01 |
+| `shared/.../ai/meallog/NdjsonEvents.kt` | 事件类型 | ⚪ 架构审：`NdjsonEvent` 族死代码待清 |
+| `shared/.../ai/meallog/AiMealPrompt.kt` | prompt | 🔧 架构审：AF-ARCH-03 待 B4 蓝图冻结决策 |
+| `androidApp/.../ai/CloudAiRuntime.kt` | Runtime | ✅ 架构审通过（⚪ postOnce 重复，不阻塞） |
+| `androidApp/.../ai/StreamTransport.kt` | transport | ✅ 架构审通过 |
+| `androidApp/.../ai/CloudAiRequestConfig.kt` | config adapter | ✅ 架构审通过 |
 | `androidApp/.../ui/ai/AiMealInputViewModel.kt` | ViewModel 会话链 | ✅ 修复 |
 | `androidApp/.../ui/ai/AiMealInputSheet.kt` | UI | ✅ 修复 |
 | `shared/.../test/.../StreamingMealSessionTest.kt` | Session 测试 | ✅ |

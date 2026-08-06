@@ -1,8 +1,8 @@
 # AI记一餐：周期记 + NDJSON 流式 B3 会话实施蓝图
 
-> 状态：`BLOCKED`；提交 `38cae283` 的 B3.2 三轮复审仍发现 AF-B3-R3-01~05，必须先完成本文 §10 的 B3.3 冻结修复，才可再次申请验收；不得开始 B4。
-> 必读：`experience/12_多模型协作与实施蓝图规范.md`、`AI记一餐_周期记_NDJSON流式开发规范.md`、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §7.9。
-> 基线：`b37ace6f`（B1/B2 代码）与 `36e35689`（B1/B2 八审记录）。
+> 状态：`BLOCKED`；B3.3（AF-B3-R3-01~05）与 B3.4（四视角联合复审 5 阻断 + 9 建议）均已修复并通过终审（提交 `d94e7d8f`，642 测试 0 失败），**但本文 §11 的架构模型终审（B4 前置门禁）发现 3 项 AF-ARCH 阻断，须先关闭才可起草 B4 实施蓝图**。
+> 必读：`experience/12_多模型协作与实施蓝图规范.md`、`AI记一餐_周期记_NDJSON流式开发规范.md`、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §7.9、本文 §11。
+> 基线：`b37ace6f`（B1/B2 代码）与 `36e35689`（B1/B2 八审记录）；`d94e7d8f`（B3.4 代码基线）。
 
 ## 1. 目标、非目标与范围冻结
 
@@ -187,3 +187,55 @@ B4 将替换“仅构造 quick segment”的输入构造步骤为周期 segments
    `scripts\\build-cli.bat :androidApp:testDebugUnitTest --tests com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest --rerun-tasks`；
    `scripts\\build-cli.bat :androidApp:assembleDebug --rerun-tasks`。
 3. 本轮 `:androidApp:testDebugUnitTest --tests ... --rerun-tasks` 在 124.1 秒无输出后超时，且无 test-results，因此不是通过证据。三条命令均当次成功后才可把 B3 标为 `ACCEPTED`；否则一律 `BLOCKED`，不得开始 B4。
+
+> B3.3 与随后的 B3.4（四视角联合复审，5 阻断 + 9 建议全部修复，两轮终审通过，提交 `d94e7d8f`，642 测试 0 失败）已完成，正确性/并发/边界维度关闭。但 B4（多段周期记）开工前，架构维度尚未审查——见 §11。
+
+## 11. 架构模型终审（B1+B2+B3 全量 · B4 前置门禁）
+
+> 复审基线：`d94e7d8f`。审查人：`google_architecture_engineer` + `apple_architect` 双视角独立审查，逐条结论由架构模型（我）代码验证后收敛；覆盖范围 = B1 协议层 + B2 Runtime + B3 会话层全部生产代码，优先 B3。目的：B3.4 的四轮 AF 修复与两轮质量终审均聚焦"正确性/并发/边界"，**从未有人从"能否撑住 B4 多段周期记"的架构角度审查**，此为 SESSION_交接.md §2 要求的审核，也是 `12_多模型协作与实施蓝图规范.md` §6"架构冻结门禁"在起草 B4 蓝图前的强制自检。
+
+### 11.1 结论
+
+**BLOCKED —— B4 实施蓝图暂不能起草。** 发现 3 项 🔴 阻断（AF-ARCH-01~03，均已逐行代码验证，非推测），其中 1 项是**当前已在生产发生的用户可见缺陷**（不是"B4 才会暴露"），另 2 项是"B3 因恒定单段而被掩盖、B4 一旦多段立即踩空"的架构缺口。三项改动集中、定位精确，不需要推翻 B1/B2/B3 已有设计。另有一批 🟡 建议须在 B4 蓝图起草时逐条显式处理（接受或拒绝都要写明理由，不能沉默跳过），以及一批 ⚪ 死代码/技术债建议顺手清理。
+
+### 11.2 🔴 阻断（AF-ARCH，须先关闭再起草 B4 蓝图）
+
+| AF | 层/文件 | 问题与验证证据 | 影响 | 修复方向 | Allowlist | 验收证据 |
+|---|---|---|---|---|---|---|
+| **AF-ARCH-01** | B1 · `AiMealPrompt.kt:39,52,126` × `StreamingMealParser.kt:122-134` × `AiMealInputViewModel.kt:409` × `AiMealInputSheet.kt:755-769` | Prompt 明确要求模型每段结束输出 `{"type":"done",...}`；`StreamingMealParser` 的 `when(parsed.type)` 无 `"done"` 分支，落入 `else` 追加 `WARNING 未知事件类型「done」，已忽略`；该诊断经 `snap.diagnostics.map{it.message}` 直接写入 `parseWarnings`，`PreviewPhase` 原样渲染"请确认以下解析提示"卡片给用户。三处代码逐行读取确认，链路成立。 | **当前生产缺陷，非仅 B4 前瞻**：现在每一次成功的 AI 记一餐都会在预览页多出一条对用户无意义的技术性噪音。四轮 AF 修复 + 两轮质量终审均未捕获，因为审查聚焦并发/状态机正确性，没有人逐字追踪"prompt 承诺的事件 → parser 是否消费 → 诊断是否 user-facing"这条链路。B4 段数 ×7，噪音同比放大。 | `StreamingMealParser` 增加 `"done" -> {}`（可选：标记 per-segment `receivedDone` 供 B4 判断段落收尾，但不得产出诊断）。 | 仅 `StreamingMealParser.kt`（B1）+ 对应单测；不改协议/Prompt/其他文件。 | 新增单测：喂入含合法 `done` 行的完整 NDJSON → `snapshot().diagnostics` 不含"未知事件类型「done」"；既有 shared 测试保持 0 失败。 |
+| **AF-ARCH-02** | B3 · `StreamingMealSession.kt:39-43,87` × `StreamingMealParser.kt:474-478` | `StreamingMealSession` 构造时创建**唯一** parser、`segments=request.segments` 全量；每段 `onCompleted` 都对同一 parser 调 `finish()`；而 `tryWholeJsonFallback` 要求 `segments.size==1` 才回退。B3 恒为 1 段，缺陷被掩盖；测试固定单段，无法暴露。逐行读取确认。 | B4 一旦 >1 段：①整体 JSON fallback 对所有段永久失效（parser 看到的 `segments.size` 恒等于段总数而非 1）；② `hasAnyNdjsonEvent`/`finishReason`/`isLengthTruncated` 是 parser 全局字段，被每段 `finish()` 反复覆盖 —— 截断标记被后段抹掉、一旦某段出现过 NDJSON 就永久跳过其余段的 fallback；③ `fallbackDate` 恒为第一段日期，多天 fallback 场景日期错锚。 | `StreamingMealSession` 把 parser 从"构造时单例"改为"按 segmentId 惰性创建"（工厂/Map，每段一个独立实例），`onCompleted` 只 finish 该段自己的实例；`snapshot()` 合并各段 draft/diagnostics。**不引入 parser 接口/依赖注入**——只有一个实现，注入是过度设计；问题是构造的时机/作用域，不是耦合方式。 | 仅 `StreamingMealSession.kt`（B3 已授权文件）+ `StreamingMealSessionTest.kt`；不改 `StreamingMealParser.kt`、不改 B1 协议、不改 VM/UI。 | 新增会话测试：两个 segment，其一触发 whole-json fallback 或 length 截断，断言另一段独立 parser 不受影响、`segments.size==1` 检查在每个 parser 实例内均成立；既有 T-B3-02/04 时序断言保持通过。 |
+| **AF-ARCH-03** | B1 API 面 × B4 决策缺口 · `AiMealPrompt.kt:93-127` × `AiMealInputViewModel.kt:306` | `buildStreamingRequest(segments: List<InputSegment>)` 同时实现"单段"与"多段合一请求"两条 prompt 拼装分支（多段分支要求模型"逐段输出 NDJSON"、maxTokens 按段数缩放到 8192）；当前唯一调用点固定传 `listOf(segment)`，多段分支是不可达代码，仅靠调用方隐式选择维持一致性。逐行读取确认两分支并存。 | 不是代码缺陷，是**决策缺口**：B4 编码者面对两条现成路径，选错一条会让 AF-ARCH-02 的按段 parser 修复失效（多段合一请求下一次响应混着多天 NDJSON，无法简单按段惰性建 parser），也会让周期记的核心诉求（按段进度/失败隔离/单段重试）落空。 | **B4 蓝图开工前必须显式冻结为"N 次独立请求 × 每次 1 段"**（与 AF-ARCH-02 一致，支持按段重试/进度/失败隔离），并将 `buildStreamingRequest` 签名收窄为单段，删除多段合一分支与 maxTokens 缩放逻辑，使错误调用方式编译期不可用。 | 归为 **B4 蓝图第 1 步的强制不变量**，非独立修复批次；会触及 `AiMealPrompt.kt`，需 B4 蓝图显式将该文件纳入允许修改范围。 | B4 蓝图的 INV 表与 allowlist 需显式记录本决策及理由。 |
+
+### 11.3 🟡 建议（B4 蓝图起草时须逐条显式处理，接受/拒绝均要写明理由）
+
+| # | 定位 | 问题 | 建议 |
+|---|---|---|---|
+| S1 | `AiMealInputViewModel.kt:546-566`（`confirmSave`）× B4 多段场景 | `PARTIAL_READY` 允许保存；保存时 `generationJob?.cancel()` 会连带取消仍在 STREAMING 的段。B3 单段无感知；B4 若用户在第 3/7 天预览时点保存，后续天的输入会被**静默丢弃**，违反项目"透明准则"（改数据/放弃用户输入至少 T1 事后留痕）。 | B4 蓝图需显式定策略：`isTerminal` 前禁止保存，或保存前明确告知"仅保存已完成 N 天，其余 M 天将放弃"，结果需回报"已存 X 天/放弃 Y 天"。 |
+| S2 | `AiMealInputViewModel.kt:309-325`（Delta → `handleSessionSnapshot` → `sessionPort.preview`） | 每个 Delta 都可能触发一次 `previewAll`（内部 `AutoGenContext.load` 全字典加载），流式期间"相同 days 不重复"的去重条件很难命中；B4 段数 × 已完成天数会放大该开销，且在 `callbackFlow` 的 `collect` 内同步执行会拖慢 SSE 读取（用户感知"AI 越写越慢"）。 | B4 蓝图需定 preview 触发时机：改"段终态 + final + 防抖/节流"，Delta 路径只更新 `segmentStates` 等纯 UI 进度，不触发 DB 相关的 preview。 |
+| S3 | `StreamingMealSession.kt:20-28`（`StreamingSessionSnapshot`） | `segmentStates: Map<String, StreamSegmentState>` + 拍平的 `diagnostics` 无法表达"第几天/哪个日期失败、原因是什么"，B4 UI（渲染"第 3/7 天失败"）需要更结构化的表达；`draft` 字段把 parser 内部草稿整体暴露过模块边界，仅测试引用。 | B4 蓝图设计 snapshot 时补 segment→date/ordinal/error 的结构化字段与 `pendingCount`（呼应 S1）；`draft` 可收窄为仅测试可见或删除。 |
+| S4 | `AiMealInputViewModel.kt:79-83`（`AiMealSessionPort`） | `preview(days, targetDate)` 的 `targetDate` 在多天场景语义模糊（下游 `MultiDayRecorder` 参数名是 `today`，三处命名指同一概念）；`commit(preview)` 无法按天局部提交（B4 若要局部重试/局部保存，只能在 VM 里对 `AutoGenPreview` 做领域手术）；`parseRule(input, targetDate)` 只接单串，表达不了按天降级。 | B4 蓝图冻结新签名（如 `commit(preview, dayFilter: Set<String>? = null)`），过滤逻辑下沉 `MultiDayRecorder`，不在 VM 里拆解领域模型。 |
+| S5 | `AiMealInputViewModel.kt:150-155`（`sessionPort` 为 `var` + `internal fun replaceSessionPortForTest`） | 生产类为测试暴露可变注入点，构造完成后仍可被改写，是不必要的并发面。 | 改为构造参数默认值注入（`private val sessionPort: AiMealSessionPort = DefaultSessionPort(...)`），测试直接构造传参，删 `replaceSessionPortForTest`。 |
+| S6 | `AiMealInputViewModel.kt`（644 行，9 项职责并列：输入/语音状态机/generation 编排/snapshot 映射/保存/规则降级/健康摘要/健康建议云端调用/周起始日算法） | 两位架构师独立一致结论：**现在不建议整体拆分 VM**（`submit()` 本就要为 B4 重写，先拆是白工；本项目有表单 VM 拆分引入 hydration/数据丢失的踩坑史，收益不抵风险）。但两处应"下沉"而非"拆分"：①周起始日算法 + segment 构造 → shared `InputSegmentFactory`（B4 本就要写"按周生成 7 个 segmentId"的工厂，现在就该定归属，且可纯单测覆盖周一边界/跨年周）；②健康摘要脱敏逻辑（"绝不发送姓名/ID"红线）目前只在 androidApp、无 shared 单测覆盖，应下沉 `HealthContextSummarizer` 并配单测。 | B4 蓝图把这两处下沉列为 §5 实施脚本的前置步骤，不做其余拆分。 |
+
+### 11.4 ⚪ 可选 / 死代码技术债（不阻塞 B4，建议下一次维护批次顺手清）
+
+- `NdjsonEvents.kt` 的 `NdjsonEvent` sealed 族（7 个子类，约 75 行）：已用 grep 确认全仓零引用（`hasAnyNdjsonEvent` 是同名近似的独立布尔字段，非同一符号）；`parser` 实际直接用 `NdjsonLine` + 字符串路由。文件头注释仍称"内部用 NdjsonEvent sealed 族做强类型处理"，与实现相反，会误导 B4 阅读者，建议删除或据此真正落地。
+- `StreamingMealParser.kt:24` 构造参数 `generationId` 类体内零使用，建议删除。
+- `AiMealPrompt.kt:58-85,139-172` 的 `FLAT_SYSTEM_PROMPT`/`buildRequest()`/`@Deprecated SYSTEM_PROMPT` 生产零调用；注释"保留供整体 JSON 回退使用"与事实不符（fallback 只重新解析已收到的原文，不会重新发送该 prompt），建议删除或改正注释。
+- `AiMealInputViewModel.kt` 的 `confirmSave()`/`retrySave()` 保存协程体重复约 18 行，可提取共享私有函数。
+- `AiRuntime.kt` 的 `LlmStreamEvent.Failed.httpStatus`/`Completed.totalChars` 从未被赋值或消费。
+- `StreamingMealSession.kt:60 nextSegment()` 有副作用（推进游标 + 置 STREAMING）但命名像纯 getter，建议改名（如 `beginNextSegment()`）或补文档。
+- B2 `CloudAiRuntime.kt:75-187`：`stream()` 走 `StreamTransport` seam（可测/可取消/错误分类），`postOnce`（供 `complete()`/健康建议调用）是类内私有裸 `HttpURLConnection`，无取消语义、与 `stream()` 的重试循环逐字重复。`confirmHealthAdvice` 走的正是这条路径，用户关闭 Sheet 时该请求不会被取消。建议顺手把 `postOnce` 收进 transport、重试循环抽公共函数，但不阻塞 B4（B4 只用 `stream`）。
+
+### 11.5 审查通过项（供 B4 蓝图沿用，无需重新论证）
+
+- 依赖方向单向：`shared/ai/meallog` 零 android 导入；UI 层未见反向导入 shared 内部可变类型（除 §11.4 提到的 `draft` 字段外）；`AiMealInputSheet.kt` 未注入任何 Repository，符合项目红线。
+- `StreamingMealSession` 不认识 ViewModel/Compose/Repository/AiRuntime，B3 分层本身干净，不需要推倒重来。
+- `StreamingMealSession` 直接 `new StreamingMealParser()` 的耦合方式本身**不是问题**（YAGNI：只有一个实现，不存在替换需求）——真正要改的是 AF-ARCH-02 的构造时机/作用域，而非引入接口。
+- `AiMealSessionPort` 三方法的抽象定位（隔离 `MultiDayRecorder` 便于测试）合理，非过度设计；命名达意、无 mode 布尔硬编码。
+- B2（`CloudAiRuntime`/`StreamTransport`/`CloudAiRequestConfig`）整体无过度设计残留，`connectionFactory` 等测试缝有明确消费者，属合理克制。
+- `AiMealInputSheet.kt` 对 ViewModel 的消费符合 UDF 准则（`collectAsStateWithLifecycle` + `vm.xxx()` 上抛事件，无本地业务态）。
+
+### 11.6 放行判定
+
+仅当 AF-ARCH-01~03 全部关闭（含新增测试证据、`:shared:testDebugUnitTest` 与既有 Android 定向测试保持 0 失败）、且 B4 蓝图起草时已把 §11.3 的 S1~S6 逐条显式处理（写明接受方案或不采纳理由），才可将本文档状态由 `BLOCKED` 改为 `ACCEPTED` 并开始起草 B4 实施蓝图。

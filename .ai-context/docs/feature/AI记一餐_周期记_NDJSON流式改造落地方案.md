@@ -477,6 +477,14 @@ internal class HttpUrlStreamCall(
 
 本次复核实际执行 `scripts\\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ai.CloudAiRuntimeStreamTest"`（成功）及 `scripts\\build-cli.bat :androidApp:assembleDebug`（成功）。AF-21 仅改 Android transport 与其测试，B1 shared parser 的既有 27 条回归未改动；B3 仍必须遵守开发规范的 I-01 至 I-07，不得顺带改写已通过的 B1/B2 契约。
 
+### 7.10 九审：架构模型终审追加发现（2026-08-06，B4 前置门禁）
+
+> B3.4 完成后，架构模型（google_architecture_engineer + apple_architect 双视角）对 B1+B2+B3 全量代码做 B4 前置架构审查，发现 B1 存在一处此前八轮复审均未捕获的**协议契约缺口**，直接影响本节已"通过"的 `StreamingMealParser.kt`。完整分析、验证证据与另外两项 B3 侧阻断见 `AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md` §11（AF-ARCH-01~03）。此处仅记录与本文件验收历史相关的一条：
+
+- **AF-ARCH-01**（🔴 阻断，详见 B3 蓝图 §11.2）：`AiMealPrompt.kt` 的 NDJSON 系统提示要求模型每段结束输出 `{"type":"done",...}`，但 `StreamingMealParser.kt:122-134` 的事件路由无 `"done"` 分支，落入 `else` 产出 `WARNING 未知事件类型「done」，已忽略`；该诊断经 B3 的 `AiMealInputViewModel` 直接展示给用户。**这是当前生产已发生的用户可见缺陷**，不是 B4 前瞻性问题——此前八轮复审聚焦取消/重试/归属/截断等并发与协议正确性，未追踪"prompt 承诺的事件类型是否被 parser 消费"这条契约链路。
+- 修复限定在 `StreamingMealParser.kt` 内新增 `"done"` 分支（不产出诊断），不改协议/Prompt/其他 B1 文件；验收证据要求见 B3 蓝图 §11.2 表格。
+- 本文件的 §7.9"八审通过"结论对**取消/归属/截断**维度仍然成立，不因此项被推翻；AF-ARCH-01 是追加的独立契约缺口，按最小范围单独修复即可，无需重开前八轮已关闭的 AF。
+
 ## 八、B1/B2 质量评分与 Token 记账
 
 ### 8.1 本次质量评分
