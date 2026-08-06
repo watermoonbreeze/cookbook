@@ -14,10 +14,16 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 /**
@@ -54,10 +60,23 @@ fun PeriodDayBlock(
         }
 
         // 输入框 + 右下角字符计数 overlay
+        // [AI修改] B5-fix: 使用 TextFieldValue 替代 String，确保 ModalBottomSheet 内文本选择/长按粘贴可用
+        var textFieldValue by remember { mutableStateOf(TextFieldValue(inputText)) }
+        LaunchedEffect(inputText) {
+            if (textFieldValue.text != inputText) {
+                textFieldValue = TextFieldValue(
+                    text = inputText,
+                    selection = TextRange(inputText.length),
+                )
+            }
+        }
         Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
             OutlinedTextField(
-                value = inputText,
-                onValueChange = { onTextChange(it.take(maxChars)) },
+                value = textFieldValue,
+                onValueChange = {
+                    textFieldValue = it
+                    onTextChange(it.text.take(maxChars))
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 100.dp, max = 160.dp),

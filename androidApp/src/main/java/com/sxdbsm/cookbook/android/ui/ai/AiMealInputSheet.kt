@@ -289,10 +289,23 @@ private fun QuickInputSection(
     activeRecognizer: VoiceRecognizer?,
 ) {
     // ── 输入框（右上角粘贴按钮 overlay） ──
+    // [AI修改] B5-fix: 使用 TextFieldValue 替代 String，确保 ModalBottomSheet 内文本选择/长按粘贴可用
+    var textFieldValue by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(state.inputText)) }
+    LaunchedEffect(state.inputText) {
+        if (textFieldValue.text != state.inputText) {
+            textFieldValue = androidx.compose.ui.text.input.TextFieldValue(
+                text = state.inputText,
+                selection = androidx.compose.ui.text.TextRange(state.inputText.length),
+            )
+        }
+    }
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
-            value = state.inputText,
-            onValueChange = { vm.setInputText(it) },
+            value = textFieldValue,
+            onValueChange = {
+                textFieldValue = it
+                vm.setInputText(it.text)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 120.dp, max = 200.dp),
@@ -441,18 +454,21 @@ private fun QuickInputSection(
 private fun PeriodInputSection(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     val anchor = state.periodWeekMonday ?: return
 
-    // WeekStrip 日期段选择器
-    WeekStrip(
-        weekMonday = anchor,
-        selectedRange = state.periodSelectedRange,
-        onRangeChange = { vm.setWeekRange(it.first, it.last) },
-    )
-
-    Spacer(Modifier.height(12.dp))
-
-    // 每日输入列表（仅渲染选中范围内的天）
-    val dayLabels = listOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
+    // [AI修改] B5-fix: 整段统一滚动，防发送按钮被推出屏幕
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        // WeekStrip 日期段选择器 + 周导航箭头
+        WeekStrip(
+            weekMonday = anchor,
+            selectedRange = state.periodSelectedRange,
+            onRangeChange = { vm.setWeekRange(it.first, it.last) },
+            onPreviousWeek = { vm.retreatWeek() },
+            onNextWeek = { vm.advanceWeek() },
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        // 每日输入列表（仅渲染选中范围内的天）
+        val dayLabels = listOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
         for (index in state.periodSelectedRange) {
             val date = DateTime.plusDays(anchor, index)
             val label = "${dayLabels[index]} ${date.monthNumber}.${date.dayOfMonth}日"
@@ -468,35 +484,35 @@ private fun PeriodInputSection(vm: AiMealInputViewModel, state: AiMealInputUiSta
                 Spacer(Modifier.height(12.dp))
             }
         }
+
+        Spacer(Modifier.height(8.dp))
+
+        // 提示文案
+        Text(
+            "只需填写有安排的日子，空白日期不发请求",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        )
+
+        // ── 透明告知 ──
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = "文字会发送给 AI 进行解析，仅用于本次记餐",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        // ── 发送按钮 [B4] ──
+        val nonBlankCount = state.periodInputs.count { it.value.isNotBlank() }
+        CapsuleButton(
+            text = if (nonBlankCount > 0) "发送 · $nonBlankCount 天" else "发送",
+            onClick = { vm.submit() },
+            enabled = nonBlankCount > 0,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
-
-    Spacer(Modifier.height(8.dp))
-
-    // 提示文案
-    Text(
-        "只需填写有安排的日子，空白日期不发请求",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-    )
-
-    // ── 透明告知 ──
-    Spacer(Modifier.height(4.dp))
-    Text(
-        text = "文字会发送给 AI 进行解析，仅用于本次记餐",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-    )
-
-    Spacer(Modifier.height(12.dp))
-
-    // ── 发送按钮 [B4] ──
-    val nonBlankCount = state.periodInputs.count { it.value.isNotBlank() }
-    CapsuleButton(
-        text = if (nonBlankCount > 0) "发送 · $nonBlankCount 天" else "发送",
-        onClick = { vm.submit() },
-        enabled = nonBlankCount > 0,
-        modifier = Modifier.fillMaxWidth(),
-    )
 }
 
 /** [AI修改] K2+Bug修复：统一语音实例管理，通过 onReady 回传实例给调用方 */

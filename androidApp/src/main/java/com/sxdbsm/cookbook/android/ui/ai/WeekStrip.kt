@@ -12,7 +12,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,12 +50,57 @@ fun WeekStrip(
     weekMonday: LocalDate,
     selectedRange: IntRange,
     onRangeChange: (IntRange) -> Unit,
+    onPreviousWeek: (() -> Unit)? = null,
+    onNextWeek: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val dayLabels = listOf("一", "二", "三", "四", "五", "六", "日")
     val today = DateTime.today()
+    val weekSunday = DateTime.plusDays(weekMonday, 6)
 
     Column(modifier = modifier.fillMaxWidth()) {
+        // ── 周导航行：← 周标签 → ──
+        if (onPreviousWeek != null || onNextWeek != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                if (onPreviousWeek != null) {
+                    IconButton(onClick = onPreviousWeek, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.ChevronLeft,
+                            contentDescription = "上一周",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                } else {
+                    Spacer(Modifier.width(32.dp))
+                }
+
+                Text(
+                    text = "${weekMonday.monthNumber}.${weekMonday.dayOfMonth}日 – ${weekSunday.monthNumber}.${weekSunday.dayOfMonth}日",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+
+                if (onNextWeek != null) {
+                    IconButton(onClick = onNextWeek, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.ChevronRight,
+                            contentDescription = "下一周",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                } else {
+                    Spacer(Modifier.width(32.dp))
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+        }
         // 7 天横条
         Row(
             modifier = Modifier.fillMaxWidth(),
