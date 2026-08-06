@@ -1,63 +1,59 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-06 19:15**
-> 当前状态：**AF-ARCH-01 / AF-ARCH-02 已修复并推送**（`b8a90121`，623 tests 0 failures）；**AF-ARCH-03 待 B4 蓝图冻结决策**。B3 蓝图可从 BLOCKED 推进。
-> 末位提交：`b8a90121`（AF-ARCH-01 + AF-ARCH-02 修复）
+> 更新时间：**2026-08-06 23:30**
+> 当前状态：**B4 完整闭环。待 commit + 真机验证 + B5 蓝图起草。**
+> **🔴 架构模型复核检查点**：B4 蓝图（§0 入口）+ B4 全部代码 + 三角色审查报告 + 流程规范变更 → 全量审核。
+> 末位提交：`a7fdf074`（B3 基线）。B4 改动未提交。
 
 ---
 
-## 一、当前已完成
+## 一、本轮完成
 
-### B1 协议层（已通过八审 + 本次死代码清理 + AF-ARCH-01）
-- `InputSegment`、`NdjsonEvents`、`StreamingMealParser`、`AiMealPrompt`、`LlmStreamEvent`
-- B3.4 清理：`jsonFallbackDays`/`buildDraftFromJsonFallback` 死代码（-40行）、`DoneEvent`/`SegmentDraft.done` 死字段（-12行）
-- **AF-ARCH-01 修复**：`processLine()` when 块加 `"done" -> {}`，静默消费段结束标记
+### 前置（接上轮）
+- AF-ARCH-01/02 已推送（`a7fdf074`，645 tests 0 failures），ChatGPT 复核确认关闭
+- AF-ARCH-03 在 B4 蓝图 §1 冻结为"N 请求 × 1 段"
 
-### B2 Runtime（已通过八审 · 无改动）
-- `CloudAiRequestConfig` + `StreamTransport/StreamCall` + `CloudAiRuntime.stream()`
+### B4 蓝图
+- **文件**：`feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md`（`ACCEPTED`）
+- 三角色设计：Google 质量（8 GAP）+ Google 架构（6 接入点）+ Apple UX（完整交互方案）
+- 三角色自审：修复命名不一致（`PERIOD`→`WEEK`、Allowlist 旧函数名）
+- S1~S6 逐条处理（§8）+ AF-ARCH-02 边界检查带入（§3.3）
 
-### B3 会话层（四视角联合审查 → 全部修复 → 架构模型终审 → AF-ARCH-02 修复）
+### B4 编码
+| # | 文件 | 操作 |
+|---|------|:--:|
+| 1 | `shared/.../AiMealPrompt.kt` | 修改：签名收窄为单段 |
+| 2 | `shared/.../InputSegmentFactory.kt` | **新建** |
+| 3 | `shared/.../InputSegmentFactoryTest.kt` | **新建**（12 条） |
+| 4 | `shared/.../InputSegment.kt` | 修改：StreamingMealRequest init require |
+| 5 | `androidApp/.../AiMealInputViewModel.kt` | 修改：InputMode + B4 字段/方法 |
+| 6 | `androidApp/.../WeekStrip.kt` | **新建** |
+| 7 | `androidApp/.../PeriodDayBlock.kt` | **新建** |
+| 8 | `androidApp/.../AiMealInputSheet.kt` | 修改：InputPhase 分叉 |
+| 9 | `.ai-context/.../` | 文档更新（SESSION/蓝图/经验/操作记录） |
 
-**B3.3 基线**：`449858e2`（AF-B3-R3-01~05 全部关闭）
+### B4 代码三角色审查
+| 角色 | 🔴 | 🟡 | 关键发现 |
+|------|:--:|:--:|---------|
+| Google 质量 | 0 | 3 | periodSelectedRange语义、范围重置、VoiceRecognizer预存 |
+| Google 架构 | 1 | 3 | 🔴segmentId无fail-fast（已修） |
+| Apple 质量 | 3 | 5 | 🔴标题"一餐"矛盾（已修）、🔴setWeekRange缺守卫（已修）、🔴周切换未接通（降级） |
 
-**B3.4 修复提交**：`d94e7d8f`（8 文件 +188/-252 · 净删 64 行）
+**裁决延后项（→ B4 蓝图 §10）**：11 条分类记入 B5/B6/技术债
 
-**AF-ARCH-02 修复提交**：`b8a90121`（StreamingMealSession 重构为按 segmentId 惰性 parser）
-
-**首轮四视角审查**（Google 质量 + Google 架构 + Apple 质量 + Apple 架构）：
-
-| 等级 | 数量 | 已修复 |
-|------|:----:|:------:|
-| 🔴 阻断 | 5 | ✅ 全部 |
-| 🟡 建议 | 9 | ✅ 全部 |
-| ⚪ 可选 | 9 | —（非阻塞） |
-| B1/B2 死代码 | 2 | ✅ 全部 |
-
-**架构模型终审**（google_architecture_engineer + apple_architect 双视角）：
-
-| AF | 问题 | 状态 |
-|---|---|:--:|
-| **AF-ARCH-01** | `done` 事件落入 else 产"未知事件类型"警告 | ✅ 已修复 |
-| **AF-ARCH-02** | 单 parser 服务全部 segments，B4 多段 fallback 永久失效 | ✅ 已修复 |
-| **AF-ARCH-03** | `buildStreamingRequest` 单段/多段合一矛盾 | 🔧 待 B4 蓝图 |
-| S1~S6 | 6 项建议 | 🔧 待 B4 蓝图处理 |
-
-### 测试结果
-```
-Shared:  623 tests, 0 failures（新增 3 个：AF-ARCH-01 x1 + AF-ARCH-02 x2）
-Android:  22 tests, 0 failures
-Total:   645 tests, 0 failures
-```
+### 规范建设
+- `~/.ai-context/WORKFLOW_SINGLE_MODEL.md`（双模型共享）：单模型角色分化+交叉验证流程。涉算法时蓝图+审查均须 `algorithm_engineer` 参与。
+- `~/.ai-context/WORKFLOW.md`（双模型共享）：多模型编排→标准/深度任务涉算法时方案+终审须算法工程师。
+- `~/.ai-context/GLOBAL.md`：任务定级新增"单模型独立工作判定"入口，指向 `WORKFLOW_SINGLE_MODEL.md`。
 
 ---
 
-## 二、下一步（按顺序）
+## 二、⏭ 下一步（按顺序）
 
-1. ~~找编码模型关闭 AF-ARCH-01、AF-ARCH-02~~ ✅ 已完成（`b8a90121`，623 tests 0 failures）
-2. 起草 B4 实施蓝图时：把 AF-ARCH-03 的决策写入蓝图 §1/§不变量表；把 §11.3 的 S1~S6 逐条显式处理（接受方案或不采纳理由都要写）
-3. 蓝图 §11.6 全部满足后，把 B3 蓝图状态由 `BLOCKED` 改 `ACCEPTED`，才可开始 B4 编码
-
-AF-ARCH-01/02 已关闭，**可以开始起草 B4 蓝图**（AF-ARCH-03 的决策作为蓝图第 1 步冻结）。
+1. **B4 commit**：`git add` + commit（含全部 9 文件）→ push
+2. **真机验证**：按 B4 蓝图 §13 的 E-B4-01~06 逐项验证
+3. **起草 B5 蓝图**（确认页流式展示）：B4 蓝图 §10 延后 11 项需列入 B5 强制清单；若涉算法（如营养评级、推荐排序等）须在蓝图阶段+编码自审阶段加 `algorithm_engineer`
+4. **(可延后) 架构模型复核**：从 B4 蓝图 §0 入口审核 B3+B4 全量
 
 ---
 
@@ -65,48 +61,43 @@ AF-ARCH-01/02 已关闭，**可以开始起草 B4 蓝图**（AF-ARCH-03 的决�
 
 1. `SESSION_交接.md`（本文件）
 2. `.ai-context/PROJECT.md`
-3. `feature/AI记一餐_周期记_NDJSON流式开发规范.md`
-4. `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`
-5. `feature/AI记一餐_周期记_NDJSON流式改造落地方案.md`
-6. `context_memory/2026-08-05_AI记一餐周期记NDJSON流式改造.md`（全流程台账）
-7. `.ai-context/docs/功能路径索引.md`
+3. `feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md`（重点 §0 门禁、§1 AF-ARCH-03、§3 不变量、§10 延后项、§13 真机清单）
+4. `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`（重点 §11 架构终审）
+5. `feature/AI记一餐_周期记_NDJSON流式开发规范.md`
+6. `feature/待办索引.md`
+7. `~/.ai-context/WORKFLOW_SINGLE_MODEL.md`（新规范·单模型流程）
 
-## 四、B3 代码文件速查（当前状态）
+---
+
+## 四、B4 代码文件速查
 
 | 文件 | 角色 | 状态 |
 |------|------|:--:|
-| `shared/.../ai/meallog/MealStreamDraftMapper.kt` | 纯 mapper | ✅ 清理 |
-| `shared/.../ai/meallog/StreamingMealSession.kt` | reducer | ✅ AF-ARCH-02 已修复 |
-| `shared/.../ai/meallog/StreamingMealParser.kt` | parser | ✅ AF-ARCH-01 已修复 |
-| `shared/.../ai/meallog/NdjsonEvents.kt` | 事件类型 | ⚪ 架构审：NdjsonEvent 族死代码待清 |
-| `shared/.../ai/meallog/AiMealPrompt.kt` | prompt | 🔧 架构审：AF-ARCH-03 待 B4 蓝图冻结决策 |
-| `androidApp/.../ai/CloudAiRuntime.kt` | Runtime | ✅ 架构审通过 |
-| `androidApp/.../ai/StreamTransport.kt` | transport | ✅ 架构审通过 |
-| `androidApp/.../ai/CloudAiRequestConfig.kt` | config adapter | ✅ 架构审通过 |
-| `androidApp/.../ui/ai/AiMealInputViewModel.kt` | ViewModel 会话链 | ✅ 修复 |
-| `androidApp/.../ui/ai/AiMealInputSheet.kt` | UI | ✅ 修复 |
-| `shared/.../test/.../StreamingMealSessionTest.kt` | Session 测试 | ✅ +3 新增 |
-| `androidApp/.../test/.../AiMealInputViewModelStreamTest.kt` | ViewModel 测试 | ✅ |
-| `shared/.../test/.../MealStreamDraftMapperTest.kt` | Mapper 测试 | ✅ |
+| `shared/.../ai/meallog/AiMealPrompt.kt` | AF-ARCH-03 冻结 | ✅ 修改 |
+| `shared/.../ai/meallog/InputSegmentFactory.kt` | 工厂（新建） | ✅ 新建 |
+| `shared/.../ai/meallog/InputSegment.kt` | fail-fast | ✅ 修改 |
+| `shared/.../test/.../InputSegmentFactoryTest.kt` | 工厂测试 | ✅ 新建 |
+| `androidApp/.../ui/ai/AiMealInputViewModel.kt` | VM 扩展 | ✅ 修改 |
+| `androidApp/.../ui/ai/WeekStrip.kt` | 7天选择器 | ✅ 新建 |
+| `androidApp/.../ui/ai/PeriodDayBlock.kt` | 单天输入块 | ✅ 新建 |
+| `androidApp/.../ui/ai/AiMealInputSheet.kt` | Sheet 分叉 | ✅ 修改 |
+
+**不改**（B4 验证通过）：`StreamingMealSession`、`StreamingMealParser`、`MealStreamDraftMapper`、`CloudAiRuntime`、`StreamTransport`、Repository、DI
 
 ---
 
 ## 五、关键红线（不变）
 
-- `GENERATING`/`PARTIAL_READY` 期间绝不写库（I-01）
-- 只有用户确认+二次 MERGE 后才写库（I-02）
-- `finish_reason=length` 必须可见（I-03）
-- 归属不完整事件不静默挂靠（I-04）
-- 日期遵循 D-15（I-05）
-- Release 不含原文/Key/响应（I-06）
+同 B3 交接 §五 + B4 新增：
+- segmentId 唯一性 fail-fast（`StreamingMealRequest.init require`）
+- 200 字截断在 VM 层（`setQuickDraft`/`setPeriodInput`）
+- 草稿隔离（`quickDraftText` ↔ `periodInputs` 独立）
+- 周期记空白段由 `StreamingMealRequest.nonBlankSegments` 过滤
 
-## 六、B3 复审关键注意事项
+---
 
-1. **save 协程管理**：save 协程赋给 `generationJob`，`invalidateGenerationToInput` 会 cancel 它；`_state.update` 内 `phase==SAVING` 守卫防竞态覆盖
-2. **健康摘要容错**：`buildHealthSafetyReport` 用 `runCatching`+`NonCancellable` 独立容错，失败降级默认报告
-3. **Sheet 关闭守卫**：`PARTIAL_READY`/`PREVIEW_READY` 弹确认框；`SAVING` 阶段禁止关闭
-4. **retrySave 并发防护**：入口 `phase!=ERROR` 门禁 + `generationJob?.cancel()` 防连点双写
-5. **.copy() 粘性字段**：`invalidateGenerationToInput` 改用 `prev.copy()`，`inputMode`/`voiceState` 等自动继承
-6. **stream 异常防护**：`collect{}` 外层 try-catch，非 Cancel 异常记录为段失败不静默丢失
-7. **死代码已清**：旧同步路径（-140 行）、PENDING/cancel（-23 行）、jsonFallbackDays（-40 行）、DoneEvent（-12 行）
-8. **AF-ARCH-02 parser 惰性创建**：`segmentParsers: LinkedHashMap`，`nextSegment()` 中 `getOrPut`，每个 parser 只持自己单个 segment，snapshot 合并
+## 六、架构模型复核检查点（🔴 未执行）
+
+> B4 编码完成，但架构模型（google_architecture_engineer + apple_architect）尚未审核。复核入口：B4 蓝图 §0 门禁表 + §3 不变量 + §7 最小改动集 + B3 蓝图 §11 架构终审记录 + 三角色审查报告。
+
+复核通过前 B4 可标记为 `COMPLETED_UNREVIEWED`，不得合并入 B5 生产路径。

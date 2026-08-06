@@ -46,4 +46,12 @@ data class StreamingMealRequest(
     val healthContext: String? = null,
 ) {
     val nonBlankSegments: List<InputSegment> get() = segments.filter { !it.isBlank }
+
+    /** [AI生成] B4: segmentId 唯一性 fail-fast（防御性编程·ChatGPT 复核边界检查 #7 + Google 架构审查 B1）。 */
+    init {
+        val ids = segments.map { it.segmentId }
+        require(ids.size == ids.distinct().size) {
+            "Duplicate segmentId in StreamingMealRequest: ${ids.groupingBy { it }.eachCount().filter { it.value > 1 }.keys}"
+        }
+    }
 }

@@ -1,6 +1,6 @@
 # AI记一餐：周期记 + NDJSON 流式 B3 会话实施蓝图
 
-> 状态：`BLOCKED`；B3.3（AF-B3-R3-01~05）与 B3.4（四视角联合复审 5 阻断 + 9 建议）均已修复并通过终审（提交 `d94e7d8f`，642 测试 0 失败），**但本文 §11 的架构模型终审（B4 前置门禁）发现 3 项 AF-ARCH 阻断，须先关闭才可起草 B4 实施蓝图**。
+> 状态：`ACCEPTED` —— AF-ARCH-01/02 已关闭（`a7fdf074`，645 tests），ChatGPT 复核确认。AF-ARCH-03 在 B4 蓝图 §1 冻结。B4 蓝图已 `ACCEPTED`，B4 编码已开始。**🔴 架构模型复核检查点**：B4 编码完成后，B3+B4 全量由架构模型审核。
 > 必读：`experience/12_多模型协作与实施蓝图规范.md`、`AI记一餐_周期记_NDJSON流式开发规范.md`、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §7.9、本文 §11。
 > 基线：`b37ace6f`（B1/B2 代码）与 `36e35689`（B1/B2 八审记录）；`d94e7d8f`（B3.4 代码基线）。
 
@@ -196,14 +196,30 @@ B4 将替换“仅构造 quick segment”的输入构造步骤为周期 segments
 
 ### 11.1 结论
 
-**BLOCKED —— B4 实施蓝图暂不能起草。** 发现 3 项 🔴 阻断（AF-ARCH-01~03，均已逐行代码验证，非推测），其中 1 项是**当前已在生产发生的用户可见缺陷**（不是"B4 才会暴露"），另 2 项是"B3 因恒定单段而被掩盖、B4 一旦多段立即踩空"的架构缺口。三项改动集中、定位精确，不需要推翻 B1/B2/B3 已有设计。另有一批 🟡 建议须在 B4 蓝图起草时逐条显式处理（接受或拒绝都要写明理由，不能沉默跳过），以及一批 ⚪ 死代码/技术债建议顺手清理。
+**AF-ARCH-01/02 已关闭（`a7fdf074`），AF-ARCH-03 待 B4 蓝图冻结。ChatGPT 架构复核（2026-08-06）：有条件通过，允许进入 B4 蓝图阶段。**
+
+原终审发现 3 项 🔴 阻断（AF-ARCH-01~03，均已逐行代码验证，非推测），其中 1 项是**当前已在生产发生的用户可见缺陷**（不是"B4 才会暴露"），另 2 项是"B3 因恒定单段而被掩盖、B4 一旦多段立即踩空"的架构缺口。三项改动集中、定位精确，不需要推翻 B1/B2/B3 已有设计。
+
+**修复状态**：AF-ARCH-01（`done` 静默消费）和 AF-ARCH-02（按 segmentId 惰性 parser）已在 `a7fdf074` 修复，Shared 623 + Android 22 = 645 tests 0 failures，ChatGPT 独立复核确认关闭。AF-ARCH-03（请求段数策略）必须在 B4 蓝图第一步冻结。另有一批 🟡 建议须在 B4 蓝图起草时逐条显式处理（接受或拒绝都要写明理由，不能沉默跳过），以及一批 ⚪ 死代码/技术债建议顺手清理。
 
 ### 11.2 🔴 阻断（AF-ARCH，须先关闭再起草 B4 蓝图）
 
 | AF | 层/文件 | 问题与验证证据 | 影响 | 修复方向 | Allowlist | 验收证据 |
 |---|---|---|---|---|---|---|
-| **AF-ARCH-01** | B1 · `AiMealPrompt.kt:39,52,126` × `StreamingMealParser.kt:122-134` × `AiMealInputViewModel.kt:409` × `AiMealInputSheet.kt:755-769` | Prompt 明确要求模型每段结束输出 `{"type":"done",...}`；`StreamingMealParser` 的 `when(parsed.type)` 无 `"done"` 分支，落入 `else` 追加 `WARNING 未知事件类型「done」，已忽略`；该诊断经 `snap.diagnostics.map{it.message}` 直接写入 `parseWarnings`，`PreviewPhase` 原样渲染"请确认以下解析提示"卡片给用户。三处代码逐行读取确认，链路成立。 | **当前生产缺陷，非仅 B4 前瞻**：现在每一次成功的 AI 记一餐都会在预览页多出一条对用户无意义的技术性噪音。四轮 AF 修复 + 两轮质量终审均未捕获，因为审查聚焦并发/状态机正确性，没有人逐字追踪"prompt 承诺的事件 → parser 是否消费 → 诊断是否 user-facing"这条链路。B4 段数 ×7，噪音同比放大。 | `StreamingMealParser` 增加 `"done" -> {}`（可选：标记 per-segment `receivedDone` 供 B4 判断段落收尾，但不得产出诊断）。 | 仅 `StreamingMealParser.kt`（B1）+ 对应单测；不改协议/Prompt/其他文件。 | 新增单测：喂入含合法 `done` 行的完整 NDJSON → `snapshot().diagnostics` 不含"未知事件类型「done」"；既有 shared 测试保持 0 失败。 |
-| **AF-ARCH-02** | B3 · `StreamingMealSession.kt:39-43,87` × `StreamingMealParser.kt:474-478` | `StreamingMealSession` 构造时创建**唯一** parser、`segments=request.segments` 全量；每段 `onCompleted` 都对同一 parser 调 `finish()`；而 `tryWholeJsonFallback` 要求 `segments.size==1` 才回退。B3 恒为 1 段，缺陷被掩盖；测试固定单段，无法暴露。逐行读取确认。 | B4 一旦 >1 段：①整体 JSON fallback 对所有段永久失效（parser 看到的 `segments.size` 恒等于段总数而非 1）；② `hasAnyNdjsonEvent`/`finishReason`/`isLengthTruncated` 是 parser 全局字段，被每段 `finish()` 反复覆盖 —— 截断标记被后段抹掉、一旦某段出现过 NDJSON 就永久跳过其余段的 fallback；③ `fallbackDate` 恒为第一段日期，多天 fallback 场景日期错锚。 | `StreamingMealSession` 把 parser 从"构造时单例"改为"按 segmentId 惰性创建"（工厂/Map，每段一个独立实例），`onCompleted` 只 finish 该段自己的实例；`snapshot()` 合并各段 draft/diagnostics。**不引入 parser 接口/依赖注入**——只有一个实现，注入是过度设计；问题是构造的时机/作用域，不是耦合方式。 | 仅 `StreamingMealSession.kt`（B3 已授权文件）+ `StreamingMealSessionTest.kt`；不改 `StreamingMealParser.kt`、不改 B1 协议、不改 VM/UI。 | 新增会话测试：两个 segment，其一触发 whole-json fallback 或 length 截断，断言另一段独立 parser 不受影响、`segments.size==1` 检查在每个 parser 实例内均成立；既有 T-B3-02/04 时序断言保持通过。 |
+| **AF-ARCH-01** | B1 · `AiMealPrompt.kt:39,52,126` × `StreamingMealParser.kt:122-134` × `AiMealInputViewModel.kt:409` × `AiMealInputSheet.kt:755-769` | Prompt 明确要求模型每段结束输出 `{"type":"done",...}`；`StreamingMealParser` 的 `when(parsed.type)` 无 `"done"` 分支，落入 `else` 追加 `WARNING 未知事件类型「done」，已忽略`；该诊断经 `snap.diagnostics.map{it.message}` 直接写入 `parseWarnings`，`PreviewPhase` 原样渲染"请确认以下解析提示"卡片给用户。三处代码逐行读取确认，链路成立。 | **当前生产缺陷，非仅 B4 前瞻**：现在每一次成功的 AI 记一餐都会在预览页多出一条对用户无意义的技术性噪音。四轮 AF 修复 + 两轮质量终审均未捕获，因为审查聚焦并发/状态机正确性，没有人逐字追踪"prompt 承诺的事件 → parser 是否消费 → 诊断是否 user-facing"这条链路。B4 段数 ×7，噪音同比放大。 | `StreamingMealParser` 增加 `"done" -> {}`（可选：标记 per-segment `receivedDone` 供 B4 判断段落收尾，但不得产出诊断）。 | 仅 `StreamingMealParser.kt`（B1）+ 对应单测；不改协议/Prompt/其他文件。 | ✅ **已关闭**（`a7fdf074`）。新增单测验证 `done` 不产生 warning；ChatGPT 复核确认关闭。 |
+| **AF-ARCH-02** | B3 · `StreamingMealSession.kt:39-43,87` × `StreamingMealParser.kt:474-478` | `StreamingMealSession` 构造时创建**唯一** parser、`segments=request.segments` 全量；每段 `onCompleted` 都对同一 parser 调 `finish()`；而 `tryWholeJsonFallback` 要求 `segments.size==1` 才回退。B3 恒为 1 段，缺陷被掩盖；测试固定单段，无法暴露。逐行读取确认。 | B4 一旦 >1 段：①整体 JSON fallback 对所有段永久失效（parser 看到的 `segments.size` 恒等于段总数而非 1）；② `hasAnyNdjsonEvent`/`finishReason`/`isLengthTruncated` 是 parser 全局字段，被每段 `finish()` 反复覆盖 —— 截断标记被后段抹掉、一旦某段出现过 NDJSON 就永久跳过其余段的 fallback；③ `fallbackDate` 恒为第一段日期，多天 fallback 场景日期错锚。 | `StreamingMealSession` 把 parser 从"构造时单例"改为"按 segmentId 惰性创建"（工厂/Map，每段一个独立实例），`onCompleted` 只 finish 该段自己的实例；`snapshot()` 合并各段 draft/diagnostics。**不引入 parser 接口/依赖注入**——只有一个实现，注入是过度设计；问题是构造的时机/作用域，不是耦合方式。 | 仅 `StreamingMealSession.kt`（B3 已授权文件）+ `StreamingMealSessionTest.kt`；不改 `StreamingMealParser.kt`、不改 B1 协议、不改 VM/UI。 | ✅ **已关闭**（`a7fdf074`）。`segmentParsers: LinkedHashMap<String, StreamingMealParser>` + `getOrPut` 惰性创建；ChatGPT 复核确认关闭。**下列边界检查须携带到 B4 蓝图：** |
+
+**AF-ARCH-02 关闭确认 · B4 携带边界检查表（ChatGPT 复核）：**
+
+| # | 检查项 | 判断 | B4 蓝图落点 |
+|---| ------ | ---- | ----------- |
+| 1 | 每个 parser 构造时只传入一个 `InputSegment` | 必须 | B4 蓝图 INV 表 |
+| 2 | delta 只进入当前 segment 的 parser | 必须 | B4 蓝图 INV 表 |
+| 3 | `finish_reason=length` 只标记当前 parser | 必须 | B4 蓝图 INV 表 |
+| 4 | parser 内的残余 buffer 不跨 segment | 必须 | B4 蓝图 INV 表 |
+| 5 | snapshot 合并顺序与原 segments 顺序一致 | 必须 | B4 蓝图 §数据流 |
+| 6 | 多次调用 snapshot 不会重复累计结果 | 必须 | B4 蓝图 INV 表 |
+| 7 | `segmentId` 重复时有明确行为（同一 session 内 segmentId 必须唯一，建议 fail-fast） | B4 前冻结 | B4 蓝图 §不变量 |
 | **AF-ARCH-03** | B1 API 面 × B4 决策缺口 · `AiMealPrompt.kt:93-127` × `AiMealInputViewModel.kt:306` | `buildStreamingRequest(segments: List<InputSegment>)` 同时实现"单段"与"多段合一请求"两条 prompt 拼装分支（多段分支要求模型"逐段输出 NDJSON"、maxTokens 按段数缩放到 8192）；当前唯一调用点固定传 `listOf(segment)`，多段分支是不可达代码，仅靠调用方隐式选择维持一致性。逐行读取确认两分支并存。 | 不是代码缺陷，是**决策缺口**：B4 编码者面对两条现成路径，选错一条会让 AF-ARCH-02 的按段 parser 修复失效（多段合一请求下一次响应混着多天 NDJSON，无法简单按段惰性建 parser），也会让周期记的核心诉求（按段进度/失败隔离/单段重试）落空。 | **B4 蓝图开工前必须显式冻结为"N 次独立请求 × 每次 1 段"**（与 AF-ARCH-02 一致，支持按段重试/进度/失败隔离），并将 `buildStreamingRequest` 签名收窄为单段，删除多段合一分支与 maxTokens 缩放逻辑，使错误调用方式编译期不可用。 | 归为 **B4 蓝图第 1 步的强制不变量**，非独立修复批次；会触及 `AiMealPrompt.kt`，需 B4 蓝图显式将该文件纳入允许修改范围。 | B4 蓝图的 INV 表与 allowlist 需显式记录本决策及理由。 |
 
 ### 11.3 🟡 建议（B4 蓝图起草时须逐条显式处理，接受/拒绝均要写明理由）
@@ -238,4 +254,40 @@ B4 将替换“仅构造 quick segment”的输入构造步骤为周期 segments
 
 ### 11.6 放行判定
 
-仅当 AF-ARCH-01~03 全部关闭（含新增测试证据、`:shared:testDebugUnitTest` 与既有 Android 定向测试保持 0 失败）、且 B4 蓝图起草时已把 §11.3 的 S1~S6 逐条显式处理（写明接受方案或不采纳理由），才可将本文档状态由 `BLOCKED` 改为 `ACCEPTED` 并开始起草 B4 实施蓝图。
+**原判定**：仅当 AF-ARCH-01~03 全部关闭（含新增测试证据、`:shared:testDebugUnitTest` 与既有 Android 定向测试保持 0 失败）、且 B4 蓝图起草时已把 §11.3 的 S1~S6 逐条显式处理（写明接受方案或不采纳理由），才可将本文档状态由 `BLOCKED` 改为 `ACCEPTED` 并开始起草 B4 实施蓝图。
+
+**当前状态**：
+- AF-ARCH-01 ✅ 已关闭（`a7fdf074`，ChatGPT 复核确认）
+- AF-ARCH-02 ✅ 已关闭（`a7fdf074`，ChatGPT 复核确认，7 项边界检查携带到 B4 蓝图）
+- AF-ARCH-03 🔧 待 B4 蓝图第一步冻结
+- S1~S6 🔧 待 B4 蓝图逐条显式处理
+- 测试：Shared 623 + Android 22 = 645 tests 0 failures ✅
+
+**ChatGPT 复核结论（2026-08-06）**：有条件通过，允许进入 B4 蓝图阶段。B4 编码前须完成 4 项门禁（见 §11.7）。
+
+### 11.7 ChatGPT 架构复核（2026-08-06 · 独立第三方审核）
+
+> 复核范围：AF-ARCH-01/02 修复提交 `a7fdf074` + 本文 §11 架构模型终审
+> 总体结论：**有条件通过，允许进入 B4 蓝图阶段**
+
+**逐项判断**：
+
+| AF | 结论 | 依据 |
+|----| :--: | ---- |
+| AF-ARCH-01 | ✅ 关闭 | `done` 静默消费是最小且正确的处理。附加验证全部通过：不产生 warning、未知事件仍报警、不破坏已解析数据、不额外生成内容。 |
+| AF-ARCH-02 | ✅ 关闭 | `LinkedHashMap<String, StreamingMealParser>` + `getOrPut` 惰性创建解决了原三个架构风险。7 项边界检查携带到 B4 蓝图（见 AF-ARCH-02 条目下表）。 |
+| AF-ARCH-03 | 🔴 未关闭 | 必须在 B4 蓝图第一步冻结为"N 请求 × 1 段"，收窄 `buildStreamingRequest` 签名。 |
+
+**B4 编码前必须完成的 4 项门禁**：
+
+| # | 门禁 | 状态 |
+|---| ---- | :--: |
+| 1 | B4 蓝图第一步冻结 AF-ARCH-03：N 次独立请求 × 每次 1 段 | 🔧 待 B4 蓝图 |
+| 2 | 原审核 S1~S6 逐条写入蓝图，注明采纳方案或不采纳原因 | 🔧 待 B4 蓝图 |
+| 3 | 确认 645 项测试结果运行在完整 SHA `a7fdf074ca9c437cc1c4acfe3ffb622bfd325331` 上 | ✅ 已确认 |
+| 4 | AF-ARCH-02 边界检查表（7 项）写入 B4 蓝图不变量 | 🔧 待 B4 蓝图 |
+
+**B4 蓝图起草时的强制清单**（除上述 4 项外）：
+- 把 `segmentId` 唯一性写为 B4 不变量（建议 fail-fast，不依赖隐式约定）
+- 把 snapshot 合并顺序写入 B4 数据流
+- SESSION_交接.md 的版本元数据已修正（`b8a90121` → `a7fdf074`）

@@ -85,45 +85,27 @@ object AiMealPrompt {
 """.trimIndent()
 
     /**
-     * 构建流式请求（B1 新增·主路径）。[AI生成] B1
+     * 构建流式请求（B1→B4 AF-ARCH-03 收窄为单段）。[AI修改] B4
      *
-     * @param segments 非空分段列表（至少 1 个）
-     * @return LLM 请求（使用 NDJSON prompt + 按段缩放 maxTokens）
+     * AF-ARCH-03 决策：N 次独立请求 × 每次 1 段。多段由 ViewModel 循环逐段调用本方法，
+     * 不再支持单次请求传多段。删除原多段 prompt 分支与 maxTokens 按段缩放逻辑。
+     *
+     * @param segment 单个非空 InputSegment
+     * @return LLM 请求（NDJSON prompt，maxTokens 固定 2048）
      */
-    fun buildStreamingRequest(
-        segments: List<InputSegment>,
-    ): LlmRequest {
-        val nonBlank = segments.filter { !it.isBlank }
-        val userPrompt = buildStreamingUserPrompt(nonBlank)
-        val maxTokens = when {
-            nonBlank.size <= 1 -> 2048
-            else -> (nonBlank.size * 4096).coerceAtMost(8192)
+    fun buildStreamingRequest(segment: InputSegment): LlmRequest {
+        val userPrompt = buildString {
+            append("用户说：${segment.inputText}\n")
+            append("segment_id：${segment.segmentId}\n")
+            append("锚点日期：${segment.targetDate}（${dayOfWeekName(segment.targetDate)}）\n")
+            append("请输出 NDJSON，以 done 事件结束。")
         }
         return LlmRequest(
             system = NDJSON_SYSTEM_PROMPT,
             user = userPrompt,
             temperature = 0.2,
-            maxTokens = maxTokens,
+            maxTokens = 2048,
         )
-    }
-
-    /** 构建流式用户 prompt。[AI生成] B1 */
-    private fun buildStreamingUserPrompt(segments: List<InputSegment>): String = buildString {
-        if (segments.size == 1) {
-            val seg = segments.single()
-            append("用户说：${seg.inputText}\n")
-            append("segment_id：${seg.segmentId}\n")
-            append("锚点日期：${seg.targetDate}（${dayOfWeekName(seg.targetDate)}）\n")
-        } else {
-            append("周期记（${segments.size} 天），每天一段：\n\n")
-            segments.forEachIndexed { i, seg ->
-                append("--- 第${i + 1}天 ---\n")
-                append("segment_id：${seg.segmentId}\n")
-                append("锚点日期：${seg.targetDate}（${dayOfWeekName(seg.targetDate)}）\n")
-                append("用户说：${seg.inputText}\n\n")
-            }
-        }
-        append("请逐段输出 NDJSON，每段以 done 事件结束。")
     }
 
     /** 日期→星期中文名。[AI生成] B1 */

@@ -9,6 +9,7 @@ import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
 import com.sxdbsm.cookbook.ai.meallog.AiMealHealthAdvice
 import com.sxdbsm.cookbook.ai.meallog.DayMealJson
 import com.sxdbsm.cookbook.ai.meallog.InputSegment
+import com.sxdbsm.cookbook.ai.meallog.InputSegmentFactory
 import com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder
 import com.sxdbsm.cookbook.ai.meallog.MealDateAnchorPolicy
 import com.sxdbsm.cookbook.ai.meallog.RuleMealParser
@@ -28,9 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.minus
 
 /**
  * @File : AiMealInputViewModel
@@ -44,8 +43,8 @@ import kotlinx.datetime.minus
  * [AI修改] P2-1 K1a AI快捷输入记餐：两阶段 preview/commit 接入。
  **/
 
-/** 输入模式。[AI生成] */
-enum class InputMode { TEXT, VOICE }
+/** [AI修改] B4: 输入模式——快速记(单段) vs 周期记(周多段)。原 TEXT/VOICE 由 voiceState 独立表达。 */
+enum class InputMode { QUICK, WEEK }
 
 /** 处理阶段。[AI修改] B3: 唯一状态机 INPUT→GENERATING→PARTIAL_READY→PREVIEW_READY→SAVING→DONE；删除 PARSING/PREVIEW。 */
 enum class AiMealPhase { INPUT, GENERATING, PARTIAL_READY, PREVIEW_READY, SAVING, DONE, ERROR }
@@ -85,7 +84,7 @@ internal interface AiMealSessionPort {
 /** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 作两阶段主键，PreviewPhase 直接渲染能力层产出。 */
 data class AiMealInputUiState(
     val inputText: String = "",
-    val inputMode: InputMode = InputMode.TEXT,
+    val inputMode: InputMode = InputMode.QUICK,
     val phase: AiMealPhase = AiMealPhase.INPUT,
     /** [AI修改] B3: 当前 generation 标识；会话只读。 */
     val generationId: String? = null,
@@ -105,6 +104,15 @@ data class AiMealInputUiState(
     val voiceError: String? = null,
     /** [AI修改] K2 语音音量 dB 值（-10~10+，用于波形动画） */
     val voiceRmsdB: Float = 0f,
+    // ── B4: 周期记字段 ──
+    /** [AI生成] B4: 快速记草稿（切换模式保留）。 */
+    val quickDraftText: String = "",
+    /** [AI生成] B4: 周期记周锚点（所选周周一）。 */
+    val periodWeekMonday: LocalDate? = null,
+    /** [AI生成] B4: 周期记选中日期范围（0..6 表示周一至周日），默认全选。 */
+    val periodSelectedRange: IntRange = 0..6,
+    /** [AI生成] B4: 周期记各天草稿（key=0..6）。 */
+    val periodInputs: Map<Int, String> = emptyMap(),
     /** 新建的菜品名列表（供预览提示"已自动创建"）。[AI生成] */
     val newDishNames: List<String> = emptyList(),
     /** 目标日期（预览可调）。[AI生成] */
@@ -172,9 +180,44 @@ class AiMealInputViewModel(
         }
     }
 
-    /** 设置输入文本。[AI修改] B3.1 AF-B3-03: 编辑即新会话，取消进行中 generation。 */
+    /** [AI修改] B4: 快速记模式下设置草稿；周期记模式下无操作（周期记走 setPeriodInput）。 */
     fun setInputText(text: String) {
-        invalidateGenerationToInput(text, _state.value.targetDate)
+        if (_state.value.inputMode == InputMode.QUICK) {
+            setQuickDraft(text)
+        }
+        // WEEK 模式：setInputText 是 no-op，文本由 setPeriodInput(dayIndex, text) 管理
+    }
+
+    /** [AI生成] B4: 设置快速记草稿（含 200 字截断）。 */
+    fun setQuickDraft(text: String) {
+        val trimmed = text.take(200)
+        _state.update { it.copy(quickDraftText = trimmed, inputText = trimmed) }
+    }
+
+    /** [AI生成] B4: 设置周期记某天草稿（含 200 字截断）。 */
+    fun setPeriodInput(dayIndex: Int, text: String) {
+        val trimmed = text.take(200)
+        _state.update {
+            it.copy(periodInputs = it.periodInputs.toMutableMap().apply { put(dayIndex, trimmed) })
+        }
+    }
+
+    /** [AI生成] B4: 调整周期记选中日期范围。倒置区间静默拒绝（start > end 无操作）。 */
+    fun setWeekRange(start: Int, end: Int) {
+        if (start > end) return
+        _state.update { it.copy(periodSelectedRange = start..end) }
+    }
+
+    /** [AI生成] B4: 切换到下一周（清空草稿，重置范围）。 */
+    fun advanceWeek() {
+        val current = _state.value.periodWeekMonday ?: return
+        _state.update { it.copy(periodWeekMonday = DateTime.plusDays(current, 7), periodInputs = emptyMap(), periodSelectedRange = 0..6) }
+    }
+
+    /** [AI生成] B4: 切换到上一周（清空草稿，重置范围）。 */
+    fun retreatWeek() {
+        val current = _state.value.periodWeekMonday ?: return
+        _state.update { it.copy(periodWeekMonday = DateTime.plusDays(current, -7), periodInputs = emptyMap(), periodSelectedRange = 0..6) }
     }
 
     /** 原子失效进行中 generation 并回到 INPUT 态。[AI修改] B3.4-R4-06: 改用 .copy() 保留粘性字段。 */
@@ -200,14 +243,26 @@ class AiMealInputViewModel(
                 diagnostic = null,
                 healthSafetyReport = null,
                 // inputMode / voiceState / voiceActive / voiceError / voiceRmsdB / newDishNames —
+                // B4: quickDraftText / periodWeekMonday / periodSelectedRange / periodInputs —
                 // 粘性字段从 prev 自动继承，无需显式声明。
             )
         }
     }
 
-    /** 切换输入模式。[AI生成] */
+    /** [AI修改] B4: 切换输入模式——保留对方草稿。周期记首次进入时初始化 weekAnchor。 */
     fun setInputMode(mode: InputMode) {
-        _state.update { it.copy(inputMode = mode) }
+        _state.update {
+            val newInputText = when (mode) {
+                InputMode.QUICK -> it.quickDraftText
+                InputMode.WEEK -> ""
+            }
+            val newWeekMonday = when {
+                mode == InputMode.WEEK && it.periodWeekMonday == null ->
+                    InputSegmentFactory.mondayOfWeek(it.targetDate)
+                else -> it.periodWeekMonday
+            }
+            it.copy(inputMode = mode, inputText = newInputText, periodWeekMonday = newWeekMonday)
+        }
     }
 
     /** 设置语音激活态（录音中/停止）。[AI生成] */
@@ -261,22 +316,32 @@ class AiMealInputViewModel(
     }
 
     /**
-     * 发送输入进行流式解析并产出预览。[AI修改] B3: 冻结 session → 顺序收集 stream → session → previewAll。
-     *
-     * 只构造 quick segment（B4 将替换为周期 segments）；不改 session/mapper/Runtime 合同。
+     * 发送输入进行流式解析并产出预览。[AI修改] B4: 按 inputMode 构造 segments → 其余与 B3 完全一致。
      */
     fun submit() {
-        val text = _state.value.inputText.trim()
-        if (text.isBlank()) return
+        val state = _state.value
+        val segments = when (state.inputMode) {
+            InputMode.QUICK -> {
+                val text = state.quickDraftText.trim()
+                if (text.isBlank()) return
+                InputSegmentFactory.forQuickRecord(text, state.targetDate)
+            }
+            InputMode.WEEK -> {
+                val anchor = state.periodWeekMonday ?: return
+                val dayTexts = (0..6).map { state.periodInputs[it] ?: "" }
+                InputSegmentFactory.forPeriodicRecord(dayTexts, anchor)
+            }
+        }
+        // 全空白不发送
+        if (segments.all { it.isBlank }) return
 
-        val targetDate = _state.value.targetDate
         val generationId = "meal-${++generationCounter}"
         val request = StreamingMealRequest(
-            segments = listOf(
-                InputSegment(segmentId = "quick-$targetDate", targetDate = targetDate, inputText = text, ordinal = 0),
-            ),
+            segments = segments,
             generationId = generationId,
-            weekAnchor = startOfWeek(targetDate),
+            weekAnchor = InputSegmentFactory.mondayOfWeek(
+                segments.firstOrNull { !it.isBlank }?.targetDate ?: state.targetDate
+            ),
         )
         val session = StreamingMealSession(request)
 
@@ -303,7 +368,7 @@ class AiMealInputViewModel(
             var segment = session.nextSegment()
             while (segment != null && _state.value.generationId == generationId) {
                 val seg = segment
-                val llmRequest = AiMealPrompt.buildStreamingRequest(listOf(seg))
+                val llmRequest = AiMealPrompt.buildStreamingRequest(seg)
                 // 顺序收集当前段流；流结束（Completed/Failed 后 close）返回。
                 try {
                     aiRuntime.stream(llmRequest).collect { event ->
@@ -480,12 +545,6 @@ class AiMealInputViewModel(
                 }
             }
         }
-    }
-
-    /** 目标日期所在周的周一。 */
-    private fun startOfWeek(date: LocalDate): LocalDate {
-        val mondayOffset = date.dayOfWeek.ordinal // Mon=0
-        return if (mondayOffset == 0) date else date.minus(DatePeriod(days = mondayOffset))
     }
 
     /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
