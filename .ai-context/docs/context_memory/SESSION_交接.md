@@ -1,61 +1,78 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-07 01:30**
-> 当前状态：**B4 bug修复 + B5 核心编码完成，已提交。待真机验证 + 三角色审查 + B6 收尾。**
+> 更新时间：**2026-08-07 02:00**
+> 当前状态：**B4 bug 修复 + B5 核心编码完成，已 commit + push。待真机验证 + 三角色审查 + B6 收尾。**
 > **🔴 架构模型复核检查点**：B4+B5 全量代码 + 三角色审查 → B6 执行。
-> 末位提交：B4 fix (`744101e7`) + B5 feat（即将 commit）。
+> 末位提交：`ff72d3dc`（会话交接更新）。B4 fix: `744101e7`，B5 feat: `63fd3fec`。
 
 ---
 
-## 一、本轮完成
+## 一、本轮完成（B4 真机 bug + B5 核心编码）
 
-### 前置（接上轮）
-- AF-ARCH-01/02 已推送（`a7fdf074`，645 tests 0 failures），ChatGPT 复核确认关闭
-- AF-ARCH-03 在 B4 蓝图 §1 冻结为"N 请求 × 1 段"
+### B4 真机 Bug 修复（3 项，`744101e7`）
 
-### B4 蓝图
-- **文件**：`feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md`（`ACCEPTED`）
-- 三角色设计：Google 质量（8 GAP）+ Google 架构（6 接入点）+ Apple UX（完整交互方案）
-- 三角色自审：修复命名不一致（`PERIOD`→`WEEK`、Allowlist 旧函数名）
-- S1~S6 逐条处理（§8）+ AF-ARCH-02 边界检查带入（§3.3）
+| # | Bug | 修复 | 文件 |
+|---|-----|------|------|
+| 1 | WeekStrip 无 ← → 切周箭头 | 新增周导航行：`← 8/4日 – 8/10日 →`，接线 `advanceWeek()`/`retreatWeek()` | `WeekStrip.kt` |
+| 2 | 周期记发送按钮被隐藏 | PeriodInputSection 整段统一 `verticalScroll`，按钮始终可滚动到达 | `AiMealInputSheet.kt` |
+| 3 | 输入框缺长按粘贴/文本选择 | `String`→`TextFieldValue`，确保 ModalBottomSheet(SubcomposeLayout) 内文本选择上下文菜单可用 | `AiMealInputSheet.kt` + `PeriodDayBlock.kt` |
 
-### B4 编码
-| # | 文件 | 操作 |
-|---|------|:--:|
-| 1 | `shared/.../AiMealPrompt.kt` | 修改：签名收窄为单段 |
-| 2 | `shared/.../InputSegmentFactory.kt` | **新建** |
-| 3 | `shared/.../InputSegmentFactoryTest.kt` | **新建**（12 条） |
-| 4 | `shared/.../InputSegment.kt` | 修改：StreamingMealRequest init require |
-| 5 | `androidApp/.../AiMealInputViewModel.kt` | 修改：InputMode + B4 字段/方法 |
-| 6 | `androidApp/.../WeekStrip.kt` | **新建** |
-| 7 | `androidApp/.../PeriodDayBlock.kt` | **新建** |
-| 8 | `androidApp/.../AiMealInputSheet.kt` | 修改：InputPhase 分叉 |
-| 9 | `.ai-context/.../` | 文档更新（SESSION/蓝图/经验/操作记录） |
+### B5 核心交付（`63fd3fec`）
 
-### B4 代码三角色审查
-| 角色 | 🔴 | 🟡 | 关键发现 |
-|------|:--:|:--:|---------|
-| Google 质量 | 0 | 3 | periodSelectedRange语义、范围重置、VoiceRecognizer预存 |
-| Google 架构 | 1 | 3 | 🔴segmentId无fail-fast（已修） |
-| Apple 质量 | 3 | 5 | 🔴标题"一餐"矛盾（已修）、🔴setWeekRange缺守卫（已修）、🔴周切换未接通（降级） |
+#### B4 §10 延后项收尾（7/11 完成）
 
-**裁决延后项（→ B4 蓝图 §10）**：11 条分类记入 B5/B6/技术债
+| 来源 | 项目 | 状态 | 落点 |
+|------|------|:--:|------|
+| Google架构 S2 | 200 字常量提取 | ✅ | `AiMealPrompt.MAX_INPUT_CHARS`（shared），4 处→1 处 |
+| Apple #4 | CharCountLabel 统一组件 | ✅ | `CharCountLabel.kt`（颜色分级+底部 padding） |
+| Apple #5 | 截断层统一 | ✅ | VM 层统一截断（`setQuickDraft`/`setPeriodInput`），UI 层不重复 |
+| Apple #3 | WeekStrip 切周箭头 | ✅ | B4 bug fix #1 |
+| Apple #7 | 切周撤销 Snackbar | ✅ | `AppSnackbar.showUndo("已切换到下一周", "撤销"){ undoWeekChange() }` |
+| Apple #8 | 字符计数 padding | ✅ | CharCountLabel 内置底部 padding |
+| Google质量 B4-S1 | periodSelectedRange 注释 | ✅ | `submit()` 中加注释："提交范围（非可见范围）" |
+| Google架构 S1 | mondayOfWeek 冗余 | ⏸️ | B6 |
+| Google架构 S3 | charCount 死代码 | ⏸️ | 不处理（1 行 getter） |
+| Apple #3 旧 | VoiceRecognizer 泄漏 | ⏸️ | 技术债独立 |
+| B4 S2 | preview 触发优化 | ✅ | B5 核心：段终态+final 才调 previewAll |
 
-### 规范建设
-- `~/.ai-context/WORKFLOW_SINGLE_MODEL.md`（双模型共享）：单模型角色分化+交叉验证流程。涉算法时蓝图+审查均须 `algorithm_engineer` 参与。
-- `~/.ai-context/WORKFLOW.md`（双模型共享）：多模型编排→标准/深度任务涉算法时方案+终审须算法工程师。
-- `~/.ai-context/GLOBAL.md`：任务定级新增"单模型独立工作判定"入口，指向 `WORKFLOW_SINGLE_MODEL.md`。
+#### 新增文件
+
+| 文件 | 说明 |
+|------|------|
+| `GenerationProgress.kt` | 段进度数据类（total/complete/failed/current ordinal+label） |
+| `GeneratingPhase.kt` | 替换 ParsingPhase：进度条+部分预览增量展示+骨架占位 |
+| `SegmentProgressBar.kt` | "第 N/M 天" 线性进度条 + 段状态圆点（✅⏳❌） |
+| `CharCountLabel.kt` | 统一字符计数标签组件（80% 灰→90% 琥珀→100% 红） |
+
+#### 修改文件
+
+| 文件 | 主要改动 |
+|------|---------|
+| `AiMealInputViewModel.kt` | +`GenerationProgress` 字段、`computeProgress()`、preview 边界检测（`lastPreviewTerminalCount`）、切周撤销（`SnackbarAction` + `undoWeekChange`）、`MAX_INPUT_CHARS` 替换 |
+| `AiMealInputSheet.kt` | `GENERATING`/`PARTIAL_READY`→`GeneratingPhase`、snackbar 事件收集、`MealPreviewCard`→`internal`、`CharCountLabel` 替换、`AiMealPrompt.MAX_INPUT_CHARS` |
+| `AiMealPrompt.kt` | +`const val MAX_INPUT_CHARS = 200` |
+| `WeekStrip.kt` | +`onPreviousWeek`/`onNextWeek` 回调 + 周导航行 |
+| `PeriodDayBlock.kt` | `String`→`TextFieldValue` + `CharCountLabel` + `MAX_INPUT_CHARS` |
+
+#### 构建与测试
+
+| 检查项 | 结果 |
+|--------|:--:|
+| `shared:testDebugUnitTest` | ✅ 0 failures |
+| `androidApp:assembleDebug` | ✅ BUILD SUCCESSFUL |
+| `androidApp:testDebugUnitTest` (ViewModelStreamTest) | ⏳ 超时未完成（需 clean build 后重跑） |
 
 ---
 
 ## 二、⏭ 下一步（按顺序）
 
-1. ~~B4 commit + push~~ ✅ `744101e7`（B4 bug 修复）+ `63fd3fec`（B5 核心）
-2. **真机验证**：
-   - B4: E-B4-01~06（清单 `真机待验证清单_202608062345.md`）
-   - B5: E-B5-01~10（B5 蓝图 §10）
-3. **三角色审查**（B5 蓝图 §11）：Google 质量 + Google 架构 + Apple UX
-4. **B6 收尾**：Google架构 S1(mondayOfWeek 冗余)、VoiceRecognizer 泄漏、全量 B1-B5 架构模型复核、文档更新
+1. **真机装包验证**（你来跑，~20 分钟）：
+   - B4: `E-B4-01~06`（清单 `真机待验证清单_202608062345.md`）——切周箭头、发送按钮、草稿隔离、200 字截断
+   - B5: `E-B5-01~10`（B5 蓝图 §10）——渐进卡片、段进度、失败诊断、最终重排、切周撤销
+2. **三角色审查**（我来跑）：B5 蓝图 §11 指定 — Google 质量 + Google 架构 + Apple UX
+3. **B6 收尾**（下次会话）：Google架构 S1(mondayOfWeek 冗余)、VoiceRecognizer 泄漏、全量 B1-B5 架构模型复核
+
+**建议**：验完真机后在同一 session 做三角色审查 + B6。如果换 session，说"查看session继续"即可。
 
 ---
 
@@ -63,43 +80,50 @@
 
 1. `SESSION_交接.md`（本文件）
 2. `.ai-context/PROJECT.md`
-3. `feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md`（重点 §0 门禁、§1 AF-ARCH-03、§3 不变量、§10 延后项、§13 真机清单）
-4. `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`（重点 §11 架构终审）
-5. `feature/AI记一餐_周期记_NDJSON流式开发规范.md`
-6. `feature/待办索引.md`
-7. `~/.ai-context/WORKFLOW_SINGLE_MODEL.md`（新规范·单模型流程）
+3. `feature/AI记一餐_周期记_NDJSON流式_B5确认页流式实施蓝图.md`（**新增**·B5 蓝图·重点 §0 门禁、§3 核心设计、§4 实施步骤、§9 延后项裁决、§10 真机清单）
+4. `feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md`（重点 §10 延后项、§13 真机清单）
+5. `feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`（重点 §11 架构终审）
+6. `feature/AI记一餐_周期记_NDJSON流式开发规范.md`
+7. `feature/待办索引.md`
+8. `~/.ai-context/WORKFLOW_SINGLE_MODEL.md`
 
 ---
 
-## 四、B4 代码文件速查
+## 四、B4 + B5 代码文件速查
 
-| 文件 | 角色 | 状态 |
+| 文件 | 角色 | 批次 |
 |------|------|:--:|
-| `shared/.../ai/meallog/AiMealPrompt.kt` | AF-ARCH-03 冻结 | ✅ 修改 |
-| `shared/.../ai/meallog/InputSegmentFactory.kt` | 工厂（新建） | ✅ 新建 |
-| `shared/.../ai/meallog/InputSegment.kt` | fail-fast | ✅ 修改 |
-| `shared/.../test/.../InputSegmentFactoryTest.kt` | 工厂测试 | ✅ 新建 |
-| `androidApp/.../ui/ai/AiMealInputViewModel.kt` | VM 扩展 | ✅ 修改 |
-| `androidApp/.../ui/ai/WeekStrip.kt` | 7天选择器 | ✅ 新建 |
-| `androidApp/.../ui/ai/PeriodDayBlock.kt` | 单天输入块 | ✅ 新建 |
-| `androidApp/.../ui/ai/AiMealInputSheet.kt` | Sheet 分叉 | ✅ 修改 |
+| `shared/.../ai/meallog/AiMealPrompt.kt` | MAX_INPUT_CHARS 常量 | B5 |
+| `shared/.../ai/meallog/InputSegmentFactory.kt` | 段工厂 | B4 |
+| `shared/.../ai/meallog/InputSegment.kt` | fail-fast | B4 |
+| `shared/.../test/.../InputSegmentFactoryTest.kt` | 工厂测试 | B4 |
+| `androidApp/.../ui/ai/AiMealInputViewModel.kt` | VM（状态机+进度+撤销） | B4+B5 |
+| `androidApp/.../ui/ai/WeekStrip.kt` | 7 天选择器+切周箭头 | B4+B5 |
+| `androidApp/.../ui/ai/PeriodDayBlock.kt` | 单天输入块 | B4+B5 |
+| `androidApp/.../ui/ai/AiMealInputSheet.kt` | Sheet 入口+各阶段组件 | B4+B5 |
+| `androidApp/.../ui/ai/GenerationProgress.kt` | 段进度数据类（**新建**） | B5 |
+| `androidApp/.../ui/ai/GeneratingPhase.kt` | 生成中阶段 UI（**新建**） | B5 |
+| `androidApp/.../ui/ai/SegmentProgressBar.kt` | 段进度条 UI（**新建**） | B5 |
+| `androidApp/.../ui/component/CharCountLabel.kt` | 统一字符计数（**新建**） | B5 |
 
-**不改**（B4 验证通过）：`StreamingMealSession`、`StreamingMealParser`、`MealStreamDraftMapper`、`CloudAiRuntime`、`StreamTransport`、Repository、DI
+**不改**（B1-B5 均验证通过）：`StreamingMealSession`、`StreamingMealParser`、`MealStreamDraftMapper`、`CloudAiRuntime`、`StreamTransport`、Repository、DI
 
 ---
 
-## 五、关键红线（不变）
+## 五、关键红线（累加不变）
 
-同 B3 交接 §五 + B4 新增：
-- segmentId 唯一性 fail-fast（`StreamingMealRequest.init require`）
-- 200 字截断在 VM 层（`setQuickDraft`/`setPeriodInput`）
+同 B3/B4 交接 + B5 新增：
+- segmentId 唯一性 fail-fast
+- 200 字截断在 VM 层（`setQuickDraft`/`setPeriodInput`，常量 `AiMealPrompt.MAX_INPUT_CHARS`）
 - 草稿隔离（`quickDraftText` ↔ `periodInputs` 独立）
 - 周期记空白段由 `StreamingMealRequest.nonBlankSegments` 过滤
+- ✅ **B5 新增**：preview 仅在段终态 + final 触发（`lastPreviewTerminalCount` 边界检测）
+- ✅ **B5 新增**：`GeneratingPhase` 不持有可变业务状态，渲染纯 `state`
 
 ---
 
-## 六、架构模型复核检查点（🔴 未执行）
+## 六、架构模型复核检查点（🔴 未执行·累计）
 
-> B4 编码完成，但架构模型（google_architecture_engineer + apple_architect）尚未审核。复核入口：B4 蓝图 §0 门禁表 + §3 不变量 + §7 最小改动集 + B3 蓝图 §11 架构终审记录 + 三角色审查报告。
+> B4+B5 编码完成，但架构模型尚未审核。复核范围 = B3 蓝图 §11 + B4 蓝图 §0/§3/§7 + B5 蓝图 §0/§2/§5 + B4/B5 全部代码改动 + 三角色审查报告。
 
-复核通过前 B4 可标记为 `COMPLETED_UNREVIEWED`，不得合并入 B5 生产路径。
+复核通过前 B4+B5 标记为 `COMPLETED_UNREVIEWED`。
