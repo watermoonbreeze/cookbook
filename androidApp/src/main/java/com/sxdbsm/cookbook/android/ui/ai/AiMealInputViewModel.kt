@@ -16,6 +16,7 @@ import com.sxdbsm.cookbook.ai.meallog.RuleMealParser
 import com.sxdbsm.cookbook.ai.meallog.StreamSegmentState
 import com.sxdbsm.cookbook.ai.meallog.StreamingMealRequest
 import com.sxdbsm.cookbook.ai.meallog.StreamingMealSession
+import com.sxdbsm.cookbook.ai.meallog.StreamingSessionSnapshot
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.FamilyRepository
@@ -23,7 +24,9 @@ import com.sxdbsm.cookbook.domain.autogen.AutoGenPreview
 import com.sxdbsm.cookbook.domain.autogen.AutoGenResult
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -51,6 +54,13 @@ enum class AiMealPhase { INPUT, GENERATING, PARTIAL_READY, PREVIEW_READY, SAVING
 
 /** 语音识别状态。[AI生成] */
 enum class VoiceState { IDLE, LISTENING, PROCESSING, ERROR }
+
+/** [AI生成] B5: ViewModel → UI Snackbar 事件（含撤销回调）。 */
+data class SnackbarAction(
+    val message: String,
+    val actionLabel: String,
+    val onAction: () -> Unit,
+)
 
 /** AI 本次尝试的仅会话诊断；原始响应不写日志、不入库，重输/退出即清除。 [AI修改] */
 data class AiMealAttemptDiagnostic(
@@ -90,7 +100,9 @@ data class AiMealInputUiState(
     val generationId: String? = null,
     /** [AI修改] B3: 各分段状态；会话只读。 */
     val segmentStates: Map<String, StreamSegmentState> = emptyMap(),
-    /** [AI修改] B3: 生成中标记（GENERATING/PARTIAL_READY 为 true）。 */
+    /** [AI生成] B5: 生成进度（UI 友好的段进度封装）。GENERATING/PARTIAL_READY 时非 null。 */
+    val generationProgress: GenerationProgress? = null,
+    /** [AI生成] B3: 生成中标记（GENERATING/PARTIAL_READY 为 true）。 */
     val isGenerating: Boolean = false,
     /** [AI修改] P2-1 K1a：preview 阶段存能力层产出（含营养估算）。 */
     val autoGenPreview: AutoGenPreview? = null,
@@ -153,6 +165,14 @@ class AiMealInputViewModel(
     private var generationCounter = 0
     // [AI修改] B3: 最近一次 preview 的 days，避免相同内容重复调用 previewAll。
     private var lastPreviewDays: List<DayMealJson>? = null
+    // [AI生成] B5: 最近一次 preview 时的终态段数，用于判定段边界。
+    private var lastPreviewTerminalCount: Int = -1
+    // [AI生成] B5: 切周撤销暂存（恢复上周末态）。
+    private var undoWeekMonday: LocalDate? = null
+    private var undoPeriodInputs: Map<Int, String> = emptyMap()
+    // [AI生成] B5: Snackbar 事件通道（ViewModel → UI）。
+    private val _snackbarEvent = MutableSharedFlow<SnackbarAction>()
+    val snackbarEvent: SharedFlow<SnackbarAction> = _snackbarEvent
 
     // [AI修改] B3.1-PORT-01: 会话端口（测试可替换）；B3.2 R2-02 回退为严格三方法。
     private var sessionPort: AiMealSessionPort = DefaultSessionPort(recorder, ingredientRepo)
@@ -190,13 +210,13 @@ class AiMealInputViewModel(
 
     /** [AI生成] B4: 设置快速记草稿（含 200 字截断）。 */
     fun setQuickDraft(text: String) {
-        val trimmed = text.take(200)
+        val trimmed = text.take(AiMealPrompt.MAX_INPUT_CHARS)
         _state.update { it.copy(quickDraftText = trimmed, inputText = trimmed) }
     }
 
     /** [AI生成] B4: 设置周期记某天草稿（含 200 字截断）。 */
     fun setPeriodInput(dayIndex: Int, text: String) {
-        val trimmed = text.take(200)
+        val trimmed = text.take(AiMealPrompt.MAX_INPUT_CHARS)
         _state.update {
             it.copy(periodInputs = it.periodInputs.toMutableMap().apply { put(dayIndex, trimmed) })
         }
@@ -209,15 +229,36 @@ class AiMealInputViewModel(
     }
 
     /** [AI生成] B4: 切换到下一周（清空草稿，重置范围）。 */
+    /** [AI修改] B5: 切换到下一周。保存当前草稿以支持撤销。 */
     fun advanceWeek() {
         val current = _state.value.periodWeekMonday ?: return
-        _state.update { it.copy(periodWeekMonday = DateTime.plusDays(current, 7), periodInputs = emptyMap(), periodSelectedRange = 0..6) }
+        shiftWeek(DateTime.plusDays(current, 7), "已切换到下一周")
     }
 
-    /** [AI生成] B4: 切换到上一周（清空草稿，重置范围）。 */
+    /** [AI修改] B5: 切换到上一周。保存当前草稿以支持撤销。 */
     fun retreatWeek() {
         val current = _state.value.periodWeekMonday ?: return
-        _state.update { it.copy(periodWeekMonday = DateTime.plusDays(current, -7), periodInputs = emptyMap(), periodSelectedRange = 0..6) }
+        shiftWeek(DateTime.plusDays(current, -7), "已切换到上一周")
+    }
+
+    /** [AI生成] B5: 切周实现，保存旧状态供撤销。 */
+    private fun shiftWeek(newMonday: LocalDate, message: String) {
+        val cur = _state.value
+        // 保存当前草稿供撤销
+        undoWeekMonday = cur.periodWeekMonday
+        undoPeriodInputs = cur.periodInputs
+        _state.update { it.copy(periodWeekMonday = newMonday, periodInputs = emptyMap(), periodSelectedRange = 0..6) }
+        viewModelScope.launch {
+            _snackbarEvent.emit(SnackbarAction(message, "撤销") { undoWeekChange() })
+        }
+    }
+
+    /** [AI生成] B5: 撤销切周操作，恢复上周末态。 */
+    fun undoWeekChange() {
+        val monday = undoWeekMonday ?: return
+        _state.update { it.copy(periodWeekMonday = monday, periodInputs = undoPeriodInputs, periodSelectedRange = 0..6) }
+        undoWeekMonday = null
+        undoPeriodInputs = emptyMap()
     }
 
     /** 原子失效进行中 generation 并回到 INPUT 态。[AI修改] B3.4-R4-06: 改用 .copy() 保留粘性字段。 */
@@ -225,6 +266,7 @@ class AiMealInputViewModel(
         generationJob?.cancel()
         generationJob = null
         lastPreviewDays = null
+        lastPreviewTerminalCount = -1
         _state.update { prev ->
             prev.copy(
                 inputText = nextInput,
@@ -348,10 +390,21 @@ class AiMealInputViewModel(
         // 新 generation 前取消旧 Job（旧会话后到事件不再喂入）
         generationJob?.cancel()
         lastPreviewDays = null
+        lastPreviewTerminalCount = -1
+        // [AI生成] B5: 初始化段进度
+        val nonBlankSegments = segments.filter { !it.isBlank }
+        val initialProgress = GenerationProgress(
+            totalSegments = nonBlankSegments.size,
+            completedSegments = 0,
+            failedSegments = 0,
+            currentSegmentOrdinal = nonBlankSegments.firstOrNull()?.ordinal ?: 0,
+            currentSegmentLabel = nonBlankSegments.firstOrNull()?.targetDate?.let { shortWeekday(it) } ?: "",
+        )
         _state.update {
             it.copy(
                 phase = AiMealPhase.GENERATING,
                 generationId = generationId,
+                generationProgress = initialProgress,
                 isGenerating = true,
                 segmentStates = session.snapshot().segmentStates,
                 errorMessage = null,
@@ -419,14 +472,18 @@ class AiMealInputViewModel(
      * - 无合法餐食且非 final：仅更新进度/诊断，不调 preview。
      * - 有合法餐食：PARTIAL_READY（生成中）或 PREVIEW_READY（final）；相同 days 不重复 preview。
      * - 无合法餐食且 final：ERROR，不自动调用规则 parser。
+     * - [B5] preview 触发优化：段终态或 final 才调 previewAll，Delta 中途仅更新 progress。
      */
     private suspend fun handleSessionSnapshot(session: StreamingMealSession, generationId: String, isFinal: Boolean) {
         // AF-B3-R2-01: 唯一 generation 谓词。
         if (!isCurrentGeneration(generationId)) return
         val snap = session.snapshot()
+        val progress = computeProgress(session, snap)
+
+        // [B5] 快速路径：无合法餐食 + 非 final → 仅更新进度，不调 preview
         if (!snap.hasValidMeals && !isFinal) {
             _state.update {
-                it.copy(segmentStates = snap.segmentStates, isGenerating = true)
+                it.copy(segmentStates = snap.segmentStates, isGenerating = true, generationProgress = progress)
             }
             return
         }
@@ -436,6 +493,7 @@ class AiMealInputViewModel(
                     phase = AiMealPhase.ERROR,
                     errorMessage = "没能识别出菜品，试试更具体的描述？\n如「中午吃了红烧肉和米饭」",
                     segmentStates = snap.segmentStates,
+                    generationProgress = progress,
                     isGenerating = false,
                     // [AI修改] B3.4-R4-05: 将 session 诊断传入 parseWarnings，帮助用户理解失败原因。
                     parseWarnings = snap.diagnostics.map { it.message },
@@ -443,10 +501,20 @@ class AiMealInputViewModel(
             }
             return
         }
+
+        // [B5] 非段边界且非 final → 仅更新进度（跳过 preview，优化频繁 Delta）
+        val isBoundary = progress.terminalSegments != lastPreviewTerminalCount
+        if (!isFinal && !isBoundary && _state.value.autoGenPreview != null) {
+            _state.update {
+                it.copy(phase = AiMealPhase.PARTIAL_READY, segmentStates = snap.segmentStates, generationProgress = progress, isGenerating = true)
+            }
+            return
+        }
+
         // 相同 days 不重复调用 previewAll
         if (!isFinal && lastPreviewDays == snap.days && _state.value.autoGenPreview != null) {
             _state.update {
-                it.copy(phase = AiMealPhase.PARTIAL_READY, segmentStates = snap.segmentStates, isGenerating = true)
+                it.copy(phase = AiMealPhase.PARTIAL_READY, segmentStates = snap.segmentStates, generationProgress = progress, isGenerating = true)
             }
             return
         }
@@ -465,11 +533,13 @@ class AiMealInputViewModel(
             }.getOrDefault(HealthSafetyReport(listOf("健康档案暂不可用")))
             if (!isCurrentGeneration(generationId)) return
             lastPreviewDays = snap.days
+            lastPreviewTerminalCount = progress.terminalSegments
             _state.update {
                 it.copy(
                     phase = if (isFinal) AiMealPhase.PREVIEW_READY else AiMealPhase.PARTIAL_READY,
                     autoGenPreview = preview,
                     segmentStates = snap.segmentStates,
+                    generationProgress = progress,
                     isGenerating = !isFinal,
                     parseWarnings = snap.diagnostics.map { it.message },
                     mergeConfirmationRequired = preview.days.any { it.hasExisting },
@@ -495,6 +565,33 @@ class AiMealInputViewModel(
     /** AF-B3-R2-01: 当前 generation 谓词。 */
     private fun isCurrentGeneration(generationId: String): Boolean =
         _state.value.generationId == generationId
+
+    /** [AI生成] B5: 简短星期标签（ViewModel 内联，不依赖 Sheet 私有函数）。 */
+    private fun shortWeekday(date: LocalDate): String = when (date.dayOfWeek) {
+        kotlinx.datetime.DayOfWeek.MONDAY -> "周一"
+        kotlinx.datetime.DayOfWeek.TUESDAY -> "周二"
+        kotlinx.datetime.DayOfWeek.WEDNESDAY -> "周三"
+        kotlinx.datetime.DayOfWeek.THURSDAY -> "周四"
+        kotlinx.datetime.DayOfWeek.FRIDAY -> "周五"
+        kotlinx.datetime.DayOfWeek.SATURDAY -> "周六"
+        kotlinx.datetime.DayOfWeek.SUNDAY -> "周日"
+    }
+
+    /** [AI生成] B5: 从 snapshot 和 session 推算当前段进度。 */
+    private fun computeProgress(session: StreamingMealSession, snap: StreamingSessionSnapshot): GenerationProgress {
+        val nonBlank = session.request.nonBlankSegments.sortedBy { it.ordinal }
+        val states = snap.segmentStates
+        val completed = nonBlank.count { states[it.segmentId] == StreamSegmentState.COMPLETED }
+        val failed = nonBlank.count { states[it.segmentId] == StreamSegmentState.FAILED }
+        val current = nonBlank.firstOrNull { states[it.segmentId] == StreamSegmentState.STREAMING }
+        return GenerationProgress(
+            totalSegments = nonBlank.size,
+            completedSegments = completed,
+            failedSegments = failed,
+            currentSegmentOrdinal = current?.ordinal ?: 0,
+            currentSegmentLabel = current?.targetDate?.let { shortWeekday(it) } ?: "",
+        )
+    }
 
     /**
      * B3: 唯一允许调用 RuleMealParser 的显式动作。[AI修改]

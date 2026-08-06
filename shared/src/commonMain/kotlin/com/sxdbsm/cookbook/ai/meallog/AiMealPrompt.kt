@@ -19,6 +19,9 @@ import com.sxdbsm.cookbook.ai.LlmRequest
  **/
 object AiMealPrompt {
 
+    /** [AI生成] B5: AI 快捷记输入单段最大字符数。快速记和周期记每段均以此为准。 */
+    const val MAX_INPUT_CHARS = 200
+
     // ============================================================
     // NDJSON 流式 Prompt（B1 新增·主路径）
     // ============================================================

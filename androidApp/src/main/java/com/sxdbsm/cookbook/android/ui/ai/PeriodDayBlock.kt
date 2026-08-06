@@ -1,7 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.ai
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
+import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
+import com.sxdbsm.cookbook.android.ui.component.CharCountLabel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,7 +44,7 @@ fun PeriodDayBlock(
     onTextChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val maxChars = 200
+    val maxChars = AiMealPrompt.MAX_INPUT_CHARS
     val charCount = inputText.length
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -92,20 +92,10 @@ fun PeriodDayBlock(
                 colors = OutlinedTextFieldDefaults.colors(),
             )
 
-            // 字符计数（右下角 overlay）
-            val countColor by animateColorAsState(
-                targetValue = when {
-                    charCount >= maxChars -> MaterialTheme.colorScheme.error
-                    charCount >= 180 -> MaterialTheme.colorScheme.error.copy(alpha = 0.7f) // 琥珀替代
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                },
-                animationSpec = tween(200),
-                label = "charCount",
-            )
-            Text(
-                text = "$charCount / $maxChars",
-                style = MaterialTheme.typography.labelSmall,
-                color = countColor,
+            // 字符计数（右下角 overlay）[B5] 统一 CharCountLabel 组件
+            CharCountLabel(
+                current = charCount,
+                max = maxChars,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 12.dp, bottom = 8.dp),

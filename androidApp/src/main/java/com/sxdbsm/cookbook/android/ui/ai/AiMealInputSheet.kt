@@ -76,8 +76,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
 import com.sxdbsm.cookbook.android.ai.VoiceRecognizer
 import com.sxdbsm.cookbook.android.ui.component.CapsuleButton
+import com.sxdbsm.cookbook.android.ui.component.CharCountLabel
+import com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar
 import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
 import com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled
 import com.sxdbsm.cookbook.domain.autogen.DishPreview
@@ -119,6 +122,14 @@ fun AiMealInputSheet(
     // [AI修改] B3.4-R4-03: 未保存守卫——PARTIAL_READY/PREVIEW_READY 时关闭需确认。
     var showDismissConfirm by remember { mutableStateOf(false) }
 
+    // [AI生成] B5: 收集 VM snackbar 事件（切周撤销等）
+    val snackbar = LocalAppSnackbar.current
+    LaunchedEffect(Unit) {
+        vm.snackbarEvent.collect { action ->
+            snackbar?.showUndo(action.message, action.actionLabel, onUndo = action.onAction)
+        }
+    }
+
     if (showDismissConfirm) {
         AlertDialog(
             onDismissRequest = { showDismissConfirm = false },
@@ -154,9 +165,10 @@ fun AiMealInputSheet(
     ) {
         when (state.phase) {
             AiMealPhase.INPUT -> InputPhase(vm, state)
-            // [AI修改] B3.1 AF-B3-04: GENERATING→解析容器；仅合法 preview 后进预览容器。
-            AiMealPhase.GENERATING -> ParsingPhase()
-            AiMealPhase.PARTIAL_READY, AiMealPhase.PREVIEW_READY -> PreviewPhase(vm, state)
+            // [AI修改] B5: GENERATING→生成进度+部分预览；PARTIAL_READY→同组件(含进度+餐食卡)
+            AiMealPhase.GENERATING, AiMealPhase.PARTIAL_READY -> GeneratingPhase(state)
+            // [AI修改] B5: PREVIEW_READY→最终预览(无进度条)
+            AiMealPhase.PREVIEW_READY -> PreviewPhase(vm, state)
             AiMealPhase.SAVING -> SavingPhase()
             AiMealPhase.DONE -> {
                 // [AI修改] R4修复:延迟到下一帧避免 ModalBottomSheet 未挂载完成时的竞态
@@ -321,17 +333,10 @@ private fun QuickInputSection(
             colors = OutlinedTextFieldDefaults.colors(),
         )
 
-        // 字符计数（右下角 overlay）[B4新增]
-        val maxChars = 200
-        val charCount = state.inputText.length
-        Text(
-            text = "$charCount / $maxChars",
-            style = MaterialTheme.typography.labelSmall,
-            color = when {
-                charCount >= maxChars -> MaterialTheme.colorScheme.error
-                charCount >= 180 -> MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-                else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            },
+        // 字符计数（右下角 overlay）[B5] 统一 CharCountLabel 组件
+        CharCountLabel(
+            current = state.inputText.length,
+            max = AiMealPrompt.MAX_INPUT_CHARS,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 12.dp, bottom = 8.dp),
@@ -980,9 +985,9 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     }
 }
 
-/** 单餐次卡片（基于能力层 MealPreview 直接渲染）。[AI修改] P2-1 K1a+QA-B1/B2 */
+/** 单餐次卡片（基于能力层 MealPreview 直接渲染）。[AI修改] P2-1 K1a+QA-B1/B2 · B5 改为 internal 供 GeneratingPhase 复用 */
 @Composable
-private fun MealPreviewCard(meal: MealPreview) {
+internal fun MealPreviewCard(meal: MealPreview) {
     val calorieOn by rememberCalorieNumberEnabled()
 
     Card(
