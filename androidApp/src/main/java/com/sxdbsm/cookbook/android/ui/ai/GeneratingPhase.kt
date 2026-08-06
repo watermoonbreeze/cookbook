@@ -125,7 +125,7 @@ private fun DayMealSection(day: DayPreview, isMultiDay: Boolean) {
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         ),
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             if (isMultiDay) {
                 Text(
                     text = "📅 ${day.date}",

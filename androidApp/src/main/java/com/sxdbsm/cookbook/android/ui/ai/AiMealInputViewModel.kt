@@ -167,9 +167,6 @@ class AiMealInputViewModel(
     private var lastPreviewDays: List<DayMealJson>? = null
     // [AI生成] B5: 最近一次 preview 时的终态段数，用于判定段边界。
     private var lastPreviewTerminalCount: Int = -1
-    // [AI生成] B5: 切周撤销暂存（恢复上周末态）。
-    private var undoWeekMonday: LocalDate? = null
-    private var undoPeriodInputs: Map<Int, String> = emptyMap()
     // [AI生成] B5: Snackbar 事件通道（ViewModel → UI）。
     private val _snackbarEvent = MutableSharedFlow<SnackbarAction>()
     val snackbarEvent: SharedFlow<SnackbarAction> = _snackbarEvent
@@ -244,21 +241,17 @@ class AiMealInputViewModel(
     /** [AI生成] B5: 切周实现，保存旧状态供撤销。 */
     private fun shiftWeek(newMonday: LocalDate, message: String) {
         val cur = _state.value
-        // 保存当前草稿供撤销
-        undoWeekMonday = cur.periodWeekMonday
-        undoPeriodInputs = cur.periodInputs
+        // [AI修改] B5-review: 闭包捕获快照值而非可变字段引用，防连续切周时撤销状态被覆盖。
+        val savedMonday = cur.periodWeekMonday
+        val savedInputs = cur.periodInputs
         _state.update { it.copy(periodWeekMonday = newMonday, periodInputs = emptyMap(), periodSelectedRange = 0..6) }
         viewModelScope.launch {
-            _snackbarEvent.emit(SnackbarAction(message, "撤销") { undoWeekChange() })
+            _snackbarEvent.emit(SnackbarAction(message, "撤销") {
+                if (savedMonday != null) {
+                    _state.update { it.copy(periodWeekMonday = savedMonday, periodInputs = savedInputs, periodSelectedRange = 0..6) }
+                }
+            })
         }
-    }
-
-    /** [AI生成] B5: 撤销切周操作，恢复上周末态。 */
-    fun undoWeekChange() {
-        val monday = undoWeekMonday ?: return
-        _state.update { it.copy(periodWeekMonday = monday, periodInputs = undoPeriodInputs, periodSelectedRange = 0..6) }
-        undoWeekMonday = null
-        undoPeriodInputs = emptyMap()
     }
 
     /** 原子失效进行中 generation 并回到 INPUT 态。[AI修改] B3.4-R4-06: 改用 .copy() 保留粘性字段。 */
@@ -392,7 +385,7 @@ class AiMealInputViewModel(
         lastPreviewDays = null
         lastPreviewTerminalCount = -1
         // [AI生成] B5: 初始化段进度
-        val nonBlankSegments = segments.filter { !it.isBlank }
+        val nonBlankSegments = segments.filter { !it.isBlank }.sortedBy { it.ordinal }
         val initialProgress = GenerationProgress(
             totalSegments = nonBlankSegments.size,
             completedSegments = 0,
@@ -583,13 +576,19 @@ class AiMealInputViewModel(
         val states = snap.segmentStates
         val completed = nonBlank.count { states[it.segmentId] == StreamSegmentState.COMPLETED }
         val failed = nonBlank.count { states[it.segmentId] == StreamSegmentState.FAILED }
+        val terminalCount = completed + failed
         val current = nonBlank.firstOrNull { states[it.segmentId] == StreamSegmentState.STREAMING }
+        // [AI修改] B5-review: 无 STREAMING 段时回退到终端位置（最后终态段或最后一个段）
+        val fallback = nonBlank.getOrNull(terminalCount) ?: nonBlank.lastOrNull()
+        val ordinal = current?.ordinal ?: fallback?.ordinal ?: 0
+        val label = current?.targetDate?.let { shortWeekday(it) }
+            ?: fallback?.targetDate?.let { shortWeekday(it) } ?: ""
         return GenerationProgress(
             totalSegments = nonBlank.size,
             completedSegments = completed,
             failedSegments = failed,
-            currentSegmentOrdinal = current?.ordinal ?: 0,
-            currentSegmentLabel = current?.targetDate?.let { shortWeekday(it) } ?: "",
+            currentSegmentOrdinal = ordinal,
+            currentSegmentLabel = label,
         )
     }
 
@@ -721,6 +720,7 @@ class AiMealInputViewModel(
             )
         }
         lastPreviewDays = null
+        lastPreviewTerminalCount = -1  // [AI修改] B5-review: 补齐配对重置
 
         // [AI修改] B3.4-R4-01: save 协程复用 generationJob slot，invalidateGenerationToInput 会 cancel 它；
         // _state.update 内加 phase==SAVING 守卫防止竞态覆盖。
@@ -759,6 +759,7 @@ class AiMealInputViewModel(
         generationJob?.cancel()
         generationJob = null
         lastPreviewDays = null
+        lastPreviewTerminalCount = -1  // [AI修改] B5-review: 补齐配对重置
     }
 
     /** [AI修改] B3.4-R4-04: 重试保存——复用当前 autoGenPreview；仅 ERROR 态可触发，防连点并发。 */

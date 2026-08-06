@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,10 +34,13 @@ import androidx.compose.ui.unit.dp
  * @Author : SXD-AI
  * @Desc : B5 段进度条——"第 N/M 天"线性进度 + 段状态指示圆点。
  * <p>
- * 复用 CookModeScreen 的 LinearProgressIndicator 风格 + CookingTimerScreen 的 SegmentDots 概念。
- * 每个圆点表示一个段的状态：⏳ 脉冲(COMPLETED 绿 / STREAMING 脉冲 / FAILED 红 / 未开始灰)。
+ * 复用 CookModeScreen 的 LinearProgressIndicator 风格。
+ * 每个圆点表示一个段的状态：DONE=实心主色 / ACTIVE=主色填充+脉冲 / FAILED=实心错误色 / PENDING=空心灰。
+ * DONE 与 ACTIVE 用不同视觉区分（不单靠颜色），保证 Reduce Motion 下仍可分辨。
  * <p>
  * [AI生成] B5 确认页流式展示。
+ * [AI修改] B5-review: ACTIVE 使用 currentSegmentOrdinal 定位(修复失败段后无脉冲)；
+ * PENDING 改为空心圆(无障碍合规)；DONE 与 ACTIVE 双色区分。
  */
 @Composable
 fun SegmentProgressBar(progress: GenerationProgress, modifier: Modifier = Modifier) {
@@ -51,35 +55,42 @@ fun SegmentProgressBar(progress: GenerationProgress, modifier: Modifier = Modifi
 
         Spacer(Modifier.height(8.dp))
 
-        // 文案
+        // 文案 —— 统一使用"已完成 N 天 · 当前处理中「标签」"口径
         Text(
-            text = when {
-                progress.totalSegments <= 1 -> "正在解析…"
-                progress.failedSegments > 0 -> "第 ${progress.terminalSegments}/${progress.totalSegments} 天 · ${progress.currentSegmentLabel}"
-                else -> "第 ${progress.terminalSegments + 1}/${progress.totalSegments} 天 · ${progress.currentSegmentLabel}"
+            text = buildString {
+                append("已完成 ${progress.completedSegments} 天")
+                if (progress.failedSegments > 0) append(" · ${progress.failedSegments} 天失败")
+                if (progress.terminalSegments < progress.totalSegments && progress.currentSegmentLabel.isNotBlank()) {
+                    append(" · 正在解析「${progress.currentSegmentLabel}」")
+                } else if (progress.terminalSegments < progress.totalSegments) {
+                    append(" · 解析中…")
+                }
             },
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        Spacer(Modifier.height(8.dp))
+        // 段状态 Dots —— 单段模式不渲染（无信息量）
+        if (progress.totalSegments > 1) {
+            Spacer(Modifier.height(8.dp))
 
-        // 段状态 Dots
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            repeat(progress.totalSegments) { index ->
-                val state = when {
-                    index < progress.completedSegments -> DotState.DONE
-                    index == progress.completedSegments && progress.failedSegments == 0 -> DotState.ACTIVE
-                    index < progress.terminalSegments -> DotState.FAILED
-                    else -> DotState.PENDING
-                }
-                SegmentDot(state = state)
-                if (index < progress.totalSegments - 1) {
-                    Spacer(Modifier.size(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                repeat(progress.totalSegments) { index ->
+                    val state = when {
+                        index < progress.completedSegments -> DotState.DONE
+                        index == progress.currentSegmentOrdinal &&
+                            progress.terminalSegments < progress.totalSegments -> DotState.ACTIVE
+                        index < progress.terminalSegments -> DotState.FAILED
+                        else -> DotState.PENDING
+                    }
+                    SegmentDot(state = state)
+                    if (index < progress.totalSegments - 1) {
+                        Spacer(Modifier.size(8.dp))
+                    }
                 }
             }
         }
@@ -90,10 +101,10 @@ private enum class DotState { DONE, ACTIVE, FAILED, PENDING }
 
 @Composable
 private fun SegmentDot(state: DotState) {
-    val transition = rememberInfiniteTransition(label = "dotPulse")
     val pulseAlpha by if (state == DotState.ACTIVE) {
+        val transition = rememberInfiniteTransition(label = "dotPulse")
         transition.animateFloat(
-            initialValue = 0.4f,
+            initialValue = 0.3f,
             targetValue = 1.0f,
             animationSpec = infiniteRepeatable(
                 animation = tween(600),
@@ -102,31 +113,39 @@ private fun SegmentDot(state: DotState) {
             label = "pulse",
         )
     } else {
-        @Suppress("DEPRECATION")
-        transition.animateFloat(
-            initialValue = 1f,
-            targetValue = 1f,
-            animationSpec = infiniteRepeatable(animation = tween(1), repeatMode = RepeatMode.Restart),
-            label = "none",
-        )
+        androidx.compose.runtime.mutableStateOf(1f)
     }
 
-    val color by animateColorAsState(
+    // ACTIVE: primaryContainer 填充 + primary 描边（双色，Reduce Motion 下仍可区分）
+    // DONE: primary 实心填充
+    // FAILED: error 实心填充
+    // PENDING: 空心（surfaceVariant 描边，无填充）
+    val bgColor by animateColorAsState(
         targetValue = when (state) {
             DotState.DONE -> MaterialTheme.colorScheme.primary
-            DotState.ACTIVE -> MaterialTheme.colorScheme.primary
+            DotState.ACTIVE -> MaterialTheme.colorScheme.primaryContainer
             DotState.FAILED -> MaterialTheme.colorScheme.error
-            DotState.PENDING -> MaterialTheme.colorScheme.surfaceVariant
+            DotState.PENDING -> MaterialTheme.colorScheme.surface.copy(alpha = 0f)
         },
         animationSpec = tween(300),
-        label = "dotColor",
+        label = "dotBg",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = when (state) {
+            DotState.PENDING -> MaterialTheme.colorScheme.surfaceVariant
+            DotState.ACTIVE -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.surface.copy(alpha = 0f) // 透明 = 无描边
+        },
+        animationSpec = tween(300),
+        label = "dotBorder",
     )
 
     Box(
         modifier = Modifier
             .size(10.dp)
-            .alpha(if (state == DotState.ACTIVE) pulseAlpha else 1f)
+            .alpha(pulseAlpha)
             .clip(CircleShape)
-            .background(color),
+            .background(bgColor)
+            .border(1.5.dp, borderColor, CircleShape),
     )
 }
