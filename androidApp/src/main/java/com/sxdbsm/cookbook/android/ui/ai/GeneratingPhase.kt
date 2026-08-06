@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android.ui.ai
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -107,27 +108,11 @@ fun GeneratingPhase(state: AiMealInputUiState) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .height(40.dp)
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .then(
-                            Modifier.fillMaxWidth()
-                                .height(40.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        ),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .then(
-                                Modifier.fillMaxWidth()
-                                    .height(40.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                            ),
-                    )
-                }
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                )
                 Spacer(Modifier.height(4.dp))
             }
         }
