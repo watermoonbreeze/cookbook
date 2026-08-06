@@ -68,22 +68,6 @@ class StreamingMealSessionTest {
     }
 
     @Test
-    fun `cancel后不再接受新段且当前段标记CANCELLED`() {
-        val request = StreamingMealRequest(
-            segments = listOf(seg("s-1", LocalDate(2026, 8, 5), "周一", 0)),
-            generationId = "g1",
-            weekAnchor = LocalDate(2026, 8, 3),
-        )
-        val session = StreamingMealSession(request)
-        session.nextSegment()
-        session.cancel()
-
-        assertEquals(StreamSegmentState.CANCELLED, session.snapshot().segmentStates["s-1"])
-        assertNull(session.nextSegment(), "取消后无下一段")
-        assertTrue(session.snapshot().isTerminal)
-    }
-
-    @Test
     fun `全段失败 snapshot有合法餐食时hasValidMeals仍为false但isTerminal为true`() {
         val request = StreamingMealRequest(
             segments = listOf(seg("s-1", LocalDate(2026, 8, 5), "周一", 0)),

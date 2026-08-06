@@ -29,8 +29,6 @@ internal object MealStreamDraftMapper {
         draft: MealStreamDraft,
         segments: List<InputSegment>,
     ): List<DayMealJson> {
-        val knownSegmentIds = segments.map { it.segmentId }.toSet()
-
         // date(string) -> day 聚合：mealId -> (餐次元信息, dishId -> dishNode)
         data class MealAgg(
             val slot: String,
@@ -46,7 +44,6 @@ internal object MealStreamDraftMapper {
 
         // AF-B3-06: 按 request segments 的 ordinal 顺序遍历已知 segmentId。
         for (seg in segments.sortedBy { it.ordinal }) {
-            if (seg.segmentId !in knownSegmentIds) continue
             val draftSeg = draft.segments[seg.segmentId] ?: continue
             for (mealNode in draftSeg.meals.values) {
                 val nonBlankDishes = mealNode.dishes.values.filter { !it.name.isBlank() }

@@ -35,10 +35,6 @@ class StreamingMealParser(
     private var isLengthTruncated = false
     private var totalReceivedChars = 0
 
-    // 整体 JSON 回退结果
-    private var jsonFallbackDays: List<DayMealJson>? = null
-    private var jsonFallbackErrors: List<String>? = null
-
     private val json = Json { ignoreUnknownKeys = true; isLenient = true; coerceInputValues = true }
 
     // ═══════════════════════════════ 公开 API ═══════════════════════════════
@@ -131,7 +127,6 @@ class StreamingMealParser(
             "cooking_step" -> handleCookingStepEvent(parsed)
             "warning" -> handleWarningEvent(parsed)
             "advice" -> handleAdviceEvent(parsed)
-            "done" -> handleDoneEvent(parsed)
             else -> orphanDiagnostics.add(
                 StreamDiagnostic(DiagnosticLevel.WARNING, parsed.segment_id, null, null,
                     "未知事件类型「${parsed.type}」，已忽略")
@@ -461,12 +456,6 @@ class StreamingMealParser(
         seg.warnings.add("💬 $message")
     }
 
-    private fun handleDoneEvent(line: NdjsonLine) {
-        hasAnyNdjsonEvent = true
-        val seg = segmentMap.getOrPut(line.segment_id) { MutableSegmentDraft(line.segment_id) }
-        seg.done = true
-    }
-
     // ═══════════════════════════════ 整体 JSON 回退（AF-04 重写） ═══════════════════════════════
 
     // ============================================================
@@ -479,7 +468,7 @@ class StreamingMealParser(
      */
     private fun tryWholeJsonFallback() {
         val raw = allRawText.toString().trim()
-        if (raw.isEmpty()) { jsonFallbackErrors = listOf("AI 返回为空"); return }
+        if (raw.isEmpty()) return
 
         // AF-14: segments.size != 1 → 拒绝
         if (segments.size != 1) {
@@ -492,7 +481,6 @@ class StreamingMealParser(
         // 解析为 DayMealJson（FlatMealJson 或 MultiDayJson）
         val rawDays = parseWholeJsonToDays(raw)
         if (rawDays.isEmpty()) {
-            jsonFallbackErrors = listOf("AI 返回不符合任何已知格式")
             return
         }
 
@@ -606,60 +594,17 @@ class StreamingMealParser(
     }
 
     private fun buildDraft(): MealStreamDraft {
-        if (jsonFallbackDays != null && segmentMap.isEmpty()) {
-            // 旧回退路径（AF-04 未触及时的兜底）
-            return buildDraftFromJsonFallback()
-        }
-
         return MealStreamDraft(
             segments = segmentMap.mapValues { (_, mut) ->
                 SegmentDraft(
                     segmentId = mut.segmentId,
                     meals = mut.meals.mapValues { (_, node) -> node },
                     warnings = mut.warnings.toList(),
-                    done = mut.done,
                 )
             },
             diagnostics = orphanDiagnostics.toList(),
             finishReason = finishReason,
             isTruncated = isLengthTruncated,
-        )
-    }
-
-    /** 旧 JSON 回退兜底（已被 AF-04 替代，仅保留兼容）。 */
-    private fun buildDraftFromJsonFallback(): MealStreamDraft {
-        val days = jsonFallbackDays ?: return MealStreamDraft(
-            diagnostics = listOf(StreamDiagnostic(DiagnosticLevel.ERROR, null, null, null,
-                jsonFallbackErrors?.firstOrNull() ?: "解析失败")),
-            finishReason = finishReason, isTruncated = isLengthTruncated,
-        )
-        val fallbackSegments = days.mapIndexed { idx, day ->
-            val segId = "fallback-day$idx"
-            val meals = day.meals.associate { meal ->
-                val mealId = "${day.date ?: "unknown"}|${meal.meal_type ?: "unknown"}"
-                mealId to MealDraftNode(
-                    mealId = mealId, date = day.date ?: "", slot = meal.meal_type ?: "unknown",
-                    time = meal.meal_time, note = meal.note,
-                    dishes = meal.dishes.mapIndexed { di, dishRef ->
-                        val dishId = "$mealId|d${di + 1}"
-                        dishId to DishDraftNode(
-                            dishId = dishId,
-                            name = dishRef.name.ifBlank { dishRef.dish?.name ?: "未命名" },
-                            quantity = dishRef.quantity, unit = dishRef.quantity_unit,
-                            eatenRatio = dishRef.eaten_ratio, note = dishRef.note,
-                            ingredients = dishRef.dish?.ingredients?.map { diJson ->
-                                DraftIngredient(name = diJson.ref ?: diJson.food?.name ?: "",
-                                    quantity = diJson.quantity, unit = diJson.unit, isMain = diJson.is_main)
-                            } ?: emptyList(),
-                        )
-                    }.toMap(),
-                )
-            }
-            segId to SegmentDraft(segmentId = segId, meals = meals)
-        }.toMap()
-        return MealStreamDraft(
-            segments = fallbackSegments, diagnostics = orphanDiagnostics.toList(),
-            finishReason = finishReason, isTruncated = isLengthTruncated,
         )
     }
 
@@ -673,5 +618,4 @@ internal class MutableSegmentDraft(
     val segmentId: String,
     val meals: MutableMap<String, MealDraftNode> = linkedMapOf(),
     val warnings: MutableList<String> = mutableListOf(),
-    var done: Boolean = false,
 )

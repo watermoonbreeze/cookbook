@@ -47,8 +47,6 @@ data class NdjsonLine(
     val order: Int? = null,
     // warning/advice 事件字段
     val message: String? = null,
-    // done 事件字段
-    val summary: String? = null,
 )
 
 // ═══════════════════════════════════════════════════════════
@@ -130,12 +128,6 @@ sealed class NdjsonEvent {
         val message: String,
         val mealId: String?,
     ) : NdjsonEvent()
-
-    /** 完成事件：该 segment 模型业务完成。[AI生成] */
-    data class DoneEvent(
-        override val segmentId: String,
-        val summary: String?,
-    ) : NdjsonEvent()
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -161,8 +153,6 @@ data class SegmentDraft(
     val meals: Map<String, MealDraftNode> = emptyMap(),
     /** 该分段的段级警告 */
     val warnings: List<String> = emptyList(),
-    /** 该分段是否已收到 done 事件 */
-    val done: Boolean = false,
 )
 
 /** 餐次节点。[AI生成] */

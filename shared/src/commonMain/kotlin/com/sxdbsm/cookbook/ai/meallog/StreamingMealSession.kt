@@ -14,7 +14,7 @@ package com.sxdbsm.cookbook.ai.meallog
  */
 
 /** 分段状态；仅由 StreamingMealSession 写入。[AI生成] */
-enum class StreamSegmentState { PENDING, STREAMING, COMPLETED, FAILED, CANCELLED }
+enum class StreamSegmentState { STREAMING, COMPLETED, FAILED }
 
 /** 跨模块只读会话快照；不含原始响应。[AI生成] */
 data class StreamingSessionSnapshot(
@@ -48,7 +48,6 @@ class StreamingMealSession(
     private var currentIndex = -1
     private val segmentStates = linkedMapOf<String, StreamSegmentState>()
     private val segmentFailures = mutableMapOf<String, String>()
-    private var cancelled = false
 
     val generationId: String get() = request.generationId
 
@@ -56,15 +55,13 @@ class StreamingMealSession(
      * 返回下一段应请求的 segment；无更多段返回 null。
      *
      * 仅在尚未开始，或当前状态为 COMPLETED/FAILED 时返回下一段；
-     * CANCELLED 后永远返回 null。
+     * 当前段尚未终态（STREAMING）时不得推进。
      */
     fun nextSegment(): InputSegment? {
-        if (cancelled) return null
-        // 当前段尚未终态（STREAMING）时不得推进
         val current = orderedSegments.getOrNull(currentIndex)
         if (current != null) {
             val curState = segmentStates[current.segmentId]
-            if (curState == StreamSegmentState.STREAMING || curState == StreamSegmentState.PENDING) return null
+            if (curState == StreamSegmentState.STREAMING) return null
         }
         val next = currentIndex + 1
         if (next >= orderedSegments.size) return null
@@ -98,25 +95,14 @@ class StreamingMealSession(
         segmentFailures[segmentId] = message
     }
 
-    /** 取消整个会话：当前 STREAMING 段标记 CANCELLED，后续不再接受任何段。 */
-    fun cancel() {
-        cancelled = true
-        val cur = orderedSegments.getOrNull(currentIndex)
-        if (cur != null && segmentStates[cur.segmentId] == StreamSegmentState.STREAMING) {
-            segmentStates[cur.segmentId] = StreamSegmentState.CANCELLED
-        }
-    }
-
     /** 不可变快照。 */
     fun snapshot(): StreamingSessionSnapshot {
         val draft = parser.currentDraft
         val days = MealStreamDraftMapper.toDayMealJson(draft, request.segments)
-        val diagnostics = (
-            draft.diagnostics +
+        val diagnostics = draft.diagnostics +
                 segmentFailures.map { (seg, msg) ->
                     StreamDiagnostic(DiagnosticLevel.ERROR, seg, null, null, msg)
                 }
-            ).toList()
         return StreamingSessionSnapshot(
             generationId = request.generationId,
             segmentStates = segmentStates.toMap(),
@@ -129,8 +115,6 @@ class StreamingMealSession(
     }
 
     private companion object {
-        val TERMINAL_STATES = setOf(
-            StreamSegmentState.COMPLETED, StreamSegmentState.FAILED, StreamSegmentState.CANCELLED,
-        )
+        val TERMINAL_STATES = setOf(StreamSegmentState.COMPLETED, StreamSegmentState.FAILED)
     }
 }

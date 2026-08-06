@@ -114,9 +114,40 @@ fun AiMealInputSheet(
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    // [AI修改] B3.4-R4-03: 未保存守卫——PARTIAL_READY/PREVIEW_READY 时关闭需确认。
+    var showDismissConfirm by remember { mutableStateOf(false) }
+
+    if (showDismissConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDismissConfirm = false },
+            title = { Text("放弃当前预览？") },
+            text = { Text("AI 已解析的餐食预览将不会被保存。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDismissConfirm = false
+                    vm.cancelGeneration()
+                    onDismiss()
+                }) {
+                    Text("放弃")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDismissConfirm = false }) {
+                    Text("继续编辑")
+                }
+            },
+        )
+    }
 
     ModalBottomSheet(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            // [AI修改] B3.4-R4-03: 未保存预览时弹确认框；SAVING 中忽略关闭（等完成自动处理）。
+            when (state.phase) {
+                AiMealPhase.PARTIAL_READY, AiMealPhase.PREVIEW_READY -> showDismissConfirm = true
+                AiMealPhase.SAVING -> { /* 保存中忽略关闭请求 */ }
+                else -> onDismiss()
+            }
+        },
         sheetState = sheetState,
     ) {
         when (state.phase) {
@@ -1020,7 +1051,7 @@ private fun SavingPhase() {
     }
 }
 
-/** 错误提示。[AI生成] */
+/** 错误提示。[AI修改] B3.4-R4-04/05: 展示诊断信息 + 有预览时提供重试保存。 */
 @Composable
 private fun ErrorPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     Column(
@@ -1046,13 +1077,56 @@ private fun ErrorPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             textAlign = TextAlign.Center,
         )
 
+        // [AI修改] B3.4-R4-05: 展示 session 诊断信息，帮助用户理解失败原因。
+        val warnings = state.parseWarnings.filter { it.isNotBlank() }
+        if (warnings.isNotEmpty()) {
+            Spacer(Modifier.height(12.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                        RoundedCornerShape(8.dp),
+                    )
+                    .padding(12.dp),
+            ) {
+                Text(
+                    text = "诊断信息",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+                Spacer(Modifier.height(4.dp))
+                warnings.take(3).forEach { warning ->
+                    Text(
+                        text = "• $warning",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.85f),
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(16.dp))
 
-        Button(
-            onClick = { vm.dismissError() },
-            shape = RoundedCornerShape(12.dp),
-        ) {
-            Text("重新输入")
+        // [AI修改] B3.4-R4-04: 有未保存预览时提供"重试保存"，"重新输入"降为次要。
+        if (state.autoGenPreview != null) {
+            Button(
+                onClick = { vm.retrySave() },
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text("重试保存")
+            }
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = { vm.dismissError() }) {
+                Text("重新输入")
+            }
+        } else {
+            Button(
+                onClick = { vm.dismissError() },
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text("重新输入")
+            }
         }
     }
 }
