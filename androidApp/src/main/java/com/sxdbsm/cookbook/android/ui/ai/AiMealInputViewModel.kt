@@ -426,6 +426,7 @@ class AiMealInputViewModel(
                 val result = sessionPort.parseRule(fallbackText, fallbackDate)
                 if (!isCurrentGeneration(fallbackGenerationId)) return@launch
                 if (result.days.isEmpty() || result.days.all { it.meals.isEmpty() || it.meals.all { m -> m.dishes.isEmpty() } }) {
+                    if (!isCurrentGeneration(fallbackGenerationId)) return@launch
                     _state.update {
                         it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析也未能识别出菜品，请重新描述")
                     }
