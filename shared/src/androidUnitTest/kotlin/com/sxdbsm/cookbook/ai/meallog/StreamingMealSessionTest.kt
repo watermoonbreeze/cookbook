@@ -191,4 +191,106 @@ class StreamingMealSessionTest {
         val session = StreamingMealSession(request)
         assertEquals("meal-7", session.snapshot().generationId)
     }
+
+    // ═══════════════════════════════ AF-ARCH-01 ═══════════════════════════════
+
+    @Test
+    fun `T-AF-ARCH-01 done事件静默消费不产生警告`() {
+        val request = StreamingMealRequest(
+            segments = listOf(seg("s-1", LocalDate(2026, 8, 5), "周一午餐米饭", 0)),
+            generationId = "g1",
+            weekAnchor = LocalDate(2026, 8, 3),
+        )
+        val session = StreamingMealSession(request)
+        session.nextSegment()
+
+        // 正常 meal + dish + done
+        session.onDelta("s-1", """{"type":"meal","segment_id":"s-1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        session.onDelta("s-1", """{"type":"dish","segment_id":"s-1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"米饭"}""" + "\n")
+        session.onDelta("s-1", """{"type":"done","segment_id":"s-1","summary":"完成"}""" + "\n")
+
+        val snap = session.snapshot()
+        // done 不应产生"未知事件类型"警告
+        val unknownWarnings = snap.diagnostics.filter {
+            it.message.contains("未知事件类型") && it.message.contains("done")
+        }
+        assertTrue(unknownWarnings.isEmpty(), "done 事件不应产生'未知事件类型'警告，实际: $unknownWarnings")
+        // 合法餐食仍正确
+        assertTrue(snap.hasValidMeals)
+    }
+
+    // ═══════════════════════════════ AF-ARCH-02 ═══════════════════════════════
+
+    @Test
+    fun `T-AF-ARCH-02 多段各自独立parser 第一段合法第二段也合法 两段days不互相污染`() {
+        val request = StreamingMealRequest(
+            segments = listOf(
+                seg("s-1", LocalDate(2026, 8, 5), "周一午餐米饭", 0),
+                seg("s-2", LocalDate(2026, 8, 6), "周二晚餐面条", 1),
+            ),
+            generationId = "g1",
+            weekAnchor = LocalDate(2026, 8, 3),
+        )
+        val session = StreamingMealSession(request)
+
+        // 第一段
+        session.nextSegment()
+        session.onDelta("s-1", """{"type":"meal","segment_id":"s-1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        session.onDelta("s-1", """{"type":"dish","segment_id":"s-1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"米饭"}""" + "\n")
+        session.onCompleted("s-1", "stop")
+
+        // 第二段
+        session.nextSegment()
+        session.onDelta("s-2", """{"type":"meal","segment_id":"s-2","meal_id":"2026-08-06|dinner","date":"2026-08-06","slot":"dinner"}""" + "\n")
+        session.onDelta("s-2", """{"type":"dish","segment_id":"s-2","meal_id":"2026-08-06|dinner","dish_id":"2026-08-06|dinner|d1","name":"面条"}""" + "\n")
+        session.onCompleted("s-2", "stop")
+
+        val snap = session.snapshot()
+        assertTrue(snap.isTerminal)
+        assertTrue(snap.hasValidMeals)
+
+        // 两天的 days 应各自独立
+        val dates = snap.days.map { it.date }.toSet()
+        assertEquals(2, dates.size, "两段应产出两个不同日期的 day")
+        assertTrue("2026-08-05" in dates)
+        assertTrue("2026-08-06" in dates)
+
+        // 第一天的 dish 是米饭，不是面条
+        val day1 = snap.days.first { it.date == "2026-08-05" }
+        assertEquals("米饭", day1.meals.single().dishes.single().name)
+
+        val day2 = snap.days.first { it.date == "2026-08-06" }
+        assertEquals("面条", day2.meals.single().dishes.single().name)
+    }
+
+    @Test
+    fun `T-AF-ARCH-02 多段第二段失败 第一段数据保留 诊断含第二段失败信息`() {
+        val request = StreamingMealRequest(
+            segments = listOf(
+                seg("s-1", LocalDate(2026, 8, 5), "周一午餐米饭", 0),
+                seg("s-2", LocalDate(2026, 8, 6), "周二晚餐面条", 1),
+            ),
+            generationId = "g1",
+            weekAnchor = LocalDate(2026, 8, 3),
+        )
+        val session = StreamingMealSession(request)
+
+        session.nextSegment()
+        session.onDelta("s-1", """{"type":"meal","segment_id":"s-1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        session.onDelta("s-1", """{"type":"dish","segment_id":"s-1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"米饭"}""" + "\n")
+        session.onCompleted("s-1", "stop")
+
+        session.nextSegment()
+        session.onFailed("s-2", "HTTP 500")
+
+        val snap = session.snapshot()
+        assertTrue(snap.isTerminal)
+        assertTrue(snap.hasValidMeals) // 第一段仍合法
+
+        // 诊断含第二段失败
+        assertTrue(snap.diagnostics.any { it.message.contains("HTTP 500") && it.segmentId == "s-2" })
+
+        // 第一段数据完好
+        assertEquals("米饭", snap.days.single().meals.single().dishes.single().name)
+    }
 }

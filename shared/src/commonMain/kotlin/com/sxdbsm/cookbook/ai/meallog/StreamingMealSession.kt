@@ -4,11 +4,14 @@ package com.sxdbsm.cookbook.ai.meallog
  * @File : StreamingMealSession
  * @Time : 2026/08/05
  * @Author : SXD-AI
- * @Desc : B3: 会话 reducer —— 冻结的 StreamingMealRequest 与共享 StreamingMealParser 的编排。
+ * @Desc : B3: 会话 reducer —— 冻结的 StreamingMealRequest 与按 segment 惰性创建的 StreamingMealParser 的编排。
  * <p>
  * 认识的对象：InputSegment / StreamingMealParser / MealStreamDraftMapper。
  * 不认识：ViewModel、Compose、Repository、AutoGenPreview、AiRuntime。
  * 不发网络、不启动协程、不写库。
+ * <p>
+ * [AI修改] AF-ARCH-02: parser 按 segmentId 惰性创建，每个 segment 独立 parser（单段列表+独立 fallbackDate），
+ * snapshot 合并所有 parser 草稿。解决 B4 多段场景下整体 JSON fallback 永久失效、截断标记跨段覆盖、fallback 日期错锚。
  * <p>
  * [AI生成] B3 会话层。
  */
@@ -36,18 +39,19 @@ data class StreamingSessionSnapshot(
 class StreamingMealSession(
     val request: StreamingMealRequest,
 ) {
-    private val parser = StreamingMealParser(
-        segments = request.segments,
-        generationId = request.generationId,
-        fallbackDate = request.segments.firstOrNull()?.targetDate ?: request.weekAnchor,
-    )
-
     /** 仅非空分段，按 ordinal 升序。 */
     private val orderedSegments = request.nonBlankSegments.sortedBy { it.ordinal }
 
     private var currentIndex = -1
     private val segmentStates = linkedMapOf<String, StreamSegmentState>()
     private val segmentFailures = mutableMapOf<String, String>()
+
+    /**
+     * AF-ARCH-02: 每个 segment 独立 parser，惰性创建。
+     * 每个 parser 只持有自己的单个 segment，保证整体 JSON fallback（要求 segments.size==1）始终有效，
+     * 且截断标记、fallback 日期相互隔离。
+     */
+    private val segmentParsers = linkedMapOf<String, StreamingMealParser>()
 
     val generationId: String get() = request.generationId
 
@@ -68,23 +72,31 @@ class StreamingMealSession(
         currentIndex = next
         val seg = orderedSegments[next]
         segmentStates[seg.segmentId] = StreamSegmentState.STREAMING
+        // AF-ARCH-02: 惰性创建该 segment 的独立 parser
+        segmentParsers.getOrPut(seg.segmentId) {
+            StreamingMealParser(
+                segments = listOf(seg),
+                generationId = request.generationId,
+                fallbackDate = seg.targetDate,
+            )
+        }
         return seg
     }
 
     /** 当前正在流式的 segmentId（无则 null）。 */
     fun currentSegmentId(): String? = orderedSegments.getOrNull(currentIndex)?.segmentId
 
-    /** 接收 Delta 增量文本；仅当属于当前 STREAMING 段才喂给 parser。 */
+    /** 接收 Delta 增量文本；仅当属于当前 STREAMING 段才喂给对应 parser。 */
     fun onDelta(segmentId: String, text: String) {
         if (segmentStates[segmentId] != StreamSegmentState.STREAMING) return
         if (text.isEmpty()) return
-        parser.feedDelta(text)
+        segmentParsers[segmentId]?.feedDelta(text)
     }
 
-    /** 当前段网络完成；将缓冲尾部与整体 JSON fallback 交给 parser 收尾。 */
+    /** 当前段网络完成；将缓冲尾部与整体 JSON fallback 交给该段 parser 收尾。 */
     fun onCompleted(segmentId: String, finishReason: String) {
         if (segmentStates[segmentId] != StreamSegmentState.STREAMING) return
-        parser.finish(finishReason)
+        segmentParsers[segmentId]?.finish(finishReason)
         segmentStates[segmentId] = StreamSegmentState.COMPLETED
     }
 
@@ -95,20 +107,50 @@ class StreamingMealSession(
         segmentFailures[segmentId] = message
     }
 
-    /** 不可变快照。 */
+    /** 不可变快照。AF-ARCH-02: 合并所有 segment parser 的草稿。 */
     fun snapshot(): StreamingSessionSnapshot {
-        val draft = parser.currentDraft
-        val days = MealStreamDraftMapper.toDayMealJson(draft, request.segments)
-        val diagnostics = draft.diagnostics +
-                segmentFailures.map { (seg, msg) ->
-                    StreamDiagnostic(DiagnosticLevel.ERROR, seg, null, null, msg)
+        // AF-ARCH-02: 合并所有 parser 的 segment draft + diagnostics + finishReason + isTruncated
+        val mergedSegments = linkedMapOf<String, SegmentDraft>()
+        val mergedDiagnostics = mutableListOf<StreamDiagnostic>()
+        var mergedFinishReason: String? = null
+        var mergedIsTruncated = false
+
+        for ((_, parser) in segmentParsers) {
+            val draft = parser.currentDraft
+            mergedSegments.putAll(draft.segments)
+            mergedDiagnostics.addAll(draft.diagnostics)
+            // "length" 优先级高于其他 finishReason
+            if (draft.finishReason != null) {
+                mergedFinishReason = if (draft.finishReason == "length") {
+                    draft.finishReason
+                } else {
+                    mergedFinishReason ?: draft.finishReason
                 }
+            }
+            if (draft.isTruncated) mergedIsTruncated = true
+        }
+
+        mergedDiagnostics.addAll(
+            segmentFailures.map { (seg, msg) ->
+                StreamDiagnostic(DiagnosticLevel.ERROR, seg, null, null, msg)
+            }
+        )
+
+        val mergedDraft = MealStreamDraft(
+            segments = mergedSegments,
+            diagnostics = mergedDiagnostics,
+            finishReason = mergedFinishReason,
+            isTruncated = mergedIsTruncated,
+        )
+
+        val days = MealStreamDraftMapper.toDayMealJson(mergedDraft, request.segments)
+
         return StreamingSessionSnapshot(
             generationId = request.generationId,
             segmentStates = segmentStates.toMap(),
-            draft = draft,
+            draft = mergedDraft,
             days = days,
-            diagnostics = diagnostics,
+            diagnostics = mergedDiagnostics,
             hasValidMeals = days.any { day -> day.meals.any { it.dishes.isNotEmpty() } },
             isTerminal = orderedSegments.all { segmentStates[it.segmentId] in TERMINAL_STATES },
         )

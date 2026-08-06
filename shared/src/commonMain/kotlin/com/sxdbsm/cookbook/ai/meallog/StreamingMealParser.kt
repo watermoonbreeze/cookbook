@@ -127,6 +127,7 @@ class StreamingMealParser(
             "cooking_step" -> handleCookingStepEvent(parsed)
             "warning" -> handleWarningEvent(parsed)
             "advice" -> handleAdviceEvent(parsed)
+            "done" -> {} // AF-ARCH-01: done 是段结束标记，静默消费，不产生诊断
             else -> orphanDiagnostics.add(
                 StreamDiagnostic(DiagnosticLevel.WARNING, parsed.segment_id, null, null,
                     "未知事件类型「${parsed.type}」，已忽略")
