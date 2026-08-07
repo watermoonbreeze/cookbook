@@ -79,14 +79,14 @@ fun SegmentProgressBar(progress: GenerationProgress, modifier: Modifier = Modifi
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // [AI修改] B6-fix: 使用 VM 产出的逐段状态列表直接映射，不做计数反推（AF-B456-05·GC-17）。
+                // [AI修改] B6-fix2: 使用 VM 产出的逐段状态列表直接映射。null=尚未开始→PENDING 空心（AF-B456-05 第二轮·INV-B456-R05d·GC-36·§3.5.1）。
                 val statuses = progress.segmentStatuses
                 statuses.forEachIndexed { index, segState ->
                     val dotState = when (segState) {
+                        null -> DotState.PENDING
                         com.sxdbsm.cookbook.ai.meallog.StreamSegmentState.COMPLETED -> DotState.DONE
                         com.sxdbsm.cookbook.ai.meallog.StreamSegmentState.FAILED -> DotState.FAILED
                         com.sxdbsm.cookbook.ai.meallog.StreamSegmentState.STREAMING -> DotState.ACTIVE
-                        else -> DotState.PENDING
                     }
                     SegmentDot(state = dotState)
                     if (index < statuses.size - 1) {

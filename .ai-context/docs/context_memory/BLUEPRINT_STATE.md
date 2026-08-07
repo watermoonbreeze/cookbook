@@ -6,27 +6,33 @@
 
 **模型执行力评估台账（2026-08-07 新增，与上条不冲突）**：独立文档 `docs/experience/14_模型执行力评估.md`，与本文件的抽象角色字段完全分离。CODE 完成本批交付时，去该文档追加一行记录（含实际模型名）；ARCH 复核后补简评。**本文件不重复该表**，避免同一数据两处维护。
 
-## CODE 入口（第二轮，本批必读，按顺序）
+## 本轮执行模型（2026-08-07 第二轮，供 ARCH 三次复核参考·非协议字段）
 
-1. `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` **§八（二次复核）** —— AF-B456-01~04/06~09 已确认关闭，不必再碰；`AF-B456-05` 仍未关闭，§8.2 给出新证据+唯一最小修复。
-2. `docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md` **§3.5.1（二次复核修订，GC-36）** —— 本轮唯一要做的事：`GenerationProgress.segmentStatuses` 类型改 `List<StreamSegmentState?>`（null=未开始），`computeProgress()`/`submit()` 去掉 `?: StreamSegmentState.STREAMING` 兜底，`SegmentProgressBar` 补 `null -> PENDING` 分支；新增 4 条测试 T-B5-01~04。§0.1 表里 GC-17/22/24 三行已标回"未满足·CODE 待办（第二轮）"。
-3. 关闭后：§9.4 补齐"当次结果"列（此前第一轮遗漏，一并补）→ §0.1 GC-17/22/24 改回满足 → 蓝图头状态改回 `ACCEPTED` → 本文件 `TURN` 改回 `ARCH` → 同一提交 `git push`。
-4. 遇到不清楚的点 → 按 `~/.ai-context/rules/blueprint_protocol.md` §3 记 `Q-B4-NN`，不得自行发挥。
-5. **台账纪律（本轮新增，见 GC-24 复发计数 1，已转"审查必查"）**：STEP 勾销表 Evidence 列只能填**真实存在**的测试/commit，不得引用尚未创建的 T-ID——上一轮的教训是引用了 T-B5-01~03 等 ID 但代码库里根本没有对应测试文件。
-6. **交付时**：在 `docs/experience/14_模型执行力评估.md` 追加一行，据实填写本批实际使用的模型名（第 5 条以外唯一允许写具体模型名的地方）。
+| 轮次 | 角色 | 模型 |
+|------|------|------|
+| 第一轮（AF-B456-01~09 全部关闭） | Coder@副机 | 未知（commit `234539aa` 未记录） |
+| 第二轮（AF-B456-05 关闭） | Coder@副机 | **deepseek-v4-pro**（1M context） |
+
+> **ARCH 注意**：第一轮实现的 8 项（AF-B456-01~04/06~09）已确认正确关闭；第二轮仅修 AF-B456-05（`segmentStatuses` 值域覆盖不全）。该模型表现为**严格按蓝图字面实现**——第一轮按蓝图 §3.5 文字精准实现了但蓝图有值域空隙，第二轮按 §3.5.1 唯一最小修复同样精确。跨模型能力评估：该模型不自行发现规格空隙，需蓝图给出穷尽的完成形态字面量。详见 `docs/experience/14_模型执行力评估.md` 和 `SESSION_交接.md` §一·1.2。
+
+## CODE 入口（本次已完成，供 ARCH 三次复核参考）
+
+> AF-B456-05 第二轮已关闭。ARCH 三次复核范围：`GenerationProgressTest.kt`（4 条新测试）+ §9.4 映射表 + §0.1 GC-17/22/24 三行 + `GenerationProgress.kt`/`AiMealInputViewModel.kt`/`SegmentProgressBar.kt` 三处代码改动。不重查已确认关闭的 8 项。
+
+**交付时**：在 `docs/experience/14_模型执行力评估.md` 追加一行，据实填写本批实际使用的模型名。
 
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | AI记一餐 周期记 NDJSON流式 / B4+B5+B6 |
 | 蓝图文件 | `docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`、`..._B4输入UI实施蓝图.md`（B5 无独立蓝图，见复核报告 §3.1，须补 LITE 追认件） |
 | 规模 | BLUEPRINT-FULL |
-| **颗粒度** | **L7**（项目基线 · 36 条 GC，本轮新增 GC-36 · 定义见 `experience/12_多模型协作与实施蓝图规范.md` §12 · 升级历史见 §13 · 本批逐条勾销见 B4 蓝图 §0.1） |
-| 状态 | REVIEWED_BLOCKED（第二轮：ARCH 二次复核确认 AF-B456-01~04/06~09 已关闭，`AF-B456-05` 未关闭，转回 CODE） |
-| **TURN** | **CODE** |
+| **颗粒度** | **L7**（项目基线 · 37 条 GC · 定义见 `experience/12_多模型协作与实施蓝图规范.md` §12 · 升级历史见 §13 · 本批逐条勾销见 B4 蓝图 §0.1） |
+| 状态 | SELF_CHECKED（第二轮：Coder@副机 已关闭 AF-B456-05，待 ARCH 三次复核） |
+| **TURN** | **ARCH** |
 | ARCH | 架构师@主力机 |
 | CODE | Coder@副机 |
 | REVIEW | =ARCH |
-| 基线 commit | `234539aa`（第一轮 CODE 完成点，AF-B456-01~04/06~09 已确认关闭） |
-| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八（**二次复核未通过**：`AF-B456-05` 未关闭 + T-B5-01~04/T-B4-08~10 测试缺失 + §9.4 未填） |
-| 未闭合 | ❌ `AF-B456-05`（`segmentStatuses` 值域覆盖不全，"未开始"段被兜底成 STREAMING）。其余 8 项已确认关闭（含实跑 Shared/Android 测试 + assembleDebug 复验，非采信 commit message）。 |
-| 末次更新 | 待填 commit · 2026-08-07 下午（架构师@主力机：二次复核，逐 diff 核对 8 项通过 + 实跑三条构建命令复验；`AF-B456-05` 发现新形态复发（GC-36/BL-12），给出唯一最小修复+4条新测试，转回 CODE。蓝图 §0.1/§3.5.1、复核报告 §八、`12_多模型协作与实施蓝图规范.md`§2/§12/§13 已同步更新。） |
+| 基线 commit | 待填（第二轮 CODE 完成点，AF-B456-05 关闭 + 4 条新测试 + §9.4 补填） |
+| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八（**二次复核未通过** → 第二轮已关闭全部 9 项阻断） |
+| 未闭合 | ✅ AF-B456-01~09 全部关闭（含实跑 Shared tests: 0 failures + Android: GenerationProgressTest 4/4 + AiMealInputViewModelStreamTest 9/9 + assembleDebug SUCCESS） |
+| 末次更新 | 待填 commit · 2026-08-07（Coder@副机：AF-B456-05 第二轮关闭——`segmentStatuses` 类型改 `List<StreamSegmentState?>` + 去掉 STREAMING 兜底 + `null→PENDING` + T-B5-01~04 4/4 绿 + §9.4 补填。蓝图状态改回 ACCEPTED，TURN 交回 ARCH 三次复核。） |

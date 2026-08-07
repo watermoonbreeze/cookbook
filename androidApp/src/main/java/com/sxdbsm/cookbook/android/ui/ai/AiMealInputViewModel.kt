@@ -398,7 +398,7 @@ class AiMealInputViewModel(
             failedSegments = 0,
             currentSegmentIndex = 0,  // [AI修改] B6-fix: 显示序下标，初始段即 index 0（AF-B456-05）。
             currentSegmentLabel = nonBlankSegments.firstOrNull()?.targetDate?.let { shortWeekday(it) } ?: "",
-            segmentStatuses = nonBlankSegments.map { StreamSegmentState.STREAMING },  // [AI生成] B6-fix: 初始状态列表全为 STREAMING（AF-B456-05·GC-17）。
+            segmentStatuses = nonBlankSegments.map { null },  // [AI修改] B6-fix2: 初始全部"未开始"，不预判为 STREAMING（AF-B456-05 第二轮·§3.5.1）。
         )
         _state.update {
             it.copy(
@@ -584,9 +584,9 @@ class AiMealInputViewModel(
         val completed = nonBlank.count { states[it.segmentId] == StreamSegmentState.COMPLETED }
         val failed = nonBlank.count { states[it.segmentId] == StreamSegmentState.FAILED }
         val terminalCount = completed + failed
-        // [AI生成] B6-fix: 逐段状态列表——由 VM 按显示序直接产出，UI 不反推（AF-B456-05·GC-17）。
+        // [AI修改] B6-fix2: 逐段状态列表——由 VM 按显示序直接产出。null=尚未开始，不兜底为 STREAMING（AF-B456-05 第二轮·INV-B456-R05d·GC-36·§3.5.1）。
         val segmentStatuses = nonBlank.map { seg ->
-            states[seg.segmentId] ?: StreamSegmentState.STREAMING
+            states[seg.segmentId]
         }
         // [AI生成] B6-fix: currentSegmentIndex = 显示序下标，非业务 ordinal（AF-B456-05·INV-B456-R05b·§3.5 索引空间对照表）。
         val currentSeg = nonBlank.firstOrNull { states[it.segmentId] == StreamSegmentState.STREAMING }

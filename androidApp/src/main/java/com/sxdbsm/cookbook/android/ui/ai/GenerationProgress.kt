@@ -23,8 +23,8 @@ data class GenerationProgress(
     val currentSegmentIndex: Int,
     /** 当前段人读标签，如"周一 8/4"。 */
     val currentSegmentLabel: String,
-    /** [AI生成] B6-fix: 逐段状态列表（按 nonBlank.sortedBy{ordinal} 顺序），UI 只做 1:1 映射（AF-B456-05·INV-B456-R05a·GC-17）。 */
-    val segmentStatuses: List<StreamSegmentState> = emptyList(),
+    /** [AI修改] B6-fix2: 逐段状态列表（按 nonBlank.sortedBy{ordinal} 顺序），UI 只做 1:1 映射。null=尚未开始（AF-B456-05 第二轮·INV-B456-R05d·GC-36·§3.5.1）。 */
+    val segmentStatuses: List<StreamSegmentState?> = emptyList(),
 ) {
     /** 已终态段数 = completed + failed。 */
     val terminalSegments: Int get() = completedSegments + failedSegments
