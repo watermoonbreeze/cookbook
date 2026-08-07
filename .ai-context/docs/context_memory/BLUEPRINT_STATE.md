@@ -32,7 +32,7 @@
 | ARCH | 架构师@主力机 |
 | CODE | Coder@副机 |
 | REVIEW | =ARCH（三次复核已完成） |
-| 基线 commit | 待填（本次 ARCH 三次复核 + T-B5-02 断言收紧的提交点） |
+| 基线 commit | `dfac266a`（ARCH 三次复核 + T-B5-02 断言收紧的提交点） |
 | 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八（**二次复核未通过** → 第二轮关闭 AF-B456-05 → **三次复核 ARCH 通过，全部关闭**） |
 | 未闭合 | 无。AF-B456-01~09 全部关闭（含实跑 Shared tests: 0 failures + Android: GenerationProgressTest 4/4（含收紧后的 T-B5-02）+ AiMealInputViewModelStreamTest 9/9 + `androidApp:testDebugUnitTest` 全量无新增失败 + assembleDebug SUCCESS） |
-| 末次更新 | 待填 commit · 2026-08-07（ARCH@主力机：三次复核通过，收紧 `T-B5-02` 断言为精确匹配并复跑验证。批次关闭。） |
+| 末次更新 | `dfac266a` · 2026-08-07（ARCH@主力机：三次复核通过，收紧 `T-B5-02` 断言为精确匹配并复跑验证。批次关闭。） |
