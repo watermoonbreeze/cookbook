@@ -21,6 +21,12 @@
 
 冲突时的优先级：**当前代码与数据库 schema > 当前 `SESSION_交接.md` > 项目地图/ADR > 专项方案与待办 > experience > `_archive` 历史资料**。任何“待实现”不等于已经存在于代码。
 
+## 协作模式
+
+- **协作模式: BLUEPRINT**（常驻声明，跨机器协作时无需每次口令触发）。`ARCH=Claude@主力机 ｜ CODE=DeepSeek@副机 ｜ REVIEW=ARCH`。
+- 规则正文：用户级真相源 `~/.ai-context/rules/blueprint_protocol.md`；本仓库副本 `docs/experience/12_多模型协作与实施蓝图规范.md`（副机可能无用户级目录，以此为准）。
+- 握手状态唯一文件：`docs/context_memory/BLUEPRINT_STATE.md`。开工前先 `git pull` 读该文件，`TURN` 不是自己则停手、只报告持球方。
+
 ## 当前关键任务
 
 - AI 记一餐的实施唯一基线：`docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md`。
