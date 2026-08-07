@@ -93,7 +93,6 @@ internal interface AiMealSessionPort {
 
 /** UI 状态。[AI修改] P2-1 K1a：autoGenPreview 作两阶段主键，PreviewPhase 直接渲染能力层产出。 */
 data class AiMealInputUiState(
-    val inputText: String = "",
     val inputMode: InputMode = InputMode.QUICK,
     val phase: AiMealPhase = AiMealPhase.INPUT,
     /** [AI修改] B3: 当前 generation 标识；会话只读。 */
@@ -121,7 +120,7 @@ data class AiMealInputUiState(
     val quickDraftText: String = "",
     /** [AI生成] B4: 周期记周锚点（所选周周一）。 */
     val periodWeekMonday: LocalDate? = null,
-    /** [AI生成] B4: 周期记选中日期范围（0..6 表示周一至周日），默认全选。 */
+    /** [AI生成] B4: 周期记选中日期范围（0..6 表示周一至周日），默认全选。[AI修改] B6-fix: 本范围仅控制输入区可见性；submit() 提交的是 periodInputs 中全部非空白天（不受本范围限制），收窄范围不会撤回已输入内容（AF-B456-07·Google质量 B4-S1）。 */
     val periodSelectedRange: IntRange = 0..6,
     /** [AI生成] B4: 周期记各天草稿（key=0..6）。 */
     val periodInputs: Map<Int, String> = emptyMap(),
@@ -143,7 +142,10 @@ data class AiMealInputUiState(
     val healthAdviceLoading: Boolean = false,
     val healthAdvice: String? = null,
     val healthAdviceError: String? = null,
-)
+) {
+    /** [AI修改] B4→B6-fix: inputText 改为计算属性，统一真相源为 quickDraftText（AF-B456-01 修复·单一真相源准则A）。 */
+    val inputText: String get() = quickDraftText
+}
 
 class AiMealInputViewModel(
     private val initialText: String,
@@ -157,7 +159,7 @@ class AiMealInputViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        AiMealInputUiState(inputText = initialText, targetDate = targetDate)
+        AiMealInputUiState(quickDraftText = initialText, targetDate = targetDate)
     )
     val state: StateFlow<AiMealInputUiState> = _state.asStateFlow()
 
@@ -207,10 +209,10 @@ class AiMealInputViewModel(
         // WEEK 模式：setInputText 是 no-op，文本由 setPeriodInput(dayIndex, text) 管理
     }
 
-    /** [AI生成] B4: 设置快速记草稿（含 200 字截断）。 */
+    /** [AI生成] B4: 设置快速记草稿（含 200 字截断）。[AI修改] B6-fix: 内部收口调 invalidateGenerationToInput，确保"编辑即新会话"语义（AF-B456-01 W5·GC-27）。 */
     fun setQuickDraft(text: String) {
         val trimmed = text.take(AiMealPrompt.MAX_INPUT_CHARS)
-        _state.update { it.copy(quickDraftText = trimmed, inputText = trimmed) }
+        invalidateGenerationToInput(trimmed, _state.value.targetDate)
     }
 
     /** [AI生成] B4: 设置周期记某天草稿（含 200 字截断）。 */
@@ -270,7 +272,7 @@ class AiMealInputViewModel(
         lastPreviewTerminalCount = -1
         _state.update { prev ->
             prev.copy(
-                inputText = nextInput,
+                quickDraftText = nextInput,
                 targetDate = nextDate,
                 phase = AiMealPhase.INPUT,
                 generationId = null,
@@ -292,19 +294,15 @@ class AiMealInputViewModel(
         }
     }
 
-    /** [AI修改] B4: 切换输入模式——保留对方草稿。周期记首次进入时初始化 weekAnchor。 */
+    /** [AI修改] B4: 切换输入模式——保留对方草稿。周期记首次进入时初始化 weekAnchor。[AI修改] B6-fix: inputText 已改为计算属性，copy 不再写它（AF-B456-01 W6）。 */
     fun setInputMode(mode: InputMode) {
         _state.update {
-            val newInputText = when (mode) {
-                InputMode.QUICK -> it.quickDraftText
-                InputMode.WEEK -> ""
-            }
             val newWeekMonday = when {
                 mode == InputMode.WEEK && it.periodWeekMonday == null ->
                     InputSegmentFactory.mondayOfWeek(it.targetDate)
                 else -> it.periodWeekMonday
             }
-            it.copy(inputMode = mode, inputText = newInputText, periodWeekMonday = newWeekMonday)
+            it.copy(inputMode = mode, periodWeekMonday = newWeekMonday)
         }
     }
 
@@ -330,7 +328,7 @@ class AiMealInputViewModel(
 
     /** [AI修改] K2 语音识别完成：将识别结果追加到输入框。B3.1: 结果即新会话。 */
     fun onVoiceResult(text: String) {
-        val current = _state.value.inputText.trimEnd()
+        val current = _state.value.quickDraftText.trimEnd()
         val appended = if (current.isBlank()) text else "$current $text"
         invalidateGenerationToInput(appended, _state.value.targetDate)
     }
@@ -353,7 +351,7 @@ class AiMealInputViewModel(
 
     /** [AI修改] K2 追加文本到输入框（粘贴用）。B3.1: 追加即新会话。 */
     fun appendText(text: String) {
-        val current = _state.value.inputText.trimEnd()
+        val current = _state.value.quickDraftText.trimEnd()
         val appended = if (current.isBlank()) text else "$current\n$text"
         invalidateGenerationToInput(appended, _state.value.targetDate)
     }
@@ -398,8 +396,9 @@ class AiMealInputViewModel(
             totalSegments = nonBlankSegments.size,
             completedSegments = 0,
             failedSegments = 0,
-            currentSegmentOrdinal = nonBlankSegments.firstOrNull()?.ordinal ?: 0,
+            currentSegmentIndex = 0,  // [AI修改] B6-fix: 显示序下标，初始段即 index 0（AF-B456-05）。
             currentSegmentLabel = nonBlankSegments.firstOrNull()?.targetDate?.let { shortWeekday(it) } ?: "",
+            segmentStatuses = nonBlankSegments.map { StreamSegmentState.STREAMING },  // [AI生成] B6-fix: 初始状态列表全为 STREAMING（AF-B456-05·GC-17）。
         )
         _state.update {
             it.copy(
@@ -578,25 +577,33 @@ class AiMealInputViewModel(
         kotlinx.datetime.DayOfWeek.SUNDAY -> "周日"
     }
 
-    /** [AI生成] B5: 从 snapshot 和 session 推算当前段进度。 */
+    /** [AI生成] B5: 从 snapshot 和 session 推算当前段进度。[AI修改] B6-fix: 产出逐段状态列表 segmentStatuses，UI 只做 1:1 映射（AF-B456-05·GC-17·INV-B456-R05a/b/c）。 */
     private fun computeProgress(session: StreamingMealSession, snap: StreamingSessionSnapshot): GenerationProgress {
         val nonBlank = session.request.nonBlankSegments.sortedBy { it.ordinal }
         val states = snap.segmentStates
         val completed = nonBlank.count { states[it.segmentId] == StreamSegmentState.COMPLETED }
         val failed = nonBlank.count { states[it.segmentId] == StreamSegmentState.FAILED }
         val terminalCount = completed + failed
-        val current = nonBlank.firstOrNull { states[it.segmentId] == StreamSegmentState.STREAMING }
-        // [AI修改] B5-review: 无 STREAMING 段时回退到终端位置（最后终态段或最后一个段）
+        // [AI生成] B6-fix: 逐段状态列表——由 VM 按显示序直接产出，UI 不反推（AF-B456-05·GC-17）。
+        val segmentStatuses = nonBlank.map { seg ->
+            states[seg.segmentId] ?: StreamSegmentState.STREAMING
+        }
+        // [AI生成] B6-fix: currentSegmentIndex = 显示序下标，非业务 ordinal（AF-B456-05·INV-B456-R05b·§3.5 索引空间对照表）。
+        val currentSeg = nonBlank.firstOrNull { states[it.segmentId] == StreamSegmentState.STREAMING }
         val fallback = nonBlank.getOrNull(terminalCount) ?: nonBlank.lastOrNull()
-        val ordinal = current?.ordinal ?: fallback?.ordinal ?: 0
-        val label = current?.targetDate?.let { shortWeekday(it) }
+        val currentIdx = if (currentSeg != null) nonBlank.indexOf(currentSeg) else {
+            val fbIdx = fallback?.let { nonBlank.indexOf(it) } ?: -1
+            if (fbIdx >= 0) fbIdx else 0
+        }
+        val label = currentSeg?.targetDate?.let { shortWeekday(it) }
             ?: fallback?.targetDate?.let { shortWeekday(it) } ?: ""
         return GenerationProgress(
             totalSegments = nonBlank.size,
             completedSegments = completed,
             failedSegments = failed,
-            currentSegmentOrdinal = ordinal,
+            currentSegmentIndex = currentIdx,
             currentSegmentLabel = label,
+            segmentStatuses = segmentStatuses,
         )
     }
 

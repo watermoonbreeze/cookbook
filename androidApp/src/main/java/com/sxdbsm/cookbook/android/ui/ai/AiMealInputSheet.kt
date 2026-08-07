@@ -216,8 +216,9 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
         if (granted) startVoiceRecognition(context, vm)
     }
 
-    var activeRecognizer by remember { mutableStateOf<VoiceRecognizer?>(null) }
-    DisposableEffect(Unit) { onDispose { activeRecognizer?.destroy() } }
+    // [AI修改] B6-fix: 改用 MutableState 传递，子组件可写回（AF-B456-03·GC-15）。
+    val activeRecognizer = remember { mutableStateOf<VoiceRecognizer?>(null) }
+    DisposableEffect(Unit) { onDispose { activeRecognizer.value?.destroy() } }
 
     var showHelp by remember { mutableStateOf(false) }
     if (showHelp) HelpSheet(onDismiss = { showHelp = false })
@@ -250,7 +251,7 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = if (state.inputMode == InputMode.QUICK) "AI 快捷记" else "AI 快捷记",
+                    text = if (state.inputMode == InputMode.QUICK) "AI 快捷记一餐" else "AI 周期记一餐",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -298,17 +299,20 @@ private fun QuickInputSection(
     hasClip: Boolean,
     hasAudioPermission: Boolean,
     audioPermissionLauncher: androidx.activity.result.ActivityResultLauncher<String>,
-    activeRecognizer: VoiceRecognizer?,
+    activeRecognizer: androidx.compose.runtime.MutableState<VoiceRecognizer?>,
 ) {
     // ── 输入框（右上角粘贴按钮 overlay） ──
     // [AI修改] B5-fix: TextFieldValue 确保 ModalBottomSheet 内文本选择/长按粘贴可用。
     // 在 onValueChange 中立即截断（不依赖 LaunchedEffect 异步回写），防粘贴超长文本绕过截断。
-    var textFieldValue by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(state.inputText)) }
-    LaunchedEffect(state.inputText) {
-        if (textFieldValue.text != state.inputText) {
+    var textFieldValue by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(state.quickDraftText)) }
+    // [AI生成] B6-fix: 截断提示去重（AF-B456-04·§3.6·GC-30）。
+    var quickTruncNotified by remember { mutableStateOf(false) }
+    val quickSnackbar = LocalAppSnackbar.current
+    LaunchedEffect(state.quickDraftText) {
+        if (textFieldValue.text != state.quickDraftText) {
             textFieldValue = androidx.compose.ui.text.input.TextFieldValue(
-                text = state.inputText,
-                selection = androidx.compose.ui.text.TextRange(state.inputText.length),
+                text = state.quickDraftText,
+                selection = androidx.compose.ui.text.TextRange(state.quickDraftText.length),
             )
         }
     }
@@ -323,8 +327,17 @@ private fun QuickInputSection(
                         text = truncatedText,
                         selection = androidx.compose.ui.text.TextRange(truncatedText.length),
                     )
+                    // [AI生成] B6-fix: 快速记截断弹 Snackbar（AF-B456-04·§3.6·GC-30）。
+                    if (!quickTruncNotified) {
+                        quickTruncNotified = true
+                        quickSnackbar?.showMessage("已截取前 ${AiMealPrompt.MAX_INPUT_CHARS} 字")
+                    }
                 } else {
                     textFieldValue = newVal
+                    // [AI生成] B6-fix: 文本降到上限以下，复位截断通知标志。
+                    if (quickTruncNotified && newVal.text.length < max) {
+                        quickTruncNotified = false
+                    }
                 }
                 vm.setInputText(truncatedText)
             },
@@ -343,9 +356,9 @@ private fun QuickInputSection(
             colors = OutlinedTextFieldDefaults.colors(),
         )
 
-        // 字符计数（右下角 overlay）[B5] 统一 CharCountLabel 组件
+        // 字符计数（右下角 overlay）[B5] 统一 CharCountLabel 组件。[AI修改] B6-fix: 读 quickDraftText（AF-B456-01 真相源统一）。
         CharCountLabel(
-            current = state.inputText.length,
+            current = state.quickDraftText.length,
             max = AiMealPrompt.MAX_INPUT_CHARS,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -383,46 +396,96 @@ private fun QuickInputSection(
             Spacer(Modifier.height(12.dp))
         }
 
+        // [AI修改] B6-fix: 恢复录音中脉冲外圈动画（AF-B456-03·GC-16）。
+        val pulseScale by if (state.voiceState == VoiceState.LISTENING) {
+            val transition = rememberInfiniteTransition(label = "voicePulse")
+            transition.animateFloat(
+                initialValue = 1.0f,
+                targetValue = 1.3f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(800),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+                label = "pulseScale",
+            )
+        } else {
+            androidx.compose.runtime.mutableFloatStateOf(1f)
+        }
         Box(
             modifier = Modifier
                 .size(80.dp)
+                .then(
+                    if (state.voiceState == VoiceState.LISTENING) {
+                        Modifier.graphicsLayer {
+                            scaleX = pulseScale
+                            scaleY = pulseScale
+                            alpha = 0.3f + (pulseScale - 1f) * 1.5f
+                        }
+                    } else Modifier
+                )
                 .clip(CircleShape)
                 .background(
                     when (state.voiceState) {
-                        VoiceState.LISTENING -> MaterialTheme.colorScheme.primary
-                        VoiceState.PROCESSING -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                        else -> MaterialTheme.colorScheme.primaryContainer
+                        VoiceState.LISTENING -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                        VoiceState.PROCESSING -> MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                        else -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0f)
                     }
-                )
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            if (!hasAudioPermission) {
-                                audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                                tryAwaitRelease()
-                                return@detectTapGestures
-                            }
-                            val releasedBeforeLongPress = tryAwaitRelease()
-                            if (releasedBeforeLongPress) return@detectTapGestures
-                            startVoiceRecognition(context, vm) { recognizer -> /* captured */ }
-                            tryAwaitRelease()
-                            vm.onVoiceProcessing()
-                        },
-                    )
-                },
+                ),
             contentAlignment = Alignment.Center,
         ) {
+            // [AI修改] B6-fix: 内层实心圆——录音中主色、处理中半透明、空闲为 primaryContainer（AF-B456-03·GC-16 恢复）。
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(
+                        when (state.voiceState) {
+                            VoiceState.LISTENING -> MaterialTheme.colorScheme.primary
+                            VoiceState.PROCESSING -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                            else -> MaterialTheme.colorScheme.primaryContainer
+                        }
+                    )
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                if (!hasAudioPermission) {
+                                    audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                                    tryAwaitRelease()
+                                    return@detectTapGestures
+                                }
+                                val releasedBeforeLongPress = tryAwaitRelease()
+                                if (releasedBeforeLongPress) return@detectTapGestures
+                                // [AI修改] Bug修复：统一语音实例管理，避免 startVoiceRecognition 内新建实例导致松手 stop 到错误对象（AF-B456-03·GC-16 恢复）。
+                                startVoiceRecognition(context, vm) { recognizer -> activeRecognizer.value = recognizer }
+                                tryAwaitRelease()
+                                activeRecognizer.value?.stopListening()
+                                activeRecognizer.value = null
+                                vm.onVoiceProcessing()
+                            },
+                        )
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+            // [AI修改] B6-fix: 恢复 VoiceState 四态图标+无障碍描述（AF-B456-03·GC-16）。
             Icon(
                 imageVector = Icons.Outlined.Mic,
-                contentDescription = "语音输入",
+                contentDescription = when (state.voiceState) {
+                    VoiceState.IDLE -> "长按开始说话"
+                    VoiceState.LISTENING -> "松手结束录音"
+                    VoiceState.PROCESSING -> "识别中…"
+                    VoiceState.ERROR -> "识别失败，可重试"
+                },
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(28.dp),
             )
-        }
+            }
+        } // [AI修改] B6-fix: 关闭内层实心圆 Box + 外层脉冲圈 Box（AF-B456-03 语音 UI 恢复）。
 
+        // [AI修改] B6-fix: 恢复 VoiceState 四态文案（AF-B456-03·GC-16）。
         when (state.voiceState) {
             VoiceState.LISTENING -> Text("正在聆听…", style = MaterialTheme.typography.bodySmall)
             VoiceState.PROCESSING -> Text("识别中…", style = MaterialTheme.typography.bodySmall)
+            VoiceState.ERROR -> Text("识别失败，可重试", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             else -> Text("长按开始说话", style = MaterialTheme.typography.bodySmall)
         }
     }
@@ -459,15 +522,16 @@ private fun QuickInputSection(
     CapsuleButton(
         text = "发送",
         onClick = { vm.submit() },
-        enabled = state.inputText.isNotBlank(),
+        enabled = state.quickDraftText.isNotBlank(),
         modifier = Modifier.fillMaxWidth(),
     )
 }
 
-/** [AI生成] B4: 周期记输入区——WeekStrip + 每日 PeriodDayBlock。 */
+/** [AI生成] B4: 周期记输入区——WeekStrip + 每日 PeriodDayBlock。[AI修改] B6-fix: 注入截断 Snackbar 回调（AF-B456-04）。 */
 @Composable
 private fun PeriodInputSection(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     val anchor = state.periodWeekMonday ?: return
+    val snackbar = LocalAppSnackbar.current
 
     // [AI修改] B5-fix: 整段统一滚动，防发送按钮被推出屏幕
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -494,6 +558,7 @@ private fun PeriodInputSection(vm: AiMealInputViewModel, state: AiMealInputUiSta
                 dateLabel = label,
                 inputText = text,
                 onTextChange = { vm.setPeriodInput(index, it) },
+                onTruncated = { snackbar?.showMessage("已截取前 ${AiMealPrompt.MAX_INPUT_CHARS} 字") },
             )
 
             if (index < state.periodSelectedRange.last) {

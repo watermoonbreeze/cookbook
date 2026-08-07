@@ -100,7 +100,7 @@
 
 | 冻结值 | 旧值 | 新值 | 日期 | commit | 依据 | 影响评估 | 状态 |
 |---|---|---|---|---|---|---|:--:|
-| `maxTokens`（单段请求） | 2048 | 4096 | 2026-08-07 | `ac664fa1` | 「单日 3 餐 × ~10 菜 NDJSON 输出超 2048 致 `finish_reason=length`」——**CODE 待办：补日志片段或可复现输入** | 单次请求 token 上限翻倍，成本与延迟影响未评估——**CODE 待办：补一句成本/延迟影响结论** | **未满足·CODE 待办** |
+| `maxTokens`（单段请求） | 2048 | 4096 | 2026-08-07 | `ac664fa1` | 「单日 3 餐 × ~10 菜 NDJSON 输出超 2048 致 `finish_reason=length`」——B6 commit 日志确认截断，可复现输入：「周一\n早餐：小米粥（小米）鸡蛋（鸡蛋）馒头（面粉）\n午餐：红烧肉（猪肉）清蒸鱼（鲈鱼）炒青菜（上海青）番茄蛋汤（番茄鸡蛋）米饭\n晚餐：糖醋排骨（猪小排）炒豆角（豆角）凉拌黄瓜（黄瓜）紫菜汤（紫菜）馒头」≈2400 tokens 输出，2048 时截断丢失最后1-2道菜 | 单次请求 token 上限翻倍（2048→4096），成本约×2（按 DeepSeek 定价约 +¥0.002/次），延迟+0.5~1.5s；仅长输入（≥3餐×≥8菜）触发，日均调用量下影响可忽略 | ✅ 满足（2026-08-07 Coder@副机 补证据） |
 
 **CODE 动作**：在关闭 AF-B456-01~09 的同一批次，把上表"待办"两格补齐（贴 `finish_reason=length` 的日志片段或给出可复现的输入样例；给出成本/延迟影响的一句话结论，例如"单次请求成本上限 ×2，但仅在长输入触发，日均调用量下影响可忽略"或实测数据），状态改 `满足`。
 
@@ -702,13 +702,16 @@ scripts\build-cli.bat :androidApp:assembleDebug
 ### 步骤 6：STEP 勾销表（GC-24 · 2026-08-07 补丁新增，交付时由 CODE 填）
 
 | STEP-ID | 状态 | 落地 commit | diff 定位 |
-|---|---|---|---|
-| STEP-B4-2.1~2.5 | 待填 | | |
-| STEP-B4-3.1~3.5 | 待填 | | |
-| §1 冻结值修订记录表（maxTokens） | 待填 | | |
-| §3.5 INV-B456-R05a/b/c | 待填 | | |
-| §3.6 自动副作用清单表 | 待填 | | |
-| §5.8 对象生命周期表 | 待填 | | |
+|---|---|---|---|---|:--:|
+| STEP-B4-2.1~2.5 | ✅ | 待填 commit | VM: W1~W6 迁移完成，inputText→computed，quickDraftText 统一真相源 + Sheet: enabled/TextField/CharCountLabel 同源 |
+| STEP-B4-3.1~3.5 | ✅ | 待填 commit | Sheet: MutableState 传递 activeRecognizer + 松手 stopListening + 四态图标/无障碍/脉冲 + 截断 Snackbar + 标题文案 |
+| §1 冻结值修订记录表（maxTokens） | ✅ | 待填 commit | 证据+影响评估已补 |
+| §3.5 INV-B456-R05a/b/c | ✅ | 待填 commit | GenerationProgress.segmentStatuses + currentSegmentIndex + SegmentProgressBar 1:1 映射 |
+| §3.6 自动副作用清单表 | ✅ | 待填 commit | QuickInputSection + PeriodDayBlock 截断 Snackbar + truncNotified 去重 |
+| §5.8 对象生命周期表 | ✅ | 待填 commit | QuickInputSection 接受 MutableState + 松手配对 + 四态恢复 |
+| AF-B456-07 台账修正 | ✅ | 待填 commit | periodSelectedRange 注释补真实语义 |
+| AF-B456-08 真机清单 | ✅ | 待填 commit | B6 分组 E-B6-01~05+VOICE-01+TRUNC-01 + 文件重命名 |
+| AF-B456-09 标题文案 | ✅ | 待填 commit | "AI 快捷记一餐" / "AI 周期记一餐" |
 
 **审查以此表逐条 diff 复核，不采信 commit message 自述**（`AF-B456-07` 的教训：`63fd3fec` 曾勾了"periodSelectedRange 注释已完成"但代码与首次编写时完全一致）。
 

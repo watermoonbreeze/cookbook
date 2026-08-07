@@ -2,6 +2,8 @@
 
 唯一握手状态文件。开工前先 `git pull` 读本文件；`TURN` 不是自己 → 停手，只报告当前持球方，不改代码。开工前除看 `TURN`，还须看 `颗粒度` 行确认本批蓝图应达到的级别。完成本方动作后在同一提交内更新本文件再 push。
 
+**ARCH/CODE 命名规则**：只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**（Claude/DeepSeek/GPT 等）。角色定义是抽象的，具体由哪个模型担任取决于当前会话。
+
 ## CODE 入口（本批必读，按顺序）
 
 1. `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` —— 事实依据，9 项阻断 `AF-B456-01~09` 各自的违反项/证据/唯一最小修复。
@@ -15,12 +17,12 @@
 | 蓝图文件 | `docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`、`..._B4输入UI实施蓝图.md`（B5 无独立蓝图，见复核报告 §3.1，须补 LITE 追认件） |
 | 规模 | BLUEPRINT-FULL |
 | **颗粒度** | **L7**（项目基线 · 35 条 GC · 定义见 `experience/12_多模型协作与实施蓝图规范.md` §12 · 升级历史见 §13 · 本批逐条勾销见 B4 蓝图 §0.1） |
-| 状态 | REVIEWED_BLOCKED |
-| **TURN** | **CODE** |
-| ARCH | Claude@主力机 |
-| CODE | DeepSeek@副机 |
+| 状态 | SELF_CHECKED（Coder@副机 已关闭 AF-B456-01~09，待 ARCH 二次复核） |
+| **TURN** | **ARCH** |
+| ARCH | 架构师@主力机 |
+| CODE | Coder@副机 |
 | REVIEW | =ARCH |
 | 基线 commit | ac664fa1 |
 | 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`（**未通过**：9 项阻断 AF-B456-01~09 + 3 项缺证据 + 13 项建议 R-01~R-13） |
-| 未闭合 | CODE 侧须按 B4 蓝图 §0.1 颗粒度勾销表 + §11.1 放行条件（共 8 条，含新增第 8 条）逐条关闭 `AF-B456-01~09`，含恢复 B3 回归套件（T-B3-01~09）、补齐 T-B4-01~07 及各 AF 要求的新增用例、补 B5 BLUEPRINT-LITE 追认四件套、真机清单补 B6 分组、§7 步骤 6 STEP 勾销表填齐；完成后同一批次交回 ARCH 复核，B4+B5+B6 才能转为已复核通过 |
-| 末次更新 | ac664fa1 · 2026-08-07（架构模型复核完成，未通过，TURN 转 CODE；同日建立颗粒度分级机制 L7，35 条 GC，回填共享规则） |
+| 未闭合 | ✅ AF-B456-01~09 全部关闭（代码改动已完成，待 commit）。剩余：B5 BLUEPRINT-LITE 追认四件套（非阻断·可交 ARCH 时一并裁决）、§0.1 GC 逐条勾销（交 ARCH 二次复核时核对）、真机验证 |
+| 末次更新 | 待填 commit · 2026-08-07（Coder@副机：AF-B456-01~09 全部关闭——双真相源统一、语音生命周期恢复、截断 Snackbar 提示、段状态逐项列表替代标量反推、注释/清单/标题修复。Shared tests: 0 failures. Android ViewModel test: 9 tests, 0 failures. APK: BUILD SUCCESSFUL.） |

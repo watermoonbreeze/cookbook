@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.dp
  * DONE 与 ACTIVE 用不同视觉区分（不单靠颜色），保证 Reduce Motion 下仍可分辨。
  * <p>
  * [AI生成] B5 确认页流式展示。
- * [AI修改] B5-review: ACTIVE 使用 currentSegmentOrdinal 定位(修复失败段后无脉冲)；
- * PENDING 改为空心圆(无障碍合规)；DONE 与 ACTIVE 双色区分。
+ * [AI修改] B5-review: PENDING 改为空心圆(无障碍合规)；DONE 与 ACTIVE 双色区分。
+ * [AI修改] B6-fix: 使用 segmentStatuses 列表直接 1:1 映射，替代计数反推（AF-B456-05·GC-17·INV-B456-R05a/c）。
  */
 @Composable
 fun SegmentProgressBar(progress: GenerationProgress, modifier: Modifier = Modifier) {
@@ -79,16 +79,17 @@ fun SegmentProgressBar(progress: GenerationProgress, modifier: Modifier = Modifi
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                repeat(progress.totalSegments) { index ->
-                    val state = when {
-                        index < progress.completedSegments -> DotState.DONE
-                        index == progress.currentSegmentOrdinal &&
-                            progress.terminalSegments < progress.totalSegments -> DotState.ACTIVE
-                        index < progress.terminalSegments -> DotState.FAILED
+                // [AI修改] B6-fix: 使用 VM 产出的逐段状态列表直接映射，不做计数反推（AF-B456-05·GC-17）。
+                val statuses = progress.segmentStatuses
+                statuses.forEachIndexed { index, segState ->
+                    val dotState = when (segState) {
+                        com.sxdbsm.cookbook.ai.meallog.StreamSegmentState.COMPLETED -> DotState.DONE
+                        com.sxdbsm.cookbook.ai.meallog.StreamSegmentState.FAILED -> DotState.FAILED
+                        com.sxdbsm.cookbook.ai.meallog.StreamSegmentState.STREAMING -> DotState.ACTIVE
                         else -> DotState.PENDING
                     }
-                    SegmentDot(state = state)
-                    if (index < progress.totalSegments - 1) {
+                    SegmentDot(state = dotState)
+                    if (index < statuses.size - 1) {
                         Spacer(Modifier.size(8.dp))
                     }
                 }

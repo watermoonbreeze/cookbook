@@ -43,9 +43,14 @@ fun PeriodDayBlock(
     inputText: String,
     onTextChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    /** [AI生成] B6-fix: 截断回调——截断发生时调一次（AF-B456-04·INV-B4-05/06）。能力显隐由回调传入决定。 */
+    onTruncated: (() -> Unit)? = null,
 ) {
     val maxChars = AiMealPrompt.MAX_INPUT_CHARS
     val charCount = inputText.length
+
+    // [AI生成] B6-fix: 截断提示去重——同一输入框连续超限只提示一次，降到上限以下复位（AF-B456-04·§3.6）。
+    var truncNotified by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
         // 日期标签行
@@ -81,8 +86,17 @@ fun PeriodDayBlock(
                             text = truncatedText,
                             selection = TextRange(truncatedText.length),
                         )
+                        // [AI生成] B6-fix: 截断发生时弹 Snackbar，同一输入框连续超限只提示一次（AF-B456-04·§3.6·GC-30）。
+                        if (!truncNotified) {
+                            truncNotified = true
+                            onTruncated?.invoke()
+                        }
                     } else {
                         textFieldValue = newVal
+                        // [AI生成] B6-fix: 文本降到上限以下，复位截断通知标志。
+                        if (truncNotified && newVal.text.length < maxChars) {
+                            truncNotified = false
+                        }
                     }
                     onTextChange(truncatedText)
                 },
