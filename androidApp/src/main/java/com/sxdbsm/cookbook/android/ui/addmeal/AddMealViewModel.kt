@@ -552,6 +552,16 @@ class AddMealViewModel(
         }
     }
 
+    /** [AI生成] B6: 查询一周内哪些天已有餐食，供周期记灰显。 */
+    suspend fun datesWithMealsInWeek(weekMonday: LocalDate): Set<LocalDate> {
+        val result = mutableSetOf<LocalDate>()
+        for (i in 0..6) {
+            val d = DateTime.plusDays(weekMonday, i)
+            if (mealRepo.loadDayMealsForEdit(d).isNotEmpty()) result.add(d)
+        }
+        return result
+    }
+
     private suspend fun loadMealsForDateInternal(date: LocalDate) {
         AppLogger.d(TAG, "load meals begin: date=$date") // [AI生成] 记录数据库加载日期，排查未保存编辑被覆盖。
         val existingMeals = mealRepo.loadDayMealsForEdit(date)

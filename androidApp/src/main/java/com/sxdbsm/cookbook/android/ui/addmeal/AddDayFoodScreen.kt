@@ -584,6 +584,16 @@ fun AddDayFoodScreen(
         val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel(
             key = "ai-meal-${state.date}-$aiSheetOpenNonce", // [AI修改] 日期切换后重新打开必须重新注入 targetDate。
         ) { parametersOf("", state.date) }
+
+        // [AI生成] B6: 查询本周哪些天已有餐食，供周期记灰显 + "已有餐食"标记。
+        LaunchedEffect(state.date) {
+            val monday = com.sxdbsm.cookbook.ai.meallog.InputSegmentFactory.mondayOfWeek(state.date)
+            aiVm.setExistingMealDates(vm.datesWithMealsInWeek(monday))
+        }
+
+        // [AI修改] B6-fix: 单天保存后推迟 reload 到 onDismiss，避免与 ModalBottomSheet 关闭动画竞态致 UI 冻结。
+        var pendingReloadDate by remember { mutableStateOf<LocalDate?>(null) }
+
         com.sxdbsm.cookbook.android.ui.ai.AiMealInputSheet(
             vm = aiVm,
             onDismiss = {
@@ -591,15 +601,17 @@ fun AddDayFoodScreen(
                 if (aiSheetResetAfterClose) {
                     aiSheetResetAfterClose = false
                     aiSheetOpenNonce += 1
+                    // [AI修改] B6-fix: Sheet 完全关闭后再 reload，避免竞态
+                    pendingReloadDate?.let { vm.reloadAfterAiSave(it) }
+                    pendingReloadDate = null
                 }
             },
             onSaved = { savedState ->
                 val savedDays = savedState.autoGenPreview?.days.orEmpty()
                 AppLogger.d("MealFlow", "AI meal saved: ${savedState.autoGenResult?.mealsSaved} meals, days=${savedDays.map { it.date }}")
-                aiSheetResetAfterClose = true // [AI修改] 保存后下次打开同一天也应是新会话，避免复用 DONE 状态。
-                // [AI修改] 多天已跨出当前编辑语境，关闭本页并按实际最早日期打开周计划；单天才原地刷新。
+                aiSheetResetAfterClose = true
                 if (savedDays.size > 1) onOpenWeekPlan(savedDays.minOf { it.date })
-                else vm.reloadAfterAiSave(savedDays.firstOrNull()?.date ?: savedState.targetDate)
+                else pendingReloadDate = savedDays.firstOrNull()?.date ?: savedState.targetDate
             },
         )
     }

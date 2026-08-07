@@ -125,6 +125,8 @@ data class AiMealInputUiState(
     val periodSelectedRange: IntRange = 0..6,
     /** [AI生成] B4: 周期记各天草稿（key=0..6）。 */
     val periodInputs: Map<Int, String> = emptyMap(),
+    /** [AI生成] B6: 本周已有餐食的日期集合，周期记 WeekStrip 据此灰显 + "已有餐食"标记。 */
+    val existingMealDates: Set<LocalDate> = emptySet(),
     /** 新建的菜品名列表（供预览提示"已自动创建"）。[AI生成] */
     val newDishNames: List<String> = emptyList(),
     /** 目标日期（预览可调）。[AI生成] */
@@ -227,6 +229,12 @@ class AiMealInputViewModel(
 
     /** [AI生成] B4: 切换到下一周（清空草稿，重置范围）。 */
     /** [AI修改] B5: 切换到下一周。保存当前草稿以支持撤销。 */
+
+    /** [AI生成] B6: 设置本周已有餐食日期（由 AddDayFoodScreen 在打开 Sheet 时注入）。 */
+    fun setExistingMealDates(dates: Set<LocalDate>) {
+        _state.update { it.copy(existingMealDates = dates) }
+    }
+
     fun advanceWeek() {
         val current = _state.value.periodWeekMonday ?: return
         shiftWeek(DateTime.plusDays(current, 7), "已切换到下一周")

@@ -301,7 +301,8 @@ private fun QuickInputSection(
     activeRecognizer: VoiceRecognizer?,
 ) {
     // ── 输入框（右上角粘贴按钮 overlay） ──
-    // [AI修改] B5-fix: 使用 TextFieldValue 替代 String，确保 ModalBottomSheet 内文本选择/长按粘贴可用
+    // [AI修改] B5-fix: TextFieldValue 确保 ModalBottomSheet 内文本选择/长按粘贴可用。
+    // 在 onValueChange 中立即截断（不依赖 LaunchedEffect 异步回写），防粘贴超长文本绕过截断。
     var textFieldValue by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(state.inputText)) }
     LaunchedEffect(state.inputText) {
         if (textFieldValue.text != state.inputText) {
@@ -314,9 +315,18 @@ private fun QuickInputSection(
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = textFieldValue,
-            onValueChange = {
-                textFieldValue = it
-                vm.setInputText(it.text)
+            onValueChange = { newVal ->
+                val max = AiMealPrompt.MAX_INPUT_CHARS
+                val truncatedText = newVal.text.take(max)
+                if (truncatedText.length != newVal.text.length) {
+                    textFieldValue = newVal.copy(
+                        text = truncatedText,
+                        selection = androidx.compose.ui.text.TextRange(truncatedText.length),
+                    )
+                } else {
+                    textFieldValue = newVal
+                }
+                vm.setInputText(truncatedText)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -468,6 +478,7 @@ private fun PeriodInputSection(vm: AiMealInputViewModel, state: AiMealInputUiSta
             onRangeChange = { vm.setWeekRange(it.first, it.last) },
             onPreviousWeek = { vm.retreatWeek() },
             onNextWeek = { vm.advanceWeek() },
+            existingMealDates = state.existingMealDates,
         )
 
         Spacer(Modifier.height(12.dp))

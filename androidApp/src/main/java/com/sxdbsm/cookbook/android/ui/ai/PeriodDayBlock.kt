@@ -60,7 +60,8 @@ fun PeriodDayBlock(
         }
 
         // 输入框 + 右下角字符计数 overlay
-        // [AI修改] B5-fix: 使用 TextFieldValue 替代 String，确保 ModalBottomSheet 内文本选择/长按粘贴可用
+        // [AI修改] B5-fix: TextFieldValue 确保文本选择/长按粘贴可用。
+        // 在 onValueChange 中立即截断，防粘贴超长文本时本地状态显示未截断值。
         var textFieldValue by remember { mutableStateOf(TextFieldValue(inputText)) }
         LaunchedEffect(inputText) {
             if (textFieldValue.text != inputText) {
@@ -73,9 +74,17 @@ fun PeriodDayBlock(
         Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
             OutlinedTextField(
                 value = textFieldValue,
-                onValueChange = {
-                    textFieldValue = it
-                    onTextChange(it.text.take(maxChars))
+                onValueChange = { newVal ->
+                    val truncatedText = newVal.text.take(maxChars)
+                    if (truncatedText.length != newVal.text.length) {
+                        textFieldValue = newVal.copy(
+                            text = truncatedText,
+                            selection = TextRange(truncatedText.length),
+                        )
+                    } else {
+                        textFieldValue = newVal
+                    }
+                    onTextChange(truncatedText)
                 },
                 modifier = Modifier
                     .fillMaxWidth()

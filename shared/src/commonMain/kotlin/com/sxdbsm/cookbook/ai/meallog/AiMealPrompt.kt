@@ -107,7 +107,7 @@ object AiMealPrompt {
             system = NDJSON_SYSTEM_PROMPT,
             user = userPrompt,
             temperature = 0.2,
-            maxTokens = 2048,
+            maxTokens = 4096,  // [AI修改] B6-fix: 2048→4096，单日多餐(3餐×~10菜)NDJSON输出易超2048致finish_reason=length截断
         )
     }
 

@@ -52,6 +52,7 @@ fun WeekStrip(
     onRangeChange: (IntRange) -> Unit,
     onPreviousWeek: (() -> Unit)? = null,
     onNextWeek: (() -> Unit)? = null,
+    existingMealDates: Set<LocalDate> = emptySet(),
     modifier: Modifier = Modifier,
 ) {
     val dayLabels = listOf("一", "二", "三", "四", "五", "六", "日")
@@ -171,18 +172,31 @@ fun WeekStrip(
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val hasExisting = date in existingMealDates
+                        val dayTextColor = when {
+                            hasExisting && !inRange -> textColor.copy(alpha = 0.5f)
+                            else -> textColor
+                        }
                         Text(
                             text = label,
                             style = MaterialTheme.typography.labelMedium,
-                            color = textColor,
+                            color = dayTextColor,
                             fontWeight = if (inRange || isToday) FontWeight.SemiBold else FontWeight.Normal,
                         )
                         Text(
                             text = "${date.dayOfMonth}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = textColor,
+                            color = dayTextColor,
                             fontWeight = if (inRange || isToday) FontWeight.SemiBold else FontWeight.Normal,
                         )
+                        if (hasExisting) {
+                            Text(
+                                text = "已有",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (inRange) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                            )
+                        }
                     }
                 }
             }
