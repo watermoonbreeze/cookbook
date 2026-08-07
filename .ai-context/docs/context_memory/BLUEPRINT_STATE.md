@@ -6,33 +6,46 @@
 
 **模型执行力评估台账（2026-08-07 新增，与上条不冲突）**：独立文档 `docs/experience/14_模型执行力评估.md`，与本文件的抽象角色字段完全分离。CODE 完成本批交付时，去该文档追加一行记录（含实际模型名）；ARCH 复核后补简评。**本文件不重复该表**，避免同一数据两处维护。
 
-## 本轮执行模型（2026-08-07 第二轮，供 ARCH 三次复核参考·非协议字段）
+---
+
+## 当前批次：AI记一餐 K1a 营养展示统一化 + AI 未配置诚实报错
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | AI记一餐 K1a 营养展示统一化 + AI 未配置诚实报错 |
+| 蓝图文件 | `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` |
+| 规模 | BLUEPRINT-FULL |
+| **颗粒度** | **L7**（项目基线 · 37 条 GC · 本批逐条勾销见该蓝图 §0.1） |
+| 状态 | `ACCEPTED`（ARCH 起草 + 独立 opus 挑战 agent 已完成 GC-37 挑战，14 项挑战全部处置，蓝图已冻结，待 CODE 实施） |
+| **TURN** | **CODE** |
+| ARCH | 架构师@主力机 |
+| CODE | 待指派（下一 session/机器） |
+| REVIEW | =ARCH |
+| 基线 commit | 待填（蓝图文档提交点） |
+| 蓝图摘要 | 见该蓝图 §7 分阶段实施步骤（STEP-K1A-1.1~1.3 / 2.1 / 3.1 / CFG-1~7 / T-1~3），全部 STEP 均含完成形态字面量与 grep 判据，机械实现即可，**规格空隙已由 GC-37 独立挑战排除**（6 项 CONFIRMED-ISSUE 已在蓝图内就地修订，非留给 CODE 自行判断） |
+| CODE 交付要求 | 严格按 §7 STEP 顺序执行，逐条勾销填 §9 台账；完成后跑 §7 末尾"验收命令"三条，贴当次输出；真机清单新增 `E-K1A-01`/`E-K1A-CFG-01`/`E-K1A-CFG-02`（见蓝图 §9）；交付时到 `docs/experience/14_模型执行力评估.md` 补一行记录实际模型名 |
+| 未闭合 | 全部（本批未开始实施） |
+| 末次更新 | 待填 commit · 2026-08-07（ARCH@主力机：起草蓝图 + 派独立 opus agent 完成 GC-37 挑战，6 项阻断就地修订后蓝图 ACCEPTED，TURN 交 CODE。） |
+
+---
+
+## 历史批次（已关闭，供参考）
+
+### AI记一餐 周期记 NDJSON流式 / B4+B5+B6
+
+| 字段 | 值 |
+|---|---|
+| 蓝图文件 | `docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`、`..._B4输入UI实施蓝图.md` |
+| 状态 | **ACCEPTED**（ARCH 三次复核通过，AF-B456-01~09 全部 9 项阻断关闭） |
+| 基线 commit | `dfac266a` |
+| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八 |
+| 末次更新 | `dfac266a` · 2026-08-07（ARCH@主力机：三次复核通过，收紧 `T-B5-02` 断言为精确匹配并复跑验证。批次关闭。） |
+
+本轮执行模型记录（供跨模型能力评估）：
 
 | 轮次 | 角色 | 模型 |
 |------|------|------|
 | 第一轮（AF-B456-01~09 全部关闭） | Coder@副机 | 未知（commit `234539aa` 未记录） |
-| 第二轮（AF-B456-05 关闭） | Coder@副机 | **deepseek-v4-pro**（1M context） |
-
-> **ARCH 注意**：第一轮实现的 8 项（AF-B456-01~04/06~09）已确认正确关闭；第二轮仅修 AF-B456-05（`segmentStatuses` 值域覆盖不全）。该模型表现为**严格按蓝图字面实现**——第一轮按蓝图 §3.5 文字精准实现了但蓝图有值域空隙，第二轮按 §3.5.1 唯一最小修复同样精确。跨模型能力评估：该模型不自行发现规格空隙，需蓝图给出穷尽的完成形态字面量。详见 `docs/experience/14_模型执行力评估.md` 和 `SESSION_交接.md` §一·1.2。
-
-## ARCH 三次复核（本轮已完成）
-
-> AF-B456-05 第二轮已关闭；ARCH（架构师@主力机）三次复核**通过**。逐项核对：`GenerationProgress.kt` segmentStatuses 类型、`AiMealInputViewModel.kt` computeProgress()/submit() 去兜底、`SegmentProgressBar.kt` null→PENDING 四值穷尽——三处均与 §3.5.1 逐字一致。`GenerationProgressTest.kt` 实跑（非台账自报）4/4 绿。**发现并现场修复一处测试质量问题**：`T-B5-02` 原断言用"任一终态即可"（`statuses[0]==FAILED||COMPLETED`），弱于蓝图 §3.5.1 要求的精确 `listOf(FAILED, COMPLETED)`，无法捕获"FAILED 被吞、两段同判 COMPLETED"类回归；已收紧为精确 `assertEquals`，收紧后复跑仍 4/4 绿，`androidApp:testDebugUnitTest` 全量扫描无新增失败。
-
-**交付时**：在 `docs/experience/14_模型执行力评估.md` 追加一行，据实填写本批实际使用的模型名。
-
-| 字段 | 值 |
-|---|---|
-| 任务/批次 | AI记一餐 周期记 NDJSON流式 / B4+B5+B6 |
-| 蓝图文件 | `docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`、`..._B4输入UI实施蓝图.md`（B5 无独立蓝图，见复核报告 §3.1，须补 LITE 追认件） |
-| 规模 | BLUEPRINT-FULL |
-| **颗粒度** | **L7**（项目基线 · 37 条 GC · 定义见 `experience/12_多模型协作与实施蓝图规范.md` §12 · 升级历史见 §13 · 本批逐条勾销见 B4 蓝图 §0.1） |
-| 状态 | **ACCEPTED**（ARCH 三次复核通过，AF-B456-01~09 全部 9 项阻断关闭） |
-| **TURN** | **无**（本批次已关闭，如需继续需开新批次） |
-| ARCH | 架构师@主力机 |
-| CODE | Coder@副机 |
-| REVIEW | =ARCH（三次复核已完成） |
-| 基线 commit | `dfac266a`（ARCH 三次复核 + T-B5-02 断言收紧的提交点） |
-| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八（**二次复核未通过** → 第二轮关闭 AF-B456-05 → **三次复核 ARCH 通过，全部关闭**） |
-| 未闭合 | 无。AF-B456-01~09 全部关闭（含实跑 Shared tests: 0 failures + Android: GenerationProgressTest 4/4（含收紧后的 T-B5-02）+ AiMealInputViewModelStreamTest 9/9 + `androidApp:testDebugUnitTest` 全量无新增失败 + assembleDebug SUCCESS） |
-| 末次更新 | `dfac266a` · 2026-08-07（ARCH@主力机：三次复核通过，收紧 `T-B5-02` 断言为精确匹配并复跑验证。批次关闭。） |
+| 第二轮（AF-B456-05 关闭） | Coder@副机 | deepseek-v4-pro（1M context） |
+| 三次复核 + K1a 蓝图起草 | 架构师@主力机 | claude-sonnet-5 |
+| K1a 蓝图 GC-37 独立挑战 | 独立挑战 agent | claude-opus-5 |

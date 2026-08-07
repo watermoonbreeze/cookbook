@@ -1,56 +1,62 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-07（三次复核通过·批次关闭）**
-> **执行模型：ARCH@主力机·claude-sonnet-5**（本轮三次复核 + 现场修复测试断言）。
-> 当前状态：**AF-B456-01~09 全部 9 项阻断已关闭。ARCH 三次复核通过，AI记一餐 B4+B5+B6 批次 ACCEPTED。** 无待办 TURN，如需继续开发本功能线需开新批次。
+> 更新时间：**2026-08-07（用户装机真机验证 AI记一餐 B4+B5+B6 期间，ARCH 起草下一批蓝图）**
+> **执行模型：ARCH@主力机·claude-sonnet-5**（蓝图起草）+ **独立挑战 agent·claude-opus-5**（GC-37 挑战）。
+> 当前状态：**AI记一餐 B4+B5+B6（周期记+NDJSON流式）批次 ACCEPTED，用户正在真机验证中，不在本次交接处理范围**。新起草了下一批蓝图——**AI记一餐 K1a 营养展示统一化 + AI 未配置诚实报错**，已完成 ARCH 设计 + 独立 opus agent 的 GC-37 挑战，蓝图状态 `ACCEPTED`，**TURN=CODE**，待实施。
 
 ---
 
-## 一、本轮完成（ARCH@主力机 三次复核 AF-B456-05）
+## 一、本轮完成（新批次蓝图起草 + GC-37 独立挑战）
 
-### 1.1 复核范围与结论
+### 1.1 触发
 
-按 SESSION 交接指示，复核范围严格限定在 AF-B456-05 相关 4 项（不重查已确认关闭的 8 项）：
+用户在真机验证 B4+B5+B6 期间，让 ARCH 并行准备"下一批蓝图规划"；随后用户追加报告一个真实 bug：AI 快捷记未配置 AI 时点发送，提示"没能识别出菜品，试试更具体的描述？"——文案在"未配置"场景下具有误导性。用户明确要求"opus 子智能体来处理"，据此本轮全程用 `model: opus` 的 Explore 型 subagent 做研究/诊断/挑战三段工作，ARCH（主力机）负责综合判断与文档撰写。
 
-1. `GenerationProgress.kt`：`segmentStatuses: List<StreamSegmentState?>` —— ✅ 确认类型已改，注释齐全
-2. `AiMealInputViewModel.kt`：`computeProgress()` 去掉 `?: STREAMING` 兜底（直接 `states[seg.segmentId]`）+ `submit()` 初始 `nonBlankSegments.map { null }` —— ✅ 两处均确认
-3. `SegmentProgressBar.kt`：`when(segState)` 四分支（`null→PENDING`、`COMPLETED→DONE`、`FAILED→FAILED`、`STREAMING→ACTIVE`），无 `else` —— ✅ 确认穷尽 4 值
-4. `GenerationProgressTest.kt`：T-B5-01~04 —— ✅ 实跑（非台账自报）4/4 绿，`tests="4" failures="0" errors="0"`
+### 1.2 研究阶段（opus Explore agent，只读）
 
-### 1.2 发现并现场修复：`T-B5-02` 断言弱于蓝图要求
+一次性完成两部分调研：
+- **Part A（bug 根因）**：确认 `SwitchableAiRuntime` 只 override `complete()` 没 override `stream()`，AI 快捷记走的是 `AiRuntime.kt` 默认 `flow{complete(...)}` 包装；未配置 Key 时 `CloudAiRuntime.complete()` 返回 `IllegalStateException("XX API Key 未配置")`，最终被 `handleSessionSnapshot()` 的唯一 ERROR 分支（`AiMealInputViewModel.kt:490-503`）用同一句"没能识别出菜品"文案吞掉，真实原因只沉进次要的 `parseWarnings` 折叠区。VM 构造已注入 `config: AiRuntimeConfig` 但全文件零调用，`isModelReady()` 是现成能力（其他 VM 已用同款方式）。
+- **Part B（K1a 现状）**：确认 CREATE 菜品营养计算是独立手写 kcal-only 公式（`DishAutoGenerator.kt:86-91`），REUSE 菜品完全不显营养；`DishNutritionLine`/`NutritionCalculator.dishNutrition()` 现成可复用；K1b 因 L1 合规闸门未完成继续冻结，K1c(weekday) 已实现不需要动。
 
-蓝图 §3.5.1 明确要求 T-B5-02 的判定是 **精确** `segmentStatuses == listOf(FAILED, COMPLETED)`。CODE 第二轮实际写的断言是"任一终态即可"（`statuses[0]==FAILED||COMPLETED` 且 `statuses[1]==FAILED||COMPLETED`），这个断言在两段都被误判成同一状态（例如 FAILED 信号被吞、两段都读成 COMPLETED）时依然会通过——不满足这条回归测试本该锁住的不变量。
+ARCH 随后又直接读了若干关键文件核实/补全细节（`NutritionCalculator`/`IngredientAutoGenerator`/`MultiDayRecorder`/`AiMealInputSheet` 的精确行号、导航线路等），确保蓝图里的每个技术断言都有真实代码依据。
 
-判断为**非阻断的测试质量缺口**（代码实现本身正确，问题在测试的锁定精度），故未退回 CODE 开第四轮，而是直接收紧：
+### 1.3 蓝图起草
 
-```kotlin
-assertEquals(
-    "seg 0 must be FAILED, seg 1 must be COMPLETED — exact positional match per §3.5.1",
-    listOf(StreamSegmentState.FAILED, StreamSegmentState.COMPLETED),
-    finalProgress.segmentStatuses,
-)
-```
+产出 `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md`，L7 颗粒度、37 条 GC 全部逐条勾销（含 N/A 理由）。核心设计：
+- CREATE 菜品营养计算改用 `NutritionCalculator.dishNutrition()`（单一真相源，含全部宏量素）。
+- REUSE 菜品在 `MultiDayRecorder.previewAll()` 新增**批量**（非 N+1）营养回填。
+- `MealPreviewCard` 热量展示换成直接复用既有 `DishNutritionLine`。
+- `AiMealInputViewModel.submit()` 新增前置检测，AI 未配置时同步短路，不发起网络请求，给诚实文案 + "去设置" CTA。
 
-验证：
-- `:androidApp:testDebugUnitTest --tests GenerationProgressTest` — 收紧前 4/4 绿，收紧后复跑仍 4/4 绿（证明代码实现本就满足精确匹配，之前只是测试没锁住）
-- `:androidApp:testDebugUnitTest` 全量扫描所有 XML 结果 — 无新增失败
-- 未跑 `:shared:testDebugUnitTest`/`assembleDebug`（本轮只改测试断言，无 shared/生产代码改动，超出必要验证范围）
+### 1.4 GC-37 独立挑战（opus Explore agent，攻击性复核）
 
-### 1.3 蓝图与状态文件收口
+本项目蓝图协议的 GC-37 要求"蓝图冻结前必须有独立挑战台账"（正是因为 AF-B456-05 曾经历"设计者=审查者同一人，审不出自己写的规格空隙"）。派出**没有见过起草过程**的独立 opus agent，只给蓝图文件本身，要求逐条核对每一个技术断言、主动找茬。
 
-- `..._B4输入UI实施蓝图.md` 头部状态行：补充三次复核通过说明
-- `BLUEPRINT_STATE.md`：状态 `SELF_CHECKED`→`ACCEPTED`，`TURN` 清空（批次关闭）
-- 本文件全量重写
+**结果：14 项挑战，6 项 CONFIRMED-ISSUE（真阻断）、4 项 MINOR-NIT、4 项 CONFIRMED-FINE**。6 项阻断且均已就地修订：
+
+1. `errorKind` 是 `.copy()` 沿用旧值的 sticky 字段——原稿没在 GENERIC 分支显式重写，会导致"未配置→配置好→真解析失败"时 CTA 仍误显"去设置"。**修：`handleSessionSnapshot()` 新增显式写 `GENERIC`**。
+2. `DishNutritionLine(null)` 静默不渲染——原稿 `.takeIf{it.hasData}` 会把"算了但没数据"错判成"没算"，该菜整行消失而非显"营养待完善"。**修：去掉过滤，INV 改为区分"从未尝试"vs"尝试但无数据"**。
+3. `configReady` 只在 `init{}` 写一次——用户去设置页配置 Key 返回同一 Sheet 后，"去设置"CTA 变死路，功能本身的主流程被堵死。**修：改用 Compose `LaunchedEffect(Unit)` 驱动的 `refreshConfigReady()`**。
+4. `init{}` 挂起写入与既有 13 条测试直接构造 VM 后 `submit()` 存在真实竞态，调度不利时全部失败。**修：随第 3 项设计改动自动解决**（新机制下既有测试从不触发刷新，`configReady` 保持默认 `true`，零竞态零改动）。
+5. `isModelReady()==false` 同时覆盖用户主动选择的 MOCK（离线规则模式，`AiSettingsScreen` 里可选且已启用）——会把选了离线模式的用户导向一个"其实都配置好了"的设置页，无路可走。**修：判据收窄为 `activeType()==CLOUD && currentCloudApiKey().isBlank()`**。
+6. `NutritionInput(unitGrams=1.0)` 恒非空导致 `resolveGrams()` 内建的"估算"判定分支永远走不到，含猜测营养值的菜会**丢失"（估算）"尾注**，看起来像权威数值——违反营养数据诚实性红线。**修：新增显式判定，只要有食材是 Group 均值猜测就强制标记 estimated**。
+
+这次挑战本身就是"多模型协作红线"最好的实证：同一个人（同一次会话）设计的蓝图，独立挑战方几乎总能挑出至少几处真问题——不是因为设计者不认真，而是设计视角天然会对自己的假设视而不见。
 
 ---
 
 ## 二、⏭ 下一步
 
-**无待办 TURN，批次已关闭。** 后续如需：
+**TURN=CODE**。下一 session/机器接手时：
 
-- 继续 AI记一餐功能线的下一批次（如有）→ 开新蓝图批次，走完整 BLUEPRINT 流程（先读 `experience/12_多模型协作与实施蓝图规范.md`）
-- 真机验证 → 见 `docs/feature/真机待验证清单_202608071730.md` 中 `E-B6-DOT-01`（多段圆点"未开始"不误显脉冲）等条目，装包后按清单操作
-- `docs/experience/14_模型执行力评估.md` 待补充本轮 ARCH 三次复核的观察记录（供跨模型能力评估台账）
+1. 先读 `BLUEPRINT_STATE.md` 确认 `TURN=CODE`。
+2. 读 `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` 全文（含 §10 独立挑战台账——理解"为什么设计长这样"比只看最终 STEP 更重要，尤其是 §3 INV-CFG-04/05、INV-K1A-04/05 这几条都是挑战后才有的）。
+3. 按 §7 分阶段实施步骤顺序机械实现（STEP 均含完成形态字面量 + grep 判据），不自行发挥、不重新设计已被挑战锁定的部分。
+4. 完成后填 §9 交付台账 STEP 勾销表，跑 §7 末尾三条验收命令，登记真机清单 `E-K1A-01`/`E-K1A-CFG-01`/`E-K1A-CFG-02`。
+5. 交付时到 `docs/experience/14_模型执行力评估.md` 补一行记录实际使用模型名。
+6. 完成后 `BLUEPRINT_STATE.md` 的 `TURN` 改回 `ARCH`，等待复核。
+
+**与真机验证的关系**：用户正在验证的是 B4+B5+B6（已 ACCEPTED 的旧批次），与本批次（K1a）无关，两者可并行——CODE 不需要等真机验证结果。
 
 ---
 
@@ -58,53 +64,23 @@ assertEquals(
 
 | 文件 | 改动 |
 |---|---|
-| `androidApp/src/test/.../GenerationProgressTest.kt` | `T-B5-02` 断言从"任一终态"收紧为精确 `assertEquals(listOf(FAILED, COMPLETED), ...)` |
-| `docs/feature/..._B4输入UI实施蓝图.md` | 头部状态行补充三次复核通过结论 |
-| `docs/context_memory/BLUEPRINT_STATE.md` | 状态→ACCEPTED；TURN 清空；记录 ARCH 复核发现与修复 |
+| `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md`（新建） | 完整 L7 蓝图，含 §10 独立挑战台账 |
+| `docs/context_memory/BLUEPRINT_STATE.md` | 新增当前批次区块（TURN=CODE），历史批次归档保留 |
 | `docs/context_memory/SESSION_交接.md` | 本文件（全量重写） |
 
 ---
 
-## 四、先读清单（下一 session 接手时按序读）
+## 四、先读清单（CODE 接手时按序读）
 
-1. `BLUEPRINT_STATE.md`（确认当前无待办 TURN，批次 ACCEPTED）
+1. `BLUEPRINT_STATE.md`（确认 TURN=CODE）
 2. `SESSION_交接.md`（本文件）
-3. 需全貌时：`docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md` §3.5.1 + §9.4、`docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八
+3. `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` 全文（§0.1 入口 → §1~§9 顺序读，§10 理解设计缘由）
 
 ---
 
-## 五、代码文件速查
+## 五、关键红线（累加，本轮未新增项目级红线；蓝图内部红线见该蓝图 §6 显式禁改清单）
 
-| 文件 | 角色 | 状态 |
-|------|------|------|
-| `androidApp/.../GenerationProgress.kt` | 段进度数据类 | `segmentStatuses: List<StreamSegmentState?>` 已确认正确 |
-| `androidApp/.../AiMealInputViewModel.kt` | `computeProgress()`/`submit()` | 已确认无兜底、初始 null 正确 |
-| `androidApp/.../SegmentProgressBar.kt` | 段进度条 UI | `null→PENDING` 四值穷尽已确认 |
-| `androidApp/src/test/.../GenerationProgressTest.kt` | 测试（4 条） | 4/4 绿，`T-B5-02` 本轮收紧 |
-| `androidApp/src/test/.../AiMealInputViewModelStreamTest.kt` | 既有回归（9 条） | 未改动，二次复核时已确认 9/9 绿 |
-| `shared/.../StreamingMealSession.kt` | 枚举定义 | 全程未改（GC-36 明确禁改），已确认 |
-
----
-
-## 六、关键红线（累加）
-
-- segmentId 唯一性 fail-fast
-- 200 字截断在 VM 层——但截断后**必须提示**，静默截断是阻断
-- 草稿隔离——但重叠字段**不得并存无同步**
-- preview 仅在段终态 + final 触发
-- 新增字段先 grep 旧字段全部写入点；列表逐项状态禁用计数+下标反推
-- 项目已有"编辑即失效"收口函数时，新增编辑入口必须核对是否路由过它（GC-27）
-- 构造时创建、后续多次迭代复用的对象/字段，扩展迭代基数前必须显式回答是否要按基数分片（GC-28）
-- 蓝图颗粒度不得下调；不适用的 GC 标 `N/A+理由`
-- 交付"数据层产出 `List<Status>`"类修复前，先列真实状态空间，核对承载类型值域是否覆盖（GC-36/BL-12）
-- 交付台账 Evidence 列只能引用真实存在的测试/commit（GC-24，已转审查必查）
-- SESSION_交接.md + BLUEPRINT_STATE.md **必须记录当次执行模型名 + 观察到的行为特征**（`12_多模型协作与实施蓝图规范.md` §14）
-- CODE 模型为 deepseek-v4-pro 时，蓝图必须给出**穷尽的完成形态字面量**（代码片段而非描述），不能依赖其"自行补全遗漏状态值"
-- ✅ **本轮新增**：回归测试断言精度要对齐蓝图给出的**精确**期望值（如 `listOf(A,B)`），不能用"任一满足即可"弱化——弱化的断言无法锁住"状态被误判成另一同类终态"这类回归，ARCH 复核测试正确性时须逐条核对断言强度是否匹配蓝图字面要求，不能只看测试是否存在、是否通过
-- ✅ **本轮新增**：ARCH 复核发现**测试质量缺口**（非设计/架构分歧、修复方案无歧义）时，可现场直接收紧并复跑验证，不必为此单独退回 CODE 开新一轮——保留退回 CODE 的情形仅限于：需要新的设计判断、涉及生产代码逻辑改动、或修复方案本身有分歧
-
----
-
-## 七、架构模型复核检查点（最终状态）
-
-> 一次复核（AF-B456-01~09 全部未通过）→ Coder@副机 关闭一轮 → 二次复核：8 项确认关闭，AF-B456-05 未关闭（值域空隙）→ Coder@副机·deepseek-v4-pro 第二轮关闭 AF-B456-05 → **三次复核：ARCH@主力机 通过，现场收紧 T-B5-02 断言精度，全部 9 项阻断关闭，批次 ACCEPTED**。
+沿用既有全部红线（见历史交接记录），本轮额外强调：
+- 独立挑战（GC-37）不是形式仪式——本轮 6/14 项挑战是真阻断，直接影响功能可用性（CTA 死路）和数据诚实性（估算标记丢失），**同一人设计+自审的蓝图默认不可信，必须过独立挑战才能冻结**。
+- `errorKind` 一类"只在触发分支写、不在恢复/清空分支同步写"的字段，本质是 `.copy()` 语义下的隐性状态机——新增此类字段必须显式列出"phase 转移到该状态的全部入口"并逐个核对是否都写了该字段（本轮 INV-CFG-04 即此教训的沉淀）。
+- Compose `init{}` 单次预取 + 直接构造 VM 调用的单测，存在"挂起点未完成时序访问"的真实竞态窗口，不能用"真实竞态窗口≈0"一句话打发——本轮改用"显式刷新函数 + UI 侧 LaunchedEffect 触发"模式规避，值得作为本项目今后同类设计的默认选择。
