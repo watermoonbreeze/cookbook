@@ -4,25 +4,26 @@
 
 **ARCH/CODE 命名规则**：只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**（Claude/DeepSeek/GPT 等）。角色定义是抽象的，具体由哪个模型担任取决于当前会话。
 
-## CODE 入口（本批必读，按顺序）
+## CODE 入口（第二轮，本批必读，按顺序）
 
-1. `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` —— 事实依据，9 项阻断 `AF-B456-01~09` 各自的违反项/证据/唯一最小修复。
-2. `docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md` **§0.1 颗粒度勾销表** —— 每条 GC 的"本蓝图落点"直接指向你要改的章节（§3.5/§3.6/§5.8/§7 步骤2/步骤3/步骤6/§9.4），标"未满足·CODE 待办"的就是你这批要关闭的点，照章节内容机械实现即可，**不必自己设计修复方案**（蓝图已给出唯一最小修复+完成形态字面量+grep 判据）。
-3. 遇到蓝图没写清楚的点 → 停手，按 `~/.ai-context/rules/blueprint_protocol.md` §3 记 `Q-B4-NN`，不得自行发挥；**不确定是否要提示/要不要显式收口，先查该蓝图落点章节是否已给出唯一动作，给了就按写的做，没给才发 Q**。
-4. 关闭全部 AF 后：§7 步骤 6 STEP 勾销表填完 → §11.1 放行条件第 8 条逐项打勾 → 蓝图头状态改回 `ACCEPTED` → 本文件 `TURN` 改回 `ARCH` → 同一提交 `git push`。
+1. `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` **§八（二次复核）** —— AF-B456-01~04/06~09 已确认关闭，不必再碰；`AF-B456-05` 仍未关闭，§8.2 给出新证据+唯一最小修复。
+2. `docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md` **§3.5.1（二次复核修订，GC-36）** —— 本轮唯一要做的事：`GenerationProgress.segmentStatuses` 类型改 `List<StreamSegmentState?>`（null=未开始），`computeProgress()`/`submit()` 去掉 `?: StreamSegmentState.STREAMING` 兜底，`SegmentProgressBar` 补 `null -> PENDING` 分支；新增 4 条测试 T-B5-01~04。§0.1 表里 GC-17/22/24 三行已标回"未满足·CODE 待办（第二轮）"。
+3. 关闭后：§9.4 补齐"当次结果"列（此前第一轮遗漏，一并补）→ §0.1 GC-17/22/24 改回满足 → 蓝图头状态改回 `ACCEPTED` → 本文件 `TURN` 改回 `ARCH` → 同一提交 `git push`。
+4. 遇到不清楚的点 → 按 `~/.ai-context/rules/blueprint_protocol.md` §3 记 `Q-B4-NN`，不得自行发挥。
+5. **台账纪律（本轮新增，见 GC-24 复发计数 1，已转"审查必查"）**：STEP 勾销表 Evidence 列只能填**真实存在**的测试/commit，不得引用尚未创建的 T-ID——上一轮的教训是引用了 T-B5-01~03 等 ID 但代码库里根本没有对应测试文件。
 
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | AI记一餐 周期记 NDJSON流式 / B4+B5+B6 |
 | 蓝图文件 | `docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`、`..._B4输入UI实施蓝图.md`（B5 无独立蓝图，见复核报告 §3.1，须补 LITE 追认件） |
 | 规模 | BLUEPRINT-FULL |
-| **颗粒度** | **L7**（项目基线 · 35 条 GC · 定义见 `experience/12_多模型协作与实施蓝图规范.md` §12 · 升级历史见 §13 · 本批逐条勾销见 B4 蓝图 §0.1） |
-| 状态 | SELF_CHECKED（Coder@副机 已关闭 AF-B456-01~09，待 ARCH 二次复核） |
-| **TURN** | **ARCH** |
+| **颗粒度** | **L7**（项目基线 · 36 条 GC，本轮新增 GC-36 · 定义见 `experience/12_多模型协作与实施蓝图规范.md` §12 · 升级历史见 §13 · 本批逐条勾销见 B4 蓝图 §0.1） |
+| 状态 | REVIEWED_BLOCKED（第二轮：ARCH 二次复核确认 AF-B456-01~04/06~09 已关闭，`AF-B456-05` 未关闭，转回 CODE） |
+| **TURN** | **CODE** |
 | ARCH | 架构师@主力机 |
 | CODE | Coder@副机 |
 | REVIEW | =ARCH |
-| 基线 commit | ac664fa1 |
-| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`（**未通过**：9 项阻断 AF-B456-01~09 + 3 项缺证据 + 13 项建议 R-01~R-13） |
-| 未闭合 | ✅ AF-B456-01~09 全部关闭（代码改动已完成，待 commit）。剩余：B5 BLUEPRINT-LITE 追认四件套（非阻断·可交 ARCH 时一并裁决）、§0.1 GC 逐条勾销（交 ARCH 二次复核时核对）、真机验证 |
-| 末次更新 | 待填 commit · 2026-08-07（Coder@副机：AF-B456-01~09 全部关闭——双真相源统一、语音生命周期恢复、截断 Snackbar 提示、段状态逐项列表替代标量反推、注释/清单/标题修复。Shared tests: 0 failures. Android ViewModel test: 9 tests, 0 failures. APK: BUILD SUCCESSFUL.） |
+| 基线 commit | `234539aa`（第一轮 CODE 完成点，AF-B456-01~04/06~09 已确认关闭） |
+| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八（**二次复核未通过**：`AF-B456-05` 未关闭 + T-B5-01~04/T-B4-08~10 测试缺失 + §9.4 未填） |
+| 未闭合 | ❌ `AF-B456-05`（`segmentStatuses` 值域覆盖不全，"未开始"段被兜底成 STREAMING）。其余 8 项已确认关闭（含实跑 Shared/Android 测试 + assembleDebug 复验，非采信 commit message）。 |
+| 末次更新 | 待填 commit · 2026-08-07 下午（架构师@主力机：二次复核，逐 diff 核对 8 项通过 + 实跑三条构建命令复验；`AF-B456-05` 发现新形态复发（GC-36/BL-12），给出唯一最小修复+4条新测试，转回 CODE。蓝图 §0.1/§3.5.1、复核报告 §八、`12_多模型协作与实施蓝图规范.md`§2/§12/§13 已同步更新。） |

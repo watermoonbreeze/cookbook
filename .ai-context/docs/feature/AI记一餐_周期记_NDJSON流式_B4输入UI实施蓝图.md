@@ -1,9 +1,9 @@
 # AI记一餐：周期记 + NDJSON 流式 B4 输入 UI 实施蓝图
 
-> 状态：`REVIEWED_BLOCKED → 补丁中` —— 2026-08-07 架构模型复核（覆盖 B4+B5+B6）未通过，9 项阻断 `AF-B456-01~09`，详见 `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`。CODE 在本蓝图基础上打补丁关闭阻断，不重新起草。
-> **颗粒度：L7**（项目基线；GC 条款清单与书写红线见 `experience/12_多模型协作与实施蓝图规范.md` §12；升级历史见 §13）。**§0.1 是本次补丁的入口——先读它，逐行对照落点章节。**
-> **🔴 架构模型复核检查点**：B4 蓝图 + B4/B5/B6 编码实现已由架构模型全量审核一轮，结论未通过。CODE 关闭全部 `AF-B456-01~09` 后交回 ARCH 做二次复核（范围仅限本次 9 项 AF + 补充测试，不重新审查已通过项）。
-> 起草日期：2026-08-06；补丁日期：2026-08-07
+> 状态：`REVIEWED_BLOCKED → 补丁中（第二轮）` —— 2026-08-07 架构模型复核（覆盖 B4+B5+B6）未通过，9 项阻断 `AF-B456-01~09`；同日二次复核 8 项已关闭，**AF-B456-05 新形态复发，仍未关闭**，详见 `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八。CODE 在本蓝图基础上打第二轮补丁，不重新起草。
+> **颗粒度：L7**（项目基线；GC 条款清单与书写红线见 `experience/12_多模型协作与实施蓝图规范.md` §12；升级历史见 §13）。**§0.1 是本次补丁的入口——先读它，逐行对照落点章节。AF-B456-05 这一行的落点已改为 §3.5 末尾的"二次复核修订"小节。**
+> **🔴 架构模型复核检查点**：第一轮已关闭 AF-B456-01~04/06~09（8 项），第二轮（本次）唯一待关闭项 = `AF-B456-05`（进度圆点把"尚未开始"的段误标成"流式中"）+ 配套 4 条新测试 + §9.4 映射表补填。关闭后交回 ARCH 做三次复核（范围仅限 AF-B456-05 + 新增测试，不重查已通过项）。
+> 起草日期：2026-08-06；第一轮补丁：2026-08-07 上午；第二轮补丁：2026-08-07 下午
 > 前置蓝图：`AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`（AF-ARCH-01/02 已关闭，AF-ARCH-03 由本蓝图 §1 冻结）
 > 必读：`AI记一餐_周期记_NDJSON流式开发规范.md` §2.1/§5.3、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §四/§五、`experience/12_多模型协作与实施蓝图规范.md`（含 §12 颗粒度分级、§13 升级历史）、B3 蓝图 §11.7（ChatGPT 复核 4 项门禁）、`苹果风格UI设计方案.md` §九、`架构模型复核报告_B4B5B6_2026-08-07.md`（**本次补丁的事实依据，必读**）
 > 基线：`a7fdf074`（B1+B2+B3 全部生产代码 + 645 tests 0 failures）；本次补丁基线：`ac664fa1`（B4+B5+B6 编码完成点）
@@ -34,29 +34,29 @@
 | GC-05 | INV↔T 双向映射表 | §9.4（新增） | 满足 |
 | GC-06 | 放行条件写命令原文，台账当次+分模块 | §11.1 | 满足 |
 | GC-07 | 测试夹具职责边界（fake 只制造外部原因） | §9（沿用 B3 §10.1 固定测试夹具规则） | 满足 |
-| GC-08 | 真机清单文件名+编号区间登记 | §13（须补 B6 分组，见 AF-B456-08） | **未满足·CODE 待办** |
+| GC-08 | 真机清单文件名+编号区间登记 | §13（须补 B6 分组，见 AF-B456-08） | ✅ 满足（2026-08-07 二次复核核实：`真机待验证清单_202608071200.md` 单文件，B6 分组 7 项齐全） |
 | GC-09 | 不得失败的既有测试套件全名（回归基线锁定） | §7 步骤 2.4 | 满足 |
-| GC-10 | 逐字段真相源表 | §7 步骤 2.0（新增） | **未满足·CODE 待办**（表已给出，CODE 需照做并使代码与表一致） |
-| GC-11 | 重叠字段写入点迁移清单 | §7 步骤 2.1（新增） | **未满足·CODE 待办** |
-| GC-12 | UI 判据/业务判据同源表 | §7 步骤 2.2（新增） | **未满足·CODE 待办** |
+| GC-10 | 逐字段真相源表 | §7 步骤 2.0（新增） | ✅ 满足（二次复核逐点核对 W1~W6，`grep "inputText ="` 赋值形零命中） |
+| GC-11 | 重叠字段写入点迁移清单 | §7 步骤 2.1（新增） | ✅ 满足（同上） |
+| GC-12 | UI 判据/业务判据同源表 | §7 步骤 2.2（新增） | ✅ 满足（`enabled = state.quickDraftText.isNotBlank()` 与 `submit()` 同源） |
 | GC-13 | fallback 复用主路径校验入口 | — | N/A：本批无 fallback 新增 |
-| GC-14 | 对象生命周期表 | §5.8（新增） | **未满足·CODE 待办** |
-| GC-15 | 跨 Composable 传递可变持有物声明传递形态 | §5.8（新增） | **未满足·CODE 待办** |
-| GC-16 | 搬迁代码块须列历史修复注释清单 | §5.8（新增） | **未满足·CODE 待办** |
-| GC-17 | 列表逐项状态由数据层产出 `List<Status>` | §3.5（新增） | **未满足·CODE 待办** |
-| GC-18 | 序号字段标注索引空间 | §3.5（新增） | **未满足·CODE 待办** |
-| GC-19 | 集合过滤/消费链路画出来 | §3.5（新增） | **未满足·CODE 待办** |
-| GC-20 | 自动副作用清单表 | §3.6（新增） | **未满足·CODE 待办** |
-| GC-21 | INV 写"提示"必须有对应 STEP 落点 | §7 步骤 3.5（新增） | **未满足·CODE 待办** |
-| GC-22 | 可见副作用配 T-ID/真机项 | §9.4 + §13 | **未满足·CODE 待办** |
-| GC-23 | 实施脚本最小动作独立编号 STEP-ID | §7 全节（改写为 STEP 编号） | **未满足·CODE 待办** |
-| GC-24 | 交付台账 STEP 勾销表 | §7 步骤 6（新增） | **未满足·CODE 待办** |
-| GC-25 | 字面量完成形态 + grep 判据 | §7 步骤 3.4（标题文案） | **未满足·CODE 待办** |
-| GC-26 | 冻结值修订记录表 | §1 末尾（新增） | **未满足·CODE 待办**（maxTokens 2048→4096 待补依据） |
-| GC-27 | 编辑类新入口必须核对是否路由收口函数（本项目=`invalidateGenerationToInput`） | §7 步骤 2.1 W5 行 | **未满足·CODE 待办**（AF-B456-01 根因） |
+| GC-14 | 对象生命周期表 | §5.8（新增） | ✅ 满足（`activeRecognizer` 已改 `MutableState` 传递，释放点/触发条件核对通过） |
+| GC-15 | 跨 Composable 传递可变持有物声明传递形态 | §5.8（新增） | ✅ 满足（`QuickInputSection` 形参类型确认为 `MutableState<VoiceRecognizer?>`） |
+| GC-16 | 搬迁代码块须列历史修复注释清单 | §5.8（新增） | ✅ 满足（历史修复注释、四态图标、脉冲动画均已核对恢复） |
+| GC-17 | 列表逐项状态由数据层产出 `List<Status>` | §3.5（新增，**2026-08-07 二次复核追加"未开始"修订，见 §3.5 末尾**） | **❌ 未满足·CODE 待办（第二轮）**——`segmentStatuses` 已按字面产出，但"尚未开始"的段被兜底成 `STREAMING`（与"流式中"同值），不是真实的逐项状态，见架构模型复核报告 §8.2 |
+| GC-18 | 序号字段标注索引空间 | §3.5（新增） | ✅ 满足（`currentSegmentIndex` 命名与取值已核实为显示下标，索引空间错配已解决） |
+| GC-19 | 集合过滤/消费链路画出来 | §3.5（新增） | ✅ 满足（`allSegments--filter-->nonBlank--sortedBy-->显示序` 链路与代码一致） |
+| GC-20 | 自动副作用清单表 | §3.6（新增） | ✅ 满足（快速记+周期记两处截断分支均弹 Snackbar，去重/复位规则核对通过） |
+| GC-21 | INV 写"提示"必须有对应 STEP 落点 | §7 步骤 3.5（新增） | ✅ 满足 |
+| GC-22 | 可见副作用配 T-ID/真机项 | §9.4 + §13 | **未满足·CODE 待办（第二轮）**——真机项（`E-B6-TRUNC-01` 等）已登记，但 T-B5-01~04 尚未新增，§9.4"当次结果"列仍空 |
+| GC-23 | 实施脚本最小动作独立编号 STEP-ID | §7 全节（改写为 STEP 编号） | 满足（蓝图文本已具备，属 ARCH 产出，非 CODE 待办） |
+| GC-24 | 交付台账 STEP 勾销表 | §7 步骤 6（新增） | **部分满足**——已填写但 Evidence 列引用的测试 ID 实际不存在（见架构模型复核报告 §8.4），第二轮须补真实测试后重新勾销 |
+| GC-25 | 字面量完成形态 + grep 判据 | §7 步骤 3.4（标题文案） | ✅ 满足（`grep "AI 周期记一餐"` 命中） |
+| GC-26 | 冻结值修订记录表 | §1 末尾（新增） | ✅ 满足（maxTokens 依据+影响评估已补） |
+| GC-27 | 编辑类新入口必须核对是否路由收口函数（本项目=`invalidateGenerationToInput`） | §7 步骤 2.1 W5 行 | ✅ 满足（`setQuickDraft()` 已内部调用 `invalidateGenerationToInput`） |
 | GC-28 | 构造时单例/全局字段在基数 1→N 场景须显式回答是否按基数分片 | — | N/A：本批不新增此类对象；已有实例（parser）在 B3 已按 AF-ARCH-02 解决 |
 | GC-29 | 多来源写入同一聚合 key 须显式声明合并/覆盖 | — | N/A：本批不改 mapper |
-| GC-30 | 状态转移分支须驱动完整声明的副作用链 | §7 步骤 3.5（截断提示分支） | **未满足·CODE 待办** |
+| GC-30 | 状态转移分支须驱动完整声明的副作用链 | §7 步骤 3.5（截断提示分支） | ✅ 满足 |
 | GC-31 | 挂起点清单 + 恢复后重新校验身份 | — | N/A：本批 `submit()`/`invalidateGenerationToInput` 无新增挂起点，沿用 B3 `isCurrentGeneration` 机制 |
 | GC-32 | 高频事件触发 IO 须显式节流策略 | — | N/A：本批（B4 输入 UI）不改 preview 触发时机，归属 B5 追认件（见 AF-B456-05 关闭后一并处理） |
 | GC-33 | 禁止生产类为测试暴露可变全局注入点 | — | N/A：本批不改 `sessionPort` 注入方式（S5 已裁决降级为技术债） |
@@ -205,6 +205,31 @@ B3 蓝图 INV-B3-01~08 全部保持。B4 仅改变 segment 的**构造方式**�
 **反例锁定（GC-17 · 审查 grep 判据）**：`androidApp/.../ui/ai/` 内出现下列形态即判 AF——`index < progress.completedSegments`（隐含"成功项必排在失败项前"）、`index == progress.currentSegmentOrdinal`（跨索引空间比较）。
 
 **新增测试**：T-B5-01（`{2:"周三",4:"周五"}` → `totalSegments==2 && currentSegmentIndex in 0..1`）、T-B5-02（段1 FAILED、段2 COMPLETED → `segmentStatuses == [FAILED, COMPLETED]`）、T-B5-03（全段 PENDING → `currentSegmentIndex==0`）。
+
+#### 3.5.1 二次复核修订：`segmentStatuses` 缺"未开始"表达（INV-B456-R05d · 2026-08-07 二次复核追加，CODE 第二轮从这里开始）
+
+> 背景：第一轮 CODE 精确实现了上面 3.5 的字面规格，但架构模型二次复核（`架构模型复核报告_B4B5B6_2026-08-07.md` §8.2）发现规格本身有空隙——`StreamSegmentState` 只有 `STREAMING/COMPLETED/FAILED` 三值，"尚未轮到"的段在 `computeProgress()` 里被 `states[seg.segmentId] ?: StreamSegmentState.STREAMING` 兜底成了 `STREAMING`，导致周期记 2 段以上时，所有未开始的段和真正在流的那段一起显示"脉冲中"。本节是唯一修订依据，取代 3.5 原表述中"`segmentStatuses: List<StreamSegmentState>`"这一点（其余 3.5 内容，含索引空间部分，不变、继续有效）。
+
+| ID | 条件 | 必须结果 | 禁止结果 | 证据 |
+|---|---|---|---|---|
+| INV-B456-R05d | 段尚未被 `StreamingMealSession.nextSegment()` 触达（`segmentStates` 无该 segmentId 的 entry） | `GenerationProgress.segmentStatuses` 类型改为 `List<StreamSegmentState?>`；该段位置为 `null`，`SegmentProgressBar` 把 `null` 映射为 `DotState.PENDING`（空心圆） | 把"未开始"兜底成 `StreamSegmentState.STREAMING`（与"真正在流"同值不可区分） | T-B5-04 |
+
+**唯一最小修复**（三处，均在 UI 层，不改 `StreamSegmentState` 枚举）：
+- `GenerationProgress.kt`：`segmentStatuses: List<StreamSegmentState?> = emptyList()`。
+- `AiMealInputViewModel.kt`：
+  - `computeProgress()`：`val segmentStatuses = nonBlank.map { seg -> states[seg.segmentId] }`（删除 `?: StreamSegmentState.STREAMING` 兜底，直接透传 `null`）。
+  - `submit()` 初始 `GenerationProgress`：`segmentStatuses = nonBlankSegments.map { null }`（会话尚未开始任何段，全部"未开始"）。
+- `SegmentProgressBar.kt`：`when (segState) { null -> DotState.PENDING; StreamSegmentState.COMPLETED -> DotState.DONE; StreamSegmentState.FAILED -> DotState.FAILED; StreamSegmentState.STREAMING -> DotState.ACTIVE }`（穷尽 4 值，删除死 `else` 分支）。
+
+**必须新增的测试**（新建 `androidApp/src/test/.../GenerationProgressTest.kt`，四条缺一不可，T-B5-01~03 语义不变但断言需按新类型调整）：
+- T-B5-01：`{2:"周三",4:"周五"}` → `totalSegments==2 && currentSegmentIndex in 0..1`。
+- T-B5-02：段1 FAILED、段2 COMPLETED（均已终态）→ `segmentStatuses == listOf(FAILED, COMPLETED)`。
+- T-B5-03：会话构造后未调用任何 `nextSegment()` → `segmentStatuses == List(totalSegments){ null }` 且 `currentSegmentIndex==0`。
+- **T-B5-04（新增，锁定本条回归）**：3 段中仅第 1 段已 `nextSegment()`（STREAMING），第 2/3 段未触达 → `segmentStatuses == listOf(StreamSegmentState.STREAMING, null, null)`。
+
+**禁止扩大范围**：不得改 `StreamSegmentState` 枚举；不得改 `StreamingMealSession`/`segmentStates` 惰性写入时机；不得改进度条文案口径或圆点组件本体。
+
+**关闭本条后**：`AF-B456-05` 在架构模型复核报告 §8.5 的判定改为"已关闭"，§0.1 表 GC-17/GC-22/GC-24 三行改回"满足"，§9.4 补齐"当次结果"列，`BLUEPRINT_STATE.md` 的 `TURN` 改回 `ARCH`。
 
 ### 3.6 自动副作用清单表（GC-20 · 2026-08-07 因 AF-B456-04 追加 · CODE 关闭 AF-B456-04 的冻结锚点）
 
