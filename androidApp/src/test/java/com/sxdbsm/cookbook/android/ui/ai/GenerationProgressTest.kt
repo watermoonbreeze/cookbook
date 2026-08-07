@@ -187,17 +187,13 @@ class GenerationProgressTest {
         assertNotNull("generationProgress should not be null", finalProgress)
         assertEquals(2, finalProgress!!.totalSegments)
 
-        // Both should be terminal — FAILED then COMPLETED
-        val statuses = finalProgress.segmentStatuses
-        assertEquals(2, statuses.size)
-        // seg 0: should be FAILED (terminal, not STREAMING or null)
-        assertTrue("seg 0 should be FAILED or COMPLETED (terminal), got ${statuses[0]}",
-            statuses[0] == StreamSegmentState.FAILED || statuses[0] == StreamSegmentState.COMPLETED)
-        assertTrue("seg 1 should be FAILED or COMPLETED (terminal), got ${statuses[1]}",
-            statuses[1] == StreamSegmentState.FAILED || statuses[1] == StreamSegmentState.COMPLETED)
-        // 关键：不应有 null 或 STREAMING（都是终态）
-        assertTrue("no null in terminal state", statuses.none { it == null })
-        assertTrue("no STREAMING in terminal state", statuses.none { it == StreamSegmentState.STREAMING })
+        // §3.5.1 精确要求：seg 0 FAILED、seg 1 COMPLETED，逐位精确匹配（非"任一终态即可"，
+        // 否则漏判"FAILED 信号被静默吞掉、两段都读成 COMPLETED"这类回归）。
+        assertEquals(
+            "seg 0 must be FAILED, seg 1 must be COMPLETED — exact positional match per §3.5.1",
+            listOf(StreamSegmentState.FAILED, StreamSegmentState.COMPLETED),
+            finalProgress.segmentStatuses,
+        )
     }
 
     // ═══════════════════════════════════════════════════════════

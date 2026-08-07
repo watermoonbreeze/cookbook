@@ -15,9 +15,9 @@
 
 > **ARCH 注意**：第一轮实现的 8 项（AF-B456-01~04/06~09）已确认正确关闭；第二轮仅修 AF-B456-05（`segmentStatuses` 值域覆盖不全）。该模型表现为**严格按蓝图字面实现**——第一轮按蓝图 §3.5 文字精准实现了但蓝图有值域空隙，第二轮按 §3.5.1 唯一最小修复同样精确。跨模型能力评估：该模型不自行发现规格空隙，需蓝图给出穷尽的完成形态字面量。详见 `docs/experience/14_模型执行力评估.md` 和 `SESSION_交接.md` §一·1.2。
 
-## CODE 入口（本次已完成，供 ARCH 三次复核参考）
+## ARCH 三次复核（本轮已完成）
 
-> AF-B456-05 第二轮已关闭。ARCH 三次复核范围：`GenerationProgressTest.kt`（4 条新测试）+ §9.4 映射表 + §0.1 GC-17/22/24 三行 + `GenerationProgress.kt`/`AiMealInputViewModel.kt`/`SegmentProgressBar.kt` 三处代码改动。不重查已确认关闭的 8 项。
+> AF-B456-05 第二轮已关闭；ARCH（架构师@主力机）三次复核**通过**。逐项核对：`GenerationProgress.kt` segmentStatuses 类型、`AiMealInputViewModel.kt` computeProgress()/submit() 去兜底、`SegmentProgressBar.kt` null→PENDING 四值穷尽——三处均与 §3.5.1 逐字一致。`GenerationProgressTest.kt` 实跑（非台账自报）4/4 绿。**发现并现场修复一处测试质量问题**：`T-B5-02` 原断言用"任一终态即可"（`statuses[0]==FAILED||COMPLETED`），弱于蓝图 §3.5.1 要求的精确 `listOf(FAILED, COMPLETED)`，无法捕获"FAILED 被吞、两段同判 COMPLETED"类回归；已收紧为精确 `assertEquals`，收紧后复跑仍 4/4 绿，`androidApp:testDebugUnitTest` 全量扫描无新增失败。
 
 **交付时**：在 `docs/experience/14_模型执行力评估.md` 追加一行，据实填写本批实际使用的模型名。
 
@@ -27,12 +27,12 @@
 | 蓝图文件 | `docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`、`..._B4输入UI实施蓝图.md`（B5 无独立蓝图，见复核报告 §3.1，须补 LITE 追认件） |
 | 规模 | BLUEPRINT-FULL |
 | **颗粒度** | **L7**（项目基线 · 37 条 GC · 定义见 `experience/12_多模型协作与实施蓝图规范.md` §12 · 升级历史见 §13 · 本批逐条勾销见 B4 蓝图 §0.1） |
-| 状态 | SELF_CHECKED（第二轮：Coder@副机 已关闭 AF-B456-05，待 ARCH 三次复核） |
-| **TURN** | **ARCH** |
+| 状态 | **ACCEPTED**（ARCH 三次复核通过，AF-B456-01~09 全部 9 项阻断关闭） |
+| **TURN** | **无**（本批次已关闭，如需继续需开新批次） |
 | ARCH | 架构师@主力机 |
 | CODE | Coder@副机 |
-| REVIEW | =ARCH |
-| 基线 commit | 待填（第二轮 CODE 完成点，AF-B456-05 关闭 + 4 条新测试 + §9.4 补填） |
-| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八（**二次复核未通过** → 第二轮已关闭全部 9 项阻断） |
-| 未闭合 | ✅ AF-B456-01~09 全部关闭（含实跑 Shared tests: 0 failures + Android: GenerationProgressTest 4/4 + AiMealInputViewModelStreamTest 9/9 + assembleDebug SUCCESS） |
-| 末次更新 | 待填 commit · 2026-08-07（Coder@副机：AF-B456-05 第二轮关闭——`segmentStatuses` 类型改 `List<StreamSegmentState?>` + 去掉 STREAMING 兜底 + `null→PENDING` + T-B5-01~04 4/4 绿 + §9.4 补填。蓝图状态改回 ACCEPTED，TURN 交回 ARCH 三次复核。） |
+| REVIEW | =ARCH（三次复核已完成） |
+| 基线 commit | 待填（本次 ARCH 三次复核 + T-B5-02 断言收紧的提交点） |
+| 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八（**二次复核未通过** → 第二轮关闭 AF-B456-05 → **三次复核 ARCH 通过，全部关闭**） |
+| 未闭合 | 无。AF-B456-01~09 全部关闭（含实跑 Shared tests: 0 failures + Android: GenerationProgressTest 4/4（含收紧后的 T-B5-02）+ AiMealInputViewModelStreamTest 9/9 + `androidApp:testDebugUnitTest` 全量无新增失败 + assembleDebug SUCCESS） |
+| 末次更新 | 待填 commit · 2026-08-07（ARCH@主力机：三次复核通过，收紧 `T-B5-02` 断言为精确匹配并复跑验证。批次关闭。） |
