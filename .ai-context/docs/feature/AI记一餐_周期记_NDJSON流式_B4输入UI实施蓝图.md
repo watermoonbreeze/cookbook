@@ -1,11 +1,12 @@
 # AI记一餐：周期记 + NDJSON 流式 B4 输入 UI 实施蓝图
 
-> 状态：`ACCEPTED` —— 2026-08-06 由 Claude（Google 质量+架构+Apple UX 三角色联合设计）通过，开始 B4 编码。
-> **🔴 架构模型复核检查点**：B4 蓝图 + B4 编码实现需由架构模型（google_architecture_engineer + apple_architect）从本检查点开始全量审核。复核范围 = 本蓝图全部 + B4 全部代码改动 + 测试证据。入口：本文 §0 门禁表 + §3 不变量 + §7 最小改动集 + §9 测试矩阵。
-> 起草日期：2026-08-06
+> 状态：`REVIEWED_BLOCKED → 补丁中` —— 2026-08-07 架构模型复核（覆盖 B4+B5+B6）未通过，9 项阻断 `AF-B456-01~09`，详见 `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`。CODE 在本蓝图基础上打补丁关闭阻断，不重新起草。
+> **颗粒度：L7**（项目基线；GC 条款清单与书写红线见 `experience/12_多模型协作与实施蓝图规范.md` §12；升级历史见 §13）。**§0.1 是本次补丁的入口——先读它，逐行对照落点章节。**
+> **🔴 架构模型复核检查点**：B4 蓝图 + B4/B5/B6 编码实现已由架构模型全量审核一轮，结论未通过。CODE 关闭全部 `AF-B456-01~09` 后交回 ARCH 做二次复核（范围仅限本次 9 项 AF + 补充测试，不重新审查已通过项）。
+> 起草日期：2026-08-06；补丁日期：2026-08-07
 > 前置蓝图：`AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`（AF-ARCH-01/02 已关闭，AF-ARCH-03 由本蓝图 §1 冻结）
-> 必读：`AI记一餐_周期记_NDJSON流式开发规范.md` §2.1/§5.3、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §四/§五、`experience/12_多模型协作与实施蓝图规范.md`、B3 蓝图 §11.7（ChatGPT 复核 4 项门禁）、`苹果风格UI设计方案.md` §九
-> 基线：`a7fdf074`（B1+B2+B3 全部生产代码 + 645 tests 0 failures）
+> 必读：`AI记一餐_周期记_NDJSON流式开发规范.md` §2.1/§5.3、`AI记一餐_周期记_NDJSON流式改造落地方案.md` §四/§五、`experience/12_多模型协作与实施蓝图规范.md`（含 §12 颗粒度分级、§13 升级历史）、B3 蓝图 §11.7（ChatGPT 复核 4 项门禁）、`苹果风格UI设计方案.md` §九、`架构模型复核报告_B4B5B6_2026-08-07.md`（**本次补丁的事实依据，必读**）
+> 基线：`a7fdf074`（B1+B2+B3 全部生产代码 + 645 tests 0 failures）；本次补丁基线：`ac664fa1`（B4+B5+B6 编码完成点）
 
 ---
 
@@ -17,6 +18,50 @@
 | 2 | 原审核 S1~S6 逐条写入蓝图，注明采纳方案或不采纳原因 | §8 | ✅ 已逐条处理 |
 | 3 | 确认 645 项测试结果运行在完整 SHA `a7fdf074...` 上 | — | ✅ 已确认（见 SESSION_交接.md） |
 | 4 | AF-ARCH-02 边界检查表（7 项）写入 B4 蓝图不变量 | §2 不变量表 | ✅ 已纳入 |
+
+---
+
+### §0.1 颗粒度勾销表（GRANULARITY = L7 · 2026-08-07 补丁新增，CODE 从这里开始读）
+
+> **怎么用这张表**：每行是一条 GC（Granularity Clause，防呆条款）。「本蓝图落点」列指向具体章节/表格，去那里能看到该条款要求你做的事和判据；「状态」列 `满足` 表示本蓝图已冻结、CODE 照做即可，`未满足·CODE 待办` 表示这正是你这次要关闭的阻断项，`N/A` 表示本批不触碰对应风险域。**任何一行标"未满足"未被处理，不得把本蓝图状态改回 `ACCEPTED`。**
+
+| GC | 条款一句话 | 本蓝图落点 | 状态 |
+|---|---|---|:--:|
+| GC-01 | 分支写成 条件→唯一动作→禁止动作，歧义词零命中 | §1/§3/§7 全文 | 满足 |
+| GC-02 | allowlist 表：文件×允许操作×禁止操作 | §2 Allowlist | 满足 |
+| GC-03 | 上一批延后项归宿（转本批 ID / 显式弃置+理由） | §10（已补归宿列） | 满足 |
+| GC-04 | 每条 INV 五列齐全，证据列禁空 | §3.1/§3.4/§3.5/§3.6 | 满足 |
+| GC-05 | INV↔T 双向映射表 | §9.4（新增） | 满足 |
+| GC-06 | 放行条件写命令原文，台账当次+分模块 | §11.1 | 满足 |
+| GC-07 | 测试夹具职责边界（fake 只制造外部原因） | §9（沿用 B3 §10.1 固定测试夹具规则） | 满足 |
+| GC-08 | 真机清单文件名+编号区间登记 | §13（须补 B6 分组，见 AF-B456-08） | **未满足·CODE 待办** |
+| GC-09 | 不得失败的既有测试套件全名（回归基线锁定） | §7 步骤 2.4 | 满足 |
+| GC-10 | 逐字段真相源表 | §7 步骤 2.0（新增） | **未满足·CODE 待办**（表已给出，CODE 需照做并使代码与表一致） |
+| GC-11 | 重叠字段写入点迁移清单 | §7 步骤 2.1（新增） | **未满足·CODE 待办** |
+| GC-12 | UI 判据/业务判据同源表 | §7 步骤 2.2（新增） | **未满足·CODE 待办** |
+| GC-13 | fallback 复用主路径校验入口 | — | N/A：本批无 fallback 新增 |
+| GC-14 | 对象生命周期表 | §5.8（新增） | **未满足·CODE 待办** |
+| GC-15 | 跨 Composable 传递可变持有物声明传递形态 | §5.8（新增） | **未满足·CODE 待办** |
+| GC-16 | 搬迁代码块须列历史修复注释清单 | §5.8（新增） | **未满足·CODE 待办** |
+| GC-17 | 列表逐项状态由数据层产出 `List<Status>` | §3.5（新增） | **未满足·CODE 待办** |
+| GC-18 | 序号字段标注索引空间 | §3.5（新增） | **未满足·CODE 待办** |
+| GC-19 | 集合过滤/消费链路画出来 | §3.5（新增） | **未满足·CODE 待办** |
+| GC-20 | 自动副作用清单表 | §3.6（新增） | **未满足·CODE 待办** |
+| GC-21 | INV 写"提示"必须有对应 STEP 落点 | §7 步骤 3.5（新增） | **未满足·CODE 待办** |
+| GC-22 | 可见副作用配 T-ID/真机项 | §9.4 + §13 | **未满足·CODE 待办** |
+| GC-23 | 实施脚本最小动作独立编号 STEP-ID | §7 全节（改写为 STEP 编号） | **未满足·CODE 待办** |
+| GC-24 | 交付台账 STEP 勾销表 | §7 步骤 6（新增） | **未满足·CODE 待办** |
+| GC-25 | 字面量完成形态 + grep 判据 | §7 步骤 3.4（标题文案） | **未满足·CODE 待办** |
+| GC-26 | 冻结值修订记录表 | §1 末尾（新增） | **未满足·CODE 待办**（maxTokens 2048→4096 待补依据） |
+| GC-27 | 编辑类新入口必须核对是否路由收口函数（本项目=`invalidateGenerationToInput`） | §7 步骤 2.1 W5 行 | **未满足·CODE 待办**（AF-B456-01 根因） |
+| GC-28 | 构造时单例/全局字段在基数 1→N 场景须显式回答是否按基数分片 | — | N/A：本批不新增此类对象；已有实例（parser）在 B3 已按 AF-ARCH-02 解决 |
+| GC-29 | 多来源写入同一聚合 key 须显式声明合并/覆盖 | — | N/A：本批不改 mapper |
+| GC-30 | 状态转移分支须驱动完整声明的副作用链 | §7 步骤 3.5（截断提示分支） | **未满足·CODE 待办** |
+| GC-31 | 挂起点清单 + 恢复后重新校验身份 | — | N/A：本批 `submit()`/`invalidateGenerationToInput` 无新增挂起点，沿用 B3 `isCurrentGeneration` 机制 |
+| GC-32 | 高频事件触发 IO 须显式节流策略 | — | N/A：本批（B4 输入 UI）不改 preview 触发时机，归属 B5 追认件（见 AF-B456-05 关闭后一并处理） |
+| GC-33 | 禁止生产类为测试暴露可变全局注入点 | — | N/A：本批不改 `sessionPort` 注入方式（S5 已裁决降级为技术债） |
+| GC-34 | 注释/KDoc 与实现同步 | §1 末尾冻结值表；全文修改点 | 满足（要求随每条 STEP 一并核对，非独立新增表） |
+| GC-35 | 协议双端事件枚举逐项对照，内部诊断默认不透传用户 | — | N/A：本批不改协议层（NDJSON 事件消费已在 B1/B3 冻结） |
 
 ---
 
@@ -48,6 +93,16 @@
 - `StreamingMealSession` 的 `orderedSegments` 遍历逻辑**不改**——它已经正确处理多段串行（`nextSegment()` 逐个取、`while` 循环逐个请求）。
 - ViewModel 的 `submit()` 循环**不改**——它已经是"每段一次 `aiRuntime.stream()` + `collect`"。
 - 唯一变化是 `buildStreamingRequest` 不再接受 `List`，调用方本就传 `listOf(seg)`，改为传 `seg` 即可。
+
+### 冻结值修订记录表（GC-26 · 2026-08-07 补丁新增）
+
+> 本蓝图冻结的常量/阈值发生变更时，登记本表；无记录的变更视为缺证据（复核报告 §3.2）。
+
+| 冻结值 | 旧值 | 新值 | 日期 | commit | 依据 | 影响评估 | 状态 |
+|---|---|---|---|---|---|---|:--:|
+| `maxTokens`（单段请求） | 2048 | 4096 | 2026-08-07 | `ac664fa1` | 「单日 3 餐 × ~10 菜 NDJSON 输出超 2048 致 `finish_reason=length`」——**CODE 待办：补日志片段或可复现输入** | 单次请求 token 上限翻倍，成本与延迟影响未评估——**CODE 待办：补一句成本/延迟影响结论** | **未满足·CODE 待办** |
+
+**CODE 动作**：在关闭 AF-B456-01~09 的同一批次，把上表"待办"两格补齐（贴 `finish_reason=length` 的日志片段或给出可复现的输入样例；给出成本/延迟影响的一句话结论，例如"单次请求成本上限 ×2，但仅在长输入触发，日均调用量下影响可忽略"或实测数据），状态改 `满足`。
 
 ---
 
@@ -125,6 +180,40 @@ B3 蓝图 INV-B3-01~08 全部保持。B4 仅改变 segment 的**构造方式**�
 | INV-B4-11 | 快速记 segmentId 与周期记 segmentId | 格式不同（`quick-*` vs `week-*`），不会碰撞 | T-B4-03 |
 
 > **建议**：在 `StreamingMealRequest` init 块加 `require(segments.map{it.segmentId}.distinct().size == segments.size) { "segmentId 重复" }` fail-fast。此为 🟡 建议（非阻断），若实施则需在 B3 session 测试中补"重复 segmentId 抛异常"用例。
+>
+> **CODE 待办（复核报告 §三.3.3）**：上述 fail-fast 已在代码里实施（`shared/.../ai/meallog/InputSegment.kt` `StreamingMealRequest.init`），但配套的"重复 segmentId 抛异常"用例未补——在 `StreamingMealSessionTest.kt` 补 `assertFailsWith<IllegalArgumentException> { StreamingMealRequest(segments = listOf(seg, seg.copy()), ...) }`。
+
+### 3.5 逐项状态与索引空间不变量（GC-17/18/19 · 2026-08-07 因 AF-B456-05 追加 · CODE 关闭 AF-B456-05 的冻结锚点）
+
+> 背景：B5 阶段 `SegmentProgressBar` 用 `completedSegments`/`currentSegmentOrdinal` 等标量反推逐段圆点状态，`ordinal`（业务序号，过滤前 0..6）与圆点 `index`（显示下标，过滤后 0..totalSegments-1）在有空白天时不相等，导致 ACTIVE 脉冲点永不出现、成败天对调显示；三角色审查曾"修复"过一次（`3f60c20f`）但只是换了个仍然跨索引空间比较的字段，未解决根因。本节是关闭 `AF-B456-05` 的唯一冻结依据，CODE 必须按此重写，不得重复上次那种"换字段名但仍标量反推"的做法。
+
+| ID | 条件 | 必须结果 | 禁止结果 | 证据 |
+|---|---|---|---|---|
+| INV-B456-R05a | UI 需要按段渲染独立状态（进度圆点） | `GenerationProgress` 暴露 `segmentStatuses: List<StreamSegmentState>`，`size == totalSegments`，顺序 == 显示顺序（`nonBlank.sortedBy { it.ordinal }`）；`SegmentProgressBar` 只做 `segmentStatuses[index]` → `DotState` 的直接映射 | UI 用 `completedSegments`/`terminalSegments` 与 `index` 比较反推逐项状态 | T-B5-02 |
+| INV-B456-R05b | 任何整型序号字段被 UI 消费 | 命名后缀标明索引空间；`currentSegmentOrdinal` 重命名为 `currentSegmentIndex`，取值 = `nonBlank.indexOfFirst { it.segmentId == current.segmentId }` | 跨索引空间直接比较（如 `index == currentSegmentOrdinal`） | T-B5-01 |
+| INV-B456-R05c | 段集合被"非空白"过滤后消费 | 数据流写出 `allSegments(7) --filter{!isBlank}--> nonBlank(N) --sortedBy{ordinal}--> 显示序`，UI 唯一消费对象 = 显示序列表 | UI 消费过滤前列表的长度或下标 | T-B5-01 |
+
+**索引空间对照表（GC-18 必填）**
+
+| 字段 | 索引空间 | 取值域 | 转换到显示下标 |
+|---|---|---|---|
+| `InputSegment.ordinal` | 业务序号（周内第几天） | 0..6（过滤前，**不因过滤重编号**） | `nonBlank.indexOfFirst { it.ordinal == x }` |
+| `GenerationProgress.currentSegmentIndex` | 显示下标 | `0..totalSegments-1` | 即显示下标 |
+| `GenerationProgress.segmentStatuses` 的下标 | 显示下标 | 同上 | 即显示下标 |
+| `SegmentProgressBar` `repeat(totalSegments){ index }` | 显示下标 | 同上 | 即显示下标 |
+
+**反例锁定（GC-17 · 审查 grep 判据）**：`androidApp/.../ui/ai/` 内出现下列形态即判 AF——`index < progress.completedSegments`（隐含"成功项必排在失败项前"）、`index == progress.currentSegmentOrdinal`（跨索引空间比较）。
+
+**新增测试**：T-B5-01（`{2:"周三",4:"周五"}` → `totalSegments==2 && currentSegmentIndex in 0..1`）、T-B5-02（段1 FAILED、段2 COMPLETED → `segmentStatuses == [FAILED, COMPLETED]`）、T-B5-03（全段 PENDING → `currentSegmentIndex==0`）。
+
+### 3.6 自动副作用清单表（GC-20 · 2026-08-07 因 AF-B456-04 追加 · CODE 关闭 AF-B456-04 的冻结锚点）
+
+> 背景：INV-B4-05/06 已要求截断"并给出一次性可见提示"，但 §7 实施脚本此前从未给出"提示"这一步的机械动作，CODE 严格按脚本做出了截断生效但完全静默的实现——这不是编码偏离，是蓝图本身的脚本空隙（GC-21 的由来）。本表 + §7 步骤 3.5 一起补齐这个空隙。
+
+| 触发条件 | 用户可见载体 | 文案原文 | 去重与复位规则 | 透明 Tier |
+|---|---|---|---|---|
+| 快速记输入框单次输入/粘贴超过 `AiMealPrompt.MAX_INPUT_CHARS`（200）字 | `LocalAppSnackbar`（`AiMealInputSheet.kt` 已取得实例） | `"已截取前 200 字"` | `var truncNotified by remember { mutableStateOf(false) }`：同一输入框连续超限只提示一次；文本降到上限以下后复位为 `false` | T1（事后留痕，Snackbar 即可，不用 AlertDialog） |
+| 周期记任一天输入框单次输入/粘贴超过 200 字 | 同上，`PeriodDayBlock` 新增可空回调参数 `onTruncated: (() -> Unit)? = null`（能力显隐由回调传入决定，非 mode 布尔） | 同上 | 同上，按天独立计数 | T1 |
 
 ---
 
@@ -393,6 +482,29 @@ data class AiMealInputUiState(
 | WeekStrip 圆角 10dp | SegmentedControl 轨道圆角同值，同为分段选中控件圆角一致 |
 | 天格高度 56dp | 标准触达底线 48dp + padding，直接满足适老要求 |
 
+### 5.8 对象生命周期表（GC-14/15/16 · 2026-08-07 因 AF-B456-03 追加 · CODE 关闭 AF-B456-03 的冻结锚点）
+
+> 背景：B4 步骤 3 把 §5.2.2/§5.2.3 的语音长按手势从"共用语音逻辑，零改动"（§2 非目标已声明）实现成了把 `activeRecognizer` **以值**传给 `QuickInputSection`，子组件写不回父层，`DisposableEffect` 的清理逻辑变成死代码——`a7fdf074` 版本里"统一语音实例管理，避免松手 stop 到错误对象"的历史修复连带消失，麦克风在部分场景不释放。本表是唯一冻结依据，CODE 按此恢复，不得引入新的语音状态字段或改 `VoiceRecognizer` 本体。
+
+| 对象 | 创建者 | 持有者 | 可调用者 | 释放点 | 释放触发条件 |
+|---|---|---|---|---|---|
+| `VoiceRecognizer` 实例 | `startVoiceRecognition(context, vm) { recognizer -> ... }` 回调 | `InputPhase` 层的 `remember { mutableStateOf<VoiceRecognizer?>(null) }`（**必须是 `MutableState`，以该 State 本身向下传递，见 GC-15**） | `QuickInputSection`（读+写，非只读值） | `tryAwaitRelease()` 后 `activeRecognizer.value?.stopListening(); activeRecognizer.value = null`；`DisposableEffect(Unit){ onDispose { activeRecognizer.value?.destroy() } }` | 长按手势松手；或组合体离开 Composition（Sheet 关闭） |
+
+**GC-15 传递形态**：`QuickInputSection` 的形参类型必须是 `activeRecognizer: MutableState<VoiceRecognizer?>`（不是 `VoiceRecognizer?` 值参数，也不是回调），调用处传入 `InputPhase` 层持有的同一个 `MutableState` 实例本身。
+
+**GC-16 搬迁历史修复清单**（重构语音长按代码块时逐条落点，不得遗漏）：
+
+| `a7fdf074` 原有历史修复 | 定位 | B4 重构后落点 |
+|---|---|---|
+| `// Bug修复：统一语音实例管理，避免 startVoiceRecognition 内新建实例导致松手 stop 到错误对象` 注释 | 原 `AiMealInputSheet.kt` 长按手势块 | 随 `MutableState` 传递方式一并恢复，注释保留 |
+| 松手 `activeRecognizer?.stopListening(); activeRecognizer = null` 配对逻辑 | 同上 | `QuickInputSection` 内 `tryAwaitRelease()` 之后 |
+| `VoiceState` 四态图标/`contentDescription`（长按开始说话/松手结束录音/识别中…/识别失败可重试） | 同上 | 恢复随 `VoiceState` 变化的图标与无障碍描述，不得退化为固定 `Icons.Outlined.Mic` + 固定文案 |
+| 录音中脉冲外圈动画 | 同上 | 恢复 |
+
+**必须新增/恢复的真机项**：`E-B6-VOICE-01`——①长按语音说一句→松手→文本进入输入框②立刻点发送→能发出且预览含该内容③连按三次录音，`adb shell dumpsys media.audio_flinger` 无残留 record client。
+
+**禁止扩大范围**：不得改 `VoiceRecognizer` 本体；不得给周期记加语音（§5.7 已裁决周期记不放语音）；不得改语音权限申请流程。
+
 ## §6. 数据流（B4 变更部分）
 
 ```
@@ -456,30 +568,63 @@ commitPreview
 - `forPeriodicRecord`：7 段生成、segmentId 格式 `week-{anchor}-day1..7`、ordinal 0-6、空白段保留
 - `mondayOfWeek`：正常周、跨年周（2025-12-29→周一 2025-12-29）、1月1日周一、12月31日所在周
 
-### 步骤 2：扩展 ViewModel（接入点 1, 5, 6）
+### 步骤 2：扩展 ViewModel（接入点 1, 5, 6 · 2026-08-07 因 AF-B456-01/02 全面改写，取代原 2.1~2.5 散文脚本）
 
-**文件**：`androidApp/.../ui/ai/AiMealInputViewModel.kt`
+**文件**：`androidApp/.../ui/ai/AiMealInputViewModel.kt`、`AiMealInputSheet.kt`
 
-2.1 `AiMealInputUiState` 新增字段（与 §4.3 一致）：
+> 背景：原 2.1~2.5 只说"新增 `quickDraftText` 字段"和"`submit()` 读它"，从未说明旧字段 `inputText` 的四个写入点怎么办，也没说发送按钮 `enabled` 该读谁。CODE 严格照做，结果 100% 合规地写出了双真相源——`quickDraftText` 只有 `submit()` 在读，构造器/`onVoiceResult`/`appendText`/`invalidateGenerationToInput` 四处仍写 `inputText`，语音识别结果和「粘贴」按钮内容因此永远发不出去（`AF-B456-01/02`）。这不是 CODE 的自由发挥，是原脚本的空隙；本节是唯一执行依据，取代原文。
+
+#### 2.0 字段真相源冻结表（GC-10）
+
+| 字段 | 唯一写入者 | 读取方（全部） | 禁止覆盖点 | 终局形态 |
+|---|---|---|---|---|
+| `quickDraftText` | `setQuickDraft()`（唯一收口） | `submit()` QUICK 分支 · `AiMealInputSheet.kt` 发送按钮 `enabled` 判据 · `InputPhase` TextField 回灌 | 除 `setQuickDraft()` 外任何 `_state.update{ it.copy(quickDraftText=…) }` | **唯一真相源** |
+| `inputText` | **无**（禁止任何写入） | 兼容读点（若仍有代码引用） | 全部 | **派生**：`val inputText: String get() = quickDraftText`（计算属性，与 §4.3 原设计"`inputText` 保留但变更为计算属性"一致） |
+
+#### 2.1 旧字段写入点迁移清单（GC-11/GC-27 · 逐行勾销，不得跳行）
+
+**前置动作**：CODE 先执行 `grep -n "inputText" androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/*.kt` 并与下表逐行比对。**若 grep 出表外的写入点 → 停机发 `Q-B4-NN`，不得自行处理。**
+
+| # | 写入点（定位） | 现状 | 处置 | 完成形态（审查判据） |
+|---|---|---|---|---|
+| W1 | `AiMealInputViewModel.kt:159-161` VM 构造 | `AiMealInputUiState(inputText = initialText, …)` | 改写为 `quickDraftText = initialText` | 构造实参列表 `grep "inputText ="` 零命中 |
+| W2 | `AiMealInputViewModel.kt:265-292` `invalidateGenerationToInput()` | `prev.copy(inputText = nextInput, …)` | 改为 `prev.copy(quickDraftText = nextInput, …)` | 函数体 `grep "inputText"` 零命中 |
+| W3 | `AiMealInputViewModel.kt:332-336` `onVoiceResult()` | 读 `_state.value.inputText` | 改读 `_state.value.quickDraftText` | 同上 |
+| W4 | `AiMealInputViewModel.kt:355-359` `appendText()` | 读 `_state.value.inputText` | 改读 `_state.value.quickDraftText` | 同上 |
+| W5（**GC-27，本项目"编辑收口函数"核对**） | `AiMealInputViewModel.kt:211-214` `setQuickDraft()` | 只 `take(200)` 写字段，**未调** `invalidateGenerationToInput()`——本项目"编辑即失效"的唯一收口函数是 `invalidateGenerationToInput`（B3 为修复 `AF-B3-03` 而建立）；任何新增编辑入口都必须核对是否路由过它，这条核对本身就是 B3→B4 同一 bug 复发的直接教训 | 内部改为调用 `invalidateGenerationToInput(trimmed, targetDate)` 收口 | 函数体出现 `invalidateGenerationToInput(` |
+| W6 | `AiMealInputUiState` 字段声明 | `val inputText: String = ""`（可写字段） | 改为 `val inputText: String get() = quickDraftText`（无 backing field，计算属性） | data class 主构造函数参数列表中不含 `inputText` |
+
+**Must not**：保留 `inputText` 为可写字段并"两边都写"（并存无同步保证，直接判 AF）；**Must not**：把 `invalidateGenerationToInput` 的粘性字段清单顺手重构（禁止扩大范围）。
+
+#### 2.2 UI 判据 / 业务判据同源表（GC-12）
+
+| 判据 | 位置 | 唯一表达式（字面量） |
+|---|---|---|
+| 发送按钮可用 | `AiMealInputSheet.kt:459-463` `enabled =` | `state.quickDraftText.isNotBlank()` |
+| 提交前置校验 | `AiMealInputViewModel.submit()` QUICK 分支 | `state.quickDraftText.trim().isBlank() -> return` |
+
+审查判据：`grep -n "enabled = state\." AiMealInputSheet.kt` 结果与 `submit()` QUICK 分支引用同一字段；不同源即判 AF。
+
+#### 2.3 其余字段与方法（原 2.1/2.2 内容，未涉及 AF，照原样保留）
+
+`AiMealInputUiState` 另新增（与 §4.3 一致）：
 ```kotlin
 val inputMode: InputMode = InputMode.QUICK,
-val quickDraftText: String = "",
 val periodWeekMonday: LocalDate = ...,  // 默认当前日期所在周周一
 val periodSelectedRange: IntRange = 0..6,
 val periodInputs: Map<Int, String> = emptyMap(),
 ```
 
-2.2 新增 VM 动作（字段名与 §4.3 一致）：
+新增 VM 动作：
 ```kotlin
 fun setInputMode(mode: InputMode) { ... }        // 切换模式，保留对方草稿
-fun setQuickDraft(text: String) { ... }           // take(200)
-fun setPeriodInput(dayIndex: Int, text: String) { ... }  // take(200)，写 periodInputs
+fun setPeriodInput(dayIndex: Int, text: String) { ... }  // take(200)，写 periodInputs；截断分支须调用 GC-30（见 §7 步骤 3.5）
 fun setWeekRange(start: Int, end: Int) { ... }    // 调整 periodSelectedRange
 fun advanceWeek() { ... }                         // periodWeekMonday + 7，清空 periodInputs
 fun retreatWeek() { ... }                         // periodWeekMonday - 7，清空 periodInputs
 ```
 
-2.3 `submit()` 改造（`AiMealInputViewModel.kt:268-280`，接入点 1）：
+`submit()` 改造（接入点 1）：
 ```kotlin
 fun submit() {
     val state = _state.value
@@ -510,11 +655,21 @@ fun submit() {
 }
 ```
 
-2.4 **删除 `startOfWeek()` 私有方法**（`AiMealInputViewModel.kt:486-489`）→ 替换为 `InputSegmentFactory.mondayOfWeek()`。
+**删除 `startOfWeek()` 私有方法**（`AiMealInputViewModel.kt:486-489`）→ 替换为 `InputSegmentFactory.mondayOfWeek()`。
 
-2.5 `setInputText()` 兼容：快速记模式时调用 `setQuickDraft()`，周期记模式时不操作。
+#### 2.4 STEP 勾销 + 回归基线锁定（GC-09/23/24）
 
-### 步骤 3：新建 UI 组件 + 扩展 InputPhase
+| STEP-ID | 文件:定位 | 动作 | 完成后形态 | Evidence |
+|---|---|---|---|---|
+| STEP-B4-2.1 | VM `AiMealInputUiState` + 四个写入点 | 按 2.1 表 W1~W6 逐行迁移 | 全仓 `grep "inputText ="`（赋值形）零命中 | T-B4-03/08/09 |
+| STEP-B4-2.2 | `AiMealInputSheet.kt:459` | `enabled` 改为 `state.quickDraftText.isNotBlank()` | 字面量匹配 2.2 表 | 真机 E-B6-VOICE-01 |
+| STEP-B4-2.3 | VM `setQuickDraft()` | 内部收口调 `invalidateGenerationToInput()` | 函数体含该调用 | T-B4-10 |
+| STEP-B4-2.4 | VM `startOfWeek()` | 删除，替换为 `InputSegmentFactory.mondayOfWeek()` | `grep startOfWeek` 零命中 | T-B4-07 |
+| STEP-B4-2.5 | VM 新增字段/方法 | 按 2.3 落地 `inputMode`/`periodWeekMonday`/`periodSelectedRange`/`periodInputs`/`setInputMode`/`setPeriodInput`/`setWeekRange`/`advanceWeek`/`retreatWeek` | 编译通过 + T-B4-01/02/04 | T-B4-01/02/04 |
+
+**本批不得失败**（回归基线锁定）：`AiMealInputViewModelStreamTest`（T-B3-01~09 全部）、`InputSegmentFactoryTest`、`StreamingMealSessionTest`。**不批准**任何 B3 断言弱化；如需修改，先发 `Q-B4-NN`。
+
+### 步骤 3：新建 UI 组件 + 扩展 InputPhase（2026-08-07 补丁：拆 STEP 编号 + 补 3.4/3.5 落点）
 
 **新建文件**：
 - `androidApp/.../ui/ai/WeekStrip.kt`（§5.2.2 规格）
@@ -522,17 +677,17 @@ fun submit() {
 
 **修改文件**：`androidApp/.../ui/ai/AiMealInputSheet.kt`
 
-3.1 `InputPhase` 内部按 `state.inputMode` 分叉 → `QuickInputSection`（既有代码搬迁）/ `PeriodInputSection`（新增）
-
-3.2 `PeriodInputSection` 使用 `WeekStrip` + `PeriodDayBlock` 列表 + `CapsuleButton`
-
-3.3 发送按钮改为 `CapsuleButton`，文案：快速记 `"发送"` / 周期记 `"发送 · N 天"`
-
-3.4 标题文案跟随模式："AI 快捷记一餐" / "AI 周期记一餐"
+| STEP-ID | 动作 | 完成后形态 | Evidence |
+|---|---|---|---|
+| STEP-B4-3.1 | `InputPhase` 内部按 `state.inputMode` 分叉 → `QuickInputSection`（既有代码搬迁，**须按 §5.8 对象生命周期表恢复 `activeRecognizer` 的 `MutableState` 传递方式**，不得以值传参）/ `PeriodInputSection`（新增） | §5.8 GC-14/15/16 全部满足 | 真机 E-B6-VOICE-01 |
+| STEP-B4-3.2 | `PeriodInputSection` 使用 `WeekStrip` + `PeriodDayBlock` 列表 + `CapsuleButton` | 编译通过 + E-B4-01/02 | E-B4-01/02 |
+| STEP-B4-3.3 | 发送按钮改为 `CapsuleButton`，文案：快速记 `"发送"` / 周期记 `"发送 · N 天"` | 字面量匹配 | 真机目测 |
+| STEP-B4-3.4（**GC-25**） | 标题文案跟随模式 | `text = if (state.inputMode == InputMode.QUICK) "AI 快捷记一餐" else "AI 周期记一餐"`（**当前代码两分支相同，是死条件，AF-B456-09**） | 审查判据：`grep "AI 周期记一餐" AiMealInputSheet.kt` 须命中 |
+| STEP-B4-3.5（**GC-21/30，关闭 AF-B456-04**） | 按 §3.6 自动副作用清单表，在 `QuickInputSection`/`PeriodDayBlock` 的 `onValueChange` 截断分支（`truncatedText.length != newVal.text.length`）弹一次 `LocalAppSnackbar.current.showSnackbar("已截取前 ${AiMealPrompt.MAX_INPUT_CHARS} 字")`；`PeriodDayBlock` 经新增可空回调 `onTruncated` 接收，由 `PeriodInputSection` 注入；`truncNotified` 复位规则见 §3.6 | 两处截断分支均出现 Snackbar 调用；文本降到上限以下不重复弹 | T-B4-05a/05b（沿用 §9.2）+ 真机 `E-B6-TRUNC-01` |
 
 ### 步骤 4：测试
 
-见 §9。
+见 §9（含 §9.4 INV↔T 双向映射表）。
 
 ### 步骤 5：构建与台账
 
@@ -541,6 +696,21 @@ scripts\build-cli.bat :shared:testDebugUnitTest
 scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest"
 scripts\build-cli.bat :androidApp:assembleDebug
 ```
+
+台账须贴**当次**输出，Shared / Android 分别列出测试计数（GC-06）；不得只写 `Shared tests: 0 failures`。
+
+### 步骤 6：STEP 勾销表（GC-24 · 2026-08-07 补丁新增，交付时由 CODE 填）
+
+| STEP-ID | 状态 | 落地 commit | diff 定位 |
+|---|---|---|---|
+| STEP-B4-2.1~2.5 | 待填 | | |
+| STEP-B4-3.1~3.5 | 待填 | | |
+| §1 冻结值修订记录表（maxTokens） | 待填 | | |
+| §3.5 INV-B456-R05a/b/c | 待填 | | |
+| §3.6 自动副作用清单表 | 待填 | | |
+| §5.8 对象生命周期表 | 待填 | | |
+
+**审查以此表逐条 diff 复核，不采信 commit message 自述**（`AF-B456-07` 的教训：`63fd3fec` 曾勾了"periodSelectedRange 注释已完成"但代码与首次编写时完全一致）。
 
 ### B4 最小改动集（架构工程师确认，命名已对齐 §4）
 
@@ -600,26 +770,38 @@ scripts\build-cli.bat :androidApp:assembleDebug
 
 B3 既有测试（T-B3-01~09 + session/mapper/parser/runtime）全部保持通过。
 
+### 9.4 INV ↔ T 双向映射表（GC-05 · 2026-08-07 补丁新增）
+
+> 每条 INV 至少 1 个 T-ID，每个 T-ID 至少 1 个 INV；出现孤儿项即判蓝图未完成。本表覆盖 B4 补丁涉及的全部新增不变量与测试，交付时补齐"当次结果"列。
+
+| INV | T-ID | 覆盖 AF | 当次结果 |
+|---|---|---|:--:|
+| INV-B4-01~11（原有） | T-B4-01~07（§9.2） | — | 待填 |
+| （字段真相源 §7 步骤 2.0） | T-B4-08（`onVoiceResult` 发送验证）、T-B4-09（`appendText` 拼接验证）、T-B4-10（`setQuickDraft` 生成中编辑打断验证） | AF-B456-01/02 | 待填 |
+| INV-B456-R05a/b/c（§3.5） | T-B5-01/02/03 | AF-B456-05 | 待填 |
+| INV-B4-05/06（截断提示，§3.6） | T-B4-05a/05b（沿用）+ 真机 `E-B6-TRUNC-01` | AF-B456-04 | 待填 |
+| segmentId 唯一性（§3.4） | `StreamingMealSessionTest` 新增用例 | 缺证据 §3.3 | 待填 |
+| §5.8 语音生命周期 | 无法单测，真机 `E-B6-VOICE-01` | AF-B456-03 | 待填 |
+| §7 步骤 3.4 标题文案 | 无单测，并入真机 `E-B4-01` 预期结果 | AF-B456-09 | 待填 |
+
 ---
 
-## §10. 审查裁决延后项（2026-08-06 三角色审查记录）
+## §10. 审查裁决延后项（2026-08-06 三角色审查记录，2026-08-07 补 GC-03 归宿列）
 
-以下审查发现不阻塞 B4 交付，记录到对应批次：
+> **GC-03（延后项归宿）说明**：本表原版全部标"待 B5/B6"是"只留指针"，这正是 `AF-B456` 复核报告 §3.1 指出的"B4→B5 连续两批延后项无归宿"问题的源头。下表已补齐归宿——已处理项标实际关闭 commit，未处理项转成本次补丁的具体条目或显式弃置+理由，不得再留纯指针。
 
-| 来源 | 项目 | 裁决 | 目标批次 |
+| 来源 | 项目 | 裁决 | 归宿（GC-03） |
 |------|------|------|---------|
-| Apple #3 | advanceWeek/retreatWeek 未接通 UI | 🟡 B4 蓝图未要求周切换（WeekStrip 是点选范围），待 B5 接通 | B5 |
-| Google质量 B4-S1 | periodSelectedRange 语义澄清 | ⚪ 可见范围≠提交范围，加注释说明 | B5 蓝图 |
-| Google架构 S1 | mondayOfWeek 在 submit() 中冗余反推 | ⚪ 不阻塞，逻辑安全 | B6 收尾 |
-| Google架构 S2 | 200 字上限散布 4 处，未提取常量 | 🟡 提取 `MAX_INPUT_CHARS` 公共常量 | B5/B6 |
-| Google架构 S3 | InputSegment.charCount 死代码 | ⚪ 保留不删（1 行 getter，伤害低） | 不处理 |
-| Apple #3 | VoiceRecognizer 泄漏（B3 预存） | ⚪ 非 B4 引入，记录 | 技术债 |
-| Apple #4 | 两模式字符计数动画不一致 | ⚪ 抽 CharCountLabel 组件 | B5 |
-| Apple #5 | 截断层不一致（VM 层 vs UI 层） | ⚪ 统一在 VM 层截断 | B5 |
-| Apple #7 | 切周清空草稿无撤销 | 🟡 接通 UI 时加 Snackbar 撤销 | B5 |
-| Apple #8 | 字符计数 overlay 可能压文字 | ⚪ 评估后加底部 padding | B5 视觉打磨 |
-
-> **下次统一处理**（B5 蓝图起草时强制列入）：200 字常量提取、CharCountLabel 组件、截断层统一、周切换 UI 接通、撤销 Snackbar。
+| Apple #3 | advanceWeek/retreatWeek 未接通 UI | ✅ B5 已接通（`63fd3fec` WeekStrip 切周箭头） | 已关闭 `63fd3fec` |
+| Google质量 B4-S1 | periodSelectedRange 语义澄清 | ⚠️ B5 声称已加注释（`63fd3fec`），复核核实**注释与首次编写时完全一致，未真正落地**（`AF-B456-07`） | 转本次补丁：CODE 需在 `periodSelectedRange` 字段补真实注释"仅控制输入区可见性，`submit()` 提交 `periodInputs` 中全部非空白天，不受本范围限制" |
+| Google架构 S1 | mondayOfWeek 在 submit() 中冗余反推 | ⚪ 逻辑安全，非本次阻断 | 显式弃置：转下一次维护批次顺手清（B6 说要做但未做，本次不追加范围，避免范围漂移） |
+| Google架构 S2 | 200 字上限散布 4 处，未提取常量 | ✅ 已提取 `AiMealPrompt.MAX_INPUT_CHARS`（`63fd3fec`） | 已关闭 `63fd3fec` |
+| Google架构 S3 | InputSegment.charCount 死代码 | ⚪ 保留不删 | 显式弃置：1 行 getter，伤害低，不处理 |
+| Apple #3 | VoiceRecognizer 泄漏（B3 预存） | 🔴 B4 步骤 3 实际**加重**了此问题（`AF-B456-03`） | 转本次补丁：§5.8 对象生命周期表 |
+| Apple #4 | 两模式字符计数动画不一致 | ✅ 已抽 `CharCountLabel`（`63fd3fec`），但 KDoc 与实现不符（R-06） | 部分关闭 `63fd3fec`；KDoc 修正转下一维护批次（非阻断，不在本次 9 项 AF 范围内） |
+| Apple #5 | 截断层不一致（VM 层 vs UI 层） | ⚠️ B5 声称"统一到 VM 层"，但 B6 又在 UI 层加回截断（`ac664fa1`），现为双层截断，"统一"结论已失效 | 转本次补丁：§3.6 承认双层截断为现状（UI 层截断负责即时视觉反馈+提示，VM 层截断负责最终写入值一致），不强行合并为单层，避免范围漂移；文档表述已更正 |
+| Apple #7 | 切周清空草稿无撤销 | ✅ 已加 `AppSnackbar.showUndo`（`63fd3fec`） | 已关闭 `63fd3fec` |
+| Apple #8 | 字符计数 overlay 可能压文字 | ⚠️ B5 声称已加 padding，复核发现 padding 加在调用处而非组件内，KDoc 描述与实现不符（R-06） | 转下一维护批次（非阻断） |
 
 ---
 
@@ -637,6 +819,7 @@ B3 既有测试（T-B3-01~09 + session/mapper/parser/runtime）全部保持通�
    - `scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest"`
    - `scripts\build-cli.bat :androidApp:assembleDebug`
 7. 本蓝图状态由 `DRAFT` → `ACCEPTED`。
+8. **（2026-08-07 补丁新增）** §0.1 颗粒度勾销表 26+9=35 条 GC 中标"未满足·CODE 待办"的全部转为"满足"，无遗留；`AF-B456-01~09` 全部按对应章节的"唯一最小修复"关闭；§7 步骤 6 的 STEP 勾销表全部填写落地 commit 与 diff 定位；真机清单（§13）补齐 B6 分组并按当次时间重命名文件。全部满足后，把本文件头的状态由 `REVIEWED_BLOCKED → 补丁中` 改回 `ACCEPTED`，并把 `BLUEPRINT_STATE.md` 的 `TURN` 改回 `ARCH`、`git push`，交回架构模型做二次复核（仅限本轮 9 项 AF + 补充测试范围，不重新审查已通过项）。
 
 ### 11.2 B4 → B5 过渡条件
 
@@ -670,3 +853,17 @@ B3 蓝图的 §11.6 放行判定要求本文（B4 蓝图）完成后将 B3 蓝�
 | E-B4-04 | 周期记发送 → 流式生成 | ①在周一/周三/周五填内容，其余留空 → 点击发送②确认只发了 3 个请求（非 7 个）③生成过程中可看到进度（第 1/3 天...）④空白天不产生预览内容 | ⬜ |
 | E-B4-05 | 草稿独立保留 | ①快速记输入"午饭"②切换到周期记③切换回快速记 → "午饭"还在④周期记周一写"早餐"⑤切换到快速记⑥切换回周期记 → 周一"早餐"还在 | ⬜ |
 | E-B4-06 | 全部空白不可发送 | ①周期记模式全部 7 天空白 → 发送按钮灰色不可点击②快速记模式输入框空白 → 发送按钮灰色 | ⬜ |
+
+### B6 分组（2026-08-07 补丁新增，GC-08 · 关闭 AF-B456-08）
+
+> B6（`ac664fa1`）五项真机改动此前零验证项登记，本次补齐。**CODE 完成 AF-B456-01~09 修复后，须把本文件重命名为 `真机待验证清单_<当次 yyyyMMddHHmm>.md`（唯一清单原则，不得新建第二份），并把下表状态更新为实测结果。**
+
+| 编号 | 验证项 | 操作步骤 | 状态 |
+|------|--------|----------|:--:|
+| E-B6-01 | 单天保存后 Sheet 关闭不冻屏 | 快速记/周期记保存一次 → Sheet 关闭动画正常，无卡顿黑屏，重复 5 次 | ⬜ |
+| E-B6-02 | 长输入不截断 | 单日 3 餐 × ~10 菜的长输入 → AI 完整解析出全部菜品，不出现 `finish_reason=length` 截断 | ⬜ |
+| E-B6-03 | 已有餐食灰显 | 打开周期记，本周已记录过的日期显示半透明+「已有」小标，仍可选中 | ⬜ |
+| E-B6-04（R-01，先记录再修） | 切周后灰显是否随之更新 | ①周期记打开时看到当周灰显正确②点→切到下一周③检查该周已有餐食日是否也正确灰显（**已知缺陷：目前只在打开 Sheet 时查一次，切周后不刷新，此项预期失败，记录现象即可，不算本批阻断**） | ⬜ |
+| E-B6-05 | 粘贴超 200 字截断 + 提示 | 快速记/周期记粘贴 300 字内容 → 截断到 200 字 + Snackbar「已截取前 200 字」出现（与 `AF-B456-04` 关闭状态一并验） | ⬜ |
+| E-B6-VOICE-01（AF-B456-03） | 语音实例正确释放 | 见 §5.8 | ⬜ |
+| E-B6-TRUNC-01（AF-B456-04） | 截断提示不重复弹 | 见 §3.6 | ⬜ |

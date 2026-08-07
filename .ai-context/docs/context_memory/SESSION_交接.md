@@ -1,91 +1,97 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-07（架构复核后）**
-> 当前状态：**B4+B5+B6 架构模型复核已完成，结论：未通过。TURN 转 CODE（编码机），须逐条关闭 AF-B456-01~09 后交回 ARCH 复核。**
-> **协作模式：BLUEPRINT（C 档，常驻声明）**——开工前先读 `docs/context_memory/BLUEPRINT_STATE.md` 确认 `TURN` 是不是自己；不是自己就停手，只报告持球方。
-> 末位提交：`599566e6`（声明协作模式 + 建立 BLUEPRINT_STATE）。本轮复核未产生代码 commit，只产出复核报告 + 规则回填，见下方"本轮变更"。
+> 更新时间：**2026-08-07（架构复核 + 颗粒度机制落地后）**
+> 当前状态：**B4+B5+B6 架构模型复核未通过（9 项阻断）。同日建立"蓝图颗粒度分级机制"（L1~L7，35 条 GC）并已打补丁到 B4 蓝图。TURN=CODE（编码机），下一步直接读 B4 蓝图 §0.1 逐条落点开工，不必重新分析。**
+> **协作模式：BLUEPRINT（C 档，常驻声明）**——开工前先读 `docs/context_memory/BLUEPRINT_STATE.md` 确认 `TURN` 是不是自己且看清楚"颗粒度"行；不是自己就停手，只报告持球方。
+> 末位提交：待本次交接一并提交。上一提交 `599566e6`（声明协作模式 + 建立 BLUEPRINT_STATE）。
 
 ---
 
-## 一、本轮完成（架构模型复核，ARCH = Claude@主力机）
+## 一、本轮完成（两件事，都是 ARCH = Claude@主力机 做的）
 
-1. 对 B4+B5+B6 批次做架构模型终审，复核范围：B3 蓝图 §11（沿用项是否被破坏）+ B4 蓝图 §0/§3/§7 + B5 事实性范围（无独立蓝图）+ B6 不变量合规，逐行核对 `a7fdf074..ac664fa1` 全部代码 diff（14 文件，2307 插入/341 删除，未采信 commit message 自述）。
-2. **结论：未通过**。完整报告：`docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`（**CODE 接手前必须完整读一遍，本文件只摘要**）。
-3. 把两条可复用根因回填共享规则：`~/.ai-context/rules/blueprint_protocol.md` §4 新增"索引空间隐性耦合"审查分类 + "蓝图包任务卡必须含上一批延后项归宿"门禁 + "新增语义重叠 state 字段先 grep 旧字段写入点"规则；项目内副本 `docs/experience/12_多模型协作与实施蓝图规范.md` 同步（新增 BL-08 + §10 闭环记录）；`CLAUDE.md` 踩坑红线补 2 条一行版；ai-share 已同步推送（`ecad3c3`）。
-4. `docs/experience/` 已按 `/zongjie` 沉淀本轮经验（`07_操作记录.md` 新条目、`INDEX.md` 会话点+计数）。
-5. `BLUEPRINT_STATE.md` 已更新：状态 `REVIEWED_BLOCKED`，`TURN=CODE`。
+### 1.1 架构模型复核（B4+B5+B6）
 
----
+对 B4+B5+B6 批次做架构模型终审，逐行核对 `a7fdf074..ac664fa1` 全部代码 diff（14 文件，2307 插入/341 删除，未采信 commit message 自述）。**结论：未通过**。完整报告：`docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`（9 项阻断 `AF-B456-01~09` + 3 项缺证据 + 13 项建议）。
 
-## 二、⏭ 下一步（CODE 在编码机上按此执行）
+### 1.2 蓝图颗粒度分级机制（用户当场提出的新需求，同日设计并落地）
 
-**先读**：`docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` 全文（尤其 §二 9 条 AF 的"唯一最小修复"与"必须新增/恢复的测试"）+ `~/.ai-context/rules/blueprint_protocol.md` §3（编码模型职责与停机，遇蓝图缺口停手记 `Q-<批次>-NN`，不得自行发挥）。
+用户诉求：审核发现的问题要能被系统性记录、可追踪、可复用，蓝图要有"颗粒度"分级（1~N，越大越精细），编码模型易犯的错要登记进级别，新增错误类别要能加级并说明原因。
 
-### 复核通过条件（须全部满足后再交回 ARCH，见报告 §六）
-
-1. `AF-B456-01~09` 全部按报告给出的"唯一最小修复"关闭，**不扩大范围**（报告每条都写了"禁止扩大范围"边界，照做即可，别顺手重构）。
-2. 补齐 B4 蓝图 §9.2 的 `T-B4-01~07` + 各 AF 条目要求的新增用例（`T-B4-08/09/10`、`T-B5-01/02/03`、`StreamingMealRequest` 重复 segmentId 用例）。
-3. §11.1 的三条构建/测试命令**同一 commit、当次串行成功**，台账贴出**当次**测试计数（Shared / Android 分别列出，不得只写 "Shared tests: 0 failures"）。
-4. 补一份 B5 的 **BLUEPRINT-LITE 追认四件套**（任务卡 / allowlist / 不变量表 / 测试矩阵），把报告 §3.1 表格里 7 项写成显式条款，尤其冻结 S1（`PARTIAL_READY` 可否保存）与 S2（preview 触发时机）。
-5. B4 蓝图 §1 追加 `maxTokens` 2048→4096 的修订记录与依据（B6 已改值但未记录）。
-6. 真机清单补 B6 分组（`E-B6-01~05`）并按当次时间重命名（唯一清单原则，不得新建第二份）。
-7. 建议项 R-01~R-13 逐条给出"本批修 / 转下批 / 显式弃置"裁决（不要求全修，但要求全部有归宿——呼应本轮新加的"延后项归宿"门禁）。
-
-### 关键提醒（照抄报告即可，不必重新分析）
-
-- AF-01/02 根因是 `quickDraftText` 与 `inputText` 双真相源，报告已给出两个修复方案（推荐方案 B：删 `inputText` 字段，改计算属性）；修完后 `AiMealInputViewModelStreamTest.kt`（T-B3-01~09）必须全绿，这是判断修复是否到位的第一道闸。
-- AF-05（`SegmentProgressBar` 索引空间错配）在 B5 三角色审查中曾被"修复"过一次但实为假修复——本次要用报告给出的方案（VM 直接产出 `segmentStatuses: List<StreamSegmentState>`）重修，**不要重复上次那种"换个字段名but还是标量反推"的做法**。
-- 完成后**同一批次**把结果交回 ARCH（Claude@主力机）复核，`BLUEPRINT_STATE.md` 的 `TURN` 改回 `ARCH` 并 `git push`，下一次主力机开工前 `git pull` 即可看到。
+- 先 spawn Opus 设计机制：**规模轴**（FULL/LITE，管写哪些工件）与**颗粒度轴**（`L1~L7`，管每个工件写多细）正交；GC（Granularity Clause）条款必须是存在性命题；三分支升级（复发→该 GC 复发计数+1/两次升自动检查；扩容→现有级别加条款；开新级→需要全新表达形式）。种子版 26 条 GC，直接用本次 9 项 AF 校验过。
+- 用户追加：回溯 B1~B3 三轮复审 + 架构终审的结论（不看代码细节，只看结论），又挖出 9 条新 GC（GC-27~35）+ 3 个新 BL 类别。**最有价值的两个发现**：
+  - `AF-B3-03`（B3，已修）→ `AF-B456-01`（B4，本次阻断）是**同一个 bug 跨批次真实复发**——本项目"编辑即失效"收口函数 `invalidateGenerationToInput` 第一次被 `setInputText()` 绕过（B3 修了），第二次被新入口 `setQuickDraft()` 绕过（B4 又踩）。→ `GC-27`。
+  - `AF-ARCH-02`（构造时单例 parser 在段数=1 时被掩盖，段数>1 立即整体失效）是**全项目历史上最严重的单项阻断**。→ `GC-28`/`BL-09`。
+- **落地文件**（本轮全部完成，见下方"三、本轮改动文件清单"）：共享规则 `blueprint_protocol.md`（已同步 ai-share）、项目 `12_多模型协作与实施蓝图规范.md`（新增 §12 GC 登记表 + §13 升级历史）、`BLUEPRINT_STATE.md`（新增"颗粒度"字段 + "CODE 入口"小节）、**B4 蓝图本身打补丁到 L7**（这是 CODE 下一步唯一要读的文件）。
 
 ---
 
-## 三、先读清单（任何一端接手时按序读）
+## 二、⏭ 下一步（CODE 在编码机上按此执行，入口已内嵌进蓝图，不必再读本节以外的东西）
 
-1. `BLUEPRINT_STATE.md`（**先读，确认 TURN 是不是自己**）
+**唯一入口**：`docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md` **§0.1 颗粒度勾销表**。表里每行是一条 GC，"本蓝图落点"列直接指向你要改的章节（§1 末尾冻结值表、§3.5 索引空间不变量、§3.6 自动副作用表、§5.8 对象生命周期表、§7 步骤 2/3/6、§9.4），标"未满足·CODE 待办"的就是本批要关闭的点，**蓝图已给出唯一最小修复方案 + 完成形态字面量 + grep 判据，不必自己设计**。
+
+- 遇到蓝图没写清楚的点 → 停手，按 `~/.ai-context/rules/blueprint_protocol.md` §3 记 `Q-B4-NN`，不得自行发挥。
+- 关闭全部 9 项 AF 后：填 §7 步骤 6 STEP 勾销表 → §11.1 放行条件第 8 条逐项打勾（含 §0.1 表 35 条 GC 全部转"满足"）→ 蓝图头状态改回 `ACCEPTED` → `BLUEPRINT_STATE.md` 的 `TURN` 改回 `ARCH` → 同一提交 `git push`。
+- 二次复核范围仅限本次 9 项 AF + 补充测试，ARCH 不会重新审查已通过项。
+
+**旧版"复核通过条件 7 条"已被 §0.1 表取代**（内容一致，§0.1 更细、按 GC 逐条给了落点），不必再对照两份清单。
+
+---
+
+## 三、本轮改动文件清单（供快速核对，非必读）
+
+| 文件 | 改动 |
+|---|---|
+| `~/.ai-context/rules/blueprint_protocol.md`（共享，已同步 ai-share） | §2 扩为两轴；新增 §2.1（颗粒度定义/判定式/GC书写红线/L1~L7语义）、§2.2（声明规范）；§4 加三分支升级判定 |
+| `docs/experience/12_多模型协作与实施蓝图规范.md` | §2 BL 表加 BL-09/10/11；新增 §12（35 条 GC 完整登记表）+ §13（升级历史）；§11 模板补颗粒度声明位 |
+| `docs/context_memory/BLUEPRINT_STATE.md` | 新增"颗粒度"字段行 + "CODE 入口"4 步小节 |
+| `docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md` | 头部加颗粒度声明；新增 §0.1（勾销表）、§1 末尾（冻结值修订表）、§3.5（索引空间不变量，关 AF-05）、§3.6（自动副作用表，关 AF-04）、§5.8（对象生命周期表，关 AF-03）；§7 步骤 2 全面改写（关 AF-01/02）、步骤 3 拆 STEP（关 AF-09 + 截断提示落点）、新增步骤 6（STEP 勾销表）；§9.4（INV↔T 映射表）；§10 补归宿列；§11.1 加条件 8；§13 补 B6 真机分组 |
+| `docs/experience/07_操作记录.md` / `INDEX.md` | 记录本轮（架构复核 + 颗粒度机制建立两条） |
+| `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`（新建） | 复核完整报告，9 阻断+3缺证据+13建议 |
+
+---
+
+## 四、先读清单（任何一端接手时按序读）
+
+1. `BLUEPRINT_STATE.md`（**先读，确认 TURN + 颗粒度**）
 2. `SESSION_交接.md`（本文件）
-3. `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`（**本轮核心交付物，CODE 必读全文**）
-4. `.ai-context/PROJECT.md`
-5. `~/.ai-context/rules/blueprint_protocol.md`（C 档协作细则；无用户级目录时读项目内副本 `docs/experience/12_多模型协作与实施蓝图规范.md`）
-6. `docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md`（重点 §2 allowlist、§3 不变量、§7 实施脚本、§9.2 测试矩阵、§10 延后项、§11.1 放行条件）
-7. `docs/feature/AI记一餐_周期记_NDJSON流式_B3会话实施蓝图.md`（重点 §11 架构终审、状态机与 generation 隔离设计）
-8. `docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md`
+3. `docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md` §0.1（**CODE 的直接工作入口**）
+4. 需要事故全貌时才读：`docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`（§0.1 已把结论摘到落点，通常不必整篇重读）
+5. `.ai-context/PROJECT.md`
+6. `docs/experience/12_多模型协作与实施蓝图规范.md` §12/§13（想理解某条 GC 为什么存在时查）
 
 ---
 
-## 四、B4+B5+B6 代码文件速查（复核已确认的事实）
+## 五、B4+B5+B6 代码文件速查（复核已确认的事实，本轮未改代码，仍准确）
 
 | 文件 | 角色 | 本轮阻断涉及 |
 |------|------|------|
-| `shared/.../ai/meallog/AiMealPrompt.kt` | MAX_INPUT_CHARS 常量、maxTokens | 缺证据（§3.2） |
-| `shared/.../ai/meallog/InputSegment.kt` | segmentId 唯一性 fail-fast | 缺证据（§3.3，缺配套测试） |
-| `shared/.../ai/meallog/InputSegmentFactory.kt` | 段工厂（三个纯函数） | 通过，无需重查 |
-| `androidApp/.../ui/ai/AiMealInputViewModel.kt` | 状态机+进度+撤销，本轮改动最集中 | **AF-01/02（双真相源）** |
-| `androidApp/.../ui/ai/AiMealInputSheet.kt` | Sheet 入口+各阶段组件 | **AF-02/03（语音回归）/09（标题）** |
-| `androidApp/.../ui/ai/WeekStrip.kt` | 7 天选择器+切周箭头+已有餐食灰显 | R-01（切周后陈旧） |
-| `androidApp/.../ui/ai/PeriodDayBlock.kt` | 单天输入块 | AF-04（截断无提示） |
-| `androidApp/.../ui/ai/GeneratingPhase.kt` | 生成中阶段 UI | R-04（动画恒真） |
-| `androidApp/.../ui/ai/SegmentProgressBar.kt` | 段进度条 UI | **AF-05（索引空间错配，假修复）** |
-| `androidApp/.../ui/ai/GenerationProgress.kt` | 段进度数据类 | AF-05 需扩字段 |
-| `androidApp/.../ui/component/CharCountLabel.kt` | 统一字符计数 | R-06（KDoc 与实现不符） |
-| `androidApp/.../ui/addmeal/AddMealViewModel.kt` | 已有餐食日期查询 | R-02（N+1 查询） |
-| `androidApp/.../ui/addmeal/AddDayFoodScreen.kt` | UI 冻结修复 | AF-08（真机登记缺失） |
+| `shared/.../ai/meallog/AiMealPrompt.kt` | MAX_INPUT_CHARS 常量、maxTokens | §1 冻结值修订表待办 |
+| `shared/.../ai/meallog/InputSegment.kt` | segmentId 唯一性 fail-fast | 缺配套测试 |
+| `androidApp/.../ui/ai/AiMealInputViewModel.kt` | 状态机+进度+撤销，本轮改动最集中 | **AF-01/02（§7 步骤 2）** |
+| `androidApp/.../ui/ai/AiMealInputSheet.kt` | Sheet 入口+各阶段组件 | **AF-02/03/09（§5.8、§7 步骤 3）** |
+| `androidApp/.../ui/ai/PeriodDayBlock.kt` | 单天输入块 | AF-04（§3.6/§7 步骤 3.5） |
+| `androidApp/.../ui/ai/SegmentProgressBar.kt` | 段进度条 UI | **AF-05（§3.5，假修复过一次，别重蹈）** |
+| `androidApp/.../ui/ai/GenerationProgress.kt` | 段进度数据类 | AF-05 需扩 `segmentStatuses` 字段 |
+| `androidApp/.../ui/addmeal/AddMealViewModel.kt` / `AddDayFoodScreen.kt` | 已有餐食查询 / UI 冻结修复 | AF-08（§13 真机登记） |
 
-**不改**（B1-B6 全程零改动，本轮已验证）：`StreamingMealSession`、`StreamingMealParser`、`MealStreamDraftMapper`、`CloudAiRuntime`、`StreamTransport`、Repository、SQLDelight、DI（`AndroidModule.kt`）。
+**不改**（B1-B6 全程零改动，本轮已验证）：`StreamingMealSession`、`StreamingMealParser`、`MealStreamDraftMapper`、`CloudAiRuntime`、`StreamTransport`、Repository、SQLDelight、DI。
 
 ---
 
-## 五、关键红线（累加不变，本轮新增见末尾两条）
+## 六、关键红线（累加不变，本轮新增见末尾三条）
 
 同 B3/B4/B5 交接 + 本轮新增：
 - segmentId 唯一性 fail-fast
-- 200 字截断在 VM 层（`AiMealPrompt.MAX_INPUT_CHARS`）——但截断后**必须提示**，静默截断是阻断（AF-04）
-- 草稿隔离（`quickDraftText` ↔ `periodInputs` 独立）——但 `quickDraftText` 与遗留的 `inputText` 字段**不得并存无同步**（AF-01/02 根因）
-- preview 仅在段终态 + final 触发（`lastPreviewTerminalCount` 边界检测）
-- ✅ **本轮新增**：新增与既有字段语义重叠的 state 字段前，先 grep 旧字段全部写入点，决定"派生/替换/并存（禁止）"
-- ✅ **本轮新增**：列表逐项状态必须由数据层产出 `List<Status>`，UI 禁止用计数+下标反推
+- 200 字截断在 VM 层——但截断后**必须提示**，静默截断是阻断（见 §3.6）
+- 草稿隔离——但重叠字段**不得并存无同步**（见 §7 步骤 2.0/2.1）
+- preview 仅在段终态 + final 触发
+- ✅ 新增字段先 grep 旧字段全部写入点；列表逐项状态禁用计数+下标反推
+- ✅ **本轮新增**：项目已有"编辑即失效"收口函数（`invalidateGenerationToInput`）时，新增编辑入口必须核对是否路由过它（`GC-27`，B3→B4 真实复发过一次）
+- ✅ **本轮新增**：构造时创建、后续多次迭代复用的对象/字段，扩展迭代基数（1→N）前必须显式回答是否要按基数分片（`GC-28`）
+- ✅ **本轮新增**：蓝图颗粒度不得下调；不适用的 GC 标 `N/A+理由`，不是省略（见 §0.1 表）
 
 ---
 
-## 六、架构模型复核检查点（状态更新）
+## 七、架构模型复核检查点（状态更新）
 
-> 复核已执行，**结论未通过**。TURN 已转 CODE。CODE 完成 §二 全部 7 条后，交回 ARCH 做二次复核（范围仅限本次 9 项 AF + 补充测试，不重新审查已通过项）。
+> 复核已执行，**结论未通过**。TURN 已转 CODE。CODE 按 B4 蓝图 §0.1 完成全部"未满足"项后，交回 ARCH 做二次复核（范围仅限本次 9 项 AF + 补充测试，不重新审查已通过项）。
