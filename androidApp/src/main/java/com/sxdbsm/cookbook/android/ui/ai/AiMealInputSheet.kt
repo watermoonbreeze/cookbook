@@ -72,6 +72,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -129,6 +130,10 @@ fun AiMealInputSheet(
             snackbar?.showUndo(action.message, action.actionLabel, onUndo = action.onAction)
         }
     }
+
+    // [AI新增] 每次本 Sheet 进入组合都刷新一次引擎状态（含"从 AI 设置页配置 Key 后返回"场景——
+    // Compose Navigation 标准行为下，宿主 composable 会随导航离开/返回而整体离开/重新进入组合）。
+    LaunchedEffect(Unit) { vm.refreshEngineStatus() }
 
     if (showDismissConfirm) {
         AlertDialog(
@@ -242,7 +247,12 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                // [AI修改] Google质量复核：与右侧固定宽度的 IconButton 同处一个 SpaceBetween Row，
+                // 本 Row 必须限宽（weight 且不强制填满），否则标签+标题在窄屏/长模型名下会把说明按钮挤出可视区。
+                modifier = Modifier.weight(1f, fill = false),
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.AutoAwesome,
                     contentDescription = null,
@@ -255,6 +265,25 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                 )
+                // [AI新增] 引擎标签：始终展示当前会用 AI 还是规则解析，未刷新完成前不显示。
+                if (state.engineLabel.isNotBlank()) {
+                    Spacer(Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                    ) {
+                        Text(
+                            text = state.engineLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        )
+                    }
+                }
             }
             IconButton(onClick = { showHelp = true }, modifier = Modifier.size(40.dp)) {
                 Icon(

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.ai.AiRuntime
 import com.sxdbsm.cookbook.ai.AiRuntimeConfig
+import com.sxdbsm.cookbook.ai.AiRuntimeType
 import com.sxdbsm.cookbook.ai.LlmStreamEvent
 import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
 import com.sxdbsm.cookbook.ai.meallog.AiMealHealthAdvice
@@ -51,6 +52,9 @@ enum class InputMode { QUICK, WEEK }
 
 /** 处理阶段。[AI修改] B3: 唯一状态机 INPUT→GENERATING→PARTIAL_READY→PREVIEW_READY→SAVING→DONE；删除 PARSING/PREVIEW。 */
 enum class AiMealPhase { INPUT, GENERATING, PARTIAL_READY, PREVIEW_READY, SAVING, DONE, ERROR }
+
+/** [AI新增] 段级规则兜底原因哨兵值：AI 未配置（区别于"AI 配置了但该段解析失败"，两者文案框架不同）。 */
+private const val ENGINE_NOT_CONFIGURED_REASON = "AI_NOT_CONFIGURED"
 
 /** 语音识别状态。[AI生成] */
 enum class VoiceState { IDLE, LISTENING, PROCESSING, ERROR }
@@ -142,6 +146,8 @@ data class AiMealInputUiState(
     val healthAdviceLoading: Boolean = false,
     val healthAdvice: String? = null,
     val healthAdviceError: String? = null,
+    /** [AI新增] 当前引擎标签，标题旁始终可见："AI · {模型名}" 或 "规则解析"；未刷新前为空（UI 隐藏）。 */
+    val engineLabel: String = "",
 ) {
     /** [AI修改] B4→B6-fix: inputText 改为计算属性，统一真相源为 quickDraftText（AF-B456-01 修复·单一真相源准则A）。 */
     val inputText: String get() = quickDraftText
@@ -175,6 +181,17 @@ class AiMealInputViewModel(
     private val _snackbarEvent = MutableSharedFlow<SnackbarAction>()
     val snackbarEvent: SharedFlow<SnackbarAction> = _snackbarEvent
 
+    // [AI新增] AI→规则自动兜底：是否有真实可用的云端 AI（乐观默认 true，避免影响未调用 refreshEngineStatus() 的既有测试）。
+    private var configReady: Boolean = true
+    // [AI新增] segmentId -> 该段规则解析兜底产出的 DayMealJson（AI 未配置或 AI 该段失败时填充）。
+    private val ruleFallbackDays = mutableMapOf<String, DayMealJson>()
+    // [AI新增] 已尝试过规则兜底的 segmentId 集合，防止同一段被重复触发（session 内多个 onFailed 调用点可能对同一段各触发一次）。
+    private val fallbackAttempted = mutableSetOf<String>()
+    // [AI新增] segmentId -> 触发规则兜底的原因（AI 失败消息 或 ENGINE_NOT_CONFIGURED_REASON），用于确认页说明文案。
+    private val segmentFallbackReasons = mutableMapOf<String, String>()
+    // [AI新增] segmentId -> 规则解析自身的告知性 warning（如"当前餐食以选择的餐食日期为参照"），并入 parseWarnings。
+    private val ruleWarnings = mutableMapOf<String, String>()
+
     // [AI修改] B3.1-PORT-01: 会话端口（测试可替换）；B3.2 R2-02 回退为严格三方法。
     private var sessionPort: AiMealSessionPort = DefaultSessionPort(recorder, ingredientRepo)
 
@@ -198,6 +215,38 @@ class AiMealInputViewModel(
             val ruleDays = RuleMealParser.parse(input, names, today = targetDate)
             val anchorResult = MealDateAnchorPolicy.apply(input, targetDate, ruleDays)
             return RuleFallbackResult(anchorResult.days, anchorResult.warning)
+        }
+    }
+
+    /**
+     * [AI新增] 刷新引擎状态：是否有真实可用云端 AI + 标题旁引擎标签。
+     *
+     * 由 UI 侧在 Sheet 每次进入可交互态时调用（`AiMealInputSheet` 的 `LaunchedEffect(Unit)`），覆盖两个场景：
+     * ①Sheet 首次打开前完成一次判定；②用户从 AI 设置页配置 Key 后返回本 Sheet（Compose Navigation 标准行为下，
+     * 宿主 composable 会随导航离开/返回而整体离开/重新进入组合，`LaunchedEffect(Unit)` 因此重新触发）。
+     *
+     * 判据：仅当"选中云端类型且已填 Key"才算真实可用；MOCK/ON_DEVICE 与"CLOUD 但未填 Key"统一视为"用规则"，
+     * 不额外调用 `AiRuntimeConfig.isModelReady()`（其值域覆盖 MOCK/ON_DEVICE，语义是"能否发起任意调用"而非
+     * "本次记一餐要不要走 AI"，两者不等价）。
+     */
+    suspend fun refreshEngineStatus() {
+        // [AI修改] Google质量复核：prefs 读取异常（如库损坏）不应从 Compose LaunchedEffect 逃逸崩溃组合树，
+        // 失败时保守回退到"规则解析"标签（configReady 也回退 false——宁可少用一次 AI，不让本次刷新直接崩溃）。
+        runCatching {
+            val cloudReady = config.activeType() == AiRuntimeType.CLOUD && config.currentCloudApiKey().isNotBlank()
+            configReady = cloudReady
+            val label = if (cloudReady) {
+                // CloudModel.displayName 里的说明用全角或半角括号都有（如"（免费·推荐）" vs "(moonshot-v1-8k)"），
+                // 标题旁小标签只取模型标识本体，两种括号都要截。
+                val model = config.selectedModel()
+                "AI · ${model.displayName.substringBefore("（").substringBefore(" (")}"
+            } else {
+                "规则解析"
+            }
+            _state.update { it.copy(engineLabel = label) }
+        }.onFailure {
+            configReady = false
+            _state.update { it.copy(engineLabel = "规则解析") }
         }
     }
 
@@ -270,6 +319,10 @@ class AiMealInputViewModel(
         generationJob = null
         lastPreviewDays = null
         lastPreviewTerminalCount = -1
+        ruleFallbackDays.clear()
+        fallbackAttempted.clear()
+        segmentFallbackReasons.clear()
+        ruleWarnings.clear()
         _state.update { prev ->
             prev.copy(
                 quickDraftText = nextInput,
@@ -390,6 +443,11 @@ class AiMealInputViewModel(
         generationJob?.cancel()
         lastPreviewDays = null
         lastPreviewTerminalCount = -1
+        // [AI新增] segmentId 在不同 generation 间可能重复（同日期→同 segmentId），必须清空防止跨 generation 串数据。
+        ruleFallbackDays.clear()
+        fallbackAttempted.clear()
+        segmentFallbackReasons.clear()
+        ruleWarnings.clear()
         // [AI生成] B5: 初始化段进度
         val nonBlankSegments = segments.filter { !it.isBlank }.sortedBy { it.ordinal }
         val initialProgress = GenerationProgress(
@@ -421,6 +479,15 @@ class AiMealInputViewModel(
             var segment = session.nextSegment()
             while (segment != null && _state.value.generationId == generationId) {
                 val seg = segment
+                if (!configReady) {
+                    // [AI新增] 未配置真实云端 AI：不发起任何网络请求，该段直接判定为"未尝试"并走规则解析
+                    // （不是失败，是本来就该用的引擎——不产出"AI 解析失败"框架的文案）。
+                    session.onFailed(seg.segmentId, ENGINE_NOT_CONFIGURED_REASON)
+                    attemptRuleFallback(seg, ENGINE_NOT_CONFIGURED_REASON, generationId, session)
+                    handleSessionSnapshot(session, generationId, isFinal = false)
+                    segment = session.nextSegment()
+                    continue
+                }
                 val llmRequest = AiMealPrompt.buildStreamingRequest(seg)
                 // 顺序收集当前段流；流结束（Completed/Failed 后 close）返回。
                 try {
@@ -437,6 +504,10 @@ class AiMealInputViewModel(
                             }
                             is LlmStreamEvent.Failed -> {
                                 session.onFailed(seg.segmentId, event.message)
+                                // [AI新增] AI 该段失败：自动、立即（同协程内）尝试规则解析兜底——不是静默切换，
+                                // 原因通过 parseWarnings（既有 snap.diagnostics 通道）与确认页 parseSourceMessage
+                                // 双重可见（GC-30/透明准则 T1：能自动做好又无害的就"做+告知"）。
+                                attemptRuleFallback(seg, event.message, generationId, session)
                                 handleSessionSnapshot(session, generationId, isFinal = false)
                             }
                         }
@@ -447,17 +518,36 @@ class AiMealInputViewModel(
                     // [AI修改] B3.4-R4-07: stream 实现抛未捕获异常时，记录为段失败而非静默丢失。
                     if (isCurrentGeneration(generationId)) {
                         session.onFailed(seg.segmentId, "STREAM_COLLECT_ERROR: ${e.message}")
+                        attemptRuleFallback(seg, "STREAM_COLLECT_ERROR: ${e.message}", generationId, session)
                         handleSessionSnapshot(session, generationId, isFinal = false)
                     }
                 }
                 if (_state.value.generationId != generationId) return@launch
                 // AF-B3-02: 流返回但当前段仍未终态（STREAMING）→ 记为异常结束。
+                // [AI修改] Google质量复核：必须核对 session.isStreaming(...)（真实状态），不能只比较
+                // currentSegmentId()（只看下标顺序，段已 Completed 时下标未推进、这里仍会误判为"未终态"，
+                // 对已成功的段重复调用 onFailed/规则兜底——虽然 onFailed 内部对非 STREAMING 段是 no-op，
+                // 但这里的目的就是精确表达"仅当真的还没终态才处理"，不依赖下游兜底吸收错误触发）。
                 if (session.currentSegmentId() == seg.segmentId &&
+                    session.isStreaming(seg.segmentId) &&
                     _state.value.generationId == generationId) {
                     session.onFailed(seg.segmentId, "STREAM_ENDED_WITHOUT_TERMINAL")
+                    attemptRuleFallback(seg, "STREAM_ENDED_WITHOUT_TERMINAL", generationId, session)
                     handleSessionSnapshot(session, generationId, isFinal = false)
                 }
                 segment = session.nextSegment()
+            }
+            // [AI新增] Google质量二次复核：补上"AI 正常 Completed 但没解析出任何合法菜"（模型只回了大段文字/
+            // 道歉、没有一行合法 NDJSON）这条路径的兜底——它不会经过任何 onFailed 调用点，之前完全没有
+            // attemptRuleFallback 的机会，直接落到"没能识别出菜品"且没有任何自动兜底，与本功能承诺的
+            // "AI 失败就自动转规则"矛盾。收尾时对每个仍无合法结果的段补触发一次。
+            if (_state.value.generationId == generationId) {
+                for (seg in session.request.nonBlankSegments) {
+                    val hasAiDay = session.daysForSegment(seg.segmentId).any { it.meals.any { m -> m.dishes.isNotEmpty() } }
+                    if (!hasAiDay) {
+                        attemptRuleFallback(seg, "AI 未产出可用结果", generationId, session)
+                    }
+                }
             }
             // 全部段终态：最终重算 preview 或进入 ERROR
             if (_state.value.generationId == generationId) {
@@ -467,27 +557,114 @@ class AiMealInputViewModel(
     }
 
     /**
+     * [AI新增] 对失败的段自动尝试规则解析兜底（AI 未配置或该段 AI 失败时触发）。
+     *
+     * 幂等：同一 segmentId 只尝试一次（`fallbackAttempted` 守卫），避免同一段的多个 onFailed 调用点
+     * （Failed 事件 / 异常捕获 / 流结束未终态）重复触发。仅在规则解析真的产出合法餐食时写入
+     * [ruleFallbackDays]；解析不出时不写入，交由 [mergeDays] 后的 `hasValidMeals` 判断进入真正的 ERROR。
+     *
+     * 若该段其实已通过 AI 拿到合法餐食（如"流结束但未收到干净的终态事件"发生在有效 Delta 之后，
+     * T-B3-02 场景），跳过兜底——不浪费一次规则解析，也不用规则结果覆盖已解析出的 AI 内容。
+     * [AI修改] Google质量复核：`aiAlreadyValid` 改用 [StreamingMealSession.daysForSegment]（按 segmentId 取该段
+     * 自身草稿），不再按日期字符串匹配——AI 可能为该段声明与 `seg.targetDate` 不同的绝对日期（用户说"昨天"）
+     * 或用 `/` 分隔符，字符串匹配会误判"未解析"、错误覆盖已成功的 AI 结果。
+     * [AI修改] 规则解析产出的相对日期（`date==null, date_offset` 相对 `seg.targetDate` 计算，见
+     * `MealDateAnchorPolicy.apply`）必须在此处立即解析成绝对日期——后续 `handleSessionSnapshot` 统一用
+     * 首段日期做 `frozenDate` 传给 `preview()`，周期记非首段若仍带相对 offset 会被按错误锚点重新解析。
+     * [AI修改] `RuleFallbackResult.warning`（如"当前餐食以选择的餐食日期为参照"）不再丢弃，写入 [ruleWarnings]
+     * 供确认页展示，对齐手动 [useRuleFallback] 路径的既有行为。
+     */
+    private suspend fun attemptRuleFallback(seg: InputSegment, reason: String, generationId: String, session: StreamingMealSession) {
+        if (!isCurrentGeneration(generationId)) return
+        if (!fallbackAttempted.add(seg.segmentId)) return
+        val aiAlreadyValid = session.daysForSegment(seg.segmentId).any { day -> day.meals.any { it.dishes.isNotEmpty() } }
+        if (aiAlreadyValid) return
+        val result = runCatching { sessionPort.parseRule(seg.inputText, seg.targetDate) }
+            .getOrElse { if (it is kotlinx.coroutines.CancellationException) throw it else return }
+        if (!isCurrentGeneration(generationId)) return
+        val day = result.days.firstOrNull { day -> day.meals.any { it.dishes.isNotEmpty() } } ?: return
+        val resolvedDay = if (day.date == null) {
+            day.copy(date = DateTime.plusDays(seg.targetDate, day.date_offset).toString(), date_offset = 0)
+        } else day
+        ruleFallbackDays[seg.segmentId] = resolvedDay
+        segmentFallbackReasons[seg.segmentId] = reason
+        result.warning?.let { ruleWarnings[seg.segmentId] = it }
+    }
+
+    /**
+     * [AI新增] 合并 AI 解析结果与规则兜底结果：按显示序遍历各段，AI 该段有合法餐食则用 AI 结果，
+     * 否则取 [ruleFallbackDays] 中该段的规则兜底结果（可能仍缺失，即两个引擎都没解析出内容）。
+     * [AI修改] Google质量复核：改用 [StreamingMealSession.daysForSegment] 按 segmentId 取段自身结果，
+     * 不再按日期字符串跨段匹配（同一原因见 [attemptRuleFallback] 顶部说明）。
+     */
+    private fun mergeDays(session: StreamingMealSession): List<DayMealJson> {
+        return session.request.nonBlankSegments.sortedBy { it.ordinal }.mapNotNull { seg ->
+            val aiDay = session.daysForSegment(seg.segmentId).firstOrNull { day -> day.meals.any { it.dishes.isNotEmpty() } }
+            aiDay ?: ruleFallbackDays[seg.segmentId]
+        }
+    }
+
+    /**
+     * [AI新增] 确认页"本次结果来自哪个引擎"说明文案。无兜底发生时返回空串（不显示，维持现状：默认即 AI）。
+     */
+    private fun buildParseSourceMessage(session: StreamingMealSession): String {
+        val segs = session.request.nonBlankSegments
+        val fallbackSegs = segs.filter { it.segmentId in ruleFallbackDays }
+        if (fallbackSegs.isEmpty()) return ""
+        if (!configReady) return "本次结果：规则解析"
+        val allFallback = fallbackSegs.size == segs.size
+        val reason = fallbackSegs.mapNotNull { segmentFallbackReasons[it.segmentId] }
+            .firstOrNull { it != ENGINE_NOT_CONFIGURED_REASON }
+            ?.let(::humanizeWarning)
+        return if (allFallback) {
+            "本次结果：规则解析（AI 解析失败：${reason ?: "未知原因"}）"
+        } else {
+            "部分内容由规则解析补充（AI 解析失败：${reason ?: "未知原因"}）"
+        }
+    }
+
+    /**
+     * [AI新增/修改] 把内部诊断代号转成用户可读文案；已是人读文案（如 CloudAiRuntime 的 Key 未配置提示）时原样透传。
+     * `ENGINE_NOT_CONFIGURED_REASON` 返回 null——它代表"本就该用规则"的正常路径，不是需要告知的异常，
+     * 不该出现在诊断/警告类展示位（Google质量复核：原实现遗漏此过滤，未配置用户会在"诊断信息"里看到内部代号原文）。
+     */
+    private fun humanizeWarning(raw: String): String? = when {
+        raw == ENGINE_NOT_CONFIGURED_REASON -> null
+        raw.startsWith("STREAM_COLLECT_ERROR") -> "网络请求异常"
+        raw == "STREAM_ENDED_WITHOUT_TERMINAL" -> "AI 响应异常中断"
+        else -> raw
+    }
+
+    /**
      * B3: 将 session 快照落为 UI 状态。[AI修改]
      *
      * - 无合法餐食且非 final：仅更新进度/诊断，不调 preview。
      * - 有合法餐食：PARTIAL_READY（生成中）或 PREVIEW_READY（final）；相同 days 不重复 preview。
-     * - 无合法餐食且 final：ERROR，不自动调用规则 parser。
+     * - 无合法餐食且 final：ERROR。
      * - [B5] preview 触发优化：段终态或 final 才调 previewAll，Delta 中途仅更新 progress。
+     * - [AI新增] "有效"判定改用 AI 结果 + 规则兜底结果的合并集 [mergeDays]，而非 `snap.hasValidMeals`（后者只看 AI）；
+     *   段失败时已在调用方自动尝试规则兜底（见 [attemptRuleFallback]），此处只负责合并与展示，不重复触发解析。
+     *   走到"没能识别出菜品"时，意味着两个引擎都没有为这些段解析出任何菜——此时该文案才是诚实的。
      */
     private suspend fun handleSessionSnapshot(session: StreamingMealSession, generationId: String, isFinal: Boolean) {
         // AF-B3-R2-01: 唯一 generation 谓词。
         if (!isCurrentGeneration(generationId)) return
         val snap = session.snapshot()
         val progress = computeProgress(session, snap)
+        val mergedDays = mergeDays(session)
+        val hasValidMeals = mergedDays.any { day -> day.meals.any { it.dishes.isNotEmpty() } }
+        // [AI新增] 诊断消息统一走 humanizeWarning 过滤内部哨兵/代号 + 并入规则解析自身的 warning
+        // （Google质量复核：原实现把 ENGINE_NOT_CONFIGURED_REASON 等内部代号原样吐给用户）。
+        val displayWarnings = (snap.diagnostics.mapNotNull { humanizeWarning(it.message) } + ruleWarnings.values).distinct()
 
         // [B5] 快速路径：无合法餐食 + 非 final → 仅更新进度，不调 preview
-        if (!snap.hasValidMeals && !isFinal) {
+        if (!hasValidMeals && !isFinal) {
             _state.update {
                 it.copy(segmentStates = snap.segmentStates, isGenerating = true, generationProgress = progress)
             }
             return
         }
-        if (!snap.hasValidMeals) {
+        if (!hasValidMeals) {
             _state.update {
                 it.copy(
                     phase = AiMealPhase.ERROR,
@@ -496,7 +673,7 @@ class AiMealInputViewModel(
                     generationProgress = progress,
                     isGenerating = false,
                     // [AI修改] B3.4-R4-05: 将 session 诊断传入 parseWarnings，帮助用户理解失败原因。
-                    parseWarnings = snap.diagnostics.map { it.message },
+                    parseWarnings = displayWarnings,
                 )
             }
             return
@@ -512,7 +689,7 @@ class AiMealInputViewModel(
         }
 
         // 相同 days 不重复调用 previewAll
-        if (!isFinal && lastPreviewDays == snap.days && _state.value.autoGenPreview != null) {
+        if (!isFinal && lastPreviewDays == mergedDays && _state.value.autoGenPreview != null) {
             _state.update {
                 it.copy(phase = AiMealPhase.PARTIAL_READY, segmentStates = snap.segmentStates, generationProgress = progress, isGenerating = true)
             }
@@ -521,7 +698,7 @@ class AiMealInputViewModel(
         // AF-B3-03: preview date 取 session/request 冻结日期，不读可变 UI date。
         val frozenDate = session.request.segments.firstOrNull()?.targetDate ?: _state.value.targetDate
         try {
-            val preview = sessionPort.preview(snap.days, frozenDate)
+            val preview = sessionPort.preview(mergedDays, frozenDate)
             // AF-B3-R3-01: preview 挂起后先比对 generation，旧 A 直接返回（不跑健康摘要）。
             if (!isCurrentGeneration(generationId)) return
             // [AI修改] B3.4-R4-02: 健康摘要独立容错——即使 buildHealthSafetyReport 抛异常，
@@ -532,7 +709,7 @@ class AiMealInputViewModel(
                 }
             }.getOrDefault(HealthSafetyReport(listOf("健康档案暂不可用")))
             if (!isCurrentGeneration(generationId)) return
-            lastPreviewDays = snap.days
+            lastPreviewDays = mergedDays
             lastPreviewTerminalCount = progress.terminalSegments
             _state.update {
                 it.copy(
@@ -541,7 +718,8 @@ class AiMealInputViewModel(
                     segmentStates = snap.segmentStates,
                     generationProgress = progress,
                     isGenerating = !isFinal,
-                    parseWarnings = snap.diagnostics.map { it.message },
+                    parseWarnings = displayWarnings,
+                    parseSourceMessage = buildParseSourceMessage(session),
                     mergeConfirmationRequired = preview.days.any { it.hasExisting },
                     mergeConfirmed = false,
                     healthSafetyReport = safetyReport,
@@ -608,10 +786,11 @@ class AiMealInputViewModel(
     }
 
     /**
-     * B3: 唯一允许调用 RuleMealParser 的显式动作。[AI修改]
+     * 用户手动触发的规则解析重试。[AI修改] 自动兜底（见 [attemptRuleFallback]）已覆盖"AI 失败自动转规则"的
+     * 主路径；本方法保留给"两个引擎都没解析出内容、用户改了描述想再试一次规则解析"的残余场景。
      *
-     * 仅当 phase=ERROR 且当前 generation 无合法餐食时执行；产物标记"规则解析"。
-     * B5 再接可见按钮，B3 不新增 UI。
+     * 仅当 phase=ERROR 且当前 generation 无合法餐食时执行；产物标记"规则解析"。当前无 UI 调用点（孤儿方法，
+     * 沿用 B5 前的既有状态，非本次改动引入）。
      */
     fun useRuleFallback() {
         val state = _state.value
@@ -775,6 +954,10 @@ class AiMealInputViewModel(
         generationJob = null
         lastPreviewDays = null
         lastPreviewTerminalCount = -1  // [AI修改] B5-review: 补齐配对重置
+        ruleFallbackDays.clear()
+        fallbackAttempted.clear()
+        segmentFallbackReasons.clear()
+        ruleWarnings.clear()
     }
 
     /** [AI修改] B3.4-R4-04: 重试保存——复用当前 autoGenPreview；仅 ERROR 态可触发，防连点并发。 */

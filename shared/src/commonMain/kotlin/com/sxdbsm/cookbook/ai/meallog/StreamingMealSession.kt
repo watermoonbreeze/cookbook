@@ -86,6 +86,25 @@ class StreamingMealSession(
     /** 当前正在流式的 segmentId（无则 null）。 */
     fun currentSegmentId(): String? = orderedSegments.getOrNull(currentIndex)?.segmentId
 
+    /** [AI新增] 该 segmentId 当前是否仍处于 STREAMING（未终态）。区别于 [currentSegmentId]——后者只看下标顺序，
+     *  不代表该段还没结束（下标不推进≠仍在流），调用方需要"真的没终态"语义时必须用这个。 */
+    fun isStreaming(segmentId: String): Boolean = segmentStates[segmentId] == StreamSegmentState.STREAMING
+
+    /**
+     * [AI新增] 该段自身已解析出的 day(s)（只看这一个 segmentId 的草稿，不受其他段影响）。
+     * 用于业务层判断"这段是否已有合法 AI 结果"，不依赖日期字符串跨段匹配——AI 可能为该段声明与
+     * `targetDate` 不同的绝对日期（用户说"昨天"）或使用非 `-` 分隔符，字符串匹配会漏判。
+     * 空列表代表该段尚无合法内容（未开始/进行中/失败/解析出的菜为空）。
+     */
+    fun daysForSegment(segmentId: String): List<DayMealJson> {
+        val seg = orderedSegments.firstOrNull { it.segmentId == segmentId } ?: return emptyList()
+        val draftSeg = segmentParsers[segmentId]?.currentDraft?.segments?.get(segmentId) ?: return emptyList()
+        return MealStreamDraftMapper.toDayMealJson(
+            MealStreamDraft(segments = mapOf(segmentId to draftSeg)),
+            listOf(seg),
+        )
+    }
+
     /** 接收 Delta 增量文本；仅当属于当前 STREAMING 段才喂给对应 parser。 */
     fun onDelta(segmentId: String, text: String) {
         if (segmentStates[segmentId] != StreamSegmentState.STREAMING) return

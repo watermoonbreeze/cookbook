@@ -1,86 +1,85 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-07（用户装机真机验证 AI记一餐 B4+B5+B6 期间，ARCH 起草下一批蓝图）**
-> **执行模型：ARCH@主力机·claude-sonnet-5**（蓝图起草）+ **独立挑战 agent·claude-opus-5**（GC-37 挑战）。
-> 当前状态：**AI记一餐 B4+B5+B6（周期记+NDJSON流式）批次 ACCEPTED，用户正在真机验证中，不在本次交接处理范围**。新起草了下一批蓝图——**AI记一餐 K1a 营养展示统一化 + AI 未配置诚实报错**，已完成 ARCH 设计 + 独立 opus agent 的 GC-37 挑战，蓝图状态 `ACCEPTED`，**TURN=CODE**，待实施。
+> 更新时间：**2026-08-08（AI 快捷记引擎标签 + AI→规则自动兜底 已实施完毕）**
+> **执行模型：ARCH@主力机·claude-sonnet-5**（设计、实施、自测全流程）+ **独立 opus 挑战/审查 agent**（GC-37 挑战 + 两轮 Google 质量审查）。
+> 当前状态：**AI记一餐 B4+B5+B6（周期记+NDJSON流式）批次 ACCEPTED，用户仍在真机验证中，与本次改动无关**。本轮新完成：用户报告 bug（AI 未配置报错文案误导）→ 重新设计为"规则解析是 AI 兜底"→ **已直接实施+自测通过**（跳过独立 CODE 角色，ARCH 本人实现，因用户明确选择"直接写代码实现"）。K1a 营养展示统一化部分**仍未实施**，蓝图 `TURN=CODE` 继续有效。
 
 ---
 
-## 一、本轮完成（新批次蓝图起草 + GC-37 独立挑战）
+## 一、本轮完成（AI 引擎标签 + AI→规则自动兜底，含两轮 Google 质量审查）
 
-### 1.1 触发
+### 1.1 起因
 
-用户在真机验证 B4+B5+B6 期间，让 ARCH 并行准备"下一批蓝图规划"；随后用户追加报告一个真实 bug：AI 快捷记未配置 AI 时点发送，提示"没能识别出菜品，试试更具体的描述？"——文案在"未配置"场景下具有误导性。用户明确要求"opus 子智能体来处理"，据此本轮全程用 `model: opus` 的 Explore 型 subagent 做研究/诊断/挑战三段工作，ARCH（主力机）负责综合判断与文档撰写。
+用户报告：AI 快捷记未配置 AI 时点发送，提示"没能识别出菜品，试试更具体的描述？"——文案误导（暗示是措辞问题，实际是没配 Key）。我最初设计了一个"检测到未配置就同步短路报错+引导去设置"的方案并写入蓝图，但**用户当面纠正**：规则解析应该是 AI 的**兜底**，不是被 AI 挡住的独立模式。正确预期：
 
-### 1.2 研究阶段（opus Explore agent，只读）
+1. 标题旁应**始终**显示当前引擎（"AI · 模型名" 或 "规则解析"）。
+2. 配置了 AI 时优先调 AI，某段失败要显示失败原因（复用现成的 `CloudAiRuntime` 诚实错误消息）+**自动**（非手动点按钮）回退规则解析，确认页要说明"这是 AI 失败后规则解析的结果"——这个自动回退机制"之前就有"，要求直接复用而非重新设计。
 
-一次性完成两部分调研：
-- **Part A（bug 根因）**：确认 `SwitchableAiRuntime` 只 override `complete()` 没 override `stream()`，AI 快捷记走的是 `AiRuntime.kt` 默认 `flow{complete(...)}` 包装；未配置 Key 时 `CloudAiRuntime.complete()` 返回 `IllegalStateException("XX API Key 未配置")`，最终被 `handleSessionSnapshot()` 的唯一 ERROR 分支（`AiMealInputViewModel.kt:490-503`）用同一句"没能识别出菜品"文案吞掉，真实原因只沉进次要的 `parseWarnings` 折叠区。VM 构造已注入 `config: AiRuntimeConfig` 但全文件零调用，`isModelReady()` 是现成能力（其他 VM 已用同款方式）。
-- **Part B（K1a 现状）**：确认 CREATE 菜品营养计算是独立手写 kcal-only 公式（`DishAutoGenerator.kt:86-91`），REUSE 菜品完全不显营养；`DishNutritionLine`/`NutritionCalculator.dishNutrition()` 现成可复用；K1b 因 L1 合规闸门未完成继续冻结，K1c(weekday) 已实现不需要动。
+### 1.2 重新设计与实施
 
-ARCH 随后又直接读了若干关键文件核实/补全细节（`NutritionCalculator`/`IngredientAutoGenerator`/`MultiDayRecorder`/`AiMealInputSheet` 的精确行号、导航线路等），确保蓝图里的每个技术断言都有真实代码依据。
+按用户要求重新设计后，用户明确选择"我直接写代码实现"（而非走独立 CODE 角色的蓝图交接流程），于是本 session（ARCH）直接完成设计+实现+测试：
 
-### 1.3 蓝图起草
+- `AiMealInputViewModel` 新增 `configReady`（`activeType()==CLOUD && currentCloudApiKey().isNotBlank()`）+ `refreshEngineStatus()`（由 `AiMealInputSheet` 的 `LaunchedEffect(Unit)` 驱动，覆盖"去设置配置 Key 后返回"场景）+ `engineLabel`（标题旁徽标）。
+- 每个 segment 的 AI 侧失败（`LlmStreamEvent.Failed`/流异常/流意外结束/未配置直接跳过 AI）时**自动**触发 `attemptRuleFallback()`，用该段自身的规则解析结果补进 `mergeDays()` 的合并结果；只有 AI 和规则都没解析出内容才是真 ERROR（此时"没能识别出菜品"才是诚实的）。
+- 确认页复用既有 `parseSourceMessage` 字段披露"本次结果：规则解析（AI 解析失败：<原因>）"。
 
-产出 `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md`，L7 颗粒度、37 条 GC 全部逐条勾销（含 N/A 理由）。核心设计：
-- CREATE 菜品营养计算改用 `NutritionCalculator.dishNutrition()`（单一真相源，含全部宏量素）。
-- REUSE 菜品在 `MultiDayRecorder.previewAll()` 新增**批量**（非 N+1）营养回填。
-- `MealPreviewCard` 热量展示换成直接复用既有 `DishNutritionLine`。
-- `AiMealInputViewModel.submit()` 新增前置检测，AI 未配置时同步短路，不发起网络请求，给诚实文案 + "去设置" CTA。
+### 1.3 两轮独立 Google 质量审查（发现并修复 6 处真实阻断）
 
-### 1.4 GC-37 独立挑战（opus Explore agent，攻击性复核）
+**第一轮**发现 5 处 CONFIRMED-ISSUE：
+1. `mergeDays()` 按日期字符串（`day.date == seg.targetDate.toString()`）匹配段结果——AI 说"昨天"会给出不同日期，会被误判丢弃整条记录。
+2. "流意外结束"分支只比较 `currentSegmentId()`（只看下标不看状态），已成功 COMPLETED 的段仍会触发误判。
+3. 内部哨兵/调试字符串（`AI_NOT_CONFIGURED`、`STREAM_COLLECT_ERROR: ...`）未经翻译直接吐进用户可见的"诊断信息"卡片。
+4. 自动兜底丢弃了 `RuleFallbackResult.warning`（如"当前餐食以选择的餐食日期为参照"），手动路径原本会展示。
+5. 周期记非首段规则兜底的相对日期（`date_offset`）被套用首段（周一）锚点重新解析，日期算错。
 
-本项目蓝图协议的 GC-37 要求"蓝图冻结前必须有独立挑战台账"（正是因为 AF-B456-05 曾经历"设计者=审查者同一人，审不出自己写的规格空隙"）。派出**没有见过起草过程**的独立 opus agent，只给蓝图文件本身，要求逐条核对每一个技术断言、主动找茬。
+**修复**：给 `StreamingMealSession`（shared）新增 `daysForSegment(segmentId)`（按段自身草稿取结果，不靠日期字符串）+ `isStreaming(segmentId)`（真实状态判断）；`mergeDays`/`attemptRuleFallback` 改用这两个新方法；新增 `humanizeWarning()` 过滤/翻译内部代号；新增 `ruleWarnings` 承接规则解析自身的告知；`attemptRuleFallback` 内就近用该段自身 `targetDate` 把相对日期解析成绝对日期。
 
-**结果：14 项挑战，6 项 CONFIRMED-ISSUE（真阻断）、4 项 MINOR-NIT、4 项 CONFIRMED-FINE**。6 项阻断且均已就地修订：
+**第二轮**复核修复效果时，独立审查又发现一处修复引入的**覆盖缺口**："AI 正常 Completed 但没解析出任何菜"（模型只回文字/道歉）这条路径不经过任何 `onFailed` 调用点，第一轮的 `isStreaming` 修复反而让它彻底失去了自动兜底机会——直接卡在 ERROR，且没有任何自动/手动救回路径。**已修复**：在段全部终态后的收尾阶段，对每个仍无合法 AI 结果的段补触发一次 `attemptRuleFallback`（`fallbackAttempted` 保证幂等，不会与已尝试过的段重复）。
 
-1. `errorKind` 是 `.copy()` 沿用旧值的 sticky 字段——原稿没在 GENERIC 分支显式重写，会导致"未配置→配置好→真解析失败"时 CTA 仍误显"去设置"。**修：`handleSessionSnapshot()` 新增显式写 `GENERIC`**。
-2. `DishNutritionLine(null)` 静默不渲染——原稿 `.takeIf{it.hasData}` 会把"算了但没数据"错判成"没算"，该菜整行消失而非显"营养待完善"。**修：去掉过滤，INV 改为区分"从未尝试"vs"尝试但无数据"**。
-3. `configReady` 只在 `init{}` 写一次——用户去设置页配置 Key 返回同一 Sheet 后，"去设置"CTA 变死路，功能本身的主流程被堵死。**修：改用 Compose `LaunchedEffect(Unit)` 驱动的 `refreshConfigReady()`**。
-4. `init{}` 挂起写入与既有 13 条测试直接构造 VM 后 `submit()` 存在真实竞态，调度不利时全部失败。**修：随第 3 项设计改动自动解决**（新机制下既有测试从不触发刷新，`configReady` 保持默认 `true`，零竞态零改动）。
-5. `isModelReady()==false` 同时覆盖用户主动选择的 MOCK（离线规则模式，`AiSettingsScreen` 里可选且已启用）——会把选了离线模式的用户导向一个"其实都配置好了"的设置页，无路可走。**修：判据收窄为 `activeType()==CLOUD && currentCloudApiKey().isBlank()`**。
-6. `NutritionInput(unitGrams=1.0)` 恒非空导致 `resolveGrams()` 内建的"估算"判定分支永远走不到，含猜测营养值的菜会**丢失"（估算）"尾注**，看起来像权威数值——违反营养数据诚实性红线。**修：新增显式判定，只要有食材是 Group 均值猜测就强制标记 estimated**。
+### 1.4 验证
 
-这次挑战本身就是"多模型协作红线"最好的实证：同一个人（同一次会话）设计的蓝图，独立挑战方几乎总能挑出至少几处真问题——不是因为设计者不认真，而是设计视角天然会对自己的假设视而不见。
+新增/重写测试 `T-CFG-01~06`、`T-B3-05`/`T-B3-05b`/`T-B3-07`（重写）、`T-B3-02`（更新断言）。全部验证通过：
+- `:androidApp:testDebugUnitTest`（`AiMealInputViewModelStreamTest` 16/16，全量无新增失败）
+- `:shared:testDebugUnitTest`（0 failures）
+- `:androidApp:assembleDebug`（BUILD SUCCESSFUL）
+
+### 1.5 涉及文件
+
+| 文件 | 改动 |
+|---|---|
+| `androidApp/.../ui/ai/AiMealInputViewModel.kt` | 核心：`configReady`/`refreshEngineStatus`/`engineLabel`/`attemptRuleFallback`/`mergeDays`/`humanizeWarning`/`ruleWarnings`/收尾兜底补齐 |
+| `androidApp/.../ui/ai/AiMealInputSheet.kt` | 标题旁引擎标签徽标 + `LaunchedEffect` 刷新 + 溢出防护 |
+| `shared/.../ai/meallog/StreamingMealSession.kt` | 新增 `daysForSegment`/`isStreaming` |
+| `androidApp/src/test/.../AiMealInputViewModelStreamTest.kt` | 新增/重写共 22 处改动，16 条测试全绿 |
+| `.ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` | 顶部追记：原 CFG 设计已否决，指向实际实现 |
+| `.ai-context/docs/feature/真机待验证清单_202608080714.md` | 新增 E-CFG-01~06（新建，替换旧时间戳文件） |
 
 ---
 
 ## 二、⏭ 下一步
 
-**TURN=CODE**。下一 session/机器接手时：
-
-1. 先读 `BLUEPRINT_STATE.md` 确认 `TURN=CODE`。
-2. 读 `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` 全文（含 §10 独立挑战台账——理解"为什么设计长这样"比只看最终 STEP 更重要，尤其是 §3 INV-CFG-04/05、INV-K1A-04/05 这几条都是挑战后才有的）。
-3. 按 §7 分阶段实施步骤顺序机械实现（STEP 均含完成形态字面量 + grep 判据），不自行发挥、不重新设计已被挑战锁定的部分。
-4. 完成后填 §9 交付台账 STEP 勾销表，跑 §7 末尾三条验收命令，登记真机清单 `E-K1A-01`/`E-K1A-CFG-01`/`E-K1A-CFG-02`。
-5. 交付时到 `docs/experience/14_模型执行力评估.md` 补一行记录实际使用模型名。
-6. 完成后 `BLUEPRINT_STATE.md` 的 `TURN` 改回 `ARCH`，等待复核。
-
-**与真机验证的关系**：用户正在验证的是 B4+B5+B6（已 ACCEPTED 的旧批次），与本批次（K1a）无关，两者可并行——CODE 不需要等真机验证结果。
+1. **用户真机验证**：`真机待验证清单_202608080714.md` 的 E-CFG-01~06（新增，优先）+ 既有 B4/B5/B6 回归项（与本次无关，用户按自己节奏继续）。
+2. **K1a 营养展示统一化**（蓝图另一半，`TURN=CODE` 仍有效，未实施）：CREATE/REUSE 菜品营养计算统一到 `NutritionCalculator`，`MealPreviewCard` 复用 `DishNutritionLine`。可另开 session/角色实施，蓝图本身仍准确（未被本轮改动触碰）。
+3. 已知但本轮明确未修的相邻问题（记录于代码注释，非本次范围）：
+   - `mergeDays()` 单段仍只取 `firstOrNull` 天——极端场景"一段文字里同时提到昨天和今天两天"只会保留一天，另一天丢失（低概率，未做，Google 质量审查标注为"低 blast radius 的已知限制"）。
+   - `humanizeWarning` 未覆盖 `StreamingMealParser` 自身产出的诊断（如"NDJSON 行缺少 segment_id"类消息），这类消息仍可能带工程师黑话/原始 JSON 片段——与本次 3 个哨兵字符串是同一类问题，未来可一并处理。
+   - `useRuleFallback()`（手动重试按钮）仍是孤儿方法，无 UI 调用点；本次自动兜底已覆盖其原本要解决的大部分场景，是否还需要接线成按钮，留待后续评估。
 
 ---
 
-## 三、本轮改动文件清单
+## 三、关键红线（累加，本轮新增）
 
-| 文件 | 改动 |
-|---|---|
-| `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md`（新建） | 完整 L7 蓝图，含 §10 独立挑战台账 |
-| `docs/context_memory/BLUEPRINT_STATE.md` | 新增当前批次区块（TURN=CODE），历史批次归档保留 |
-| `docs/context_memory/SESSION_交接.md` | 本文件（全量重写） |
+- ✅ **本轮新增**：多段自动状态判断（"这段是否已终态/已有合法结果"）禁止用位置指针类 API（如本例的 `currentSegmentId()` 只反映下标顺序）替代真实状态查询——下标不推进 ≠ 没结束，必须用状态本身（如新增的 `isStreaming()`）。
+- ✅ **本轮新增**：跨段结果归属禁止用"内容字段值是否等于预期"做匹配（本例：按 `day.date == seg.targetDate.toString()` 字符串匹配）——内容值本身可能被正当地不同于预期（AI declares "昨天"），必须用结构化 ID（segmentId）做归属。
+- ✅ **本轮新增**：新增内部诊断代号/哨兵值时，必须同步检查**所有**已有的"用户可见展示"通道（本例漏了 `parseWarnings`，只顾了 `parseSourceMessage`）——同一批新增的调试代号很容易只翻译了其中一条通路。
+- ✅ **本轮新增**：为"修复 A 类误判"新增的状态守卫，必须反向核对"是否恰好卡死了 A 类误判曾经附带救回的 B 类真实缺陷"（本例：`isStreaming` 修复了"已成功段被误判"，但同时让"AI 正常结束但没解析出内容"这条路径失去了此前经由该误判分支"顺便"获得的自动兜底机会）——阻断项修复后必须过一遍"这个修复本身是否留下新缺口"，不能止步于"原阻断已消失"。
+- ✅ **本轮新增**：用户明确"我直接写代码实现"时，ARCH 角色可以跳过独立 CODE 交接，自行实现+自测；但仍应保留 GC-37 式的独立挑战/审查（本轮用两轮独立 google_quality_engineer agent 替代了"另一个人实现"的效果），不能因为跳过角色分离就跳过独立视角复核。
 
 ---
 
-## 四、先读清单（CODE 接手时按序读）
+## 四、先读清单（下一 session 接手时按序读）
 
-1. `BLUEPRINT_STATE.md`（确认 TURN=CODE）
+1. `BLUEPRINT_STATE.md`（确认当前 `TURN` 状态——本轮改动未走蓝图协议，`TURN` 字段仍指向 K1a 营养部分）
 2. `SESSION_交接.md`（本文件）
-3. `docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` 全文（§0.1 入口 → §1~§9 顺序读，§10 理解设计缘由）
-
----
-
-## 五、关键红线（累加，本轮未新增项目级红线；蓝图内部红线见该蓝图 §6 显式禁改清单）
-
-沿用既有全部红线（见历史交接记录），本轮额外强调：
-- 独立挑战（GC-37）不是形式仪式——本轮 6/14 项挑战是真阻断，直接影响功能可用性（CTA 死路）和数据诚实性（估算标记丢失），**同一人设计+自审的蓝图默认不可信，必须过独立挑战才能冻结**。
-- `errorKind` 一类"只在触发分支写、不在恢复/清空分支同步写"的字段，本质是 `.copy()` 语义下的隐性状态机——新增此类字段必须显式列出"phase 转移到该状态的全部入口"并逐个核对是否都写了该字段（本轮 INV-CFG-04 即此教训的沉淀）。
-- Compose `init{}` 单次预取 + 直接构造 VM 调用的单测，存在"挂起点未完成时序访问"的真实竞态窗口，不能用"真实竞态窗口≈0"一句话打发——本轮改用"显式刷新函数 + UI 侧 LaunchedEffect 触发"模式规避，值得作为本项目今后同类设计的默认选择。
+3. 需了解本轮 bug 修复设计缘由：`.ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` 顶部追记
+4. 需了解 K1a 营养部分（下一步工作）：同一蓝图文件 §1~§9（未受本轮影响）

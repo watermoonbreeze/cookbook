@@ -1,6 +1,20 @@
 # AI记一餐 K1a：营养展示统一化 + AI 未配置诚实报错 实施蓝图
 
-> 状态：`ACCEPTED`（GC-37 独立挑战已完成，13 项中 6 项 CONFIRMED-ISSUE 已就地修订，详见 §10）
+> **🔴 2026-08-07 追记：本文档"AI 未配置诚实报错"（原 §1/§3/§4/§7 的 CFG 部分）的设计已被用户当面否决并重新设计，且已直接实施完毕（跳过 CODE 独立角色，由 ARCH 本人实现+自测）。K1a 营养展示统一化部分则仍是原设计、尚未实施、`TURN=CODE` 继续有效。下面 CFG 相关章节保留作历史记录（说明"为什么最初设计是错的"），但不再是当前行为的真相源——真相源是代码本身 + 本节摘要。**
+>
+> **用户纠正的原因**：原设计把"未配置 AI"当成一个需要拦下来的错误态（同步短路 + 报错 UI + "去设置"引导）。但产品实际预期是：**规则解析是 AI 的兜底，不是被 AI 挡住的替代模式**——① 标题旁应始终显示当前引擎（"AI · 模型名" 或 "规则解析"）；② 配置了 AI 时优先调用 AI，AI 某段失败要显示失败原因（复用既有 `CloudAiRuntime` 的诚实错误消息，不用新造）、然后**自动**（非手动点击）回退到规则解析，确认页要说明"这是 AI 失败后规则解析的结果"。
+>
+> **实际最终设计**（已实现，非本文档原方案）：
+> - `AiMealInputViewModel` 新增 `configReady`（是否有真实可用云端 AI，判据 `activeType()==CLOUD && currentCloudApiKey().isNotBlank()`）+ `refreshEngineStatus()`（由 `AiMealInputSheet` 的 `LaunchedEffect(Unit)` 驱动，覆盖"配置Key后返回"场景）+ `engineLabel`（标题旁始终可见的"AI·模型名"/"规则解析"徽标）。
+> - 每个 segment 在 AI 侧失败（`LlmStreamEvent.Failed`/流异常/流意外结束/未配置直接跳过 AI）时，**自动**触发 `attemptRuleFallback()` 调用 `sessionPort.parseRule()`，用**该段自身**的解析结果补进 `mergeDays()` 产出的合并结果；只有 AI 和规则**都**没解析出内容才是真正的 ERROR。
+> - 确认页复用既有 `parseSourceMessage` 字段披露"本次结果：规则解析（AI 解析失败：<原因>）"或"部分内容由规则解析补充"。
+> - 独立 Google 质量审查（两轮）发现并修复 5 处真实阻断（详见下方"实施审查记录"）：`mergeDays` 用 segmentId 而非日期字符串匹配（避免 AI 声明"昨天"这类不同日期被误判丢弃）、`isStreaming` 状态守卫（避免已成功段被误判未终态）、内部哨兵文案人性化（不泄露 `AI_NOT_CONFIGURED` 等内部代号给用户）、`RuleFallbackResult.warning` 不再丢失、周期记非首段规则兜底日期锚点修正；二轮复核还额外发现并补上"AI 正常 Completed 但没解析出任何菜"这条路径此前完全没有自动兜底的覆盖缺口。
+> - 涉及文件：`androidApp/.../ui/ai/AiMealInputViewModel.kt`、`AiMealInputSheet.kt`、`shared/.../ai/meallog/StreamingMealSession.kt`（新增 `daysForSegment`/`isStreaming`）、对应测试 `AiMealInputViewModelStreamTest.kt`（新增/重写 T-CFG-01~06、T-B3-05/05b/07、T-B3-02）。
+> - 验证：`:androidApp:testDebugUnitTest`（含本文件全部新/改测试）、`:shared:testDebugUnitTest`、`:androidApp:assembleDebug` 均 0 failures / BUILD SUCCESSFUL。
+>
+> K1a 营养展示统一化部分（§1.3 In Scope 第 1-3 条）**仍未实施**，蓝图设计不变，`BLUEPRINT_STATE.md` 的 `TURN=CODE` 仍指向这部分。
+
+> 状态：`ACCEPTED`（GC-37 独立挑战已完成，13 项中 6 项 CONFIRMED-ISSUE 已就地修订，详见 §10；**注：本轮挑战针对的是已被否决的原 CFG 设计，不代表实际实施方案已过挑战**——实际实施方案经过了两轮独立 Google 质量审查，见上方追记）
 > **颗粒度：L7**（项目基线；GC 条款清单见 `experience/12_多模型协作与实施蓝图规范.md` §12）。**§0.1 是入口——先读它，逐行对照落点章节。**
 > 起草日期：2026-08-07（AI记一餐 B4+B5+B6 批次 ACCEPTED 后，用户装机真机验证期间由 ARCH@主力机 起草）；同日经独立 opus 挑战 agent（GC-37）攻击后修订定稿。
 > 前置：`AI快捷记一餐_进阶_架构方案.md`（K1a 的原始产品设计，2026-08-01，📄待拍板未编码；本蓝图是其 P2-1 子集的可执行细化，K1b/K1c 处置见 §1.3）

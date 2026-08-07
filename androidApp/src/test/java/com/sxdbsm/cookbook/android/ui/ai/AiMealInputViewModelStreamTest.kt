@@ -66,8 +66,15 @@ class AiMealInputViewModelStreamTest {
         }
     }
 
-    /** 会话端口 spy：记录调用次数与入参（R2-04 记录 commit 实例）。 */
-    private open class SpySessionPort(private val hasExisting: Boolean = false) : AiMealSessionPort {
+    /**
+     * 会话端口 spy：记录调用次数与入参（R2-04 记录 commit 实例）。
+     * [AI新增] `ruleParseYields`：第 N 次 `parseRule` 调用是否产出合法餐食的序列（0-indexed）；
+     * 超出序列长度的调用沿用最后一项，序列为空则恒成功（保持既有测试默认行为不变）。
+     */
+    private open class SpySessionPort(
+        private val hasExisting: Boolean = false,
+        private val ruleParseYields: List<Boolean> = emptyList(),
+    ) : AiMealSessionPort {
         var previewCount = 0
         var commitCount = 0
         var parseRuleCount = 0
@@ -96,7 +103,11 @@ class AiMealInputViewModelStreamTest {
         }
 
         override suspend fun parseRule(input: String, targetDate: LocalDate): RuleFallbackResult {
+            val succeed = if (ruleParseYields.isEmpty()) true else {
+                ruleParseYields.getOrElse(parseRuleCount) { ruleParseYields.last() }
+            }
             parseRuleCount++
+            if (!succeed) return RuleFallbackResult(days = emptyList(), warning = null)
             return RuleFallbackResult(
                 days = listOf(
                     DayMealJson(
@@ -229,17 +240,52 @@ class AiMealInputViewModelStreamTest {
         vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
 
         // 单段无下一段 → 最终 isFinal → 有合法餐食 → PREVIEW_READY + STREAM_ENDED 诊断
+        // [AI修改] Google质量复核：parseWarnings 现在过 humanizeWarning，不再是原始 "STREAM_ENDED_WITHOUT_TERMINAL"
+        // 代号，而是人读文案"AI 响应异常中断"——断言改用人读文案，原始代号不该出现在用户可见文本里。
         assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
         assertTrue(
-            "应有 STREAM_ENDED 诊断",
-            vm.state.value.parseWarnings.any { it.contains("STREAM_ENDED") } || vm.state.value.diagnostic != null,
+            "应有人读的 AI 响应异常中断诊断",
+            vm.state.value.parseWarnings.any { it.contains("AI 响应异常中断") } || vm.state.value.diagnostic != null,
+        )
+        assertTrue(
+            "不得把内部代号原样吐给用户",
+            vm.state.value.parseWarnings.none { it.contains("STREAM_ENDED_WITHOUT_TERMINAL") },
         )
     }
 
     @Test
-    fun `T-B3-05 全流Failed进入ERROR 不自动规则解析`() = runVmTest {
+    fun `T-B3-05 全段Failed但规则解析成功 自动回退到PREVIEW_READY`() = runVmTest {
+        // [AI修改] AI 未配置报错重设计：AI 该段失败后自动尝试规则解析兜底，成功则直接进入 PREVIEW_READY，
+        // 不再进 ERROR（规则解析是兜底而非阻断态）；确认页 parseSourceMessage 须诚实说明"AI 失败→规则解析"。
         val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
-        val spy = SpySessionPort()
+        val spy = SpySessionPort() // 默认 ruleParseYields 空 = parseRule 恒成功
+        val vm = createVm(channelRuntime(channel))
+        vm.replaceSessionPortForTest(spy)
+        vm.submit()
+
+        channel.send(LlmStreamEvent.Failed("HTTP 500 STREAM_HTTP_ERROR", retryable = false))
+        channel.close()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        assertEquals(1, spy.parseRuleCount)
+        // 该段进入 FAILED（terminal）触发一次中间 preview（PARTIAL_READY），最终 isFinal=true 再无条件重算一次
+        // preview——这是既有既定行为（dedup 只对非 final 调用生效，见 handleSessionSnapshot 注释），非本次改动引入。
+        assertEquals(2, spy.previewCount)
+        assertEquals(0, spy.commitCount)
+        assertTrue(
+            "确认页须说明 AI 失败已回退规则",
+            vm.state.value.parseSourceMessage.contains("规则解析") &&
+                vm.state.value.parseSourceMessage.contains("HTTP 500 STREAM_HTTP_ERROR"),
+        )
+    }
+
+    @Test
+    fun `T-B3-05b 全段Failed且规则解析也失败 才真进ERROR`() = runVmTest {
+        // 两个引擎都解析不出内容时，"没能识别出菜品"才是诚实文案；此时 useRuleFallback 已被自动尝试过一次
+        // （parseRuleCount==1），仍应允许用户手动再试（T-B3-07 覆盖该场景）。
+        val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
+        val spy = SpySessionPort(ruleParseYields = listOf(false))
         val vm = createVm(channelRuntime(channel))
         vm.replaceSessionPortForTest(spy)
         vm.submit()
@@ -250,14 +296,19 @@ class AiMealInputViewModelStreamTest {
 
         assertEquals(AiMealPhase.ERROR, vm.state.value.phase)
         assertEquals(0, spy.previewCount)
-        assertEquals("不自动调用规则解析", 0, spy.parseRuleCount)
+        assertEquals(1, spy.parseRuleCount)
         assertEquals(0, spy.commitCount)
+        assertTrue(
+            "两引擎皆失败时仍是诚实的没识别出菜品文案",
+            vm.state.value.errorMessage?.contains("没能识别出菜品") == true,
+        )
     }
 
     @Test
-    fun `T-B3-07 ERROR后useRuleFallback显式触发 标记规则来源`() = runVmTest {
+    fun `T-B3-07 自动兜底也失败后 useRuleFallback手动再试可成功`() = runVmTest {
+        // 自动兜底（第 1 次 parseRule）失败→真 ERROR；用户手动 useRuleFallback（第 2 次 parseRule）成功。
         val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
-        val spy = SpySessionPort()
+        val spy = SpySessionPort(ruleParseYields = listOf(false, true))
         val vm = createVm(channelRuntime(channel))
         vm.replaceSessionPortForTest(spy)
         vm.submit()
@@ -265,13 +316,178 @@ class AiMealInputViewModelStreamTest {
         channel.send(LlmStreamEvent.Failed("HTTP 500 STREAM_HTTP_ERROR", retryable = false))
         channel.close()
         vm.state.first { it.phase == AiMealPhase.ERROR }
+        assertEquals(1, spy.parseRuleCount)
 
         vm.useRuleFallback()
         vm.state.first { it.parseSourceMessage.contains("规则解析") || it.errorMessage?.contains("规则解析") == true }
-        assertEquals(1, spy.parseRuleCount)
+        assertEquals(2, spy.parseRuleCount)
         assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
         assertTrue(vm.state.value.parseSourceMessage.contains("规则解析"))
         assertEquals(1, spy.previewCount)
+    }
+
+    @Test
+    fun `T-CFG-01 AI未配置直接走规则解析 不发起任何AI请求`() = runVmTest {
+        // configReady 默认 true（测试从不调用 refreshEngineStatus），本测试显式驱动到"未配置"分支需要
+        // 走 refreshEngineStatus 的真实判据：AiRuntimeConfig 默认 CLOUD 且未填 Key，isNotBlank()==false。
+        val runtime = object : AiRuntime {
+            var streamCalls = 0
+            override suspend fun complete(request: LlmRequest): Result<String> = Result.success("")
+            override fun stream(request: LlmRequest): Flow<LlmStreamEvent> {
+                streamCalls++
+                return kotlinx.coroutines.flow.emptyFlow()
+            }
+        }
+        val spy = SpySessionPort()
+        val vm = createVm(runtime)
+        vm.replaceSessionPortForTest(spy)
+        vm.refreshEngineStatus() // 未填 Key → configReady=false，engineLabel="规则解析"
+
+        assertEquals("规则解析", vm.state.value.engineLabel)
+
+        vm.submit()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        assertEquals(1, spy.parseRuleCount)
+        assertEquals("本次结果：规则解析", vm.state.value.parseSourceMessage)
+        assertEquals("未配置时不得发起任何 AI 网络请求", 0, runtime.streamCalls)
+    }
+
+    @Test
+    fun `T-CFG-02 AI声明与targetDate不同的绝对日期 段结果不被按日期字符串误判丢弃`() = runVmTest {
+        // Google质量复核阻断项1的回归锁定：AI 解析"昨天晚饭"这类输入会给出与 seg.targetDate 不同的绝对
+        // 日期（此处 2026-08-04≠targetDate 2026-08-05），mergeDays 必须按 segmentId 归属找到该结果，
+        // 不能按 `day.date == seg.targetDate.toString()` 字符串匹配（会把这天判定成"未解析"丢弃）。
+        val yesterdayMeal = """{"type":"meal","segment_id":"$quickSegId","meal_id":"2026-08-04|dinner","date":"2026-08-04","slot":"dinner"}"""
+        val yesterdayDish = """{"type":"dish","segment_id":"$quickSegId","meal_id":"2026-08-04|dinner","dish_id":"2026-08-04|dinner|d1","name":"清蒸鲈鱼"}"""
+        val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
+        val spy = SpySessionPort()
+        val vm = createVm(channelRuntime(channel), text = "昨天晚饭吃了清蒸鲈鱼")
+        vm.replaceSessionPortForTest(spy)
+        vm.submit()
+
+        channel.send(LlmStreamEvent.Delta("$yesterdayMeal\n$yesterdayDish\n"))
+        channel.send(LlmStreamEvent.Completed("stop", 0))
+        channel.close()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        assertEquals("AI 结果不该被判定为解析失败", 0, spy.parseRuleCount)
+        assertEquals(
+            "昨天的绝对日期必须原样送入 preview，不能因日期不等于 targetDate 而丢弃",
+            LocalDate(2026, 8, 4),
+            vm.state.value.autoGenPreview?.days?.firstOrNull()?.date,
+        )
+    }
+
+    @Test
+    fun `T-CFG-03 段AI已COMPLETED成功后 不再误触发规则兜底`() = runVmTest {
+        // Google质量复核阻断项2的回归锁定：currentSegmentId() 只看下标不看状态，段已 COMPLETED 时它仍等于
+        // seg.segmentId；必须靠 session.isStreaming(...) 挡住，不能对已成功的段调用 parseRule。
+        val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
+        val spy = SpySessionPort()
+        val vm = createVm(channelRuntime(channel))
+        vm.replaceSessionPortForTest(spy)
+        vm.submit()
+
+        channel.send(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
+        channel.send(LlmStreamEvent.Completed("stop", 0))
+        channel.close()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        assertEquals("成功段不得触发规则兜底", 0, spy.parseRuleCount)
+    }
+
+    @Test
+    fun `T-CFG-04 未配置AI时诊断信息不泄露内部哨兵代号`() = runVmTest {
+        // Google质量复核阻断项3的回归锁定：ENGINE_NOT_CONFIGURED_REASON 是内部哨兵，规则解析也失败走到
+        // ERROR 时，parseWarnings 里不能出现这个原始代号字符串。
+        val runtime = object : AiRuntime {
+            override suspend fun complete(request: LlmRequest): Result<String> = Result.success("")
+            override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = kotlinx.coroutines.flow.emptyFlow()
+        }
+        val spy = SpySessionPort(ruleParseYields = listOf(false))
+        val vm = createVm(runtime)
+        vm.replaceSessionPortForTest(spy)
+        vm.refreshEngineStatus()
+        vm.submit()
+        vm.state.first { it.phase == AiMealPhase.ERROR }
+
+        assertEquals(AiMealPhase.ERROR, vm.state.value.phase)
+        assertTrue(
+            "parseWarnings 不得包含内部哨兵代号",
+            vm.state.value.parseWarnings.none { it.contains("AI_NOT_CONFIGURED") },
+        )
+    }
+
+    @Test
+    fun `T-CFG-05 周期记非首段规则兜底 相对日期按该段自身targetDate而非首段锚点解析`() = runVmTest {
+        // Google质量复核阻断项5的回归锁定：MealDateAnchorPolicy 对"有星期无绝对日期"的输入产出
+        // date=null + date_offset(相对传入的 targetDate 计算)。attemptRuleFallback 必须用该段自身的
+        // seg.targetDate（周五 2026-08-07）解析绝对日期，不能等流到 handleSessionSnapshot 后被首段
+        // （周一 2026-08-03）锚点的 frozenDate 重新解析——否则同样 offset 在错误锚点下会指向错误日期。
+        val relativeDayPort = object : SpySessionPort() {
+            override suspend fun parseRule(input: String, targetDate: LocalDate): RuleFallbackResult {
+                parseRuleCount++
+                // date_offset=2：若按本段自身 targetDate(2026-08-07 周五) 解析 → 2026-08-09；
+                // 若被错误套用首段锚点(2026-08-03 周一) → 会变成 2026-08-05，两者不同，测试才有辨别力。
+                return RuleFallbackResult(
+                    days = listOf(
+                        DayMealJson(
+                            date = null,
+                            date_offset = 2,
+                            meals = listOf(
+                                MealJson(meal_type = "lunch", dishes = listOf(MealDishRefJson(name = "炒饭", dish = DishJson(name = "炒饭")))),
+                            ),
+                        ),
+                    ),
+                    warning = null,
+                )
+            }
+        }
+        val runtime = object : AiRuntime {
+            override suspend fun complete(request: LlmRequest): Result<String> = Result.success("")
+            override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = kotlinx.coroutines.flow.emptyFlow()
+        }
+        val vm = createVm(runtime)
+        vm.replaceSessionPortForTest(relativeDayPort)
+        vm.refreshEngineStatus() // 未配置 Key → 全走规则，触发 attemptRuleFallback 的日期解析逻辑
+        vm.setInputMode(InputMode.WEEK)
+        vm.setPeriodInput(4, "周五吃了炒饭") // index 4 = 周五（首段是周一 2026-08-03），seg.targetDate=2026-08-07
+        vm.submit()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        val day = vm.state.value.autoGenPreview?.days?.firstOrNull()
+        assertEquals(
+            "date_offset 必须按该段自身 targetDate(周五)解析，不能套用首段(周一)锚点",
+            LocalDate(2026, 8, 9),
+            day?.date,
+        )
+    }
+
+    @Test
+    fun `T-CFG-06 AI正常Completed但没解析出任何合法菜 仍自动兜底到规则`() = runVmTest {
+        // Google质量二次复核发现的覆盖缺口回归锁定：段 Completed 正常终态但没有一行合法 NDJSON（模型只回了
+        // 文字/道歉，没有任何 meal/dish 事件），不经过任何 onFailed 调用点——必须在段全部终态后的收尾阶段
+        // 补触发规则兜底，不能让"AI 正常结束但啥也没解析出"这条路径永远拿不到自动兜底。
+        val channel = Channel<LlmStreamEvent>(Channel.UNLIMITED)
+        val spy = SpySessionPort() // 默认 ruleParseYields 空 = parseRule 恒成功
+        val vm = createVm(channelRuntime(channel))
+        vm.replaceSessionPortForTest(spy)
+        vm.submit()
+
+        // 模型只回一段无法解析出菜品的文字，然后正常 Completed（不是 Failed，不是异常，不是流意外结束）。
+        channel.send(LlmStreamEvent.Delta("抱歉，我没有理解您的意思，能再描述具体一些吗？\n"))
+        channel.send(LlmStreamEvent.Completed("stop", 0))
+        channel.close()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        assertEquals("Completed但空解析必须仍触发一次规则兜底", 1, spy.parseRuleCount)
+        assertTrue(vm.state.value.parseSourceMessage.contains("规则解析"))
     }
 
     @Test
