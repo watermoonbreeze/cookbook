@@ -1,70 +1,56 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-08（L1→K1e→K1i→K1h 四项按用户既定顺序全部处理完毕）**
-> **执行角色：ARCH@主力机·Claude Code**（本轮：用户明确指示"你只负责蓝图，不要编码"，全程只起草蓝图/做调研，未写一行产品代码）。
-> 当前状态：**L1、K1i 两份蓝图 `BLUEPRINT_READY`，排队待 CODE；K1e 起草后被独立挑战证伪废弃；K1h 纯调研已完成**。AI快捷记一餐（K1a/B4-B6/CFG）上一批的真机验证进度**仍未核实**——这是本轮开始前就悬而未决的问题，本轮结束时依然没有答案，下次接手应优先处理。
+> 更新时间：**2026-08-08（L1 + K1i 两份蓝图 CODE 均已交付，提交远程，排队审核模型 REVIEW）**
+> **执行角色：CODE@主力机·Claude Code（本会话模型 = DeepSeek V4 Flash，担任编码模型；按用户裁定"编码模型不得自审"，正式 ARCH 复核须由审核模型在交接后执行）**
+> 当前状态：**L1（云端AI首启同意+合规免责）与 K1i（流式地基·运行时真实委托）CODE 均已完成并 push**。构建/单测/内部质量门禁（Google 终审 ×2、copywriter 审校）已过，但 **ARCH 正式复核（TURN=REVIEW）尚未执行**——这是交给审核模型的下一棒。真机验证（E-L1-01~12 + E-K1I-01/02）也待做。
 
 ---
 
-## 一、本轮做了什么（按时间顺序）
+## 一、本轮做了什么（按顺序）
 
-### 1.1 起点：K1b 蓝图被叫停，改向"先收尾 AI快捷记主线"
+### 1.1 L1：云端 AI 首启同意 + 合规免责（CODE 交付，commit `ad1c5878`）
 
-用户指出"AI快捷记都做完了吗？"，核查后发现 B4/B5/B6/K1a/CFG 那批的真机待验证清单近 30 项绝大多数仍 `⬜`/`🔧`。K1b 蓝图（逐成员健康评价）保留不回退但暂停推进（`DRAFT·PARKED`，见其 §10 已挑出 11 项待处置）。用户随后给出新指令："你把现在做的蓝图放到待办，以后再继续，当前先提交commit，然后继续AI记一餐的剩余部分，逐个出蓝图给编码模型做…每个完成后提交并推送远程"，又追加"你只负责蓝图 不要编码"——确立了本轮的工作模式：ARCH 逐项起草蓝图（或调研），每项完成即 commit+push，不做实现。
+按蓝图 §7 逐 STEP 实施（BLUEPRINT-READY v2b）：
+- **shared**：新增 `CloudAiConsent.kt`（同意状态模型：NOT_ASKED/GRANTED/DECLINED/GRANDFATHER_PENDING，偏好 JSON 免迁移）；`AiRuntimeConfig.kt` 新增 `cloudAiConsent()`/`setCloudAiConsent()`/`cloudAiConsentGranted()`/`KEY_CLOUD_AI_CONSENT`；**联网闸门下沉 `SwitchableAiRuntime.complete()`**（CLOUD 已选中且未同意 → 直接 `Result.failure(CloudAiConsentRequiredException())`，不路由 CloudAiRuntime）。
+- **androidApp**：新增 `CloudAiDisclosure.kt`（会发送/不会发送清单真相源）、`CloudAiSaveRoute.kt`（`routeOnSave`/`shouldShowCloudStatusBlock` 纯函数）、`CloudAiConsentPanel.kt`（完整同意面板·双按钮/只读双态）；`AiSettingsViewModel.kt` 新增 5 个同意动作函数（grantConsent/declineConsent/confirmVendorSwitch/closeCloudAi/resolveGrandfather）；`AiSettingsScreen.kt` 6 弹层状态机 + KeyDialog 保存三态分流 + 常驻状态块 + DECLINED 重新启用行；`CapsuleButton.kt` 追加 `CapsuleOutlineButton`。
+- **政策**：`PolicyContent.kt` 新增"四、云端 AI"小节（原 §四~§八 顺延 §五~§九）+ §一"默认不上传，除非自行启用云端 AI"订正 + `POLICY_UPDATED`="最近更新：2026年8月"；同步 `.ai-context/docs/feature/隐私政策与用户协议.md`。
+- **测试**：23 个新测试（shared `AiRuntimeConfigConsentTest` 7 + androidApp `CloudAiSaveRouteTest` 6 / `AiSettingsViewModelConsentTest` 8 / `AiMealConsentGateIntegrationTest` 2）。
+- 门禁：Google 质量终审**无阻断**（闸门唯一性验证：全 App 4 个云端消费点均经 SwitchableAiRuntime）；copywriter 审校落地（保留蓝图冻结字面量"已被你关闭"——与 STEP grep 判据冲突，已记 fast-follow）。
 
-### 1.2 L1：云端 AI 首启同意 + 合规免责声明
+### 1.2 K1i：流式地基·运行时真实委托（CODE 交付，commit `d7240d6f`）
 
-- 前置门禁：涉及新交互与"App 自动行为"，先派 `apple_software_behavior`（行为契约：T3 强同意档位、触发点定在"填Key点保存后、落库前"、拒绝须真正无害不降级其他功能）+ `apple_ux_designer`（Dialog+Surface 独立弹层、对等双按钮、中性配色，含 UX 首次调用因连接错误失败后重试成功）两个前置设计 agent。
-- **v1 起草后 GC-37 第一轮独立挑战判定"核心设计前提有误"**：原设计把同意状态塞进 `AiRuntimeConfig.isModelReady()`，但该函数在现状代码里根本不是任何调用点的真实网络出口闸门（全App至少3条路径可绕过）。**v2 重新设计**：把闸门下沉到 `SwitchableAiRuntime.complete()`（全App云端调用的唯一分发入口），未同意时返回 `Result.failure`，复用各消费点已有的失败兜底路径（AI记一餐 `attemptRuleFallback()`/AI推荐 `RULE_FALLBACK`），做到真正的"零改动、全App生效"。
-- **第二轮独立挑战确认 v2 核心设计成立**，挑出 7 项局部缺口（同意状态换厂商可绕过、consent 解析失败 fail-open、漏一个消费点`confirmHealthAdvice()`、弹层状态未互斥等），**v2b 就地处置全部**，转 `BLUEPRINT_READY`。
-- 文件：`docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md`。已 commit+push（`872905fe`）。
+- **shared**：`SwitchableAiRuntime` 新增 `override fun stream()`——真实委托给底层 runtime 的 `stream()`（替代接口默认"complete() 整段包装成假 Delta"）；复用 L1 的 `cloudAiConsentGranted()` 同意闸门（同源判据+同源文案，防 stream() 路径绕开 L1 闸门）；runtimes 回退 MOCK 与 complete() 语义对齐。`CloudAiConsentRequiredException` 提取 `DEFAULT_MESSAGE` 常量。
+- **测试**：`SwitchableAiRuntimeStreamTest` 4/4（T-K1I-01 多Delta真委托 / 02 同意闸门拦截 / 03 回退语义 / 04 取消透传，runBlocking 写法）。
+- 授权改写 L1 蓝图 §4.4/§0.1 失实注释（"stream() 不重写"→"已由 K1i 重写"），防生产代码假话。
+- 门禁：Google 质量终审**无阻断**（取消传播链路核实正确、闸门同源、回退对齐、allowlist 合规）；本批无 UI/文案，豁免 copywriter/UX。
 
-### 1.3 K1e：全App AI调用点紧凑结构转换层——**起草后被证伪废弃**
+### 1.3 文档登记（commit `b008a3cc`/`90065bf8`）
 
-- 起草蓝图（候选菜列表从中文标签行改紧凑JSON短key，backlog声称省50-70% token）后按惯例派 GC-37 独立挑战。
-- **挑战按现有代码逐字符估算，发现backlog的判断本身是错的**：现状候选渲染本就条件式输出（空字段不写），中文单/双字标签（"｜主料:"5字符）比JSON语法（`,"main":[...]`10+字符，每个字符串都要引号+逗号+冒号+方括号）更紧凑。改造后**实测净增约60~80%字符/token**，方向与预期完全相反；且会与既有system提示词里"候选已标『利调养』"等文案产生语义冲突。
-- 汇报给用户后，**用户裁定废弃**（选项"废弃K1e，不做这项(推荐)"）。文件保留作调研记录，状态改 `DISCARDED`。已 commit+push（`b9f02808`）。
-- **经验沉淀**：backlog条目的"应该做"判断不能直接采信为事实，必须先核实现状代码再设计，这次是"设计前先核实"救回一次可能白做的批次。
-
-### 1.4 K1i：全App AI输出流式/渐进展示——**起草前发现更深的地基问题**
-
-- 起草前调研发现backlog"AI记餐NDJSON先落地"这句话不成立：`SwitchableAiRuntime` 从未重写 `stream()`，**全App（含AI记一餐）实际上从来没有真正的网络级流式到达**，`CloudAiRuntime.stream()` 的真实SSE实现是生产环境里的死代码，AI记一餐现在收到的是"一次性整段响应包装成假的单个Delta"。
-- 汇报给用户，用户选择"K1i先修这个地基缺口，再扩展UI(推荐)"。
-- 蓝图范围收窄为**只做地基修复**（批K1i-1：`SwitchableAiRuntime` 新增真委托 `stream()`）；"扩展到AI推荐/生成菜品/健康建议"的UI层工作（批K1i-2）显式弃置为独立未来批次（量级参考AI记一餐当年B1~B6六个批次，不适合与地基修复捆绑仓促设计）。
-- GC-37独立挑战一轮，核心技术判断（取消传播、DI解耦）全部确认成立，挑出3项问题已处置：① 与L1的反向依赖（L1文档里"stream()不重写"的注释在K1i落地后会失真，已在两份蓝图互相记录，K1i落地时必须同步删除）② **真正的行为风险被v1稿判断错了**——不是"网络分片粒度解析器扛不扛得住"（已被既有单测覆盖），而是 `CloudAiRuntime.stream()` 不带 `response_format:json_object`，与`complete()`路径不同：现状因为恒走`complete()`包装，NDJSON prompt几乎总被强制成单一JSON对象输出，解析器一直在走"整体JSON fallback"这条非设计主路径；本批修好后模型才会真正按NDJSON输出，解析主路径会切换——已把真机验证项(E-K1I-01)从"非断言主观项"升级为带4条明确判据+回退方案的阻断性真机项 ③ shared模块测试classpath没有`kotlinx-coroutines-test`，测试策略改用`runBlocking`。
-- 文件：`docs/feature/K1i_AI流式渐进展示_实施蓝图.md`，`BLUEPRINT_READY`，**排在L1之后实施**。已 commit+push（`2e6c6c1d`）。
-
-### 1.5 K1h：菜品/食材自动添加成熟算法调研——纯调研已完成
-
-- 联网调研三个方向（菜品→食材自动补全、食材实体归一、营养估算）的成熟方案/开源库/论文/产品做法。
-- **结论：本项目现有架构在三个方向上都已经与业界主流一致，无需替换**——AI直出食材（对应学界NAME→INGR任务，LLM prompt是当前主流，早期CRF方案已过时）、轻量别名表（对应FoodOn/FoodSEM等本体+LLM实体链接研究，但这些以英文为主，本项目"轻量表不做全量模糊匹配"在中文小规模场景下反而更务实）、真实成分库核算+权威数据源（与FoodLMM等学术工作、第三方营养API的"查真实库"路线一致，均不推荐AI直接猜测营养值）。
-- 记录3项低优先级fast-follow（常见菜参考表缓存、别名表规模增长后的检索增强、第三方营养API作为人工核准候选源），均判定当前不必立项。
-- 文件：`docs/feature/K1h_菜品食材自动添加算法调研报告.md`。待本次交接一并commit+push。
+蓝图 §9 台账（两批 STEP 勾销 + 验收命令 + 门禁记录）、真机清单 `真机待验证清单_202608082015.md`（E-L1-01~12 + E-K1I-01/02，E-K1I-01 为阻断性）、模型执行力台账两批 CODE 行（模型名 = DeepSeek V4 Flash）、BLUEPRINT_STATE（TURN=REVIEW）、功能路径索引。
 
 ---
 
-## 二、⏭ 下一步
+## 二、⏭ 下一步（交给审核模型 + 真机验证）
 
-1. **优先与用户核实 AI快捷记一餐（B4/B5/B6/K1a/CFG）真机验证进度**——这是本轮开始前就存在、本轮结束时依然未解决的问题，不应继续被新工作挤到后面。
-2. **L1、K1i 两份蓝图已 `BLUEPRINT_READY`，等用户决定是否转 CODE 实施**（本 session 按用户指示只出蓝图不编码；若用户希望现在就实现，需要明确告知走 CODE 角色/切换模式）。K1i 必须晚于 L1（依赖 `cloudAiConsentGranted()`）。
-3. **K1b 蓝图（`DRAFT·PARKED`）**：等 L1/K1i 这条主线（含真机验证）彻底收尾后再拾起，直接处置其 §10 已挑出的 11 项阻断，不必重新起草。
-4. 若用户后续想继续"出蓝图"模式，`待办索引.md`/`待办_功能算法.md`/`待办_工程合规.md` 里其余🔴项（J2/J17/L2/FAM-AGE/FAM-MEAL等）可作候选，需先按 GLOBAL 定级规则评估。
-
----
-
-## 三、本轮沉淀的关键经验（新增，供后续复用）
-
-- **backlog条目的"应该做/能省多少"判断不能直接采信**：K1e是活生生的反例——一句"省50-70% token"的描述，没人在写代码前实测过，直到起草蓝图、独立挑战agent逐字符核算才发现方向错了。以后任何"优化类"backlog条目，起草蓝图前第一步应该是"先用现有代码/数据核实这个判断本身站不站得住"，而不是直接开始设计怎么做。
-- **"已经落地"的功能描述也可能不成立**：K1i是第二个反例——backlog写"AI记餐NDJSON先落地"，但深挖发现真实网络流式从未真正接通，"落地"的只是UI层的段进度状态机，网络层是假的。凡是后续batch要"复用/扩展"某个"已有"能力时，先验证这个能力本身是不是真的存在、真的按描述工作。
-- **GC-37独立挑战机制这次展现出了真实价值**：三次挑战里两次（L1第一轮、K1e）直接推翻了原设计的核心前提，一次（K1i）虽然确认核心设计成立但挑出了一个"风险点判断错误"（以为风险在分片粒度，实际风险在协议切换）——如果没有这道强制的对抗性复核，这三批都可能带着错误前提直接交给CODE实施。
-- **跨蓝图依赖必须显式记录在两份文档里，不能只记一份**：L1与K1i存在双向耦合（K1i的stream()闸门复用L1的判据；L1文档里一句注释在K1i落地后会失真），本轮做法是在两份蓝图文件里都写明对方的依赖点+完成后需要做什么，而不是只在一份里提一句"注意"。
+1. **ARCH 正式复核（TURN=REVIEW，须由审核模型执行，编码模型不得自审）**：对 L1（`ad1c5878`）+ K1i（`d7240d6f`）交付做独立复核，判定标准见下方"先读清单 #4"。复核通过 → 批次关闭，并在模型台账 `14_模型执行力评估.md` 两批 CODE 行补 ARCH 简评。
+2. **真机验证**：L1 核心 `E-L1-04 → E-L1-01（存量Key）→ E-L1-03 → E-L1-06`；K1i `E-K1I-01（阻断性·4条判据）→ E-K1I-02`。全量见 `真机待验证清单_202608082015.md`。
+3. **之后**：决定是否续做其他批次（K1b `DRAFT·PARKED` 等；待办里其余 🔴 项需按定级规则评估）。
 
 ---
 
-## 四、先读清单（下一 session 接手时按序读）
+## 三、本轮沉淀的关键经验
 
-1. `BLUEPRINT_STATE.md`（确认 L1/K1i 均 `BLUEPRINT_READY`、TURN=CODE，K1e已废弃、K1h已完成）
+- **编码模型不得自审**（用户 2026-08-08 裁定）：编码模型可以派内部质量 agent 做自检（Google 终审/文案审校），但 **ARCH 正式复核必须由审核模型在会话交接后执行**，不是编码模型自己（或自己派的 agent）说了算。交接时要把"待审核项 + 判定标准 + 先读清单"写全，让审核模型能直接接手。
+- **内部自检仍有价值**：编码侧独立 agent 复核发现的 2 处问题（模型台账 K1i commit 指针格式、K1i 对 L1 文件的 allowlist 文字越界）已处置——前者直接补写 `d7240d6f`；后者是"纯加法常量提取加强同源文案"的受控偏差，已在 K1i §9 台账如实记录（不阻断，但暴露了蓝图 allowlist 对"纯加法重构"的授权盲区，后续蓝图应显式列出）。
+- **K1i 依赖 L1 的落地方式**：K1i 蓝图起草时假设"L1 未落地是默认主路径"，但实际 L1 先 CODE 落地（`ad1c5878`），K1i 走正式分支无留桩。实施前先 grep 确认依赖函数是否存在，避免按错误分支写桩。
+- **测试方法名 `->` 非法**：JVM 测试方法名（反引号内）不能含 `->`，用"返回/时"等中文替代；VM 异步写测试需轮询等待终态（`awaitUntil`）而非直接断言（fire-and-forget launch 经 `withContext(IO)` 异步）。
+
+---
+
+## 四、先读清单（审核模型接手时按序读）
+
+1. `BLUEPRINT_STATE.md`（TURN=REVIEW；L1/K1i 交付状态、commit、依赖提醒）
 2. `SESSION_交接.md`（本文件）
-3. `docs/feature/真机待验证清单_202608081130.md`（优先核实B4/B5/B6/K1a/CFG进度，见本文件§二第1条）
-4. 若转CODE实施：`docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md`（先做）→ `docs/feature/K1i_AI流式渐进展示_实施蓝图.md`（后做，注意§4.4/§6里对L1的依赖处理）
-5. 若拾起K1b：`docs/feature/AI记一餐_K1b膳食健康评价逐成员化_实施蓝图.md` §10（11项阻断待处置清单，直接处置不必重新起草）
+3. `docs/feature/真机待验证清单_202608082015.md`（真机验证 E-L1-01~12 + E-K1I-01/02；另含早前 AI快捷记 B4/B5/B6/K1a/CFG 近 30 项仍未核实进度——早前就悬而未决，应一并跟用户确认）
+4. **ARCH 复核对象 + 判定标准**：`docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md`（§3 INV-L1-01~12、§6 allowlist、§9 台账）→ `docs/feature/K1i_AI流式渐进展示_实施蓝图.md`（§3 INV-K1I-01~04、§6 allowlist、§9 台账）。判定：①diff 走查两 commit（`ad1c5878`/`d7240d6f`）②实跑三条构建命令（`scripts\build-cli.bat :shared:testDebugUnitTest` / `:androidApp:testDebugUnitTest` / `:androidApp:assembleDebug`，基线 shared 652 / androidApp 49）③闸门唯一性（`grep SwitchableAiRuntime(` 生产代码仅 2 处：类定义 + DI 绑定）④allowlist 合规 + 失实注释闭环 ⑤台账与真实 diff 一致。无阻断 → 批次关闭 + 模型台账补 ARCH 简评。
+5. 若续做真机验证：按清单 #3 逐条跑，把现象反馈给用户判是否符合预期。
