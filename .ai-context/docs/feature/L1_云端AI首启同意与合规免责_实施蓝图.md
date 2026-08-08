@@ -724,3 +724,5 @@ scripts\build-cli.bat :androidApp:assembleDebug
 | Grandfather 补确认的"下一次真实云端请求前"第二触发点 | 显式弃置 | 运行时闸门已覆盖安全底线，UI 提醒覆盖面是体验加强项，独立 fast-follow |
 | 接收方隐私政策跳转链接 | 显式弃置，非阻断可选加项 | 已有申请指南提供官网跳转 |
 | `CloudAiDisclosure.INCREMENT_NOTES`（外发范围扩大时的增量说明文案） | 预留空实现 | 下次 `SCOPE_VERSION` 递增时随该次改动补齐 |
+
+**反向依赖提醒（2026-08-08 K1i 蓝图起草时发现，追记）**：`K1i_AI流式渐进展示_实施蓝图.md` 会给 `SwitchableAiRuntime` 新增 `override fun stream(...)`。若 K1i 晚于本批（L1）落地，K1i 的 CODE **必须**同步删除/改写本文档 §4.4 代码片段里"`// stream() 不重写：AiRuntime 接口默认实现已把 complete() 的 Result.failure 转成 LlmStreamEvent.Failed…本次改动零新增行为分歧`"这一整行注释（届时它会变成生产代码里的假话），以及本文档 §0.1 GC-13 对应行的论证文字。若 K1i 先于本批落地，则本批（L1）CODE 实施 `complete()` 的同意闸门时，`stream()` 的对应闸门已由 K1i 补上，本批不需要再处理 `stream()`（K1i 蓝图 §4.4 已复用同一 `cloudAiConsentGranted()` 判据）。两批交叠实施时，先落地的一方在各自 §9 交付台账里记一笔引用对方蓝图，避免遗漏。
