@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.domain.autogen
 
 import com.sxdbsm.cookbook.domain.NutritionGuess
+import com.sxdbsm.cookbook.domain.model.DishNutrition
 import kotlinx.datetime.LocalDate
 
 /**
@@ -90,8 +91,8 @@ data class DishPreview(
     val existingId: Long?,
     val ingredients: List<IngredientPreview>,
     val source: String,
-    /** 由营养估算×克数汇总·全缺料→null(显"营养待完善"非"约0") */
-    val estimatedKcal: Double?,
+    /** 菜品营养（CREATE 由 NutritionCalculator.dishNutrition() 产出；REUSE 由 previewAll() 批量回填）·null=从未尝试计算 */
+    val nutrition: DishNutrition?,
     /** 从 SemanticDish 透传·commit 后回填 eaten_ratio·null 或 1.0 跳过 */
     val eatenRatio: Double? = null,
 )

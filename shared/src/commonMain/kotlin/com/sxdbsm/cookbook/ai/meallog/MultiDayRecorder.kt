@@ -13,6 +13,7 @@ import com.sxdbsm.cookbook.domain.autogen.DishAutoGenerator
 import com.sxdbsm.cookbook.domain.autogen.IngredientAliasResolver
 import com.sxdbsm.cookbook.domain.autogen.IngredientAutoGenerator
 import com.sxdbsm.cookbook.domain.autogen.MergeMode
+import com.sxdbsm.cookbook.domain.autogen.ResolveKind
 import com.sxdbsm.cookbook.domain.autogen.SemanticDay
 import com.sxdbsm.cookbook.domain.autogen.SemanticDish
 import com.sxdbsm.cookbook.domain.autogen.SemanticIngredient
@@ -111,6 +112,8 @@ class MultiDayRecorder(
      * 只预览·零写库（P2-1 K1a：UI 确认前调用）。[AI修改]
      *
      * 解析 DayMealJson → SemanticDay → DayAutoGenerator.preview()，返回完整预览含营养估算。
+     * K1a 新增：REUSE 菜品（AI 识别为库内已有菜，preview 时不重算营养、nutrition=null）在此
+     * **一次批量**查询 `nutritionRepo.dishNutrition(reuseIds)` 回填真实营养，避免逐个查询（N+1）。
      */
     suspend fun previewAll(
         days: List<DayMealJson>,
@@ -119,7 +122,28 @@ class MultiDayRecorder(
         val autoGenContext = AutoGenContext.load(db, aliasResolver)
         val dayGen = buildDayGen()
         val semanticDays = days.map { toSemanticDay(it) }
-        dayGen.preview(semanticDays, today, autoGenContext)
+        val preview = dayGen.preview(semanticDays, today, autoGenContext)
+
+        // REUSE 菜品批量营养回填：收集全部 REUSE id → 一次查询 → 逐层 .copy() 回填。
+        // 注意：dishNutrition() 用 associateWith 保证每个请求 id 都有非空条目（即使 hasData=false 也是非空对象），
+        // 因此 REUSE 菜回填后必为"尝试计算但无数据"(②类)，不会与"从未尝试计算"(①类)混淆（INV-K1A-04）。
+        val reuseIds = preview.days.asSequence()
+            .flatMap { it.meals }
+            .flatMap { it.dishes }
+            .filter { it.resolution == ResolveKind.REUSE }
+            .mapNotNull { it.existingId }
+            .distinct()
+            .toList()
+        if (reuseIds.isEmpty()) return@withContext preview
+        val nutritionById = nutritionRepo.dishNutrition(reuseIds) // 一次批量查询，非循环（INV-K1A-02）
+        preview.copy(days = preview.days.map { day ->
+            day.copy(meals = day.meals.map { meal ->
+                meal.copy(dishes = meal.dishes.map { dish ->
+                    if (dish.resolution == ResolveKind.REUSE && dish.existingId != null)
+                        dish.copy(nutrition = nutritionById[dish.existingId]) else dish
+                })
+            })
+        })
     }
 
     /**

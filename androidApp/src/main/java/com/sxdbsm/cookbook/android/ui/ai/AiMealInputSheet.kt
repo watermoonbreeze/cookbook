@@ -81,15 +81,15 @@ import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
 import com.sxdbsm.cookbook.android.ai.VoiceRecognizer
 import com.sxdbsm.cookbook.android.ui.component.CapsuleButton
 import com.sxdbsm.cookbook.android.ui.component.CharCountLabel
+import com.sxdbsm.cookbook.android.ui.component.DishNutritionLine
 import com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar
 import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
-import com.sxdbsm.cookbook.android.ui.component.rememberCalorieNumberEnabled
+import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
 import com.sxdbsm.cookbook.domain.autogen.DishPreview
 import com.sxdbsm.cookbook.domain.autogen.MealPreview
 import com.sxdbsm.cookbook.domain.autogen.ResolveKind
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
-import kotlin.math.roundToInt
 
 /**
  * @File : AiMealInputSheet
@@ -1093,8 +1093,6 @@ private fun PreviewPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
 /** 单餐次卡片（基于能力层 MealPreview 直接渲染）。[AI修改] P2-1 K1a+QA-B1/B2 · B5 改为 internal 供 GeneratingPhase 复用 */
 @Composable
 internal fun MealPreviewCard(meal: MealPreview) {
-    val calorieOn by rememberCalorieNumberEnabled()
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -1136,7 +1134,6 @@ internal fun MealPreviewCard(meal: MealPreview) {
             // 菜品列表（含热量 + 「新」标）—— 直接从 DishPreview 取，无 Map 查找
             meal.dishes.forEach { dishPreview ->
                 val isNew = dishPreview.resolution == ResolveKind.CREATE
-                val kcal = dishPreview.estimatedKcal
 
                 Column(
                     modifier = Modifier
@@ -1184,22 +1181,8 @@ internal fun MealPreviewCard(meal: MealPreview) {
                         }
                     }
 
-                    // 第二行：热量（受开关）
-                    val kcalText = if (calorieOn && kcal != null && kcal > 0.0) {
-                        "整份约 ${kcal.roundToInt()} 千卡（估算）"
-                    } else if (kcal == null || kcal <= 0.0) {
-                        "营养待完善"
-                    } else {
-                        null
-                    }
-                    if (kcalText != null) {
-                        Text(
-                            text = kcalText,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(top = 1.dp),
-                        )
-                    }
+                    // 第二行：营养行（K1a 统一复用 DishNutritionLine：宏量色点+热量+钠提示/营养待完善）
+                    DishNutritionLine(dishPreview.nutrition?.toDishNutritionUi())
                 }
             }
         }
@@ -1321,10 +1304,6 @@ private fun eatenLabel(ratio: Double): String = when {
     ratio <= 0.8 -> "大半"
     else -> "吃完"
 }
-
-/** 数值展示（整数不显 .0）。[AI生成] */
-private fun formatQuantity(q: Double): String =
-    if (q == q.toLong().toDouble()) q.toLong().toString() else q.toString()
 
 /** 日期 → 中文星期。[AI生成] */
 private fun weekdayLabel(date: LocalDate): String = when (date.dayOfWeek) {
