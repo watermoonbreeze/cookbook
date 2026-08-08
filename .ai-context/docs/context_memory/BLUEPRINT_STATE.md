@@ -8,18 +8,19 @@
 
 ---
 
-## 当前批次：L1 云端AI首启同意（2026-08-08 用户已定序：L1→K1e→K1i→K1h，逐个出蓝图）
+## 当前批次：L1 → K1i 排队待 CODE（2026-08-08 用户定序 L1→K1e→K1i→K1h 已全部走完，逐个出蓝图）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | 用户明确指示"你只负责蓝图，不要编码"——本 session 的 ARCH 只起草蓝图，不实现。已按序完成 L1 蓝图：起草→GC-37 第一轮挑战（判定核心设计前提有误，要求结构性返工）→v2 重新设计闸门落点（`SwitchableAiRuntime.complete()`）→GC-37 第二轮挑战（核心设计确认成立，挑出 7 项局部缺口）→v2b 就地处置全部问题→转 `BLUEPRINT_READY` |
-| 状态 | `BLUEPRINT_READY` |
-| **TURN** | **CODE**（`docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md`，按其 §7 STEP 逐条机械执行；本蓝图颗粒度 L7，§0.1 是入口） |
-| K1e 现状 | **已废弃**——蓝图起草后 GC-37 独立挑战证伪"紧凑JSON省token"前提（实测反而多耗60~80%），用户裁定不做。蓝图文件 `docs/feature/K1e_AI调用点紧凑结构转换层_实施蓝图.md` 状态改 `DISCARDED`，保留作调研记录，不移交 CODE |
-| K1i 现状 | **`BLUEPRINT_READY`**（`docs/feature/K1i_AI流式渐进展示_实施蓝图.md`）——起草时发现 backlog"AI记餐NDJSON先落地"这句话不成立：`SwitchableAiRuntime` 从未重写 `stream()`，全App（含AI记一餐）实际都没有真正的网络级流式到达。蓝图只做地基修复（让 `stream()` 真正委托给 `CloudAiRuntime` 的真实SSE实现），UI层扩展到AI推荐/生成菜品/健康建议显式弃置为独立未来批次（量级参考AI记一餐B1~B6）。GC-37独立挑战一轮，3项CONFIRMED-ISSUE已处置（含与本批L1的双向依赖：L1 §4.4 的"stream()不重写"注释需在K1i落地时同步删除，已在两份蓝图互相记录）。**排在 L1 之后实施**（`cloudAiConsentGranted()` 需已存在，否则走留桩分支） |
-| ARCH 下一步 | 用户已定序 L1→K1e(废弃)→K1i(已就绪)→**K1h**（自动添加算法调研，纯调研非蓝图，无需GC-37/BLUEPRINT_READY流程）。ARCH 现在做 K1h 调研 |
-| K1b 蓝图现状（不变） | `docs/feature/AI记一餐_K1b膳食健康评价逐成员化_实施蓝图.md`，状态 `DRAFT·PARKED`，等 L1/K1e/K1i/K1h 这条主线收尾后再拾起处置 §10 已挑出的问题，不重新起草 |
-| AI快捷记一餐真机验证（不变，仍未核实进度） | `真机待验证清单_202608081130.md` 里 E-B4-*/E-B5-*/E-B6-*/E-K1A-01/E-CFG-01~06 近 30 项进度仍待用户确认，与本轮 L1/K1e/K1i 工作并行，不阻塞 |
+| 任务/批次 | 用户明确指示"你只负责蓝图，不要编码"——本 session 的 ARCH 只起草蓝图/做调研，不实现代码。四项按序全部处理完毕：L1（`BLUEPRINT_READY`）、K1e（起草后证伪废弃）、K1i（`BLUEPRINT_READY`）、K1h（纯调研，已完成）。 |
+| 状态 | L1/K1i 均 `BLUEPRINT_READY`，K1e `DISCARDED`，K1h 调研完成 |
+| **TURN** | **CODE**——先做 `docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md`（§7 STEP 逐条机械执行，L7），**K1i 排在 L1 之后**（`docs/feature/K1i_AI流式渐进展示_实施蓝图.md`，其 `cloudAiConsentGranted()` 引用依赖 L1 先落地，否则走蓝图内留桩分支） |
+| K1e 现状 | **已废弃**——蓝图起草后 GC-37 独立挑战证伪"紧凑JSON省token"前提（实测反而多耗60~80%），用户裁定不做。蓝图文件 `docs/feature/K1e_AI调用点紧凑结构转换层_实施蓝图.md` 状态 `DISCARDED`，保留作调研记录 |
+| K1h 现状 | **已完成**——纯联网调研（非蓝图），报告 `docs/feature/K1h_菜品食材自动添加算法调研报告.md`：三方向（AI直出菜品食材/别名归一/营养估算）现状均与业界主流一致，无需替换，仅记录 3 项低优先级 fast-follow |
+| L1↔K1i 交叉依赖提醒 | K1i 会给 `SwitchableAiRuntime` 新增 `stream()` override，需复用 L1 新增的 `cloudAiConsentGranted()`；L1 蓝图 §4.4 那句"stream() 不重写"的注释在 K1i 落地后会失真，**K1i 落地时必须同步删除该注释**（两份蓝图 §9/§12 已互相记录，CODE 交付时留意） |
+| ARCH 下一步 | 四项均已处理完毕，暂无新蓝图待起草。下一步建议：① 与用户核实 L1/K1i 是否现在就转 CODE 实施，或先做其他事；② AI快捷记一餐真机验证进度仍未核实（见下条），可优先处理；③ K1b（PARKED）蓝图等本轮主线彻底收尾后再拾起 |
+| K1b 蓝图现状（不变） | `docs/feature/AI记一餐_K1b膳食健康评价逐成员化_实施蓝图.md`，状态 `DRAFT·PARKED`，等这条主线（含 L1/K1i 的 CODE 实施+真机验证）彻底收尾后再拾起处置 §10 已挑出的问题，不重新起草 |
+| AI快捷记一餐真机验证（不变，仍未核实进度） | `真机待验证清单_202608081130.md` 里 E-B4-*/E-B5-*/E-B6-*/E-K1A-01/E-CFG-01~06 近 30 项进度仍待用户确认——**这是本轮 L1→K1h 工作开始前就悬而未决的原始问题，本轮结束后仍未被回答**，下次接手应优先跟用户核实 |
 
 ---
 
