@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.ai
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,10 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sxdbsm.cookbook.ai.AiRuntimeType
+import com.sxdbsm.cookbook.ai.ConsentSource
+import com.sxdbsm.cookbook.ai.ConsentStatus
 import com.sxdbsm.cookbook.ai.DeviceAiGrade
 import com.sxdbsm.cookbook.android.ai.DeviceAiCapability
 import com.sxdbsm.cookbook.android.ai.DeviceAiReport
 import androidx.compose.ui.platform.LocalContext
+import com.sxdbsm.cookbook.util.DateTime
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -38,6 +43,7 @@ import org.koin.androidx.compose.koinViewModel
  * @Desc : AI 设置页（三档来源 + 云端选模型 + 按厂商 Key 设置/编辑）
  * <p>
  * [AI修改] 云端可下拉选择具体模型(多厂商)，未配置 Key 弹框输入、已配置可编辑；改动即时生效。
+ * [AI修改] L1：云端 AI 首启同意 + 常驻状态块 + 关闭/重新启用，宿主直接管理多个独立弹层。
  **/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +54,31 @@ fun AiSettingsScreen(
     val state = vm.state
     var keyDialogOpen by remember { mutableStateOf(false) }
     var guideOpen by remember { mutableStateOf(false) } // [AI生成] "如何申请密钥"指南 sheet 开关
+    // [AI修改] L1 v2b：改用 remember（非 rememberSaveable）——API Key 草稿不应落进 SavedStateRegistry/Bundle 持久化存储，
+    //   否则进程被杀后系统可能把明文密钥暂存到磁盘（蓝图 §10 v2 挑战第20项）；代价是配置变更/进程重建会丢草稿，可接受。
+    var pendingKeyDraft by remember { mutableStateOf("") }
+    var vendorConfirmOpen by remember { mutableStateOf(false) }
+    var consentPanelOpen by remember { mutableStateOf(false) }
+    var grandfatherPanelOpen by remember { mutableStateOf(false) }
+    var readonlyPanelOpen by remember { mutableStateOf(false) }
+    var closeSheetOpen by remember { mutableStateOf(false) }
+    var pendingSnackbar by remember { mutableStateOf<String?>(null) }
+    // [AI修改] L1 v2b：hoist 在 Composable 作用域读取（CompositionLocal.current 是 @Composable getter，
+    //   不能在 LaunchedEffect 的 suspend block 里直接读——蓝图 §10 v2 挑战第10项）；类型可空（AppSnackbar.kt:51）。
+    val snackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current
     val context = LocalContext.current
+
+    // [AI修改] L1 v2b：以 state.loaded 为 key（reload() 完成后从 false 翻 true 触发）；额外三弹层互斥守卫，
+    //   避免冷启动首屏 loaded 翻转之前用户已手动打开其他弹层时与 grandfather 面板同屏堆叠（蓝图 §10 v2 挑战第12项）。
+    LaunchedEffect(state.loaded) {
+        if (state.loaded && state.cloudAiConsent.status == ConsentStatus.GRANDFATHER_PENDING &&
+            !keyDialogOpen && !consentPanelOpen && !vendorConfirmOpen
+        ) grandfatherPanelOpen = true
+    }
+    // [AI修改] L1：宿主级 pendingSnackbar——弹层关闭后的下一次重组展示，不撞 Dialog 遮挡（蓝图 §10 C-13）。
+    pendingSnackbar?.let { msg ->
+        LaunchedEffect(msg) { snackbar?.showMessage(msg); pendingSnackbar = null }
+    }
 
     Scaffold(
         // [AI修改] D2 家族化卡化：灰底(Scaffold 默认 background)+ contentWindowInsets 0(与设置族 FeatureSettingsScreen 一致)。
@@ -77,6 +107,9 @@ fun AiSettingsScreen(
                         onSelectModel = { vm.onSelectModel(it) },
                         onEditKey = { keyDialogOpen = true },
                         onShowGuide = { guideOpen = true },
+                        onShowStatusDetail = { readonlyPanelOpen = true }, // [AI修改] L1："发送哪些内容"
+                        onCloseCloudAi = { closeSheetOpen = true }, // [AI修改] L1：常驻状态块"关闭"
+                        onReenableConsent = { consentPanelOpen = true }, // [AI修改] L1：DECLINED 后"重新启用"
                     )
                 }
                 com.sxdbsm.cookbook.android.ui.component.InsetDivider(startIndent = 48)
@@ -91,8 +124,9 @@ fun AiSettingsScreen(
             }
 
             // [AI修改] D2：隐私小字移到卡外页脚(裸 Text·不进白卡)，与设置族一致。
+            // [AI修改] L1 copywriter 🟡#9：措辞对齐 CloudAiDisclosure.WILL_SEND（补第四项"你说的话"）+ 全角引号（🔴#1）。
             Text(
-                "隐私：走云端时只发送在手食材名 + 粗约束标签（如\"忌高嘌呤\"）+ 候选菜名，不发送完整健康档案。",
+                "隐私：启用云端 AI 后，只发送在手食材名、粗健康标签（如「忌高嘌呤」）、候选菜名和你在 AI 记一餐里输入的那句话，不发送完整健康档案。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
@@ -107,10 +141,129 @@ fun AiSettingsScreen(
             vendorName = model.vendorName,
             initial = state.keyByVendor[model.vendor].orEmpty(),
             onConfirm = { key ->
-                vm.onSaveVendorKey(model.vendor, key)
+                // [AI修改] L1：先关 KeyDialog，再按同意状态分流（INV-L1-04/05）——routeOnSave 纯函数，可直接 JVM 单测。
                 keyDialogOpen = false
+                when (routeOnSave(state.cloudAiConsent, model.vendor, key)) {
+                    SaveRoute.DIRECT -> vm.onSaveVendorKey(model.vendor, key)
+                    SaveRoute.VENDOR_CONFIRM -> { pendingKeyDraft = key; vendorConfirmOpen = true }
+                    SaveRoute.FULL_CONSENT -> { pendingKeyDraft = key; consentPanelOpen = true }
+                }
             },
             onDismiss = { keyDialogOpen = false },
+        )
+    }
+
+    // [AI修改] L1：轻量换厂商确认（同意已满足但 vendor 未确认）。"看看发送哪些内容"下钻只读面板，不自动弹回（§5.1 显式简化）。
+    if (vendorConfirmOpen) {
+        val model = vm.selectedModel()
+        AlertDialog(
+            onDismissRequest = { vendorConfirmOpen = false; pendingKeyDraft = "" },
+            title = { Text("切换到${model.vendorName}云端模型？") },
+            text = {
+                Column {
+                    Text("你即将切换到${model.vendorName}，请先确认发送范围。") // [AI修改] copywriter 🔴#3：消"该厂商由不同服务商提供"歧义
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "看看发送哪些内容 ›",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clickable {
+                                vendorConfirmOpen = false
+                                readonlyPanelOpen = true
+                            }
+                            .padding(vertical = 2.dp),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.confirmVendorSwitch(model.vendor, pendingKeyDraft)
+                    vendorConfirmOpen = false
+                    pendingKeyDraft = ""
+                    pendingSnackbar = "已启用云端 AI"
+                }) { Text("继续") }
+            },
+            dismissButton = {
+                TextButton(onClick = { vendorConfirmOpen = false; pendingKeyDraft = "" }) { Text("取消") }
+            },
+        )
+    }
+
+    // [AI修改] L1：完整同意面板（FULL_CONSENT / DECLINED 后重新启用 / 首次启用共用）。
+    if (consentPanelOpen) {
+        val model = vm.selectedModel()
+        CloudAiConsentPanel(
+            vendorName = model.vendorName,
+            onAgree = {
+                vm.grantConsent(model.vendor, pendingKeyDraft, ConsentSource.EXPLICIT_FIRST_ENABLE)
+                consentPanelOpen = false
+                pendingKeyDraft = ""
+                pendingSnackbar = "已启用云端 AI"
+            },
+            onDecline = {
+                vm.declineConsent()
+                consentPanelOpen = false
+                pendingKeyDraft = ""
+                pendingSnackbar = "已关闭云端 AI"
+            },
+            onClose = {
+                consentPanelOpen = false // 返回键/点外部：仅关闭+清草稿，不写任何 consent 状态（等价"这次先不处理"）
+                // [AI修改] Google 质量终审 ⚪#5：清空 pendingKeyDraft 安全——用户重新点 KeyDialog 保存时，
+                //   onConfirm 的 when(routeOnSave(...)) 分支会重新给 pendingKeyDraft 赋值，不会以空串进 grantConsent。
+                pendingKeyDraft = ""
+            },
+        )
+    }
+
+    // [AI修改] L1：只读态披露面板（常驻状态块"发送哪些内容"入口）。"知道了"关闭后不自动弹回换厂商确认框（§5.1 显式简化）。
+    if (readonlyPanelOpen) {
+        val model = vm.selectedModel()
+        CloudAiConsentPanel(
+            vendorName = model.vendorName,
+            onAgree = null,
+            onDecline = null,
+            onClose = { readonlyPanelOpen = false },
+        )
+    }
+
+    // [AI修改] L1：grandfather 补确认面板（差异化措辞；onClose 仅关闭，不写任何 consent 状态=下次进页再问）。
+    if (grandfatherPanelOpen) {
+        val model = vm.selectedModel()
+        CloudAiConsentPanel(
+            vendorName = model.vendorName,
+            grandfather = true,
+            onAgree = {
+                vm.resolveGrandfather(confirm = true)
+                grandfatherPanelOpen = false
+                pendingSnackbar = "已启用云端 AI"
+            },
+            onDecline = {
+                vm.resolveGrandfather(confirm = false)
+                grandfatherPanelOpen = false
+                pendingSnackbar = "已关闭云端 AI"
+            },
+            onClose = { grandfatherPanelOpen = false },
+        )
+    }
+
+    // [AI修改] L1：常驻状态块"关闭"——ActionSheet 两档，默认项在前、破坏项(删除密钥)标红在后（§5.3）。
+    if (closeSheetOpen) {
+        val model = vm.selectedModel()
+        com.sxdbsm.cookbook.android.ui.component.ActionSheet(
+            title = "关闭云端 AI",
+            message = "关闭后，AI 记一餐等功能将回退到本地规则，不再向云端发送数据。", // [AI修改] copywriter 🟡#10：说人话补"向云端"
+            actions = listOf(
+                com.sxdbsm.cookbook.android.ui.component.SheetAction("保留密钥并关闭") {
+                    vm.closeCloudAi(model.vendor, deleteKey = false)
+                    pendingSnackbar = "已关闭云端 AI"
+                },
+                com.sxdbsm.cookbook.android.ui.component.SheetAction("关闭并删除密钥", destructive = true) {
+                    vm.closeCloudAi(model.vendor, deleteKey = true)
+                    pendingSnackbar = "已关闭并删除密钥"
+                },
+            ),
+            onDismiss = { closeSheetOpen = false },
         )
     }
 
@@ -223,6 +376,9 @@ private fun CloudSection(
     onSelectModel: (String) -> Unit,
     onEditKey: () -> Unit,
     onShowGuide: () -> Unit, // [AI生成] 打开"如何申请密钥"指南 sheet
+    onShowStatusDetail: () -> Unit, // [AI修改] L1："发送哪些内容"只读披露面板
+    onCloseCloudAi: () -> Unit, // [AI修改] L1：常驻状态块"关闭"→ ActionSheet
+    onReenableConsent: () -> Unit, // [AI修改] L1：DECLINED 后"重新启用"→ 完整同意面板
 ) {
     val model = state.models.firstOrNull { it.id == state.selectedModelId } ?: state.models.first()
     val vendorKey = state.keyByVendor[model.vendor].orEmpty()
@@ -281,6 +437,73 @@ private fun CloudSection(
                 .clickable(onClick = onShowGuide)
                 .padding(vertical = 2.dp),
         )
+
+        // [AI修改] L1：常驻状态块（INV-L1-10）——双条件：GRANTED 且当前厂商 Key 非空（否则与红色"密钥：未配置"同屏矛盾）。
+        if (shouldShowCloudStatusBlock(state.cloudAiConsent, state.keyByVendor, model.vendor)) {
+            Spacer(Modifier.height(10.dp))
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("云端 AI 已启用", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                        Text(
+                            "已启用",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(percent = 50))
+                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    CloudStatusRow("接收方", model.vendorName)
+                    state.cloudAiConsent.grantedAtEpochSeconds?.let { seconds ->
+                        CloudStatusRow("同意时间", DateTime.epochSecondsToDate(seconds))
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "发送哪些内容 ›",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clickable(onClick = onShowStatusDetail)
+                            .padding(vertical = 2.dp),
+                    )
+                    Text(
+                        "关闭",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .clickable(onClick = onCloseCloudAi)
+                            .padding(vertical = 2.dp),
+                    )
+                }
+            }
+        }
+        // [AI修改] L1：DECLINED 后手动把单选切回"云端大模型"但未重新启用——给唯一恢复入口（INV-L1-12）。
+        if (state.type == AiRuntimeType.CLOUD && state.cloudAiConsent.status == ConsentStatus.DECLINED) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "云端 AI 已被你关闭 · 重新启用 ›",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clickable(onClick = onReenableConsent)
+                    .padding(vertical = 2.dp),
+            )
+        }
+    }
+}
+
+/** 常驻状态块的一行"标签：值"。[AI生成] L1 */
+@Composable
+private fun CloudStatusRow(label: String, value: String) {
+    Row(Modifier.fillMaxWidth()) {
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(64.dp))
+        Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 

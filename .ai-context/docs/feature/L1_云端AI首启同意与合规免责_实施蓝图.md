@@ -631,16 +631,25 @@ scripts\build-cli.bat :androidApp:assembleDebug
 
 | STEP-ID | 状态 | 落地 commit | diff 定位 |
 |---|---|---|---|
-| STEP-L1-1.1~1.4 | ⬜ | | |
-| STEP-L1-2.1~2.4 | ⬜ | | |
-| STEP-L1-3.1 | ⬜ | | |
-| STEP-L1-4.1~4.9 | ⬜ | | |
-| STEP-L1-5.1~5.4 | ⬜ | | |
-| STEP-L1-T-1~4 | ⬜ | | |
+| STEP-L1-1.1~1.3 | ✅ | 见本批次 CODE 提交（BLUEPRINT_STATE） | `shared/.../ai/CloudAiConsent.kt`（新建）+ `AiRuntimeConfig.kt`（同意读写+闸门分支） |
+| STEP-L1-2.1~2.4 | ✅ | 同上 | `ui/ai/CloudAiDisclosure.kt`、`CloudAiSaveRoute.kt`、`CloudAiConsentPanel.kt`（新建）+ `CapsuleButton.kt`（CapsuleOutlineButton） |
+| STEP-L1-3.1 | ✅ | 同上 | `ui/ai/AiSettingsViewModel.kt`（5 方法 + reload 一行 + UiState 字段） |
+| STEP-L1-4.1~4.9 | ✅ | 同上 | `ui/ai/AiSettingsScreen.kt`（6 弹层状态 + routeOnSave 分流 + 状态块 + grandfather + pendingSnackbar） |
+| STEP-L1-5.1~5.4 | ✅ | 同上 | `ui/policy/PolicyContent.kt`（§一限定句 + 新§四 + 顺延§五~九 + 更新日期）+ `.ai-context/.../隐私政策与用户协议.md` 同步 |
+| STEP-L1-T-1~4 | ✅ | 同上 | 4 个新测试文件（详见 §8.2 映射） |
 
 ### 验收命令输出 / 真机待验证登记
 
-（交付时填；`E-L1-01`/`E-L1-02` 登记至时间戳最新的 `真机待验证清单_<yyyyMMddHHmm>.md`，另补录第一版 apple_software_behavior 设计输出中"建议真机验证条目"7 条完整场景）
+**验收命令（全部 BUILD SUCCESSFUL，2026-08-08 CODE 实测）**：
+- `:shared:testDebugUnitTest` ✅（含新增 `AiRuntimeConfigConsentTest` 7/7）
+- `:androidApp:testDebugUnitTest` ✅ 49/49（含既有回归基线 `AiMealInputViewModelStreamTest`/`GenerationProgressTest` 零改动仍绿 + 新增 16 个：`CloudAiSaveRouteTest` 6 / `AiSettingsViewModelConsentTest` 8 / `AiMealConsentGateIntegrationTest` 2）
+- `:androidApp:assembleDebug` ✅
+
+**代码质量门禁**：`google_quality_engineer` 终审——无阻断项，闸门唯一性验证通过（全 App 4 个云端消费点均经 `SwitchableAiRuntime`，无绕过路径），INV-L1-01~12 全部满足；3 项 🟡 建议已就地处置（closeCloudAi 加守卫、RecordingCloudRuntime.stream 改 Failed、T-L1-03b 约束注释），4 项 ⚪ 选择性采纳注释类 2 项。`copywriter` 文案审校——🔴6 项采纳 4 项（引号/面板句/换厂商句/去冗余）、1 项保留蓝图冻结字面量（"已被你关闭"，STEP-L1-4.6 grep 判据）、1 项为既有文案越界不改（Key/密钥混用）；🟡 采纳 5 项（影响→启用后会怎样/顿号/隐私小字对齐 WILL_SEND/关闭消息/删"模型"赘字）。
+
+**真机待验证登记**：`E-L1-01`~`E-L1-12` 已登记至时间戳最新的 `真机待验证清单_202608082015.md`（覆盖 grandfather 补确认/常驻状态块/关闭重启用/首同意流程/暂不启用/换厂商确认/未同意不外发/政策披露/同意时间/删密钥/冷启动互斥/全新安装共 12 项，含 apple_software_behavior 行为契约对应的可验证场景）。
+
+> **fast-follow 记录**：copywriter 建议"云端 AI 已被你关闭 · 重新启用 ›"去"被你"（🔴#4）与蓝图 STEP-L1-4.6 冻结 grep 判据冲突，本批保留蓝图字面量；若后续文案定稿采纳，须同步改 STEP-L1-4.6 判据。
 
 ---
 

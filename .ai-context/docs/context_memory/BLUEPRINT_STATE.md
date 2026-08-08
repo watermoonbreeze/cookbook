@@ -8,19 +8,18 @@
 
 ---
 
-## 当前批次：L1 → K1i 排队待 CODE（2026-08-08 用户定序 L1→K1e→K1i→K1h 已全部走完，逐个出蓝图）
+## 当前批次：L1 CODE 已交付 → 排队 ARCH 复核 → K1i 待 CODE（2026-08-08 更新）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | 用户明确指示"你只负责蓝图，不要编码"——本 session 的 ARCH 只起草蓝图/做调研，不实现代码。四项按序全部处理完毕：L1（`BLUEPRINT_READY`）、K1e（起草后证伪废弃）、K1i（`BLUEPRINT_READY`）、K1h（纯调研，已完成）。 |
-| 状态 | L1/K1i 均 `BLUEPRINT_READY`，K1e `DISCARDED`，K1h 调研完成 |
-| **TURN** | **CODE**——先做 `docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md`（§7 STEP 逐条机械执行，L7），**K1i 排在 L1 之后**（`docs/feature/K1i_AI流式渐进展示_实施蓝图.md`，其 `cloudAiConsentGranted()` 引用依赖 L1 先落地，否则走蓝图内留桩分支） |
-| K1e 现状 | **已废弃**——蓝图起草后 GC-37 独立挑战证伪"紧凑JSON省token"前提（实测反而多耗60~80%），用户裁定不做。蓝图文件 `docs/feature/K1e_AI调用点紧凑结构转换层_实施蓝图.md` 状态 `DISCARDED`，保留作调研记录 |
-| K1h 现状 | **已完成**——纯联网调研（非蓝图），报告 `docs/feature/K1h_菜品食材自动添加算法调研报告.md`：三方向（AI直出菜品食材/别名归一/营养估算）现状均与业界主流一致，无需替换，仅记录 3 项低优先级 fast-follow |
+| 任务/批次 | 用户 2026-08-08 指示转 CODE 实施 L1（此前 ARCH 只出蓝图阶段已全部走完：L1/K1i `BLUEPRINT_READY`、K1e `DISCARDED`、K1h 调研完成）。**本批 CODE 已交付**。 |
+| 状态 | **L1：CODE 已交付**（含 Google 质量终审无阻断 + copywriter 文案审校落地），`真机待验证清单_202608082015.md` E-L1-01~12 待真机验证；K1i 仍 `BLUEPRINT_READY` 排队（依赖 L1 的 `cloudAiConsentGranted()`，须 L1 真机验证通过或至少 CODE 落地后才可开做）；K1e `DISCARDED`、K1h 调研完成（不变） |
+| **TURN** | **REVIEW**——ARCH@主力机 对 L1 CODE 交付做独立复核（diff 走查 + 实跑三条构建命令），复核通过后批次关闭（参考 K1a 的 ARCH 复核流程）；复核期间 K1i 不动。ARCH 复核通过后 TURN=CODE，由用户决定是否续做 K1i |
+| L1 CODE 交付 | commit `（见 git log，BLUEPRINT_STATE 更新时回填）`；蓝图 §9 台账已填 STEP 勾销 + 验收命令（三条全绿）+ 门禁记录（Google 无阻断、copywriter 采纳明细）；真机清单 E-L1-01~12（最新 `真机待验证清单_202608082015.md`） |
 | L1↔K1i 交叉依赖提醒 | K1i 会给 `SwitchableAiRuntime` 新增 `stream()` override，需复用 L1 新增的 `cloudAiConsentGranted()`；L1 蓝图 §4.4 那句"stream() 不重写"的注释在 K1i 落地后会失真，**K1i 落地时必须同步删除该注释**（两份蓝图 §9/§12 已互相记录，CODE 交付时留意） |
-| ARCH 下一步 | 四项均已处理完毕，暂无新蓝图待起草。下一步建议：① 与用户核实 L1/K1i 是否现在就转 CODE 实施，或先做其他事；② AI快捷记一餐真机验证进度仍未核实（见下条），可优先处理；③ K1b（PARKED）蓝图等本轮主线彻底收尾后再拾起 |
+| ARCH 下一步 | ① 复核 L1 CODE 交付（走查 diff + 实跑 `:shared:testDebugUnitTest`/`:androidApp:testDebugUnitTest`/`:androidApp:assembleDebug`，无阻断即批次关闭）；② 与用户核实 L1 真机验证（E-L1-01~12）；③ 之后决定是否续做 K1i CODE；④ AI快捷记一餐真机验证进度仍未核实（见下条） |
 | K1b 蓝图现状（不变） | `docs/feature/AI记一餐_K1b膳食健康评价逐成员化_实施蓝图.md`，状态 `DRAFT·PARKED`，等这条主线（含 L1/K1i 的 CODE 实施+真机验证）彻底收尾后再拾起处置 §10 已挑出的问题，不重新起草 |
-| AI快捷记一餐真机验证（不变，仍未核实进度） | `真机待验证清单_202608081130.md` 里 E-B4-*/E-B5-*/E-B6-*/E-K1A-01/E-CFG-01~06 近 30 项进度仍待用户确认——**这是本轮 L1→K1h 工作开始前就悬而未决的原始问题，本轮结束后仍未被回答**，下次接手应优先跟用户核实 |
+| AI快捷记一餐真机验证（不变，仍未核实进度） | `真机待验证清单_202608082015.md` 里 E-B4-*/E-B5-*/E-B6-*/E-K1A-01/E-CFG-01~06 近 30 项进度仍待用户确认——**这是早前就悬而未决的原始问题**，L1 交付后（连同 E-L1-01~12）应优先跟用户核实 |
 
 ---
 
