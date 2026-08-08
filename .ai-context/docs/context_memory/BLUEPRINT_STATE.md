@@ -30,7 +30,7 @@
 | 状态 | **ACCEPTED**（ARCH 独立复核通过：diff 走查 + `:shared:testDebugUnitTest` 641/641 绿 + `:androidApp:assembleDebug` 绿 + 全仓 grep 确认 `estimatedKcal` 无死引用，无阻断项） |
 | 基线 commit | `dae39fc2` |
 | CODE 交付 commit | `5c976a49`（营养统一化全部 STEP + 新增 2 测试文件）；CFG 部分已在更早历史批次实施 |
-| ARCH 复核 commit | 见本批次同批 `docs:` 交接提交（本次复核未改代码，仅补台账文档，回填于 SESSION_交接.md） |
+| ARCH 复核 commit | `226142bf`（本次复核未改代码，仅补台账文档） |
 | 末次更新 | 2026-08-08（ARCH@主力机：独立复核通过——diff 走查 + 实跑构建/测试验证，批次关闭，K1a 待办标 ✅。） |
 
 ---
