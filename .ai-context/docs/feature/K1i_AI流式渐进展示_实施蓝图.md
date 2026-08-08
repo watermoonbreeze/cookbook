@@ -281,7 +281,18 @@ scripts\build-cli.bat :androidApp:assembleDebug
 
 **代码质量门禁**：`google_quality_engineer` 终审——无阻断项；取消传播链路（flow{}+emitAll→callbackFlow/awaitClose）核实正确、同意闸门与 L1 同源复用、回退语义与 complete() 对齐、allowlist 合规；2 条 🟡（显式设 activeType、`DEFAULT_MESSAGE` 常量）全落地 + 1 条 ⚪（T-K1I-03 场景2 message 精确断言）采纳。本批无 UI/文案，豁免 copywriter/UX 门禁。
 
-**真机待验证登记**：`E-K1I-01`（**阻断性**，带 4 条判据 + 回退方案）已登记至 `真机待验证清单_202608082015.md`。
+**真机待验证登记**：`E-K1I-01`（**阻断性**，带 4 条判据 + 回退方案）已登记至 `真机待验证清单_202608082330.md`。
+
+### ARCH 独立复核（2026-08-08，审核模型，未参考 CODE 自评结论）
+
+**复核方式**：diff 逐文件走查（`ad1c5878`+`d7240d6f`）+ 实跑三条构建命令 + 闸门唯一性 grep + allowlist 核对 + 台账与真实 diff 一致性核对，按 `SESSION_交接.md` 先读清单 #4 判定标准执行。
+
+**结论：无阻断，批次可关闭**，但发现 1 项需订正的台账准确性问题：
+
+- **allowlist 边界问题（非阻断，已订正记录）**：本批实际修改了 `shared/.../ai/CloudAiConsent.kt`（`CloudAiConsentRequiredException` 由裸 `Exception(字面量)` 改为 `Exception(DEFAULT_MESSAGE)` + 新增 `companion object { const val DEFAULT_MESSAGE }`）。该文件是 L1 蓝图定义的文件，K1i §6 允许清单只显式授权修改**两份蓝图 Markdown 文档**里的失实注释，"显式禁改文件清单"明确写"L1 蓝图涉及的所有文件……只读引用不修改其定义"——`CloudAiConsent.kt` 不在允许改动之列。核实此改动**功能上安全**（`DEFAULT_MESSAGE` 字面量与原 `Exception(...)` 参数完全一致，纯提取常量消除两处硬编码漂移风险，不影响 L1 任何 INV/测试断言，`AiRuntimeConfigConsentTest`/`AiMealConsentGateIntegrationTest` 全部保持绿），**予以放行不要求回退**，但原 §9"allowlist 合规"表述与实情不符，此处订正为"基本合规，1 处受控例外（见上）"。上一次 CODE 自评（`SESSION_交接.md`"本轮沉淀的关键经验"一节）声称此偏差"已在 K1i §9 台账如实记录"，经核查此前 §9 正文实际未记录该例外——本次复核已补全，后续蓝图 allowlist 起草应对"纯加法重构/常量提取"这类改动显式声明是否需要走文档更新流程，避免下次同类判断再次口径不一。
+- **闸门唯一性核实**：全仓 grep `SwitchableAiRuntime(` 生产代码命中恰好 2 处（`AiRuntimeConfig.kt` 类定义 + `AndroidModule.kt` DI 绑定），`CloudAiRuntime(` 仅 1 处构造（同一 DI 文件，并入 `runtimes` map），无任何消费点绕过 `get<CloudAiRuntime>()` 直接注入；`isModelReady()` 函数体确认逐字未改。INV-K1I-01~04 与 L1 INV-L1-01~12 逐条比对代码与测试均一致，测试断言精确匹配蓝图 §8.2 要求（含完整字面量断言、acknowledgedVendors 并集校验、fail-closed 解码失败路径）。
+- **三条验收命令复验**：`:shared:testDebugUnitTest` BUILD SUCCESSFUL，652/652（含新增 `AiRuntimeConfigConsentTest` 7 + `SwitchableAiRuntimeStreamTest` 4，0 failures）；`:androidApp:testDebugUnitTest` BUILD SUCCESSFUL，49/49（0 failures，含既有回归基线 `AiMealInputViewModelStreamTest` 16 + `GenerationProgressTest` 4 零改动仍绿）；`:androidApp:assembleDebug` BUILD SUCCESSFUL。
+- **非阻断观察项（建议 fast-follow）**：全量跑 `:androidApp:testDebugUnitTest` 时输出中出现一次 `kotlinx.coroutines.CoroutinesInternalError: Fatal exception in coroutines machinery ... HealthProfileRepository$listAllCrowdTypes$2`；JUnit 结果 0 failures/0 errors，且单独只跑 `AiMealConsentGateIntegrationTest` 未复现，判断为跨测试类的协程生命周期泄漏（某测试的 fire-and-forget `viewModelScope.launch` 在其自身断言通过后仍未收尾，于下一测试类的 dispatcher 重置窗口异步抛出），不影响本批 INV 判定，但建议后续排查，避免长期演变成真实 flaky。
 
 ---
 
