@@ -41,6 +41,10 @@ data class CloudAiConsent(
  *  本类型存在只是为了让测试能精确断言"失败原因是同意未满足"而非猜测字符串。
  *  注意：message 为固定短文案（14 汉字），`AiMealInputViewModel.confirmHealthAdvice()` 有 `.take(120)` 截断——
  *  若未来 message 加长（如带厂商名），须保持 ≤120 字符且同步更新测试断言（Google 质量终审 🟡#2/#7）。 */
-class CloudAiConsentRequiredException :
-    Exception("还没有同意把数据发给云端 AI") // [AI修改] v2b：不预设"已使用规则推荐"这一结果——confirmHealthAdvice() 这个消费点
+class CloudAiConsentRequiredException : Exception(DEFAULT_MESSAGE) { // [AI修改] v2b：不预设"已使用规则推荐"这一结果——confirmHealthAdvice() 这个消费点
     // 没有规则兜底，看到这条消息时并不会真的生成什么规则版结果（蓝图 L1 §10 v2 挑战第5项），message 措辞必须对所有消费点都成立
+    companion object {
+        /** 与 K1i stream() 闸门失败文案同源（Google 质量终审 K1i S2：避免 `?:` 兜底两处字面重复漂移）。[AI生成] K1i */
+        const val DEFAULT_MESSAGE = "还没有同意把数据发给云端 AI"
+    }
+}

@@ -24,7 +24,7 @@
 | GC-10 | 逐字段真相源表 | §4.1 | 满足 |
 | GC-11 | 新增/重命名与既有字段语义重叠字段时给旧字段全部写入点清单 | §4.2 | 满足 |
 | GC-12 | UI 判据与业务判据同源表 | §4.3 | 满足 |
-| GC-13 | fallback 先转换为主路径类型再复用主路径校验入口 | §4.6 | 满足：v2 新增内容——`SwitchableAiRuntime` 的同意拦截复用 `AiRuntime.stream()` 默认实现已有的 `Result.failure→LlmStreamEvent.Failed` 转换入口，不新造 fallback 类型 |
+| GC-13 | fallback 先转换为主路径类型再复用主路径校验入口 | §4.6 | 满足：v2 新增内容——`SwitchableAiRuntime` 的同意拦截复用 `AiRuntime.stream()` 默认实现已有的 `Result.failure→LlmStreamEvent.Failed` 转换入口，不新造 fallback 类型。**（[AI修改] K1i 落地后改写：stream() 已由 K1i 显式重写，同意闸门改为在 `stream()` 内直接 `emit(LlmStreamEvent.Failed(...))`，与 complete() 复用同一 `cloudAiConsentGranted()` 判据、同源文案——K1i §6 授权改写本条论证，避免失实。）** |
 | GC-14~16 | 对象生命周期表 / 可变持有物传递形态 / 搬迁历史注释清单 | §4.5 | 满足（v2：`CloudAiKeySetupDialog` 拆分，Key 草稿改为宿主 `AiSettingsScreen` 持有，见 §10 C-11/C-12 处置） |
 | GC-17~19 | 逐项状态 List&lt;Status&gt; / 索引空间标注 / 过滤链画出 | — | N/A：本批状态是单值枚举，非逐项列表状态机场景 |
 | GC-20 | 自动副作用清单表 | §3 INV-L1-08 | 满足 |
@@ -232,8 +232,8 @@ class SwitchableAiRuntime(
             ?: return Result.failure(IllegalStateException("no AiRuntime registered for $type"))
         return runtime.complete(request)
     }
-    // stream() 不重写：AiRuntime 接口默认实现已把 complete() 的 Result.failure 转成 LlmStreamEvent.Failed（AiRuntime.kt:42-53），
-    // 本类本就未重写 stream()（K1a GC-37 挑战 #14 已记录此既有事实），本次改动零新增行为分歧。
+    // [AI修改] K1i 落地后改写：stream() 已由 K1i 批次显式重写（真实委托 + 复用 cloudAiConsentGranted 同意闸门），
+    // 实现见 K1i 蓝图 §4.4；本行注释不再成立（K1i §6 allowlist 授权改写，避免生产代码假话）。
 }
 ```
 

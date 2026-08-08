@@ -1,6 +1,9 @@
 package com.sxdbsm.cookbook.ai
 
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
@@ -108,6 +111,25 @@ class SwitchableAiRuntime(
             ?: return Result.failure(IllegalStateException("no AiRuntime registered for $type"))
         return runtime.complete(request)
     }
-    // stream() 不重写：AiRuntime 接口默认实现已把 complete() 的 Result.failure 转成 LlmStreamEvent.Failed（AiRuntime.kt:42-53），
-    // 本类本就未重写 stream()（K1a GC-37 挑战 #14 已记录此既有事实），本次改动零新增行为分歧。
+
+    /**
+     * [AI生成] K1i：真实委托给底层 runtime 的 stream()，替代 AiRuntime 接口默认的"complete() 包装成假流式"。
+     *
+     * 同意闸门与 [complete] 复用同一判据 [AiRuntimeConfig.cloudAiConsentGranted]（GC-13，防止 stream() 路径
+     * 绕开 L1 建立的闸门——见 K1i 蓝图 §1.2 依赖说明）。取消信号经 [emitAll] 透传到底层 runtime.stream()，
+     * 不新造取消处理（flow{} 构建器结构化并发，K1i 蓝图 §4.5）。
+     */
+    override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = flow {
+        val type = config.activeType()
+        if (type == AiRuntimeType.CLOUD && !config.cloudAiConsentGranted()) {
+            emit(LlmStreamEvent.Failed(message = CloudAiConsentRequiredException().message ?: CloudAiConsentRequiredException.DEFAULT_MESSAGE, retryable = false))
+            return@flow
+        }
+        val runtime = runtimes[type] ?: runtimes[AiRuntimeType.MOCK]
+        if (runtime == null) {
+            emit(LlmStreamEvent.Failed(message = "no AiRuntime registered for $type", retryable = false))
+            return@flow
+        }
+        emitAll(runtime.stream(request))
+    }
 }

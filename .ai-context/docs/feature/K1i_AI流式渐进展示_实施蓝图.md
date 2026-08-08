@@ -261,16 +261,27 @@ scripts\build-cli.bat :androidApp:assembleDebug
 
 | STEP-ID | 状态 | 落地 commit | diff 定位 |
 |---|---|---|---|
-| STEP-K1I-1.1~1.3 | ⬜ | | |
-| STEP-K1I-T-1 | ⬜ | | |
+| STEP-K1I-1.1 | ✅ | 见本批次 CODE 提交（BLUEPRINT_STATE） | `grep cloudAiConsentGranted` 命中 1 → **L1 已先落地，走 §4.4 正式代码块分支，无留桩** |
+| STEP-K1I-1.2 | ✅ | 同上 | `shared/.../ai/AiRuntimeConfig.kt`（`SwitchableAiRuntime` 新增 `override fun stream` + 3 个 flow imports） |
+| STEP-K1I-1.3 | ✅ | 同上 | 同上（import `flow`/`emitAll`/`Flow` 已补） |
+| STEP-K1I-T-1 | ✅ | 同上 | `shared/src/androidUnitTest/.../SwitchableAiRuntimeStreamTest.kt`（T-K1I-01~04） |
 
 ### 与 L1 的交叉引用（若实施顺序交叠，见 §1.2/§4.4）
 
-（交付时填：若本批与 L1 交叠实施，在此记录桩代码位置+对方蓝图交付台账的对应记录）
+**L1 已先落地（commit `ad1c5878`），本批走 §4.4 正式代码块分支，无留桩**。已按 §6 allowlist 授权完成两处 L1 蓝图改写（防止假话）：
+- `L1_云端AI首启同意与合规免责_实施蓝图.md` §4.4 代码片段"stream() 不重写…本次改动零新增行为分歧"注释 → 改写为"stream() 已由 K1i 批次显式重写，实现见 K1i 蓝图 §4.4"。
+- 同文件 §0.1 GC-13 行 → 追加说明"K1i 落地后 stream() 改为显式 emit Failed，复用同一 cloudAiConsentGranted() 判据"。
 
 ### 验收命令输出 / 真机待验证登记
 
-（交付时填；`E-K1I-01` 登记至时间戳最新的真机待验证清单）
+**验收命令（全部 BUILD SUCCESSFUL，2026-08-08 CODE 实测）**：
+- `:shared:testDebugUnitTest` ✅（含新增 `SwitchableAiRuntimeStreamTest` 4/4 + 全量无回归）
+- `:androidApp:testDebugUnitTest` ✅ 49/49（既有回归基线零改动仍绿）
+- `:androidApp:assembleDebug` ✅
+
+**代码质量门禁**：`google_quality_engineer` 终审——无阻断项；取消传播链路（flow{}+emitAll→callbackFlow/awaitClose）核实正确、同意闸门与 L1 同源复用、回退语义与 complete() 对齐、allowlist 合规；2 条 🟡（显式设 activeType、`DEFAULT_MESSAGE` 常量）全落地 + 1 条 ⚪（T-K1I-03 场景2 message 精确断言）采纳。本批无 UI/文案，豁免 copywriter/UX 门禁。
+
+**真机待验证登记**：`E-K1I-01`（**阻断性**，带 4 条判据 + 回退方案）已登记至 `真机待验证清单_202608082015.md`。
 
 ---
 
