@@ -432,24 +432,37 @@ scripts\build-cli.bat :androidApp:assembleDebug
 
 ---
 
-## §9 交付台账模板（CODE 完成时填）
+## §9 交付台账（CODE 完成时填）
 
 ### STEP 勾销表
 
+> **CFG-1~7 已在 2026-08-08 上一批次（AI→规则自动兜底）实施完毕**，本台账只登记营养部分；CFG 部分见 SESSION_交接.md 历史记录。
+
 | STEP-ID | 状态 | 落地 commit | diff 定位 |
 |---|---|---|---|
-| STEP-K1A-1.1~1.3 | ⬜ | — | — |
-| STEP-K1A-2.1 | ⬜ | — | — |
-| STEP-K1A-3.1 | ⬜ | — | — |
-| STEP-K1A-CFG-1~7 | ⬜ | — | — |
-| STEP-K1A-T-1~3 | ⬜ | — | — |
+| STEP-K1A-1.1 | ✅ | `5c976a49` | `DishAutoGenerator.kt` `toNutritionInput()` 扩展函数 |
+| STEP-K1A-1.2 | ✅ | `5c976a49` | `DishAutoGenerator.kt` CREATE 分支：`NutritionCalculator.dishNutrition` + `anyGuessed`，删手写 fold，无 hasData 过滤 |
+| STEP-K1A-1.3 | ✅ | `5c976a49` | `AutoGenModels.kt` `DishPreview.estimatedKcal`→`nutrition`；`DishAutoGenerator.kt:51/64` 占位分支改 `nutrition=null` |
+| STEP-K1A-2.1 | ✅ | `5c976a49` | `MultiDayRecorder.kt` `previewAll()` REUSE 批量回填（`nutritionRepo.dishNutrition(reuseIds)` 一次查询，循环外） |
+| STEP-K1A-3.1 | ✅ | `5c976a49` | `AiMealInputSheet.kt` `MealPreviewCard` 换 `DishNutritionLine(dishPreview.nutrition?.toDishNutritionUi())`；删 `calorieOn`/`roundToInt` 死代码 |
+| STEP-K1A-CFG-1~7 | ✅（上一批） | `e2f87a1a`（拉取的既有历史） | AI 未配置诚实报错（上一 session 实施，本批未触碰） |
+| STEP-K1A-T-1 | ✅ | `5c976a49` | 新建 `DishAutoGeneratorTest.kt`（T-K1A-01a/b/c/d 4 条） |
+| STEP-K1A-T-2 | ✅ | `5c976a49` | 新建 `MultiDayRecorderK1aTest.kt`（T-K1A-02/03 2 条，CountingSqlDriver 数 SQL 执行次数验零 N+1） |
+| STEP-K1A-T-3 | ✅（上一批） | `e2f87a1a`（既有） | T-CFG-01~03 已并入 `AiMealInputViewModelStreamTest`（16 条），本批零改动仍绿 |
+
+### 验收命令输出（2026-08-08 · commit `5c976a49`）
+
+```
+scripts\build-cli.bat :shared:testDebugUnitTest   → BUILD SUCCESSFUL（674 测试 0 failures，含新增 6 条）
+scripts\build-cli.bat :androidApp:testDebugUnitTest → BUILD SUCCESSFUL（AiMealInputViewModelStreamTest 16/16、GenerationProgressTest 4/4 零改动仍绿，全量 0 failures）
+scripts\build-cli.bat :androidApp:assembleDebug    → BUILD SUCCESSFUL
+```
+
+Google 质量终审（google_quality_engineer agent）：**无阻断项**。采纳：删死函数 `formatQuantity`、`toNutritionInput()` 补同步守卫注释、`anyGuessed` 补语义注释（**名字保持蓝图冻结字面量未改名**——完成形态判据依赖它）。未采纳：#3 `inLibrary` 注释属既有代码、超出本批 allowlist。
 
 ### 真机待验证登记
 
-交付时须在时间戳最新的 `真机待验证清单_<yyyyMMddHHmm>.md` 新增：
-- `E-K1A-01`：AI 快捷记预览页营养展示（CREATE + REUSE 两类菜 + 估算尾注）
-- `E-K1A-CFG-01`：AI 未配置时发送 → 诚实提示 + "去设置" CTA 跳转验证
-- `E-K1A-CFG-02`：配置 Key 后返回可正常发送闭环验证（GC-37 挑战 #3）
+已在时间戳最新的 `真机待验证清单_202608080714.md` 新增 `E-K1A-01`（本批营养统一化）；`E-K1A-CFG-01/02` 已在上一批登记于同一文件（AI→规则自动兜底）。
 
 ---
 

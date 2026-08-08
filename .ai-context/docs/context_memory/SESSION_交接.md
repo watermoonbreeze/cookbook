@@ -1,8 +1,8 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-08（AI 快捷记引擎标签 + AI→规则自动兜底 已实施完毕）**
-> **执行模型：ARCH@主力机·claude-sonnet-5**（设计、实施、自测全流程）+ **独立 opus 挑战/审查 agent**（GC-37 挑战 + 两轮 Google 质量审查）。
-> 当前状态：**AI记一餐 B4+B5+B6（周期记+NDJSON流式）批次 ACCEPTED，用户仍在真机验证中，与本次改动无关**。本轮新完成：用户报告 bug（AI 未配置报错文案误导）→ 重新设计为"规则解析是 AI 兜底"→ **已直接实施+自测通过**（跳过独立 CODE 角色，ARCH 本人实现，因用户明确选择"直接写代码实现"）。K1a 营养展示统一化部分**仍未实施**，蓝图 `TURN=CODE` 继续有效。
+> 更新时间：**2026-08-08（K1a 营养展示统一化 已实施完毕）**
+> **执行模型：CODE@主力机·Claude Code**（实施 K1a 营养统一化全部 STEP + 自测 + 独立 Google 质量终审）。
+> 当前状态：**AI记一餐 B4+B5+B6（周期记+NDJSON流式）批次 ACCEPTED，用户仍在真机验证中**。本轮新完成：**K1a 营养展示统一化（蓝图营养部分 STEP-K1A-1.1~3.1 + T-1~2）全部实施 + 三条验收命令全绿 + Google 质量终审无阻断，commit `5c976a49`，`BLUEPRINT_STATE` TURN 已置 ARCH 待复核**。AI 未配置诚实报错（CFG 部分）此前已实施完毕。
 
 ---
 
@@ -54,13 +54,27 @@
 | `.ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` | 顶部追记：原 CFG 设计已否决，指向实际实现 |
 | `.ai-context/docs/feature/真机待验证清单_202608080714.md` | 新增 E-CFG-01~06（新建，替换旧时间戳文件） |
 
+### 1.6 本轮新完成（2026-08-08）：K1a 营养展示统一化（commit `5c976a49`，TURN=ARCH 待复核）
+
+按蓝图 §7 营养部分 STEP 机械实施，CODE 角色完成：
+
+- **STEP-K1A-1**：`DishAutoGenerator.preview()` CREATE 分支营养计算从"手写 kcal-only fold"改为复用 `NutritionCalculator.dishNutrition()`（单一真相源，产出蛋白/脂肪/碳水/钠全字段）；新增 `IngredientPreview.toNutritionInput()` 扩展；`anyGuessed` 判定（任一食材 source 非 `Match` → `.copy(estimated=true)`）保证含 Group 均值食材标"（估算）"（INV-K1A-05）。
+- **STEP-K1A-2**：`MultiDayRecorder.previewAll()` 新增 REUSE 菜品**批量**营养回填（收集全部 REUSE id → 一次 `nutritionRepo.dishNutrition(reuseIds)` 查询 → 逐层 `.copy()`），避免 N+1（INV-K1A-02）。
+- **STEP-K1A-3**：`MealPreviewCard` 手写热量渲染块替换为复用 `DishNutritionLine(dishPreview.nutrition?.toDishNutritionUi())`；删 `calorieOn`/`roundToInt` 死代码。
+- **字段替换（GC-11）**：`DishPreview.estimatedKcal: Double?` → `nutrition: DishNutrition?`（3 写入点 + 1 读取点全迁移，`grep estimatedKcal` 生产代码零命中）。
+- **新增测试**：`DishAutoGeneratorTest`（T-K1A-01a/b/c/d 4 条）+ `MultiDayRecorderK1aTest`（T-K1A-02/03 2 条，用 `CountingSqlDriver` 数 `selectNutritionInputsByDishIds` SQL 执行次数=1 验零 N+1）。
+- **验证**：三条验收命令全绿（shared 674 测试 0 failures；androidApp 全量 0 failures，含 `AiMealInputViewModelStreamTest` 16/16、`GenerationProgressTest` 4/4 两文件零改动仍绿；`assembleDebug` BUILD SUCCESSFUL）。
+- **Google 质量终审**（独立 `google_quality_engineer` agent）：**无阻断项**。采纳 2 条🟡（删死函数 `formatQuantity`、`toNutritionInput()` 补同步守卫注释）+ `anyGuessed` 补语义注释（**名字保持蓝图冻结字面量未改名**，完成形态判据依赖）；拒绝 1 条（#3 `inLibrary` 属既有代码、超出本批 allowlist）。
+
+涉及文件：`DishAutoGenerator.kt` / `AutoGenModels.kt` / `MultiDayRecorder.kt`（shared 3）+ `AiMealInputSheet.kt`（androidApp）+ 2 个新测试文件。CFG 部分（AI 未配置诚实报错）非本批、上批已实施。
+
 ---
 
 ## 二、⏭ 下一步
 
-1. **用户真机验证**：`真机待验证清单_202608080714.md` 的 E-CFG-01~06（新增，优先）+ 既有 B4/B5/B6 回归项（与本次无关，用户按自己节奏继续）。
-2. **K1a 营养展示统一化**（蓝图另一半，`TURN=CODE` 仍有效，未实施）：CREATE/REUSE 菜品营养计算统一到 `NutritionCalculator`，`MealPreviewCard` 复用 `DishNutritionLine`。可另开 session/角色实施，蓝图本身仍准确（未被本轮改动触碰）。
-3. 已知但本轮明确未修的相邻问题（记录于代码注释，非本次范围）：
+1. **ARCH 复核 K1a 营养统一化批次**（`BLUEPRINT_STATE` TURN=ARCH，REVIEW=架构师@主力机）：对照蓝图 §9 台账 + `git log dae39fc2..5c976a49` 反查，重点是①冻结字面量约束是否守住（`anyGuessed` 名、grep 判据）②§9 台账与真实 diff 一致性 ③三条验收命令输出已贴（见蓝图 §9）。复核通过则批次关闭、TURN=ACCEPTED；如有阻断项按 `AF-K1A-NN` 记回蓝图。
+2. **用户真机验证**：`真机待验证清单_202608081130.md` 的 E-K1A-01（新增，本批）+ E-CFG-01~06（既有）+ 既有 B4/B5/B6 回归项（用户按自己节奏继续）。
+3. 已知但上批明确未修的相邻问题（记录于代码注释，非本批范围）：
    - `mergeDays()` 单段仍只取 `firstOrNull` 天——极端场景"一段文字里同时提到昨天和今天两天"只会保留一天，另一天丢失（低概率，未做，Google 质量审查标注为"低 blast radius 的已知限制"）。
    - `humanizeWarning` 未覆盖 `StreamingMealParser` 自身产出的诊断（如"NDJSON 行缺少 segment_id"类消息），这类消息仍可能带工程师黑话/原始 JSON 片段——与本次 3 个哨兵字符串是同一类问题，未来可一并处理。
    - `useRuleFallback()`（手动重试按钮）仍是孤儿方法，无 UI 调用点；本次自动兜底已覆盖其原本要解决的大部分场景，是否还需要接线成按钮，留待后续评估。
@@ -79,7 +93,7 @@
 
 ## 四、先读清单（下一 session 接手时按序读）
 
-1. `BLUEPRINT_STATE.md`（确认当前 `TURN` 状态——本轮改动未走蓝图协议，`TURN` 字段仍指向 K1a 营养部分）
+1. `BLUEPRINT_STATE.md`（确认当前 `TURN`——K1a 营养统一化已实施，TURN=ARCH 待复核）
 2. `SESSION_交接.md`（本文件）
-3. 需了解本轮 bug 修复设计缘由：`.ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` 顶部追记
-4. 需了解 K1a 营养部分（下一步工作）：同一蓝图文件 §1~§9（未受本轮影响）
+3. 需了解 K1a 营养统一化实施细节/验收输出：`.ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md` §9（台账+验收命令输出）
+4. 需了解既有 AI→规则自动兜底（上批）：同一蓝图文件顶部追记
