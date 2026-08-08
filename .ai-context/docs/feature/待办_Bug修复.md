@@ -30,6 +30,7 @@
 | I5 | ⬜ | 连接词切分错误 | “红烧肉，鸡蛋羹，香肠，炒青菜还有大米饭”不能把“还有大米饭”当菜名。 |
 | I6 | ⬜ | DeepSeek 返回无效 | 2026-08-04 日志：`finish_reason=length`，4096 token 截断 JSON → parser 返回 null → 规则回退；需缩短Prompt/分批或提高完成额度，并展示原因。 |
 | I7 | ⬜ | AI失败静默降级 | 改为保留原文、用户确认是否转规则模板；实施见 `AI记一餐_分段解析与可控降级方案.md`。 |
+| I8 | ⬜ | AI记一餐"查看建议"结果不随编辑清空 | `AiMealInputViewModel.confirmHealthAdvice()` 用裸 `viewModelScope.launch`，不受 `invalidateGenerationToInput()` 的 `generationJob?.cancel()` 管辖，该函数也没重置 `healthAdvice`/`healthAdviceConsentPending` 等字段。复现：点"查看建议"→AI 还没返回时编辑输入框重新发送→旧建议异步返回后原样贴到新预览页，与新餐食内容对不上。影响小（只是文字对不上，不影响记录本身），2026-08-08 起草 K1b 蓝图时 GC-37 独立挑战发现，登记备查。修法：给建议协程加身份令牌（如快照 generationId，写回前校验）或并入可取消 Job；同时补齐 `invalidateGenerationToInput()` 里遗漏的 4 个健康建议字段重置。 |
 
 | # | 状态 | 项 | 说明 |
 |---|------|-----|------|
