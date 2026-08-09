@@ -65,7 +65,7 @@ K1i 为了让 `stream()`/`complete()` 失败文案同源，把 L1 定义的 `Clo
 
 1. `BLUEPRINT_STATE.md`（TURN=USER；L1/K1i 均 ACCEPTED，ARCH 简评已补）
 2. `SESSION_交接.md`（本文件）
-3. `docs/feature/真机待验证清单_202608082330.md`（顶部"📊 全量待验证汇总"——97 项未验证的全貌，真机解封后从这里开始）
+3. `docs/feature/真机待验证清单_202608082330.md`（顶部"📊 全量待验证汇总"——97 项未验证的全貌，真机解封后从这里开始；**2026-08-09 起全表统一新增"验证结果/原因"反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位，规范见 CLAUDE.md「交付必做」）
 4. 若推进 K1b：`docs/feature/AI记一餐_K1b膳食健康评价逐成员化_实施蓝图.md` §10（11 项 CONFIRMED-ISSUE + 9 项 MINOR-NIT，按序处置，不重新起草）
 5. 若推进 K1i-2：`docs/feature/K1i_AI流式渐进展示_实施蓝图.md` §1.3 Out of Scope（弃置理由）+ §12（弃置项登记），从零起草
 6. 若做文档订正：`.ai-context/docs/projectReview/07_项目现状.md`（AI 记餐 NDJSON 段仍写"待实现"）、`docs/feature/待办_功能算法.md`（K1g 行未标 ✅）
