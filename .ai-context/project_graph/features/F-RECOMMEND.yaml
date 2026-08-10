@@ -26,3 +26,45 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/RecommendationOrchestrator.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/MealCompositionScorer.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/FreePairingEngine.kt
+
+work_items:
+  - id: K9
+    kind: feature
+    status: backlog
+    title: AI推荐内容/算法深化
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K9
+    intent: 调研权威营养餐搭配与真实饮食组合；从宝塔层扩到疾病目标、口味、证据、可解释搭配
+  - id: K10
+    kind: feature
+    status: backlog
+    title: AI推荐规则降级提示
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K10
+    intent: AI结果无效/超时切规则推荐时 Snackbar 明示来源与原因
+  - id: K11
+    kind: feature
+    status: backlog
+    title: 推荐越用越顺手
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K11
+    intent: 本地显式反馈+历史偏好学习，透明可关闭，不做黑箱静默画像
+  - id: K12
+    kind: feature
+    status: backlog
+    title: 定向菜单/菜品扩充
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K12
+    intent: 低脂低嘌呤、抗炎、低糖等标签菜单；先定义权威口径与适用边界
+  - id: TODO-RECOMMEND-001
+    kind: feature
+    status: backlog
+    title: 首页推荐下一餐 v2
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 轻量单菜卡+批量记成一餐+措辞去歧义；需 Apple-UX 门禁

@@ -29,3 +29,53 @@ code:
   data:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/IngredientRepository.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/IngredientGroupRepository.kt
+
+work_items:
+  - id: BUG-INGREDIENT-001
+    kind: bug
+    status: backlog
+    title: 添加食材：清空预填后手动选营养分类仍被自动 classify 覆盖
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md
+    intent: 用户清空预填=不想跟随系统→再手动选分类时应尊重用户选择，不被 classify(name) 覆盖
+  - id: K14
+    kind: feature
+    status: backlog
+    title: 食材来源筛选
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K14
+    intent: 搜索支持预设/自建/AI 来源
+  - id: J9
+    kind: feature
+    status: backlog
+    title: 食材详情忌口/宜口视觉区分
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#J9
+    intent: 忌口保持现状·宜口用健康色，需 apple_ux/visual 定色
+  - id: J11
+    kind: feature
+    status: backlog
+    title: 食材搜索显示二级名称
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#J11
+    intent: 名称·二级名称 + 预设/自建标记
+  - id: J20
+    kind: bug
+    status: backlog
+    title: 调味料（盐）在调养中展示口径应为“限量”而非“忌口”
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md#J20
+    intent: 核查盐/酱油等调料在食材详情“调养”tab 展示→统一为“少量/限量”
+  - id: TODO-INGREDIENT-001
+    kind: feature
+    status: in_progress
+    title: 食材库扩充阶段2（USDA→5000+）
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: 阶段1 nlc 505→1115 已完成；阶段2 USDA 7793 国际层→5000+（需 cn_en 映射+分类+care/属性规模化）

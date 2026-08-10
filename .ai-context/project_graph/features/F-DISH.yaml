@@ -26,3 +26,21 @@ code:
   data:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/DishRepository.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/FavoriteComboRepository.kt
+
+work_items:
+  - id: REFACTOR-DISH-001
+    kind: refactor
+    status: backlog
+    title: 添加食材 vs 添加菜品两编辑页统一
+    feature: F-DISH
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md
+    intent: 抽 FormField/FormSection 共享组件，统一 label/placeholder/间距范式；需 Apple-UX 门禁
+  - id: L4
+    kind: feature
+    status: ready
+    title: 分享链接解析·外部菜谱导入
+    feature: F-DISH
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md#L4
+    intent: 方案已出（六角色会商）：Phase1=下厨房单源+预设正则+链接列表+存为菜品；DB+解析引擎+UI，待编码

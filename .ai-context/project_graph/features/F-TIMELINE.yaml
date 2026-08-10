@@ -17,3 +17,21 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/MealRecordRepository.kt
   other:
     - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/component/DayMealCardView.kt
+
+work_items:
+  - id: J4
+    kind: feature
+    status: backlog
+    title: 食历右侧时间轴+按月折叠
+    feature: F-TIMELINE
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#J4
+    intent: 时间轴(年月日·一年)+历史月折叠(带色系+营养汇总)，需 UX 门禁
+  - id: J5
+    kind: feature
+    status: backlog
+    title: 食历右上角日期→当前年份首餐~末餐
+    feature: F-TIMELINE
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md#J5
+    intent: 配合 J4 一起做，小调整

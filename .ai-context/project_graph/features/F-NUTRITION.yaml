@@ -31,3 +31,61 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/IntakeCalculator.kt
   data:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/NutritionRepository.kt
+
+work_items:
+  - id: J2
+    kind: feature
+    status: backlog
+    title: 食用比例进度条改造(0~100)+成员维度摄入
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#J2
+    intent: 进度条替四档+“没吃”档+per-member-per-dish 矩阵；用户已拍板选项②，待五方会商细化后编码；L级改造
+  - id: J21
+    kind: feature
+    status: backlog
+    title: “按实际吃了多少调整”入口可点性
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#J21
+    intent: 纯文字无 chevron/图标→用户不知能点；需 affordance 设计
+  - id: J6
+    kind: todo
+    status: backlog
+    title: 营养色系墙“往年”→“历年”文案
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#J6
+    intent: 一处文案改·极小
+  - id: J3
+    kind: research
+    status: backlog
+    title: 营养/热量是快照还是实时（待拍板）
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md#J3
+    intent: 用户主张历史应快照固化；权衡快照(历史真实) vs 实时(改数据全局生效)；或历史锁快照+重算入口
+  - id: J13
+    kind: maintenance
+    status: backlog
+    title: 脚本化月度营养数据交叉对比
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md#J13
+    intent: cron 定时跑 USDA vs 中国成分表 vs 库内现值→标记漂移/异常；P4 链路落地后接入
+  - id: TODO-NUTRITION-001
+    kind: feature
+    status: backlog
+    title: 营养走势折线：三线同显+周/月视图统一
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 现为单线+三色chip切换；三线同显需 UX 评估（信息密度vs清晰度），先调研再改
+  - id: TODO-NUTRITION-002
+    kind: feature
+    status: backlog
+    title: 食材营养表分页查询
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: 库千级前必须落地：DAO LIMIT 100 OFFSET + LazyColumn 上拉加载 + 搜索改 DB 侧查询

@@ -36,23 +36,125 @@ work_items:
     status: verifying
     title: AI记餐周期记 + NDJSON 流式解析改造
     feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K1g
+      - .ai-context/docs/context_memory/SESSION_交接.md
     intent: 周期记按周/日期分段；max token 按场景放大；NDJSON/JSONL 边解析边展示，整体 JSON 作为兼容输入规范化
   - id: K1i
     kind: feature
     status: verifying
     title: 全App AI输出流式/渐进显示兼容（运行时真实委托）
     feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/K1i_AI流式渐进展示_实施蓝图.md
+      - .ai-context/docs/context_memory/SESSION_交接.md
     intent: SwitchableAiRuntime.stream() 真实委托；复用 L1 cloudAiConsent 闸门
   - id: K1b
     kind: feature
     status: parked
     title: 膳食健康评价逐成员化
     feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/AI记一餐_K1b膳食健康评价逐成员化_实施蓝图.md
+      - .ai-context/docs/context_memory/SESSION_交接.md
+    intent: DRAFT·PARKED，等真机验证收尾后处置蓝图 §10 阻断项
   - id: I8
     kind: bug
     status: backlog
     title: AI记一餐"查看建议"结果不随编辑清空
     feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md#I8
+    intent: confirmHealthAdvice() 裸 launch 不受 generationJob?.cancel() 管辖；需身份令牌/并入可取消 Job + 补齐 4 个健康建议字段重置
+  - id: K1a
+    kind: feature
+    status: verifying
+    title: AI预览确认页营养热量展示统一化
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md
+      - .ai-context/docs/context_memory/SESSION_交接.md
+    intent: CREATE/REUSE 均复用 NutritionCalculator.dishNutrition()；REUSE 批量回填零 N+1；ARCH 已复核通过但真机 E-K1A-01 待验证
+  - id: K1c
+    kind: feature
+    status: backlog
+    title: 规则引擎日期推算+星期偏移
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K1c
+    intent: weekdayHint 推算未来最近对应星期几的 date_offset
+  - id: K1d
+    kind: feature
+    status: backlog
+    title: JSON Schema 客户端与服务端双端兼容
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K1d
+    intent: 生成 .schema.json + 抽象入库编排流程 + FlatMealJson 优先作为交换格式
+  - id: K1e
+    kind: feature
+    status: cancelled
+    title: 全App AI调用点语义转换层（废弃）
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/K1e_AI调用点紧凑结构转换层_实施蓝图.md
+    intent: 起草后 GC-37 证伪：紧凑JSON 实测比现状更费 token，方向错误；用户裁定废弃，不再重开
+  - id: I3
+    kind: bug
+    status: backlog
+    title: 菜名被当单一食材
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md#I3
+    intent: 薄皮椒炒肉丝/西兰花炒藕片/番茄炒蛋须保留菜品，拆食材+炒法
+  - id: I4
+    kind: bug
+    status: backlog
+    title: 复合菜与括号主食遗漏
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md#I4
+    intent: 乌冬面（番茄炒蛋）须两道菜且乌冬面含面；蛋炒饭/炒饭须补米饭
+  - id: I5
+    kind: bug
+    status: backlog
+    title: 连接词切分错误
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md#I5
+    intent: 不能把“还有大米饭”当菜名
+  - id: I6
+    kind: bug
+    status: backlog
+    title: DeepSeek 返回无效（token 截断）
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md#I6
+    intent: finish_reason=length 4096 token 截断 JSON → parser null → 规则回退；需缩短 Prompt/分批或提高完成额度并展示原因
+  - id: I7
+    kind: bug
+    status: backlog
+    title: AI 失败静默降级（保留原文+用户确认转规则）
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md#I7
+    intent: 改为保留原文、用户确认是否转规则模板（合并 K15：分段解析与可控降级，见 AI记一餐_分段解析与可控降级方案.md）
+  - id: BUG-AI-MEAL-001
+    kind: bug
+    status: backlog
+    title: K2语音：长按录音无授权弹窗、无反应
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md
+    intent: ①长按🎤无权限请求弹窗 ②无录音波形条 ③语音识别失败无法验证——语音入口不可用
+  - id: L3
+    kind: feature
+    status: backlog
+    title: 全App基础功能自动化进阶（AI批量创建）
+    feature: F-AI-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md#L3
+    intent: 食材/菜品/餐次/计划/库存/营养全链路 AI 自动化；需产品定优先级+分阶段
 
 plans:
   - id: PLAN-AI-NDJSON

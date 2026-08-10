@@ -22,3 +22,45 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/HealthProfileRepository.kt
   domain:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/HealthMetrics.kt
+
+work_items:
+  - id: BUG-FAMILY-001
+    kind: bug
+    status: backlog
+    title: 家庭成员设“不在场”→今日营养卡所有选项卡消失
+    feature: F-FAMILY
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md
+    intent: 该成员应移除选项卡并默认切到其他成员；现状所有选项卡都消失
+  - id: BUG-FAMILY-002
+    kind: bug
+    status: backlog
+    title: 缺席微调：成员页不按缺席联动
+    feature: F-FAMILY
+    source_refs:
+      - .ai-context/docs/feature/待办_Bug修复.md
+    intent: 统计页标成员“没吃”→份额正常分给其余在场并持久化；但切成员 Tab 后仍按在场算，未联动缺席状态
+  - id: TODO-FAMILY-001
+    kind: feature
+    status: backlog
+    title: 家庭成员>4人切换标签统一成滑块·家族风格
+    feature: F-FAMILY
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 现 chip 横排挤压，>4人放不下；统一设计滑块/横滚式成员切换器
+  - id: TODO-FAMILY-002
+    kind: feature
+    status: backlog
+    title: FAM-AGE 家庭成员年龄→生日改造
+    feature: F-FAMILY
+    source_refs:
+      - .ai-context/docs/feature/待办索引.md
+    intent: 界面调整·改用生日实时算年龄；需会商出方案
+  - id: TODO-FAMILY-003
+    kind: feature
+    status: backlog
+    title: FAM-MEAL 家庭成员与用餐统计解耦
+    feature: F-FAMILY
+    source_refs:
+      - .ai-context/docs/feature/待办索引.md
+    intent: 加开关·非所有成员计入每餐计算·临时来客场景；需会商出方案

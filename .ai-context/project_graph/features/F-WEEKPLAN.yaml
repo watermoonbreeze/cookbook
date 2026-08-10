@@ -24,3 +24,13 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/PeriodPlanner.kt
   other:
     - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/component/DayMealCardView.kt
+
+work_items:
+  - id: J17
+    kind: feature
+    status: backlog
+    title: 一周计划营养线统一算法
+    feature: F-WEEKPLAN
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#J17
+    intent: 已吃 vs 未吃分治（不造假）+ AiPlan/WeekPlan 抽共享营养规划器；需算法会诊+方案

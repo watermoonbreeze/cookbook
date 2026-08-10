@@ -43,3 +43,38 @@ code:
   core:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/di/SharedModule.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/DatabaseDriverFactory.kt
+
+work_items:
+  - id: L1
+    kind: compliance
+    status: verifying
+    title: 用户协议免责声明 + AI 功能开启前弹窗告知
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md
+      - .ai-context/docs/context_memory/SESSION_交接.md
+    intent: ①PolicyContent 开头免责 ②首次开启云端 AI 弹窗告知第三方服务风险；守 T2；ARCH 已复核通过但真机 E-L1-01~12 待验证
+  - id: J19
+    kind: research
+    status: backlog
+    title: 规则+数据全开源→第三方可捞库复刻·壁垒防范（待拍板）
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md#J19
+    intent: 倾向“规则透明·体验/服务/数据资产做护城河”；与透明准则张力需权衡，待用户拍板
+  - id: J16
+    kind: feature
+    status: backlog
+    title: 采购清单入口移到食材-库存页
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#J16
+    intent: 悬浮购物车图标+份数徽标(99+)；复用 §九 FAB+贴角圆角标
+  - id: K2
+    kind: todo
+    status: backlog
+    title: 整体界面优化
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#K2
+    intent: 一期功能全部完成后整体 UI 打磨；放最后

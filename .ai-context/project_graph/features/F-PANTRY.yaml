@@ -17,3 +17,21 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/pantry/PantryPlanAnnotator.kt
   data:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/PantryRepository.kt
+
+work_items:
+  - id: K13
+    kind: feature
+    status: backlog
+    title: 库存随过期计划消耗
+    feature: F-PANTRY
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K13
+    intent: 已过用餐时间的计划餐按实际确认/撤销结算库存，禁止静默累加
+  - id: J7
+    kind: feature
+    status: backlog
+    title: 菜品编辑加“非家庭用餐”选项
+    feature: F-PANTRY
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#J7
+    intent: 选中不挂钩库存；与 J2「没吃/外食」主题相关

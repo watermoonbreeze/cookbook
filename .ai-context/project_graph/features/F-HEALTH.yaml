@@ -28,3 +28,29 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/DietaryGuideline.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/StapleFood.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/SeasoningDefaults.kt
+
+work_items:
+  - id: L2
+    kind: feature
+    status: backlog
+    title: 健康状态增加“脂肪肝”App侧入口
+    feature: F-HEALTH
+    source_refs:
+      - .ai-context/docs/feature/待办_工程合规.md#L2
+    intent: 数据/脚本侧已就绪（condition_guidelines+18条care）；纯 App 侧接入：枚举+fromCareName+家庭档案多选+参考页；DB 零迁移（合并 J22）
+  - id: J10
+    kind: feature
+    status: backlog
+    title: 多健康档案时忌口/宜口综合体现
+    feature: F-HEALTH
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md#J10
+    intent: 分项(按病种)+综合(“对我而言”裁决)；需方案+UX
+  - id: J14
+    kind: feature
+    status: backlog
+    title: 菜名解析自动补调料/主食食材
+    feature: F-HEALTH
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#J14
+    intent: “红烧肉”→自动加酱油/糖/料酒 + “大排饭”→补大米；守 T1 事后留痕
