@@ -2,6 +2,8 @@
 
 > 迁移冲突台账（遵循 No Guess Rule §77）。已解决标记 `RESOLVED`，未解决明列于"开放冲突"。
 > 本阶段允许的冲突类型：`PLAN_SOURCE_MISSING` / `PLAN_SCOPE_UNCERTAIN` / `RELATION_UNCERTAIN` / `BLUEPRINT_STATE_DRIFT` / `ARCH_CHANGE_REQUIRED`。
+>
+> **交接注记（Phase 2C END · ACCEPT / CLOSED · Review Commit `ced5f13f`）**：本台账随 Phase 2C 外部架构审核 ACCEPT 收口；唯一开放项 `L3 FEATURE_SPLIT_CANDIDATE` 为允许的架构冲突，Follow-up Phase 2E（见 `PHASE2C_ACCEPT.md` §8）。Phase 2D 边界见 `PHASE2C_TO_2D_HANDOFF.md`。
 
 ## 已裁决冲突
 
