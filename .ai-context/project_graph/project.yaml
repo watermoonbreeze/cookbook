@@ -1,7 +1,8 @@
 # Project Graph — Project 根
 # Phase 1 Model Contract: FINAL ACCEPT / FROZEN
 # Phase 2A Feature Universe: ACCEPT / CLOSED
-# Current Bootstrap Stage: Phase 2B
+# Phase 2B Current WorkItem: ACCEPT / CLOSED
+# Current Bootstrap Stage: Phase 2C
 # mode: draft — Contract 已冻结；Graph 数据仍处 Bootstrap draft；Phase 2/3 完成前不得切 active。
 # 现有 Truth（Code/SESSION/BLUEPRINT_STATE/项目地图）优先级不变。
 kind: project

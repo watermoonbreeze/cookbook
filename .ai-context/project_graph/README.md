@@ -2,14 +2,14 @@
 
 > **Phase 1 — Model Contract**: FINAL ACCEPT / FROZEN
 > **Phase 2A — Feature Universe**: ACCEPT / CLOSED
-> **Phase 2B — Current WorkItem**: MIGRATION RECONCILED / WAITING FOR ARCHITECTURE REVIEW
+> **Phase 2B — Current WorkItem**: ACCEPT / CLOSED
 > **Graph Mode**: `draft`
 
-> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）Migration **RECONCILED**（Rework 完成：Stable ID 无损、Source Coverage 100%、Status/Kind/Ownership 对账），**等待外部架构审核**，未标 ACCEPT。**Graph 仍为 mode: draft，未正式启用**，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
+> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**（Review Commit `e2127176`：Stable ID 无损、Source Coverage 100%、Status/Kind/Ownership 对账，最终统计从 Graph 直接计算：Total 104 / Stable 51 / Generated 53）。**Graph 仍为 mode: draft，未正式启用**，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
 >
 > 维护角色：**AI Maintained, Human Read-Only**。
 >
-> 阶段记录：Phase 1 → [`migration/PHASE1_FINAL_ACCEPT.md`](migration/PHASE1_FINAL_ACCEPT.md) ｜ Phase 2A → [`migration/PHASE2A_ACCEPT.md`](migration/PHASE2A_ACCEPT.md) ｜ Phase 2A→2B 交接 → [`migration/PHASE2A_TO_2B_HANDOFF.md`](migration/PHASE2A_TO_2B_HANDOFF.md) ｜ Phase 2B 对账 → [`migration/PHASE2B_SOURCE_COVERAGE.md`](migration/PHASE2B_SOURCE_COVERAGE.md)。
+> 阶段记录：Phase 1 → [`migration/PHASE1_FINAL_ACCEPT.md`](migration/PHASE1_FINAL_ACCEPT.md) ｜ Phase 2A → [`migration/PHASE2A_ACCEPT.md`](migration/PHASE2A_ACCEPT.md) ｜ Phase 2A→2B 交接 → [`migration/PHASE2A_TO_2B_HANDOFF.md`](migration/PHASE2A_TO_2B_HANDOFF.md) ｜ Phase 2B Accept → [`migration/PHASE2B_ACCEPT.md`](migration/PHASE2B_ACCEPT.md) ｜ Phase 2B→2C 交接 → [`migration/PHASE2B_TO_2C_HANDOFF.md`](migration/PHASE2B_TO_2C_HANDOFF.md)。
 
 ## 0. Phase 1 状态与冻结契约（Status & Frozen Contract）
 
@@ -18,13 +18,13 @@
 ```text
 Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN   （Final Review Commit 83623a3）
 Phase 2A — Feature Universe    : ACCEPT / CLOSED          （Review Commit b54246c1）
-Phase 2B — Current WorkItem    : MIGRATION RECONCILED / WAITING FOR ARCH REVIEW （Rework Commit 0f342dad+）
+Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （Review Commit e2127176）
 Phase 2  — 整体                : IN PROGRESS（非 COMPLETE）
 Graph Mode                     : draft
 ```
 
-Phase 2A 已完成能力见 `migration/PHASE2A_ACCEPT.md`；Phase 2B 执行强制入口见 `migration/PHASE2A_TO_2B_HANDOFF.md`。
-**Phase 2B Migration Reconciliation（Rework）完成**：Stable ID（FAM-AGE/FAM-MEAL/K15/J22）无损恢复、Source Coverage 100%（UNEXPLAINED=0）、TODO-* kind 全部修正、K1c 状态修正、L3 → F-TOOLS（FEATURE_SPLIT_CANDIDATE）。**等待外部架构审核，未标 ACCEPT/CLOSED。**
+Phase 2A 已完成能力见 `migration/PHASE2A_ACCEPT.md`；Phase 2A→2B 执行强制入口见 `migration/PHASE2A_TO_2B_HANDOFF.md`；Phase 2B Accept 记录见 `migration/PHASE2B_ACCEPT.md`；Phase 2B→2C 强制入口见 `migration/PHASE2B_TO_2C_HANDOFF.md`。
+**Phase 2B 已 ACCEPT / CLOSED（Review Commit `e2127176`）**：Migration Reconciliation（Rework）完成——Stable ID（FAM-AGE/FAM-MEAL/K15/J22）无损恢复、Source Coverage 100%（UNEXPLAINED=0）、TODO-* kind 全部修正、K1c 状态修正、L3 → F-TOOLS（FEATURE_SPLIT_CANDIDATE）。最终派生统计（From Graph）：Total 104 / Stable 51 / Generated 53。**外部架构审核 ACCEPT，进入 Phase 2C。**
 
 ### 0.2 冻结契约（Phase 1 Frozen Contract）
 
