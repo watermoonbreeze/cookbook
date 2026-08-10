@@ -1,0 +1,24 @@
+# Feature Graph ——F-FAMILY（家庭档案）
+kind: feature
+id: F-FAMILY
+name: 家庭档案
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/family/**
+  - shared/**/data/repository/FamilyRepository*
+  - shared/**/data/repository/HealthProfileRepository*
+  - shared/**/domain/model/HealthMetrics*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyStatsScreen.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/family/FamilyStatsViewModel.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/FamilyRepository.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/HealthProfileRepository.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/HealthMetrics.kt

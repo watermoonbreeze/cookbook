@@ -584,6 +584,97 @@ class Rework2Tests(unittest.TestCase):
         self.assertNotIn("PG-E-RELATION_TYPE", codes)
 
 
+# ---------- Phase 2A source_refs provenance 测试（§9.4/§9.6） ----------
+
+class SourceRefTests(unittest.TestCase):
+
+    def _build_disk_graph(self, source_refs, work_refs=None, schema_off=False):
+        """真实临时目录：project.yaml + features/F-A.yaml（可挂 feature/work 级 source_refs）。
+        repo_root 指到 tmpdir，source ref 相对 tmpdir 解析（如 docs/feature.md）。
+        schema 指向真实 REAL_SCHEMA（tmpdir 无 schema/ 子目录）。"""
+        import tempfile
+        tmpdir = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmpdir, "features"))
+        os.makedirs(os.path.join(tmpdir, "docs"))
+        with open(os.path.join(tmpdir, "docs", "feature.md"), "w", encoding="utf-8") as f:
+            f.write("# doc\n")
+        with open(os.path.join(tmpdir, "project.yaml"), "w", encoding="utf-8") as f:
+            f.write("kind: project\ngraph_version: '1'\nmode: draft\n"
+                    "project: {id: t, name: T, root: .}\nfeatures: [F-A]\n")
+        lines = ["kind: feature", "id: F-A", "name: a", "lifecycle: active"]
+        if source_refs is not None:
+            lines.append("source_refs:")
+            lines += ["  - '%s'" % r for r in source_refs]  # 单引号包裹，防 #anchor 被当注释
+        if work_refs is not None:
+            lines.append("work_items:")
+            lines.append("  - id: W1")
+            lines.append("    kind: feature")
+            lines.append("    status: backlog")
+            lines.append("    title: w1")
+            lines.append("    feature: F-A")
+            lines.append("    source_refs:")
+            lines += ["      - '%s'" % r for r in work_refs]
+        with open(os.path.join(tmpdir, "features", "F-A.yaml"), "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        g = pg.ProjectGraph(tmpdir)
+        g.repo_root = os.path.abspath(tmpdir)  # 本测试以 tmpdir 为仓库根
+        g.schema_file = REAL_SCHEMA
+        g.load()
+        if schema_off:
+            g.schema_enabled = False
+        g.check()
+        return [i.code for i in g.issues]
+
+    # §9.6: valid relative source → PASS
+    def test_valid_relative_source(self):
+        codes = self._build_disk_graph(["docs/feature.md"])
+        self.assertNotIn("PG-E-SOURCE_REF", codes)
+        self.assertEqual([], codes)
+
+    # §9.6: path#anchor → PASS（anchor 本阶段不验证）
+    def test_anchor_stripped_pass(self):
+        codes = self._build_disk_graph(["docs/feature.md#L5"])
+        self.assertNotIn("PG-E-SOURCE_REF", codes)
+
+    # §9.6: missing source → FAIL
+    def test_missing_source(self):
+        codes = self._build_disk_graph(["docs/missing.md"])
+        self.assertIn("PG-E-SOURCE_REF", codes)
+
+    # §9.6: absolute source → FAIL（POSIX 风格绝对路径，跨平台 isabs 均 True）
+    def test_absolute_source(self):
+        codes = self._build_disk_graph(["/etc/hosts"])
+        self.assertIn("PG-E-SOURCE_REF", codes)
+
+    # §9.6: ../escape → FAIL
+    def test_parent_escape(self):
+        codes = self._build_disk_graph(["../escape.md"])
+        self.assertIn("PG-E-SOURCE_REF", codes)
+
+    # source_refs 挂到 WorkItem 同样被校验
+    def test_source_ref_on_workitem(self):
+        codes = self._build_disk_graph(None, work_refs=["docs/missing.md"])
+        self.assertIn("PG-E-SOURCE_REF", codes)
+
+    # schema 强制 source_refs 为数组：字符串值 → PG-E-SCHEMA
+    def test_source_refs_schema_string_invalid(self):
+        import tempfile
+        tmpdir = tempfile.mkdtemp()
+        os.makedirs(os.path.join(tmpdir, "features"))
+        with open(os.path.join(tmpdir, "project.yaml"), "w", encoding="utf-8") as f:
+            f.write("kind: project\ngraph_version: '1'\nmode: draft\n"
+                    "project: {id: t, name: T, root: .}\nfeatures: [F-A]\n")
+        with open(os.path.join(tmpdir, "features", "F-A.yaml"), "w", encoding="utf-8") as f:
+            f.write("kind: feature\nid: F-A\nname: a\nlifecycle: active\n"
+                    "source_refs: docs/feature.md\n")  # 字符串非数组
+        g = pg.ProjectGraph(tmpdir)
+        g.schema_file = REAL_SCHEMA
+        g.load()
+        g.check()
+        codes = [i.code for i in g.issues]
+        self.assertIn("PG-E-SCHEMA", codes)
+
+
 # ---------- 真实 PoC 数据 smoke test ----------
 
 class RealDataSmokeTest(unittest.TestCase):

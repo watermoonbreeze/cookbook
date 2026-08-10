@@ -141,6 +141,20 @@ Feature 按「文件分片」组织（`features/<id>.yaml`），AI 处理任务�
 - **Final V1 Contract**：`Feature.lifecycle = Declared`；`Feature.activity = Derived`；`Feature.health = Derived`。核心 Feature YAML 中**不存储 activity/health**（Schema 的 Feature 无此字段，AI 不得声明或覆盖）。`project_graph.py` 已实现 `derive_activity` / `derive_health` 作为推导契约演示。
 - 如未来确需 override activity/health，属于 Extension 设计，**本阶段不实现**。
 
+## Source Provenance（Phase 2A · source_refs）
+
+Entity → `source_refs` → authoritative repository artifact：
+
+```yaml
+source_refs:
+  - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
+  - .ai-context/docs/功能路径索引.md#记录
+```
+
+- `source_refs` 可挂在 **Feature / WorkItem / Plan / Verification** 上（可选，通常 1~3 条），指向**权威来源**（功能路径索引 / 项目业务地图 / 专项方案），不是罗列所有提到该实体的文档。
+- 语义校验器（PG-P2A-A01）轻量检查：去掉 `#anchor` 后，path 不得绝对、不得含 `..` 逃逸仓库、文件必须存在（相对仓库根解析）。Anchor 本身本阶段不验证。错误码 `PG-E-SOURCE_REF`。
+- **`source_refs` 不改变 Truth Source 优先级，只记录证据来源**：Project Graph 仍是 Project Truth；Code / SESSION / BLUEPRINT_STATE / 项目地图 的现有优先级不变。
+
 ## 6. Typed Reference 与 Relation Canonical Direction（§18）
 
 内部引用标准化为带类型：
@@ -283,7 +297,7 @@ target: plan:PLAN-X
 reason: target does not exist
 ```
 
-错误码：`PG-E-LOAD` `PG-E-SCHEMA` `PG-E-GRAPH_VERSION` `PG-E-DUP_ID` `PG-E-UNKNOWN_FEATURE` `PG-E-WORK_FEATURE` `PG-E-PLAN_REF` `PG-E-VERIFY_REF` `PG-E-RELATION_SOURCE` `PG-E-RELATION_TARGET` `PG-E-SELF_REF` `PG-E-CYCLE` `PG-E-CODE_MAPPING` `PG-E-CURRENT` `PG-E-EXTENSION` `PG-E-DONE_NO_VERIFY` `PG-E-VERIFY_REASON` `PG-E-REGISTRY_MISMATCH`。
+错误码：`PG-E-LOAD` `PG-E-SCHEMA` `PG-E-GRAPH_VERSION` `PG-E-DUP_ID` `PG-E-UNKNOWN_FEATURE` `PG-E-WORK_FEATURE` `PG-E-PLAN_REF` `PG-E-VERIFY_REF` `PG-E-RELATION_SOURCE` `PG-E-RELATION_TARGET` `PG-E-SELF_REF` `PG-E-CYCLE` `PG-E-CODE_MAPPING` `PG-E-CURRENT` `PG-E-EXTENSION` `PG-E-DONE_NO_VERIFY` `PG-E-VERIFY_REASON` `PG-E-REGISTRY_MISMATCH` `PG-E-SOURCE_REF`。
 
 ## 13. Tool Contract（§31）
 

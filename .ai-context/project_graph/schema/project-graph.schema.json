@@ -69,6 +69,11 @@
         "id": { "$ref": "#/$defs/FeatureId" },
         "name": { "type": "string", "minLength": 1 },
         "lifecycle": { "$ref": "#/$defs/Lifecycle" },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Provenance：Entity 的权威证据来源（仓库内部路径，可选，1~3 条）。"
+        },
         "match": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
@@ -104,6 +109,10 @@
         "status": { "$ref": "#/$defs/WorkStatus" },
         "title": { "type": "string", "minLength": 1 },
         "feature": { "$ref": "#/$defs/FeatureId" },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
         "priority": { "type": "string" },
         "intent": { "type": "string" }
       }
@@ -117,6 +126,10 @@
         "id": { "$ref": "#/$defs/PlanId" },
         "status": { "$ref": "#/$defs/PlanStatus" },
         "title": { "type": "string", "minLength": 1 },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
         "work_items": {
           "type": "array",
           "items": { "$ref": "#/$defs/WorkId" },
@@ -134,6 +147,10 @@
         "kind": { "$ref": "#/$defs/VerifyKind" },
         "status": { "$ref": "#/$defs/VerifyStatus" },
         "work_item": { "$ref": "#/$defs/WorkId" },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
         "required": {
           "type": "boolean",
           "description": "是否为必须验证（默认 true）。required=false 的验证不阻止 WorkItem done。"

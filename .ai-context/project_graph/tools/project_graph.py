@@ -79,6 +79,10 @@ RELATION_ENDPOINT_CONSTRAINTS = {
 class ProjectGraph:
     def __init__(self, root_dir):
         self.root = os.path.abspath(root_dir)
+        # source_refs 是仓库相对路径（如 .ai-context/docs/...）。
+        # project_graph 位于 <repo>/.ai-context/project_graph，上溯两级 = 仓库根。
+        # 内存构造（from_data）可覆盖该值用于测试。
+        self.repo_root = os.path.dirname(os.path.dirname(self.root))
         self.project = None
         self.project_file = None
         self.features = {}        # id -> feature dict（有文件的子图）
@@ -594,6 +598,56 @@ class ProjectGraph:
                     "PG-E-VERIFY_REASON", "verification %s 为 not_required 但缺 reason" % vid,
                     file=vf["file"], source="verify:%s" % vid))
 
+    # ---- Source Provenance（Phase 2A · source_refs 最小校验）----
+
+    _SR_PREFIX = {"feature": "feature", "work_item": "work", "plan": "plan", "verification": "verify"}
+
+    def _check_source_refs(self):
+        """PG-P2A-A01: 对 Feature/WorkItem/Plan/Verification 的 source_refs 做轻量校验（§9.4）。
+        仓库内部 source ref：
+          1. 去除 #anchor；
+          2. path 不得绝对；
+          3. path 不得含 .. 逃逸 repo；
+          4. 文件必须存在（相对仓库根解析）。
+        Anchor 本身本阶段不验证。"""
+        for fid, feat in self.features.items():
+            fpath = self.feature_files[fid]
+            self._check_one_source_ref("feature", fid, feat.get("source_refs"), fpath)
+            for wi in feat.get("work_items") or []:
+                self._check_one_source_ref("work_item", wi.get("id"), wi.get("source_refs"), fpath)
+            for pl in feat.get("plans") or []:
+                self._check_one_source_ref("plan", pl.get("id"), pl.get("source_refs"), fpath)
+            for vf in feat.get("verifications") or []:
+                self._check_one_source_ref("verification", vf.get("id"), vf.get("source_refs"), fpath)
+
+    def _check_one_source_ref(self, etype, eid, refs, fpath):
+        if not refs:
+            return
+        prefix = self._SR_PREFIX.get(etype, etype)
+        for ref in refs:
+            reason = self._source_ref_error(ref)
+            if reason:
+                self.issues.append(Issue(
+                    "PG-E-SOURCE_REF",
+                    "entity: %s\nid: %s\nsource_ref: %s\nreason: %s" % (etype, eid, ref, reason),
+                    file=fpath, source="%s:%s" % (prefix, eid), target=ref))
+
+    def _source_ref_error(self, ref):
+        if not isinstance(ref, str):
+            return "source_ref 必须为字符串"
+        path = ref.split("#", 1)[0].strip()
+        if not path:
+            return "source_ref 为空路径"
+        if os.path.isabs(path):
+            return "source_ref 不得为绝对路径: %s" % path
+        for seg in path.replace("\\", "/").split("/"):
+            if seg == "..":
+                return "source_ref 不得含 .. 逃逸仓库: %s" % path
+        full = os.path.normpath(os.path.join(self.repo_root, path))
+        if not os.path.isfile(full):
+            return "source_ref 文件不存在: %s" % path
+        return None
+
     # ---- 派生（Derived）报告：定义推导契约，非强制 ----
 
     def derive_activity(self, fid):
@@ -646,6 +700,7 @@ class ProjectGraph:
         self._check_extensions()
         self._check_done_rule()           # PG-R5: Verification 闭包
         self._check_verify_reason()
+        self._check_source_refs()         # PG-P2A-A01: source_refs provenance（Phase 2A）
         return self.issues
 
     def summary(self):

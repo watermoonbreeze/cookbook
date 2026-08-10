@@ -1,0 +1,19 @@
+# Feature Graph ——F-PANTRY（库存）
+kind: feature
+id: F-PANTRY
+name: 库存
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/component/PantryHook*
+  - shared/**/data/repository/PantryRepository*
+  - shared/**/pantry/**
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/component/PantryHook.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/pantry/PantryAllocation.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/pantry/PantryPlanAnnotator.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/PantryRepository.kt

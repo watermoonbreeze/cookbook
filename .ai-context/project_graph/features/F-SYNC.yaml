@@ -1,0 +1,21 @@
+# Feature Graph ——F-SYNC（双设备同步）
+kind: feature
+id: F-SYNC
+name: 双设备同步
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/sync/**
+  - shared/**/sync/**
+  - shared/**/platform/BackupManager*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/sync/DeviceSyncDialog.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/sync/DeviceSyncViewModel.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/sync/SyncRepository.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/sync/SyncBundle.kt
+  core:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/BackupManager.kt

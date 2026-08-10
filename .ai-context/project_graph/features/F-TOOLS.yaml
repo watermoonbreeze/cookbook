@@ -1,0 +1,45 @@
+# Feature Graph ——F-TOOLS（工具与系统底座）
+# 聚合：厨房做菜/计时器/采购清单/搜索 + 导航/主题/组件/设置/我的 + 数据层与平台 infra（DI/偏好/expect-actual/埋点）。
+kind: feature
+id: F-TOOLS
+name: 工具与系统底座
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/cook/**
+  - androidApp/**/ui/kitchen/**
+  - androidApp/**/ui/shopping/**
+  - androidApp/**/ui/search/**
+  - androidApp/**/ui/nav/**
+  - androidApp/**/ui/theme/**
+  - androidApp/**/ui/component/**
+  - androidApp/**/ui/settings/**
+  - androidApp/**/ui/mine/**
+  - shared/**/data/repository/CookingTimerRepository*
+  - shared/**/data/repository/ShoppingListRepository*
+  - shared/**/data/repository/StepTemplateRepository*
+  - shared/**/di/**
+  - shared/**/platform/**
+  - shared/**/analytics/**
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/cook/CookModeScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/kitchen/CookingTimerScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/shopping/ShoppingListScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/search/SearchScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nav/MainScaffold.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/settings/FeatureSettingsScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/mine/MineScreen.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/cook/CookModeViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/shopping/ShoppingListViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/settings/FeatureSettingsViewModel.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/CookingTimerRepository.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/ShoppingListRepository.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/StepTemplateRepository.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/PreferenceRepository.kt
+  core:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/di/SharedModule.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/DatabaseDriverFactory.kt

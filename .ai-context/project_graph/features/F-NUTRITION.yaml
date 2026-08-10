@@ -1,0 +1,33 @@
+# Feature Graph ——F-NUTRITION（营养评估）
+kind: feature
+id: F-NUTRITION
+name: 营养评估
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/nutrition/**
+  - androidApp/**/ui/report/**
+  - androidApp/**/ui/home/NutritionWall*
+  - androidApp/**/ui/component/Nutrition*
+  - shared/**/domain/Nutrition*
+  - shared/**/domain/model/IntakeCalculator*
+  - shared/**/domain/model/Nutrition*
+  - shared/**/domain/model/DietReport*
+  - shared/**/data/repository/NutritionRepository*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nutrition/NutritionTableScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/report/DietReportScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/home/NutritionWall.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/component/NutritionLineCard.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nutrition/NutritionTableViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/report/DietReportViewModel.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/NutritionLevel.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/NutritionInterpreter.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/NutritionLine.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/IntakeCalculator.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/NutritionRepository.kt

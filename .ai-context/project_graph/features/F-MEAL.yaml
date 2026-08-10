@@ -3,10 +3,12 @@ kind: feature
 id: F-MEAL
 name: 记一餐
 lifecycle: mature
+source_refs:
+  - .ai-context/docs/功能路径索引.md
 match:
   - androidApp/**/addmeal/**
-  - shared/**/repository/MealRecordRepository*
-  - shared/**/model/MealRecord*
+  - shared/**/data/repository/MealRecordRepository*
+  - shared/**/domain/model/MealRecord*
 code:
   ui:
     - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddDayFoodScreen.kt

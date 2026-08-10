@@ -1,0 +1,31 @@
+# Feature Graph ——F-INGREDIENT（食材体系）
+kind: feature
+id: F-INGREDIENT
+name: 食材体系
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/ingredients/**
+  - androidApp/**/ui/picker/Ingredient*
+  - shared/**/domain/FoodGroup*
+  - shared/**/domain/FoodAttribute*
+  - shared/**/domain/IngredientCrowdCare*
+  - shared/**/domain/MedicinalFoods*
+  - shared/**/data/repository/IngredientRepository*
+  - shared/**/data/repository/IngredientGroupRepository*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ingredients/IngredientsScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/picker/IngredientPickerScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/picker/IngredientDetailSheet.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/picker/IngredientPickerViewModel.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/FoodGroup.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/FoodAttribute.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/IngredientCrowdCare.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/MedicinalFoods.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/IngredientRepository.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/IngredientGroupRepository.kt

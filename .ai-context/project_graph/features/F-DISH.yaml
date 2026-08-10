@@ -1,0 +1,28 @@
+# Feature Graph ——F-DISH（菜品库）
+kind: feature
+id: F-DISH
+name: 菜品库
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/dishes/**
+  - androidApp/**/ui/dishdetail/**
+  - androidApp/**/ui/newdish/**
+  - shared/**/data/repository/DishRepository*
+  - shared/**/data/repository/FavoriteComboRepository*
+  - shared/**/domain/model/Dish*
+  - shared/**/domain/model/FavoriteCombo*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/dishes/DishesScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/dishdetail/DishDetailScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/newdish/NewDishScreen.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/dishdetail/DishDetailViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/newdish/NewDishViewModel.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/Dish.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/DishRepository.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/FavoriteComboRepository.kt

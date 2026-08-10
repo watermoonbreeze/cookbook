@@ -1,0 +1,19 @@
+# Feature Graph ——F-TIMELINE（食历/时间线）
+kind: feature
+id: F-TIMELINE
+name: 食历/时间线
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/timeline/**
+  - androidApp/**/ui/component/DayMealCardView*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/timeline/FoodTimelineScreen.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/timeline/TimelineViewModel.kt
+  data:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/MealRecordRepository.kt
+  other:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/component/DayMealCardView.kt

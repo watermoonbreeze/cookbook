@@ -1,0 +1,26 @@
+# Feature Graph ——F-WEEKPLAN（周期/一周计划）
+kind: feature
+id: F-WEEKPLAN
+name: 周期/一周计划
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/weekplan/**
+  - androidApp/**/ui/ai/AiPlan*
+  - androidApp/**/ui/ai/WeekStrip*
+  - androidApp/**/ui/ai/PeriodDayBlock*
+  - shared/**/ai/PlanOrchestrator*
+  - shared/**/ai/PeriodPlanner*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/weekplan/WeekPlanScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanScreen.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/weekplan/WeekPlanViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiPlanViewModel.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/PlanOrchestrator.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/PeriodPlanner.kt
+  other:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/component/DayMealCardView.kt

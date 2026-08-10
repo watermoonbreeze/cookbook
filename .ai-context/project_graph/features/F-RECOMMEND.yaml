@@ -1,0 +1,28 @@
+# Feature Graph ——F-RECOMMEND（单餐推荐）
+kind: feature
+id: F-RECOMMEND
+name: 单餐推荐
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - androidApp/**/ui/ai/AiRecommend*
+  - androidApp/**/ui/pairing/**
+  - shared/**/ai/RecommendationOrchestrator*
+  - shared/**/ai/RecommendationDataSource*
+  - shared/**/ai/MealCompositionScorer*
+  - shared/**/ai/MealPortion*
+  - shared/**/ai/MealSlot*
+  - shared/**/ai/FreePairingEngine*
+  - shared/**/ai/RecommendationStyle*
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/pairing/FreePairingScreen.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/pairing/FreePairingViewModel.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/RecommendationOrchestrator.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/MealCompositionScorer.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/FreePairingEngine.kt

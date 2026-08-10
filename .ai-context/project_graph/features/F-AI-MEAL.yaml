@@ -4,11 +4,15 @@ kind: feature
 id: F-AI-MEAL
 name: AI快捷记一餐
 lifecycle: active
+source_refs:
+  - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
+  - .ai-context/docs/功能路径索引.md
 
 # Code Mapping：支持 Feature→Code（生成功能路径索引）与 Code→Feature（git diff 反查 affected）。
 # code 键值为真实 repo-relative path（相对仓库 root，/ 分隔，不用 .../类名/逗号拼接）。
 match:
   - shared/**/ai/meallog/**
+  - shared/**/domain/autogen/**
   - androidApp/**/AiMeal*
   - androidApp/**/ai/AiMealInput*
 code:
@@ -20,6 +24,7 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealSession.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealParser.kt
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/MultiDayRecorder.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/autogen/IngredientAutoGenerator.kt
   tests:
     - shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealParserTest.kt
   other:

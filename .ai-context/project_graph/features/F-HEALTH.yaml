@@ -1,0 +1,30 @@
+# Feature Graph ——F-HEALTH（健康判定/忌口引擎 + 权威参考）
+kind: feature
+id: F-HEALTH
+name: 健康判定/忌口
+lifecycle: active
+source_refs:
+  - .ai-context/docs/功能路径索引.md
+match:
+  - shared/**/ai/HealthRuleEngine*
+  - shared/**/ai/MemberDishHealthUseCase*
+  - shared/**/ai/MealHealthHintUseCase*
+  - shared/**/ai/ChronicDiseasePenalty*
+  - shared/**/domain/DietaryGuideline*
+  - shared/**/domain/StapleFood*
+  - shared/**/domain/SeasoningDefaults*
+  - shared/**/domain/NutritionGuesser*
+  - shared/**/domain/DishNameIngredientGuesser*
+  - shared/**/domain/model/MemberDishVerdict*
+  - androidApp/**/ui/reference/**
+code:
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/reference/DietaryReferenceScreen.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/reference/DataSourceScreen.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/HealthRuleEngine.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/ChronicDiseasePenalty.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/MemberDishHealthUseCase.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/DietaryGuideline.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/StapleFood.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/SeasoningDefaults.kt
