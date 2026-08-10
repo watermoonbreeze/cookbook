@@ -35,3 +35,11 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_Bug修复.md#J5
     intent: 配合 J4 一起做，小调整
+  - id: TODO-TIMELINE-001
+    kind: todo
+    status: backlog
+    title: observeTimelineCards N+1
+    feature: F-TIMELINE
+    source_refs:
+      - .ai-context/docs/feature/UX深挖审计与待办.md
+    intent: 逐日 selectMealRecordsByDate → 批量 selectMealRecordsByDates 一次取回 groupBy

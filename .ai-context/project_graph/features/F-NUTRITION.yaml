@@ -74,7 +74,7 @@ work_items:
       - .ai-context/docs/feature/待办_数据健康.md#J13
     intent: cron 定时跑 USDA vs 中国成分表 vs 库内现值→标记漂移/异常；P4 链路落地后接入
   - id: TODO-NUTRITION-001
-    kind: feature
+    kind: todo
     status: backlog
     title: 营养走势折线：三线同显+周/月视图统一
     feature: F-NUTRITION
@@ -82,10 +82,82 @@ work_items:
       - .ai-context/docs/feature/待办_UI交互.md
     intent: 现为单线+三色chip切换；三线同显需 UX 评估（信息密度vs清晰度），先调研再改
   - id: TODO-NUTRITION-002
-    kind: feature
+    kind: todo
     status: backlog
     title: 食材营养表分页查询
     feature: F-NUTRITION
     source_refs:
       - .ai-context/docs/feature/待办_数据健康.md
     intent: 库千级前必须落地：DAO LIMIT 100 OFFSET + LazyColumn 上拉加载 + 搜索改 DB 侧查询
+  - id: TODO-NUTRITION-003
+    kind: todo
+    status: backlog
+    title: 食材补充维生素数据 2b
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: 2a 数据已捕获（863食材·5维生素）；2b：DB列+seeder+营养模型+营养表/维生素页展示
+  - id: TODO-NUTRITION-004
+    kind: todo
+    status: backlog
+    title: 微量营养素评估扩展
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 现只热量+钠钾钙→可加铁/钙/维D等缺乏提示（尤孕妇/老人/儿童）；需数据补齐+算法
+  - id: TODO-NUTRITION-005
+    kind: todo
+    status: backlog
+    title: EER个人能量更精细
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 按性别/年龄/活动/生命阶段校准（DRIs表）；替代 Mifflin 估
+  - id: TODO-NUTRITION-006
+    kind: todo
+    status: backlog
+    title: 食物交换份
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 食养指南·等量替换；高级功能
+  - id: TODO-NUTRITION-007
+    kind: todo
+    status: backlog
+    title: GI/纤维覆盖率复核
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: GI 75%/纤维 95%，真缺口极小多为合理空缺；补3项GI+7项留空不编造
+  - id: TODO-NUTRITION-008
+    kind: todo
+    status: backlog
+    title: 食材营养表体现营养素+属性+冻结左列
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: 补营养素列+8属性列+冻结左侧食材名列；等属性体系全部落地后做
+  - id: TODO-NUTRITION-009
+    kind: todo
+    status: backlog
+    title: 全功能权威化重审
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 按 `功能总线_权威方法论对照.md` 逐个重梳：色系墙→宝塔/餐次→三餐分配/推荐份量→宝塔各层/热量→DRIs EER；XL 级
+  - id: TODO-NUTRITION-010
+    kind: todo
+    status: backlog
+    title: 报告模块二期
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 慢病区/年报/导出/较上期对比/成员切换/达标口径/饱脂胆固醇；MVP一期已完成
+  - id: TODO-NUTRITION-011
+    kind: todo
+    status: backlog
+    title: 首页营养分配可视化（P4）
+    feature: F-NUTRITION
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 色系墙升级为真实热量/达标热力图；食材营养素+每日卡路里链路 P4

@@ -44,3 +44,11 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_战略会商.md#L4
     intent: 方案已出（六角色会商）：Phase1=下厨房单源+预设正则+链接列表+存为菜品；DB+解析引擎+UI，待编码
+  - id: TODO-DISH-001
+    kind: todo
+    status: backlog
+    title: 369道批量导入菜品 quantity/steps 补全
+    feature: F-DISH
+    source_refs:
+      - .ai-context/docs/feature/UX深挖审计与待办.md
+    intent: 批量导入菜 quantity 为 null、364 道无 steps → 营养卡近乎无数据；排期补高频菜用量/步骤

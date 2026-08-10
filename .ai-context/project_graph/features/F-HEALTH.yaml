@@ -37,7 +37,15 @@ work_items:
     feature: F-HEALTH
     source_refs:
       - .ai-context/docs/feature/待办_工程合规.md#L2
-    intent: 数据/脚本侧已就绪（condition_guidelines+18条care）；纯 App 侧接入：枚举+fromCareName+家庭档案多选+参考页；DB 零迁移（合并 J22）
+    intent: 数据/脚本侧已就绪（condition_guidelines+18条care）；纯 App 侧接入：枚举+fromCareName+家庭档案多选+参考页；DB 零迁移
+  - id: J22
+    kind: feature
+    status: backlog
+    title: 健康状态加“脂肪肝”App侧入口
+    feature: F-HEALTH
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md#J22
+    intent: 数据/脚本侧已就绪（condition_guidelines+18条care）；缺 App 侧入口：枚举+fromCareName+家庭档案多选+参考页
   - id: J10
     kind: feature
     status: backlog
@@ -54,3 +62,19 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_功能算法.md#J14
     intent: “红烧肉”→自动加酱油/糖/料酒 + “大排饭”→补大米；守 T1 事后留痕
+  - id: TODO-HEALTH-001
+    kind: todo
+    status: backlog
+    title: 全库忌口补漏剩余边界
+    feature: F-HEALTH
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: 核心已闭环；待确认：植物高嘌呤判红vs规则不忌口冲突、鱼油高血脂、鸡毛蛋preschool/lactation
+  - id: TODO-HEALTH-002
+    kind: todo
+    status: backlog
+    title: 生命阶段适配推荐/评估
+    feature: F-HEALTH
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 老人优质蛋白/儿童限糖/孕妇叶酸铁奶；需产品定口径

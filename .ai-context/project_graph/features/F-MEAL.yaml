@@ -18,3 +18,21 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/MealRecordRepository.kt
   domain:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/MealRecord.kt
+
+work_items:
+  - id: TODO-MEAL-001
+    kind: todo
+    status: backlog
+    title: 餐状态机："计划记了但没吃"显式态
+    feature: F-MEAL
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 补"计划餐 date≤today 自动当吃完"语义漏洞；独立大改造
+  - id: TODO-MEAL-002
+    kind: todo
+    status: backlog
+    title: 首页"快速记一餐"入口
+    feature: F-MEAL
+    source_refs:
+      - .ai-context/docs/feature/UX深挖审计与待办.md
+    intent: 首页常驻快速记一餐入口（跳过选餐次步骤），减少操作步数

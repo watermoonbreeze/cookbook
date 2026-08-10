@@ -34,3 +34,11 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_功能算法.md#J17
     intent: 已吃 vs 未吃分治（不造假）+ AiPlan/WeekPlan 抽共享营养规划器；需算法会诊+方案
+  - id: TODO-WEEKPLAN-001
+    kind: todo
+    status: backlog
+    title: 周计划"营养线"整体均衡价值
+    feature: F-WEEKPLAN
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 跨餐跨天营养关联→整周连贯建议；核心价值点；方案 `周计划营养线方案.md`

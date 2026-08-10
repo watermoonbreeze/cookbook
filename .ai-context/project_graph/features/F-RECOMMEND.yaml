@@ -61,10 +61,58 @@ work_items:
       - .ai-context/docs/feature/待办_功能算法.md#K12
     intent: 低脂低嘌呤、抗炎、低糖等标签菜单；先定义权威口径与适用边界
   - id: TODO-RECOMMEND-001
-    kind: feature
+    kind: todo
     status: backlog
     title: 首页推荐下一餐 v2
     feature: F-RECOMMEND
     source_refs:
       - .ai-context/docs/feature/待办_UI交互.md
     intent: 轻量单菜卡+批量记成一餐+措辞去歧义；需 Apple-UX 门禁
+  - id: TODO-RECOMMEND-002
+    kind: todo
+    status: backlog
+    title: 自由搭配引入AI推荐
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md
+    intent: 自由搭配后期接AI，生成更完整搭配/菜谱建议
+  - id: TODO-RECOMMEND-003
+    kind: todo
+    status: backlog
+    title: AI推荐结合历史餐食学习
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md
+    intent: 结合用户真实历史餐食学习偏好
+  - id: TODO-RECOMMEND-004
+    kind: todo
+    status: backlog
+    title: AI规则推荐不贴合日常 MID-1
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: dish.commonness 家常度列；涉迁移+主观标注+推荐接入；需先定口径
+  - id: TODO-RECOMMEND-005
+    kind: todo
+    status: backlog
+    title: 推荐正向优化：按健康状态推有利菜
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 忌口负向→加正向加分维度；覆盖所有推荐入口；权威方法论核查先行
+  - id: TODO-RECOMMEND-006
+    kind: todo
+    status: backlog
+    title: 食物多样性提示
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 每天12种+每周25种；色系墙/推荐 nudge 多样性
+  - id: TODO-RECOMMEND-007
+    kind: todo
+    status: backlog
+    title: S1 自由搭配功能去留会商
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 与 AI 推荐重叠；先核原设计目标、使用数据和差异价值，再决定下线/合并

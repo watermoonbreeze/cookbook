@@ -35,3 +35,11 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_功能算法.md#J7
     intent: 选中不挂钩库存；与 J2「没吃/外食」主题相关
+  - id: TODO-PANTRY-001
+    kind: todo
+    status: backlog
+    title: pantryCardFlags 全量派生重算
+    feature: F-PANTRY
+    source_refs:
+      - .ai-context/docs/feature/UX深挖审计与待办.md
+    intent: 库存非空时滚动食历反复全表算占用 → 按窗口只算一次传入

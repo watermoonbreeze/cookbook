@@ -78,3 +78,155 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_UI交互.md#K2
     intent: 一期功能全部完成后整体 UI 打磨；放最后
+  - id: L3
+    kind: feature
+    status: backlog
+    title: 全App基础功能自动化进阶（AI批量创建）
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md#L3
+    intent: 食材/菜品/餐次/计划/库存/营养全链路 AI 自动化；需产品定优先级+分阶段；临时 Primary=F-TOOLS（跨 13 Feature 横切，2E 架构复核）
+  - id: I-Mine
+    kind: todo
+    status: backlog
+    title: "我的"页重新归类
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 高频在前、低频折叠、可合并的收进弹框；需 Apple-UX 门禁
+  - id: I-About
+    kind: todo
+    status: backlog
+    title: "关于·已为你开启"突出开启内容
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 让用户一眼看到开了哪些功能；与"我的归类"合并做
+  - id: U1
+    kind: todo
+    status: backlog
+    title: 全食材/菜品卡通图
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 统一资源规范后批量 AI 生成，需版权/审核/包体策略
+  - id: U2
+    kind: todo
+    status: backlog
+    title: UI持续优化
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 按页面审计迭代
+  - id: U3
+    kind: todo
+    status: backlog
+    title: 设置适老版
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_UI交互.md
+    intent: 字号、触达、密度、对比度；复用共享适老规范
+  - id: TODO-TOOLS-006
+    kind: todo
+    status: backlog
+    title: 数据规模化性能优化
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_工程合规.md
+    intent: seed异步/N+1/大列表虚拟化+数据源增多·性能专项规划
+  - id: TODO-TOOLS-007
+    kind: todo
+    status: backlog
+    title: P2写入Diff / P3 KMP日志 / DI平台化
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_工程合规.md
+    intent: 全量清空再插入改差异更新；KMP 跨平台日志；平台依赖注册移入各平台 module
+  - id: TODO-TOOLS-008
+    kind: todo
+    status: parked
+    title: iOS shared 编译能力
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_工程合规.md
+    intent: 一期只交付 Android，暂不做；启用前补 actual 与静态 framework 验证
+  - id: TODO-TOOLS-009
+    kind: todo
+    status: backlog
+    title: S2 发布渠道探索
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 知乎、AI workflow 等内容/分发渠道评估，明确目标用户与转化口径
+  - id: TODO-TOOLS-010
+    kind: todo
+    status: backlog
+    title: 账号体系深化 / AI营养师订阅
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 二期核心
+  - id: TODO-TOOLS-011
+    kind: todo
+    status: backlog
+    title: 拍照扫码系 / 条码录入
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办_战略会商.md
+    intent: 条码优先级上提(确定性映射)；拍照识菜缓做
+  - id: TODO-TOOLS-012
+    kind: todo
+    status: backlog
+    title: 竞品对比 + 商业化规划
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 变现节奏/AI订阅定价待拍板；先免费留存→二期最小账号+克制AI订阅
+  - id: TODO-TOOLS-013
+    kind: todo
+    status: backlog
+    title: 参考内容数据驱动 + 接口下发铺路
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 参考页 Kotlin 字面量→bundled JSON；展示阈值 JSON ≠ 判定引擎常量；server 下发留接缝
+  - id: TODO-TOOLS-014
+    kind: todo
+    status: backlog
+    title: 反查全App落地新确立结论/准则
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 透明准则/联网核准列来源/加食材走忌口系统等反查哪些适用未落地→补漏清单+逐项处理
+  - id: TODO-TOOLS-015
+    kind: todo
+    status: backlog
+    title: 用户上报菜品/食材（联网后）
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 登录后自建菜品/食材自愿上报→审核→并入预设库；依赖联网+账号体系
+  - id: TODO-TOOLS-016
+    kind: todo
+    status: backlog
+    title: 通知分层可独立开关
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 提醒类(默认开)/摘要类(默认可关)/运营类(默认关)；判据="不收到会不会吃亏"
+  - id: TODO-TOOLS-017
+    kind: todo
+    status: backlog
+    title: 全App家族化统一操作基调 P2-P4
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: P1 菜品编辑已交付；P2 食材编辑/两选择页统一 SelectionSummaryBar/餐食编辑→P4 全App其余页；每批 Apple-UX+Google 门禁
+  - id: TODO-TOOLS-018
+    kind: todo
+    status: backlog
+    title: selectionMode 完整两入口拆分
+    feature: F-TOOLS
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 已抽 SelectionBottomBar 消除最大一处散落；完整两入口拆分（管理/选择各自 Composable）暂缓·高风险需真机验证

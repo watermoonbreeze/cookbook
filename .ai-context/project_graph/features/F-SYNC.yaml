@@ -19,3 +19,13 @@ code:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/sync/SyncBundle.kt
   core:
     - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/BackupManager.kt
+
+work_items:
+  - id: TODO-SYNC-001
+    kind: todo
+    status: backlog
+    title: SyncRepository.import 无总事务
+    feature: F-SYNC
+    source_refs:
+      - .ai-context/docs/feature/UX深挖审计与待办.md
+    intent: 多域合并中途失败残留半完成数据 → 包一层事务回滚；注意嵌套事务语义需谨慎+回归

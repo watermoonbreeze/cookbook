@@ -1,7 +1,7 @@
 # Phase 2B Conflict Ledger
 
 > 迁移冲突台账（即使最后无冲突也保留）。遵循 No Guess Rule（§29.2）：不静默猜，影响稳定 ID 的跳过待架构审核。
-> 以下冲突均已做最小裁决并记录；涉及「所有权/ID 语义」的裁决以本文档 + Inventory 为基线。
+> **状态：`RECONCILED`**（2026-08-10 · Phase 2B Rework）——已解决冲突标记 `RESOLVED`，不允许已解决的问题继续算 Open；未解冲突明列于"开放冲突"。
 
 ## 已裁决冲突
 
@@ -23,17 +23,23 @@
 - 裁决：**L1 = verifying**（§23 规则：CODE+ARCH accepted + required device pending → verifying）。
 - 状态：RESOLVED。
 
+### STATE_CONFLICT-04 · K1c（规则引擎日期推算）【Rework 新增】
+
+- 冲突：`待办_功能算法`（2026-08-05）标 🔄（in_progress）；上版 Graph 误迁为 backlog。
+- 裁决：无更高优先级 Truth 覆盖 → **K1c = in_progress**（实施蓝图 §33 冻结）。
+- 状态：RESOLVED（P2B-R06）。
+
 ### DUPLICATE-01 · I7 + K15（AI 失败静默降级 / 分段解析与可控降级）
 
-- 依据：两文件同一问题对象（AI 解析失败保留原文+用户确认转规则模板），同引用 `AI记一餐_分段解析与可控降级方案.md`。
-- 裁决：合并为 **I7**（既有稳定 ID），K15 不再建。
-- 状态：RESOLVED-MERGE。
+- 依据：早期裁决曾合并。**Rework 复核推翻**：I7 核心 = AI 失败后的静默 fallback/降级问题；K15 还包含按天/餐次分段、防 token 截断、可控降级（实施蓝图 §24.1）。
+- 裁决：**KEEP BOTH STABLE IDS** —— `work:I7`（bug）+ `work:K15`（feature）分别独立。不建立 duplicate/supersedes relation。
+- 状态：RESOLVED（P2B-R03）。关系标记 `RELATION_PENDING_2C`。
 
 ### DUPLICATE-02 · L2 + J22（脂肪肝 App 侧入口）
 
-- 依据：`待办_工程合规` L2 与 `待办_数据健康` J22 为同一事项（健康状态加脂肪肝 App 侧入口，数据侧已就绪）。
-- 裁决：合并为 **L2**（既有稳定 ID），J22 不再建。
-- 状态：RESOLVED-MERGE。
+- 依据：早期裁决曾合并为 L2。**Rework 复核推翻**：两者均为 Stable ID，语义高度重叠但不允许合并丢 ID（实施蓝图 §20-23）。
+- 裁决：**KEEP BOTH STABLE IDS** —— `work:L2` + `work:J22` 均 F-HEALTH、backlog。不建立 duplicate/supersedes relation。
+- 状态：RESOLVED（P2B-R04）。关系标记 `DUPLICATE_RELATION_PENDING_2C`。
 
 ### DUPLICATE-03 · K1d（JSON Schema 双端兼容）
 
@@ -62,17 +68,55 @@
 ### FEATURE_OWNERSHIP_UNCERTAIN-03 · 推演类功能接入 AI 增强
 
 - 冲突：菜名推食材/营养估算/同义归一 横跨 F-INGREDIENT / F-NUTRITION / F-HEALTH。
-- 裁决：本项为泛化能力待定，**不迁**（未列入 Inventory）；如需立项在 2C 经 relation 表达。
-- 状态：RESOLVED-SKIP（记录不迁移）。
+- 裁决：本项为泛化能力待定 → **DEFER_WITH_REASON**（feature ownership truly unresolved，跨多 Feature 无独立 primary）；如需立项在 2C 经 relation 表达。
+- 状态：DEFER（Rework 按 §69 门禁明确化，不再以"不迁"一言带过）。
+
+### FEATURE_SPLIT_CANDIDATE · L3（全App自动化进阶）
+
+- 冲突：L3 定义覆盖 食材/菜品/餐次/计划/库存/营养，横跨 13 Feature，非单纯 F-AI-MEAL。
+- 裁决：当前无通用 AI Platform Feature，且 2B 禁止新增 Feature → **临时 Primary = F-TOOLS**（P2B-R07）。
+- 记录（Rework 补充正式条目）：
+
+```text
+FEATURE_SPLIT_CANDIDATE
+work: L3
+temporary_primary: F-TOOLS
+reason: 跨食材/菜品/餐次/计划/库存/营养的全App自动化，当前13 Feature中无独立AI Platform Feature。
+decision: Phase 2B 使用 F-TOOLS 作为 Primary Feature，不得新增 Feature。
+follow_up: Phase 2E architecture reconcile
+```
+
+- 状态：RECORDED（P2B-R12，架构冲突允许存在，不污染 Stable ID）。
+
+### KIND_ID_CONVENTION_REQUIRED · AI对话生成菜品/餐食
+
+- 冲突：匿名待办（无 Stable ID）且明确是新能力（对话式生成菜品/餐食，非现有功能完善）→ 必须 kind:feature，但本轮不创造新 FEATURE-* ID 规则。
+- 裁决：按 §31 → **KIND_ID_CONVENTION_REQUIRED**，暂不迁移该项，等待 2C/架构定 ID 规则。
+- 状态：RECORDED（不迁，不视为 UNEXPLAINED）。
+
+### KIND_ID_CONVENTION_REQUIRED · 放开AI推荐限制（自由创菜+自动建食材）
+
+- 冲突：匿名待办（无 Stable ID）且明确是新能力（AI 自由创菜）→ 必须 kind:feature；用户定"暂不动"。
+- 裁决：按 §31 → **KIND_ID_CONVENTION_REQUIRED**，暂不迁移；实际状态近 parked（用户暂缓）。
+- 状态：RECORDED（不迁，不视为 UNEXPLAINED）。
+
+### STATE_CONFLICT-05 · 菜品加食材智能默认剂量
+
+- 冲突：`待办_功能算法` 标 ⬜；`待办总览` 明确 ✅ 已实现（`SeasoningDefaults.GROUP_GRAMS`，2026-07-22）。
+- 裁决：以 Truth（代码已实现）= 已完成 → **SKIP_HISTORY**，不建独立 WorkItem。
+- 状态：RESOLVED-SKIP（Rework 记录）。
 
 ## 开放冲突
 
 ```text
-NONE
+FEATURE_SPLIT_CANDIDATE : L3（临时 F-TOOLS，2E 复核）
+DUPLICATE_RELATION_PENDING_2C : J22 / L2（双 Stable ID 关系，2C 用 related_to/supersedes 表达）
+RELATION_PENDING_2C : K15 / I7（双 Stable ID 关系，2C 表达）
+KIND_ID_CONVENTION_REQUIRED : AI对话生成菜品/餐食、放开AI推荐限制（2C 定 feature ID 规则）
 ```
 
-所有冲突均已最小裁决；无影响稳定 ID 的悬而未决项。
+> 开放冲突均为**允许的架构冲突**（§71）：不污染 Stable ID、有 temporary safe representation、有明确 follow-up phase。Source Coverage 冲突（UNEXPLAINED/LOST STABLE ID/UNKNOWN DISPOSITION）为 **0**（§72）。
 
 ---
 
-*Phase 2B Conflict Ledger · 2026-08-10。*
+*Phase 2B Conflict Ledger · 2026-08-10（Rework）。*

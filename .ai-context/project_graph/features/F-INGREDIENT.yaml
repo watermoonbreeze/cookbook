@@ -72,10 +72,34 @@ work_items:
       - .ai-context/docs/feature/待办_数据健康.md#J20
     intent: 核查盐/酱油等调料在食材详情“调养”tab 展示→统一为“少量/限量”
   - id: TODO-INGREDIENT-001
-    kind: feature
+    kind: todo
     status: in_progress
     title: 食材库扩充阶段2（USDA→5000+）
     feature: F-INGREDIENT
     source_refs:
       - .ai-context/docs/feature/待办_数据健康.md
     intent: 阶段1 nlc 505→1115 已完成；阶段2 USDA 7793 国际层→5000+（需 cn_en 映射+分类+care/属性规模化）
+  - id: TODO-INGREDIENT-002
+    kind: todo
+    status: backlog
+    title: 端侧免费OCR·拍营养成分表补录
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md
+    intent: ML Kit 离线识别+本地解析→补进食材营养；零成本先行项
+  - id: TODO-INGREDIENT-003
+    kind: todo
+    status: backlog
+    title: 补"青菜"泛称食材
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_数据健康.md
+    intent: 家庭高频口语"青菜"匹配不到→建泛称条目（代表营养+care/属性+来源页）；对算法无影响
+  - id: TODO-INGREDIENT-004
+    kind: todo
+    status: backlog
+    title: 食材输入智能推演 scenario1 候选建议
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办总览.md
+    intent: 自建食材输名匹配到已有/预设食材时主动提示"已有『土豆』直接用？"；复用 PinyinIndex/按名查
