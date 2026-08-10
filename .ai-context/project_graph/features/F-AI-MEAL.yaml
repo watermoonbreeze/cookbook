@@ -28,16 +28,16 @@ code:
 work_items:
   - id: K1g
     kind: feature
-    status: done
-    title: SwitchableAiRuntime.stream() 真实委托
+    status: verifying
+    title: AI记餐周期记 + NDJSON 流式解析改造
     feature: F-AI-MEAL
-    intent: 运行时流式地基
+    intent: 周期记按周/日期分段；max token 按场景放大；NDJSON/JSONL 边解析边展示，整体 JSON 作为兼容输入规范化
   - id: K1i
     kind: feature
     status: verifying
-    title: stream() 委托落地正式分支
+    title: 全App AI输出流式/渐进显示兼容（运行时真实委托）
     feature: F-AI-MEAL
-    intent: 复用 L1 cloudAiConsent 闸门
+    intent: SwitchableAiRuntime.stream() 真实委托；复用 L1 cloudAiConsent 闸门
   - id: K1b
     kind: feature
     status: parked
@@ -46,7 +46,7 @@ work_items:
   - id: I8
     kind: bug
     status: backlog
-    title: 周期记长输入解析边界
+    title: AI记一餐"查看建议"结果不随编辑清空
     feature: F-AI-MEAL
 
 plans:
@@ -55,25 +55,25 @@ plans:
     title: AI记一餐 周期记 NDJSON 流式改造
     work_items:
       - K1g
-      - K1i
 
 verifications:
   - id: E-K1G-01
     kind: device
-    status: pass
+    status: pending
     work_item: K1g
+    reason: B1-B6 主线真机验证未完成（真机清单 E-B4-*/E-B5-*/E-B6-*/E-K1A-01/E-CFG-01~06 待验证）
   - id: E-K1I-01
     kind: device
     status: pending
     work_item: K1i
+    reason: E-K1I-01 阻断性真机项待验证（流式真委托 + 解析主路径切换 4 条判据）
   - id: E-K1I-02
     kind: build
     status: pass
     work_item: K1i
+    reason: K1i 构建验证通过（BLUEPRINT_STATE 三命令复验全绿）
 
 # 跨切关系（belongs_to/implemented_by/verified_by 已由 shorthand 声明，此处表达 depends_on/supersedes 等）。
 # 仅保留真实项目关系；虚构/未确认的关系不写入正式 Graph（PG-P1-B04）。
-relations:
-  - source: work:K1i
-    type: depends_on
-    target: work:K1g
+# K1i 关键依赖是 L1（cloudAiConsent 闸门），与 K1g（AI快捷记主线）无功能交集（见 K1i 蓝图 §1.2/§1.4），故不写 depends_on。
+relations: []

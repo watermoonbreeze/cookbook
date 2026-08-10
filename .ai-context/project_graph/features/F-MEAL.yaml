@@ -9,10 +9,10 @@ match:
   - shared/**/model/MealRecord*
 code:
   ui:
-    - AddDayFoodScreen
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddDayFoodScreen.kt
   viewmodel:
-    - AddMealViewModel
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddMealViewModel.kt
   data:
-    - MealRecordRepository
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/MealRecordRepository.kt
   domain:
-    - MealRecord
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/MealRecord.kt
