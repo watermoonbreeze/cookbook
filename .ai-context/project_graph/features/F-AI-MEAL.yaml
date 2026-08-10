@@ -4,9 +4,6 @@ kind: feature
 id: F-AI-MEAL
 name: AI快捷记一餐
 lifecycle: active
-# activity / health 原则上 Derived，本文件不强制手工同步；此处仅声明覆盖（可省略）。
-activity: verifying
-health: yellow
 
 # Code Mapping：支持 Feature→Code（生成功能路径索引）与 Code→Feature（git diff 反查 affected）。
 match:
@@ -14,11 +11,18 @@ match:
   - androidApp/**/AiMeal*
   - androidApp/**/ai/AiMealInput*
 code:
-  ui: AiMealInputSheet
-  viewmodel: AiMealInputViewModel
-  domain: StreamingMealSession,StreamingMealParser,MultiDayRecorder
-  tests: StreamingMealParserTest
-  other: AddDayFoodScreen(入口顶栏按钮)
+  ui:
+    - androidApp/.../AiMealInputSheet.kt
+  viewmodel:
+    - androidApp/.../AiMealInputViewModel.kt
+  domain:
+    - shared/.../StreamingMealSession.kt
+    - shared/.../StreamingMealParser.kt
+    - shared/.../MultiDayRecorder.kt
+  tests:
+    - shared/.../StreamingMealParserTest.kt
+  other:
+    - AddDayFoodScreen(入口顶栏按钮)
 
 work_items:
   - id: K1g
@@ -66,7 +70,7 @@ verifications:
     status: pass
     work_item: K1i
 
-# 跨切关系（belongs_to/implemented_by/verified_by 已由 shorthand 声明，此处表达 depends_on/affects/supersedes 等）。
+# 跨切关系（belongs_to/implemented_by/verified_by 已由 shorthand 声明，此处表达 depends_on/supersedes 等）。
 relations:
   - source: work:K1i
     type: depends_on
@@ -74,9 +78,3 @@ relations:
   - source: work:K1g
     type: supersedes
     target: work:K1b
-  - source: plan:PLAN-AI-NDJSON
-    type: affects
-    target: feature:F-SYNC
-  - source: work:I8
-    type: related_to
-    target: feature:F-AI-MEAL

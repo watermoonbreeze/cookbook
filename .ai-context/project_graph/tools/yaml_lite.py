@@ -172,9 +172,9 @@ def _parse_map(lines, i, indent):
         if ln.is_seq:
             break  # 同级出现序列 → 映射结束
         if ln.indent > indent:
-            # 无主期待的更深行；跳过避免死循环
-            i += 1
-            continue
+            # 非法缩进：上一行不是期待子节点的 key:，或子节点已被 _parse_node 消费完毕
+            raise YamlLiteError(
+                "非法的缩进行 (indent=%d, expected<=%d): %r" % (ln.indent, indent, ln.content))
         key, val_text = _split_key_value(ln.content)
         if key == "":
             raise YamlLiteError("映射行无 key: %r" % ln.content)
@@ -197,9 +197,9 @@ def _parse_seq(lines, i, indent):
         if ln.indent < indent:
             break
         if ln.indent != indent:
-            # 更深的孤立行；不应出现，跳过
-            i += 1
-            continue
+            # 非法缩进：序列项必须同级缩进
+            raise YamlLiteError(
+                "序列内非法缩进行 (indent=%d, expected=%d): %r" % (ln.indent, indent, ln.content))
         if not ln.is_seq:
             break  # 同级出现映射 → 序列结束
         rest = ln.content
