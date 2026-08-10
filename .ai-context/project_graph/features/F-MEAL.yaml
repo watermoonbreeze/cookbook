@@ -1,0 +1,14 @@
+# Feature Graph ——F-MEAL（记一餐）· 简单样例
+kind: feature
+id: F-MEAL
+name: 记一餐
+lifecycle: mature
+match:
+  - androidApp/**/addmeal/**
+  - shared/**/repository/MealRecordRepository*
+  - shared/**/model/MealRecord*
+code:
+  ui: AddDayFoodScreen
+  viewmodel: AddMealViewModel
+  data: MealRecordRepository
+  domain: MealRecord

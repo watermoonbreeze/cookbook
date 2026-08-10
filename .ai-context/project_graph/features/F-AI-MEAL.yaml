@@ -1,0 +1,82 @@
+# Feature Graph ——F-AI-MEAL（AI 快捷记一餐）
+# PoC 样例：演示 WorkItem / Plan / Verification / Relation / CodeMapping 全实体。
+kind: feature
+id: F-AI-MEAL
+name: AI快捷记一餐
+lifecycle: active
+# activity / health 原则上 Derived，本文件不强制手工同步；此处仅声明覆盖（可省略）。
+activity: verifying
+health: yellow
+
+# Code Mapping：支持 Feature→Code（生成功能路径索引）与 Code→Feature（git diff 反查 affected）。
+match:
+  - shared/**/ai/meallog/**
+  - androidApp/**/AiMeal*
+  - androidApp/**/ai/AiMealInput*
+code:
+  ui: AiMealInputSheet
+  viewmodel: AiMealInputViewModel
+  domain: StreamingMealSession,StreamingMealParser,MultiDayRecorder
+  tests: StreamingMealParserTest
+  other: AddDayFoodScreen(入口顶栏按钮)
+
+work_items:
+  - id: K1g
+    kind: feature
+    status: done
+    title: SwitchableAiRuntime.stream() 真实委托
+    feature: F-AI-MEAL
+    intent: 运行时流式地基
+  - id: K1i
+    kind: feature
+    status: verifying
+    title: stream() 委托落地正式分支
+    feature: F-AI-MEAL
+    intent: 复用 L1 cloudAiConsent 闸门
+  - id: K1b
+    kind: feature
+    status: parked
+    title: 膳食健康评价逐成员化
+    feature: F-AI-MEAL
+  - id: I8
+    kind: bug
+    status: backlog
+    title: 周期记长输入解析边界
+    feature: F-AI-MEAL
+
+plans:
+  - id: PLAN-AI-NDJSON
+    status: implementing
+    title: AI记一餐 周期记 NDJSON 流式改造
+    work_items:
+      - K1g
+      - K1i
+
+verifications:
+  - id: E-K1G-01
+    kind: device
+    status: pass
+    work_item: K1g
+  - id: E-K1I-01
+    kind: device
+    status: pending
+    work_item: K1i
+  - id: E-K1I-02
+    kind: build
+    status: pass
+    work_item: K1i
+
+# 跨切关系（belongs_to/implemented_by/verified_by 已由 shorthand 声明，此处表达 depends_on/affects/supersedes 等）。
+relations:
+  - source: work:K1i
+    type: depends_on
+    target: work:K1g
+  - source: work:K1g
+    type: supersedes
+    target: work:K1b
+  - source: plan:PLAN-AI-NDJSON
+    type: affects
+    target: feature:F-SYNC
+  - source: work:I8
+    type: related_to
+    target: feature:F-AI-MEAL

@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cookbook.local/project-graph.schema.json",
+  "title": "Project Graph Schema (Phase 1 — Model Contract)",
+  "description": "通用项目图协议。本 Schema 不含任何 Cookbook/Kotlin/Android 等业务约束，仅约束结构、类型、枚举与 ID 格式。跨文件引用、ID 唯一、Relation 语义、循环检测等由 Python Semantic Validator 负责。",
+  "oneOf": [
+    { "$ref": "#/$defs/Project" },
+    { "$ref": "#/$defs/Feature" }
+  ],
+
+  "$defs": {
+
+    "Project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "graph_version", "mode", "project", "features"],
+      "properties": {
+        "kind": { "type": "string", "const": "project" },
+        "graph_version": { "type": "string", "minLength": 1 },
+        "mode": { "$ref": "#/$defs/GraphMode" },
+        "project": { "$ref": "#/$defs/ProjectMeta" },
+        "current": { "$ref": "#/$defs/CurrentWork" },
+        "features": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$" },
+          "description": "Feature Registry。本阶段为 ID 清单，指向 features/<id>.yaml"
+        },
+        "extensions": {
+          "type": "object",
+          "description": "扩展机制。核心不得写死角色/平台/业务，通过 extensions 承载（如 BLUEPRINT_STATE CODE/ARCH）。扩展不得破坏核心 Schema 顶层字段。",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "ProjectMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "root"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "root": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "GraphMode": {
+      "type": "string",
+      "enum": ["draft", "active"]
+    },
+
+    "CurrentWork": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "feature": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$" },
+        "work_item": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$" },
+        "phase": { "type": "string" },
+        "blocker": { "type": "string" }
+      }
+    },
+
+    "Feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "name", "lifecycle"],
+      "properties": {
+        "kind": { "type": "string", "const": "feature" },
+        "id": { "$ref": "#/$defs/FeatureId" },
+        "name": { "type": "string", "minLength": 1 },
+        "lifecycle": { "$ref": "#/$defs/Lifecycle" },
+        "activity": {
+          "description": "Derived Fact（原则上由 WorkItem 状态推导）。允许 AI 声明覆盖，但不得成为需手工重复同步的必填项。",
+          "$ref": "#/$defs/Activity"
+        },
+        "health": {
+          "description": "Derived Fact（原则上由 blocker/失败验证推导）。",
+          "$ref": "#/$defs/Health"
+        },
+        "match": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Code Mapping：文件 glob 列表，支持 Code→Feature 反向定位。"
+        },
+        "code": { "$ref": "#/$defs/CodeMapping" },
+        "work_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/WorkItem" }
+        },
+        "plans": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Plan" }
+        },
+        "verifications": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Verification" }
+        },
+        "relations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Relation" }
+        }
+      }
+    },
+
+    "WorkItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "status", "title", "feature"],
+      "properties": {
+        "id": { "$ref": "#/$defs/WorkId" },
+        "kind": { "$ref": "#/$defs/WorkKind" },
+        "status": { "$ref": "#/$defs/WorkStatus" },
+        "title": { "type": "string", "minLength": 1 },
+        "feature": { "$ref": "#/$defs/FeatureId" },
+        "priority": { "type": "string" },
+        "intent": { "type": "string" }
+      }
+    },
+
+    "Plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "title"],
+      "properties": {
+        "id": { "$ref": "#/$defs/PlanId" },
+        "status": { "$ref": "#/$defs/PlanStatus" },
+        "title": { "type": "string", "minLength": 1 },
+        "work_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/WorkId" },
+          "description": "声明的 implemented_by 关系（plan→work）。本字段是该关系的唯一声明源。"
+        }
+      }
+    },
+
+    "Verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "status", "work_item"],
+      "properties": {
+        "id": { "$ref": "#/$defs/VerifyId" },
+        "kind": { "$ref": "#/$defs/VerifyKind" },
+        "status": { "$ref": "#/$defs/VerifyStatus" },
+        "work_item": { "$ref": "#/$defs/WorkId" },
+        "reason": {
+          "type": "string",
+          "description": "status=not_required 时必须填写理由（由语义校验器强制）。"
+        }
+      }
+    },
+
+    "Relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "type", "target"],
+      "properties": {
+        "source": { "$ref": "#/$defs/TypedRef" },
+        "target": { "$ref": "#/$defs/TypedRef" },
+        "type": { "$ref": "#/$defs/RelationType" }
+      }
+    },
+
+    "CodeMapping": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Feature→Code 关键路径（entry/ui/viewmodel/domain/data/core/tests/other 等），值为文件 stem 或路径，逗号并列。除核心必要外均可选。",
+      "properties": {
+        "entry": { "type": "string" },
+        "ui": { "type": "string" },
+        "viewmodel": { "type": "string" },
+        "domain": { "type": "string" },
+        "data": { "type": "string" },
+        "core": { "type": "string" },
+        "tests": { "type": "string" },
+        "other": { "type": "string" }
+      }
+    },
+
+    "FeatureId": { "type": "string", "pattern": "^F-[A-Z0-9][A-Z0-9-]*$" },
+    "WorkId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$" },
+    "PlanId": { "type": "string", "pattern": "^PLAN-[A-Z0-9][A-Z0-9-]*$" },
+    "VerifyId": { "type": "string", "pattern": "^E-[A-Z0-9][A-Z0-9-]*$" },
+    "TypedRef": {
+      "type": "string",
+      "pattern": "^(feature|work|plan|verify):[A-Za-z0-9][A-Za-z0-9-]*$",
+      "description": "标准化带类型引用，用于 relations.source/target。shorthand 字段（work_item.feature 等）为裸 ID，由校验器按字段上下文归一化为 TypedRef。"
+    },
+
+    "Lifecycle": { "type": "string", "enum": ["planned", "active", "mature", "deprecated"] },
+    "Activity": { "type": "string", "enum": ["idle", "developing", "reviewing", "verifying", "blocked"] },
+    "Health": { "type": "string", "enum": ["green", "yellow", "red"] },
+    "WorkKind": { "type": "string", "enum": ["feature", "bug", "todo", "tech_debt", "refactor", "compliance", "research", "maintenance"] },
+    "WorkStatus": { "type": "string", "enum": ["backlog", "ready", "in_progress", "blocked", "review", "verifying", "done", "parked", "cancelled"] },
+    "PlanStatus": { "type": "string", "enum": ["draft", "reviewing", "accepted", "implementing", "completed", "superseded"] },
+    "VerifyKind": { "type": "string", "enum": ["unit", "integration", "build", "device", "manual", "data", "document", "other"] },
+    "VerifyStatus": { "type": "string", "enum": ["pending", "pass", "fail", "blocked", "not_required"] },
+    "RelationType": { "type": "string", "enum": ["belongs_to", "implemented_by", "verified_by", "depends_on", "blocks", "affects", "supersedes", "related_to"] }
+  }
+}

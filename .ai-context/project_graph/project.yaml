@@ -1,0 +1,45 @@
+# Project Graph — Project 根（Phase 1 · PoC）
+# mode: draft — 本阶段未正式启用，现有 Truth（Code/SESSION/BLUEPRINT_STATE/项目地图）优先级不变。
+kind: project
+graph_version: "1"
+mode: draft
+
+project:
+  id: cookbook
+  name: Cookbook
+  root: .
+
+# 当前工作（CurrentWork）——单一入口，不散落多文件。Phase 1 只定义，不替换 SESSION。
+current:
+  feature: F-AI-MEAL
+  work_item: K1i
+  phase: verifying
+  blocker: ""
+
+# Feature Registry ——长期稳定的产品/系统能力清单（声明宇宙）。
+# 本阶段只给 F-AI-MEAL / F-MEAL 建子图样例，其余仅声明、暂无文件（少量样例，§9）。
+features:
+  - F-MEAL
+  - F-AI-MEAL
+  - F-TIMELINE
+  - F-INGREDIENT
+  - F-DISH
+  - F-PANTRY
+  - F-RECOMMEND
+  - F-NUTRITION
+  - F-HEALTH
+  - F-FAMILY
+  - F-WEEKPLAN
+  - F-SYNC
+  - F-TOOLS
+
+# 扩展机制——核心不写死角色/平台/业务。Cookbook 现有 BLUEPRINT_STATE CODE/ARCH 作为 Extension。
+# 不得侵入核心顶层字段。
+extensions:
+  blueprint_state:
+    roles:
+      - CODE
+      - ARCH
+      - REVIEW
+    turn: USER
+    current_batch: L1+K1i
