@@ -54,6 +54,8 @@ Plan / ADR / 专项方案 = Decision Truth   （为什么这么设计）
 
 Feature 按「文件分片」组织（`features/<id>.yaml`），AI 处理任务时只需读 `project.yaml` + 当前 Feature 文件，降低 Token。
 
+**Feature shard Contract**：`features/F-A.yaml` 中的 WorkItem 的 **primary feature 必须等于 F-A**（`work_item.feature` 字段，语义校验器强制）；跨 Feature 影响使用 `affects` / `depends_on` / `related_to` 等 relation 表达。**禁止把属于 F-B 的 WorkItem 放进 F-A shard。**
+
 ## 4. 状态机（enum，禁止自由字符串）
 
 | 实体 | 取值 |
@@ -78,10 +80,10 @@ Feature 按「文件分片」组织（`features/<id>.yaml`），AI 处理任务�
 | **Observed** | 工具采集 | commit / changed files / test exit code / timestamp |
 | **Derived** | 程序计算 | open bug count / pending verify count / activity / health / affected features |
 
-- `Feature.activity` / `health` 原则上由 WorkItem 状态、blocker、失败验证推导（本目录 `project_graph.py` 已实现 `derive_activity` / `derive_health` 作为推导契约演示）。
-- Schema 中 `activity`/`health` 为可选声明覆盖，**不是必填**——禁止把它做成需手工同步的必填项。
+- **Final V1 Contract**：`Feature.lifecycle = Declared`；`Feature.activity = Derived`；`Feature.health = Derived`。核心 Feature YAML 中**不存储 activity/health**（Schema 的 Feature 无此字段，AI 不得声明或覆盖）。`project_graph.py` 已实现 `derive_activity` / `derive_health` 作为推导契约演示。
+- 如未来确需 override activity/health，属于 Extension 设计，**本阶段不实现**。
 
-## 6. Typed Reference（§18）
+## 6. Typed Reference 与 Relation Canonical Direction（§18）
 
 内部引用标准化为带类型：
 
@@ -89,19 +91,35 @@ Feature 按「文件分片」组织（`features/<id>.yaml`），AI 处理任务�
 feature:F-AI-MEAL   work:K1i   plan:PLAN-AI-NDJSON   verify:E-K1I-01
 ```
 
-为编辑友好，YAML 中 shorthand 字段用裸 ID（由字段上下文确定类型）：
+### Relation canonical direction
+
+所有 relation 都有**唯一 canonical 方向**（本蓝图确认的最终 Contract）：
+
+```text
+belongs_to       work → feature
+implemented_by   work → plan
+verified_by      work → verification
+```
+
+即：WorkItem 属于 Feature（belongs_to）、被 Plan 实现（implemented_by）、被 Verification 验证（verified_by）——**三者都以 work 为起点**。不得按书写顺序反向理解。
+
+### Shorthand 与 canonical relation 分开说明
+
+为编辑友好，YAML 中 shorthand 字段用裸 ID（由字段上下文确定类型）。**shorthand 只是存储形态，normalized graph semantic 必须回到 canonical direction**：
 
 ```yaml
 work_items:
   - id: K1i
-    feature: F-AI-MEAL        # → belongs_to work:K1i → feature:F-AI-MEAL
+    feature: F-AI-MEAL        # shorthand → normalized: work:K1i --belongs_to--> feature:F-AI-MEAL
 plans:
   - id: PLAN-AI-NDJSON
-    work_items: [K1g, K1i]    # → implemented_by plan → work
+    work_items: [K1g, K1i]    # shorthand → normalized: work:K1g --implemented_by--> plan:PLAN-AI-NDJSON
 verifications:
   - id: E-K1I-01
-    work_item: K1i            # → verified_by verify → work
+    work_item: K1i            # shorthand → normalized: work:K1i --verified_by--> verify:E-K1I-01
 ```
+
+> 注意：`plan.work_items: [K1g]` 是 **Storage Shorthand**——它表示 `work:K1g --implemented_by--> plan:PLAN-X`，**不是** `plan → work`。Verification 同理（`work:K1i --verified_by--> verify:E-X`，不是 `verify → work`）。
 
 跨切关系（depends_on / blocks / affects / supersedes / related_to）用 `relations` 显式声明带类型引用：
 
@@ -119,17 +137,22 @@ relations:
 ```yaml
 match:                 # 文件 glob，支持 Code → Feature 反向定位
   - shared/**/ai/meallog/**
-code:                  # 关键路径，支持 Feature → Code 生成功能路径索引
-  ui: AiMealInputSheet
-  viewmodel: AiMealInputViewModel
-  domain: StreamingMealSession,StreamingMealParser
-  tests: StreamingMealParserTest
+code:                  # 关键路径（真实 repo-relative path 数组），支持 Feature → Code 生成功能路径索引
+  ui:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputSheet.kt
+  viewmodel:
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputViewModel.kt
+  domain:
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealSession.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealParser.kt
+  tests:
+    - shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealParserTest.kt
 ```
 
-- **Feature → Code**：未来生成 `功能路径索引`（AI 代码定位）。
-- **Code → Feature**：未来 `pg affected` —— git diff → 匹配 `match` → Direct Features → Dependents。
+- **Forward（Feature → Code）**：`Feature → CodeMapping → 功能路径索引`（AI 代码定位）。
+- **Reverse（Code → Feature）**：`git diff changed files → 匹配 match glob → affected Feature`（未来 `pg affected`）。
 
-`code` 键只允许：`entry` `ui` `viewmodel` `domain` `data` `core` `tests` `other`（语义校验器强制）。
+`code` 键只允许：`entry` `ui` `viewmodel` `domain` `data` `core` `tests` `other`（语义校验器强制）。**路径必须相对仓库 root、用 `/` 分隔；禁止 `...` 缩略、类名代替路径、逗号拼接 CSV。**
 
 ## 8. Affected 契约（§22，Phase 1 仅定义不实现）
 
@@ -184,7 +207,11 @@ YAML Data → yaml_lite 解析 → JSON 对象 → JSON Schema(schema_checker) �
 15. CurrentWork 引用合法
 16. Extension 不破坏核心 Schema
 
-附加语义：Done 须有 `pass`/`not_required` 验证（§41）；`not_required` 须有 `reason`（§16）。
+附加语义（**Verification Done Contract**，与代码 `_check_done_rule` 一致）：
+- WorkItem `status = done` 要求**至少存在一个 Verification**；
+- 且所有 `required = true` 的 Verification 都必须为 `pass` 或 `not_required + reason`；
+- 任何 `required = true` 的 Verification 处于 `pending` / `fail` / `blocked` → **禁止 Done**；
+- `required = false`（可选）的 Verification 不阻止 Done；`not_required` 必须带 `reason`（§16）。
 
 ## 12. 错误输出格式（§32）
 
@@ -274,7 +301,7 @@ Phase 1 若发现 SESSION / 07 / 待办 / 方案 / 功能路径互相冲突，**
 - [x] Code Mapping 支持正向和反向
 - [x] JSON Schema 实际可运行
 - [x] Semantic Validator 实际可运行
-- [x] Validator 有充分测试（27 项，覆盖 §28 全部 14 场景 + 额外语义 + 解析 + 真实数据）
+- [x] Validator 有充分测试（`tools/tests/test_validator.py`，覆盖 §28 全部场景 + 额外语义 + 解析 + 真实数据 + Rework 回归，运行：`python -m unittest test_validator`）
 - [x] 没有迁移全量 Cookbook（仅 F-AI-MEAL + F-MEAL 两个样例）
 - [x] 没有修改产品运行行为（无生产代码/DB 变更）
 

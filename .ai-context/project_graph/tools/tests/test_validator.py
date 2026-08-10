@@ -478,6 +478,112 @@ class ReworkTests(unittest.TestCase):
         self.assertIn("PG-E-SCHEMA", codes)
 
 
+# ---------- Phase 1 Rework-2 新增测试（PG-P1-B01/B02/B04/S01/S02） ----------
+
+class Rework2Tests(unittest.TestCase):
+
+    # PG-P1-B01: Feature 磁盘加载「先收集后建索引」——重复声明必须失败且不丢信息
+
+    def test_dup_feature_disk_yaml_yml(self):
+        """真实临时目录：F-A.yaml + F-A.yml 声明相同 ID → PG-E-DUP_ID"""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feats_dir = os.path.join(tmpdir, "features")
+            os.makedirs(feats_dir)
+            with open(os.path.join(tmpdir, "project.yaml"), "w", encoding="utf-8") as f:
+                f.write("kind: project\ngraph_version: '1'\nmode: draft\n"
+                        "project: {id: t, name: T, root: .}\nfeatures: [F-A]\n")
+            with open(os.path.join(feats_dir, "F-A.yaml"), "w", encoding="utf-8") as f:
+                f.write("kind: feature\nid: F-A\nname: a\nlifecycle: planned\n")
+            with open(os.path.join(feats_dir, "F-A.yml"), "w", encoding="utf-8") as f:
+                f.write("kind: feature\nid: F-A\nname: a2\nlifecycle: planned\n")
+            g = pg.ProjectGraph(tmpdir)
+            g.load()
+            g.check()
+            codes = [i.code for i in g.issues]
+            self.assertIn("PG-E-DUP_ID", codes)
+            # 错误信息必须保留两份声明路径，不因 dict 覆盖丢失第一份
+            dup = next(i for i in g.issues if i.code == "PG-E-DUP_ID")
+            self.assertIn("F-A.yaml", dup.reason)
+            self.assertIn("F-A.yml", dup.reason)
+
+    def test_dup_feature_disk_same_ext(self):
+        """两个不同物理文件声明相同 ID（同名不同目录/候选名）→ PG-E-DUP_ID"""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdir:
+            feats_dir = os.path.join(tmpdir, "features")
+            os.makedirs(feats_dir)
+            with open(os.path.join(tmpdir, "project.yaml"), "w", encoding="utf-8") as f:
+                f.write("kind: project\ngraph_version: '1'\nmode: draft\n"
+                        "project: {id: t, name: T, root: .}\nfeatures: [F-A]\n")
+            with open(os.path.join(feats_dir, "F-A.yaml"), "w", encoding="utf-8") as f:
+                f.write("kind: feature\nid: F-A\nname: a\nlifecycle: planned\n")
+            with open(os.path.join(feats_dir, "F-A-copy.yaml"), "w", encoding="utf-8") as f:
+                f.write("kind: feature\nid: F-A\nname: a2\nlifecycle: planned\n")
+            g = pg.ProjectGraph(tmpdir)
+            g.load()
+            g.check()
+            codes = [i.code for i in g.issues]
+            self.assertIn("PG-E-DUP_ID", codes)
+
+    # PG-P1-B02: YAML 必须消费完整输入（Fail Closed）
+
+    def test_yaml_map_then_sequence(self):
+        """映射后跟同级序列（未消费尾部）→ YamlLiteError"""
+        with self.assertRaises(yaml_lite.YamlLiteError):
+            yaml_lite.parse("a: 1\n- stray\n")
+
+    def test_yaml_sequence_then_map(self):
+        """序列后跟同级映射（未消费尾部）→ YamlLiteError"""
+        with self.assertRaises(yaml_lite.YamlLiteError):
+            yaml_lite.parse("- a\nb: 2\n")
+
+    def test_yaml_legal_trailing_comment(self):
+        """合法 YAML + 尾部空行/注释 → 正常解析"""
+        data = yaml_lite.parse("a: 1\n\n# comment\n")
+        self.assertEqual(data, {"a": 1})
+
+    def test_yaml_legal_nested(self):
+        """合法嵌套 mapping / list → 正常解析"""
+        data = yaml_lite.parse("a:\n  b: 1\n  c:\n    - x\n    - y\n")
+        self.assertEqual(data, {"a": {"b": 1, "c": ["x", "y"]}})
+
+    def test_yaml_deeper_indent_still_fails(self):
+        """上一轮修复的非法更深缩进继续 FAIL，不得回归"""
+        with self.assertRaises(yaml_lite.YamlLiteError):
+            yaml_lite.parse("key: val\n    bad: deeper\n")
+
+    # PG-P1-S02: SchemaError → 结构化 PG-E-SCHEMA（经真实 validation boundary）
+
+    def test_schema_unsupported_keyword_structured(self):
+        """不支持的关键字经实际 Graph validation boundary → PG-E-SCHEMA，无裸 traceback"""
+        import json
+        import tempfile
+        project, feats = copy.deepcopy(valid_base())
+        with tempfile.TemporaryDirectory() as tmpdir:
+            schema_path = os.path.join(tmpdir, "bad.schema.json")
+            with open(schema_path, "w", encoding="utf-8") as f:
+                json.dump({"type": "object", "properties": {}, "minItems": 3}, f)
+            g = pg.ProjectGraph.from_data(project, feats)
+            g.schema_enabled = True
+            g.schema_file = schema_path
+            g.check()  # 不得抛裸异常
+            codes = [i.code for i in g.issues]
+            self.assertIn("PG-E-SCHEMA", codes)
+            sch = next(i for i in g.issues if i.code == "PG-E-SCHEMA")
+            self.assertIn("minItems", sch.reason)
+
+    # T-07: Relation Contract Regression —— work → plan implemented_by 合法
+
+    def test_implemented_by_work_to_plan_valid(self):
+        """work --implemented_by--> plan → 合法（canonical direction）"""
+        project, feats = copy.deepcopy(valid_base())
+        feats["F-A"]["relations"].append(
+            {"source": "work:W1", "type": "implemented_by", "target": "plan:PLAN-A1"})
+        _, codes = check(project, feats)
+        self.assertNotIn("PG-E-RELATION_TYPE", codes)
+
+
 # ---------- 真实 PoC 数据 smoke test ----------
 
 class RealDataSmokeTest(unittest.TestCase):

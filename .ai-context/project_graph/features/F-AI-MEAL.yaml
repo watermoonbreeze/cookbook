@@ -6,23 +6,24 @@ name: AI快捷记一餐
 lifecycle: active
 
 # Code Mapping：支持 Feature→Code（生成功能路径索引）与 Code→Feature（git diff 反查 affected）。
+# code 键值为真实 repo-relative path（相对仓库 root，/ 分隔，不用 .../类名/逗号拼接）。
 match:
   - shared/**/ai/meallog/**
   - androidApp/**/AiMeal*
   - androidApp/**/ai/AiMealInput*
 code:
   ui:
-    - androidApp/.../AiMealInputSheet.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputSheet.kt
   viewmodel:
-    - androidApp/.../AiMealInputViewModel.kt
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputViewModel.kt
   domain:
-    - shared/.../StreamingMealSession.kt
-    - shared/.../StreamingMealParser.kt
-    - shared/.../MultiDayRecorder.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealSession.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealParser.kt
+    - shared/src/commonMain/kotlin/com/sxdbsm/cookbook/ai/meallog/MultiDayRecorder.kt
   tests:
-    - shared/.../StreamingMealParserTest.kt
+    - shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/ai/meallog/StreamingMealParserTest.kt
   other:
-    - AddDayFoodScreen(入口顶栏按钮)
+    - androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddDayFoodScreen.kt
 
 work_items:
   - id: K1g
@@ -71,10 +72,8 @@ verifications:
     work_item: K1i
 
 # 跨切关系（belongs_to/implemented_by/verified_by 已由 shorthand 声明，此处表达 depends_on/supersedes 等）。
+# 仅保留真实项目关系；虚构/未确认的关系不写入正式 Graph（PG-P1-B04）。
 relations:
   - source: work:K1i
     type: depends_on
     target: work:K1g
-  - source: work:K1g
-    type: supersedes
-    target: work:K1b

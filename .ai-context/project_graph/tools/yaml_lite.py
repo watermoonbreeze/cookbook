@@ -19,12 +19,13 @@ class YamlLiteError(Exception):
 
 
 class _Line:
-    __slots__ = ("indent", "content", "is_seq")
+    __slots__ = ("indent", "content", "is_seq", "line_no")
 
-    def __init__(self, indent, content, is_seq):
+    def __init__(self, indent, content, is_seq, line_no=None):
         self.indent = indent
         self.content = content  # seq: dash 之后的文本；非 seq: 整行去注释后
         self.is_seq = is_seq
+        self.line_no = line_no  # 原始输入行号（用于错误定位，PG-P1-B02）
 
 
 # ---------- 标量 ----------
@@ -128,7 +129,7 @@ def _strip_comment(s):
 
 def _lines(text):
     out = []
-    for raw in text.splitlines():
+    for lineno, raw in enumerate(text.splitlines(), start=1):
         raw = raw.rstrip("\r")
         indent = 0
         for ch in raw:
@@ -144,9 +145,9 @@ def _lines(text):
             continue
         if body.startswith("- ") or body == "-":
             rest = body[2:] if body.startswith("- ") else ""
-            out.append(_Line(indent, rest.strip(), True))
+            out.append(_Line(indent, rest.strip(), True, lineno))
         else:
-            out.append(_Line(indent, body.strip(), False))
+            out.append(_Line(indent, body.strip(), False, lineno))
     return out
 
 
@@ -213,7 +214,7 @@ def _parse_seq(lines, i, indent):
             continue
         if _looks_like_mapping(rest):
             # 把 '- key: val' 改写为 indent+2 的映射行，递归解析该映射项
-            lines[i] = _Line(indent + 2, rest, False)
+            lines[i] = _Line(indent + 2, rest, False, lines[i].line_no)
             item, i = _parse_map(lines, i, indent + 2)
             seq.append(item)
         else:
@@ -223,11 +224,22 @@ def _parse_seq(lines, i, indent):
 
 
 def parse(text):
-    """解析 YAML 文本为 Python 对象。"""
+    """解析 YAML 文本为 Python 对象。
+
+    Fail Closed（PG-P1-B02）：顶层解析完成后必须消费完整输入。
+    存在任何未消费的有效内容（如 'a: 1' 后跟 '- stray'、序列后跟同级映射）
+    → 抛 YamlLiteError，绝不静默忽略。空行/注释在 _lines 中已剔除，
+    合法尾部空行/注释不会误判。
+    """
     lines = _lines(text)
     if not lines:
         return {}
-    val, _ = _parse_node(lines, 0, lines[0].indent)
+    val, next_index = _parse_node(lines, 0, lines[0].indent)
+    if next_index != len(lines):
+        rest = lines[next_index]
+        raise YamlLiteError(
+            "unexpected unconsumed YAML content at line %d: %r" % (
+                rest.line_no, rest.content))
     return val
 
 
