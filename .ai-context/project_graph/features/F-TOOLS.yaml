@@ -230,3 +230,31 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办总览.md
     intent: 已抽 SelectionBottomBar 消除最大一处散落；完整两入口拆分（管理/选择各自 Composable）暂缓·高风险需真机验证
+plans:
+  - id: PLAN-L1
+    status: completed
+    title: 用户协议免责声明 + AI 功能开启前弹窗告知
+    source_refs:
+      - .ai-context/docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md
+      - .ai-context/docs/context_memory/SESSION_交接.md
+    work_items:
+      - L1
+relations:
+  - source: work:L3
+    type: affects
+    target: feature:F-INGREDIENT
+  - source: work:L3
+    type: affects
+    target: feature:F-DISH
+  - source: work:L3
+    type: affects
+    target: feature:F-MEAL
+  - source: work:L3
+    type: affects
+    target: feature:F-WEEKPLAN
+  - source: work:L3
+    type: affects
+    target: feature:F-PANTRY
+  - source: work:L3
+    type: affects
+    target: feature:F-NUTRITION

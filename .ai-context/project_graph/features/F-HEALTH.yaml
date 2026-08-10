@@ -78,3 +78,7 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_战略会商.md
     intent: 老人优质蛋白/儿童限糖/孕妇叶酸铁奶；需产品定口径
+relations:
+  - source: work:J22
+    type: related_to
+    target: work:L2

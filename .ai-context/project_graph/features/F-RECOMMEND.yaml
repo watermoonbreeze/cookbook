@@ -116,3 +116,11 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_战略会商.md
     intent: 与 AI 推荐重叠；先核原设计目标、使用数据和差异价值，再决定下线/合并
+  - id: FEAT-RECOMMEND-001
+    kind: feature
+    status: parked
+    title: 放开 AI 推荐限制（自由创菜 + 自动建食材）
+    feature: F-RECOMMEND
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md
+    intent: 云端档 AI 自由推荐不限本地库 + 自动建食材库；用户定"暂不动"，处于用户暂缓（parked）

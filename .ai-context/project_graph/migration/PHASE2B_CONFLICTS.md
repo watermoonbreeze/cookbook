@@ -110,12 +110,10 @@ follow_up: Phase 2E architecture reconcile
 
 ```text
 FEATURE_SPLIT_CANDIDATE : L3（临时 F-TOOLS，2E 复核）
-DUPLICATE_RELATION_PENDING_2C : J22 / L2（双 Stable ID 关系，2C 用 related_to/supersedes 表达）
-RELATION_PENDING_2C : K15 / I7（双 Stable ID 关系，2C 表达）
-KIND_ID_CONVENTION_REQUIRED : AI对话生成菜品/餐食、放开AI推荐限制（2C 定 feature ID 规则）
 ```
 
-> 开放冲突均为**允许的架构冲突**（§71）：不污染 Stable ID、有 temporary safe representation、有明确 follow-up phase。Source Coverage 冲突（UNEXPLAINED/LOST STABLE ID/UNKNOWN DISPOSITION）为 **0**（§72）。
+> 原 2B 开放冲突中的 `DUPLICATE_RELATION_PENDING_2C`（J22/L2）、`RELATION_PENDING_2C`（K15/I7）、`KIND_ID_CONVENTION_REQUIRED`（AI对话生成菜品/餐食、放开AI推荐限制）**已由 Phase 2C 解决**（related_to 已建、FEAT-AI-MEAL-001 / FEAT-RECOMMEND-001 已结构化），详见 `PHASE2C_CONFLICTS.md`。
+> 当前唯一开放冲突为**允许的架构冲突**（§71）：不污染 Stable ID、有 temporary safe representation、有明确 follow-up phase（2E 架构复核）。Source Coverage 冲突（UNEXPLAINED/LOST STABLE ID/UNKNOWN DISPOSITION）为 **0**（§72）。
 
 ---
 

@@ -3,13 +3,14 @@
 > **Phase 1 — Model Contract**: FINAL ACCEPT / FROZEN
 > **Phase 2A — Feature Universe**: ACCEPT / CLOSED
 > **Phase 2B — Current WorkItem**: ACCEPT / CLOSED
+> **Phase 2C — Plan + Relation + Deferred Semantics**: IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
 > **Graph Mode**: `draft`
 
-> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**（Review Commit `e2127176`：Stable ID 无损、Source Coverage 100%、Status/Kind/Ownership 对账，最终统计从 Graph 直接计算：Total 104 / Stable 51 / Generated 53）。**Graph 仍为 mode: draft，未正式启用**，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
+> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**（Review Commit `e2127176`：Stable ID 无损、Source Coverage 100%、Status/Kind/Ownership 对账，最终统计从 Graph 直接计算：Total 104 / Stable 51 / Generated 53）。Phase 2C（Plan + Relation + Deferred Semantics）**已实施**：Plan lifecycle 冻结、PLAN-AI-NDJSON/PLAN-K1I/PLAN-K1A/PLAN-L1 落位、K15↔I7 / J22↔L2 / L3 affects 关系建立、FEAT-* 匿名 feature 约定结构化，**等待外部架构审核，未标 ACCEPT**。**Graph 仍为 mode: draft，未正式启用**，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
 >
 > 维护角色：**AI Maintained, Human Read-Only**。
 >
-> 阶段记录：Phase 1 → [`migration/PHASE1_FINAL_ACCEPT.md`](migration/PHASE1_FINAL_ACCEPT.md) ｜ Phase 2A → [`migration/PHASE2A_ACCEPT.md`](migration/PHASE2A_ACCEPT.md) ｜ Phase 2A→2B 交接 → [`migration/PHASE2A_TO_2B_HANDOFF.md`](migration/PHASE2A_TO_2B_HANDOFF.md) ｜ Phase 2B Accept → [`migration/PHASE2B_ACCEPT.md`](migration/PHASE2B_ACCEPT.md) ｜ Phase 2B→2C 交接 → [`migration/PHASE2B_TO_2C_HANDOFF.md`](migration/PHASE2B_TO_2C_HANDOFF.md)。
+> 阶段记录：Phase 1 → [`migration/PHASE1_FINAL_ACCEPT.md`](migration/PHASE1_FINAL_ACCEPT.md) ｜ Phase 2A → [`migration/PHASE2A_ACCEPT.md`](migration/PHASE2A_ACCEPT.md) ｜ Phase 2A→2B 交接 → [`migration/PHASE2A_TO_2B_HANDOFF.md`](migration/PHASE2A_TO_2B_HANDOFF.md) ｜ Phase 2B Accept → [`migration/PHASE2B_ACCEPT.md`](migration/PHASE2B_ACCEPT.md) ｜ Phase 2B→2C 交接 → [`migration/PHASE2B_TO_2C_HANDOFF.md`](migration/PHASE2B_TO_2C_HANDOFF.md) ｜ Phase 2C 决策 → [`migration/PHASE2C_DECISIONS.md`](migration/PHASE2C_DECISIONS.md) ｜ Phase 2C 冲突 → [`migration/PHASE2C_CONFLICTS.md`](migration/PHASE2C_CONFLICTS.md)。
 
 ## 0. Phase 1 状态与冻结契约（Status & Frozen Contract）
 
@@ -19,12 +20,14 @@
 Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN   （Final Review Commit 83623a3）
 Phase 2A — Feature Universe    : ACCEPT / CLOSED          （Review Commit b54246c1）
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （Review Commit e2127176）
+Phase 2C — Plan+Relation+Deferred : IMPLEMENTED / WAITING FOR ARCH REVIEW
 Phase 2  — 整体                : IN PROGRESS（非 COMPLETE）
 Graph Mode                     : draft
 ```
 
-Phase 2A 已完成能力见 `migration/PHASE2A_ACCEPT.md`；Phase 2A→2B 执行强制入口见 `migration/PHASE2A_TO_2B_HANDOFF.md`；Phase 2B Accept 记录见 `migration/PHASE2B_ACCEPT.md`；Phase 2B→2C 强制入口见 `migration/PHASE2B_TO_2C_HANDOFF.md`。
-**Phase 2B 已 ACCEPT / CLOSED（Review Commit `e2127176`）**：Migration Reconciliation（Rework）完成——Stable ID（FAM-AGE/FAM-MEAL/K15/J22）无损恢复、Source Coverage 100%（UNEXPLAINED=0）、TODO-* kind 全部修正、K1c 状态修正、L3 → F-TOOLS（FEATURE_SPLIT_CANDIDATE）。最终派生统计（From Graph）：Total 104 / Stable 51 / Generated 53。**外部架构审核 ACCEPT，进入 Phase 2C。**
+Phase 2A 已完成能力见 `migration/PHASE2A_ACCEPT.md`；Phase 2A→2B 执行强制入口见 `migration/PHASE2A_TO_2B_HANDOFF.md`；Phase 2B Accept 记录见 `migration/PHASE2B_ACCEPT.md`；Phase 2B→2C 强制入口见 `migration/PHASE2B_TO_2C_HANDOFF.md`；Phase 2C 决策/冲突见 `migration/PHASE2C_DECISIONS.md` / `migration/PHASE2C_CONFLICTS.md`。
+**Phase 2B 已 ACCEPT / CLOSED（Review Commit `e2127176`）**：Migration Reconciliation（Rework）完成——Stable ID（FAM-AGE/FAM-MEAL/K15/J22）无损恢复、Source Coverage 100%（UNEXPLAINED=0）、TODO-* kind 全部修正、K1c 状态修正、L3 → F-TOOLS（FEATURE_SPLIT_CANDIDATE）。最终派生统计（From Graph）：Total 104 / Stable 51 / Generated 53。
+**Phase 2C 已实施（等待外部架构审核）**：Plan lifecycle 冻结（Plan completed ≠ WorkItem done）、Observed vs Verification 冻结、BLUEPRINT_STATE Extension 边界冻结、FEAT-* 匿名 feature 约定结构化；Plan 迁移 PLAN-AI-NDJSON(completed)/PLAN-K1I(completed)/PLAN-K1A(completed)/PLAN-L1(completed)，K1g/K1i/K1a/L1 均保持 verifying；关系 K15↔I7、J22↔L2（related_to）、L3 affects 6 Feature 已建立；FEAT-AI-MEAL-001 / FEAT-RECOMMEND-001 已落位。**Phase 2C 完成后 STOP，等待外部架构审核，禁止连续执行 Phase 2D。**
 
 ### 0.2 冻结契约（Phase 1 Frozen Contract）
 
@@ -60,6 +63,16 @@ Contract = **Frozen** 与 Graph mode = **draft** 二者不冲突，同时成立�
 - **Graph draft**：Cookbook 的真实项目数据尚未完整 Bootstrap，Generated Views 尚未切换，Project Graph 尚未成为当前唯一 Project Truth 入口。
 
 因此本阶段**绝对禁止**把 `mode` 改成 `active`。
+
+### 0.5 Phase 2C 冻结语义（Plan / Observed / Extension / FEAT-*）
+
+Phase 2C（Plan + Relation + Deferred Semantics）已实施并冻结以下治理语义，判据与来源见 `migration/PHASE2C_DECISIONS.md`：
+
+- **Plan Lifecycle**：`draft` → `reviewing` → `accepted` → `implementing` → `completed` → `superseded`。**`completed` 必须表示「Plan 要求的代码/文档实施步骤完成 + 设计/架构接受条件完成」**。
+- **Plan completed ≠ WorkItem done**：`Plan: completed + WorkItem: verifying + Verification: device/pending` 完全合法。`completed` 只表示实施方案自身完成；WorkItem done 仍受 Verification Closure Contract 约束。
+- **Observed vs Verification**：普通命令执行（build / test / lint / pg check）= **Observed Fact by default**，不是 Verification Entity。只有「稳定 Acceptance Semantic + 稳定 Verification ID + 明确验证对象」才成为 Verification（如 `E-K1I-01`）。禁止仅因 Gradle 成功新建 build Verification。Phase 2C **不实现 Observed Store**。
+- **BLUEPRINT_STATE Extension 边界**：BLUEPRINT_STATE 的 `CODE/ARCH/REVIEW` 属于 **Cookbook-specific Project Graph Extension**，不是 Core Schema Semantic。禁止新增 `code_status` / `arch_status` / `review_status` 到 WorkItem/Plan/Verification Core Schema。
+- **FEAT-* ID Convention**：匿名且确认为 `kind: feature` 的 WorkItem 使用 `FEAT-<FEATURE>-NNN`（max+1，永不重编号）。只是 Migration Stable ID Convention，不修改 JSON Schema。本批：`FEAT-AI-MEAL-001`、`FEAT-RECOMMEND-001`。
 
 ## 1. 这是什么
 
