@@ -108,6 +108,10 @@ class ProjectGraph:
         self.project = data
 
         feats_dir = os.path.join(self.root, "features")
+        # PG-P1-B01: 先收集全部 Feature 声明，再检测重复，最后才建索引。
+        # 禁止「边 parse 边写 dict by id」——否则同 ID 第二个文件会覆盖第一个，
+        # 唯一性校验时第一份 declaration 信息已丢失。
+        declarations = []  # list[(declared_id, path, data)]
         if os.path.isdir(feats_dir):
             for name in sorted(os.listdir(feats_dir)):
                 if not (name.endswith(".yaml") or name.endswith(".yml")):
@@ -125,6 +129,23 @@ class ProjectGraph:
                 if not fid:
                     self.issues.append(Issue("PG-E-SCHEMA", "feature 文件缺少 id", file=fpath))
                     continue
+                declarations.append((fid, fpath, fdata))
+
+        # 重复声明检测：不同物理文件声明同一 Feature ID → PG-E-DUP_ID。
+        # 保留所有声明路径，逐份报告，不丢信息。
+        dup_paths = {}
+        for fid, fpath, _ in declarations:
+            dup_paths.setdefault(fid, []).append(fpath)
+        for fid, paths in dup_paths.items():
+            if len(paths) > 1:
+                detail = "\n".join("- %s" % _relpath(p) for p in paths)
+                self.issues.append(Issue(
+                    "PG-E-DUP_ID",
+                    "entity: feature\nid: %s\ndeclarations:\n%s" % (fid, detail),
+                    file=paths[0], source=fid))
+        # 确认无重复后，才构建查找索引。
+        for fid, fpath, fdata in declarations:
+            if len(dup_paths[fid]) == 1:
                 self.features[fid] = fdata
                 self.feature_files[fid] = fpath
         return True
@@ -245,11 +266,19 @@ class ProjectGraph:
             return
         # project
         for obj, fpath in [(self.project, self.project_file)]:
-            for path, msg in schema_checker.collect_errors(obj, schema):
-                self.issues.append(Issue("PG-E-SCHEMA", msg, file=fpath, source=path))
+            try:
+                for path, msg in schema_checker.collect_errors(obj, schema):
+                    self.issues.append(Issue("PG-E-SCHEMA", msg, file=fpath, source=path))
+            except schema_checker.SchemaError as e:
+                # PG-P1-S02: Schema 结构问题（如不支持的 keyword）→ 结构化 PG-E-SCHEMA，
+                # 不允许裸 Python traceback。只接领域异常，不吞程序 Bug。
+                self.issues.append(Issue("PG-E-SCHEMA", str(e), file=schema_path, source="$"))
         for fid, feat in self.features.items():
-            for path, msg in schema_checker.collect_errors(feat, schema):
-                self.issues.append(Issue("PG-E-SCHEMA", msg, file=self.feature_files[fid], source=path))
+            try:
+                for path, msg in schema_checker.collect_errors(feat, schema):
+                    self.issues.append(Issue("PG-E-SCHEMA", msg, file=self.feature_files[fid], source=path))
+            except schema_checker.SchemaError as e:
+                self.issues.append(Issue("PG-E-SCHEMA", str(e), file=schema_path, source="$"))
 
     # ---- 语义校验 ----
 
