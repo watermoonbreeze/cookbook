@@ -1,31 +1,29 @@
 # Project Graph（Cookbook 实施版 · Phase 1 — Model Contract）
 
-> **Phase 1 Status: FINAL ACCEPT**
-> **Contract: FROZEN**
-> **Final Review Baseline: `83623a3`**
-> **Graph Mode: `draft`**
-> **Next Authorized Phase: Phase 2A — Feature Universe Bootstrap**（仅授权，未开始）
+> **Phase 1 — Model Contract**: FINAL ACCEPT / FROZEN
+> **Phase 2A — Feature Universe**: ACCEPT / CLOSED
+> **Phase 2B — Current WorkItem**: AUTHORIZED / STARTING
+> **Graph Mode**: `draft`
 
-> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）已完成外部架构审核并 **FINAL ACCEPT**，核心 Contract 已 **FROZEN**；但 **Graph 仍为 mode: draft，未正式启用**，Cookbook 真实项目数据尚未完整 Bootstrap，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
+> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）正在 Bootstrap。**Graph 仍为 mode: draft，未正式启用**，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
 >
 > 维护角色：**AI Maintained, Human Read-Only**。
 >
-> Phase 1 → Phase 2 承接记录（不可遗漏）见 [`migration/PHASE1_FINAL_ACCEPT.md`](migration/PHASE1_FINAL_ACCEPT.md)。
+> 阶段记录：Phase 1 → [`migration/PHASE1_FINAL_ACCEPT.md`](migration/PHASE1_FINAL_ACCEPT.md) ｜ Phase 2A → [`migration/PHASE2A_ACCEPT.md`](migration/PHASE2A_ACCEPT.md) ｜ Phase 2A→2B 交接 → [`migration/PHASE2A_TO_2B_HANDOFF.md`](migration/PHASE2A_TO_2B_HANDOFF.md)。
 
 ## 0. Phase 1 状态与冻结契约（Status & Frozen Contract）
 
-### 0.1 Phase 1 最终状态
+### 0.1 Phase Progress
 
-Phase 1（Model Contract）已于最终审核提交 `83623a3` 后获得 **FINAL ACCEPT**。
+```text
+Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN   （Final Review Commit 83623a3）
+Phase 2A — Feature Universe    : ACCEPT / CLOSED          （Review Commit b54246c1）
+Phase 2B — Current WorkItem    : AUTHORIZED / STARTING
+Phase 2  — 整体                : IN PROGRESS（非 COMPLETE）
+Graph Mode                     : draft
+```
 
-| 项 | 状态 |
-|---|---|
-| Architecture Review | **FINAL ACCEPT** |
-| Final Review Commit | `83623a3` |
-| Known Blockers | 0 |
-| Contract | **FROZEN** |
-| Graph Mode | `draft` |
-| Next Authorized Phase | **Phase 2A — Feature Universe Bootstrap**（仅授权，**未开始**） |
+Phase 2A 已完成能力见 `migration/PHASE2A_ACCEPT.md`；Phase 2B 执行强制入口见 `migration/PHASE2A_TO_2B_HANDOFF.md`。
 
 ### 0.2 冻结契约（Phase 1 Frozen Contract）
 

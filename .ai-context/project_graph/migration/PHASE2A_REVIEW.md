@@ -3,6 +3,21 @@
 > 迁移审计文档（**不是** Project Truth）。记录 Phase 2A 施工中的 Proposed Feature / Ambiguous Code Ownership / Match Overlap / Missing Code Path / Static Map Conflict。
 > 如无问题则写 `NO OPEN ISSUE`；存在已记录的边界裁量时，作为 Phase 2B/2E 后续迁移的基线。
 
+## Review 状态
+
+```text
+Architecture Review:
+ACCEPT
+
+Review Commit:
+b54246c1cbbdbfeb76c2ea7b51784a06c22bbab8
+
+Status:
+CLOSED
+```
+
+> 下方边界裁量（F-PANTRY vs F-INGREDIENT、F-WEEKPLAN vs F-RECOMMEND、F-FAMILY vs F-HEALTH、F-TOOLS wide boundary、match overlap）是 Phase 2B Feature ownership 的输入，**不得删除**。
+
 ## Summary
 
 - **Feature Universe**：13 个冻结（默认保留全部现有 ID，未 rename / delete / merge）。
