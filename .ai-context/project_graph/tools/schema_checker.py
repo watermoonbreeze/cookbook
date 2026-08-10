@@ -10,12 +10,23 @@
   - $defs（作为引用表）
 
 不实现的特性：$id scope、allOf/anyOf、if/then/else、format、minItems 等。
-对未识别关键字静默忽略。本模块与 project-graph.schema.json 配套；
+对未识别关键字立即失败（fail-closed），不静默忽略。
+本模块与 project-graph.schema.json 配套；
 若以后引入 jsonschema 库，可整体替换 validate()，调用方接口不变。
 """
 
 import json
 import re
+
+# 本校验器支持的关键字白名单（fail-closed：未知关键字立即报错）
+KNOWN_SCHEMA_KEYS = {
+    "$schema", "$id", "$defs", "$ref",
+    "title", "description",
+    "type", "enum", "const",
+    "required", "properties", "additionalProperties",
+    "items", "oneOf",
+    "pattern", "minLength",
+}
 
 
 class SchemaError(Exception):
@@ -77,6 +88,11 @@ def _validate(value, node, schema, path):
     """对 value 应用 schema node 校验。失败抛 ValidationError。"""
     if not isinstance(node, dict):
         raise SchemaError("schema 节点不是 object: %r" % node)
+
+    # 未知关键字检测（fail-closed）
+    for k in node:
+        if k not in KNOWN_SCHEMA_KEYS:
+            raise SchemaError("不支持的 JSON Schema 关键字: %r (at %s)" % (k, path))
 
     # $ref 优先
     if "$ref" in node:

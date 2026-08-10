@@ -69,14 +69,6 @@
         "id": { "$ref": "#/$defs/FeatureId" },
         "name": { "type": "string", "minLength": 1 },
         "lifecycle": { "$ref": "#/$defs/Lifecycle" },
-        "activity": {
-          "description": "Derived Fact（原则上由 WorkItem 状态推导）。允许 AI 声明覆盖，但不得成为需手工重复同步的必填项。",
-          "$ref": "#/$defs/Activity"
-        },
-        "health": {
-          "description": "Derived Fact（原则上由 blocker/失败验证推导）。",
-          "$ref": "#/$defs/Health"
-        },
         "match": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
@@ -128,7 +120,7 @@
         "work_items": {
           "type": "array",
           "items": { "$ref": "#/$defs/WorkId" },
-          "description": "声明的 implemented_by 关系（plan→work）。本字段是该关系的唯一声明源。"
+          "description": "声明的 implemented_by 关系（work→plan）。本字段是该关系的唯一声明源。"
         }
       }
     },
@@ -142,6 +134,10 @@
         "kind": { "$ref": "#/$defs/VerifyKind" },
         "status": { "$ref": "#/$defs/VerifyStatus" },
         "work_item": { "$ref": "#/$defs/WorkId" },
+        "required": {
+          "type": "boolean",
+          "description": "是否为必须验证（默认 true）。required=false 的验证不阻止 WorkItem done。"
+        },
         "reason": {
           "type": "string",
           "description": "status=not_required 时必须填写理由（由语义校验器强制）。"
@@ -162,17 +158,20 @@
 
     "CodeMapping": {
       "type": "object",
-      "additionalProperties": { "type": "string" },
-      "description": "Feature→Code 关键路径（entry/ui/viewmodel/domain/data/core/tests/other 等），值为文件 stem 或路径，逗号并列。除核心必要外均可选。",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "description": "Feature→Code 关键路径（entry/ui/viewmodel/domain/data/core/tests/other 等），值为文件路径数组。除核心必要外均可选。",
       "properties": {
-        "entry": { "type": "string" },
-        "ui": { "type": "string" },
-        "viewmodel": { "type": "string" },
-        "domain": { "type": "string" },
-        "data": { "type": "string" },
-        "core": { "type": "string" },
-        "tests": { "type": "string" },
-        "other": { "type": "string" }
+        "entry": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "ui": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "viewmodel": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "domain": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "data": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "core": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "tests": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "other": { "type": "array", "items": { "type": "string", "minLength": 1 } }
       }
     },
 
@@ -187,8 +186,6 @@
     },
 
     "Lifecycle": { "type": "string", "enum": ["planned", "active", "mature", "deprecated"] },
-    "Activity": { "type": "string", "enum": ["idle", "developing", "reviewing", "verifying", "blocked"] },
-    "Health": { "type": "string", "enum": ["green", "yellow", "red"] },
     "WorkKind": { "type": "string", "enum": ["feature", "bug", "todo", "tech_debt", "refactor", "compliance", "research", "maintenance"] },
     "WorkStatus": { "type": "string", "enum": ["backlog", "ready", "in_progress", "blocked", "review", "verifying", "done", "parked", "cancelled"] },
     "PlanStatus": { "type": "string", "enum": ["draft", "reviewing", "accepted", "implementing", "completed", "superseded"] },

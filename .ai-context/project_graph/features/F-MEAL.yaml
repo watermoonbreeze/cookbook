@@ -8,7 +8,11 @@ match:
   - shared/**/repository/MealRecordRepository*
   - shared/**/model/MealRecord*
 code:
-  ui: AddDayFoodScreen
-  viewmodel: AddMealViewModel
-  data: MealRecordRepository
-  domain: MealRecord
+  ui:
+    - AddDayFoodScreen
+  viewmodel:
+    - AddMealViewModel
+  data:
+    - MealRecordRepository
+  domain:
+    - MealRecord

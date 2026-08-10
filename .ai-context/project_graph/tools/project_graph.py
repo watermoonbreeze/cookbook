@@ -62,6 +62,19 @@ CORE_TOP_KEYS = {"kind", "graph_version", "mode", "project", "current", "feature
 
 REF_KINDS = {"feature": "feature", "work": "work", "plan": "plan", "verify": "verify"}
 
+# Relation 端点类型约束矩阵（PG-R4）
+# 每个 relation type 定义了合法的 (source_kinds, target_kinds)
+RELATION_ENDPOINT_CONSTRAINTS = {
+    "belongs_to":     ({"work"},                     {"feature"}),
+    "implemented_by": ({"work"},                     {"plan"}),
+    "verified_by":    ({"work"},                     {"verify"}),
+    "depends_on":     ({"work"},                     {"work"}),
+    "blocks":         ({"work"},                     {"work"}),
+    "affects":        ({"work", "plan"},             {"feature"}),
+    "supersedes":     ({"work", "plan", "verify"},   {"work", "plan", "verify"}),  # same-kind → same-kind
+    "related_to":     ({"feature", "work", "plan", "verify"}, {"feature", "work", "plan", "verify"}),
+}
+
 
 class ProjectGraph:
     def __init__(self, root_dir):
@@ -132,13 +145,63 @@ class ProjectGraph:
     # ---- 索引构建 ----
 
     def _index(self):
+        # Phase 1: 声明收集 — 记录 (entity_type, id, file, location)
+        declarations = []  # list of (etype, eid, file, index_in_array)
+        for fid, feat in self.features.items():
+            fpath = self.feature_files[fid]
+            for idx, wi in enumerate(feat.get("work_items") or []):
+                wid = wi.get("id")
+                if wid:
+                    declarations.append(("work", wid, fpath, idx))
+            for idx, pl in enumerate(feat.get("plans") or []):
+                pid = pl.get("id")
+                if pid:
+                    declarations.append(("plan", pid, fpath, idx))
+            for idx, vf in enumerate(feat.get("verifications") or []):
+                vid = vf.get("id")
+                if vid:
+                    declarations.append(("verify", vid, fpath, idx))
+            # Feature ID 自身也纳入声明（检测跨文件 Feature ID 重复）
+            declarations.append(("feature", feat.get("id", fid), fpath, -1))
+
+        # Phase 2: 冲突检测 — 按 id 分组，检测重复与跨类型冲突
+        by_id = {}
+        for etype, eid, fpath, loc in declarations:
+            by_id.setdefault(eid, []).append((etype, fpath, loc))
+
+        for eid, entries in by_id.items():
+            if len(entries) <= 1:
+                continue
+            # 检测同文件同类型重复
+            same_file_same_type = {}
+            for etype, fpath, loc in entries:
+                key = (etype, fpath)
+                same_file_same_type.setdefault(key, []).append(loc)
+            for (etype, fpath), locs in same_file_same_type.items():
+                if len(locs) > 1:
+                    self.issues.append(Issue(
+                        "PG-E-DUP_ID",
+                        "同文件内重复 %s ID %r (位置: %s)" % (etype, eid, locs),
+                        file=fpath, source=eid))
+            # 检测跨类型冲突（如 work 和 plan 同 ID）
+            types_seen = set()
+            for etype, fpath, loc in entries:
+                types_seen.add(etype)
+            if len(types_seen) > 1:
+                detail = ", ".join("%s in %s" % (et, os.path.basename(fp)) for et, fp, _ in entries)
+                self.issues.append(Issue(
+                    "PG-E-DUP_ID",
+                    "跨类型 ID 冲突 %r: %s" % (eid, detail),
+                    file=entries[0][1], source=eid))
+
+        # Phase 3: 索引构建（无冲突后才构建）
         for fid, feat in self.features.items():
             fpath = self.feature_files[fid]
             for wi in feat.get("work_items") or []:
                 wid = wi.get("id")
                 if not wid:
                     continue
-                rec = dict(wi)  # 保留 wi 自身声明的 feature（belongs_to），不被文件 id 覆盖
+                rec = dict(wi)
                 rec["file"] = fpath
                 self.work_items[wid] = rec
             for pl in feat.get("plans") or []:
@@ -194,42 +257,37 @@ class ProjectGraph:
         if not self.project:
             return
         gv = self.project.get("graph_version")
-        if not isinstance(gv, str) or gv.strip() == "":
-            self.issues.append(Issue("PG-E-GRAPH_VERSION", "graph_version 缺失或为空", file=self.project_file))
+        if gv != "1":
+            self.issues.append(Issue("PG-E-GRAPH_VERSION",
+                "graph_version 必须为 \"1\"，实际 %r" % gv, file=self.project_file))
 
     def _check_id_unique(self):
-        seen = {}
-        for wid, rec in self.work_items.items():
-            pass  # 字典已去重，下面检测来源冲突
-        # 重复 ID：同一 id 出现在多个 feature 文件 → 检测路径来源
-        # 因 dict 合并会覆盖，这里通过二次扫描源文件检测
+        """检测跨文件同类型 ID 重复（同文件重复已在 _index 中检测）。"""
         sources = {}
         for fid, feat in self.features.items():
             for wi in feat.get("work_items") or []:
                 wid = wi.get("id")
                 if not wid:
                     continue
-                sources.setdefault(wid, []).append(fid)
+                sources.setdefault(("work", wid), []).append(fid)
             for pl in feat.get("plans") or []:
                 pid = pl.get("id")
                 if not pid:
                     continue
-                sources.setdefault(pid, []).append(fid)
+                sources.setdefault(("plan", pid), []).append(fid)
             for vf in feat.get("verifications") or []:
                 vid = vf.get("id")
                 if not vid:
                     continue
-                sources.setdefault(vid, []).append(fid)
-            sources.setdefault(fid, []).append(fid + "(registry)")
-        for id_, fids in sources.items():
-            uniq = []
-            for f in fids:
-                if f not in uniq:
-                    uniq.append(f)
+                sources.setdefault(("verify", vid), []).append(fid)
+            # Feature ID 跨文件重复：两个文件声明相同 fid
+            sources.setdefault(("feature", feat.get("id", fid)), []).append(fid)
+        for (etype, eid), fids in sources.items():
+            uniq = list(dict.fromkeys(fids))  # 保序去重
             if len(uniq) > 1:
                 self.issues.append(Issue(
-                    "PG-E-DUP_ID", "ID %s 在多处声明: %s" % (id_, uniq),
-                    file=self.feature_files.get(id_, self.project_file), source=id_))
+                    "PG-E-DUP_ID", "跨文件重复 %s ID %r (出现在: %s)" % (etype, eid, uniq),
+                    file=self.feature_files.get(eid, self.project_file), source=eid))
 
     def _check_registry(self):
         if not self.project:
@@ -242,11 +300,64 @@ class ProjectGraph:
                                          file=self.project_file, source=fid))
             seen.add(fid)
         self.registry = seen
-        # 有文件的 feature 必须在 registry 内（registry 项不一定都有文件：少量样例）
+        # 有文件的 feature 必须在 registry 内
         for fid in self.features:
             if fid not in seen:
                 self.issues.append(Issue("PG-E-REGISTRY_MISMATCH", "feature %s 未在 project.features 注册" % fid,
                                          file=self.feature_files[fid], source=fid))
+
+    def _check_feature_file_contract(self):
+        """PG-R2: 文件名必须与 Feature ID 一致；mode=active 时 registry 与文件严格对应。"""
+        # 文件名 = Feature ID
+        for fid, fpath in self.feature_files.items():
+            basename = os.path.basename(fpath)
+            expected_id = os.path.splitext(basename)[0]
+            if fid != expected_id:
+                self.issues.append(Issue(
+                    "PG-E-FEATURE_FILE",
+                    "文件名 %r 与 feature id %r 不一致（应为 %s.yaml）" % (basename, fid, fid),
+                    file=fpath, source=fid))
+        # mode=active: registry 中每一项必须有文件
+        mode = (self.project or {}).get("mode")
+        if mode == "active":
+            for fid in self.registry:
+                if fid not in self.features:
+                    self.issues.append(Issue(
+                        "PG-E-REGISTRY_MISMATCH",
+                        "active 模式下 registry 项 %s 缺少对应 feature 文件" % fid,
+                        file=self.project_file, source=fid))
+
+    def _file_feature_id(self, fpath):
+        """从文件路径反查该文件所属的 Feature ID。"""
+        for fid, fp in self.feature_files.items():
+            if fp == fpath:
+                return fid
+        return None
+
+    def _check_work_shard(self):
+        """PG-R3: WorkItem 的 feature 必须等于所在 Feature 文件 ID。"""
+        for wid, rec in self.work_items.items():
+            file_fid = self._file_feature_id(rec["file"])
+            wi_feature = rec.get("feature")
+            if wi_feature and file_fid and wi_feature != file_fid:
+                self.issues.append(Issue(
+                    "PG-E-WORK_SHARD",
+                    "work_item %s feature=%r 但声明在 %s 文件中（应为 %s）" % (wid, wi_feature, file_fid, file_fid),
+                    file=rec["file"], source="work:%s" % wid, target="feature:%s" % wi_feature))
+
+    def _check_verify_shard(self):
+        """PG-R3: Verification 声明文件应与 WorkItem primary Feature 一致。"""
+        for vid, vf in self.verifications.items():
+            wid = vf.get("work_item")
+            if wid and wid in self.work_items:
+                work_feature = self.work_items[wid].get("feature")
+                verify_file_fid = self._file_feature_id(vf["file"])
+                if work_feature and verify_file_fid and work_feature != verify_file_fid:
+                    self.issues.append(Issue(
+                        "PG-E-VERIFY_SHARD",
+                        "verification %s (work_item=%s, feature=%s) 声明在 %s 文件中（应为 %s）" % (
+                            vid, wid, work_feature, verify_file_fid, work_feature),
+                        file=vf["file"], source="verify:%s" % vid))
 
     def _check_work_feature(self):
         for wid, rec in self.work_items.items():
@@ -287,16 +398,27 @@ class ProjectGraph:
             return id_ if id_ in self.verifications else None
         return None
 
+    def _resolve_kind(self, typed):
+        """从 typed ref 提取 kind 字符串（不做存在性校验）。"""
+        if not isinstance(typed, str) or ":" not in typed:
+            return None
+        kind, _, _ = typed.partition(":")
+        if kind in REF_KINDS:
+            return kind
+        return None
+
     def _check_relations(self):
         for rel in self.relations:
             src = rel.get("source")
             tgt = rel.get("target")
             rtype = rel.get("type")
+            # 自引用
             if src == tgt and src is not None:
                 self.issues.append(Issue(
                     "PG-E-SELF_REF", "relation 自引用: %s --%s--> %s" % (src, rtype, tgt),
                     file=rel["file"], source=src, target=tgt))
                 continue
+            # 引用存在性
             if self._resolve_ref(src) is None:
                 self.issues.append(Issue(
                     "PG-E-RELATION_SOURCE", "source 不存在: %s" % src,
@@ -305,6 +427,30 @@ class ProjectGraph:
                 self.issues.append(Issue(
                     "PG-E-RELATION_TARGET", "target 不存在: %s" % tgt,
                     file=rel["file"], source=src, target=tgt))
+            # PG-R4: 端点类型约束
+            if rtype in RELATION_ENDPOINT_CONSTRAINTS:
+                src_kinds, tgt_kinds = RELATION_ENDPOINT_CONSTRAINTS[rtype]
+                src_kind = self._resolve_kind(src)
+                tgt_kind = self._resolve_kind(tgt)
+                if src_kind and src_kind not in src_kinds:
+                    self.issues.append(Issue(
+                        "PG-E-RELATION_TYPE",
+                        "relation %s 的 source 类型 %r 不合法（允许: %s）" % (rtype, src_kind, sorted(src_kinds)),
+                        file=rel["file"], source=src, target=tgt))
+                if tgt_kind and tgt_kind not in tgt_kinds:
+                    self.issues.append(Issue(
+                        "PG-E-RELATION_TYPE",
+                        "relation %s 的 target 类型 %r 不合法（允许: %s）" % (rtype, tgt_kind, sorted(tgt_kinds)),
+                        file=rel["file"], source=src, target=tgt))
+            # PG-R4: supersedes 必须是 same-kind
+            if rtype == "supersedes":
+                src_kind = self._resolve_kind(src)
+                tgt_kind = self._resolve_kind(tgt)
+                if src_kind and tgt_kind and src_kind != tgt_kind:
+                    self.issues.append(Issue(
+                        "PG-E-RELATION_TYPE",
+                        "supersedes 要求同类型端点，实际 %s vs %s" % (src_kind, tgt_kind),
+                        file=rel["file"], source=src, target=tgt))
 
     def _check_depends_on_cycle(self):
         """对 depends_on 关系做循环检测（仅 depends_on，§17）。"""
@@ -365,6 +511,14 @@ class ProjectGraph:
             self.issues.append(Issue(
                 "PG-E-CURRENT", "current.work_item %s 不存在" % wid,
                 file=self.project_file, source="work:%s" % wid))
+        # PG-R9: current.work_item.feature 必须与 current.feature 一致
+        if fid and wid and wid in self.work_items:
+            wi_feature = self.work_items[wid].get("feature")
+            if wi_feature and wi_feature != fid:
+                self.issues.append(Issue(
+                    "PG-E-CURRENT",
+                    "current.work_item(%s).feature(%s) != current.feature(%s)" % (wid, wi_feature, fid),
+                    file=self.project_file, source="work:%s" % wid, target="feature:%s" % fid))
 
     def _check_extensions(self):
         if not self.project:
@@ -379,16 +533,30 @@ class ProjectGraph:
                     file=self.project_file, source=k))
 
     def _check_done_rule(self):
-        """WorkItem.status=done 原则上须有 Verification=pass 或 not_required（§13/§41）。"""
+        """PG-R5: WorkItem.status=done 必须所有 required Verification 为 pass/not_required。
+        required 默认 true；required=false 的验证不阻止 done。"""
         for wid, rec in self.work_items.items():
             if rec.get("status") != "done":
                 continue
-            closed = [v for v in self.verifications.values()
-                      if v.get("work_item") == wid and v.get("status") in ("pass", "not_required")]
-            if not closed:
+            verifs = [v for v in self.verifications.values() if v.get("work_item") == wid]
+            if not verifs:
                 self.issues.append(Issue(
-                    "PG-E-DONE_NO_VERIFY", "work_item %s 标记 done 但无 pass/not_required 验证" % wid,
+                    "PG-E-DONE_NO_VERIFY", "work_item %s 标记 done 但没有任何验证" % wid,
                     file=rec["file"], source="work:%s" % wid))
+                continue
+            # 只检查 required 验证（required 默认 true）
+            required_verifs = [v for v in verifs if v.get("required", True) is not False]
+            if not required_verifs:
+                # 全部都是 optional (required: false) → 不阻止 done
+                continue
+            for v in required_verifs:
+                if v.get("status") not in ("pass", "not_required"):
+                    self.issues.append(Issue(
+                        "PG-E-DONE_VERIFY_FAIL",
+                        "work_item %s 标记 done 但 required verification %s 状态为 %s（需 pass/not_required）" % (
+                            wid, v.get("id"), v.get("status")),
+                        file=rec["file"], source="work:%s" % wid, target="verify:%s" % v.get("id")))
+                    break  # 每个 WI 只报告第一个失败验证
 
     def _check_verify_reason(self):
         for vid, vf in self.verifications.items():
@@ -431,20 +599,23 @@ class ProjectGraph:
     def check(self):
         if not self.project and not self.features:
             return self.issues
-        self._index()
+        self._index()                     # 含同文件/跨类型重复检测 (PG-R1)
         self._validate_schema()
-        self._check_graph_version()
-        self._check_id_unique()
+        self._check_graph_version()       # PG-R8: 精确 "1"
+        self._check_id_unique()           # PG-R1: 跨文件同类型重复
         self._check_registry()
+        self._check_feature_file_contract()  # PG-R2: 文件名=Feature ID, mode=active
         self._check_work_feature()
+        self._check_work_shard()          # PG-R3: WorkItem 分片
         self._check_plan_refs()
         self._check_verify_refs()
-        self._check_relations()
+        self._check_verify_shard()        # PG-R3: Verification 分片
+        self._check_relations()           # PG-R4: 端点类型约束
         self._check_depends_on_cycle()
         self._check_code_mapping()
-        self._check_current()
+        self._check_current()             # PG-R9: current 一致性
         self._check_extensions()
-        self._check_done_rule()
+        self._check_done_rule()           # PG-R5: Verification 闭包
         self._check_verify_reason()
         return self.issues
 
