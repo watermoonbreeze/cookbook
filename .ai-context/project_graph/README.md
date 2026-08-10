@@ -1,8 +1,66 @@
 # Project Graph（Cookbook 实施版 · Phase 1 — Model Contract）
 
-> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1 只定义协议与验证骨架，**mode: draft，未正式启用**；现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
+> **Phase 1 Status: FINAL ACCEPT**
+> **Contract: FROZEN**
+> **Final Review Baseline: `83623a3`**
+> **Graph Mode: `draft`**
+> **Next Authorized Phase: Phase 2A — Feature Universe Bootstrap**（仅授权，未开始）
+
+> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）已完成外部架构审核并 **FINAL ACCEPT**，核心 Contract 已 **FROZEN**；但 **Graph 仍为 mode: draft，未正式启用**，Cookbook 真实项目数据尚未完整 Bootstrap，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
 >
 > 维护角色：**AI Maintained, Human Read-Only**。
+>
+> Phase 1 → Phase 2 承接记录（不可遗漏）见 [`migration/PHASE1_FINAL_ACCEPT.md`](migration/PHASE1_FINAL_ACCEPT.md)。
+
+## 0. Phase 1 状态与冻结契约（Status & Frozen Contract）
+
+### 0.1 Phase 1 最终状态
+
+Phase 1（Model Contract）已于最终审核提交 `83623a3` 后获得 **FINAL ACCEPT**。
+
+| 项 | 状态 |
+|---|---|
+| Architecture Review | **FINAL ACCEPT** |
+| Final Review Commit | `83623a3` |
+| Known Blockers | 0 |
+| Contract | **FROZEN** |
+| Graph Mode | `draft` |
+| Next Authorized Phase | **Phase 2A — Feature Universe Bootstrap**（仅授权，**未开始**） |
+
+### 0.2 冻结契约（Phase 1 Frozen Contract）
+
+以下 Phase 1 核心设计已冻结，后续 Phase 不得因迁移数据方便而随意改动：
+
+- **核心实体**：Project / Feature / WorkItem / Plan / Verification / Relation / CodeMapping / CurrentWork
+- **稳定 ID / Typed Reference / Feature Sharding**
+- **Declared / Observed / Derived** 三分类契约
+- **状态机**：Feature Lifecycle、WorkItem State Machine、Plan State Machine、Verification State Machine
+- **Relation**：Canonical Direction、Semantic Matrix
+- **Verification Closure Contract**
+- **YAML Fail Closed / JSON Schema Validation / Semantic Validator / Duplicate Detection**
+
+### 0.3 Frozen 的含义
+
+Frozen **≠** 永远不可修改。Frozen 表示：
+
+> 后续 Phase 不得因为迁移数据方便而随意改变核心 Contract。
+
+只有满足以下**三者**才能修改 Frozen Contract：
+
+1. 发现通用模型无法表达真实项目需求；
+2. 形成明确 Architecture Change；
+3. 经过独立架构复审。
+
+**禁止**：`某模型发现某条数据不好迁 → 顺手改 Schema`。
+
+### 0.4 mode: draft 与 Frozen 的区别
+
+Contract = **Frozen** 与 Graph mode = **draft** 二者不冲突，同时成立：
+
+- **Contract Frozen**：Project Graph 的**语言**已经稳定。
+- **Graph draft**：Cookbook 的真实项目数据尚未完整 Bootstrap，Generated Views 尚未切换，Project Graph 尚未成为当前唯一 Project Truth 入口。
+
+因此本阶段**绝对禁止**把 `mode` 改成 `active`。
 
 ## 1. 这是什么
 
@@ -305,6 +363,17 @@ Phase 1 若发现 SESSION / 07 / 待办 / 方案 / 功能路径互相冲突，**
 - [x] 没有迁移全量 Cookbook（仅 F-AI-MEAL + F-MEAL 两个样例）
 - [x] 没有修改产品运行行为（无生产代码/DB 变更）
 
+### Phase 1 验收最终状态
+
+- Architecture Review: **FINAL ACCEPT**
+- Final Review Commit: `83623a3`
+- Known Blockers: **0**
+- Contract: **FROZEN**
+
 ## 20. 门禁（§44）
 
-完成 Phase 1 后 **STOP**。不继续：迁移 Cookbook / 生成 AI_INDEX / 重写 07 / 重写功能路径索引 / 自动维护生命周期 / Git Hook / CI。**等待架构审核。**
+Phase 1 实施时执行 **STOP 门禁**：完成 Phase 1 后 STOP，不继续迁移 Cookbook / 生成 AI_INDEX / 重写 07 / 重写功能路径索引 / 自动维护生命周期 / Git Hook / CI。
+
+该门禁已完成：**Phase 1 已于最终审核提交 `83623a3` 后获得 FINAL ACCEPT，核心 Contract 已 FROZEN**（Phase 1 → Phase 2 完整承接见 `migration/PHASE1_FINAL_ACCEPT.md`）。
+
+**Phase 2 已授权但未开始**，唯一可开始的下一个阶段是 **Phase 2A — Feature Universe Bootstrap**。每一批独立 commit / push / architecture review，禁止连续自动执行。**禁止提前把 `mode` 切到 `active`。**

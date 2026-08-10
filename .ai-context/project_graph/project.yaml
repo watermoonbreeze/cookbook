@@ -1,5 +1,8 @@
-# Project Graph — Project 根（Phase 1 · PoC）
-# mode: draft — 本阶段未正式启用，现有 Truth（Code/SESSION/BLUEPRINT_STATE/项目地图）优先级不变。
+# Project Graph — Project 根
+# Phase 1 Model Contract: FINAL ACCEPT / FROZEN
+# Current Bootstrap Stage: pre-Phase-2
+# mode: draft — Contract 已冻结；Graph 数据仍处 Bootstrap draft；Phase 2/3 完成前不得切 active。
+# 现有 Truth（Code/SESSION/BLUEPRINT_STATE/项目地图）优先级不变。
 kind: project
 graph_version: "1"
 mode: draft
@@ -17,7 +20,8 @@ current:
   blocker: ""
 
 # Feature Registry ——长期稳定的产品/系统能力清单（声明宇宙）。
-# 本阶段只给 F-AI-MEAL / F-MEAL 建子图样例，其余仅声明、暂无文件（少量样例，§9）。
+# Phase 1 最终状态仅完成 F-AI-MEAL / F-MEAL PoC；
+# Phase 2A 将 Bootstrap 完整 Feature Universe（现在不创建其他 Feature 文件）。
 features:
   - F-MEAL
   - F-AI-MEAL
