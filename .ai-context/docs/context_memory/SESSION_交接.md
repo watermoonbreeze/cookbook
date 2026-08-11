@@ -21,7 +21,7 @@
 - **Project Graph 阶段纪律**：每一批独立 commit / push / architecture review，禁止连续自动执行；当前 Graph **mode 必须保持 `draft`**，禁止切 `active`（Phase 3 事项）；Schema / Validator / 生产代码禁止修改。
 - **Phase 2 Final 已冻结**：Phase 2E 已 `ACCEPT / CLOSED`；Project Graph snapshot 为 features=13、work_items=109、plans=4、verifications=98、relations=10；未修改 schema、validator、生产代码，Graph 仍为 `draft`。
 - 派生统计直接从 Graph 计算（临时脚本复用 `tools/project_graph.py` loader），不人工推算；统计不存 Derived 字段。
-- **SESSION Transitional Contract**：本文件是 `Transitional Current-State / Handoff Document`，供 AI 接手使用，但不是长期 Project Truth；不独立维护 WorkItem/Verification/Plan/Feature 总数、状态统计或 Stable ID Registry，不重新定义 Stable ID，不覆盖冻结的 Graph 决策。结构性重构延期至 Phase 2E/3。
+- **SESSION Transitional Contract**：本文件是 `Transitional Current-State / Handoff Document`，供 AI 接手使用，但不是长期 Project Truth；不独立维护 WorkItem/Verification/Plan/Feature 总数、状态统计或 Stable ID Registry，不重新定义 Stable ID，不覆盖冻结的 Graph 决策。SESSION thin/generated redesign deferred to Phase 3。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
 
 ---

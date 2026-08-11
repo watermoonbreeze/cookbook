@@ -31,7 +31,7 @@ Unknown / Forgotten Conflicts: 0
 | Entity | Count | Status |
 |---|---:|---|
 | Features | 13 | frozen registry |
-| WorkItems | 109 | frozen stable IDs and statuses |
+| WorkItems | 109 | derived acceptance snapshot; stable identities frozen; current statuses remain lifecycle-mutable under the frozen status contract |
 | Plans | 4 | completed plans retained separately from WorkItem status |
 | Verifications | 98 | frozen Graph VerifyIds and closure contract |
 | Relations | 10 | canonical relations retained |
@@ -48,6 +48,7 @@ Dangling References: 0
 ## Frozen core decisions
 
 - Feature Registry、Feature/WorkItem/Plan/Verification/Relation stable IDs 与 `source_refs` contract 冻结。
+- WorkItem stable identities、WorkItem status semantics/state machine 与 Verification Closure contract 冻结；各 WorkItem 的当前 status value 不冻结，满足 Closure Contract 时允许例如 `verifying → done`。
 - Plan `completed` 不等于 WorkItem `done`；required Verification closure 继续约束 `done`。
 - `Observed`（build/test/pg check）不自动创建 Verification entity。
 - Verification 双层 identity、WorkItem Status Contract、Verification Closure Contract、CurrentWork semantic、SESSION role 与 BLUEPRINT_STATE extension role 冻结。
@@ -68,6 +69,19 @@ Failed: 0
 Command: python .ai-context/project_graph/tools/project_graph.py check
 Result: PG: OK / 0 issue
 Summary: features=13, work_items=109, plans=4, verifications=98, relations=10, mode=draft, graph_version=1
+```
+
+## Phase 2 Final R1 validation
+
+```text
+Command: python -m unittest test_validator -v
+Working directory: .ai-context/project_graph/tools/tests
+Total: 61
+Passed: 61
+Failed: 0
+
+Command: python .ai-context/project_graph/tools/project_graph.py check
+Result: PG: OK / 0 issue
 ```
 
 ## Deferred to Phase 3+
