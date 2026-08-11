@@ -85,7 +85,7 @@ work_items:
     feature: F-TOOLS
     source_refs:
       - .ai-context/docs/feature/待办_战略会商.md#L3
-    intent: 食材/菜品/餐次/计划/库存/营养全链路 AI 自动化；需产品定优先级+分阶段；临时 Primary=F-TOOLS（跨 13 Feature 横切，2E 架构复核）
+    intent: 食材/菜品/餐次/计划/库存/营养全链路 AI 自动化；需产品定优先级+分阶段；Primary=F-TOOLS（跨 13 Feature 横切，Phase 2E 确认无需新增 Feature Registry）
   - id: I-Mine
     kind: todo
     status: backlog

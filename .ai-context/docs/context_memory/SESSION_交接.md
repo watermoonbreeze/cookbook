@@ -1,7 +1,7 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-11 · Project Graph 阶段推进收口**（Phase 2B END → Phase 2C 实施 → Phase 2C END → Phase 2D 交接，三个 Commit 全 push）
-> 当前工作域：**Project Graph Phase 2D R1 Reconciliation 返工中**。上一交接（2026-08-08·L1/K1i ARCH 复核）的内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
+> 更新时间：**2026-08-11 · Project Graph Phase 2E Cross-Reconcile 实施**（Phase 2D END → Phase 2E，实施提交待推送）
+> 当前工作域：**Project Graph Phase 2E Cross-Reconcile + Bootstrap Freeze**。上一交接内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
 > 执行角色：Claude Code @主力机（按 `第二阶段-2B-End-2C-Preview.md` / `第二阶段-2C-End-2D-Preview.md` 蓝图执行）。
 
 ---
@@ -19,7 +19,7 @@
 ## 二、工作规则（当前任务域）
 
 - **Project Graph 阶段纪律**：每一批独立 commit / push / architecture review，禁止连续自动执行；当前 Graph **mode 必须保持 `draft`**，禁止切 `active`（Phase 3 事项）；Schema / Validator / 生产代码禁止修改。
-- **Phase 2D 实施待架构复核**：已按 2D 蓝图建立当前真机清单的 Verification、Source Coverage、映射与冲突记录；未修改 schema、validator、生产代码，Graph 仍为 `draft`。
+- **Phase 2E 实施待架构复核**：已按 2E 蓝图完成 Cross-Reconcile 台账、E-K1G-01 legacy 收口与 L3 no-registry-change 裁决；52 条当前 deferred Verification 因缺乏唯一 WorkItem 证据保留为 blocking，未修改 schema、validator、生产代码，Graph 仍为 `draft`。
 - 派生统计直接从 Graph 计算（临时脚本复用 `tools/project_graph.py` loader），不人工推算；统计不存 Derived 字段。
 - **SESSION Transitional Contract**：本文件是 `Transitional Current-State / Handoff Document`，供 AI 接手使用，但不是长期 Project Truth；不独立维护 WorkItem/Verification/Plan/Feature 总数、状态统计或 Stable ID Registry，不重新定义 Stable ID，不覆盖冻结的 Graph 决策。结构性重构延期至 Phase 2E/3。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
@@ -42,14 +42,14 @@ Phase 2A — Feature Universe    : ACCEPT / CLOSED          （b54246c1）
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （e2127176 · 104 WorkItems = 51 Stable + 53 Generated）
 Phase 2C — Plan+Relation+Deferred : ACCEPT / CLOSED       （ced5f13f）
 Phase 2D — Verification Bootstrap : ACCEPT / CLOSED
-Phase 2E — Cross-Reconcile + Bootstrap Freeze : AUTHORIZED / NOT STARTED
+Phase 2E — Cross-Reconcile + Bootstrap Freeze : IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
 Graph Mode                     : draft
 ```
 
-- Graph 数据（snapshot，derived from Graph）：features=13 · work_items=106 · plans=4（PLAN-AI-NDJSON/K1I/K1A/L1 全 completed）· verifications=46（含 E-K1G-01 legacy aggregate）· relations=10。
+- Graph 数据（snapshot，derived from Graph）：features=13 · work_items=106 · plans=4（PLAN-AI-NDJSON/K1I/K1A/L1 全 completed）· verifications=46 · relations=10；详细审计见 `migration/PHASE2E_RECONCILIATION.md`。
 - **Plan completed ≠ WorkItem done**（冻结语义）：K1g/K1i/K1a/L1 均保持 `verifying`，不得因 Plan completed 变 done。
 - 冻结：Plan lifecycle（superseded=替换态不要求 completed 前态）、Observed vs Verification（build/test/pg check=Observed Fact，不自动建 Verification）、BLUEPRINT_STATE CODE/ARCH/REVIEW=Cookbook Extension（不进 Core Schema）、FEAT-\<FEATURE\>-NNN 约定（FEAT-AI-MEAL-001、FEAT-RECOMMEND-001）。
-- 唯一开放项：`L3 FEATURE_SPLIT_CANDIDATE`（临时 F-TOOLS primary + affects 6 Feature）→ Phase 2E 复核。
+- L3 已在 Phase 2E 关闭为 `RESOLVED_NO_REGISTRY_CHANGE`；F-TOOLS primary 与 6 条 affects 保持。
 
 ---
 
@@ -57,9 +57,9 @@ Graph Mode                     : draft
 
 **主路径（Project Graph，按序）**：
 
-1. **Phase 2D 已收口**：Source Coverage 114/114；43 MIGRATE + 2 UPDATE + 69 DEFER；E-CFG ownership 已落 K1a；E-K1G-01 保留为 legacy aggregate。
-2. **下一步进入 Phase 2E**：按 `migration/PHASE2D_TO_2E_HANDOFF.md` 做 CurrentWork、SESSION、BLUEPRINT_STATE、Deferred、冲突和视图漂移的交叉核对。
-3. Phase 2E 仍不做：Graph active、Legacy Views 替换、Observed Store、Lifecycle CLI、CI Guard，以及未经架构审核的 Feature/WorkItem/Verification 扩张。
+1. **Phase 2E 已实施**：台账入口为 `PHASE2E_RECONCILIATION.md`；52 条 current actionable deferred rows 是待独立架构审核的 blocking conflict。
+2. **下一步**：等待独立 Phase 2E architecture review，不进入 Phase 3。
+3. Phase 2E 未做：Graph active、Legacy Views 替换、Observed Store、Lifecycle CLI、CI Guard，以及未经架构审核的 Feature/WorkItem/Verification 扩张。
 
 **可并行/替代路径（真机解封前可推进，任选）**：
 

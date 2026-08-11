@@ -216,9 +216,13 @@ plans:
 verifications:
   - id: E-K1G-01
     kind: device
-    status: pending
+    status: not_required
     work_item: K1g
-    reason: 历史 K1g 聚合验证节点；当前权威真机清单已拆分为独立稳定 Verification，该聚合节点不再作为当前 Verification Coverage 统计来源。
+    required: true
+    source_refs:
+      - .ai-context/project_graph/migration/PHASE2D_ACCEPT.md
+      - .ai-context/project_graph/migration/PHASE2E_DECISIONS.md
+    reason: 历史 K1g 聚合验收节点。当前权威真机清单已经使用独立 Stable Verification 替代该聚合验收，该聚合节点不再需要作为当前 Closure 验收项。
   - id: E-K1I-01
     kind: device
     status: pending
