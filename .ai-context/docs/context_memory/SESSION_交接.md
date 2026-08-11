@@ -1,7 +1,7 @@
 # 🔖 SESSION 交接入口
 
 > 更新时间：**2026-08-11 · Project Graph 阶段推进收口**（Phase 2B END → Phase 2C 实施 → Phase 2C END → Phase 2D 交接，三个 Commit 全 push）
-> 当前工作域：**Project Graph Phase 2D Verification Bootstrap 已实施，等待架构复核**。上一交接（2026-08-08·L1/K1i ARCH 复核）的内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
+> 当前工作域：**Project Graph Phase 2D R1 Reconciliation 返工中**。上一交接（2026-08-08·L1/K1i ARCH 复核）的内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
 > 执行角色：Claude Code @主力机（按 `第二阶段-2B-End-2C-Preview.md` / `第二阶段-2C-End-2D-Preview.md` 蓝图执行）。
 
 ---
@@ -11,8 +11,8 @@
 1. **`BLUEPRINT_STATE.md`** —— TURN 当前应为 `USER`（L1/K1i 均 ACCEPTED；K1b 仍 DRAFT·PARKED；真机验证待用户）。
 2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
 3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2D 已实施、等待架构复核、Graph 仍 draft）→ `migration/PHASE2D_INVENTORY.md` → `migration/PHASE2D_SOURCE_COVERAGE.md` → `migration/PHASE2D_CONFLICTS.md`。
-4. Phase 2D 执行蓝图：`docs/项目改造规划/第二阶段-2D-BlueDesign.md`；当前尚未提交实施 Commit，等待复核确认。
-5. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（未验证合计 97 项：🔧21+⬜76；已验证 17 项）。**2026-08-09 起全表统一新增「验证结果/原因」反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位。
+4. Phase 2D R1 蓝图：`docs/项目改造规划/Phase-2D-R1.md`；审核结论为 `REWORK`，本轮完成后仍等待架构复核。
+5. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（权威清单共 114 条 Verification Rows：17 pass、97 pending）。**2026-08-09 起全表统一新增「验证结果/原因」反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位。
 
 ---
 
@@ -21,15 +21,16 @@
 - **Project Graph 阶段纪律**：每一批独立 commit / push / architecture review，禁止连续自动执行；当前 Graph **mode 必须保持 `draft`**，禁止切 `active`（Phase 3 事项）；Schema / Validator / 生产代码禁止修改。
 - **Phase 2D 实施待架构复核**：已按 2D 蓝图建立当前真机清单的 Verification、Source Coverage、映射与冲突记录；未修改 schema、validator、生产代码，Graph 仍为 `draft`。
 - 派生统计直接从 Graph 计算（临时脚本复用 `tools/project_graph.py` loader），不人工推算；统计不存 Derived 字段。
+- **SESSION Transitional Contract**：本文件是 `Transitional Current-State / Handoff Document`，供 AI 接手使用，但不是长期 Project Truth；不独立维护 WorkItem/Verification/Plan/Feature 总数、状态统计或 Stable ID Registry，不重新定义 Stable ID，不覆盖冻结的 Graph 决策。结构性重构延期至 Phase 2E/3。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
 
 ---
 
 ## 三、当前状态
 
-### 承接的既有事实（2026-08-08 交接，未变）
+### 承接的既有事实（2026-08-08 交接，历史快照）
 
-- **真机验证被阻塞**：用户确认当前暂时无法进行。真机清单 `真机待验证清单_202608082330.md` 97 项未验证（含 E-L1-01~12、E-K1I-01/02、E-B4/B5/B6、E-K1A-01、E-CFG-01~06）。
+- **真机验证被阻塞**：用户确认当前暂时无法进行。权威清单当前重算为 114 条，其中 17 条 pass、97 条 pending。
 - **BLUEPRINT_STATE 关键行**：L1、K1i 均 `ACCEPTED`（CODE+ARCH 复核通过，真机 pending）；K1b 蓝图 `DRAFT·PARKED`（11 项 CONFIRMED-ISSUE + 9 项 MINOR-NIT 待处置）；K1i-2（AI推荐/周计划/健康建议流式化）仅登记名字未设计。
 - **AI记一餐已 CODE+ARCH 通过但从未真机验证**：B1-B6、K1a、L1、K1i-1。
 
@@ -40,11 +41,11 @@ Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN   （83623a3）
 Phase 2A — Feature Universe    : ACCEPT / CLOSED          （b54246c1）
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （e2127176 · 104 WorkItems = 51 Stable + 53 Generated）
 Phase 2C — Plan+Relation+Deferred : ACCEPT / CLOSED       （ced5f13f）
-Phase 2D — Verification Bootstrap : IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
+Phase 2D — Verification Bootstrap : REWORK / RECONCILIATION IN PROGRESS
 Graph Mode                     : draft
 ```
 
-- Graph 数据：features=13 · work_items=106 · plans=4（PLAN-AI-NDJSON/K1I/K1A/L1 全 completed）· verifications=3（E-K1G-01 / E-K1I-01 / E-K1I-02，全 device pending）· relations=10。
+- Graph 数据（snapshot，derived from Graph）：features=13 · work_items=106 · plans=4（PLAN-AI-NDJSON/K1I/K1A/L1 全 completed）· verifications=46（含 E-K1G-01 legacy aggregate）· relations=10。
 - **Plan completed ≠ WorkItem done**（冻结语义）：K1g/K1i/K1a/L1 均保持 `verifying`，不得因 Plan completed 变 done。
 - 冻结：Plan lifecycle（superseded=替换态不要求 completed 前态）、Observed vs Verification（build/test/pg check=Observed Fact，不自动建 Verification）、BLUEPRINT_STATE CODE/ARCH/REVIEW=Cookbook Extension（不进 Core Schema）、FEAT-\<FEATURE\>-NNN 约定（FEAT-AI-MEAL-001、FEAT-RECOMMEND-001）。
 - 唯一开放项：`L3 FEATURE_SPLIT_CANDIDATE`（临时 F-TOOLS primary + affects 6 Feature）→ Phase 2E 复核。
@@ -55,8 +56,8 @@ Graph Mode                     : draft
 
 **主路径（Project Graph，按序）**：
 
-1. **等待外部架构审核** 本次 Phase 2D 工作区变更：当前真机清单 → Stable Verification entities；Source Coverage 98/98；Verification→WorkItem mapping（未映射项进入 `DEFER_VERIFY_UNMAPPED`）；status reconciliation；closure preparation。
-2. 审核通过后：按项目提交规范生成唯一 Phase 2D 实施 Commit；不得写 `PHASE2D_ACCEPT.md`，不得切换 Graph `active`，不得进入 Phase 2E。
+1. **完成 Phase 2D R1**：Source Coverage 114/114；43 MIGRATE + 2 UPDATE + 69 DEFER；重审 E-CFG ownership；标记 E-K1G-01 legacy aggregate；完成后提交唯一 R1 Commit 并等待架构审核。
+2. 审核通过后：不得写 `PHASE2D_ACCEPT.md`，不得切换 Graph `active`，不得进入 Phase 2E。
 3. Phase 2D 明确不做：CurrentWork reconcile（2E）、L3 split（2E）、Legacy Views（3）、Graph active（3）、Observed Store（4）、Lifecycle CLI（4）、CI Guard（5）。
 
 **可并行/替代路径（真机解封前可推进，任选）**：

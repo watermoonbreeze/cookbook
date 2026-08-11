@@ -4,10 +4,10 @@
 > **Phase 2A — Feature Universe**: ACCEPT / CLOSED
 > **Phase 2B — Current WorkItem**: ACCEPT / CLOSED
 > **Phase 2C — Plan + Relation + Deferred Semantics**: ACCEPT / CLOSED
-> **Phase 2D — Verification Bootstrap**: IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
+> **Phase 2D — Verification Bootstrap**: RECONCILED / WAITING FOR ARCHITECTURE REVIEW
 > **Graph Mode**: `draft`
 
-> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**；Phase 2C（Plan + Relation + Deferred Semantics）**已 ACCEPT / CLOSED**。Phase 2D 已完成 Verification Bootstrap：当前唯一真机清单已建立 Stable Verification、Source Coverage、WorkItem mapping 与 closure audit；当前状态为 **IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW**。**Graph 仍为 mode: draft，未正式启用**。
+> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**；Phase 2C（Plan + Relation + Deferred Semantics）**已 ACCEPT / CLOSED**。Phase 2D R1 已完成 Verification Coverage Reconciliation：权威清单 114 条、Deferred 69 条、CFG ownership 已有证据、E-K1G-01 已标记 legacy aggregate；当前状态为 **RECONCILED / WAITING FOR ARCHITECTURE REVIEW**。**Graph 仍为 mode: draft，未正式启用**。
 >
 > 维护角色：**AI Maintained, Human Read-Only**。
 >

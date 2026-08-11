@@ -218,7 +218,7 @@ verifications:
     kind: device
     status: pending
     work_item: K1g
-    reason: B1-B6 主线真机验证未完成（真机清单 E-B4-*/E-B5-*/E-B6-*/E-K1A-01/E-CFG-01~06 待验证）
+    reason: 历史 K1g 聚合验证节点；当前权威真机清单已拆分为独立稳定 Verification，该聚合节点不再作为当前 Verification Coverage 统计来源。
   - id: E-K1I-01
     kind: device
     status: pending
@@ -246,7 +246,7 @@ verifications:
   - id: E-CFG-01
     kind: device
     status: pending
-    work_item: K1g
+    work_item: K1a
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
@@ -254,7 +254,7 @@ verifications:
   - id: E-CFG-02
     kind: device
     status: pending
-    work_item: K1g
+    work_item: K1a
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
@@ -262,7 +262,7 @@ verifications:
   - id: E-CFG-03
     kind: device
     status: pending
-    work_item: K1g
+    work_item: K1a
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
@@ -270,7 +270,7 @@ verifications:
   - id: E-CFG-04
     kind: device
     status: pending
-    work_item: K1g
+    work_item: K1a
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
@@ -278,7 +278,7 @@ verifications:
   - id: E-CFG-05
     kind: device
     status: pending
-    work_item: K1g
+    work_item: K1a
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
@@ -286,7 +286,7 @@ verifications:
   - id: E-CFG-06
     kind: device
     status: pending
-    work_item: K1g
+    work_item: K1a
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
