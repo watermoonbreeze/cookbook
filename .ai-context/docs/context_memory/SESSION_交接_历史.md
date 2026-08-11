@@ -1,4 +1,5 @@
 # SESSION 交接历史（append-only 索引·每次交接追加一行）
+- 2026-08-11 · `12984df3`（+`e3389fba`/`ced5f13f`） · Project Graph 阶段推进：Phase 2B 收口（104/51/53 重算）→ Phase 2C 实施（4 Plan completed + 10 Relations + FEAT-* 落位）→ Phase 2C END→2D 交接（Governance Cleanup + PHASE2C_ACCEPT + PHASE2C_TO_2D_HANDOFF）。Phase 1~2C 全 ACCEPT，Phase 2D AUTHORIZED/NOT STARTED；等外部审核 `12984df3`。
 - 2026-08-06 · `d94e7d8f` · B3.4 四视角联合复审修复 — 5阻断+9建议+B1/B2死代码全清；Google+Apple两轮终审通过；642 tests 0 failures；待架构模型审核三层代码后进B4。
 - 2026-08-06 · `449858e2` · B3.3 补漏 — useRuleFallback 空结果写 ERROR 前补 isCurrentGeneration 守卫；AF-B3-R3-01~05 全部真正关闭；三条非缓存命令当次通过；待架构模型定向复审。
 - 2026-08-05 · `未提交` · 补齐周期记/NDJSON 的开发与验收基线；新增 `.ai-context/PROJECT.md`，收敛跨模型首读入口并将根 `docs/` 历史资料归档到 `.ai-context`。
