@@ -35,6 +35,10 @@
 - 规则与反查：`docs/projectReview/21_AI与网络请求策略（专属）.md`、`08_决策记录.md` D-15/D-16、`05_诊断地图.md`。
 - 真机验证只认 `docs/feature/真机待验证清单_<yyyyMMddHHmm>.md` 中时间最新的一份。
 
+## 蓝图治理
+
+当任务进入 C 档 / BLUEPRINT 协作模式时，全局协议唯一真相源为 `~/.ai-context/rules/blueprint_protocol.md`；CookBook 项目专属颗粒度与历史经验见 `.ai-context/experience/blueprint_granularity.md`。执行顺序：读取全局协议、读取项目 GC / experience，再按当前 `BLUEPRINT_STATE.md` 颗粒度完成 GC 勾销；未满足不得标记 `BLUEPRINT_READY`。
+
 ## 文档分层
 
 | 位置 | 内容与使用方式 |
