@@ -4,10 +4,10 @@
 > **Phase 2A — Feature Universe**: ACCEPT / CLOSED
 > **Phase 2B — Current WorkItem**: ACCEPT / CLOSED
 > **Phase 2C — Plan + Relation + Deferred Semantics**: ACCEPT / CLOSED
-> **Phase 2D — Verification Bootstrap**: AUTHORIZED / NOT STARTED
+> **Phase 2D — Verification Bootstrap**: IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
 > **Graph Mode**: `draft`
 
-> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**（Review Commit `e2127176`：Stable ID 无损、Source Coverage 100%、Status/Kind/Ownership 对账，最终统计从 Graph 直接计算：Total 104 / Stable 51 / Generated 53）。Phase 2C（Plan + Relation + Deferred Semantics）**已 ACCEPT / CLOSED**（Review Commit `ced5f13f`）：Plan lifecycle 冻结（Plan completed ≠ WorkItem done）、PLAN-AI-NDJSON/PLAN-K1I/PLAN-K1A/PLAN-L1 落位、K15↔I7 / J22↔L2 / L3 affects 关系建立、FEAT-* 匿名 feature 约定结构化。**Phase 2D（Verification Bootstrap）已 AUTHORIZED 但未开始**。**Graph 仍为 mode: draft，未正式启用**，现有 Truth（Code / SESSION / BLUEPRINT_STATE / 项目地图）优先级不变。
+> 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**；Phase 2C（Plan + Relation + Deferred Semantics）**已 ACCEPT / CLOSED**。Phase 2D 已完成 Verification Bootstrap：当前唯一真机清单已建立 Stable Verification、Source Coverage、WorkItem mapping 与 closure audit；当前状态为 **IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW**。**Graph 仍为 mode: draft，未正式启用**。
 >
 > 维护角色：**AI Maintained, Human Read-Only**。
 >
@@ -420,11 +420,11 @@ ACCEPT / CLOSED
 Phase 2C
 ACCEPT / CLOSED
 
-Next Authorized:
+Current Stage:
 Phase 2D — Verification Bootstrap
 
 Phase 2D Started:
-NO
+YES — waiting for architecture review
 
 Graph Mode:
 draft

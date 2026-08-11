@@ -223,12 +223,266 @@ verifications:
     kind: device
     status: pending
     work_item: K1i
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#K1i-流式地基
     reason: E-K1I-01 阻断性真机项待验证（流式真委托 + 解析主路径切换 4 条判据）
   - id: E-K1I-02
     kind: device
     status: pending
     work_item: K1i
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#K1i-流式地基
     reason: 周期记流式同样生效待真机验证：周一/周三/周五多段渐进解析、日期归属及流式 Delta 表现
+  - id: E-K1A-01
+    kind: device
+    status: pending
+    work_item: K1a
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#K1a-营养展示统一化
+    reason: AI 快捷记预览页 CREATE/REUSE 营养行、估算尾注与钠提示待真机验证
+  - id: E-CFG-01
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+    reason: 引擎标签随 AI 配置状态即时切换待真机验证
+  - id: E-CFG-02
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+    reason: 未配置 AI 时直接走规则解析待真机验证
+  - id: E-CFG-03
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+    reason: AI 失败自动回退规则且展示人话原因待真机验证
+  - id: E-CFG-04
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+    reason: AI 成功时优先使用 AI 且标签与结果一致待真机验证
+  - id: E-CFG-05
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+    reason: AI 无可识别菜品时自动兜底规则解析待真机验证
+  - id: E-CFG-06
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+    reason: 周期记模式 AI 失败时逐日规则兜底及日期归属待真机验证
+  - id: E-B4-01
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+    reason: 快速记/周期记模式切换与草稿保留待真机验证
+  - id: E-B4-02
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+    reason: 周期记日期段导航与当前周标记待真机验证
+  - id: E-B4-03
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+    reason: 每日输入字符计数、200 字截断与提示待真机验证
+  - id: E-B4-04
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+    reason: 周期记仅发送非空日期并显示流式进度待真机验证
+  - id: E-B4-05
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+    reason: 快速记与周期记草稿相互独立保留待真机验证
+  - id: E-B4-06
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+    reason: 两种模式全部为空时禁止发送待真机验证
+  - id: E-B5-01
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 周期记生成中合法菜品渐进展示待真机验证
+  - id: E-B5-02
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 分段完成/当前/未开始状态指示待真机验证
+  - id: E-B5-03
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 中间段失败时保留已完成餐食并允许部分确认待真机验证
+  - id: E-B5-04
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 截断诊断可见且已解析内容保留待真机验证
+  - id: E-B5-05
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 多天结果按日期餐次菜品稳定重排待真机验证
+  - id: E-B5-06
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 中途确认仅保存已完成日期待真机验证
+  - id: E-B5-07
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 快速记/周期记字符计数展示统一待真机验证
+  - id: E-B5-08
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 切周撤销可恢复原周与草稿待真机验证
+  - id: E-B5-09
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 快速记单日渐进展示待真机验证
+  - id: E-B5-10
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+    reason: 快速记与周期记输入框长按粘贴交互待真机验证
+  - id: E-B6-01
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 单天保存后 Sheet 正常关闭不冻屏待真机验证
+  - id: E-B6-02
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 长输入完整解析且不触发 token 截断待真机验证
+  - id: E-B6-03
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 已有餐食日期灰显并仍可选中待真机验证
+  - id: E-B6-04
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 切周后已有餐食灰显刷新行为待真机验证（已知缺陷可记录失败）
+  - id: E-B6-05
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 超 200 字粘贴截断与一次性 Snackbar 提示待真机验证
+  - id: E-B6-VOICE-01
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 语音实例释放与连续录音稳定性待真机验证
+  - id: E-B6-TRUNC-01
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 截断提示仅在跨越阈值时重复出现待真机验证
+  - id: E-B6-DOT-01
+    kind: device
+    status: pending
+    work_item: K1g
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+    reason: 多段进度圆点仅当前段显示脉冲待真机验证
 
 # 跨切关系（belongs_to/implemented_by/verified_by 已由 shorthand 声明，此处表达 depends_on/related_to/affects 等）。
 # 仅保留真实项目关系；虚构/未确认的关系不写入正式 Graph（PG-P1-B04）。

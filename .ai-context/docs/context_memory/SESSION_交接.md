@@ -1,7 +1,7 @@
 # 🔖 SESSION 交接入口
 
 > 更新时间：**2026-08-11 · Project Graph 阶段推进收口**（Phase 2B END → Phase 2C 实施 → Phase 2C END → Phase 2D 交接，三个 Commit 全 push）
-> 当前工作域：**Project Graph 基建阶段推进**。上一交接（2026-08-08·L1/K1i ARCH 复核）的内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
+> 当前工作域：**Project Graph Phase 2D Verification Bootstrap 已实施，等待架构复核**。上一交接（2026-08-08·L1/K1i ARCH 复核）的内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
 > 执行角色：Claude Code @主力机（按 `第二阶段-2B-End-2C-Preview.md` / `第二阶段-2C-End-2D-Preview.md` 蓝图执行）。
 
 ---
@@ -10,8 +10,8 @@
 
 1. **`BLUEPRINT_STATE.md`** —— TURN 当前应为 `USER`（L1/K1i 均 ACCEPTED；K1b 仍 DRAFT·PARKED；真机验证待用户）。
 2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
-3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md` §0.1（Phase 1~2C 全 ACCEPT、2D AUTHORIZED/NOT STARTED）→ `migration/PHASE2C_ACCEPT.md`（2C 接受记录）→ `migration/PHASE2C_TO_2D_HANDOFF.md`（**Phase 2D 强制入口**）。
-4. 若继续 Project Graph：蓝图 `docs/项目改造规划/第二阶段-2C-End-2D-Preview.md`（交接任务已做完，等审核）→ 之后是尚未生成的 Phase 2D Verification Bootstrap 蓝图。
+3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2D 已实施、等待架构复核、Graph 仍 draft）→ `migration/PHASE2D_INVENTORY.md` → `migration/PHASE2D_SOURCE_COVERAGE.md` → `migration/PHASE2D_CONFLICTS.md`。
+4. Phase 2D 执行蓝图：`docs/项目改造规划/第二阶段-2D-BlueDesign.md`；当前尚未提交实施 Commit，等待复核确认。
 5. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（未验证合计 97 项：🔧21+⬜76；已验证 17 项）。**2026-08-09 起全表统一新增「验证结果/原因」反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位。
 
 ---
@@ -19,7 +19,7 @@
 ## 二、工作规则（当前任务域）
 
 - **Project Graph 阶段纪律**：每一批独立 commit / push / architecture review，禁止连续自动执行；当前 Graph **mode 必须保持 `draft`**，禁止切 `active`（Phase 3 事项）；Schema / Validator / 生产代码禁止修改。
-- **Phase 2D 未授权开工**：Phase 2C END 交接 Commit `12984df3` 尚未经外部架构审核。审核通过后才可执行 Phase 2D Verification Bootstrap。
+- **Phase 2D 实施待架构复核**：已按 2D 蓝图建立当前真机清单的 Verification、Source Coverage、映射与冲突记录；未修改 schema、validator、生产代码，Graph 仍为 `draft`。
 - 派生统计直接从 Graph 计算（临时脚本复用 `tools/project_graph.py` loader），不人工推算；统计不存 Derived 字段。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
 
@@ -40,7 +40,7 @@ Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN   （83623a3）
 Phase 2A — Feature Universe    : ACCEPT / CLOSED          （b54246c1）
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （e2127176 · 104 WorkItems = 51 Stable + 53 Generated）
 Phase 2C — Plan+Relation+Deferred : ACCEPT / CLOSED       （ced5f13f）
-Phase 2D — Verification Bootstrap : AUTHORIZED / NOT STARTED
+Phase 2D — Verification Bootstrap : IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
 Graph Mode                     : draft
 ```
 
@@ -55,8 +55,8 @@ Graph Mode                     : draft
 
 **主路径（Project Graph，按序）**：
 
-1. **等待外部架构审核** Phase 2C END 交接 Commit `12984df3`（GOVERNANCE CLEANUP + PHASE2C_ACCEPT + PHASE2C_TO_2D_HANDOFF）。
-2. 审核通过后：执行 **Phase 2D Verification Bootstrap**（蓝图尚未生成）——唯一职责 = 最新唯一真机验证清单 → Stable Verification entities；Verification→WorkItem mapping（`VERIFY_UNMAPPED` no-guess）；status reconciliation；required closure preparation。强制入口 = `migration/PHASE2C_TO_2D_HANDOFF.md`。
+1. **等待外部架构审核** 本次 Phase 2D 工作区变更：当前真机清单 → Stable Verification entities；Source Coverage 98/98；Verification→WorkItem mapping（未映射项进入 `DEFER_VERIFY_UNMAPPED`）；status reconciliation；closure preparation。
+2. 审核通过后：按项目提交规范生成唯一 Phase 2D 实施 Commit；不得写 `PHASE2D_ACCEPT.md`，不得切换 Graph `active`，不得进入 Phase 2E。
 3. Phase 2D 明确不做：CurrentWork reconcile（2E）、L3 split（2E）、Legacy Views（3）、Graph active（3）、Observed Store（4）、Lifecycle CLI（4）、CI Guard（5）。
 
 **可并行/替代路径（真机解封前可推进，任选）**：
