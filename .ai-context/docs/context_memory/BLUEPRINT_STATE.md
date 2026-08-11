@@ -14,12 +14,13 @@
 |---|---|
 | 任务/批次 | 升级用户级与 CookBook 项目级 Blueprint Governance；强化 GC-37/47/48 的独立挑战、改进反哺、粒度/规模/交叉验证/传播与自应用契约。 |
 | 颗粒度 | L7（不新增 L8；GC=48） |
-| 状态 | **EXECUTED / PENDING INDEPENDENT ARCH REVIEW**；Phase 3A 仍 EXECUTED / REWORK REQUIRED / PAUSED，不得启动 Phase 3B。 |
+| 状态 | **EXECUTED / PENDING INDEPENDENT ARCH REVIEW**；R1 审计工件已落盘；Phase 3A 仍 EXECUTED / REWORK REQUIRED / PAUSED，不得启动 Phase 3B。 |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | 基线 | 21e54015ec5ce0fb02d0f47911a6442400a8c44b |
-| 证据 | global/project semantic parity=10/10；canonical GC registry=48/48 unique，missing=0，duplicate=0，GC-49=0；L7 unchanged、L8=0；validator=61/61；pg check=OK（13/109/4/98/10，mode=draft）；denylist=0 diff；user protocol SHA-256 before=067103BFFCB8B0062A13C28577172CCFD945E2EFECCA203BE7F669926C059C09 after=C4F3A116265DE97B105CE988AA65B50957C80FA2661B4811EE752F53D46537F5；INV↔Evidence 双向审计=PASS。 |
+| 基线 | Design Baseline=`21e54015ec5ce0fb02d0f47911a6442400a8c44b`；Execution Parent=`586652388cde269b614728d8160e7963bd88452c`；Initial Delivery=`586652388cde269b614728d8160e7963bd88452c`；Review Target=本批最终 commit。 |
+| 证据 | 详见 `.ai-context/project_graph/migration/GOV_BP_P3_01_AUDIT.md`：global/project semantic parity=10/10；canonical GC registry=48/48 unique，missing=0，duplicate=0，GC-49=0；L7 unchanged、L8=0；validator=61/61；pg check=OK（13/109/4/98/10，mode=draft）；denylist=0 diff；user protocol SHA-256 before=C4F3A116265DE97B105CE988AA65B50957C80FA2661B4811EE752F53D46537F5 after=C2C8332EB12D545CA89FCA4C80A15DBA7E2ACF5FAF7703A8CFE6815A0B5F0EB3；INV↔Evidence 双向审计=PASS。 |
 | 下一步 | 独立 ARCH 读取本批精确提交，按升级后的 GC-37/47/48 及本蓝图 Delivery Gate 判定 ACCEPT 或 REWORK；本 CODE 批到此 STOP。 |
 
 ---
