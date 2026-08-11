@@ -90,3 +90,39 @@ Evidence search followed: authoritative checklist → original Bug/Todo/Blueprin
 | K1f | Existing stable ID is present in authoritative planning sources and implementation scope | Alias normalization is a distinct ingredient-ingestion responsibility | No existing F-INGREDIENT WorkItem owns alias-table reuse | Existing stable source ID retained |
 
 All new WorkItems use `Guess: NO`; no Feature or Schema change was made.
+
+## R2 Identity / Ownership Corrections
+
+R1 rows are retained as historical evidence. The following corrections are the R2 disposition:
+
+| Source ID | R1 disposition | R2 disposition | Primary Evidence | Final WorkItem | Graph VerifyId | Status |
+|---|---|---|---|---|---|---|
+| P0-2 | K1d / Schema boundary | remap to implemented AI meal parsing chain | checklist `#P0-2`; `2026-08-04_AI记一餐MVP算法审查与修复方案.md` | K1g | E-P0-02 | pending |
+| P0-6 | K1d / nullable Schema | remap to implemented AI meal parsing chain | checklist `#P0-6`; `AI记一餐_周期记_NDJSON流式开发规范.md` | K1g | E-P0-06 | pending |
+| D11 | K1d / AI-rule Schema | remap to implemented AI meal parsing chain | checklist `#D11`; `AI记一餐_周期记_NDJSON流式开发规范.md` | K1g | E-D-11 | pending |
+| F3-1 | K1d / AI Schema | remap to implemented AI meal parsing/preview path | checklist `#FIX-3`; `AI记一餐_周期记_NDJSON流式开发规范.md` | K1g | E-F3-01 | pending |
+| F3-2 | K1d / rule Schema | remap to implemented AI meal parsing/preview path | checklist `#FIX-3`; `AI记一餐_周期记_NDJSON流式开发规范.md` | K1g | E-F3-02 | pending |
+| F3-3 | K1d / cross-platform compatibility | remap to implemented AI meal parsing/preview path | checklist `#FIX-3`; `AI记一餐_周期记_NDJSON流式开发规范.md` | K1g | E-F3-03 | pending |
+| D12 | K1g / CodeMapping-led | retain with formal confirmation path evidence | checklist `#D12`; `AI记一餐_周期记_NDJSON流式开发规范.md` §6 | K1g | E-D-12 | pending |
+| F5-1 | K1g / CodeMapping-led | retain with formal confirmation path evidence | checklist `#FIX-5`; `AI记一餐_周期记_NDJSON流式开发规范.md` §6 | K1g | E-F5-01 | pending |
+| F5-2 | K1g / CodeMapping-led | retain with formal confirmation path evidence | checklist `#FIX-5`; `AI记一餐_周期记_NDJSON流式开发规范.md` §6 | K1g | E-F5-02 | pending |
+
+### Identity audit
+
+```text
+Source IDs audited: 98 Graph Verification rows with source anchors
+Graph VerifyIds audited: 98
+Source -> Graph mapping: PASS (1:1)
+Duplicate Source IDs: 0
+Duplicate Graph VerifyIds: 0
+Mapping collisions: 0
+Schema changed: NO
+```
+
+### Status/provenance audit
+
+`K1f`, `BUG-AI-MEAL-002`, and `BUG-AI-MEAL-003` are `verifying`: implementation evidence is present and their required device rows remain pending. BUG-002 provenance points to FIX-1/FIX-2 and the parser defect report; BUG-003 points to FIX-5 and the quantity-validation review. No `verifying -> done` promotion occurred.
+
+### Observed / Acceptance Evidence
+
+The full Project Graph test suite and `pg check` were executed for this commit and are recorded as observed acceptance evidence; they do not create Verification entities.

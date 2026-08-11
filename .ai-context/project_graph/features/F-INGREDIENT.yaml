@@ -41,7 +41,7 @@ work_items:
     intent: 用户清空预填=不想跟随系统→再手动选分类时应尊重用户选择，不被 classify(name) 覆盖
   - id: K1f
     kind: feature
-    status: backlog
+    status: verifying
     title: AI食材入库轻量别名归一
     feature: F-INGREDIENT
     source_refs:

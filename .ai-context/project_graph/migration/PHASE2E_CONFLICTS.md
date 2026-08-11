@@ -1,4 +1,4 @@
-# Phase 2E Conflict Ledger — R1
+# Phase 2E Conflict Ledger — R2
 
 > Phase 2E R1 supersedes the generic 52-row blocked conclusion from the first reconciliation. Row-level ownership evidence is recorded in `PHASE2E_VERIFICATION_RECONCILIATION.md`.
 
@@ -51,4 +51,27 @@ ARCHITECTURE_CHANGE_REQUIRED: 0
 RETAIN_DEFERRED_BLOCKED: 0
 UNKNOWN / FORGOTTEN: 0
 Blocking Conflicts: 0
+```
+
+## Resolved in R2
+
+```text
+Q-2E-R2-001
+type: OWNERSHIP_CONFLICT
+status: RESOLVED
+resolution: P0-2/P0-6/D11/F3-1/F3-2/F3-3 no longer use K1d as fuzzy Schema ownership; all map to K1g with parser/preview evidence.
+```
+
+```text
+Q-2E-R2-002
+type: WORKITEM_STATUS_CONFLICT
+status: RESOLVED
+resolution: implemented K1f, BUG-AI-MEAL-002 and BUG-AI-MEAL-003 with required pending device acceptance are `verifying`, not `backlog` or `done`.
+```
+
+```text
+Q-2E-R2-003
+type: SOURCE_GRAPH_ID_CONTRACT_CONFLICT
+status: RESOLVED
+resolution: Source IDs remain checklist identities; E-* values remain Graph VerifyIds; normalization is recorded one-to-one in the verification ledger without Schema changes.
 ```

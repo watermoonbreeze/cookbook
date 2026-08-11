@@ -157,21 +157,22 @@ work_items:
     intent: ①长按🎤无权限请求弹窗 ②无录音波形条 ③语音识别失败无法验证——语音入口不可用
   - id: BUG-AI-MEAL-002
     kind: bug
-    status: backlog
+    status: verifying
     title: AI记餐规则解析动词剥离与连接词切分
     feature: F-AI-MEAL
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-1
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-2
-      - .ai-context/docs/feature/待办_Bug修复.md
+      - .ai-context/docs/feature/20260802_AI记一餐解析全链路错误_排查报告.md
     intent: 规则解析剥离“吃了/准备吃/想吃/打算吃/要喝”等动作短语，正确处理“和/还有”等连接词，避免把动作或连接残片写成菜名/食材；R7 为同一解析回归责任。
   - id: BUG-AI-MEAL-003
     kind: bug
-    status: backlog
+    status: verifying
     title: AI记餐份量语义误判
     feature: F-AI-MEAL
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-5
+      - .ai-context/docs/feature/2026-08-04_AI记一餐MVP算法审查与修复方案.md
       - .ai-context/project_graph/migration/PHASE2E_VERIFICATION_RECONCILIATION.md
     intent: 规则解析不得把“差不多”等模糊量词误判为固定半份比例；保留真实份量语义并交由用户确认。
   - id: TODO-AI-MEAL-002
@@ -519,12 +520,12 @@ verifications:
   - id: E-P0-02
     kind: device
     status: pending
-    work_item: K1d
+    work_item: K1g
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-2
-      - .ai-context/docs/feature/待办_功能算法.md#K1d
-    reason: 非法日期或份量不得进入可保存预览，验收 FlatMealJson/Schema 校验边界。
+      - .ai-context/docs/feature/2026-08-04_AI记一餐MVP算法审查与修复方案.md
+    reason: 非法日期或份量不得进入可保存预览，验收 AI 记餐解析与校验链路。
   - id: E-P0-03
     kind: device
     status: pending
@@ -555,12 +556,12 @@ verifications:
   - id: E-P0-06
     kind: device
     status: pending
-    work_item: K1d
+    work_item: K1g
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-6
-      - .ai-context/docs/feature/待办_功能算法.md#K1d
-    reason: Schema 可选字段为 null 时仍能进入有效预览，验收双端 Schema 兼容责任。
+      - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
+    reason: Schema 可选字段为 null 时仍能进入有效预览，验收 AI 记餐解析兼容链路。
   - id: E-P0-07
     kind: device
     status: pending
@@ -663,12 +664,12 @@ verifications:
   - id: E-D-11
     kind: device
     status: pending
-    work_item: K1d
+    work_item: K1g
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#D11
-      - .ai-context/docs/feature/待办_功能算法.md#K1d
-    reason: AI 结果与规则结果共享日期/括号 Schema 约束，验收 K1d 双端兼容边界。
+      - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
+    reason: AI 结果与规则结果共享日期/括号约束，验收 AI 记餐解析主链路。
   - id: E-D-12
     kind: device
     status: pending
@@ -780,30 +781,30 @@ verifications:
   - id: E-F3-01
     kind: device
     status: pending
-    work_item: K1d
+    work_item: K1g
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-3
-      - .ai-context/docs/feature/待办_功能算法.md#K1d
-    reason: AI 模式结构化结果可进入预览，验收 Schema 兼容责任。
+      - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
+    reason: AI 模式结构化结果可进入预览，验收 K1g 解析与预览责任。
   - id: E-F3-02
     kind: device
     status: pending
-    work_item: K1d
+    work_item: K1g
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-3
-      - .ai-context/docs/feature/待办_功能算法.md#K1d
-    reason: 规则模式与 AI 模式共享可保存结构，验收 Schema 兼容责任。
+      - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
+    reason: 规则模式与 AI 模式共享可保存结构，验收 K1g 解析与预览责任。
   - id: E-F3-03
     kind: device
     status: pending
-    work_item: K1d
+    work_item: K1g
     required: true
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-3
-      - .ai-context/docs/feature/待办_功能算法.md#K1d
-    reason: AI/规则结果一致性属于双端交换结构兼容验收。
+      - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
+    reason: AI/规则结果一致性属于同一记餐解析主链路的回归验收。
   - id: E-F4-01
     kind: device
     status: pending

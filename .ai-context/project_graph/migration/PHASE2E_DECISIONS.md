@@ -53,4 +53,40 @@ Phase 2E 只识别并登记 legacy view drift，不手工重写 generated/human 
 
 ## R1 amendment
 
+## R2 frozen decisions
+
+### Verification Identity Layers
+
+```text
+Source Verification ID = authoritative checklist row identity.
+Graph VerifyId = V1 Graph Verification entity identity.
+Source ID is not renamed into Graph VerifyId; the ledger records a deterministic mapping.
+```
+
+### Source-to-Graph VerifyId Normalization
+
+`F4-1 -> E-F4-01`, `P0-1 -> E-P0-01`, `D1 -> E-D-01`, `R6 -> E-R-06` mappings remain stable; IDs are not renamed, reused, or merged within either identity layer.
+
+### WorkItem verifying semantic
+
+```text
+implementation proven complete + required acceptance pending/fail/blocked = verifying
+```
+
+`backlog` means implementation has not started. This round never auto-promotes `verifying` to `done`.
+
+### Schema boundary
+
+```text
+Source Verification ID is migration/source identity.
+Graph VerifyId is V1 graph identity.
+No Core Schema field added in Phase 2.
+```
+
+### R2 ownership corrections
+
+R1's K1d ownership for P0-2, P0-6, D11, F3-1, F3-2, and F3-3 is revoked. K1d is a not-yet-implemented cross-platform compatibility design; Schema/AI/JSON keywords are not ownership evidence. These six rows test the implemented AI meal parsing/preview path and map to K1g. D12, F5-1, and F5-2 remain K1g, supported by the meal specification and confirmation/commit path rather than CodeMapping alone.
+
+K1f, BUG-AI-MEAL-002, and BUG-AI-MEAL-003 have implemented code with required device acceptance pending, so their status is `verifying`, not `backlog` or `done`.
+
 初次 Phase 2E 结论中的 `52 RETAIN_DEFERRED_BLOCKED` 只是临时隔离状态，已由 R1 ownership evidence search 逐条替换：42 条映射既有 WorkItem，10 条由 3 个严格证据支持的 WorkItem 负责；`RETAIN_DEFERRED_BLOCKED=0`、`ARCHITECTURE_CHANGE_REQUIRED=0`。R1 详细证据见 `PHASE2E_VERIFICATION_RECONCILIATION.md`。

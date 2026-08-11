@@ -1,6 +1,6 @@
 # Phase 2E Reconciliation Summary
 
-> Main review entry for Phase 2E R1. Status is reconciled pending independent architecture review.
+> Main review entry for Phase 2E R2. Status is reconciled pending independent architecture review.
 
 ## Status
 
@@ -37,6 +37,34 @@ Phase 3: NOT STARTED
 - Legacy View Drift ledger created; views modified: 0.
 
 ## Closure and boundaries
+
+## R2 reconciliation evidence
+
+```text
+R1 disposition: K1d owned P0-2/P0-6/D11/F3-1/F3-2/F3-3; K1f/BUG-002/BUG-003 were backlog.
+R2 disposition: all six K1d rows -> K1g; K1f/BUG-002/BUG-003 -> verifying.
+Reason: formal K1d source is future cross-platform compatibility design; implementation and checklist evidence identify the AI meal parsing/preview/commit path as the actual owner. Existing implementation plus required device acceptance pending uses verifying semantics.
+Architecture blocker: 0.
+```
+
+## Observed validation evidence (R2)
+
+```text
+Command: python -m unittest test_validator -v
+Working directory: .ai-context/project_graph/tools/tests
+Total: 61
+Passed: 61
+Failed: 0
+
+Command: python .ai-context/project_graph/tools/project_graph.py check
+Result: PG: OK / 0 issue
+Summary: features=13, work_items=109, plans=4, verifications=98, relations=10, mode=draft
+
+Programmatic R2 audit: PASS
+Source/Graph mapping collisions: 0
+Duplicate Source IDs: 0
+Duplicate Graph VerifyIds: 0
+```
 
 All current done WorkItems satisfy the frozen verification closure contract; no WorkItem was auto-promoted to done. Schema, validator, observed store, lifecycle CLI, generated views and production code were not changed. Tests and `pg check` are recorded at implementation time below.
 
