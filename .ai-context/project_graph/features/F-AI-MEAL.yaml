@@ -149,7 +149,7 @@ work_items:
     intent: 语音→AI；失败保原文、用户确认转模板；按天/餐次分段防 token 截断（见 AI记一餐_分段解析与可控降级方案.md）
   - id: BUG-AI-MEAL-001
     kind: bug
-    status: backlog
+    status: verifying
     title: K2语音：长按录音无授权弹窗、无反应
     feature: F-AI-MEAL
     source_refs:

@@ -75,3 +75,15 @@ type: SOURCE_GRAPH_ID_CONTRACT_CONFLICT
 status: RESOLVED
 resolution: Source IDs remain checklist identities; E-* values remain Graph VerifyIds; normalization is recorded one-to-one in the verification ledger without Schema changes.
 ```
+
+## Resolved in R3
+
+```text
+Q-2E-R3-001
+type: WORKITEM_STATUS_CONFLICT
+work_item: BUG-AI-MEAL-001
+previous_status: backlog
+status: RESOLVED
+resolution: implementation evidence is present at d6465b61ced1461a9f016902eda68b82d7fd8206; required E-F4-01/E-F4-02/E-F4-03 remain pending, so the frozen contract requires status verifying.
+blocking_conflicts_remaining: 0
+```
