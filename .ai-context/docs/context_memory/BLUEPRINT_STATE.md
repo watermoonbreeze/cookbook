@@ -8,7 +8,22 @@
 
 ---
 
-## 当前批次：L1 + K1i ARCH 独立复核通过 → 待真机验证（2026-08-08 更新）
+## 当前批次：Phase 3A Baseline + View Inventory / Classification（2026-08-11）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | 用户指示按 `Phase-3A-Preview.md` 继续执行 Phase 3A CODE；本批完成 baseline + view inventory/classification。 |
+| 状态 | **EXECUTED / PENDING INDEPENDENT ARCH REVIEW**；不得自称 Phase 3A ACCEPT，不得启动 Phase 3B。 |
+| **TURN** | **REVIEW** |
+| CODE | `Coder@当前机` |
+| ARCH | `架构师@主力机` |
+| 基线 | `598daf4e5083d62038adfe39b1635993a7d90fa4` |
+| 证据 | validator 61/61；`pg check` OK；counts 13/109/4/98/10；duplicate=0；dangling=0；Phase2E 9/9 classified。 |
+| 下一步 | 独立 ARCH 读取精确提交并按 allowlist / audit / command evidence 判定 ACCEPT 或 REWORK；本 CODE 批到此 STOP。 |
+
+---
+
+## 上一批次：L1 + K1i ARCH 独立复核通过 → 待真机验证（2026-08-08 更新）
 
 | 字段 | 值 |
 |---|---|
