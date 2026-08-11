@@ -8,18 +8,19 @@
 
 ---
 
-## 当前批次：Phase 3A R1 Governance Closure + Classification Correction（2026-08-11）
+## 当前批次：GOV-BP-P3-01 Blueprint Governance Upgrade（2026-08-11）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | 按 Phase-3A-R1 执行治理文档返工；修复 GC disposition、STEP closure、GC-48 schema、ownership 与 model commit 语义。 |
-| 状态 | **EXECUTED / PENDING INDEPENDENT ARCH REVIEW**；不得自称 Phase 3A ACCEPT，不得启动 Phase 3B。 |
+| 任务/批次 | 升级用户级与 CookBook 项目级 Blueprint Governance；强化 GC-37/47/48 的独立挑战、改进反哺、粒度/规模/交叉验证/传播与自应用契约。 |
+| 颗粒度 | L7（不新增 L8；GC=48） |
+| 状态 | **EXECUTED / PENDING INDEPENDENT ARCH REVIEW**；Phase 3A 仍 EXECUTED / REWORK REQUIRED / PAUSED，不得启动 Phase 3B。 |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | 基线 | 21e54015ec5ce0fb02d0f47911a6442400a8c44b |
-| 证据 | GC=48/48；STEP=12/12；tracked_markdown=202；marker_hit_files=59；candidate_views=18；unresolved=0；validator=61/61；pg check=OK；mode=draft。 |
-| 下一步 | 独立 ARCH 读取新提交并判定 ACCEPT 或 REWORK；本 CODE R1 批到此 STOP。 |
+| 证据 | global/project semantic parity=10/10；canonical GC registry=48/48 unique，missing=0，duplicate=0，GC-49=0；L7 unchanged、L8=0；validator=61/61；pg check=OK（13/109/4/98/10，mode=draft）；denylist=0 diff；user protocol SHA-256 before=067103BFFCB8B0062A13C28577172CCFD945E2EFECCA203BE7F669926C059C09 after=C4F3A116265DE97B105CE988AA65B50957C80FA2661B4811EE752F53D46537F5；INV↔Evidence 双向审计=PASS。 |
+| 下一步 | 独立 ARCH 读取本批精确提交，按升级后的 GC-37/47/48 及本蓝图 Delivery Gate 判定 ACCEPT 或 REWORK；本 CODE 批到此 STOP。 |
 
 ---
 
