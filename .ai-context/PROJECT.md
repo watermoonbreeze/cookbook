@@ -1,19 +1,18 @@
 # Cookbook 项目上下文入口
 
 > 用途：Claude、Codex、DeepSeek 或其他模型首次接手本仓库时的最小必读导航。
-> 状态：2026-08-05；当前事实以本文件列出的优先级为准。
+> 定位：CookBook 项目的稳定导航入口。短生命周期事实由各 canonical source 持有，本文件不维护其副本。
 
 ## 项目事实
 
 - 产品：面向慢性病家庭的饮食规划 App，核心链路为记录餐食、食历复用、饮食推荐和健康提示。
 - 技术：Kotlin Multiplatform；`shared` 承载 Domain/Data/SQLDelight，`androidApp` 承载 Compose UI；当前只交付 Android。
-- 阶段：MVP 核心已完成，处于功能扩展与打磨；AI 记一餐 V2 已验证，周期记 + NDJSON 流式改造已有架构规范，待按批实施。
 - 文档规则：项目通用规范、状态、方案、经验和交接只写本 `.ai-context/`；`.claude/`、`.codex/` 只保留工具专属配置。
 
 ## 首读顺序与真相优先级
 
 1. 项目入口规则：仓库根 `AGENTS.md`（Codex）或 `CLAUDE.md`（Claude）。
-2. 全局全貌：`docs/projectReview/00_导读与索引.md`，再按其阅读路径下钻。
+2. 项目视图与历史资料：`docs/projectReview/00_导读与索引.md`，再按其阅读路径下钻；Project Truth 仍以 Project Graph 为准。
 3. Project Truth 入口：`.ai-context/project_graph/README.md`、`.ai-context/project_graph/project.yaml`；Feature、WorkItem、Plan、Verification、Relation、CurrentWork 以 Project Graph 为准。
 4. 当前进行中状态：`docs/context_memory/SESSION_交接.md`；它是 Handoff Context，不覆盖 Project Graph 或已接受决策。
 5. 代码定位：`docs/功能路径索引.md`。
@@ -40,7 +39,7 @@ Phase 2 Frozen Truth Hierarchy：Runtime Truth（Code / DB / schema / runtime co
 
 | 位置 | 内容与使用方式 |
 |---|---|
-| `docs/projectReview/` | 当前项目地图、架构/流程/UI/数据/决策/诊断；全局任务首读。 |
+| `docs/projectReview/` | 架构、流程、UI、数据、决策、诊断等项目视图与历史资料；Project Truth 仍以 Project Graph 为准。 |
 | `docs/context_memory/SESSION_交接.md` | 唯一当前会话接续入口；其他日期文件均为历史快照。 |
 | `docs/feature/` | 当前功能方案、待办、验收与唯一真机清单。 |
 | `docs/experience/` | 可复用工程经验与踩坑；由 `INDEX.md` 导航。 |

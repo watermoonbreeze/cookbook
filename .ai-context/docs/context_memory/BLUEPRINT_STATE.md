@@ -50,11 +50,8 @@
 | 复核报告 | `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md` §八 |
 | 末次更新 | `dfac266a` · 2026-08-07（ARCH@主力机：三次复核通过，收紧 `T-B5-02` 断言为精确匹配并复跑验证。批次关闭。） |
 
-本轮执行模型记录（供跨模型能力评估）：
+具体模型执行与能力评估：
 
-| 轮次 | 角色 | 模型 |
-|------|------|------|
-| 第一轮（AF-B456-01~09 全部关闭） | Coder@副机 | 未知（commit `234539aa` 未记录） |
-| 第二轮（AF-B456-05 关闭） | Coder@副机 | deepseek-v4-pro（1M context） |
-| 三次复核 + K1a 蓝图起草 | 架构师@主力机 | claude-sonnet-5 |
-| K1a 蓝图 GC-37 独立挑战 | 独立挑战 agent | claude-opus-5 |
+Canonical Owner：`docs/experience/14_模型执行力评估.md`
+
+BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器标识，不在本文件重复具体模型名称或模型能力评价。
