@@ -8,7 +8,22 @@
 
 ---
 
-## 当前批次：Phase 3A Baseline + View Inventory / Classification（2026-08-11）
+## 当前批次：Phase 3A R1 Governance Closure + Classification Correction（2026-08-11）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | 按 Phase-3A-R1 执行治理文档返工；修复 GC disposition、STEP closure、GC-48 schema、ownership 与 model commit 语义。 |
+| 状态 | **EXECUTED / PENDING INDEPENDENT ARCH REVIEW**；不得自称 Phase 3A ACCEPT，不得启动 Phase 3B。 |
+| TURN | REVIEW |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| 基线 | 21e54015ec5ce0fb02d0f47911a6442400a8c44b |
+| 证据 | GC=48/48；STEP=12/12；tracked_markdown=202；marker_hit_files=59；candidate_views=18；unresolved=0；validator=61/61；pg check=OK；mode=draft。 |
+| 下一步 | 独立 ARCH 读取新提交并判定 ACCEPT 或 REWORK；本 CODE R1 批到此 STOP。 |
+
+---
+
+## 上一批次：Phase 3A Baseline + View Inventory / Classification（2026-08-11）
 
 | 字段 | 值 |
 |---|---|

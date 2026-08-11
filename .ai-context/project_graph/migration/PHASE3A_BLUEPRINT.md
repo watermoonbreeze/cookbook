@@ -45,6 +45,74 @@ renderer implementation, AI_INDEX generation, legacy migration, and mode activat
 | CH-3A-09 | PASS | Acceptance is mechanically checked by validator, `pg check`, recount, and diff audits. |
 | CH-3A-10 | PASS | No GC registry mutation; GC-48 self-application is recorded in the audit. |
 
+## R1 Verified Defects and Repair Boundary
+
+| ID | Defect | Repair |
+|---|---|---|
+| V-P3A-R1-01 | Missing full L7 GC disposition | Add GC-01 through GC-48 below. |
+| V-P3A-R1-02 | STEP ledger used range rows | Use one row per minimal action. |
+| V-P3A-R1-03 | GC-48 used a generic table | Use the canonical six-column table in the audit. |
+| V-P3A-R1-04 | Action owner and closure verifier were conflated | Separate both fields and correct phase ownership. |
+| V-P3A-R1-05 | Markdown discovery evidence was incomplete | Record actual scan counts, hit list, and unresolved=0. |
+| V-P3A-R1-06 | Model row had self-referential commit semantics | Set the existing row commit to 21e54015; no new R1 row. |
+
+Root cause: the previous blueprint declared L7 without embedding all mandatory disposition and minimal-step closure evidence. R1 is governance-document repair only.
+
+## GC-01 ~ GC-48 Disposition
+
+| GC | Disposition |
+|---|---|
+| GC-01 | PASS — unique defect/repair/STOP branch. |
+| GC-02 | PASS — strict allowlist and denylist. |
+| GC-03 | PASS — preserve/deferred owner is explicit. |
+| GC-04 | PASS — invariants include condition/must/must-not/evidence. |
+| GC-05 | PASS — invariant/test mapping is bidirectional. |
+| GC-06 | PASS — commands and evidence locations are explicit. |
+| GC-07 | N/A — no test fixture change. |
+| GC-08 | N/A — no runtime or user-visible implementation. |
+| GC-09 | PASS — validator suite rerun. |
+| GC-10 | PASS — truth and action owners are separate. |
+| GC-11 | N/A — no business state field. |
+| GC-12 | N/A — no UI/business predicate. |
+| GC-13 | N/A — no fallback path. |
+| GC-14 | N/A — no resource holder. |
+| GC-15 | N/A — no Compose state ownership. |
+| GC-16 | N/A — no production block moved. |
+| GC-17 | N/A — no UI projection. |
+| GC-18 | N/A — no ordinal/index. |
+| GC-19 | N/A — no collection consumer. |
+| GC-20 | N/A — no user-visible side effect. |
+| GC-21 | N/A — no runtime notification. |
+| GC-22 | N/A — no real-device test. |
+| GC-23 | PASS — each minimal repair has an independent STEP. |
+| GC-24 | PASS — closure table has ID/status/landing/diff. |
+| GC-25 | PASS — literals have grep/row evidence. |
+| GC-26 | N/A — no threshold/model/constant. |
+| GC-27 | N/A — no edit/invalidation entry. |
+| GC-28 | N/A — no runtime cardinality. |
+| GC-29 | N/A — no same-key runtime source. |
+| GC-30 | N/A — no runtime transition. |
+| GC-31 | N/A — no suspend/state write. |
+| GC-32 | N/A — no async event. |
+| GC-33 | N/A — no test injection. |
+| GC-34 | PASS — declarations checked against final diff. |
+| GC-35 | N/A — no protocol enum. |
+| GC-36 | N/A — no List<Status> model. |
+| GC-37 | PASS — challenge blocker means zero mutation/commit. |
+| GC-38 | PASS — defect/root cause/reopen/preserve/repair/STOP present. |
+| GC-39 | PASS — five mutation categories declared. |
+| GC-40 | PASS — ownership has source semantic and authority evidence. |
+| GC-41 | PASS — recount and Markdown scan recorded. |
+| GC-42 | PASS — no new registry/state canonical file. |
+| GC-43 | PASS — PROJECT remains stable pointer. |
+| GC-44 | PASS — view truth/target/edit/update fields present. |
+| GC-45 | N/A — no lifecycle change. |
+| GC-46 | N/A — no verification ID mapping. |
+| GC-47 | PASS — error attribution and feedback branch explicit. |
+| GC-48 | PASS — canonical six-column self-application audit. |
+
+Programmatic disposition check: unique=48, missing=0, duplicate=0.
+
 ## STEP Ledger
 
 | Step | Result | Evidence |
@@ -58,9 +126,48 @@ renderer implementation, AI_INDEX generation, legacy migration, and mode activat
 | P3A-2.1 | PASS | Canonical registry discovery recorded in `PHASE3A_AUDIT.md`. |
 | P3A-2.2 | PASS | Architecture accept record created. |
 | P3A-2.3 | PASS | This execution blueprint created. |
-| P3A-3.1..3.6 | PASS | Nine Phase 2E rows and mandatory candidates classified in the audit. |
-| P3A-4.1..4.2 | PASS | Mutation audit and GC-48 self-application audit recorded. |
-| P3A-5.1..5.4 | PASS | Model ledger, TURN=REVIEW, final allowlist audit, and `pg check` completed. |
+| P3A-3.1 | PASS | Audit: Phase2E row 1 classified. |
+| P3A-3.2 | PASS | Audit: Phase2E row 2 classified. |
+| P3A-3.3 | PASS | Audit: Phase2E row 3 classified. |
+| P3A-3.4 | PASS | Audit: Phase2E row 4 classified. |
+| P3A-3.5 | PASS | Audit: Phase2E row 5 classified. |
+| P3A-3.6 | PASS | Audit: Phase2E row 6 classified. |
+| P3A-3.7 | PASS | Audit: Phase2E row 7 classified. |
+| P3A-3.8 | PASS | Audit: Phase2E row 8 classified. |
+| P3A-3.9 | PASS | Audit: Phase2E row 9 classified. |
+| P3A-3.10 | PASS | Audit: PROJECT candidate classified. |
+| P3A-3.11 | PASS | Audit: SESSION candidate classified. |
+| P3A-3.12 | PASS | Audit: BLUEPRINT_STATE candidate classified. |
+| P3A-3.13 | PASS | Audit: AI_INDEX absence classified. |
+| P3A-3.14 | PASS | Audit: Current Work View absence classified. |
+| P3A-3.15 | PASS | Audit: Plan View absence classified. |
+| P3A-3.16 | PASS | Audit: Verification View absence classified. |
+| P3A-3.17 | PASS | Audit: Handoff View absence classified. |
+| P3A-4.1 | PASS | Mutation audit recorded. |
+| P3A-4.2 | PASS | GC-48 self-application audit recorded. |
+| P3A-5.1 | PASS | Existing Phase3A model row corrected. |
+| P3A-5.2 | PASS | BLUEPRINT_STATE TURN=REVIEW. |
+| P3A-5.3 | PASS | Final allowlist audit. |
+| P3A-5.4 | PASS | Final `pg check`. |
+
+No STEP range identifiers remain; all R1 repair actions use independent rows.
+
+## STEP Closure Table
+
+| STEP-ID | Status | Commit-or-baseline | Diff location |
+|---|---|---|---|
+| STEP-P3A-R1-01 | PASS | R1 worktree | R1 defects |
+| STEP-P3A-R1-02 | PASS | R1 worktree | GC disposition |
+| STEP-P3A-R1-03 | PASS | R1 worktree | STEP ledger |
+| STEP-P3A-R1-04 | PASS | R1 worktree | Audit view matrix |
+| STEP-P3A-R1-05 | PASS | R1 worktree | Phase2E carry-forward |
+| STEP-P3A-R1-06 | PASS | R1 worktree | Repository discovery |
+| STEP-P3A-R1-07 | PASS | R1 worktree | Audit GC-48 |
+| STEP-P3A-R1-08 | PASS | R1 worktree | Model ledger row |
+| STEP-P3A-R1-09 | PASS | R1 worktree | BLUEPRINT_STATE current batch |
+| STEP-P3A-R1-10 | PASS | R1 worktree | Preserve-set command |
+| STEP-P3A-R1-11 | PASS | R1 worktree | Validator/pg check |
+| STEP-P3A-R1-12 | PASS | R1 worktree | This closure table |
 
 ## Deferred Item Ledger
 
