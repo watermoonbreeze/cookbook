@@ -1,8 +1,8 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-11 · Project Graph Phase 2E R3 Final WorkItem Status Closure**
-> 当前工作域：**Project Graph Phase 2E R3**。当前 blocker：无阻塞，等待独立架构审核；真机验收仍由权威清单管理。Phase 2E R3 已完成，提交并推送后停止进入 Phase 3。
-> 执行角色：Codex @主力机（按 `Phase-2E-4-R3.md` 执行）。
+> 更新时间：**2026-08-11 · Project Graph Phase 2 Final Accept / Phase 3 Handoff**
+> 当前工作域：**Phase 2 Final**。当前 blocker：无；Phase 2 已 `FINAL ACCEPT / FROZEN`，Phase 3 已授权但尚未开始。下一步：新开 Phase 3 控制会话，先发布并接受架构蓝图。
+> 执行角色：Codex @主力机（按 `PHASE2_TO_PHASE3_HANDOFF.md` 接手）。
 
 ---
 
@@ -10,7 +10,7 @@
 
 1. **`BLUEPRINT_STATE.md`** —— TURN 当前应为 `USER`（L1/K1i 均 ACCEPTED；K1b 仍 DRAFT·PARKED；真机验证待用户）。
 2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
-3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2D ACCEPT / CLOSED；Phase 2E R3 RECONCILED / WAITING FOR ARCHITECTURE REVIEW；Graph 仍 draft）→ `migration/PHASE2E_RECONCILIATION.md` → `migration/PHASE2E_VERIFICATION_RECONCILIATION.md`。
+3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2 FINAL ACCEPT / FROZEN；Phase 3 AUTHORIZED / NOT STARTED；Graph 仍 draft）→ `migration/PHASE2_FINAL_ACCEPT.md` → `migration/PHASE2_TO_PHASE3_HANDOFF.md`。
 4. Phase 2D 历史蓝图：`docs/项目改造规划/Phase-2D-R1.md`；收口记录见 `project_graph/migration/PHASE2D_ACCEPT.md`，下一阶段入口见 `PHASE2D_TO_2E_HANDOFF.md`。
 5. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（权威清单共 114 条 Verification Rows：17 pass、97 pending）。**2026-08-09 起全表统一新增「验证结果/原因」反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位。
 
@@ -19,7 +19,7 @@
 ## 二、工作规则（当前任务域）
 
 - **Project Graph 阶段纪律**：每一批独立 commit / push / architecture review，禁止连续自动执行；当前 Graph **mode 必须保持 `draft`**，禁止切 `active`（Phase 3 事项）；Schema / Validator / 生产代码禁止修改。
-- **Phase 2E R3 待架构复核**：已完成 BUG-AI-MEAL-001 状态对账；实现证据存在，E-F4-01/02/03 仍 pending，因此状态为 `verifying`；未修改 schema、validator、生产代码，Graph 仍为 `draft`。
+- **Phase 2 Final 已冻结**：Phase 2E 已 `ACCEPT / CLOSED`；Project Graph snapshot 为 features=13、work_items=109、plans=4、verifications=98、relations=10；未修改 schema、validator、生产代码，Graph 仍为 `draft`。
 - 派生统计直接从 Graph 计算（临时脚本复用 `tools/project_graph.py` loader），不人工推算；统计不存 Derived 字段。
 - **SESSION Transitional Contract**：本文件是 `Transitional Current-State / Handoff Document`，供 AI 接手使用，但不是长期 Project Truth；不独立维护 WorkItem/Verification/Plan/Feature 总数、状态统计或 Stable ID Registry，不重新定义 Stable ID，不覆盖冻结的 Graph 决策。结构性重构延期至 Phase 2E/3。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
@@ -42,7 +42,9 @@ Phase 2A — Feature Universe    : ACCEPT / CLOSED          （b54246c1）
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （e2127176 · 104 WorkItems = 51 Stable + 53 Generated）
 Phase 2C — Plan+Relation+Deferred : ACCEPT / CLOSED       （ced5f13f）
 Phase 2D — Verification Bootstrap : ACCEPT / CLOSED
-Phase 2E — Cross-Reconcile + Bootstrap Freeze : RECONCILED / WAITING FOR ARCHITECTURE REVIEW
+Phase 2E — Cross-Reconcile + Bootstrap Freeze : ACCEPT / CLOSED
+Phase 2  — Bootstrap                    : FINAL ACCEPT / FROZEN
+Phase 3  — Views + Activation            : AUTHORIZED / NOT STARTED
 Graph Mode                     : draft
 ```
 
@@ -57,9 +59,9 @@ Graph Mode                     : draft
 
 **主路径（Project Graph，按序）**：
 
-1. **Phase 2E R3 已收口**：R2 冻结的 identity/ownership/status decisions 保持不变，BUG-AI-MEAL-001 已按实现存在 + 验收 pending 修正为 `verifying`；无 blocking conflict。
-2. **下一步**：等待独立 Phase 2E architecture review，不进入 Phase 3。
-3. Phase 2E 未做：Graph active、Legacy Views 替换、Observed Store、Lifecycle CLI、CI Guard，以及未经架构审核的 Feature/WorkItem/Verification 扩张。
+1. **Phase 2 Final 已收口**：Phase 2E 接受记录、Phase 2 Final 接受记录与 Phase 2→3 交接记录已落库；冻结的 identity/ownership/status decisions 保持不变。
+2. **下一步**：新开 Phase 3 控制会话，先读取 `PHASE2_FINAL_ACCEPT.md` 与 `PHASE2_TO_PHASE3_HANDOFF.md`，发布并接受 Phase 3 架构蓝图。
+3. 在新蓝图接受前，不实现 Graph renderer、Legacy View 替换、Observed Store、Lifecycle CLI、CI Guard，也不把 Graph mode 切为 `active`。
 
 **可并行/替代路径（真机解封前可推进，任选）**：
 
