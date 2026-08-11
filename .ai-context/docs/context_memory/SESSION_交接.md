@@ -10,8 +10,8 @@
 
 1. **`BLUEPRINT_STATE.md`** —— TURN 当前应为 `USER`（L1/K1i 均 ACCEPTED；K1b 仍 DRAFT·PARKED；真机验证待用户）。
 2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
-3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2D 已实施、等待架构复核、Graph 仍 draft）→ `migration/PHASE2D_INVENTORY.md` → `migration/PHASE2D_SOURCE_COVERAGE.md` → `migration/PHASE2D_CONFLICTS.md`。
-4. Phase 2D R1 蓝图：`docs/项目改造规划/Phase-2D-R1.md`；审核结论为 `REWORK`，本轮完成后仍等待架构复核。
+3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2D ACCEPT / CLOSED；Phase 2E AUTHORIZED / NOT STARTED；Graph 仍 draft）→ `migration/PHASE2D_ACCEPT.md` → `migration/PHASE2D_TO_2E_HANDOFF.md`。
+4. Phase 2D 历史蓝图：`docs/项目改造规划/Phase-2D-R1.md`；收口记录见 `project_graph/migration/PHASE2D_ACCEPT.md`，下一阶段入口见 `PHASE2D_TO_2E_HANDOFF.md`。
 5. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（权威清单共 114 条 Verification Rows：17 pass、97 pending）。**2026-08-09 起全表统一新增「验证结果/原因」反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位。
 
 ---
@@ -41,7 +41,8 @@ Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN   （83623a3）
 Phase 2A — Feature Universe    : ACCEPT / CLOSED          （b54246c1）
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （e2127176 · 104 WorkItems = 51 Stable + 53 Generated）
 Phase 2C — Plan+Relation+Deferred : ACCEPT / CLOSED       （ced5f13f）
-Phase 2D — Verification Bootstrap : REWORK / RECONCILIATION IN PROGRESS
+Phase 2D — Verification Bootstrap : ACCEPT / CLOSED
+Phase 2E — Cross-Reconcile + Bootstrap Freeze : AUTHORIZED / NOT STARTED
 Graph Mode                     : draft
 ```
 
@@ -56,9 +57,9 @@ Graph Mode                     : draft
 
 **主路径（Project Graph，按序）**：
 
-1. **完成 Phase 2D R1**：Source Coverage 114/114；43 MIGRATE + 2 UPDATE + 69 DEFER；重审 E-CFG ownership；标记 E-K1G-01 legacy aggregate；完成后提交唯一 R1 Commit 并等待架构审核。
-2. 审核通过后：不得写 `PHASE2D_ACCEPT.md`，不得切换 Graph `active`，不得进入 Phase 2E。
-3. Phase 2D 明确不做：CurrentWork reconcile（2E）、L3 split（2E）、Legacy Views（3）、Graph active（3）、Observed Store（4）、Lifecycle CLI（4）、CI Guard（5）。
+1. **Phase 2D 已收口**：Source Coverage 114/114；43 MIGRATE + 2 UPDATE + 69 DEFER；E-CFG ownership 已落 K1a；E-K1G-01 保留为 legacy aggregate。
+2. **下一步进入 Phase 2E**：按 `migration/PHASE2D_TO_2E_HANDOFF.md` 做 CurrentWork、SESSION、BLUEPRINT_STATE、Deferred、冲突和视图漂移的交叉核对。
+3. Phase 2E 仍不做：Graph active、Legacy Views 替换、Observed Store、Lifecycle CLI、CI Guard，以及未经架构审核的 Feature/WorkItem/Verification 扩张。
 
 **可并行/替代路径（真机解封前可推进，任选）**：
 
