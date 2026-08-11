@@ -14,30 +14,27 @@
 
 1. 项目入口规则：仓库根 `AGENTS.md`（Codex）或 `CLAUDE.md`（Claude）。
 2. 全局全貌：`docs/projectReview/00_导读与索引.md`，再按其阅读路径下钻。
-3. 当前进行中状态：`docs/context_memory/SESSION_交接.md`；它优先于任何历史快照、旧交接或待办摘要。
-4. 代码定位：`docs/功能路径索引.md`。
-5. 任务范围：`docs/feature/待办索引.md` 与相应专项文档；工程与踩坑：`docs/experience/INDEX.md`。
-6. 具体功能按需读 `docs/feature/`；架构、流程、数据、AI 和诊断按需读 `docs/projectReview/`。
+3. Project Truth 入口：`.ai-context/project_graph/README.md`、`.ai-context/project_graph/project.yaml`；Feature、WorkItem、Plan、Verification、Relation、CurrentWork 以 Project Graph 为准。
+4. 当前进行中状态：`docs/context_memory/SESSION_交接.md`；它是 Handoff Context，不覆盖 Project Graph 或已接受决策。
+5. 代码定位：`docs/功能路径索引.md`。
+6. 任务范围：`docs/feature/待办索引.md` 与相应专项文档；工程与踩坑：`docs/experience/INDEX.md`。
+7. 具体功能按需读 `docs/feature/`；架构、流程、数据、AI 和诊断按需读 `docs/projectReview/`。
 
-冲突时的优先级：**当前代码与数据库 schema > 当前 `SESSION_交接.md` > 项目地图/ADR > 专项方案与待办 > experience > `_archive` 历史资料**。任何“待实现”不等于已经存在于代码。
+Phase 2 Frozen Truth Hierarchy：Runtime Truth（Code / DB / schema / runtime config）> Project Truth（Project Graph）> Decision Truth（Accepted Plan / ADR / Formal Blueprint）> Execution Extension（BLUEPRINT_STATE）> Handoff Context（SESSION）。任何“待实现”不等于已经存在于代码。
 
 ## 协作模式
 
-- **协作模式: BLUEPRINT**（常驻声明，跨机器协作时无需每次口令触发）。`ARCH=Claude@主力机 ｜ CODE=DeepSeek@副机 ｜ REVIEW=ARCH`。
-- 规则正文：用户级真相源 `~/.ai-context/rules/blueprint_protocol.md`；本仓库副本 `docs/experience/12_多模型协作与实施蓝图规范.md`（副机可能无用户级目录，以此为准）。
-- 握手状态唯一文件：`docs/context_memory/BLUEPRINT_STATE.md`。开工前先 `git pull` 读该文件，`TURN` 不是自己则停手、只报告持球方。
+- **协作模式: BLUEPRINT**（常驻声明，跨机器协作时无需每次口令触发）。ARCH / CODE / REVIEW / TURN 以 `docs/context_memory/BLUEPRINT_STATE.md` 当前值为准。
+- 规则正文：用户级真相源 `~/.ai-context/rules/blueprint_protocol.md`；CookBook canonical GC / fallback：`docs/experience/12_多模型协作与实施蓝图规范.md`。
+- 握手状态唯一文件：`docs/context_memory/BLUEPRINT_STATE.md`。开工前先 `git pull` 读取；`TURN` 不是自己则停手、只报告持球方。
+- 具体模型执行记录唯一事实源：`docs/experience/14_模型执行力评估.md`。
 
-## 当前关键任务
+## 稳定导航指针
 
-- **AI 记一餐 B4+B5+B6（周期记+NDJSON流式）已 ACCEPTED**，用户正在真机验证中；实施基线 `docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md`、`..._B3会话实施蓝图.md`、`..._B4输入UI实施蓝图.md`。
-- **当前 TURN=CODE 的批次**：`docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md`（AI 预览页营养展示统一化 + AI 未配置诚实报错），已过 GC-37 独立挑战，蓝图 `ACCEPTED`，先读 `docs/context_memory/BLUEPRINT_STATE.md` 确认后接手。
+- 当前批次 / TURN / 当前执行状态：唯一读取 `docs/context_memory/BLUEPRINT_STATE.md`。
 - 任何编码模型实施前必须读 `docs/experience/12_多模型协作与实施蓝图规范.md`（蓝图协议 + GC 条款）。
 - 规则与反查：`docs/projectReview/21_AI与网络请求策略（专属）.md`、`08_决策记录.md` D-15/D-16、`05_诊断地图.md`。
 - 真机验证只认 `docs/feature/真机待验证清单_<yyyyMMddHHmm>.md` 中时间最新的一份。
-
-## 蓝图治理
-
-当任务进入 C 档 / BLUEPRINT 协作模式时，全局协议唯一真相源为 `~/.ai-context/rules/blueprint_protocol.md`；CookBook 项目专属颗粒度与历史经验见 `.ai-context/experience/blueprint_granularity.md`。执行顺序：读取全局协议、读取项目 GC / experience，再按当前 `BLUEPRINT_STATE.md` 颗粒度完成 GC 勾销；未满足不得标记 `BLUEPRINT_READY`。
 
 ## 文档分层
 
