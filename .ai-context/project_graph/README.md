@@ -5,7 +5,7 @@
 > **Phase 2B — Current WorkItem**: ACCEPT / CLOSED
 > **Phase 2C — Plan + Relation + Deferred Semantics**: ACCEPT / CLOSED
 > **Phase 2D — Verification Bootstrap**: ACCEPT / CLOSED
-> **Phase 2E — Cross-Reconcile + Bootstrap Freeze**: IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
+> **Phase 2E — Cross-Reconcile + Bootstrap Freeze**: RECONCILED / WAITING FOR ARCHITECTURE REVIEW
 > **Graph Mode**: `draft`
 
 > 本目录是 Project Graph 的 **数据真相源（Project Truth）**。Phase 1（Model Contract）**FINAL ACCEPT**、核心 Contract **FROZEN**；Phase 2A（Feature Universe）已 **ACCEPT / CLOSED**，13 个 Feature shard + `source_refs` provenance 已冻结；Phase 2B（Current WorkItem）已 **ACCEPT / CLOSED**；Phase 2C（Plan + Relation + Deferred Semantics）**已 ACCEPT / CLOSED**；Phase 2D（Verification Bootstrap）已 **ACCEPT / CLOSED**，权威清单 114 条、Deferred 69 条、CFG ownership 已有证据、E-K1G-01 已标记 legacy aggregate。Phase 2E 已实施，52 条当前 deferred Verification 等待独立架构审核。**Graph 仍为 mode: draft，未正式启用**。
@@ -24,14 +24,14 @@ Phase 2A — Feature Universe    : ACCEPT / CLOSED          （Review Commit b54
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （Review Commit e2127176）
 Phase 2C — Plan+Relation+Deferred : ACCEPT / CLOSED       （Review Commit ced5f13f）
 Phase 2D — Verification Bootstrap : ACCEPT / CLOSED       （Review Commit 1cfc96035237e708005b8919a5b624273e534a0c）
-Phase 2E — Cross-Reconcile + Bootstrap Freeze : IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
+Phase 2E — Cross-Reconcile + Bootstrap Freeze : RECONCILED / WAITING FOR ARCHITECTURE REVIEW
 Phase 2  — 整体                : IN PROGRESS（非 COMPLETE）
 Graph Mode                     : draft
 ```
 
 Phase 2A 已完成能力见 `migration/PHASE2A_ACCEPT.md`；Phase 2A→2B 执行强制入口见 `migration/PHASE2A_TO_2B_HANDOFF.md`；Phase 2B Accept 记录见 `migration/PHASE2B_ACCEPT.md`；Phase 2B→2C 强制入口见 `migration/PHASE2B_TO_2C_HANDOFF.md`；Phase 2C 决策/冲突见 `migration/PHASE2C_DECISIONS.md` / `migration/PHASE2C_CONFLICTS.md`；Phase 2C Accept 见 `migration/PHASE2C_ACCEPT.md`；Phase 2C→2D 强制入口见 `migration/PHASE2C_TO_2D_HANDOFF.md`。
 **Phase 2B 已 ACCEPT / CLOSED（Review Commit `e2127176`）**：Migration Reconciliation（Rework）完成——Stable ID（FAM-AGE/FAM-MEAL/K15/J22）无损恢复、Source Coverage 100%（UNEXPLAINED=0）、TODO-* kind 全部修正、K1c 状态修正、L3 → F-TOOLS（FEATURE_SPLIT_CANDIDATE）。最终派生统计（From Graph）：Total 104 / Stable 51 / Generated 53。
-**Phase 2C 已 ACCEPT / CLOSED（Review Commit `ced5f13f`）**：Plan lifecycle 冻结（Plan completed ≠ WorkItem done）、Observed vs Verification 冻结、BLUEPRINT_STATE Extension 边界冻结、FEAT-* 匿名 feature 约定结构化；Plan 迁移 PLAN-AI-NDJSON(completed)/PLAN-K1I(completed)/PLAN-K1A(completed)/PLAN-L1(completed)，K1g/K1i/K1a/L1 均保持 verifying；关系 K15↔I7、J22↔L2（related_to）、L3 affects 6 Feature 已建立；FEAT-AI-MEAL-001 / FEAT-RECOMMEND-001 已落位。**Phase 2D 已 ACCEPT / CLOSED；Phase 2E 已 IMPLEMENTED，待独立架构审核。执行入口见 `migration/PHASE2E_RECONCILIATION.md`。**
+**Phase 2C 已 ACCEPT / CLOSED（Review Commit `ced5f13f`）**：Plan lifecycle 冻结（Plan completed ≠ WorkItem done）、Observed vs Verification 冻结、BLUEPRINT_STATE Extension 边界冻结、FEAT-* 匿名 feature 约定结构化；Plan 迁移 PLAN-AI-NDJSON(completed)/PLAN-K1I(completed)/PLAN-K1A(completed)/PLAN-L1(completed)，K1g/K1i/K1a/L1 均保持 verifying；关系 K15↔I7、J22↔L2（related_to）、L3 affects 6 Feature 已建立；FEAT-AI-MEAL-001 / FEAT-RECOMMEND-001 已落位。**Phase 2D 已 ACCEPT / CLOSED；Phase 2E R1 已 RECONCILED，待独立架构审核。执行入口见 `migration/PHASE2E_RECONCILIATION.md`。**
 
 ### 0.2 冻结契约（Phase 1 Frozen Contract）
 
@@ -430,7 +430,7 @@ ACCEPT / CLOSED
 Phase 2D Review Commit:
 1cfc96035237e708005b8919a5b624273e534a0c
 Phase 2E:
-IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
+RECONCILED / WAITING FOR ARCHITECTURE REVIEW
 
 Graph Mode:
 draft

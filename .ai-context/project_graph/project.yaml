@@ -4,10 +4,10 @@
 # Phase 2B Current WorkItem: ACCEPT / CLOSED
 # Phase 2C Plan + Relation + Deferred Semantics: ACCEPT / CLOSED
 # Phase 2D Verification Bootstrap: ACCEPT / CLOSED
-# Phase 2E Cross-Reconcile + Bootstrap Freeze: IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
-# Current Bootstrap Stage: Phase 2E review
+# Phase 2E Cross-Reconcile + Bootstrap Freeze: RECONCILED / WAITING FOR ARCHITECTURE REVIEW
+# Current Bootstrap Stage: Phase 2E R1 review
 # mode: draft — Contract 已冻结；Graph 数据仍处 Bootstrap draft；Phase 3 完成前不得切 active。
-# 现有 Truth（Code/SESSION/BLUEPRINT_STATE/项目地图）优先级不变。
+# Truth hierarchy: Runtime=Code/DB/schema/config; Project=Project Graph; Decision=accepted Plan/ADR/Blueprint; Execution Extension=BLUEPRINT_STATE; Handoff=SESSION。
 kind: project
 graph_version: "1"
 mode: draft

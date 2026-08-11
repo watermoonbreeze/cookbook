@@ -1,7 +1,7 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-11 · Project Graph Phase 2E Cross-Reconcile 实施**（Phase 2D END → Phase 2E，实施提交待推送）
-> 当前工作域：**Project Graph Phase 2E Cross-Reconcile + Bootstrap Freeze**。上一交接内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
+> 更新时间：**2026-08-11 · Project Graph Phase 2E R1 Ownership Reconciliation**（Phase 2E R1，实施提交待推送）
+> 当前工作域：**Project Graph Phase 2E R1 Deferred Verification Ownership Reconciliation**。上一交接内容已并入本文件「承接的既有事实」，更细历史见 `SESSION_交接_历史.md` 与日期快照 `2026-08-11_ProjectGraph_2B收口与2C_2D交接.md`。
 > 执行角色：Claude Code @主力机（按 `第二阶段-2B-End-2C-Preview.md` / `第二阶段-2C-End-2D-Preview.md` 蓝图执行）。
 
 ---
@@ -10,7 +10,7 @@
 
 1. **`BLUEPRINT_STATE.md`** —— TURN 当前应为 `USER`（L1/K1i 均 ACCEPTED；K1b 仍 DRAFT·PARKED；真机验证待用户）。
 2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
-3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2D ACCEPT / CLOSED；Phase 2E AUTHORIZED / NOT STARTED；Graph 仍 draft）→ `migration/PHASE2D_ACCEPT.md` → `migration/PHASE2D_TO_2E_HANDOFF.md`。
+3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2D ACCEPT / CLOSED；Phase 2E R1 RECONCILED / WAITING FOR ARCHITECTURE REVIEW；Graph 仍 draft）→ `migration/PHASE2E_RECONCILIATION.md` → `migration/PHASE2E_VERIFICATION_RECONCILIATION.md`。
 4. Phase 2D 历史蓝图：`docs/项目改造规划/Phase-2D-R1.md`；收口记录见 `project_graph/migration/PHASE2D_ACCEPT.md`，下一阶段入口见 `PHASE2D_TO_2E_HANDOFF.md`。
 5. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（权威清单共 114 条 Verification Rows：17 pass、97 pending）。**2026-08-09 起全表统一新增「验证结果/原因」反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位。
 
@@ -19,7 +19,7 @@
 ## 二、工作规则（当前任务域）
 
 - **Project Graph 阶段纪律**：每一批独立 commit / push / architecture review，禁止连续自动执行；当前 Graph **mode 必须保持 `draft`**，禁止切 `active`（Phase 3 事项）；Schema / Validator / 生产代码禁止修改。
-- **Phase 2E 实施待架构复核**：已按 2E 蓝图完成 Cross-Reconcile 台账、E-K1G-01 legacy 收口与 L3 no-registry-change 裁决；52 条当前 deferred Verification 因缺乏唯一 WorkItem 证据保留为 blocking，未修改 schema、validator、生产代码，Graph 仍为 `draft`。
+- **Phase 2E R1 待架构复核**：已逐条完成 52 条 deferred Verification ownership reconciliation；42 条映射既有 WorkItem，10 条由 3 个严格证据支持的 WorkItem 负责，`RETAIN_DEFERRED_BLOCKED=0`、`ARCHITECTURE_CHANGE_REQUIRED=0`，未修改 schema、validator、生产代码，Graph 仍为 `draft`。
 - 派生统计直接从 Graph 计算（临时脚本复用 `tools/project_graph.py` loader），不人工推算；统计不存 Derived 字段。
 - **SESSION Transitional Contract**：本文件是 `Transitional Current-State / Handoff Document`，供 AI 接手使用，但不是长期 Project Truth；不独立维护 WorkItem/Verification/Plan/Feature 总数、状态统计或 Stable ID Registry，不重新定义 Stable ID，不覆盖冻结的 Graph 决策。结构性重构延期至 Phase 2E/3。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
@@ -42,11 +42,11 @@ Phase 2A — Feature Universe    : ACCEPT / CLOSED          （b54246c1）
 Phase 2B — Current WorkItem    : ACCEPT / CLOSED          （e2127176 · 104 WorkItems = 51 Stable + 53 Generated）
 Phase 2C — Plan+Relation+Deferred : ACCEPT / CLOSED       （ced5f13f）
 Phase 2D — Verification Bootstrap : ACCEPT / CLOSED
-Phase 2E — Cross-Reconcile + Bootstrap Freeze : IMPLEMENTED / WAITING FOR ARCHITECTURE REVIEW
+Phase 2E — Cross-Reconcile + Bootstrap Freeze : RECONCILED / WAITING FOR ARCHITECTURE REVIEW
 Graph Mode                     : draft
 ```
 
-- Graph 数据（snapshot，derived from Graph）：features=13 · work_items=106 · plans=4（PLAN-AI-NDJSON/K1I/K1A/L1 全 completed）· verifications=46 · relations=10；详细审计见 `migration/PHASE2E_RECONCILIATION.md`。
+- Graph 数据（snapshot，derived from Graph）：features=13 · work_items=109 · plans=4（PLAN-AI-NDJSON/K1I/K1A/L1 全 completed）· verifications=98 · relations=10；详细审计见 `migration/PHASE2E_RECONCILIATION.md` 与 `PHASE2E_VERIFICATION_RECONCILIATION.md`。
 - **Plan completed ≠ WorkItem done**（冻结语义）：K1g/K1i/K1a/L1 均保持 `verifying`，不得因 Plan completed 变 done。
 - 冻结：Plan lifecycle（superseded=替换态不要求 completed 前态）、Observed vs Verification（build/test/pg check=Observed Fact，不自动建 Verification）、BLUEPRINT_STATE CODE/ARCH/REVIEW=Cookbook Extension（不进 Core Schema）、FEAT-\<FEATURE\>-NNN 约定（FEAT-AI-MEAL-001、FEAT-RECOMMEND-001）。
 - L3 已在 Phase 2E 关闭为 `RESOLVED_NO_REGISTRY_CHANGE`；F-TOOLS primary 与 6 条 affects 保持。
@@ -57,7 +57,7 @@ Graph Mode                     : draft
 
 **主路径（Project Graph，按序）**：
 
-1. **Phase 2E 已实施**：台账入口为 `PHASE2E_RECONCILIATION.md`；52 条 current actionable deferred rows 是待独立架构审核的 blocking conflict。
+1. **Phase 2E R1 已收口**：52 条 current actionable deferred rows 已逐条有 final disposition；无 generic blocked 或架构阻塞。
 2. **下一步**：等待独立 Phase 2E architecture review，不进入 Phase 3。
 3. Phase 2E 未做：Graph active、Legacy Views 替换、Observed Store、Lifecycle CLI、CI Guard，以及未经架构审核的 Feature/WorkItem/Verification 扩张。
 

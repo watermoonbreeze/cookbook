@@ -50,3 +50,7 @@ SESSION 冻结为 `Handoff / Working Context View`。本轮移除 Phase 2D rewor
 ## Legacy View policy
 
 Phase 2E 只识别并登记 legacy view drift，不手工重写 generated/human views；View 替换留给 Phase 3。SESSION 作为当前 handoff 文档是唯一允许在本轮清理的例外。
+
+## R1 amendment
+
+初次 Phase 2E 结论中的 `52 RETAIN_DEFERRED_BLOCKED` 只是临时隔离状态，已由 R1 ownership evidence search 逐条替换：42 条映射既有 WorkItem，10 条由 3 个严格证据支持的 WorkItem 负责；`RETAIN_DEFERRED_BLOCKED=0`、`ARCHITECTURE_CHANGE_REQUIRED=0`。R1 详细证据见 `PHASE2E_VERIFICATION_RECONCILIATION.md`。

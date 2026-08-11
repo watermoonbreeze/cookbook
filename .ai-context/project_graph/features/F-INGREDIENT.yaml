@@ -39,6 +39,15 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_Bug修复.md
     intent: 用户清空预填=不想跟随系统→再手动选分类时应尊重用户选择，不被 classify(name) 覆盖
+  - id: K1f
+    kind: feature
+    status: backlog
+    title: AI食材入库轻量别名归一
+    feature: F-INGREDIENT
+    source_refs:
+      - .ai-context/docs/feature/待办_功能算法.md#K1f
+      - .ai-context/docs/feature/待办总览.md#K1f
+    intent: AI 食材入库前按冻结别名表复用已有食材 ID，避免“西红柿/番茄”等同义名称重复创建；不做全量模糊匹配。
   - id: K14
     kind: feature
     status: backlog
@@ -103,3 +112,14 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办总览.md
     intent: 自建食材输名匹配到已有/预设食材时主动提示"已有『土豆』直接用？"；复用 PinyinIndex/按名查
+
+verifications:
+  - id: E-R-06
+    kind: device
+    status: pending
+    work_item: K1f
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R6
+      - .ai-context/docs/feature/待办_功能算法.md#K1f
+    reason: 西红柿/番茄同义食材应复用已有条目而不重复建库，验收 K1f 别名归一责任。

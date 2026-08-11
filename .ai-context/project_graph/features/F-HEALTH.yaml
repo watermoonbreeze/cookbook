@@ -78,6 +78,16 @@ work_items:
     source_refs:
       - .ai-context/docs/feature/待办_战略会商.md
     intent: 老人优质蛋白/儿童限糖/孕妇叶酸铁奶；需产品定口径
+verifications:
+  - id: E-R-05
+    kind: device
+    status: pending
+    work_item: J14
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R5
+      - .ai-context/docs/feature/待办_功能算法.md#J14
+    reason: 菜名解析自动补调料时，盐应使用受控默认剂量而非误用食材满量，验收 J14 的调料补全责任。
 relations:
   - source: work:J22
     type: related_to

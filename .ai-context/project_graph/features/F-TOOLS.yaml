@@ -336,6 +336,15 @@ verifications:
     source_refs:
       - .ai-context/docs/feature/真机待验证清单_202608082330.md#L1-云端-AI-首启同意
     reason: 全新安装同意流程与隐私小字待真机验证
+  - id: E-P0-08
+    kind: device
+    status: pending
+    work_item: L1
+    required: true
+    source_refs:
+      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-8
+      - .ai-context/docs/feature/待办_工程合规.md#L1
+    reason: 来源 P0-8：云端 AI 交互日志不应暴露输入、原始响应或密钥，验收 L1 合规边界。
 relations:
   - source: work:L3
     type: affects

@@ -18,15 +18,15 @@ Every carried conflict is assigned one of: `RESOLVED`, `ACCEPTED_LEGACY`, `DEFER
 | PHASE2C L3 follow-up | RESOLVED | No Feature Registry change required in Phase 2E |
 | PHASE2D Q-2D-R1-001 CFG ownership | RESOLVED | E-CFG-01..06 owned by K1a with formal blueprint evidence |
 | PHASE2D E-K1G-01 legacy aggregate | ACCEPTED_LEGACY | Stable ID retained; status `not_required`; no current Closure block |
-| PHASE2D Q-2D-001 deferred ownership gap | ARCHITECTURE_CHANGE_REQUIRED | 52 current pending rows lack unique WorkItem evidence; see verification reconciliation |
+| PHASE2D Q-2D-001 deferred ownership gap | RESOLVED | Superseded by Phase 2E R1 row-level ownership search; all 52 rows now have final dispositions |
 
 ## Summary
 
 ```text
-RESOLVED: 11 source groups
+RESOLVED: 12 source groups
 ACCEPTED_LEGACY: 1 source group
 DEFERRED_TO_PHASE_3_PLUS: 0
-ARCHITECTURE_CHANGE_REQUIRED: 1 blocking source group / 52 rows
+ARCHITECTURE_CHANGE_REQUIRED: 0
 Unknown / Forgotten: 0
-Blocking Conflicts: 52 deferred verification rows
+Blocking Conflicts: 0
 ```
