@@ -12,8 +12,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M0-END-ACCEPT-02 — Model Evidence Truth Closure |
-| 状态 | **CLAIMED / IN EXECUTION** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -21,10 +21,13 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | DETERMINISTIC_ARCH_AUTHORED_TRANSFORM |
 | Handoff Parent | `d6c8d5f693ace96a525d9dc797042467660bf6ef` |
+| Execution Parent | `2513f1e9fd92a23369e97442c1799bdec95a0f16` |
 | Architecture input | END-ACCEPT-01 remote delivery = **REWORK — ARCH-PAYLOAD-01 ONLY** |
-| 范围 | 仅修 END-ACCEPT-01 模型台账 truth、记录当前批 evidence、更新 State；Final Accept/Handoff/Control 冻结 |
-| UBF Stage | M0 **ACCEPT / CLOSED**; M0→M1 handoff content preserved; review closure pending this evidence repair |
-| 下一步 | Execute the fixed repair payload, return TURN=REVIEW, and stop. M1 is NOT STARTED; CookBook Phase 3B remains NOT AUTHORIZED TO START. |
+| 范围 | END-ACCEPT-01 模型台账 truth closure + 当前批 evidence + State；Final Accept/Handoff/Control 保持 zero-diff |
+| 证据 | previous ledger row corrected; current CODE evidence row COMPLETE/PENDING REVIEW; exact 4-file final scope; semantic truth gate; State concrete-model deny gate |
+| 未解决问题 | NONE in CODE delivery; remote ARCH review of this repair remains required |
+| UBF Stage | M0 **ACCEPT / CLOSED**; M0→M1 HANDOFF **PERSISTED / AWAITING REMOTE ARCH REVIEW AFTER EVIDENCE TRUTH REPAIR** |
+| 下一步 | Remote ARCH reviews this repair. Only ARCH ACCEPT of this delivery authorizes a separate M1 Preview/Start batch. M1 is NOT STARTED; CookBook Phase 3B remains NOT AUTHORIZED TO START. |
 ## 上一批次：UBF-M0-END-ACCEPT-01 — M0 End/Accept + M0→M1 Handoff Persistence（2026-08-12）
 | 字段 | 值 |
 |---|---|
