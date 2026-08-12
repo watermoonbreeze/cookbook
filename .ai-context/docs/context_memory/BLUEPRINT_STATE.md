@@ -8,28 +8,32 @@
 
 ---
 
-## 当前批次：UBF-M0-END-ACCEPT-01 — M0 End/Accept + M0→M1 Handoff Persistence（2026-08-12）
-
+## 当前批次：UBF-M0-END-ACCEPT-02 — Model Evidence Truth Closure（2026-08-12）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M0-END-ACCEPT-01 — M0 End/Accept + M0→M1 Handoff Persistence |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M0-END-ACCEPT-02 — Model Evidence Truth Closure |
+| 状态 | **CLAIMED / IN EXECUTION** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | DETERMINISTIC_ARCH_AUTHORED_TRANSFORM |
-| Handoff Parent | `3489523db6508ba742ee835022d7e2a9a64f2c4f` |
-| Execution Parent | `164b13090a9354123ff70242637405cb13b6875c` |
-| Architecture input | R5 reviewed delivery `3489523db6508ba742ee835022d7e2a9a64f2c4f` = **ACCEPT** |
-| 范围 | M0 End/Accept、R5 台账 ARCH 回填、M0→M1 handoff、Control/State；未执行 M1 |
-| 证据 | Final Accept snapshot, M0→M1 Handoff, R5 ledger backfill, current CODE evidence, Control, State; exact 7-file normal delivery |
-| 未解决问题 | NONE |
-| UBF Stage | M0 **ACCEPT / CLOSED**; M0→M1 HANDOFF **PERSISTED / AWAITING REMOTE ARCH REVIEW** |
-| 下一步 | Remote review this persistence delivery. Only ARCH ACCEPT of this delivery authorizes a separate M1 Preview/Start batch. M1 is NOT STARTED; CookBook Phase 3B remains NOT AUTHORIZED TO START. |
-
+| Handoff Parent | `d6c8d5f693ace96a525d9dc797042467660bf6ef` |
+| Architecture input | END-ACCEPT-01 remote delivery = **REWORK — ARCH-PAYLOAD-01 ONLY** |
+| 范围 | 仅修 END-ACCEPT-01 模型台账 truth、记录当前批 evidence、更新 State；Final Accept/Handoff/Control 冻结 |
+| UBF Stage | M0 **ACCEPT / CLOSED**; M0→M1 handoff content preserved; review closure pending this evidence repair |
+| 下一步 | Execute the fixed repair payload, return TURN=REVIEW, and stop. M1 is NOT STARTED; CookBook Phase 3B remains NOT AUTHORIZED TO START. |
+## 上一批次：UBF-M0-END-ACCEPT-01 — M0 End/Accept + M0→M1 Handoff Persistence（2026-08-12）
+| 字段 | 值 |
+|---|---|
+| 状态 | **REWORK / REMOTE ARCH REVIEWED / ARCH-PAYLOAD-01 ONLY** |
+| Reviewed delivery | `d6c8d5f693ace96a525d9dc797042467660bf6ef` |
+| 已验证 | 两提交链、exact 7-file allowlist、deterministic 7/7 byte identity、R5 ACCEPT 持久化、M0 Final Accept、M0→M1 Handoff、Control/State gates |
+| 未通过 | 模型执行台账当前批行仍写 `待执行`，与 Git/Execution Report/State 的 COMPLETE 事实冲突 |
+| 归因 | **architecture-authored payload defect；不是 CODE 执行偏差** |
+| 修复授权 | 仅授权 UBF-M0-END-ACCEPT-02 做模型证据 truth closure；不得修改 Final Accept/Handoff/Control，不得启动 M1 或 Phase 3B |
 ## 上一批次：UBF-M0-REWORK-05 — Deterministic M0 Governance Repair（2026-08-12）
 
 | 字段 | 值 |
