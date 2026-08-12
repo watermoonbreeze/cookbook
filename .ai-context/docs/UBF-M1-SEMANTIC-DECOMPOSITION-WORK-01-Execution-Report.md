@@ -47,4 +47,3 @@ Adapter PASS text is not acceptance evidence by itself. Remote ARCH independentl
 ## Attribution
 
 R1/R2/R3 stops remain architecture/package defects and are not GPT-5.6 Luna capability negatives. This delivery does not self-ACCEPT or establish a model-routing conclusion.
-

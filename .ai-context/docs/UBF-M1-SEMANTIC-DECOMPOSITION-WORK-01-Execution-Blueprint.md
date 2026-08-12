@@ -118,4 +118,3 @@ Do not repair State compaction, TURN enum, project fallback, routing sibling ide
 Normal/abort remote evidence must establish parent/claim/final chain, exact changed sets, target blobs, denyset, canonical hashes, semantic gates and remote equality. Do not rely only on adapter PASS text.
 
 Architecture/payload/compatibility defects are not Luna capability negatives. Only a proven deviation from this complete executable package may be recorded as execution deviation.
-
