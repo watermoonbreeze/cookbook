@@ -1,13 +1,13 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0 REWORK-05 COMPLETE / PENDING REMOTE ARCH REVIEW`
+> 状态：`M0 ACCEPT / CLOSED; M0→M1 HANDOFF PERSISTED / PENDING REMOTE ARCH REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M0 — Migration Control & Truth Lock`
-> Current Review Result: `d7423f30b3892f021a50d162b832d168d2cfad22 = BLOCKED_FOR_REVIEW / REMOTE INPUT VALID / CONTENT REWORK REQUIRED`
-> Current Repository Observation / Handoff Parent: `d7423f30b3892f021a50d162b832d168d2cfad22`
+> Current UBF Stage: `M0 — ACCEPT / CLOSED`
+> Current Review Result: `3489523db6508ba742ee835022d7e2a9a64f2c4f = ACCEPT`
+> M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R5 — Deterministic Repair Payload & Independent Execution Observation`
+> Process Revision: `R6 — M0 End/Accept & M0→M1 Handoff Persistence`
 
 ## 1. 目标
 
@@ -404,10 +404,9 @@ STOP：
 
 ## 10. 当前启动判定
 
-- 当前 UBF 阶段为 `M0 — Migration Control & Truth Lock`；M0 尚未获得架构 ACCEPT。
-- `d7423f30b3892f021a50d162b832d168d2cfad22` 是有效的 R4 四文件远程审核输入，但其阻塞归因不成立，原十项治理修复仍为 0/10，报告与台账证据需要纠正。
-- `UBF-M0-REWORK-05` 使用架构提供的确定性修复载荷，在隔离干净 worktree 中执行；这是 M0 repair，不是 M1。
-- R5 push 后必须等待远程架构 `ACCEPT`；Coder 不得自行宣布 M0 完成。
-- ACCEPT 后仍须由架构另发 M0 End/Accept + M0→M1 Handoff persistence 蓝图，执行并审核该交接后，才可另行 Preview/Start M1。
-- 若 R5 审核为 REWORK，只能发布下一份窄范围修复蓝图。
-- CookBook Phase 3B、production code、tests、build/configuration 均不在本批范围内。
+- UBF M0 已由远程架构对 R5 reviewed delivery `3489523db6508ba742ee835022d7e2a9a64f2c4f` 独立复核并判定 `ACCEPT / CLOSED`。
+- `UBF-M0-END-ACCEPT-01` 只负责持久化该既有架构裁决、回填 R5 模型台账并创建 M0→M1 handoff；不重新打开 R2/R3/R4/R5 已验收内容。
+- M0→M1 handoff 在本批正常交付后状态为 `PERSISTED / PENDING REMOTE ARCH REVIEW`；本批不得自我 ACCEPT。
+- 只有本批 persistence delivery 获得远程架构 `ACCEPT` 后，才允许另发独立的 M1 Preview/Start 蓝图。
+- 当前 M1 为 `NOT STARTED / NOT YET AUTHORIZED`；不得在本批执行 M1 Current-State Semantic Decomposition。
+- CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；production code、tests、build/configuration 与 Project Graph mutation 均不在本批范围内。
