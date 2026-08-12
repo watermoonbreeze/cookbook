@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01 — Canonical Contract Decomposition |
-| 状态 | **CLAIMED / IN EXECUTION** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,11 +20,11 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9` |
-| Execution Parent | `CLAIM COMMIT (this state-only commit)` |
+| Execution Parent | final delivery 的直接父提交（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | M1 Preview/Start remote delivery `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9` = **ACCEPT** |
 | 范围 | 持久化 architecture-authored M1 current-clause inventory/classification/current-state map/contradiction-gap-preserve/overlay boundary；不改 canonical source；不执行 M2 |
 | 外部 canonical evidence | blueprint_protocol=`c2c8332e...`; GLOBAL=`73cf5c04...`; root MODEL_ROUTING=`86b3dec9...`; current routing source identity gap recorded, not guessed as same-file drift |
-| UBF Stage | M0 **ACCEPT/CLOSED**; M1 Preview/Start **ACCEPT/CONSUMED**; M1 Semantic Decomposition Work-01 **CLAIMED / IN EXECUTION**; M2 **NOT STARTED** |
+| UBF Stage | M0 **ACCEPT/CLOSED**; M1 Preview/Start **ACCEPT/CONSUMED**; M1 Semantic Decomposition Work-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; M2 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
 | 下一步 | 完成本批后 TURN=REVIEW 并仅等待 remote ARCH review；ACCEPT 后先做 M1 End/Accept + M1→M2 Handoff，不直接启动 M2 |
 ## 上一批次：UBF-M1-PREVIEW-START-01 — Current-State Semantic Decomposition Entry（2026-08-12）

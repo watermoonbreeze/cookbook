@@ -1,14 +1,14 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0 ACCEPT / CLOSED; M0→M1 HANDOFF ARCH ACCEPTED / CONSUMED; M1 PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW`
+> 状态：`M0 ACCEPT / CLOSED; M1 PREVIEW/START ARCH ACCEPTED / CONSUMED; M1 SEMANTIC DECOMPOSITION WORK-01 PERSISTED / PENDING REMOTE ARCH REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M1 — PREVIEW / START ENTRY`
-> Current Review Result: `eb1bdc846b3f746dde80e8a1fec234f6434b411f = ACCEPT (M0 End/Accept + handoff persistence chain)`
+> Current UBF Stage: `M1 — CURRENT-STATE SEMANTIC DECOMPOSITION`
+> Current Review Result: `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9 = ACCEPT (M1 Preview/Start entry)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R7 — M1 Preview/Start Entry`
+> Process Revision: `R8 — Execution Architecture v2 + M1 Work-01 STATIC_TARGET_BUNDLE`
 
 ## 1. 目标
 
@@ -412,3 +412,21 @@ STOP：
 - M1 `Current-State Semantic Decomposition` 的实际 inventory/classification 尚未执行；只有本批 Preview/Start 经远程架构 `ACCEPT` 后，才允许另发架构闭合的 M1 semantic-decomposition work batch。
 - M1 semantic decomposition 必须由架构模型完成判断并形成完整 target payload；Luna/CODE 只做机械落库与验证，不自行定义 Universal Level、authority 或 clause classification。
 - CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；production code、tests、build/configuration、Project Graph mutation 与 user-level protocol mutation 均不在本批范围内。
+
+## 11. M1 Semantic Decomposition Work-01
+
+- M1 Preview/Start final delivery `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9` has REMOTE ARCH **ACCEPT** and is consumed by this work batch.
+- Architecture has directly read current user-level `blueprint_protocol.md`, `GLOBAL.md`, and root shared `MODEL_ROUTING.md`; repository persistence stores hashes + normalized semantics, not wholesale external file content.
+- Work-01 persists the UBF-relevant clause inventory, five-kind classification, current-state map, contradiction/gap/preserve matrices, and CookBook overlay boundary.
+- Legacy L1-L7 and GC-01..GC-48 remain unmapped to Universal Level; per-GC metadata/mapping is M2 and remains prohibited.
+- No user-level canonical mutation, fallback synchronization, State compaction, Project Graph mutation, production change, M2 start, or CookBook Phase 3B start is authorized.
+- Normal delivery returns `TURN=REVIEW` and waits for REMOTE ARCH review. If accepted, next is M1 End/Accept + M1→M2 Handoff persistence, not M2 execution.
+
+## 12. Execution Architecture v2 Pointer
+
+- Canonical implementation architecture for this batch: `Universal-Blueprint-Execution-Architecture-v2.md`.
+- Execution Truth is the manifest plus exact claim/final/abort artifacts; Python/PowerShell/Bash/native file operations are adapters.
+- Deterministic means unique target Git blobs and lifecycle result, not mandatory execution of one script.
+- Compatibility failures follow only the package-preauthorized fallback graph; semantic/Truth failures remain Hard STOP.
+- Byte identity PASS and architecture semantic truth PASS are separate gates.
+- R1/R2/R3 package defects remain architecture-attributed and do not count as Luna capability negatives.

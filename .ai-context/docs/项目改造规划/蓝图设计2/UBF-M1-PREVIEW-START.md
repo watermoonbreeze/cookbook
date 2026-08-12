@@ -4,7 +4,8 @@ Document Role: Generated View / Stage Entry Contract
 Stage: `M1 — Current-State Semantic Decomposition`
 Entry Task: `UBF-M1-PREVIEW-START-01`
 Exact Handoff Parent: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
-Entry Status: `PERSISTED / PENDING REMOTE ARCH REVIEW`
+Entry Status: `ARCH ACCEPTED / CONSUMED BY UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01`
+Accepted Review Target: `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9`
 M0 Status: `ACCEPT / CLOSED`
 M0→M1 Handoff: `ARCH ACCEPTED / CONSUMED BY THIS ENTRY`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
@@ -92,17 +93,8 @@ The next separately authorized architecture work should emit clause-level record
 
 This schema is an entry constraint, not an inventory. This document classifies zero current clauses.
 
-## 8. Entry Review Gate
+## 8. Entry Review Result
 
-Remote ARCH must verify this Preview/Start delivery before semantic decomposition is persisted.
+Remote ARCH independently reviewed final delivery `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9` and returned **ACCEPT**.
 
-Until that review returns ACCEPT:
-
-```text
-M1 PREVIEW/START: PERSISTED / PENDING REMOTE ARCH REVIEW
-M1 SEMANTIC DECOMPOSITION: NOT YET EXECUTED
-M2+: NOT STARTED
-CookBook Phase 3B: NOT AUTHORIZED TO START
-```
-
-An ACCEPT authorizes a separate architecture-authored M1 semantic-decomposition work batch. It does not authorize M2 or CookBook Phase 3B.
+This entry is therefore consumed by the separately authorized architecture-authored `UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01` batch. That authorization does not start M2 or CookBook Phase 3B.
