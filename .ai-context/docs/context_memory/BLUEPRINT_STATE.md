@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-02 — State Abstract-Role Truth Repair |
-| 状态 | **CLAIMED / IN EXECUTION** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -21,19 +21,20 @@
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Rework Parent | `aa45a286c8077c05e203e8da4a71c945dd574472` |
 | Original Handoff Parent | `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9` |
-| Reopen Set | State 旧 R4 行的一个具体模型名改为抽象 `CODE`；模型台账仅记录本次事务与归因 |
-| Preserve Set | R4-REWORK-01 的两处 EOF 修复、64 semantic records、其余所有成果/canonical/Graph/生产代码 byte-identical |
-| Architecture disposition | R4-REWORK-01 Git/byte/whitespace/Preserve gates PASS，但 State 仍含具体模型名，违反其头部抽象角色合同；归因 **ARCH_PAYLOAD_DEFECT / SELF_APPLICATION_SEMANTIC_GATE_MISSING**，不是 CODE 能力负样本 |
-| UBF Stage | M0 **ACCEPT/CLOSED**; M1 Preview/Start **ACCEPT/CONSUMED**; M1 Semantic Decomposition Work-01 **REWORK-02 IN EXECUTION**; M2 **NOT STARTED** |
+| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
+| Reopen Set | State 旧 R4 行的一个具体模型名已改为抽象 `CODE`；模型台账仅记录本次事务与归因 |
+| Preserve Set | R4-REWORK-01 两处 EOF 修复、64 semantic records、其余所有成果/canonical/Graph/生产代码 byte-identical |
+| Architecture disposition | R4-REWORK-01 Git/byte/whitespace/Preserve gates PASS；State concrete-model leakage 归因 **ARCH_PAYLOAD_DEFECT / SELF_APPLICATION_SEMANTIC_GATE_MISSING**，不是 CODE 能力负样本 |
+| UBF Stage | M0 **ACCEPT/CLOSED**; M1 Preview/Start **ACCEPT/CONSUMED**; M1 Semantic Decomposition Work-01 **R4-REWORK-02 COMPLETE / PENDING REMOTE ARCH REVIEW**; M2 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅机械落盘 final State+模型台账，验证 State concrete-model denyset、exact blobs/scope/Preserve 后 TURN=REVIEW；不得启动 M1 End/Accept、M2 或 Phase 3B |
+| 下一步 | 仅等待 remote ARCH 核验两提交链、exact 2-file scope、target blobs、State concrete-model denyset 与 Preserve blobs；ACCEPT 前不得启动 M1 End/Accept、M2 或 Phase 3B |
 ## 上一批次：UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-01（2026-08-12）
 | 字段 | 值 |
 |---|---|
 | 状态 | **REWORK / REMOTE ARCH REVIEWED / ARCH_PAYLOAD_DEFECT ONLY** |
 | Reviewed delivery | `aa45a286c8077c05e203e8da4a71c945dd574472` |
-| 已验证 | `94890cc... -> bcb151af... -> aa45a286...`；claim exact 1 file；final exact 4 files；4/4 blobs；两处 exact one-LF deletion；clean diff-check；64-record Preserve；TURN/M2/Phase 3B gates |
-| 未通过 | State 第 45 行写入具体模型名，违反 State 文件头部“抽象角色、禁止具体模型名称”合同 |
+| 已验证 | `94890cc... -> bcb151af... -> aa45a286...`；claim/final exact scopes；4/4 blobs；两处 exact one-LF deletion；clean diff-check；64-record Preserve；TURN/M2/Phase 3B gates |
+| 未通过 | State 旧 R4 行写入具体模型名，违反抽象角色合同 |
 | 归因 | **architecture-authored payload / self-application semantic gate defect；不是 CODE 执行偏差或能力负样本** |
 | 修复授权 | 仅授权本批将该具体模型名替换为抽象 `CODE` 并更新模型台账事务事实；不得重开 EOF 修复或 64 records，不得启动后续阶段 |
 ## 上一批次：UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01 R4 — Canonical Contract Decomposition（2026-08-12）
@@ -43,7 +44,7 @@
 | Reviewed delivery | `94890cc746e50d8631de7b9daa9fdc82bd3732dd` |
 | 已验证 | `795d2b... -> 44a4667... -> 94890cc...` 两提交链；exact 8-file allowlist；8/8 target Git blobs；64 条 semantic records 与 maps/matrices；TURN=REVIEW；M2/Phase 3B 未启动 |
 | 未通过 | `git diff --check 44a4667... 94890cc...`：Execution Blueprint line 121 与 Execution Report line 50 各有一个 new blank line at EOF |
-| 归因 | **architecture-authored payload / self-application gate defect；Luna payload execution fidelity PASS；不计入 coder 能力负样本** |
+| 归因 | **architecture-authored payload / self-application gate defect；CODE payload execution fidelity PASS；不计入 coder 能力负样本** |
 | 修复授权 | 仅授权本批删除上述两个 EOF 空白行并更新 State/模型台账事务事实；不得重新分解 64 条 records，不得启动 M2 或 Phase 3B |
 ## 上一批次：UBF-M1-PREVIEW-START-01 — Current-State Semantic Decomposition Entry（2026-08-12）
 | 字段 | 值 |
