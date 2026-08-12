@@ -8,26 +8,32 @@
 
 ---
 
-## 当前批次：UBF-M0-END-ACCEPT-02 — Model Evidence Truth Closure（2026-08-12）
+## 当前批次：UBF-M1-PREVIEW-START-01 — Current-State Semantic Decomposition Entry（2026-08-12）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M0-END-ACCEPT-02 — Model Evidence Truth Closure |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M1-PREVIEW-START-01 — Current-State Semantic Decomposition Entry |
+| 状态 | **CLAIMED / IN EXECUTION** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | DETERMINISTIC_ARCH_AUTHORED_TRANSFORM |
-| Handoff Parent | `d6c8d5f693ace96a525d9dc797042467660bf6ef` |
-| Execution Parent | `2513f1e9fd92a23369e97442c1799bdec95a0f16` |
-| Architecture input | END-ACCEPT-01 remote delivery = **REWORK — ARCH-PAYLOAD-01 ONLY** |
-| 范围 | END-ACCEPT-01 模型台账 truth closure + 当前批 evidence + State；Final Accept/Handoff/Control 保持 zero-diff |
-| 证据 | previous ledger row corrected; current CODE evidence row COMPLETE/PENDING REVIEW; exact 4-file final scope; semantic truth gate; State concrete-model deny gate |
-| 未解决问题 | NONE in CODE delivery; remote ARCH review of this repair remains required |
-| UBF Stage | M0 **ACCEPT / CLOSED**; M0→M1 HANDOFF **PERSISTED / AWAITING REMOTE ARCH REVIEW AFTER EVIDENCE TRUTH REPAIR** |
-| 下一步 | Remote ARCH reviews this repair. Only ARCH ACCEPT of this delivery authorizes a separate M1 Preview/Start batch. M1 is NOT STARTED; CookBook Phase 3B remains NOT AUTHORIZED TO START. |
+| Handoff Parent | `eb1bdc846b3f746dde80e8a1fec234f6434b411f` |
+| Architecture input | END-ACCEPT-02 remote delivery = **ACCEPT** |
+| 范围 | 仅持久化 M0→M1 handoff acceptance/consumption、M1 Preview/Start entry contract、Control/ledger/State；不执行 M1 semantic decomposition |
+| UBF Stage | M0 **ACCEPT / CLOSED**; M1 Preview/Start entry CLAIMED; M1 semantic decomposition NOT YET EXECUTED |
+| 下一步 | Execute fixed stage-entry payload, return TURN=REVIEW, and STOP. CookBook Phase 3B remains NOT AUTHORIZED TO START. |
+## 上一批次：UBF-M0-END-ACCEPT-02 — Model Evidence Truth Closure（2026-08-12）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED** |
+| Reviewed delivery | `eb1bdc846b3f746dde80e8a1fec234f6434b411f` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | 两提交链、exact 4-file allowlist、deterministic 4/4 byte identity、END-ACCEPT-01 ledger truth/ARCH-PAYLOAD-01 归因、State 抽象角色、M1/Phase 3B 门禁 |
+| 未解决问题 | NONE |
+| Transition authority | 已授权独立 `UBF-M1-PREVIEW-START-01`；不得把该授权解释为已执行 M1 semantic decomposition 或启动 Phase 3B |
 ## 上一批次：UBF-M0-END-ACCEPT-01 — M0 End/Accept + M0→M1 Handoff Persistence（2026-08-12）
 | 字段 | 值 |
 |---|---|
