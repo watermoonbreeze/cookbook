@@ -8,23 +8,33 @@
 
 ---
 
-## 当前批次：UBF-M0-REWORK-03 — M0 Governance Evidence and Status Repair（2026-08-12）
+## 当前批次：UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure（2026-08-12）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure |
+| 状态 | **AUTHORIZED / IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Worktree mode | ISOLATED_DETACHED_CLEAN |
+| Handoff Parent | `2a5567193c688bbd0e30f323699a68aab1ffeb34` |
+| Execution Parent | `PENDING CLAIM COMMIT` |
+| 范围 | UBF-M0-R2-02/R2-05/R2-07/R2-08; UBF-M0-R3-01 ~ UBF-M0-R3-06; UBF-M0-R3-EXEC-01; UBF-M0-R4-01 ~ UBF-M0-R4-04 |
+| 证据 | R4 blueprint, R4 execution report, model ledger, state; execute only R4 |
+| 未解决问题 | UBF-M0-R3-EXEC-01; UBF-M0-R4-01 ~ UBF-M0-R4-04 |
+| UBF Stage | M0 / REWORK BEFORE ACCEPTANCE |
+| 下一步 | Execute only R4 in the isolated clean worktree, then return to remote review. M1 and Phase 3B remain unauthorized. |
+
+## 上一批次：UBF-M0-REWORK-03 — M0 Governance Evidence and Status Repair（2026-08-12）
 
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M0-REWORK-03 — M0 Governance Evidence and Status Repair |
-| 状态 | **BLOCKED_FOR_REVIEW / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
-| CODE | Coder@当前机 |
-| ARCH | 架构师@主力机 |
-| Review mode | REMOTE_READ_ONLY_ARCH |
-| Handoff Parent | `c3c7b812272344935f2bb48f96a890d84081b5d3` |
-| Execution Parent | `838136d645b7ac73c200f08305d052d6b93cad33` |
-| 范围 | UBF-M0-R2-02/R2-05/R2-07/R2-08; UBF-M0-R3-01 ~ UBF-M0-R3-06 |
-| 证据 | R3 blueprint, R3 execution report, model ledger, state; fallback allowlist only |
-| 未解决问题 | UBF-M0-R3-EXEC-01 |
-| UBF Stage | M0 / AWAITING REMOTE ARCH REVIEW |
-| 下一步 | Remote architecture reviews R3. If ACCEPT, issue a separate M0 End/Accept + M0→M1 Handoff persistence blueprint, execute and review it, then separately Preview/Start M1; if REWORK, issue a narrow repair. M1 and Phase 3B remain unauthorized. |
+| 状态 | **BLOCKED_FOR_REVIEW / REMOTE ARCH REVIEWED / REWORK REQUIRED** |
+| Reviewed delivery | `2a5567193c688bbd0e30f323699a68aab1ffeb34` |
+| 未解决问题 | Ten open repair issues; UBF-M0-R3-EXEC-01; UBF-M0-R4-01 ~ UBF-M0-R4-04 |
 
 ## 上一批次：UBF-M0-REWORK-02 — Remote-visible Evidence Repair（2026-08-12）
 
