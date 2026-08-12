@@ -1,13 +1,14 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0 ACCEPT / CLOSED; M0→M1 HANDOFF PERSISTED / PENDING REMOTE ARCH REVIEW`
+> 状态：`M0 ACCEPT / CLOSED; M0→M1 HANDOFF ARCH ACCEPTED / CONSUMED; M1 PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M0 — ACCEPT / CLOSED`
-> Current Review Result: `3489523db6508ba742ee835022d7e2a9a64f2c4f = ACCEPT`
+> Current UBF Stage: `M1 — PREVIEW / START ENTRY`
+> Current Review Result: `eb1bdc846b3f746dde80e8a1fec234f6434b411f = ACCEPT (M0 End/Accept + handoff persistence chain)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
+> M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R6 — M0 End/Accept & M0→M1 Handoff Persistence`
+> Process Revision: `R7 — M1 Preview/Start Entry`
 
 ## 1. 目标
 
@@ -404,9 +405,10 @@ STOP：
 
 ## 10. 当前启动判定
 
-- UBF M0 已由远程架构对 R5 reviewed delivery `3489523db6508ba742ee835022d7e2a9a64f2c4f` 独立复核并判定 `ACCEPT / CLOSED`。
-- `UBF-M0-END-ACCEPT-01` 只负责持久化该既有架构裁决、回填 R5 模型台账并创建 M0→M1 handoff；不重新打开 R2/R3/R4/R5 已验收内容。
-- M0→M1 handoff 在本批正常交付后状态为 `PERSISTED / PENDING REMOTE ARCH REVIEW`；本批不得自我 ACCEPT。
-- 只有本批 persistence delivery 获得远程架构 `ACCEPT` 后，才允许另发独立的 M1 Preview/Start 蓝图。
-- 当前 M1 为 `NOT STARTED / NOT YET AUTHORIZED`；不得在本批执行 M1 Current-State Semantic Decomposition。
-- CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；production code、tests、build/configuration 与 Project Graph mutation 均不在本批范围内。
+- UBF M0 保持 `ACCEPT / CLOSED`；R5 accepted review target 仍为 `3489523db6508ba742ee835022d7e2a9a64f2c4f`。
+- M0 End/Accept + M0→M1 persistence repair chain 的最终 reviewed delivery `eb1bdc846b3f746dde80e8a1fec234f6434b411f` 已由远程架构独立复核并判定 `ACCEPT`。
+- `UBF-M1-PREVIEW-START-01` 是独立阶段入口批，只负责消费已接受 handoff、持久化 M1 Preview/Start contract、回填 END-ACCEPT-02 模型台账并更新 Control/State。
+- 本批正常交付后，M1 Preview/Start 为 `PERSISTED / PENDING REMOTE ARCH REVIEW`；本批不得自我 ACCEPT。
+- M1 `Current-State Semantic Decomposition` 的实际 inventory/classification 尚未执行；只有本批 Preview/Start 经远程架构 `ACCEPT` 后，才允许另发架构闭合的 M1 semantic-decomposition work batch。
+- M1 semantic decomposition 必须由架构模型完成判断并形成完整 target payload；Luna/CODE 只做机械落库与验证，不自行定义 Universal Level、authority 或 clause classification。
+- CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；production code、tests、build/configuration、Project Graph mutation 与 user-level protocol mutation 均不在本批范围内。

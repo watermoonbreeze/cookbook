@@ -3,9 +3,11 @@
 Document Role: Generated View / Stage Handoff
 Parent Stage: `M0 — ACCEPT / CLOSED`
 Child Stage: `M1 — Current-State Semantic Decomposition`
-Handoff Status: `PERSISTED / PENDING REMOTE ARCH REVIEW`
+Handoff Status: `ARCH ACCEPTED / CONSUMED BY M1 PREVIEW/START-01`
 M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 Persistence Task: `UBF-M0-END-ACCEPT-01`
+Persistence Repair / Accepted Review Target: `UBF-M0-END-ACCEPT-02` / `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
+Consumed By: `UBF-M1-PREVIEW-START-01`
 
 ## 1. Handoff Meaning
 
@@ -73,18 +75,19 @@ No CookBook Legacy L7 → Universal Level mapping is pre-decided.
 
 ## 6. Entry Preconditions for M1 Preview/Start
 
-A separate M1 Preview/Start batch is permitted only after all are true:
+The entry preconditions are satisfied through the accepted persistence-repair chain:
 
-1. this `UBF-M0-END-ACCEPT-01` persistence delivery has been pushed;
-2. remote architecture review verifies its exact parent/claim/final chain and allowlist;
-3. remote architecture review returns `ACCEPT`;
-4. the next M1 blueprint names that accepted persistence commit as its exact handoff parent;
-5. the next batch performs its own TURN claim.
+1. M0 End/Accept + handoff persistence was pushed;
+2. END-ACCEPT-02 repaired the architecture-authored model-evidence truth defect without reopening accepted M0 content;
+3. remote architecture review accepted `eb1bdc846b3f746dde80e8a1fec234f6434b411f`;
+4. `UBF-M1-PREVIEW-START-01` names `eb1bdc846b3f746dde80e8a1fec234f6434b411f` as its exact handoff parent;
+5. this M1 entry batch performs its own TURN claim.
 
-Until then:
+This authorizes only the M1 Preview/Start lifecycle entry. It does not itself authorize Luna to perform semantic classification.
 
 ```text
-M1: NOT STARTED / NOT YET AUTHORIZED
+M1 PREVIEW/START: AUTHORIZED FOR THIS SEPARATE ENTRY BATCH
+M1 SEMANTIC DECOMPOSITION: NOT YET EXECUTED
 CookBook Phase 3B: NOT AUTHORIZED TO START
 ```
 

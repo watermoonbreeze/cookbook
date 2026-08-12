@@ -12,8 +12,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M1-PREVIEW-START-01 — Current-State Semantic Decomposition Entry |
-| 状态 | **CLAIMED / IN EXECUTION** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -21,10 +21,13 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | DETERMINISTIC_ARCH_AUTHORED_TRANSFORM |
 | Handoff Parent | `eb1bdc846b3f746dde80e8a1fec234f6434b411f` |
-| Architecture input | END-ACCEPT-02 remote delivery = **ACCEPT** |
-| 范围 | 仅持久化 M0→M1 handoff acceptance/consumption、M1 Preview/Start entry contract、Control/ledger/State；不执行 M1 semantic decomposition |
-| UBF Stage | M0 **ACCEPT / CLOSED**; M1 Preview/Start entry CLAIMED; M1 semantic decomposition NOT YET EXECUTED |
-| 下一步 | Execute fixed stage-entry payload, return TURN=REVIEW, and STOP. CookBook Phase 3B remains NOT AUTHORIZED TO START. |
+| Execution Parent | `72d79fdd951259aecc462ab86fbbaafbcf56ed6e` |
+| Architecture input | END-ACCEPT-02 remote delivery `eb1bdc846b3f746dde80e8a1fec234f6434b411f` = **ACCEPT** |
+| 范围 | M1 Preview/Start stage-entry persistence only；不执行 current-clause inventory/classification；不改 Graph/生产代码 |
+| 证据 | previous ledger backfill; Handoff ARCH ACCEPTED/CONSUMED; Preview/Start contract; Control lifecycle transition; exact 7-file scope; payload identity + semantic truth gates |
+| 未解决问题 | NONE in CODE delivery; remote ARCH review of this M1 entry remains required |
+| UBF Stage | M0 **ACCEPT / CLOSED**; M0→M1 HANDOFF **ARCH ACCEPTED / CONSUMED**; M1 PREVIEW/START **PERSISTED / AWAITING REMOTE ARCH REVIEW**; M1 semantic decomposition **NOT YET EXECUTED** |
+| 下一步 | Remote ARCH reviews this stage entry. Only ARCH ACCEPT authorizes a separate architecture-authored M1 semantic-decomposition work batch. CookBook Phase 3B remains NOT AUTHORIZED TO START. |
 ## 上一批次：UBF-M0-END-ACCEPT-02 — Model Evidence Truth Closure（2026-08-12）
 | 字段 | 值 |
 |---|---|
