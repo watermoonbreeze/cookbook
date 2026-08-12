@@ -8,7 +8,24 @@
 
 ---
 
-## 当前批次：GOV-BP-P3-01 Blueprint Governance Upgrade（2026-08-11）
+## 当前批次：UBF-M0-REWORK-02 — Remote-visible Evidence Repair（2026-08-12）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M0-REWORK-02 — Remote-visible Evidence Repair |
+| 状态 | **AUTHORIZED / IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `b46b9dfe4d2328aeae6f2f244d7ba0a023eee402` |
+| Execution Parent | PENDING CLAIM COMMIT |
+| 范围 | UBF-M0-R2-01 ~ UBF-M0-R2-08 |
+| 下一步 | Execute only this blueprint; return to REVIEW. |
+
+---
+
+## 上一批次：GOV-BP-P3-01 Blueprint Governance Upgrade（2026-08-11）
 
 | 字段 | 值 |
 |---|---|
