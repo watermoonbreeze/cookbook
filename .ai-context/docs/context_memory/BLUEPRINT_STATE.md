@@ -8,27 +8,37 @@
 
 ---
 
-## 当前批次：UBF-M0-REWORK-05 — Deterministic M0 Governance Repair（2026-08-12）
+## 当前批次：UBF-M0-END-ACCEPT-01 — M0 End/Accept + M0→M1 Handoff Persistence（2026-08-12）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M0-REWORK-05 — Deterministic M0 Governance Repair |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M0-END-ACCEPT-01 — M0 End/Accept + M0→M1 Handoff Persistence |
+| 状态 | **AUTHORIZED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | DETERMINISTIC_ARCH_AUTHORED_TRANSFORM |
-| Handoff Parent | `d7423f30b3892f021a50d162b832d168d2cfad22` |
-| Execution Parent | `d3935ae7620312e85d85429b48ac30c62ef80f00` |
-| 范围 | 原十项修复；R3/R4 历史报告；R3/R4 模型台账；UBF-M0-R5-01 ~ UBF-M0-R5-05 |
-| 证据 | R5 blueprint, deterministic payload, R2/R3/R4 corrected evidence, R5 report, model ledger, state; exact ten-file normal delivery |
-| 未解决问题 | NONE |
-| UBF Stage | M0 / AWAITING REMOTE ARCH REVIEW |
-| 下一步 | Remote review R5. ACCEPT only authorizes a separate End/Accept+Handoff persistence blueprint, its execution/review, then separate M1 Preview/Start. REWORK leads to a narrow repair. M1 and Phase 3B remain unauthorized now. |
+| Handoff Parent | `3489523db6508ba742ee835022d7e2a9a64f2c4f` |
+| Execution Parent | `PENDING CLAIM COMMIT` |
+| Architecture input | R5 reviewed delivery `3489523db6508ba742ee835022d7e2a9a64f2c4f` = **ACCEPT** |
+| 范围 | 仅持久化 M0 End/Accept、R5 台账 ARCH 回填、M0→M1 handoff、Control/State；不执行 M1 |
+| 未解决问题 | NONE at claim; deterministic persistence pending |
+| UBF Stage | M0 / ARCH ACCEPT DECIDED / END-ACCEPT+HANDOFF PERSISTENCE IN PROGRESS |
+| 下一步 | 完成本批确定性落库并返回 REVIEW。M1 与 CookBook Phase 3B 当前仍未授权启动。 |
 
+## 上一批次：UBF-M0-REWORK-05 — Deterministic M0 Governance Repair（2026-08-12）
+
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED** |
+| Reviewed delivery | `3489523db6508ba742ee835022d7e2a9a64f2c4f` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | 两提交链、exact 10-file allowlist、deterministic payload/blob identity、原十项 10/10、报告真实性、模型台账、State/M0 gate |
+| 未解决问题 | NONE |
+| Transition authority | 仅授权独立的 M0 End/Accept + M0→M1 Handoff persistence；尚未启动 M1 |
 ## 上一批次：UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure（2026-08-12）
 
 | 字段 | 值 |
