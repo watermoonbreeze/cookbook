@@ -1,11 +1,11 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）  
-> 状态：`M0 AUTHORIZED` — 等待 Truth Pack  
+> 状态：`M0 REWORK-02 IN EXECUTION / PENDING REMOTE ARCH REVIEW`
 > 制定日期：2026-08-11  
-> 当前 CookBook 基线：`598daf4e5083d62038adfe39b1635993a7d90fa4`  
+> 当前 CookBook 基线：`b46b9dfe4d2328aeae6f2f244d7ba0a023eee402`
 > 当前 CookBook Phase 3：`AUTHORIZED / NOT STARTED`  
-> 现行协议输入：`blueprint_protocol_P3-01-R1(1).md`  
+> Process Revision: `R4 — Remote Review Visibility & Issue Disposition Contract`
 
 ## 1. 目标
 
@@ -279,6 +279,18 @@ Luna 不可以：
 9. ACCEPT 落库及 handoff 完成后，才开始下一批。
 
 `/clear` 不会破坏连续性，因为连续性由 canonical Truth、commit、执行包和结构化 evidence 承担，而不是依赖 Luna 的聊天记忆。
+
+### 7.1 R4 鈥?Remote Review Visibility & Issue Disposition Contract
+
+Review role and repository write capability are separate dimensions. WRITE_CAPABLE_ARCH performs and pushes REVIEW 鈫?CODE before release. REMOTE_READ_ONLY_ARCH grants a one-task delegated claim; Coder first pushes a claim commit containing only BLUEPRINT_STATE.md.
+
+Remote visibility is the exit gate. Safely publishable COMPLETE, PARTIAL, Q, validation failure or implementation blocker is recorded in the fixed report and pushed. Outcomes: COMPLETE / PENDING REMOTE ARCH REVIEW, PARTIAL / PENDING REMOTE ARCH REVIEW, BLOCKED_FOR_REVIEW / PENDING REMOTE ARCH REVIEW.
+
+Every remote-read-only blueprint defines allowlists, partial rules, fallback allowlist, commit messages, Return TURN and NON_PUBLISHABLE_STOP. Issues have stable IDs, classification, expected/actual, path/line, redacted evidence, action=NONE 鈥?AWAITING ARCH DISPOSITION and delivery impact. Coder does not decide repairs.
+
+The next architecture task gives each issue exactly one disposition: ACCEPT_AS_IS / REPAIR / DEFER / REJECT. Only credentials, unisolatable scope, parent/remote mismatch, network/permission failure or unprovable Git contents may use NON_PUBLISHABLE_STOP. No outcome authorizes amend, reset, rebase, force push, history rewrite or allowlist expansion. After a safely pushed outcome, Luna returns only the full final commit hash.
+
+This R4 subsection supersedes conflicting older 搂搂6鈥? wording for future REMOTE_READ_ONLY_ARCH writable batches.
 
 ## 8. 第一批所需 Truth Pack
 

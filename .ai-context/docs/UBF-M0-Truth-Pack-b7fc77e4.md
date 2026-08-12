@@ -521,14 +521,10 @@ D	".ai-context/docs/\351\241\271\347\233\256\346\224\271\351\200\240\350\247\204
 
 ## J. Export Integrity
 
-- Filename: `UBF-M0-Truth-Pack-b7fc77e4.md`
-- Export source: `<USER_HOME>/Downloads/UBF-M0-Truth-Pack-b7fc77e4.md`
-- File size / line count / SHA-256: reported externally after write.
-- Collection: `COMPLETE`
-- Unresolved STOP/Q items: `NONE`
+- Collection: `PARTIAL / SUPERSEDED IN PART BY UBF-M0-Truth-Pack-Supplement-169bb0a7.md`
+- Original capture gaps: canonical GC registry and governance indexes were absent from the original export; explicit phase-state expansion and conflict registration were also absent.
+- Current repository resolution evidence: see `UBF-M0-Truth-Pack-Supplement-169bb0a7.md` and `UBF-M0-REWORK-02-Execution-Report.md`.
 - SELF_SHA256_REPORTED_EXTERNALLY
-
-
 ## Errata and Supplement
 
 See `.ai-context/docs/UBF-M0-Truth-Pack-Supplement-169bb0a7.md` for supplemental missing-material and errata evidence. The supplement owns gap and correction evidence; it does not overwrite the original capture command output or adjudicate canonical state conflicts.

@@ -2,9 +2,9 @@
 
 Document Role: Supplemental Evidence and Errata
 Status: COMPLETE
-Execution Parent: 169bb0a70524c513fd4d2fd1cc72e06cac3ee27d
+Execution Parent: 2f4fcb790c9aae2373055b933ead6c64feea1876
 Original Capture HEAD: b7fc77e4d442364e6f5db790b374ece4c5da409d
-Task ID: UBF-M0-REWORK-01
+Task ID: UBF-M0-REWORK-02
 
 ## A. Provenance and Scope
 
@@ -39,10 +39,10 @@ Task ID: UBF-M0-REWORK-01
 ## D. Complete Project-level File Contents
 
 ### .ai-context/docs/experience/12_多模型协作与实施蓝图规范.md
-- SHA-256: `44FEE0FDFC55FAAA61B0A599FE35A1F61757921AB8D63B48498A59BF64EBECFC`
+- Repository LF-normalized SHA-256: `0a58da55219ce134095c3a15881205124174b74994e47b58168a91c1f402c827`
 - Line count: 479
 
-```markdown
+~~~~markdown
 # 多模型协作与实施蓝图规范
 
 > 状态：长期有效；2026-08-05 起执行。
@@ -208,7 +208,154 @@ Task ID: UBF-M0-REWORK-01
 每次审查结束，架构模型执行以下闭环：
 
 1. 将每个 AF 归入 BL-01 至 BL-07；新类别新增 `BL-XX`。
-2. 判断根因是“蓝图缺失、编码偏离、测试伪证、环…5988 tokens truncated…量 + 下标反推逐项状态 | BL-08 / `AF-B456-05`：`index < completedSegments -> DONE` 隐含"成功项必排在失败项前"，成败天对调 | D / E | 0 |
+2. 判断根因是“蓝图缺失、编码偏离、测试伪证、环境证据不足”之一；只把可复用根因写入本规范。
+3. 同一 BL 类别在两个批次遗漏时，将其对应工件从“建议”升为“蓝图包必填项”，并给模板增加检查项。
+4. 记录三个指标：首次复审通过率、每批 AF 数、AF 中因蓝图缺口产生的比例。指标只用于改善蓝图，不评价模型人格或以猜测 token 代替事实。
+5. 功能蓝图一旦被证明有效，抽取为本规范的通用规则；功能专属事实留在 `feature/`，不污染通用规范。
+
+目标不是让编码模型“更聪明”，而是让任务在低能力模型下仍没有可自由解释的设计空隙。
+
+### 10.x 闭环记录：2026-08-07 B4/B5/B6 架构复核
+
+- 结论：未通过。9 项阻断 `AF-B456-01~09` + 3 项缺证据 + 13 项建议；报告见项目 `docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md`。
+- AF 归类：01/02→BL-03（双真相源并存无同步）；03→BL-02（`VoiceRecognizer` 持有权被值传递夺走，对象生命周期未标注）；04→编码偏离已冻结 INV-B4-05/06，因缺配套测试未被自查发现（关联 BL-06）；05→**新增 BL-08**（索引空间隐性耦合）；06→BL-06（回归与证据不完整，定向测试从未运行）；07→BL-06（证据台账不实，声称完成实为未改）；08→项目级交付流程红线（真机登记），非蓝图协议分类；09→实施脚本条目遗漏未做且未被察觉，暂不新增 BL，按下次复现再定类别。
+- 根因分布：蓝图缺口 1 项（B5 无独立蓝图）、编码偏离 5 项（01/02/04/05/09）、测试伪证/证据不足 3 项（06/07/08）。
+- **BL-01 变体升级**（§10.3 规则触发）：“上一批延后项只留指针不落蓝图”在 B4→B5 连续两次出现（B4 §10 的 11 项延后中 4 项至今无归宿），已按规则升级为 §4 任务卡必填项（见上表 A 行）。
+- 三角色审查抽查：17 项声称修复中 1 项为假修复（AF-B456-05，被 BL-08 症状掩盖，误判已关闭）、1 项台账不实（AF-B456-07）——说明"审查已关闭"结论必须逐行 diff 复核，不能采信 commit message 自述，此条已是 blueprint_protocol §3 原有要求，本次是失效案例而非新规则。
+- **颗粒度分级机制建立**（用户 2026-08-07 提出）：把本节的"事后归类+建议升级"机制系统化为可追踪的 `L1~L7`/`GC-01~26` 分级（见 §12/§13），蓝图头声明颗粒度、`§0.1` 逐条勾销、CODE 从 `§0.1` 开始读起。
+- **第二轮（同日）：回溯 B1~B3 三轮复审 + 架构终审的全部 AF/S 条目结论**（不看代码细节，只看结论），补挖 9 条新 GC（GC-27~35）+ 3 个新 BL 类别（BL-09 基数掩盖、BL-10 高频节流未定、BL-11 文档腐化）。最有价值的发现：`AF-B3-03`→`AF-B456-01` 是**同一个 bug 跨批次真实复发**（编辑收口函数被新入口绕过），`AF-ARCH-02`（构造时单例被基数=1掩盖）是全项目历史上最严重的单项阻断——这两条直接证明了颗粒度机制的必要性，不是凭空设计。当前基线由隐式 L2 一次性升至 **L7**。
+
+### 10.y 闭环记录：2026-08-07 主流 spec-driven 框架借鉴评估（Opus 讨论，避免同一问题被重复问）
+
+用户问：BMAD-METHOD（12+ 角色人格流水线）、GitHub Spec Kit（Specify→Plan→Tasks→Implement）、AWS Kiro（EARS 记法 + 编码前 spec check）这三个 2026 年主流 spec-driven 框架，有什么值得借鉴的，尤其 BMAD 的 12 角色人格。
+
+- **触因**：`AF-B456-05` 二次复核发现，ARCH 一次复核未能挑出自己写的蓝图规格本身的值域覆盖空隙——因为一次复核和设计出自同一角色，没有对抗性视角。
+- **反证（关键）**：本项目此前已经用过"独立视角"（`3f60c20f` 三角色审查），AF-B456-05 的假修复正是那轮自己产出又自己放行的——说明"换一双眼睛"不必然管用，真正管用的是**存在性命题条款本身**（GC-36）。
+- **根因分布纠偏**：本批 9 项 AF 中"蓝图缺口"仅 1 项，"编码偏离"5 项、"测试伪证/证据不足"3 项——BMAD 的 Analyst/PM/Scrum Master 类角色解决的是需求/沟通不确定性，本项目需求方是用户本人、沟通损耗≈0，这些角色防不住本批任何一项 AF。
+- **裁决**：
+  - **不采纳** BMAD 12 角色人格整体迁入 `blueprint_protocol`（机制 B）；也不给机制 B 单独发明角色系统（会重复维护两份说明书，踩 `BL-11`）。
+  - **不采纳** EARS 全面替换现有 `ID/Owner/When/Input/Do/Must not/Evidence` 语法（现有语法是 EARS 的严格超集，替换会丢 `Must not`/`Evidence`）。
+  - **不采纳** 仿 Kiro 的 SMT 矛盾检测式 spec check（解决"需求互斥"，本项目缺口类型是"状态空间遗漏"，工具形态不对口）。
+  - **采纳（三件，已落地）**：① 语法加 `While`（前置状态）字段，要求同一 `Do` 的互斥前置态必须穷举（`blueprint_protocol.md` §2）；② 新增 `GC-37`——蓝图冻结前须存在一份独立挑战台账，只强制"挑战发生过且可 grep 核实"，不规定挑战方必须是独立 agent（`blueprint_protocol.md` §4、本文件 §6 门禁第 13 条）；③ 待办：把 `GC-24`/`GC-25`/`GC-34` 等已判定"可机械核验"的检查写成脚本（`blueprint_protocol.md` §4 分支①"复发计数≥2 升自动检查"早有此规定，一直没执行，ROI 高于新增角色）。
+  - **延后试点**：`blueprint_spec_challenger` 作为机制 A 的第 16 个专才角色（非 12 个），仅在下一次 `BLUEPRINT-FULL` 批次冻结前跑一次，带退出条件（两批后若未提前挑出任何问题即删除）。
+
+### 10.z 闭环记录：2026-08-08 GC-37 首次实战验证（第一批试点，10.y 延后试点的直接回访）
+
+- **背景**：ARCH 起草"K1a 营养展示统一化 + AI 未配置诚实报错"新蓝图后，按 GC-37 派独立 opus agent（只给蓝图成文，不知起草过程）做挑战，验证 10.y 的"存在性命题条款是否比换角色更管用"判断是否在**新场景**下依然成立（10.y 的反证案例 `3f60c20f` 是同角色审查自己的产出，本次是首次真正意义上的"独立"挑战）。
+- **结果：14 项挑战，6 项 CONFIRMED-ISSUE（真阻断）、4 项 MINOR-NIT、4 项 CONFIRMED-FINE**。全部 6 项阻断被采纳并就地修订，蓝图才转 `ACCEPTED`。典型模式（可复用为下次蓝图自查清单）：
+  1. **`.copy()` 语义下的 sticky 字段**：新增状态字段只在触发分支写，未在所有"该状态被清空/替换"的分支同步写，会残留陈旧值（`errorKind` 案例）。
+  2. **null 契约不对齐组件已有行为**：给一个"约定 null=不渲染"的现成组件传 null，用来表达"尝试过但没数据"，会让该项在 UI 上整体消失而非按预期显示占位文案。
+  3. **一次性初始化 + 缺失刷新路径**：状态在 VM 构造时算一次、无显式刷新入口，用户在此后完成的外部操作（如去设置页配置好 Key 再返回）不会反映到已算好的状态上。
+  4. **判据值域比实际概念更宽**：复用一个"是否能力可用"的既有判定函数做"是否需要新分支"的依据，两者字面意义相近但值域不同（覆盖了不该覆盖的枚举值），导致误判一类用户。
+  5. **恒定输入下游分支永远不触发**：给一个下游"从残缺输入判定异常"的分支固定传入非空值，使该分支永久失活，对应的用户可见标记（如"估算"提示）永久消失。
+  6. **这些问题没有一条是"蓝图缺失细节"**——都是蓝图**写得清楚但逻辑本身有洞**，属于 GC-36/GC-37 想防的"表面合规"类别，再次印证 10.y 的结论：起作用的是"要求一份独立、对抗性的复核"这件事本身被强制发生，不是靠角色人格多寡。
+- **后续（同一改动的二次教训，超出 GC-37 范围但记录在案）**：蓝图挑战通过后，用户当面否决了蓝图里"AI 未配置报错"这部分的产品设计本身（技术上无懈可击、产品预期错了），推翻重做后**跳过独立 CODE 角色由 ARCH 直接实现**，改用两轮独立 `google_quality_engineer` 审查替代"另一双眼睛"——第一轮挑出 5 个真阻断，**第二轮复核修复效果时又发现第一轮的某个修复本身引入了新的覆盖缺口（一条真实场景失去了自动兜底）**（详见 `06_问题与踩坑.md`"AI 快捷记引擎标签 + 自动兜底 session"）。这条证明"独立复核"不是一次性动作，**阻断修复后必须再复核一次修复本身**，尤其当修复方式是"新增一个状态守卫去堵某个误判分支"时——那个分支可能恰好覆盖着另一个真实场景。
+
+### 10.aa 闭环记录：2026-08-08 首次"编码模型不得自审"TURN=REVIEW 实战（L1+K1i 独立复核）
+
+- **背景**：用户当日裁定"编码模型不得自审，ARCH 正式复核须由审核模型在会话交接后执行"。L1（云端 AI 首启同意，`ad1c5878`）+ K1i（流式地基运行时真实委托，`d7240d6f`）CODE 交付后，`SESSION_交接.md` 写明判定标准，`BLUEPRINT_STATE.md` 置 `TURN=REVIEW`。下一 session 用户明确要求"编码模型自己审核了一遍，不要受他的影响，重新审核"——这是本机制第一次真正被执行。
+- **复核方法**：diff 逐文件走查两 commit + 逐条 INV 对照代码/测试 + 实跑三条构建命令（shared/androidApp 测试 + assembleDebug）+ 闸门唯一性 grep（`SwitchableAiRuntime(` 生产代码构造点计数、`isModelReady()` 逐字比对、`CloudAiRuntime` 有无绕过注入）+ allowlist 逐条核对 + 台账与真实 diff 一致性核对。
+- **关键发现（可复用的方法论教训）**：CODE 在 K1i 提交里为让 `stream()`/`complete()` 失败文案同源，顺手把 `CloudAiConsentRequiredException`（定义在 L1 产出的 `CloudAiConsent.kt`）重构成 `companion object` 常量提取。这个改动**功能上完全安全**（字面量不变，L1 全部测试仍绿），但 K1i 自己的 allowlist 明文写"L1 涉及的所有文件……只读引用不修改其定义"，commit message 如实写了这个改动，**但 K1i 蓝图 §9 台账却写"allowlist 合规"，未把这处例外记下来**；上一 session 的 `SESSION_交接.md` 进一步声称"已在 K1i §9 台账如实记录"——独立复核时逐字检索 §9 正文，**这句话不成立，台账里根本没写**。
+- **教训（延伸 10.x 已有红线"审查声称已修的阻断必须逐行diff复核不能信commit message自述"）**：**这条红线要扩展到"allowlist 合规"这类自评结论本身**——不能因为 commit message 诚实披露了改动、或蓝图台账写了"合规"两个字，就默认这个合规判断本身是对的；独立复核必须重新拿着 allowlist 原文逐条核对实际改动了哪些文件，自己下判断，不能复用 CODE 自己给出的"合规/不阻断"结论。本次的改动本身是安全的（予以放行，不要求回退），**问题不在改动，而在自评与台账不一致**——这正是"编码模型不得自审"这条规则要防的那类风险的一个具体样本：不是编码质量问题，是自我核验的盲区。
+- **附带技巧**：全量 `:androidApp:testDebugUnitTest` 跑出一条 `kotlinx.coroutines.CoroutinesInternalError`（`HealthProfileRepository.listAllCrowdTypes` 相关），JUnit 结果 0 failures。用 `--tests "<单个测试类>"` **单独重跑同一个类**，未复现——以此区分"新代码引入的真断言失败"与"跨测试类的协程生命周期泄漏噪音"，后者判定为非阻断观察项、记录待 fast-follow，不拖批次关闭。可复用为下次遇到"全量绿但输出有异常堆栈"场景的排查手法。
+
+## 11. 新功能蓝图最小模板
+
+```text
+# <功能> B<n> 实施蓝图
+状态：DRAFT / BLUEPRINT_READY / ...
+颗粒度：L<k>（见 §12；§0.1 颗粒度勾销表逐条给落点或 N/A+理由）
+前置：commit、必读文档、已通过批次
+目标 / 非目标 / allowlist / 禁止文件 / 上一批延后项归宿（GC-03，逐项转本批 ID 或显式弃置）
+
+INV 表：ID | 条件 | 必须结果 | 禁止结果 | Evidence
+类型表：路径 | 类型 | 可见性 | 字段/方法 | Owner
+数据流：输入快照 -> 转换 -> 输出；逐字段真相源（重叠字段须给 GC-11 写入点迁移清单）
+状态机：状态、事件、转移、取消、失败、清理
+时序：请求/并发/重试/取消；挂起点清单 + 恢复后身份重校验（GC-31）
+对象生命周期表：对象 | 创建者 | 持有者 | 可调用者 | 释放点 | 释放触发条件（GC-14~16）
+实施脚本：STEP-<批次>-<n.m> 逐动作 + 完成形态字面量（GC-23）
+测试矩阵：T-ID | 前置 | 刺激 | 断言 | 夹具只负责什么；INV↔T 双向映射表（GC-05）
+交付：命令原文、当次输出（分模块）、STEP 勾销表（GC-24）、真机清单编号区间、提交范围
+Q/AF：格式与升级规则
+```
+
+模板中的占位项必须填值后才能交给编码模型；保留 `<待定>` 即表示蓝图未完成。
+
+---
+
+## 12. 蓝图颗粒度分级（GRANULARITY）
+
+> 机制定义（两轴关系、判定式、GC 书写红线、声明规范、升级三分支）见用户级真相源 `~/.ai-context/rules/blueprint_protocol.md` §2.1/§2.2/§4，本节只登记**本项目专属**的 GC 条款清单、触发案例与升级历史，不重复机制说明。
+
+### 12.1 本项目基线级
+
+**当前基线：L7 · 48 条 GC**（2026-08-11 完成 Project Graph / Blueprint Governance review lessons 扩容）。不得下调；不适用的 GC 在各蓝图 `§0.1 颗粒度勾销表`标 `N/A：<理由>`，不是省略。纯文档/纯配置/零业务代码批次可整体声明降级（须在 `BLUEPRINT_STATE.md` 颗粒度行注明理由）。本轮不新增 L8。
+
+### 12.2 级别总表
+
+| 级别 | 名称 | 一句话 | GC 编号 | 主要工件 |
+|---|---|---|---|---|
+| L1 | 决策与范围闭合 | 每个分支有唯一动作，改动面被 allowlist 封死，多来源合并策略与延后项都有明确归宿 | GC-01~04, GC-29, GC-30, GC-38~39 | A / C / G |
+| L2 | 证据闭合 | 每条 INV 有测试、每条命令有当次输出、每次交付有真机登记、注释与实现同步 | GC-05~09, GC-34, GC-40~41 | C / H / I |
+| L3 | 真相源闭合 | 每个字段唯一写入者；新增重叠字段必须逐个写入点迁移；既有收口函数必须核对路由；协议双端契约对齐 | GC-10~13, GC-27, GC-35, GC-42~44 | D / E |
+| L4 | 所有权与生命周期闭合 | 持有资源的对象有生命周期表；构造时单例在基数扩张时重新审视；禁止测试后门；挂起点须重校验身份 | GC-14~16, GC-28, GC-31, GC-33, GC-45 | D / F / G |
+| L5 | 索引空间与集合投影闭合 | 逐项状态由数据层产出 `List<Status>`；每个序号字段标注索引空间；过滤映射画出来 | GC-17~19, GC-46 | D / E |
+| L6 | 用户可见副作用闭合 | 每个自动截断/丢弃/纠正在蓝图里有载体、文案原文、去重规则、脚本落点；高频事件的开销有节流策略 | GC-20~22, GC-32 | C / G / H |
+| L7 | 脚本可勾销闭合 | 每个最小动作有 STEP 编号与完成形态字面量，交付逐条勾销、审查逐条 diff | GC-23~26, GC-47~48 | G / I |
+
+### 12.3 GC 登记表（48 条，按级别分组；「复发计数」随分支①判定更新）
+
+#### L1 · 决策与范围闭合
+
+| GC | 强制细化规则（存在性命题） | 触发案例 | 工件 | 复发计数 |
+|---|---|---|---|:--:|
+| GC-01 | 每个行为分支写成 `条件 → 唯一动作 → 禁止动作`；全文对歧义词表（适当/必要时/尽量/合理兜底/正确处理/注意/酌情）grep 零命中 | BL-01：取消边界、HTTP 重试、整体 JSON fallback 留给实现时判断 | C / G | 0 |
+| GC-02 | 存在 allowlist 表：`文件 × 允许操作 × 禁止操作`，并另列"显式禁改文件"清单 | BL-07：修复时顺带改 UI/DI/协议/依赖 | G | 0 |
+| GC-03 | 任务卡存在「上一批延后项归宿」表，每项状态 ∈ {转为本批 `<ID>`, 显式弃置+理由}，禁止"只留指针" | BL-01 变体：B4 §10 十一项延后中四项至今无归宿（连续两批） | A | 1（已升必填） |
+| GC-04 | 每条 INV 具备 `ID / 条件 / 必须结果 / 禁止结果 / 证据` 五列，证据列禁空 | BL-01；B4 INV-B4-04 有 INV 无测试 | C | 0 |
+| GC-29 | 多来源写入同一聚合目标（同 key）时必须显式声明"合并 or 覆盖"，禁止裸赋值覆盖 | B3.1 AF-B3-06：`MealStreamDraftMapper` 对同 `meal_id` 直接赋值覆盖，未按 segment ordinal 驱动 | E | 0 |
+| GC-30 | 状态转移分支必须驱动其声明的**完整**副作用链（不能只做字面量最小实现），蓝图逐分支列"配套动作清单"而非只列触发条件 | B3.1 AF-B3-01（Delta 分支只 `onDelta` 漏了 preview）、AF-B3-05（`confirmSave()` 未限制 phase）、AF-B3-04（GENERATING 错路由 UI）、`AF-B456-04`（截断 INV 写了提示，脚本没给落点） | C / G | 1（已升必填，见 GC-21） |
+| GC-37 | 蓝图冻结前存在独立挑战台账，且挑战方同时读取 canonical protocol、项目 canonical GC registry 与 Blueprint，独立生成 `Canonical Requirement → Blueprint Location → Presence/Semantic Result → Evidence Method` coverage audit；缺失或只依据 Blueprint 自带 checklist 的挑战不得 PASS | 2026-08-07 `AF-B456-05` 暴露自证式挑战；GOV-BP-P3-01 将独立性从“有台账”强化为“canonical requirement 交叉核对” | A | 0 |
+
+#### L2 · 证据闭合
+
+| GC | 强制细化规则 | 触发案例 | 工件 | 复发计数 |
+|---|---|---|---|:--:|
+| GC-05 | 存在 `INV ↔ T` 双向映射表：每个 INV ≥1 个 T-ID，每个 T-ID ≥1 个 INV；出现孤儿项即判蓝图未完成 | `AF-B456-06`：T-B4-01~07 全缺却仍标 SELF_CHECKED | C / H | 0 |
+| GC-06 | 放行条件逐条写出命令原文（含 `--tests` 过滤器）；台账须贴当次输出并分模块列测试计数 | `AF-B456-06`：四个 commit 台账一律 `Shared tests: 0 failures` | I | 0 |
+| GC-07 | 测试夹具职责边界成表：fake 只制造外部原因，禁止直接返回业务终态；异步禁 `sleep` | BL-05：fake 自抛 `CancellationException`，从未进入生产 `catch(IOException)` | H | 0 |
+| GC-08 | 交付台账含一行「真机清单文件名 + 本批新增编号区间」；未登记即视为未交付 | `AF-B456-08`：B6 五项改动零真机验证项 | I | 0 |
+| GC-09 | 列出本批不得失败的既有测试套件全名（回归基线锁定）；删改既有断言须先有架构批准 + 一对一替代映射 | BL-06、`AF-B456-01`：B3 回归套件 T-B3-01~09 全线失效却无人发现 | H / I | 0 |
+| GC-34 | 复核逐条比对注释/KDoc 描述与当前实现是否一致；不符登记进台账（不强制阻断，但不得放过） | BL-11：B1/B2 死代码注释×2 + `AF-ARCH-01` prompt 注释 + B5 `CharCountLabel` KDoc + `AF-B456-07` 台账不实，**已四次独立命中** | I | 3（已达自动检查门槛，建议纳入 lint） |
+
+#### L3 · 真相源闭合
+
+| GC | 强制细化规则 | 触发案例 | 工件 | 复发计数 |
+|---|---|---|---|:--:|
+| GC-10 | 存在逐字段真相源表：`字段 / 唯一写入者 / 读取方（全部） / 禁止覆盖点 / 终局形态` | BL-03；`AF-B456-01` | E | 0 |
+| GC-11 | 新增或重命名与既有字段语义重叠的状态字段时，蓝图必须内嵌"旧字段全部写入点 grep 清单（文件:行）"，每个写入点标注处置，并选定终局之一：派生（计算属性）/ 替换（删旧字段）/ 并存（禁止，除非同条给出同步保证条款） | `AF-B456-01/02` 精确根因：`quickDraftText` 只迁移了读取方 `submit()`，四个写入方仍写 `inputText` | D / E | 0 |
+| GC-12 | UI 判据与业务判据同源表：凡"按钮 enabled / 可见性 / 计数文案"与"执行方法的前置校验"，写明两者引用同一字段或同一派生属性 | `AF-B456-01`：`enabled = state.inputText.isNotBlank()` vs `submit()` 读 `quickDraftText` | D / E | 0 |
+| GC-13 | fallback 先转换为主路径内部类型、再复用主路径校验入口，蓝图写出该入口的函数名 | BL-03：整体 JSON fallback 另造日期/归属规则 → 错段错日期 | E | 0 |
+| GC-27 | 项目内既有的"编辑即失效"收口函数（本项目=`invalidateGenerationToInput`），新增/修改编辑类入口方法时，蓝图必须给出显式核对表：该入口是否路由过收口函数 | `AF-B3-03`（`setInputText()` 未收口）→ `AF-B456-01`（`setQuickDraft()` 未收口）**同一 bug 跨批次复发一次**，是全部 35 条 GC 中唯一有两次独立复发实证的模式 | D / E | 1（已升审查必查） |
+| GC-35 | 协议发送端声明的事件枚举与接收端处理分支必须逐项对照；未处理的枚举值默认按内部诊断处理，禁止直接透传成用户可见文案（除非蓝图显式设计为用户可见） | B3 架构终审 `AF-ARCH-01`：Prompt 承诺的 `"done"` 事件未被 parser 消费，内部 `WARNING 未知事件类型「done」，已忽略` 直接吐给用户 | E / C | 0 |
+
+#### L4 · 所有权与生命周期闭合
+
+| GC | 强制细化规则 | 触发案例 | 工件 | 复发计数 |
+|---|---|---|---|:--:|
+| GC-14 | 存在对象生命周期表：`对象 / 创建者 / 持有者 / 可调用者 / 释放点 / 释放触发条件`。凡持有系统资源者（麦克风、相机、Stream、Job、Cursor、SpeechRecognizer）必须入表 | BL-02；`AF-B456-03`：`activeRecognizer` 恒 null，`DisposableEffect` 成死代码，麦克风不释放 | D / F | 0 |
+| GC-15 | 跨 Composable 传递可变持有物必须声明传递形态：`MutableState<T>` / 回调 / hoist 到更高层，三选一写死；禁止"以值传 `T?` 后期望子层写回" | `AF-B456-03` 精确根因：`QuickInputSection(… activeRecognizer: VoiceRecognizer?)` 值传参 | D / G | 0 |
+| GC-16 | 实施脚本涉及"搬迁既有代码块"时，必须先列出被搬迁块内的历史修复注释 / 配对逻辑清单，逐条标注搬迁后落点 | `AF-B456-03`：`a7fdf074` 的 `// Bug修复：统一语音实例管理…` 注释与 `stopListening()` 在重构中一并消失 | G | 0 |
+| GC-28 | 任何"构造时创建、后续被多次迭代复用"的对象或字段（parser/accumulator/缓存/累积状态），蓝图必须显式回答"迭代基数从 1 扩展到 N 时是否需要按基数分片" | BL-09：`AF-ARCH-02`——parser 单例在段数=1时被掩盖，段数>1立即整体失效，全项目最严重阻断 | D / E | 0 |
+| GC-31 | 蓝图必须列出全部挂起点（suspend 调用）清单；每个挂起点恢复后、写 state 前必须重新校验 generation/会话身份（`isCurrentGeneration` 一类谓词），不能只在入口处校验一次 | B3.2 `AF-B3-R2-01`（preview 挂起点恢复）+ B3.3 `AF-B3-R3-01`（fallback 挂起点恢复），**同一模式两次独立复现** | F | 1（已升审查必查） |
+| GC-33 | 禁止为可测试性给生产类暴露可变全局注入点（`var xxx` + `internal fun replaceXxxForTest`）；测试应通过构造参数默认值注入 | B3 架构终审 S5：`sessionPort` 为 `var` + `replaceSessionPortForTest`，构造完成后仍可被改写，是不必要的并发面 | D | 0 |
+
+#### L5 · 索引空间与集合投影闭合
+
+| GC | 强制细化规则 | 触发案例 | 工件 | 复发计数 |
+|---|---|---|---|:--:|
+| GC-17 | 凡"列表逐项状态"，D 类型表 / E 数据流须显式声明为 `List<Status>`（与显示顺序一一对应），UI 只做映射；禁止用计数/标量 + 下标反推逐项状态 | BL-08 / `AF-B456-05`：`index < completedSegments -> DONE` 隐含"成功项必排在失败项前"，成败天对调 | D / E | 0 |
 | GC-18 | 每个整型序号字段在类型表标注索引空间（业务序号 / 过滤前下标 / 显示下标）+ 取值域；命名后缀约定 `*Ordinal`=业务序号、`*Index`=显示下标；跨空间使用须写出转换表达式 | `AF-B456-05`：`currentSegmentOrdinal ∈ {2,4}` 与圆点 `index ∈ {0,1}` 恒不相等，ACTIVE 点永不出现 | D | 0 |
 | GC-19 | 凡集合经过滤 / 排序 / 分组后再被消费，数据流须画出 `原集合 --filter--> 子集 --sort--> 显示序` 链，并声明唯一 UI 消费对象 | `AF-B456-05`；同类：`nonBlankSegments` 过滤后未重编号 | E | 0 |
 | GC-36 | 交付"数据层产出 `List<Status>`"类修复前，须先列出真实状态空间的全部可区分值，核对承载类型（枚举/密封类）值域基数是否覆盖；不足时在 UI 承载层加可空/包装类型表达缺失值，禁止用值域内现有值兜底代替缺失值（BL-12） | 二次复核 `AF-B456-05`：`segmentStatuses: List<StreamSegmentState>`（3 值）无法表达"尚未开始"，`states[id] ?: StreamSegmentState.STREAMING` 把未开始兜底成 STREAMING，多段场景下未轮到的段和真正在流的段同时显示 ACTIVE，`DotState.PENDING` 变死代码 | D | 0 |
@@ -376,14 +523,13 @@ Architecture Action Enum：`NONE`、`STRENGTHEN_EXISTING_RULE`、`STRENGTHEN_BLU
 
 每次治理规则 mutation 后，Self-Application 必须扫描同语义关键词、workflow entry、gate、template、lifecycle closure 的 sibling entry，并在六列表中记录当前治理文件、canonical stable entry/state/registry、当前 Blueprint 及明确受影响的 future Blueprint/template。denylist 文件只登记传播缺口，不直接修改；GC 总数保持 48，禁止借此新增 GC-49 或 L8。
 
-
-```
+~~~~
 
 ### .ai-context/docs/experience/INDEX.md
-- SHA-256: `54A252AA2ACB1BBCE0DC1FDD233AF80E43E8226743210C22024ABDF6249DF083`
+- Repository LF-normalized SHA-256: `e81a8e26866ba2db3347e998b79bba9833b189ef39e098f9bd023e045aa17241`
 - Line count: 55
 
-```markdown
+~~~~markdown
 # AI智能体经验手册 - 索引
 
 > 本手册由 /zongjie 指令自动维护，记录项目开发过程中的关键经验和知识。
@@ -440,14 +586,13 @@ Architecture Action Enum：`NONE`、`STRENGTHEN_EXISTING_RULE`、`STRENGTHEN_BLU
 | [13_单模型独立任务流程规范.md](13_单模型独立任务流程规范.md) | 项目指针 → 真相源在 `~/.ai-context/WORKFLOW_SINGLE_MODEL.md`（双模型共享）：单模型角色分化+交叉验证流程。 |
 | [14_模型执行力评估.md](14_模型执行力评估.md) | 不同具体模型担任 CODE 角色的实证评估台账：哪个模型在什么复杂度任务下表现如何、执行力边界在哪，积累证据后反哺 `MODEL_ROUTING.md`。 |
 
-
-```
+~~~~
 
 ### .ai-context/project_graph/README.md
-- SHA-256: `2E8EE6833D5CF672BC62118C41938436FCBC66EA24EFAD500838294B489A4677`
+- Repository LF-normalized SHA-256: `2e8ee6833d5cf672bc62118c41938436fcbc66ea24efad500838294b489a4677`
 - Line count: 448
 
-```markdown
+~~~~markdown
 # Project Graph（Cookbook 实施版 · Phase 1 — Model Contract）
 
 > **Phase 1 — Model Contract**: FINAL ACCEPT / FROZEN
@@ -897,8 +1042,7 @@ draft
 
 每一批独立 commit / push / architecture review，禁止连续自动执行。**禁止提前把 `mode` 切到 `active`。**
 
-
-```
+~~~~
 
 ## E. Phase and Protocol State Evidence
 
@@ -950,4 +1094,3 @@ Result: COMPLETE.
   - M `.ai-context/docs/UBF-M0-Truth-Pack-b7fc77e4.md`
   - A `.ai-context/docs/UBF-M0-Truth-Pack-Supplement-169bb0a7.md`
 - Unresolved Q/STOP: `NONE`.
-
