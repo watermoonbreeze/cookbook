@@ -13,19 +13,19 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure |
-| 状态 | **AUTHORIZED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **BLOCKED_FOR_REVIEW / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Handoff Parent | `2a5567193c688bbd0e30f323699a68aab1ffeb34` |
-| Execution Parent | `PENDING CLAIM COMMIT` |
+| Execution Parent | `6c62a91dfc9dab1806725ec595cd7297e947a732` |
 | 范围 | UBF-M0-R2-02/R2-05/R2-07/R2-08; UBF-M0-R3-01 ~ UBF-M0-R3-06; UBF-M0-R3-EXEC-01; UBF-M0-R4-01 ~ UBF-M0-R4-04 |
-| 证据 | R4 blueprint, R4 execution report, model ledger, state; execute only R4 |
-| 未解决问题 | UBF-M0-R3-EXEC-01; UBF-M0-R4-01 ~ UBF-M0-R4-04 |
-| UBF Stage | M0 / REWORK BEFORE ACCEPTANCE |
-| 下一步 | Execute only R4 in the isolated clean worktree, then return to remote review. M1 and Phase 3B remain unauthorized. |
+| 证据 | R4 blueprint, R4 execution report, model ledger, state; four-file fallback |
+| 未解决问题 | NONE; prior evidence issues remain dispositioned in R4 report |
+| UBF Stage | M0 / AWAITING REMOTE ARCH REVIEW |
+| 下一步 | Remote review R4. ACCEPT leads only to separate End/Accept+Handoff persistence, its review, then separate M1 Preview/Start; REWORK leads to narrow repair; M1 and Phase 3B remain unauthorized now. |
 
 ## 上一批次：UBF-M0-REWORK-03 — M0 Governance Evidence and Status Repair（2026-08-12）
 
