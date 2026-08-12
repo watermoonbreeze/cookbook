@@ -3,7 +3,7 @@
 > Document Role: Luna Mechanical Execution Blueprint
 > Status: `READY FOR EXECUTION`
 > Task ID: `UBF-M0-REWORK-02`
-> Blueprint Revision: `R1`
+> Blueprint Revision: `R2`
 > Review Operation Mode: `REMOTE_READ_ONLY_ARCH`
 > Handoff Parent: `b46b9dfe4d2328aeae6f2f244d7ba0a023eee402`
 > Execution Parent: `CLAIM_COMMIT_RESOLVED_AT_RUNTIME`
@@ -12,7 +12,7 @@
 > Return TURN: `REVIEW`
 > Turn Transfer Actor: `CODE_DELEGATED_CLAIM`
 > Target Branch: `master`
-> Target Repository: `watermoonbreeze/cookbook`
+> Target Repository: `cookbook`
 > Date: `2026-08-12`
 
 ## 0. How to execute
@@ -26,6 +26,14 @@ This batch implements the `Remote Review Visibility & Issue Disposition Contract
 - unanticipated problems must be recorded in the repository-carried execution report, not silently repaired;
 - the remote architecture reviewer decides `ACCEPT_AS_IS / REPAIR / DEFER / REJECT` in the next task document;
 - only a `NON_PUBLISHABLE_STOP` condition may leave the result without a review-input push.
+
+Repository naming contract for this and all generated artifacts in this batch:
+
+- identify the target only as `cookbook` or `the current cookbook repository`;
+- do not assert or record a hosting provider, account owner, organization or namespace identity;
+- treat the currently configured `origin` as the operational endpoint without changing it;
+- `origin/master` is permitted as a Git ref name and does not constitute a repository-identity claim;
+- do not copy the full origin URL into committed documents or chat output.
 
 On a successful push, reply only:
 
@@ -123,7 +131,7 @@ Do not run `pull`, `merge`, `rebase`, `reset`, `clean`, `stash`, amend, force pu
 
 ## 4. Preflight
 
-Before writing, capture exact output for the report:
+Before writing, run the following commands. Capture exact output for the report except for `git remote get-url origin`: use its result only for local validation and record the sanitized result specified below.
 
 ```text
 git rev-parse --show-toplevel
@@ -143,7 +151,8 @@ All must be true:
 
 - branch is `master`;
 - local HEAD and remote `master` both equal the Handoff Parent;
-- origin identifies `watermoonbreeze/cookbook`;
+- `origin` is configured and its final repository path component, ignoring an optional `.git` suffix and case, is `cookbook`; do not require or assert any provider, owner, organization or namespace;
+- the report records only `Remote: origin; Repository: cookbook; Endpoint: CONFIGURED / VALUE NOT RECORDED` and does not contain the full origin URL;
 - index is empty;
 - `<TRUTH_PACK>`, `<SUPPLEMENT>`, `<CONTROL>` and `<STATE>` have no pre-existing unstaged changes;
 - `<BLUEPRINT_COPY>` and `<REPORT>` do not exist and are not untracked;
@@ -300,6 +309,13 @@ The subsection must state exactly these contracts in equivalent concise wording:
 10. Only credentials/sensitive ancestry, unisolatable scope/attribution, parent/remote/non-fast-forward mismatch, network/permission failure, or unprovable Git contents may use `NON_PUBLISHABLE_STOP`.
 11. No outcome authorizes amend, reset, rebase, force push, history rewrite or expansion of allowlist.
 12. After any safely pushed outcome, Luna returns only the full final commit hash and the user forwards only that hash.
+13. All future task documents and repository-carried reports identify the target repository only as `cookbook` or `the current cookbook repository`.
+14. No future task document hard-codes a hosting provider, account owner, organization or namespace.
+15. Coder uses the current worktree's configured `origin`; a task must not require changing it merely to match an architecture-side mirror.
+16. Remote preflight validates only that `origin` exists and its final repository path component, ignoring case and an optional `.git` suffix, is `cookbook`.
+17. The full origin URL is used only for local mechanical validation and is not copied into task documents, committed reports or chat output.
+18. Repository-carried reports use `Remote: origin; Repository: cookbook; Endpoint: CONFIGURED / VALUE NOT RECORDED`.
+19. `origin/master` is a permitted Git ref name and is not a hosting or ownership identity claim.
 
 Add a precedence sentence: this R4 subsection supersedes conflicting failure-report and local-only STOP wording in the older §§6–7 for all future `REMOTE_READ_ONLY_ARCH` writable batches.
 
@@ -312,7 +328,7 @@ Create `<REPORT>` with:
 
 Document Role: Repository-carried Mechanical Execution and Remote Review Evidence
 Task ID: UBF-M0-REWORK-02
-Blueprint Revision: R1
+Blueprint Revision: R2
 Review Operation Mode: REMOTE_READ_ONLY_ARCH
 Handoff Parent: b46b9dfe4d2328aeae6f2f244d7ba0a023eee402
 Execution Parent / Turn Claim Commit: <CLAIM_COMMIT>
@@ -323,7 +339,7 @@ Outcome: COMPLETE | PARTIAL | BLOCKED_FOR_REVIEW
 
 Required sections:
 
-- `A. Preflight and Turn Claim`: branch, remote, local/remote parent, initial TURN, exact claim hash, claim parent, claim file list and remote verification;
+- `A. Preflight and Turn Claim`: branch, sanitized remote identity (`Remote: origin; Repository: cookbook; Endpoint: CONFIGURED / VALUE NOT RECORDED`), local/remote parent, initial TURN, exact claim hash, claim parent, claim file list and remote verification;
 - `B. Prior Review Disposition`: all eight Issue IDs from §1 and their disposition;
 - `C. Execution Result`: actual result for each Issue ID and exact validation evidence;
 - `D. Embedded Source Integrity`: three source paths, expected/actual line counts, expected/actual LF-normalized SHA-256, byte-compare result;

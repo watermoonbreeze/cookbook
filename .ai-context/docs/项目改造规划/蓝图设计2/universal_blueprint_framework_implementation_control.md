@@ -1,11 +1,13 @@
 # Universal Blueprint Framework 实施总控
 
-> 文档身份：实施控制文档（Implementation Control）  
-> 状态：`M0 REWORK-02 IN EXECUTION / PENDING REMOTE ARCH REVIEW`
-> 制定日期：2026-08-11  
-> 当前 CookBook 基线：`b46b9dfe4d2328aeae6f2f244d7ba0a023eee402`
-> 当前 CookBook Phase 3：`AUTHORIZED / NOT STARTED`  
-> Process Revision: `R4 — Remote Review Visibility & Issue Disposition Contract`
+> 文档身份：实施控制文档（Implementation Control）
+> 状态：`M0 REWORK-05 COMPLETE / PENDING REMOTE ARCH REVIEW`
+> 制定日期：2026-08-11
+> Current UBF Stage: `M0 — Migration Control & Truth Lock`
+> Current Review Result: `d7423f30b3892f021a50d162b832d168d2cfad22 = BLOCKED_FOR_REVIEW / REMOTE INPUT VALID / CONTENT REWORK REQUIRED`
+> Current Repository Observation / Handoff Parent: `d7423f30b3892f021a50d162b832d168d2cfad22`
+> CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
+> Process Revision: `R5 — Deterministic Repair Payload & Independent Execution Observation`
 
 ## 1. 目标
 
@@ -280,17 +282,39 @@ Luna 不可以：
 
 `/clear` 不会破坏连续性，因为连续性由 canonical Truth、commit、执行包和结构化 evidence 承担，而不是依赖 Luna 的聊天记忆。
 
-### 7.1 R4 鈥?Remote Review Visibility & Issue Disposition Contract
+### 7.1 R4 — Remote Review Visibility & Issue Disposition Contract
 
-Review role and repository write capability are separate dimensions. WRITE_CAPABLE_ARCH performs and pushes REVIEW 鈫?CODE before release. REMOTE_READ_ONLY_ARCH grants a one-task delegated claim; Coder first pushes a claim commit containing only BLUEPRINT_STATE.md.
+1. Review role and repository write capability are separate dimensions.
+2. `WRITE_CAPABLE_ARCH`: architecture pushes `REVIEW → CODE` before task release.
+3. `REMOTE_READ_ONLY_ARCH`: the blueprint grants a one-task delegated claim; Coder first pushes a claim commit containing only `BLUEPRINT_STATE.md`.
+4. Remote visibility is the exit gate; every safely publishable `COMPLETE`, `PARTIAL`, `Q`, validation failure or implementation blocker is written to the fixed report and pushed.
+5. Outcomes are `COMPLETE / PENDING REMOTE ARCH REVIEW`, `PARTIAL / PENDING REMOTE ARCH REVIEW`, or `BLOCKED_FOR_REVIEW / PENDING REMOTE ARCH REVIEW`.
+6. Every remote-read-only blueprint defines normal and fallback allowlists, PARTIAL rules, commit messages, Return TURN and `NON_PUBLISHABLE_STOP`.
+7. Each issue records stable ID, classification, expected/actual, path/line, redacted evidence, `NONE — AWAITING ARCH DISPOSITION`, and delivery impact.
+8. Coder does not decide whether an unanticipated issue should be repaired.
+9. The next architecture task gives each Issue ID exactly one `ACCEPT_AS_IS / REPAIR / DEFER / REJECT` disposition and exact boundary.
+10. Only credential/sensitive ancestry, unisolatable scope, parent/remote/non-fast-forward mismatch, network/permission failure, or unprovable Git contents can use `NON_PUBLISHABLE_STOP`.
+11. No outcome authorizes amend, reset, rebase, force push, history rewrite or allowlist expansion.
+12. After a safely pushed outcome, Luna returns only the full final commit hash; the user forwards only that hash.
+13. Future task documents and reports identify the repository only as `cookbook` or `the current cookbook repository`.
+14. No task document hard-codes a hosting provider, account owner, organization or namespace.
+15. Coder uses the current worktree's configured `origin`; the task does not change it to match an architecture mirror.
+16. Preflight validates only that `origin` exists and its final path component, ignoring case and optional `.git`, is `cookbook`.
+17. The full origin URL is local-validation-only and is absent from task documents, reports and chat output.
+18. Reports use `Remote: origin; Repository: cookbook; Endpoint: CONFIGURED / VALUE NOT RECORDED`.
+19. `origin/master` is a permitted Git ref, not a hosting/ownership identity claim.
 
-Remote visibility is the exit gate. Safely publishable COMPLETE, PARTIAL, Q, validation failure or implementation blocker is recorded in the fixed report and pushed. Outcomes: COMPLETE / PENDING REMOTE ARCH REVIEW, PARTIAL / PENDING REMOTE ARCH REVIEW, BLOCKED_FOR_REVIEW / PENDING REMOTE ARCH REVIEW.
+This R4 subsection supersedes conflicting failure-report and local-only STOP wording in older §§6–7 for all future REMOTE_READ_ONLY_ARCH writable batches.
 
-Every remote-read-only blueprint defines allowlists, partial rules, fallback allowlist, commit messages, Return TURN and NON_PUBLISHABLE_STOP. Issues have stable IDs, classification, expected/actual, path/line, redacted evidence, action=NONE 鈥?AWAITING ARCH DISPOSITION and delivery impact. Coder does not decide repairs.
+### 7.2 Model Execution Capability Evidence Contract
 
-The next architecture task gives each issue exactly one disposition: ACCEPT_AS_IS / REPAIR / DEFER / REJECT. Only credentials, unisolatable scope, parent/remote mismatch, network/permission failure or unprovable Git contents may use NON_PUBLISHABLE_STOP. No outcome authorizes amend, reset, rebase, force push, history rewrite or allowlist expansion. After a safely pushed outcome, Luna returns only the full final commit hash.
-
-This R4 subsection supersedes conflicting older 搂搂6鈥? wording for future REMOTE_READ_ONLY_ARCH writable batches.
+1. Every writable CODE blueprint declares the actual execution model and includes `.ai-context/docs/experience/14_模型执行力评估.md` in its normal delivery allowlist.
+2. The current Coder appends exactly one task row with Task ID, CODE role, actual model, task family/complexity, package profile, blueprint granularity, outcome, rework/STOP facts and validation summary.
+3. Concrete model names belong only in the capability ledger and execution report; `BLUEPRINT_STATE.md` keeps abstract role+machine identifiers.
+4. Because the final commit does not exist when its row is written, the Coder records `待 ARCH 依据最终远程 commit hash 回填` and must not amend or add a follow-up commit merely to self-fill it.
+5. Remote architecture review verifies the final hash and produces the ARCH assessment; the next writable architecture task explicitly authorizes backfilling the previous row's commit and ARCH comment.
+6. Historical rows are append-preserved; a current task may edit a prior row only with an explicit architecture backfill instruction naming that row and verified commit.
+7. A single batch is evidence, not a model-routing conclusion; the ledger's minimum-sample rule remains authoritative.
 
 ## 8. 第一批所需 Truth Pack
 
@@ -380,6 +404,10 @@ STOP：
 
 ## 10. 当前启动判定
 
-- 用户在 2026-08-11 指示按最终架构开始实施：`M0 AUTHORIZED`；
-- Luna 返回只读 Truth Pack 且本会话复核通过：`M0 ACCEPTED / M1 READY`；
-- 在此之前，canonical protocol、CookBook Phase 3 与 production code 均保持未变。
+- 当前 UBF 阶段为 `M0 — Migration Control & Truth Lock`；M0 尚未获得架构 ACCEPT。
+- `d7423f30b3892f021a50d162b832d168d2cfad22` 是有效的 R4 四文件远程审核输入，但其阻塞归因不成立，原十项治理修复仍为 0/10，报告与台账证据需要纠正。
+- `UBF-M0-REWORK-05` 使用架构提供的确定性修复载荷，在隔离干净 worktree 中执行；这是 M0 repair，不是 M1。
+- R5 push 后必须等待远程架构 `ACCEPT`；Coder 不得自行宣布 M0 完成。
+- ACCEPT 后仍须由架构另发 M0 End/Accept + M0→M1 Handoff persistence 蓝图，执行并审核该交接后，才可另行 Preview/Start M1。
+- 若 R5 审核为 REWORK，只能发布下一份窄范围修复蓝图。
+- CookBook Phase 3B、production code、tests、build/configuration 均不在本批范围内。

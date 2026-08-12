@@ -1,40 +1,47 @@
 # UBF-M0 Truth Pack Supplement — 169bb0a7
 
 Document Role: Supplemental Evidence and Errata
-Status: COMPLETE
-Execution Parent: 2f4fcb790c9aae2373055b933ead6c64feea1876
+Status: COMPLETE / PENDING REMOTE ARCH REVIEW
 Original Capture HEAD: b7fc77e4d442364e6f5db790b374ece4c5da409d
-Task ID: UBF-M0-REWORK-02
+Prior Repair Tasks: UBF-M0-REWORK-02, UBF-M0-REWORK-03, UBF-M0-REWORK-04
+Current Repair Task: UBF-M0-REWORK-05
+R2 Handoff Parent: b46b9dfe4d2328aeae6f2f244d7ba0a023eee402
+R3 Handoff Parent: c3c7b812272344935f2bb48f96a890d84081b5d3
+R3 Reviewed Delivery: 2a5567193c688bbd0e30f323699a68aab1ffeb34
+R4 Handoff Parent: 2a5567193c688bbd0e30f323699a68aab1ffeb34
+R4 Reviewed Delivery: d7423f30b3892f021a50d162b832d168d2cfad22
+R5 Handoff Parent: d7423f30b3892f021a50d162b832d168d2cfad22
+R5 Execution Parent: d3935ae7620312e85d85429b48ac30c62ef80f00
 
 ## A. Provenance and Scope
 
 - Truth Pack path: `.ai-context/docs/UBF-M0-Truth-Pack-b7fc77e4.md`.
-- Original Truth Pack SHA-256 before revision: `B2C8EBFAA7E64F42EA5EDFC885E0546F66DC43BBA613090D80734AE17B49587B`.
-- Original capture occurred before the Downloads export; the user then authorized copying the export into the CookBook repository, followed by commit `169bb0a7`.
-- Allowlist: the Truth Pack above and this supplement in the same directory.
-- Denylist: protocol, registry, Phase 3 state, business code, tests, build/configuration files, and all paths outside the allowlist.
-- This document adds missing evidence and corrections only; it does not mutate input evidence.
+- Original capture HEAD remains `b7fc77e4d442364e6f5db790b374ece4c5da409d`; this supplement corrects evidence without rewriting the capture.
+- `c3c7b812272344935f2bb48f96a890d84081b5d3` was `PARTIAL / REWORK REQUIRED`.
+- `2a5567193c688bbd0e30f323699a68aab1ffeb34` was valid R3 blocked review input and completed 0/10 repairs.
+- `d7423f30b3892f021a50d162b832d168d2cfad22` was valid R4 blocked review input, but its blocker attribution was rejected and the ten repairs remained 0/10.
+- R5 is the current deterministic isolated repair. UBF remains M0; M1 and CookBook Phase 3B are unauthorized.
+- The three §D bodies were accepted by remote review and remain byte-for-byte preserved.
+- Canonical governance/Project Graph sources, production code, tests, builds and user-level protocol files are denylisted.
 - Paths use repository-relative names or `<USER_HOME>` / `<COOKBOOK_REPO>` placeholders.
 
 ## B. Corrected Observation Register
 
-| ID | Original Observation | Corrected Fact | Evidence | Effect |
-|---|---|---|---|---|
-| ERR-01 | Local HEAD and Observed Remote Target were reported as different. | At capture time they were identical: `b7fc77e4d442364e6f5db790b374ece4c5da409d`. | Original Truth Pack §A/§G; capture metadata. | Hash comparison corrected. |
-| ERR-02 | Overall collection was `COMPLETE`. | It is `PARTIAL / SUPERSEDED IN PART BY UBF-M0-Truth-Pack-Supplement-169bb0a7.md`. | Original Truth Pack §A; this supplement. | Missing evidence is explicit. |
-| ERR-03 | Canonical GC registry and two governance indexes were not collected. | All three required project files are included below. | Section C/D; repository files. | M0 evidence completed. |
-| ERR-04 | Phase 3A, Phase 3B, and `GOV-BP-P3-01` states were not fully expanded. | State declarations are listed in Section E from their source files. | Section E. | No state is adjudicated. |
-| ERR-05 | `project.yaml` and later Phase 3A records were not compared. | They contain conflicting lifecycle declarations; conflict remains unresolved. | Section F; source hashes/lines. | No source file is changed. |
-| NOTE-01 | Downloads and repository paths differ. | This is the authorized transport chain, not original collection overreach. | Original capture provenance and commit `169bb0a7`. | Provenance clarified. |
-| NOTE-02 | Working tree was already DIRTY before capture. | Existing dirty entries remain outside this commit and are preserved. | Original Truth Pack §B/§I; current preflight status. | No attribution to this task. |
+| ID | Corrected fact | Evidence / effect |
+|---|---|---|
+| ERR-01 | Capture HEAD and observed remote target were both `b7fc77e4...`. | Provenance corrected; no history rewrite. |
+| ERR-02 | Original Truth Pack is `PARTIAL / SUPERSEDED IN PART`; the supplement supplies missing evidence. | No false collection-complete claim. |
+| ERR-03 | All three required project-level governance files are embedded in §D and byte-equal. | M0 input evidence preserved. |
+| ERR-04 | Phase declarations remain evidence snapshots with an unresolved lifecycle conflict. | No source state adjudicated here. |
+| ERR-05 | Repository hashes use LF-normalized Git-blob evidence; the user-level protocol remains remote-attested external state. | Hash bases are explicit. |
 
 ## C. Canonical Governance Inventory Supplement
 
-| Requested Material | Repository-relative Path | Scope | Truth Role | Status | SHA-256 | Line Count | Notes |
+| Requested Material | Repository-relative Path | Scope | Truth Role | Status | Repository LF-normalized SHA-256 | Lines | Notes |
 |---|---|---|---|---|---|---:|---|
-| `12_多模型协作与实施蓝图规范.md` | `.ai-context/docs/experience/12_多模型协作与实施蓝图规范.md` | PROJECT-LEVEL | Project fallback canonical GC registry | FOUND | `44FEE0FDFC55FAAA61B0A599FE35A1F61757921AB8D63B48498A59BF64EBECFC` | 479 | Project-level fallback copy. |
-| `INDEX.md` | `.ai-context/docs/experience/INDEX.md` | PROJECT-LEVEL | Experience index | FOUND | `54A252AA2ACB1BBCE0DC1FDD233AF80E43E8226743210C22024ABDF6249DF083` | 55 | Index identifies experience handbook. |
-| `README.md` | `.ai-context/project_graph/README.md` | PROJECT-LEVEL | Project Graph entry/documentation | FOUND | `2E8EE6833D5CF672BC62118C41938436FCBC66EA24EFAD500838294B489A4677` | 448 | Project Graph documentation. |
+| `12_多模型协作与实施蓝图规范.md` | `.ai-context/docs/experience/12_多模型协作与实施蓝图规范.md` | PROJECT-LEVEL | Project fallback canonical GC registry | FOUND | `0a58da55219ce134095c3a15881205124174b74994e47b58168a91c1f402c827` | 479 | §D body byte-equal. |
+| `INDEX.md` | `.ai-context/docs/experience/INDEX.md` | PROJECT-LEVEL | Experience index | FOUND | `e81a8e26866ba2db3347e998b79bba9833b189ef39e098f9bd023e045aa17241` | 55 | §D body byte-equal. |
+| `README.md` | `.ai-context/project_graph/README.md` | PROJECT-LEVEL | Project Graph entry | FOUND | `2e8ee6833d5cf672bc62118c41938436fcbc66ea24efad500838294b489a4677` | 448 | §D body byte-equal. |
 
 ## D. Complete Project-level File Contents
 
@@ -1046,51 +1053,49 @@ draft
 
 ## E. Phase and Protocol State Evidence
 
-| Subject | Source Path | Source Role | Exact Status Text | Line(s) | SHA-256 | Observation |
-|---|---|---|---|---|---|---|
-| Phase 3 | `.ai-context/project_graph/project.yaml` | canonical project graph declaration | `Phase 3: AUTHORIZED / NOT STARTED` | 9-10 | `2C756CE240C129E72276D7A97842C953580C006B768227BB06C086C270CA2F0F` | Lifecycle declaration. |
-| Phase 3A | `.ai-context/project_graph/migration/PHASE3A_AUDIT.md` | audit snapshot | `Final state: Phase 3A R1 EXECUTED / PENDING INDEPENDENT ARCH REVIEW; STOP.` | 144 | `F0C4A9A2E529C87BF9C252EFB79C78B6ABBB89FC7E5740F70B82B5BBA38CF9F2` | Acceptance snapshot. |
-| Phase 3A | `.ai-context/project_graph/migration/PHASE3A_BLUEPRINT.md` | execution blueprint | `Final state is EXECUTED / PENDING INDEPENDENT ARCH REVIEW, TURN=REVIEW.` | 188-190 | `EE0ACC657FD4E9B0A89D3621C84681AFEBC68DDB1E5DDA68AAA9DF89F8F9CB49` | Execution/lifecycle evidence. |
-| Phase 3B | `.ai-context/project_graph/migration/PHASE3A_BLUEPRINT.md` | deferred phase map | `Renderer Contract | Phase 3B`; Phase 3B requires separate ARCH accept/handoff. | 176, 190 | `EE0ACC657FD4E9B0A89D3621C84681AFEBC68DDB1E5DDA68AAA9DF89F8F9CB49` | No Phase 3B execution evidence. |
-| GOV-BP-P3-01 | `.ai-context/docs/context_memory/BLUEPRINT_STATE.md` | handshake/lifecycle snapshot | `EXECUTED / PENDING INDEPENDENT ARCH REVIEW` | 17-24 | `C93F25059DC7382F3C770E51DAEB6530453673B70A3610927B741C1B1EAD5463` | Current batch awaits ARCH review. |
-| blueprint_protocol.md | `<USER_HOME>/.ai-context/rules/blueprint_protocol.md` | user-level canonical protocol | `Stable Identity / Contract / Lifecycle State / Acceptance Snapshot / Generated View` | 15-25 | `C2C8332EB12D545CA89FCA4C80A15DBA7E2ACF5FAF7703A8CFE6815A0B5F0EB3` | Full text omitted from repository copy. |
-| Canonical stable entry | `.ai-context/docs/experience/12_多模型协作与实施蓝图规范.md` | project fallback copy | `本文件是 fallback 副本` | 8, 32 | `44FEE0FDFC55FAAA61B0A599FE35A1F61757921AB8D63B48498A59BF64EBECFC` | Stable governance entry. |
-| Lifecycle state | `.ai-context/docs/context_memory/BLUEPRINT_STATE.md` | handshake state | `TURN=REVIEW` | 17-24 | `C93F25059DC7382F3C770E51DAEB6530453673B70A3610927B741C1B1EAD5463` | Current value belongs to state file. |
-| Acceptance snapshot | `.ai-context/project_graph/migration/PHASE3A_AUDIT.md` | audit snapshot | `EXECUTED / PENDING INDEPENDENT ARCH REVIEW` | 144 | `F0C4A9A2E529C87BF9C252EFB79C78B6ABBB89FC7E5740F70B82B5BBA38CF9F2` | Not a lifecycle adjudication. |
-| Generated view | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | No source uniquely identified. |
+| Subject | Source Path | Source Role | Exact status / evidence | Repository LF-normalized SHA-256 / Evidence Basis | Observation |
+|---|---|---|---|---|---|
+| Phase 3 | `.ai-context/project_graph/project.yaml` | canonical project graph declaration | `Phase 3: AUTHORIZED / NOT STARTED` | `2c756ce240c129e72276d7a97842c953580c006b768227bb06c086c270ca2f0f` | Lifecycle declaration at R2 evidence snapshot. |
+| Phase 3A audit | `.ai-context/project_graph/migration/PHASE3A_AUDIT.md` | acceptance snapshot | `EXECUTED / PENDING INDEPENDENT ARCH REVIEW` | `c78dfbcb08b35ffbc26e165d139cd3929c9aae895bcc70e3acddb40fcb215a52` | Snapshot, not current adjudication. |
+| Phase 3A blueprint | `.ai-context/project_graph/migration/PHASE3A_BLUEPRINT.md` | execution/lifecycle evidence | `EXECUTED / PENDING INDEPENDENT ARCH REVIEW` | `7269fab1a893212fce068367454051ae26c0d643452fac41b19b926c1c8b265b` | Phase 3B requires separate handoff. |
+| GOV-BP-P3-01 | `.ai-context/docs/context_memory/BLUEPRINT_STATE.md` at `b46b9dfe4d2328aeae6f2f244d7ba0a023eee402` | handshake snapshot | `TURN=REVIEW` | `8933b7d85d382f4bde8a8077db4359514833141a0d70c62efbfaf5785ce56109` | Historical evidence only. |
+| blueprint protocol | `<USER_HOME>/.ai-context/rules/blueprint_protocol.md` | user-level canonical protocol | Stable Identity / Contract / Lifecycle / Snapshot / View | `REMOTE_ATTESTED_EXTERNAL_STATE / NOT DIRECTLY REPRODUCIBLE FROM REPOSITORY`; prior externally attested hash retained | Full text remains outside repository. |
+| Canonical stable entry | `.ai-context/docs/experience/12_多模型协作与实施蓝图规范.md` | project fallback | `本文件是 fallback 副本` | `0a58da55219ce134095c3a15881205124174b74994e47b58168a91c1f402c827` | Same source, same basis. |
 
 ## F. Conflict and Absence Register
 
-- `project.yaml` declares Phase 3 `AUTHORIZED / NOT STARTED` at lines 9-10.
-- `PHASE3A_AUDIT.md` and `PHASE3A_BLUEPRINT.md` declare Phase 3A executed and pending independent architecture review.
-- This is **UNRESOLVED AUTHORITY / LIFECYCLE CONFLICT**; no side is selected and no source is modified.
-- Phase 3B execution evidence is ABSENT; its ownership is a deferred phase / separate ARCH accept-handoff.
-- `GOV-BP-P3-01` has no contradictory status in inspected sources.
-- No required project-level governance input was absent.
-- User-level full contents are intentionally absent; integrity is preserved by path, hash, and line count.
+- `project.yaml` and Phase 3A records retain different lifecycle declarations; this remains an unresolved authority/lifecycle conflict and is not repaired in M0 evidence work.
+- Phase 3B execution evidence is absent and Phase 3B remains unauthorized.
+- User-level full contents are intentionally absent; only remote-attested external-state evidence is retained.
+- No production, test, build or canonical Project Graph source is modified by R5.
 
 ## G. Working Tree Preservation Evidence
 
-- Requested execution parent: `169bb0a70524c513fd4d2fd1cc72e06cac3ee27d`.
-- Actual preflight HEAD: `3e08ab9b7f07d7ba54a0981e74a78193fa315e05`; user-authorized interposed documentation commit `3e08ab9b`.
-- Preflight staged state: empty.
-- Preflight unstaged/untracked state: pre-existing dirty documentation and temporary files; all unrelated entries remain untouched.
-- Allowlist after write: only Truth Pack modified and this supplement added.
-- Existing dirty items were not modified, deleted, staged, or committed by this task.
+- Handoff Parent: `d7423f30b3892f021a50d162b832d168d2cfad22`.
+- Execution Parent: `d3935ae7620312e85d85429b48ac30c62ef80f00`.
+- Execution Worktree Mode: `ISOLATED_DETACHED_CLEAN`.
+- The original worktree, its index and all dirty/untracked contents remain untouched.
+- Selected outcome allowlist: exact ten-file R5 normal delivery list recorded in §I.
 
 ## H. Completion Assessment
 
-All required project-level files are present with complete original contents. Phase/protocol evidence, absence records, conflict registration, hash correction, user-level omission, and dirty-tree preservation are complete. No sensitive values were found.
-Result: COMPLETE.
+- The three §D embedded bodies are complete only because fixed line counts, LF-normalized hashes and byte comparisons pass.
+- R5 closes the ten original governance repairs and the R3/R4 report/ledger evidence corrections as a review input; it does not self-accept M0.
+- M0 cannot enter M1 until R5 receives remote architecture ACCEPT, a separate M0 End/Accept plus M0→M1 Handoff persistence batch is executed and reviewed, and a separate M1 Preview/Start is authorized.
+- Result: `COMPLETE / PENDING REMOTE ARCH REVIEW`.
 
 ## I. Integrity
 
-- Revised Truth Pack SHA-256: SELF_SHA256_REPORTED_EXTERNALLY
-- Revised Truth Pack line count: reported after write.
-- Supplement path: `.ai-context/docs/UBF-M0-Truth-Pack-Supplement-169bb0a7.md`
-- Supplement file size and line count: reported after write.
-- Supplement SHA-256: SELF_SHA256_REPORTED_EXTERNALLY
-- Expected commit files:
-  - M `.ai-context/docs/UBF-M0-Truth-Pack-b7fc77e4.md`
-  - A `.ai-context/docs/UBF-M0-Truth-Pack-Supplement-169bb0a7.md`
-- Unresolved Q/STOP: `NONE`.
+- Exact changed-file set:
+  - M `.ai-context/docs/UBF-M0-Truth-Pack-Supplement-169bb0a7.md`
+  - M `.ai-context/docs/项目改造规划/蓝图设计2/universal_blueprint_framework_implementation_control.md`
+  - M `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M0-REWORK-02_Luna_Execution_Blueprint.md`
+  - M `.ai-context/docs/UBF-M0-REWORK-02-Execution-Report.md`
+  - M `.ai-context/docs/UBF-M0-REWORK-03-Execution-Report.md`
+  - M `.ai-context/docs/UBF-M0-REWORK-04-Execution-Report.md`
+  - A `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M0-REWORK-05_Luna_Execution_Blueprint.md`
+  - A `.ai-context/docs/UBF-M0-REWORK-05-Execution-Report.md`
+  - M `.ai-context/docs/experience/14_模型执行力评估.md`
+  - M `.ai-context/docs/context_memory/BLUEPRINT_STATE.md`
+- Unresolved R5 execution issues: `NONE`.
+- M0 transition: `AWAITING REMOTE ARCH REVIEW`.

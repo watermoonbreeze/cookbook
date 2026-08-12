@@ -13,8 +13,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M0-REWORK-05 — Deterministic M0 Governance Repair |
-| 状态 | **AUTHORIZED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -22,10 +22,12 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | DETERMINISTIC_ARCH_AUTHORED_TRANSFORM |
 | Handoff Parent | `d7423f30b3892f021a50d162b832d168d2cfad22` |
-| Execution Parent | `PENDING CLAIM COMMIT` |
+| Execution Parent | `d3935ae7620312e85d85429b48ac30c62ef80f00` |
 | 范围 | 原十项修复；R3/R4 历史报告；R3/R4 模型台账；UBF-M0-R5-01 ~ UBF-M0-R5-05 |
-| UBF Stage | M0 / REWORK BEFORE ACCEPTANCE |
-| 下一步 | Execute only R5 and return to remote review. M1 and Phase 3B remain unauthorized. |
+| 证据 | R5 blueprint, deterministic payload, R2/R3/R4 corrected evidence, R5 report, model ledger, state; exact ten-file normal delivery |
+| 未解决问题 | NONE |
+| UBF Stage | M0 / AWAITING REMOTE ARCH REVIEW |
+| 下一步 | Remote review R5. ACCEPT only authorizes a separate End/Accept+Handoff persistence blueprint, its execution/review, then separate M1 Preview/Start. REWORK leads to a narrow repair. M1 and Phase 3B remain unauthorized now. |
 
 ## 上一批次：UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure（2026-08-12）
 
@@ -42,7 +44,7 @@
 |---|---|
 | 状态 | **BLOCKED_FOR_REVIEW / REMOTE ARCH REVIEWED / REWORK REQUIRED** |
 | Reviewed delivery | `2a5567193c688bbd0e30f323699a68aab1ffeb34` |
-| 未解决问题 | Original delivery closed 0/10; historical evidence requires R5 correction |
+| 未解决问题 | Historical result repaired by R5; original delivery closed 0/10 |
 
 ## 上一批次：UBF-M0-REWORK-02 — Remote-visible Evidence Repair（2026-08-12）
 
@@ -50,7 +52,7 @@
 |---|---|
 | 状态 | **PARTIAL / REMOTE ARCH REVIEWED / REWORK REQUIRED** |
 | Reviewed delivery | `c3c7b812272344935f2bb48f96a890d84081b5d3` |
-| 未解决问题 | Historical report requires R5 correction |
+| 未解决问题 | Historical report repaired by R5; original delivery remained PARTIAL |
 
 ---
 
