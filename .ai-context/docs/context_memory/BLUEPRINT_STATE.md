@@ -2,54 +2,55 @@
 
 唯一握手状态文件。开工前先 `git pull` 读本文件；`TURN` 不是自己 → 停手，只报告当前持球方，不改代码。开工前除看 `TURN`，还须看 `颗粒度` 行确认本批蓝图应达到的级别。完成本方动作后在同一提交内更新本文件再 push。
 
-**ARCH/CODE 命名规则**：`ARCH`/`CODE`/`REVIEW`/`TURN` 这几个协议字段只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**（Claude/DeepSeek/GPT 等）——角色定义是抽象的，具体由哪个模型担任取决于当前会话，协议逻辑不依赖模型身份。
+**ARCH/CODE 命名规则**：`ARCH`/`CODE`/`REVIEW`/`TURN` 这几个协议字段只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**——角色定义是抽象的，具体由哪个模型担任取决于当前会话，协议逻辑不依赖模型身份。
 
-**模型执行力评估台账（2026-08-07 新增，与上条不冲突）**：独立文档 `docs/experience/14_模型执行力评估.md`，与本文件的抽象角色字段完全分离。CODE 完成本批交付时，去该文档追加一行记录（含实际模型名）；ARCH 复核后补简评。**本文件不重复该表**，避免同一数据两处维护。
+**模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
 
-## 当前批次：UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure（2026-08-12）
+## 当前批次：UBF-M0-REWORK-05 — Deterministic M0 Governance Repair（2026-08-12）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure |
-| 状态 | **BLOCKED_FOR_REVIEW / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M0-REWORK-05 — Deterministic M0 Governance Repair |
+| 状态 | **AUTHORIZED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
+| Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
-| Handoff Parent | `2a5567193c688bbd0e30f323699a68aab1ffeb34` |
-| Execution Parent | `6c62a91dfc9dab1806725ec595cd7297e947a732` |
-| 范围 | UBF-M0-R2-02/R2-05/R2-07/R2-08; UBF-M0-R3-01 ~ UBF-M0-R3-06; UBF-M0-R3-EXEC-01; UBF-M0-R4-01 ~ UBF-M0-R4-04 |
-| 证据 | R4 blueprint, R4 execution report, model ledger, state; four-file fallback |
-| 未解决问题 | NONE; prior evidence issues remain dispositioned in R4 report |
-| UBF Stage | M0 / AWAITING REMOTE ARCH REVIEW |
-| 下一步 | Remote review R4. ACCEPT leads only to separate End/Accept+Handoff persistence, its review, then separate M1 Preview/Start; REWORK leads to narrow repair; M1 and Phase 3B remain unauthorized now. |
+| Payload mode | DETERMINISTIC_ARCH_AUTHORED_TRANSFORM |
+| Handoff Parent | `d7423f30b3892f021a50d162b832d168d2cfad22` |
+| Execution Parent | `PENDING CLAIM COMMIT` |
+| 范围 | 原十项修复；R3/R4 历史报告；R3/R4 模型台账；UBF-M0-R5-01 ~ UBF-M0-R5-05 |
+| UBF Stage | M0 / REWORK BEFORE ACCEPTANCE |
+| 下一步 | Execute only R5 and return to remote review. M1 and Phase 3B remain unauthorized. |
+
+## 上一批次：UBF-M0-REWORK-04 — Isolated M0 Governance Repair and Evidence Closure（2026-08-12）
+
+| 字段 | 值 |
+|---|---|
+| 状态 | **BLOCKED_FOR_REVIEW / REMOTE ARCH REVIEWED / CONTENT REWORK REQUIRED** |
+| Reviewed delivery | `d7423f30b3892f021a50d162b832d168d2cfad22` |
+| 已验证 | 隔离 worktree、两提交链、四文件 fallback、allowlist、TURN=REVIEW |
+| 未通过 | 原十项 0/10；阻塞归因不成立；R3 台账未回填；R4-01~04 错误 PASS；报告内部不一致；R5-01~05 |
 
 ## 上一批次：UBF-M0-REWORK-03 — M0 Governance Evidence and Status Repair（2026-08-12）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M0-REWORK-03 — M0 Governance Evidence and Status Repair |
 | 状态 | **BLOCKED_FOR_REVIEW / REMOTE ARCH REVIEWED / REWORK REQUIRED** |
 | Reviewed delivery | `2a5567193c688bbd0e30f323699a68aab1ffeb34` |
-| 未解决问题 | Ten open repair issues; UBF-M0-R3-EXEC-01; UBF-M0-R4-01 ~ UBF-M0-R4-04 |
+| 未解决问题 | Original delivery closed 0/10; historical evidence requires R5 correction |
 
 ## 上一批次：UBF-M0-REWORK-02 — Remote-visible Evidence Repair（2026-08-12）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M0-REWORK-02 — Remote-visible Evidence Repair |
 | 状态 | **PARTIAL / REMOTE ARCH REVIEWED / REWORK REQUIRED** |
-| TURN | REVIEW |
-| CODE | Coder@当前机 |
-| ARCH | 架构师@主力机 |
-| Review mode | REMOTE_READ_ONLY_ARCH |
-| Handoff Parent | `b46b9dfe4d2328aeae6f2f244d7ba0a023eee402` |
-| Execution Parent | `2f4fcb790c9aae2373055b933ead6c64feea1876` |
-| 范围 | UBF-M0-R2-01 ~ UBF-M0-R2-08 |
-| 未解决问题 | UBF-M0-R2-02, UBF-M0-R2-05, UBF-M0-R2-07, UBF-M0-R2-08, UBF-M0-R3-01 ~ UBF-M0-R3-06 |
+| Reviewed delivery | `c3c7b812272344935f2bb48f96a890d84081b5d3` |
+| 未解决问题 | Historical report requires R5 correction |
 
 ---
 
