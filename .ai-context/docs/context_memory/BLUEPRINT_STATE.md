@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M2-PREVIEW-START-01 — Legacy Asset Mapping Entry |
-| 状态 | **CLAIMED / IN EXECUTION** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,12 +20,13 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `2054899ad93d9c2bc1353914c31a1ef3b96c15ac` |
+| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | M1 End/Accept + M1→M2 Handoff persistence `2054899ad93d9c2bc1353914c31a1ef3b96c15ac` = **ACCEPT** |
 | Accepted handoff evidence | `1723a4f9... -> 5650c5c5... -> 2054899a...`; claim 1/final 7 paths; 7/7 blobs; State denyset; Preserve/whitespace/lifecycle PASS |
-| 范围 | 仅持久化 M2 Preview/Start 生命周期与 Legacy Asset Mapping entry contract；不创建 GC mapping rows，不决定 Universal Level |
-| UBF Stage | M0/M1 **ACCEPT/CLOSED**; M1→M2 Handoff **ACCEPT/CONSUMED BY THIS ENTRY**; M2 Preview/Start **IN EXECUTION**; M2 Mapping **NOT EXECUTED** |
+| 范围 | 已持久化 M2 Preview/Start 生命周期与 mapping entry contract；未创建任何 GC mapping row，未决定 Universal Level |
+| UBF Stage | M0/M1 **ACCEPT/CLOSED**; M1→M2 Handoff **ACCEPT/CONSUMED**; M2 Preview/Start **COMPLETE / PENDING REMOTE ARCH REVIEW**; M2 Mapping **NOT EXECUTED / NOT YET AUTHORIZED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 机械落盘 exact 7-file entry targets 后 TURN=REVIEW；entry 获 remote ARCH ACCEPT 后才可另发 M2 Mapping Work-01 |
+| 下一步 | 仅等待 remote ARCH 核验 entry 两提交链、exact 7-file scope、target blobs、State denyset 与 mapping non-start；ACCEPT 后另发 M2 Mapping Work-01 |
 ## 上一批次：UBF-M1-END-ACCEPT-01（2026-08-13）
 | 字段 | 值 |
 |---|---|

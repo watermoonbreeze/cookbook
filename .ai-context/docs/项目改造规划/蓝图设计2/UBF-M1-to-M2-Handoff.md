@@ -3,15 +3,17 @@
 Document Role: Generated View / Stage Handoff
 Parent Stage: `M1 — ACCEPT / CLOSED`
 Child Stage: `M2 — Legacy Asset Mapping`
-Handoff Status: `PERSISTED / PENDING REMOTE ARCH REVIEW`
+Handoff Status: `ARCH ACCEPTED / CONSUMED BY UBF-M2-PREVIEW-START-01`
 M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
 Persistence Task: `UBF-M1-END-ACCEPT-01`
-M2 Status: `NOT STARTED / NOT AUTHORIZED`
+Persistence Accepted Review Target: `2054899ad93d9c2bc1353914c31a1ef3b96c15ac`
+Consumed By: `UBF-M2-PREVIEW-START-01`
+M2 Status: `PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW; MAPPING NOT EXECUTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 
 ## 1. Meaning
 
-This generated view transfers accepted M1 boundaries into the future M2 entry gate. It is not canonical Truth and does not start M2.
+This generated view transferred accepted M1 boundaries into the M2 entry gate. Remote ARCH accepted the persistence delivery, and this handoff is consumed only by the separate Preview/Start entry. It is not canonical Truth and does not authorize mapping work.
 
 ## 2. Inherited inputs
 
@@ -34,10 +36,10 @@ M2 will non-destructively map CookBook Legacy L1～L7 and GC-01～GC-48. Each GC
 
 ## 5. Entry prerequisites
 
-M2 Preview/Start requires remote acceptance of this exact seven-file persistence delivery and a separate architecture-authored entry task naming that accepted commit as parent. The entry must perform its own State-only claim and must not include mapping work.
+M2 Preview/Start prerequisites are satisfied by remote acceptance of `2054899ad93d9c2bc1353914c31a1ef3b96c15ac` and the separate architecture-authored entry task naming it as exact parent. This entry performs its own State-only claim and does not include mapping work.
 
 ## 6. Non-scope
 
 This handoff does not authorize mapping rows, M2 Preview/Start, Level decisions, M3 work, canonical/fallback/State/routing/Project Graph mutation, production work or CookBook Phase 3B.
 
-After handoff acceptance, the next task is only `UBF-M2-PREVIEW-START-01`.
+After remote acceptance of `UBF-M2-PREVIEW-START-01`, the next task may be architecture-authored `UBF-M2-LEGACY-ASSET-MAPPING-WORK-01`; mapping remains unauthorized before that acceptance.

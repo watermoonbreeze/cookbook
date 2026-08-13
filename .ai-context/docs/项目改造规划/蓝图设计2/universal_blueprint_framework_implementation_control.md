@@ -1,15 +1,16 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0 ACCEPT / CLOSED; M1 ACCEPT / CLOSED; M1→M2 HANDOFF PERSISTED / PENDING REMOTE ARCH REVIEW; M2 NOT STARTED / NOT AUTHORIZED`
+> 状态：`M0/M1 ACCEPT / CLOSED; M1→M2 HANDOFF ARCH ACCEPTED / CONSUMED; M2 PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW; M2 MAPPING NOT EXECUTED / NOT YET AUTHORIZED`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M1 — END/ACCEPT + M1→M2 HANDOFF PERSISTENCE`
-> Current Review Result: `1723a4f9c050d4da47740d04164fa27d73ea9f2b = ACCEPT (M1 Work-01 closure)`
+> Current UBF Stage: `M2 — LEGACY ASSET MAPPING PREVIEW/START`
+> Current Review Result: `2054899ad93d9c2bc1353914c31a1ef3b96c15ac = ACCEPT (M1 End/Accept + M1→M2 Handoff persistence)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
+> M1→M2 Persistence Accepted Review Target: `2054899ad93d9c2bc1353914c31a1ef3b96c15ac`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R9 — M1 ACCEPT/CLOSED + M1→M2 governed handoff persistence`
+> Process Revision: `R10 — M2 Preview/Start governed entry; mapping not executed`
 
 ## 1. 目标
 
@@ -109,6 +110,8 @@ Lifecycle result: `ACCEPT / CLOSED` at reviewed delivery `1723a4f9c050d4da47740d
 门禁：每个拟修改点必须标为 `PRESERVE / REDEFINE / MOVE / SPLIT / DEPRECATE-CANDIDATE`，并给出权威和证据。
 
 ### M2 — Legacy Asset Mapping
+
+Entry status: `PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW`. The accepted M1→M2 handoff is consumed by `UBF-M2-PREVIEW-START-01`. No GC mapping row is created and mapping work remains unauthorized until this entry receives remote ARCH `ACCEPT`.
 
 目标：非破坏性映射 CookBook Legacy L7 与 GC-01～GC-48。
 
