@@ -142,3 +142,10 @@ Remote ARCH accepts this Preview/Start at reviewed delivery `5d6eda046be0b2a09f5
 Work-01 is permitted to persist an evidence disposition after executing the frozen cluster-aware procedure and eight falsification tests. It is **not** authorized to define Universal Level count/names/thresholds/envelopes/mappings, finalize Task/Capability Profiles or Level Selector, rank models, recommend routing, start M4/M5, or start CookBook Phase 3B.
 
 The ARCH-authored Work-01 result is `H4_INSUFFICIENT_EVIDENCE`; this is an evidence sufficiency disposition, not a Universal Level decision.
+
+
+## 11. Analysis Work-01 reviewed delivery and repair boundary
+
+Remote ARCH reviewed Analysis Work-01 delivery `b87726abc575a0c17cd1b76f663f242edbddc041` and accepts CODE execution fidelity. The frozen evidence disposition remains `H4_INSUFFICIENT_EVIDENCE`, with H1 not established and H2/H3 not distinguishable on current evidence.
+
+A lifecycle-view propagation omission in the architecture-authored Work-01 package is classified `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`. This repair may update only generated/current lifecycle views and acceptance bookkeeping. It may not change analysis data, evidence labels, falsification verdicts, hypothesis disposition, or any forbidden-decision counter.

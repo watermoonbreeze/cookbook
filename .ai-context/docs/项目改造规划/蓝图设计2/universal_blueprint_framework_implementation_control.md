@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 PREVIEW/START ACCEPT / CONSUMED; M3 CORPUS WORK-01 COMPLETE / PENDING REMOTE ARCH REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS WORK-01/02/03 + PROBE-01 ACCEPT / CONSUMED; M3 CALIBRATION ANALYSIS WORK-01 EXECUTION ACCEPT / H4_INSUFFICIENT_EVIDENCE / ARCH PAYLOAD LIFECYCLE-VIEW REPAIR IN REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CORPUS — EMPIRICAL CALIBRATION WORK-01`
-> Current Review Result: `c07e4d582a485739144a38ed06267473596cadee = ACCEPT (M3 Preview/Start Entry)`
+> Current UBF Stage: `M3 CALIBRATION — ANALYSIS WORK-01 LIFECYCLE-VIEW REPAIR`
+> Current Review Result: `b87726abc575a0c17cd1b76f663f242edbddc041 = CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT NON_CAPABILITY`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -13,9 +13,10 @@
 > M2 Accepted Review Target: `84cd8508e213e3664ec898cd2b9a783570b28de5`
 > M2→M3 Persistence Accepted Review Target: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
 > M3 Preview/Start Accepted Review Target: `c07e4d582a485739144a38ed06267473596cadee`
-> M3 Corpus Work-01 Review Target: `PENDING REMOTE ARCH REVIEW`
+> M3 Corpus Work-01 Accepted Review Target: `1be1afa1185570e67d7d23e965f6f42ea38724df`
+> M3 Calibration Analysis Work-01 Review Target: `b87726abc575a0c17cd1b76f663f242edbddc041` — execution fidelity ACCEPT; lifecycle-view repair required
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R14 — M3 empirical corpus Work-01; nine architecture-frozen observation rows`
+> Process Revision: `R20 — M3 calibration analysis Work-01 lifecycle-view coherence repair; H4 evidence disposition preserved`
 
 ## 1. 目标
 
@@ -538,3 +539,13 @@ STOP：
 - Hypothesis disposition: H1 NOT ESTABLISHED; H2/H3 PLAUSIBLE BUT NOT DISTINGUISHABLE; **H4 INSUFFICIENT EVIDENCE selected**.
 - `H4` is not a Level design decision. Universal Level/Profile/Selector/model ranking/routing decision counters remain 0.
 - Any subsequent M3 task requires a new remote ARCH decision after Work-01 review. M4/M5 and CookBook Phase 3B remain prohibited.
+
+
+## M3 Calibration Analysis Work-01 — Remote ARCH review and lifecycle-view repair
+
+- Reviewed delivery `b87726abc575a0c17cd1b76f663f242edbddc041` executed the architecture-authored Work-01 payload faithfully: State-only claim, exact 8-path final, H4 analysis persistence and return to REVIEW all match the frozen task.
+- Remote ARCH therefore records **CODE EXECUTION FIDELITY = ACCEPT**.
+- Independent review found an architecture payload defect in Generated View lifecycle propagation: the implementation-control header and M3 Preview header remained on older corpus/analysis-entry status after Analysis Work-01 was persisted.
+- Classification: `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`. It must not become a negative coder/model sample.
+- This repair changes only lifecycle/current-status views and acceptance bookkeeping. It does **not** alter the Work-01 analysis JSON, H1/H2/H3/H4 adjudication, corpus labels, root clusters, falsification verdicts, or zero-decision gates.
+- After this repair is remotely accepted, M3 may proceed only to an architecture-authored evidence-gap-closure Preview/Start. M4/M5 and CookBook Phase 3B remain prohibited.

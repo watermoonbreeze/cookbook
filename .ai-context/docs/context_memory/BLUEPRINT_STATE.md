@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01 — Analysis Work-01 Lifecycle-View Coherence Repair |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,7 +20,7 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `b87726abc575a0c17cd1b76f663f242edbddc041` |
-| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01 / R1` single-use claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01 / R1` single-use claim **CONSUMED** |
 | Delegation binding | parent `b87726abc575a0c17cd1b76f663f242edbddc041` + target `origin/master` + exact State-only claim + package/revision/single-use |
 | Holder transition | `REVIEW -> CODE` after claim push+remote verify; final/authorized abort returns `REVIEW` |
 | Host isolation | original worktree may be dirty/behind; preserve it; isolated detached clean checkout only |
@@ -28,7 +28,7 @@
 | Repair boundary | 仅修 implementation-control/M3 Preview/current lifecycle views 与 acceptance bookkeeping；Analysis JSON/H4/corpus/falsification/zero-decision 均 Preserve |
 | UBF Stage | M3 Calibration Analysis Work-01 evidence disposition **H4_INSUFFICIENT_EVIDENCE**；lifecycle-view repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 只机械落盘 manifest exact final targets；验证 lifecycle coherence/Preserve/zero-decision 后返回 REVIEW；不得扩大范围。 |
+| 下一步 | 仅等待 remote ARCH 复核本 repair；ACCEPT 后由 ARCH 单独签发 Evidence Gap Closure Preview/Start；CODE 不得自行继续。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01（2026-08-13）
 | 字段 | 值 |

@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `PREVIEW/START COMPLETE / PENDING REMOTE ARCH REVIEW`
+Calibration Analysis: `WORK-01 EXECUTION ACCEPT / H4_INSUFFICIENT_EVIDENCE / ARCH PAYLOAD LIFECYCLE-VIEW REPAIR IN REVIEW`
 
 ## 1. Entry meaning
 
@@ -232,3 +232,12 @@ The analysis contract requires root-cluster independence, synthetic/production s
 Remote ARCH accepts `UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01` reviewed delivery `5d6eda046be0b2a09f52059e438cb51f7db38e40` and consumes its root-cluster/falsification method contract. `UBF-M3-CALIBRATION-ANALYSIS-WORK-01` is the only authorized next M3 action.
 
 The ARCH-authored Work-01 analysis collapses 15 eligible rows into 9 eligible root clusters, detects material pseudo-replication/synthetic/actor/assistance/coverage sensitivity, observes task/decision-axis crossover, and selects `H4_INSUFFICIENT_EVIDENCE`. H1 is not established; H2 and H3 remain observationally indistinguishable. Universal Level/Profile/Selector/model-ranking/routing decisions remain zero.
+
+
+## 11. Analysis Work-01 remote review and lifecycle-view defect
+
+Remote ARCH reviewed `b87726abc575a0c17cd1b76f663f242edbddc041`. The CODE transaction is accepted for execution fidelity: the delegated State-only claim, exact 8-path final, cluster-aware H4 analysis payload and return to REVIEW match the architecture-authored package.
+
+The architecture package itself failed to propagate the new lifecycle into all current-status Generated Views. Specifically, this document's header still described Analysis Preview/Start as pending, while the implementation-control header still described M3 as Corpus Work-01. This is `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`, not an execution deviation.
+
+This repair changes lifecycle views only. The accepted analysis remains `H4_INSUFFICIENT_EVIDENCE`; Universal Level/Profile/Selector/model-ranking/routing decisions remain zero. Evidence expansion is not authorized until this repair receives remote ARCH acceptance and a separate evidence-gap-closure Preview/Start is issued.
