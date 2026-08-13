@@ -4,31 +4,40 @@
 
 **ARCH/CODE 命名规则**：`ARCH`/`CODE`/`REVIEW`/`TURN` 这几个协议字段只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**——角色定义是抽象的，具体由哪个模型担任取决于当前会话，协议逻辑不依赖模型身份。
 
-**模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
-
+**模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和运行时 provenance/执行报告，本文件不重复。
 ---
-## 当前批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01（2026-08-13）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01 — Analysis Work-01 Lifecycle-View Coherence Repair |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01 — Evidence Gap Closure Preview/Start |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Execution mode | REPAIR / MECHANICAL / NON_CAPABILITY |
+| Execution mode | PREVIEW_START / MECHANICAL |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
-| Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `b87726abc575a0c17cd1b76f663f242edbddc041` |
-| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01 / R1` single-use claim **CONSUMED** |
-| Delegation binding | parent `b87726abc575a0c17cd1b76f663f242edbddc041` + target `origin/master` + exact State-only claim + package/revision/single-use |
-| Holder transition | `REVIEW -> CODE` after claim push+remote verify; final/authorized abort returns `REVIEW` |
+| Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE + RUNTIME_PROVENANCE |
+| Handoff Parent | `bbd8bbbd5c97a9faef62fde50971a586322e625d` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01 / R1` single-use abstract-CODER claim **ACTIVE / CONSUMING** |
+| Delegation binding | parent `bbd8bbbd5c97a9faef62fde50971a586322e625d` + target `origin/master` + exact State-only claim + package/revision/single-use + actor `CODER` |
+| Holder transition | `REVIEW -> CODE` after claim push+remote verify; valid same-revision in-flight claim may be resumed by another concrete coder; final/authorized abort returns `REVIEW` |
 | Host isolation | original worktree may be dirty/behind; preserve it; isolated detached clean checkout only |
-| Architecture input | Analysis Work-01 `b87726abc575a0c17cd1b76f663f242edbddc041` = **CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT NON_CAPABILITY** |
-| Repair boundary | 仅修 implementation-control/M3 Preview/current lifecycle views 与 acceptance bookkeeping；Analysis JSON/H4/corpus/falsification/zero-decision 均 Preserve |
-| UBF Stage | M3 Calibration Analysis Work-01 evidence disposition **H4_INSUFFICIENT_EVIDENCE**；lifecycle-view repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 **NOT STARTED** |
+| Architecture input | lifecycle repair `bbd8bbbd5c97a9faef62fde50971a586322e625d` = **ARCH ACCEPT / CONSUMED**；Analysis Work-01 = `H4_INSUFFICIENT_EVIDENCE` |
+| Evidence boundary | Preview/Start only；new empirical rows=0；evidence acquisition runs=0；Work-01 not started |
+| UBF Stage | M3 Calibration — Evidence Gap Closure Preview/Start **COMPLETE / PENDING REMOTE ARCH REVIEW**；H4 preserved；M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 复核本 repair；ACCEPT 后由 ARCH 单独签发 Evidence Gap Closure Preview/Start；CODE 不得自行继续。 |
+| 下一步 | 只机械落盘本 package final targets；完成后返回 REVIEW；不得开始 Evidence Gap Closure Work-01。 |
+
+## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY EVIDENCE GAP CLOSURE PREVIEW/START** |
+| Reviewed delivery | `bbd8bbbd5c97a9faef62fde50971a586322e625d` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | claim `9592815...` State-only；final exact 7 files；lifecycle/current views repaired；H4/analysis/corpus/zero-decision preserved；State returned REVIEW |
+| Defect attribution | original lifecycle propagation defect remains `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`; repair execution does not create coder-negative evidence |
+| Transition authority | 仅授权本 Evidence Gap Closure Preview/Start；不得直接开始 evidence acquisition、re-analysis、M4/M5 或 Phase 3B |
 
 ## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01（2026-08-13）
 | 字段 | 值 |
