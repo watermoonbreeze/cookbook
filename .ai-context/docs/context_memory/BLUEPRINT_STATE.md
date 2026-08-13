@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01 — M3 Calibration Analysis Entry Contract Persistence |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,16 +20,16 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `99dc95ddd682945bfa6936a7ca2391ff211393ec` |
-| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01 / R1` single-use claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01 / R1` single-use claim **CONSUMED** |
 | Delegation binding | parent `99dc95ddd682945bfa6936a7ca2391ff211393ec` + target `origin/master` + State-only claim; package/revision/single-use |
 | Holder transition | `REVIEW -> CODE` claim; final/authorized abort returns `REVIEW` |
 | Host isolation | original worktree may be dirty/behind; preserve it; isolated detached clean checkout only |
 | Architecture input | Work-03 `99dc95ddd682945bfa6936a7ca2391ff211393ec` = **ACCEPT / REMOTE ARCH REVIEWED** |
 | Evidence boundary | 21 rows / 12 clusters / 15 eligible / 6 context / 12 positive / 3 negative / 6 neutral；Work-03 six rows share one root cluster |
 | 范围 | 仅机械持久化 M3 Calibration Analysis Preview/Start 方法合同；不执行 Analysis Work-01；不决定 Level/Profile/Selector/model ranking/routing；不改 canonical/Graph/生产代码 |
-| UBF Stage | Work-01/02/03 **ACCEPT/CONSUMED**; Probe-01 **ACCEPT/CONSUMED**; Calibration Analysis Preview/Start **CLAIMED / IN PROGRESS**; Analysis Work-01 **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| UBF Stage | Work-01/02/03 **ACCEPT/CONSUMED**; Probe-01 **ACCEPT/CONSUMED**; Calibration Analysis Preview/Start **COMPLETE / PENDING REMOTE ARCH REVIEW**; Analysis Work-01 **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 只机械落盘 exact 7 targets、验证 Preserve/non-inference 后返回 REVIEW；不得开始 Analysis Work-01。 |
+| 下一步 | 仅等待 remote ARCH 复核本 Preview/Start；CODE 不得自行开始 Analysis Work-01、M4/M5 或 Phase 3B。 |
 ## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03（2026-08-13）
 | 字段 | 值 |
 |---|---|

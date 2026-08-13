@@ -7,10 +7,11 @@ Exact Handoff Parent: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
 Entry Status: `ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01`
 M0 / M1 / M2: `ACCEPT / CLOSED`
 M2→M3 Handoff: `ARCH ACCEPTED / CONSUMED BY THIS ENTRY`
-M3 Corpus: `WORK-01 COMPLETE / PENDING REMOTE ARCH REVIEW`
+M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
+Calibration Analysis: `PREVIEW/START COMPLETE / PENDING REMOTE ARCH REVIEW`
 
 ## 1. Entry meaning
 
@@ -217,3 +218,10 @@ Probe-01 also exposed one evidence-identity hygiene gap: its runtime Response se
 ARCH authorizes only `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03` to persist six post-hoc-adjudicated rows `M3-S-016..M3-S-021`. The six rows share one root cluster and remain synthetic-controlled evidence; they must not be weighted as six independent execution batches. After Work-03, controlled structured-Q/correct-STOP coverage exists, but production equivalents remain gaps.
 
 Calibration analysis remains `NOT STARTED / NOT AUTHORIZED` until Work-03 receives separate remote ARCH acceptance. Universal Level/Profile/Selector, model ranking/routing, M4/M5 and CookBook Phase 3B remain prohibited.
+
+
+## 10. Calibration analysis entry — UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01
+
+Remote ARCH accepted Work-03 `99dc95ddd682945bfa6936a7ca2391ff211393ec`. The accepted evidence boundary is 21 rows / 12 root clusters / 15 eligible / 6 context / 12 positive / 3 negative / 6 neutral. Calibration Analysis Preview/Start is now persisted, but Analysis Work-01 remains not started/not authorized.
+
+The analysis contract requires root-cluster independence, synthetic/production stratification, actor/task/assistance confound sensitivity, explicit H1/H2/H3/H4 alternatives and falsification tests. No Universal Level/Profile/Selector/model-ranking/routing conclusion is authorized by this entry.

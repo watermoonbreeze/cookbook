@@ -514,3 +514,15 @@ STOP：
 - All raw Universal Calibration dispositions remain `UNRESOLVED`.
 - Work-03 is evidence persistence only. Calibration analysis, model ranking/routing, Universal Level/Profile/Selector inference, M4/M5 and CookBook Phase 3B remain prohibited.
 - Work-03 final state is `COMPLETE / PENDING REMOTE ARCH REVIEW` and returns `TURN=REVIEW`.
+
+
+## M3 Calibration Analysis Preview/Start — UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01
+
+- Architecture input: Work-03 `99dc95ddd682945bfa6936a7ca2391ff211393ec` = **ACCEPT / CONSUMED**.
+- Evidence boundary: 21 rows / 12 root clusters / 15 eligible / 6 context / 12 positive / 3 negative / 6 neutral.
+- Primary independence unit: Root Incident / Episode Cluster ID; row-count pseudo-replication is forbidden.
+- Mandatory stratification/sensitivity: synthetic vs production, actor imbalance, assistance/reviewer confound, task-family/decision-axis crossover, coverage gaps and legacy-label contamination.
+- Candidate outcomes: one-dimensional supported; one-dimensional core + secondary axes; multidimensional only; insufficient evidence.
+- This Preview/Start creates **zero** Universal Level/Profile/Selector/model-ranking/routing decisions.
+- Analysis Work-01 is **NOT STARTED / NOT AUTHORIZED** until remote ARCH accepts this entry.
+- M4/M5 remain NOT STARTED; CookBook Phase 3B remains NOT AUTHORIZED.
