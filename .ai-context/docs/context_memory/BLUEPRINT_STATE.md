@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-PREVIEW-START-01 — Empirical Calibration Corpus Stage Entry |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,13 +20,13 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` |
-| Execution Parent | 本 claim commit 自身（exact 40 位 identity 由 remote Git evidence 持有） |
+| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | M2 End/Accept + M2→M3 Handoff persistence `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` = **ACCEPT** |
 | Source identity | package/user canonical hashes verified；root routing is shared coarse Actor/Capability Routing；provider-specific routing is a distinct optional layer and is not required or mutated by this entry |
 | 范围 | 仅消费已 ACCEPT 的 M2→M3 Handoff、持久化 M3 Preview/Start entry contract 与 corpus future-entry requirements；**empirical sample rows = 0**；不作 Level/Profile/Selector/canonical/routing/Graph/生产改动 |
-| UBF Stage | M0/M1/M2 **ACCEPT/CLOSED**; M2→M3 Handoff **ARCH ACCEPTED / AWAITING CONSUMPTION**; M3 Preview/Start **CLAIMED / IN PROGRESS**; M3 Corpus **NOT STARTED / NOT YET AUTHORIZED**; M4/M5 **NOT STARTED** |
+| UBF Stage | M0/M1/M2 **ACCEPT/CLOSED**; M2→M3 Handoff **ARCH ACCEPTED / CONSUMED BY UBF-M3-PREVIEW-START-01**; M3 Preview/Start **PERSISTED / PENDING REMOTE ARCH REVIEW**; M3 Corpus **NOT STARTED / NOT YET AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅机械落盘 manifest 七个 final targets 并完成证据门禁；不得创建 corpus row；完成后必须 RETURN TURN=REVIEW 并 STOP |
+| 下一步 | 仅等待 remote ARCH 核验 parent→claim→final、exact 7-file scope、7/7 blobs、Preserve、State denyset、zero-sample recount 与 M3 entry semantic gates；ACCEPT 后也只能由 ARCH 另发 M3 corpus Work-01，CODE 不得自行开始 |
 ## 上一批次：UBF-M2-END-ACCEPT-01（2026-08-13）
 | 字段 | 值 |
 |---|---|

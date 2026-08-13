@@ -1,18 +1,20 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M2→M3 HANDOFF PERSISTED / PENDING REMOTE ARCH REVIEW; M3 NOT STARTED / NOT AUTHORIZED`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M2→M3 HANDOFF ARCH ACCEPTED / CONSUMED; M3 PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW; M3 CORPUS NOT STARTED / NOT YET AUTHORIZED`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M2 END/ACCEPT + M2→M3 HANDOFF PERSISTENCE`
-> Current Review Result: `84cd8508e213e3664ec898cd2b9a783570b28de5 = ACCEPT (M2 Legacy Asset Mapping Work-01)`
+> Current UBF Stage: `M3 PREVIEW/START — EMPIRICAL CORPUS ENTRY ONLY`
+> Current Review Result: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4 = ACCEPT (M2 End/Accept + M2→M3 Handoff Persistence)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
 > M1→M2 Persistence Accepted Review Target: `2054899ad93d9c2bc1353914c31a1ef3b96c15ac`
 > M2 Preview/Start Accepted Review Target: `c72a19b257550de7bb75dc9361b9f939fc220cb9`
 > M2 Accepted Review Target: `84cd8508e213e3664ec898cd2b9a783570b28de5`
+> M2→M3 Persistence Accepted Review Target: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
+> M3 Preview/Start Review Target: `PENDING REMOTE ARCH REVIEW`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R12 — M2 ACCEPT/CLOSED; M2→M3 handoff persisted; M3 not started`
+> Process Revision: `R13 — M3 Preview/Start entry contract; empirical sample rows remain zero`
 
 ## 1. 目标
 
@@ -151,30 +153,29 @@ Accepted result:
 
 ### M3 — Empirical Calibration Corpus
 
-Entry status: `NOT STARTED / NOT AUTHORIZED`. M2→M3 handoff persistence is pending remote ARCH review. No corpus record or Universal Level candidate is authorized by M2 closure.
+**Entry Status:** `PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW`
 
-目标：用真实 Blueprint 与执行结果确定“一维 Universal Level”是否可形成单调、可比较的 closure ladder。
+**Corpus Status:** `NOT STARTED / NOT YET AUTHORIZED`
 
-样本至少覆盖：
+**Entry Handoff Parent:** `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
 
-- 不同 task family；
-- 不同风险与复杂度；
-- 成功、REWORK、Q/STOP、越界和 Blueprint defect；
-- Luna 实际补推理的位置；
-- coder challenge 改善架构的案例；
-- FULL 与 LITE 的不同表达载体。
+**Entry Contract:** `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-PREVIEW-START.md`
 
-每个样本必须标注：
+**Preview/Start frozen result:**
 
-- Blueprint 已闭合的决策；
-- coder 剩余的决策；
-- 合格 coder 可能产生的合理分歧；
-- 哪些分歧会造成不可接受结果；
-- 最终执行是否需要隐藏帮助；
-- evidence 是否具有真实因果性；
-- defect attribution。
+- M2→M3 handoff acceptance is consumed only by the M3 stage-entry transaction;
+- this entry creates empirical sample rows = `0`;
+- future Work-01 must use the architecture-frozen corpus record schema, eligibility classes, evidence minimum, ARCH labeling/adjudication, UBEA-v2 defect attribution, compatibility classification, confound controls, coverage recount and acceptance gates;
+- `EXECUTION_DEVIATION` is the only defect class that may support a negative coder capability signal, and only with independent evidence plus confound review;
+- architecture-authored payload/Blueprint defects, soft compatibility, compatibility exhaustion and external truth change are not coder negative samples;
+- linked revisions of one incident require cluster identity to avoid pseudo-replication;
+- Legacy L1～L7, GC count/order, risk/novelty, FULL/LITE, mechanism class and Actor Routing remain observed orthogonal variables, never preselected Universal Level answers;
+- raw corpus may not decide Universal Level count/name/threshold/envelope/mapping, final Task Profile, final Capability Profile or Level Selector;
+- every corpus delivery requires machine recount, independent challenge and remote ARCH acceptance before any later calibration analysis.
 
-门禁：只有当候选 closure envelopes 满足可检验的嵌套关系时，才允许冻结线性 Level；否则必须回到架构研究，不得用历史主题顺序伪造单调性。
+**Corpus Work-01 start gate:** only a **separate architecture-authored package after remote ARCH ACCEPT of this Preview/Start delivery** may create empirical rows. CODE has no standing authorization to start corpus work from the presence of this entry document alone.
+
+**Exit:** accepted corpus evidence and subsequent architecture analysis establish whether a monotonic/comparable closure ladder is empirically supportable; failure returns to architecture research instead of inventing levels.
 
 ### M4 — Universal Contracts
 
@@ -432,13 +433,16 @@ STOP：
 
 ## 10. 当前启动判定
 
-- UBF M0 保持 `ACCEPT / CLOSED`；R5 accepted review target 仍为 `3489523db6508ba742ee835022d7e2a9a64f2c4f`。
-- M0 End/Accept + M0→M1 persistence repair chain 的最终 reviewed delivery `eb1bdc846b3f746dde80e8a1fec234f6434b411f` 已由远程架构独立复核并判定 `ACCEPT`。
-- `UBF-M1-PREVIEW-START-01` 是独立阶段入口批，只负责消费已接受 handoff、持久化 M1 Preview/Start contract、回填 END-ACCEPT-02 模型台账并更新 Control/State。
-- 本批正常交付后，M1 Preview/Start 为 `PERSISTED / PENDING REMOTE ARCH REVIEW`；本批不得自我 ACCEPT。
-- M1 `Current-State Semantic Decomposition` 的实际 inventory/classification 尚未执行；只有本批 Preview/Start 经远程架构 `ACCEPT` 后，才允许另发架构闭合的 M1 semantic-decomposition work batch。
-- M1 semantic decomposition 必须由架构模型完成判断并形成完整 target payload；Luna/CODE 只做机械落库与验证，不自行定义 Universal Level、authority 或 clause classification。
-- CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；production code、tests、build/configuration、Project Graph mutation 与 user-level protocol mutation 均不在本批范围内。
+当前唯一在途治理事务是 `UBF-M3-PREVIEW-START-01` 的 remote review：
+
+1. M0/M1/M2 已 `ACCEPT / CLOSED`；
+2. M2→M3 Handoff persistence `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` 已由 remote ARCH `ACCEPT`，本 entry 仅消费该授权；
+3. M3 Preview/Start 已持久化为 `PENDING REMOTE ARCH REVIEW`；
+4. empirical corpus sample rows 必须保持 `0`，直到该 entry 被 remote ARCH ACCEPT 且 ARCH 另发 frozen corpus Work-01；
+5. M3 entry 不决定 Universal Level 数量/名称/阈值/envelope/mapping，也不冻结最终 Task Profile、Capability Profile 或 Level Selector；
+6. user-level canonical、GC registry、routing、State ownership split、Project Graph 和 production assets 保持 Preserve；
+7. M4/M5 均 `NOT STARTED`；CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；
+8. 若本 entry REWORK，只允许针对 verified defect 的最小闭环；若 ACCEPT，也只能进入独立 M3 corpus Work-01 architecture design，不得由 CODE 自行开工。
 
 ## 11. M1 Semantic Decomposition Work-01
 
