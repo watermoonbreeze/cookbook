@@ -7,27 +7,34 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-02 — State Abstract-Role Truth Repair（2026-08-12）
+## 当前批次：UBF-M1-END-ACCEPT-01 — M1 End/Accept + M1→M2 Handoff Persistence（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-02 — State Abstract-Role Truth Repair |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M1-END-ACCEPT-01 — M1 End/Accept + M1→M2 Handoff Persistence |
+| 状态 | **CLAIMED / IN EXECUTION** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Rework Parent | `aa45a286c8077c05e203e8da4a71c945dd574472` |
-| Original Handoff Parent | `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9` |
-| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
-| Reopen Set | State 旧 R4 行的一个具体模型名已改为抽象 `CODE`；模型台账仅记录本次事务与归因 |
-| Preserve Set | R4-REWORK-01 两处 EOF 修复、64 semantic records、其余所有成果/canonical/Graph/生产代码 byte-identical |
-| Architecture disposition | R4-REWORK-01 Git/byte/whitespace/Preserve gates PASS；State concrete-model leakage 归因 **ARCH_PAYLOAD_DEFECT / SELF_APPLICATION_SEMANTIC_GATE_MISSING**，不是 CODE 能力负样本 |
-| UBF Stage | M0 **ACCEPT/CLOSED**; M1 Preview/Start **ACCEPT/CONSUMED**; M1 Semantic Decomposition Work-01 **R4-REWORK-02 COMPLETE / PENDING REMOTE ARCH REVIEW**; M2 **NOT STARTED** |
+| Handoff Parent | `1723a4f9c050d4da47740d04164fa27d73ea9f2b` |
+| Architecture input | R4-REWORK-02 remote delivery `1723a4f9c050d4da47740d04164fa27d73ea9f2b` = **ACCEPT** |
+| Accepted M1 evidence | 64 records/maps/matrices；R4/R4-REWORK-01/R4-REWORK-02 chain/scopes/blobs/whitespace/State-role/Preserve/lifecycle gates PASS |
+| 范围 | 仅持久化 M1 Final Accept、M1→M2 Handoff 与事务证据；不执行 M2，不改 64 records/canonical/Graph/生产代码 |
+| UBF Stage | M0 **ACCEPT/CLOSED**; M1 **ARCH ACCEPT DECIDED / PERSISTENCE IN EXECUTION**; M2 **NOT STARTED / NOT AUTHORIZED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 核验两提交链、exact 2-file scope、target blobs、State concrete-model denyset 与 Preserve blobs；ACCEPT 前不得启动 M1 End/Accept、M2 或 Phase 3B |
+| 下一步 | 机械落盘 exact 7-file final 后 TURN=REVIEW；本 persistence 获 remote ARCH ACCEPT 后才可另发 M2 Preview/Start |
+## 上一批次：UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-02（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED** |
+| Reviewed delivery | `1723a4f9c050d4da47740d04164fa27d73ea9f2b` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | `aa45a286... -> e176a722... -> 1723a4f9...`；claim exact 1 file；final exact 2 files；target blobs；State concrete-model denyset；diff-check；EOF/64-record/Work-01 Preserve；remote ref/lifecycle gates |
+| 未解决问题 | NONE |
+| Transition authority | 仅授权本批 M1 End/Accept + M1→M2 Handoff persistence；不得启动 M2 或 CookBook Phase 3B |
 ## 上一批次：UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-01（2026-08-12）
 | 字段 | 值 |
 |---|---|
