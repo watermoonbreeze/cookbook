@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M2→M3 HANDOFF ARCH ACCEPTED / CONSUMED; M3 PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW; M3 CORPUS NOT STARTED / NOT YET AUTHORIZED`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 PREVIEW/START ACCEPT / CONSUMED; M3 CORPUS WORK-01 COMPLETE / PENDING REMOTE ARCH REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 PREVIEW/START — EMPIRICAL CORPUS ENTRY ONLY`
-> Current Review Result: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4 = ACCEPT (M2 End/Accept + M2→M3 Handoff Persistence)`
+> Current UBF Stage: `M3 CORPUS — EMPIRICAL CALIBRATION WORK-01`
+> Current Review Result: `c07e4d582a485739144a38ed06267473596cadee = ACCEPT (M3 Preview/Start Entry)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -12,9 +12,10 @@
 > M2 Preview/Start Accepted Review Target: `c72a19b257550de7bb75dc9361b9f939fc220cb9`
 > M2 Accepted Review Target: `84cd8508e213e3664ec898cd2b9a783570b28de5`
 > M2→M3 Persistence Accepted Review Target: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
-> M3 Preview/Start Review Target: `PENDING REMOTE ARCH REVIEW`
+> M3 Preview/Start Accepted Review Target: `c07e4d582a485739144a38ed06267473596cadee`
+> M3 Corpus Work-01 Review Target: `PENDING REMOTE ARCH REVIEW`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R13 — M3 Preview/Start entry contract; empirical sample rows remain zero`
+> Process Revision: `R14 — M3 empirical corpus Work-01; nine architecture-frozen observation rows`
 
 ## 1. 目标
 
@@ -153,11 +154,11 @@ Accepted result:
 
 ### M3 — Empirical Calibration Corpus
 
-**Entry Status:** `PREVIEW/START PERSISTED / PENDING REMOTE ARCH REVIEW`
+**Entry Status:** `PREVIEW/START ACCEPT / REMOTE ARCH REVIEWED / CONSUMED`
 
-**Corpus Status:** `NOT STARTED / NOT YET AUTHORIZED`
+**Corpus Status:** `WORK-01 COMPLETE / PENDING REMOTE ARCH REVIEW`
 
-**Entry Handoff Parent:** `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
+**Entry Accepted Review Target:** `c07e4d582a485739144a38ed06267473596cadee`
 
 **Entry Contract:** `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-PREVIEW-START.md`
 
@@ -433,16 +434,18 @@ STOP：
 
 ## 10. 当前启动判定
 
-当前唯一在途治理事务是 `UBF-M3-PREVIEW-START-01` 的 remote review：
+当前唯一在途治理事务是 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01` 的 remote review：
 
 1. M0/M1/M2 已 `ACCEPT / CLOSED`；
-2. M2→M3 Handoff persistence `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` 已由 remote ARCH `ACCEPT`，本 entry 仅消费该授权；
-3. M3 Preview/Start 已持久化为 `PENDING REMOTE ARCH REVIEW`；
-4. empirical corpus sample rows 必须保持 `0`，直到该 entry 被 remote ARCH ACCEPT 且 ARCH 另发 frozen corpus Work-01；
-5. M3 entry 不决定 Universal Level 数量/名称/阈值/envelope/mapping，也不冻结最终 Task Profile、Capability Profile 或 Level Selector；
-6. user-level canonical、GC registry、routing、State ownership split、Project Graph 和 production assets 保持 Preserve；
-7. M4/M5 均 `NOT STARTED`；CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；
-8. 若本 entry REWORK，只允许针对 verified defect 的最小闭环；若 ACCEPT，也只能进入独立 M3 corpus Work-01 architecture design，不得由 CODE 自行开工。
+2. M3 Preview/Start reviewed delivery `c07e4d582a485739144a38ed06267473596cadee` 已由 remote ARCH **ACCEPT** 并被本 Work-01 消费；
+3. Work-01 只持久化 ARCH 已冻结的 9 个 empirical episode records：5 `CALIBRATION_ELIGIBLE`、4 `CONTEXT_ONLY`、0 `EXCLUDED`；
+4. 唯一 `NEGATIVE` 行是 `M3-S-002 / EXECUTION_DEVIATION`；architecture payload/compatibility 类事件全部保持 non-negative；
+5. unique episode clusters=5；M0/M1 linked repair-chain confounds 必须保留，后续不得把 revisions 当独立权重；
+6. raw corpus 的 Universal Calibration Disposition 9/9 均为 `UNRESOLVED`；Level count/name/threshold/envelope/mapping、final Task/Capability Profile、Level Selector 均未启动；
+7. coverage gaps（single actor/model、缺 structured Q/correct STOP/scope escape、机制/profile 与生产任务覆盖不足）必须显式保留，不得通过猜测补齐；
+8. user-level canonical、GC registry、routing、State ownership split、Project Graph 和 production assets 保持 Preserve；
+9. M4/M5 均 `NOT STARTED`；CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；
+10. 若本 Work-01 REWORK，只允许 verified defect 的最小闭环；若 ACCEPT，下一步仍由 ARCH 决定是 M3 corpus coverage/challenge Work-02 还是单独的 calibration-analysis design，CODE 无 standing authority，且不得启动 M4/M5。
 
 ## 11. M1 Semantic Decomposition Work-01
 
@@ -461,3 +464,15 @@ STOP：
 - Compatibility failures follow only the package-preauthorized fallback graph; semantic/Truth failures remain Hard STOP.
 - Byte identity PASS and architecture semantic truth PASS are separate gates.
 - R1/R2/R3 package defects remain architecture-attributed and do not count as Luna capability negatives.
+
+## 13. M3 Empirical Calibration Corpus Work-01
+
+- Fixed Handoff Parent: `c07e4d582a485739144a38ed06267473596cadee` = M3 Preview/Start **ACCEPT**.
+- Machine-readable corpus target: `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01.json`.
+- Frozen recount: total=9, unique IDs=9, unique clusters=5, eligible=5, context-only=4, excluded=0.
+- Outcome coverage: success=4, REWORK=3, incorrect STOP=1, blocked/external=1.
+- Primary attribution coverage: NONE=4, ARCH_PAYLOAD_DEFECT=3, EXECUTION_DEVIATION=1, COMPATIBILITY_EXHAUSTED=1.
+- Capability signal coverage: POSITIVE=4, NEGATIVE=1, NEUTRAL=4; forbidden negative/non-execution combination=0.
+- All raw Universal Calibration Disposition values are UNRESOLVED.
+- This is evidence construction, not Universal Level or routing inference.
+- Work-01 final state is COMPLETE / PENDING REMOTE ARCH REVIEW and returns TURN=REVIEW.

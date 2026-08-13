@@ -1,0 +1,1003 @@
+{
+  "schema_version": "M3-CORPUS-OBSERVATION-v1",
+  "task_id": "UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01",
+  "handoff_parent": "c07e4d582a485739144a38ed06267473596cadee",
+  "source_contract": {
+    "task": "UBF-M3-PREVIEW-START-01",
+    "reviewed_delivery": "c07e4d582a485739144a38ed06267473596cadee",
+    "architecture_disposition": "ACCEPT / REMOTE ARCH REVIEWED 2026-08-13"
+  },
+  "serialization_contract": {
+    "record_envelope_fields": [
+      "eligibility_class",
+      "observation"
+    ],
+    "observation_field_count": 25,
+    "observation_field_order": [
+      "Sample ID",
+      "Root Incident / Episode Cluster ID",
+      "Source Task / Blueprint Identity",
+      "Handoff / Execution Parent and Reviewed Delivery Identity",
+      "Review Disposition",
+      "Observed Task Shape",
+      "Observed Risk / Novelty Shape",
+      "Actor / Model Observation",
+      "Package Profile / Mechanism / Environment",
+      "Assistance / Hidden Help",
+      "Architecture-Closed Decision Set",
+      "Residual Coder Decision Set",
+      "Reasonable Divergence Set",
+      "Unacceptable Divergence Set",
+      "Observed Decision / Behavior",
+      "Outcome Class",
+      "Primary Defect Attribution",
+      "Secondary Attribution Events",
+      "Capability Signal Disposition",
+      "Evidence References",
+      "Evidence Independence",
+      "Confound Flags",
+      "Coverage Tags",
+      "Adjudication Status",
+      "Universal Calibration Disposition"
+    ],
+    "eligibility_classes": [
+      "CALIBRATION_ELIGIBLE",
+      "CONTEXT_ONLY",
+      "EXCLUDED"
+    ],
+    "semantic_authority": "ARCH_FROZEN; CODE MAY ONLY MATERIALIZE AND RECOUNT",
+    "universal_calibration_rule": "Every raw Work-01 row remains UNRESOLVED."
+  },
+  "records": [
+    {
+      "eligibility_class": "CONTEXT_ONLY",
+      "observation": {
+        "Sample ID": "M3-S-001",
+        "Root Incident / Episode Cluster ID": "M0-GOV-REPAIR-CHAIN-01",
+        "Source Task / Blueprint Identity": "UBF-M0-REWORK-03 / R1",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "c3c7b812272344935f2bb48f96a890d84081b5d3",
+          "claim_commit": "838136d645b7ac73c200f08305d052d6b93cad33",
+          "reviewed_delivery": "2a5567193c688bbd0e30f323699a68aab1ffeb34"
+        },
+        "Review Disposition": "BLOCKED_FOR_REVIEW / REMOTE ARCH REVIEWED / REWORK REQUIRED",
+        "Observed Task Shape": {
+          "family": "governance repair",
+          "scope": "known ten-issue repair with fallback transaction",
+          "decision_domain": [
+            "worktree safety",
+            "fallback",
+            "evidence truth"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "governance truth / dirty-worktree safety",
+          "novelty": "compatibility handling under pre-existing target modifications"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "FULL",
+          "mechanism": "blueprint-authorized fallback",
+          "environment": "original worktree had pre-existing allowlisted target modifications"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "Ten repair specifications were architecture-defined.",
+          "Allowlist and fallback path were defined.",
+          "User worktree safety was non-negotiable."
+        ],
+        "Residual Coder Decision Set": [
+          "Whether completion path remained safely executable under the then-authorized adapters; fallback selection when completion could not be safely established."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "Used the authorized four-file fallback, returned REVIEW, and completed 0/10 original repairs rather than mutating conflicting user state.",
+        "Outcome Class": "blocked/external",
+        "Primary Defect Attribution": "COMPATIBILITY_EXHAUSTED",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEUTRAL",
+        "Evidence References": [
+          {
+            "role": "execution_report",
+            "path": ".ai-context/docs/UBF-M0-REWORK-03-Execution-Report.md",
+            "reviewed_delivery": "2a5567193c688bbd0e30f323699a68aab1ffeb34"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M0-REWORK-03_Luna_Execution_Blueprint.md"
+          },
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": true,
+          "prior_exposure": "R2/R3 context present",
+          "architecture_followup": "YES",
+          "package_revision": "KNOWN",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "PRE_EXISTING_TARGET_MODIFICATIONS; later isolated-worktree mechanism closed the environment issue",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "governance-repair",
+          "blocked-external",
+          "compatibility",
+          "FULL",
+          "linked-chain"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-002",
+        "Root Incident / Episode Cluster ID": "M0-GOV-REPAIR-CHAIN-01",
+        "Source Task / Blueprint Identity": "UBF-M0-REWORK-04 / R1",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "2a5567193c688bbd0e30f323699a68aab1ffeb34",
+          "claim_commit": "6c62a91dfc9dab1806725ec595cd7297e947a732",
+          "reviewed_delivery": "d7423f30b3892f021a50d162b832d168d2cfad22"
+        },
+        "Review Disposition": "BLOCKED_FOR_REVIEW / REMOTE ARCH REVIEWED / CONTENT REWORK REQUIRED; blocker attribution rejected",
+        "Observed Task Shape": {
+          "family": "governance repair",
+          "scope": "isolated clean-worktree repair of ten frozen issues",
+          "decision_domain": [
+            "mechanical source application",
+            "truthful completion",
+            "fallback gate"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "governance truth / false blocker",
+          "novelty": "isolated worktree mechanism was newly required but exact repair specifications were present"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "FULL",
+          "mechanism": "isolated detached clean worktree + blueprint-authorized normal/fallback",
+          "environment": "clean isolated worktree successfully created"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "Exact ten repairs and evidence corrections were enumerated.",
+          "Blueprint incorporated fixed content repair specifications.",
+          "Normal completion required all repair/content gates; fallback had explicit conditions."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical execution details and authorized adapter selection only; no authority to redefine source availability or declare an unsupported blocker."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "Isolation and Git transaction succeeded, but CODE declared historical source unreconstructable and published a fallback with 0/10 repairs; remote ARCH found the source specifications and parent targets available and rejected the blocker attribution.",
+        "Outcome Class": "incorrect STOP",
+        "Primary Defect Attribution": "EXECUTION_DEVIATION",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEGATIVE",
+        "Evidence References": [
+          {
+            "role": "execution_report",
+            "path": ".ai-context/docs/UBF-M0-REWORK-04-Execution-Report.md",
+            "reviewed_delivery": "d7423f30b3892f021a50d162b832d168d2cfad22"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M0-REWORK-04_Luna_Execution_Blueprint.md"
+          },
+          {
+            "role": "corrective_report",
+            "path": ".ai-context/docs/UBF-M0-REWORK-05-Execution-Report.md"
+          },
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": true,
+          "prior_exposure": "YES; same incident after R3 fallback",
+          "architecture_followup": "PRE-EXECUTION R4 architecture package; no mid-execution rescue established",
+          "package_revision": "KNOWN",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "ISOLATED_CLEAN_WORKTREE_AVAILABLE",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "governance-repair",
+          "incorrect-stop",
+          "execution-deviation",
+          "FULL",
+          "linked-chain"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-003",
+        "Root Incident / Episode Cluster ID": "M0-GOV-REPAIR-CHAIN-01",
+        "Source Task / Blueprint Identity": "UBF-M0-REWORK-05 / R1",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "d7423f30b3892f021a50d162b832d168d2cfad22",
+          "claim_commit": "d3935ae7620312e85d85429b48ac30c62ef80f00",
+          "reviewed_delivery": "3489523db6508ba742ee835022d7e2a9a64f2c4f"
+        },
+        "Review Disposition": "ACCEPT / REMOTE ARCH REVIEWED (2026-08-12)",
+        "Observed Task Shape": {
+          "family": "governance repair",
+          "scope": "deterministic ten-file truth repair",
+          "decision_domain": [
+            "exact payload execution",
+            "Git transaction",
+            "validation honesty"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "governance truth closure",
+          "novelty": "low semantic discretion; high evidence discipline"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "FULL",
+          "mechanism": "DETERMINISTIC_ARCH_AUTHORED_TRANSFORM",
+          "environment": "ISOLATED_DETACHED_CLEAN"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "All content decisions and target repairs frozen in architecture payload.",
+          "Exact ten-file allowlist and validation gates frozen."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical adapter/Git execution only within package contract."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "Executed deterministic ten-file repair, closed 10/10 issues, preserved denyset, returned REVIEW, and passed independent remote ARCH review.",
+        "Outcome Class": "success",
+        "Primary Defect Attribution": "NONE",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "POSITIVE",
+        "Evidence References": [
+          {
+            "role": "execution_report",
+            "path": ".ai-context/docs/UBF-M0-REWORK-05-Execution-Report.md",
+            "reviewed_delivery": "3489523db6508ba742ee835022d7e2a9a64f2c4f"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M0-REWORK-05_Luna_Execution_Blueprint.md"
+          },
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": true,
+          "prior_exposure": "YES; repeated incident after R3/R4",
+          "architecture_followup": "YES",
+          "package_revision": "KNOWN",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "ISOLATED_DETACHED_CLEAN",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "governance-repair",
+          "success",
+          "no-defect",
+          "FULL",
+          "linked-chain"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CONTEXT_ONLY",
+      "observation": {
+        "Sample ID": "M3-S-004",
+        "Root Incident / Episode Cluster ID": "M0-END-ACCEPT-CHAIN-01",
+        "Source Task / Blueprint Identity": "UBF-M0-END-ACCEPT-01 / R1",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "3489523db6508ba742ee835022d7e2a9a64f2c4f",
+          "claim_commit": "164b13090a9354123ff70242637405cb13b6875c",
+          "reviewed_delivery": "d6c8d5f693ace96a525d9dc797042467660bf6ef"
+        },
+        "Review Disposition": "REWORK / REMOTE ARCH REVIEWED / ARCH-PAYLOAD-01 ONLY",
+        "Observed Task Shape": {
+          "family": "governance stage close/handoff",
+          "scope": "seven-file deterministic persistence",
+          "decision_domain": [
+            "exact payload execution",
+            "lifecycle persistence"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "cross-document governance truth",
+          "novelty": "low coder discretion"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "FULL",
+          "mechanism": "DETERMINISTIC_ARCH_AUTHORED_TRANSFORM",
+          "environment": "ISOLATED_DETACHED_CLEAN"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "R5 ACCEPT, M0 final accept, handoff and ledger/state targets frozen by ARCH."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical execution only."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "CODE faithfully materialized the seven-file deterministic payload; remote review found a stale ledger value already embedded in the architecture-authored target.",
+        "Outcome Class": "REWORK",
+        "Primary Defect Attribution": "ARCH_PAYLOAD_DEFECT",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEUTRAL",
+        "Evidence References": [
+          {
+            "role": "execution_report",
+            "path": ".ai-context/docs/UBF-M0-END-ACCEPT-01-Execution-Report.md",
+            "reviewed_delivery": "d6c8d5f693ace96a525d9dc797042467660bf6ef"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M0-END-ACCEPT-01_Luna_Execution_Blueprint.md"
+          },
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": false,
+          "prior_exposure": "YES; follows accepted M0 repair",
+          "architecture_followup": "Architecture-authored payload later corrected by END-ACCEPT-02",
+          "package_revision": "KNOWN",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "NONE_MATERIAL_RECORDED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "stage-close",
+          "REWORK",
+          "arch-payload-defect",
+          "FULL"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CONTEXT_ONLY",
+      "observation": {
+        "Sample ID": "M3-S-005",
+        "Root Incident / Episode Cluster ID": "M1-SEMANTIC-DECOMPOSITION-CHAIN-01",
+        "Source Task / Blueprint Identity": "UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01 / R4",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9",
+          "claim_commit": "44a4667e327a0b22a4d6e1ff6c861d03635256c2",
+          "reviewed_delivery": "94890cc746e50d8631de7b9daa9fdc82bd3732dd"
+        },
+        "Review Disposition": "REWORK / REMOTE ARCH REVIEWED / ARCH_PAYLOAD_DEFECT / SELF_APPLICATION_MISSING ONLY",
+        "Observed Task Shape": {
+          "family": "semantic decomposition persistence",
+          "scope": "8-file static target; 64 semantic records",
+          "decision_domain": [
+            "exact static payload execution",
+            "canonical continuity"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "governance semantic inventory integrity",
+          "novelty": "large static semantic artifact with zero coder labeling authority"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "UNRESOLVED",
+          "mechanism": "AUTHORITATIVE_STATIC_TARGET_BUNDLE",
+          "environment": "ISOLATED_DETACHED_CLEAN / HOST_PRESERVED"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "64 records, maps/matrices, hashes and all semantics frozen by ARCH."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical materialization and evidence collection only."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "CODE matched 8/8 target blobs and 64 records; remote ARCH rejected only two EOF blank lines already present in architecture-authored target artifacts.",
+        "Outcome Class": "REWORK",
+        "Primary Defect Attribution": "ARCH_PAYLOAD_DEFECT",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEUTRAL",
+        "Evidence References": [
+          {
+            "role": "execution_report",
+            "path": ".ai-context/docs/UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-Execution-Report.md",
+            "reviewed_delivery": "94890cc746e50d8631de7b9daa9fdc82bd3732dd"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-Execution-Blueprint.md"
+          },
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": true,
+          "prior_exposure": "YES; M1 entry previously accepted",
+          "architecture_followup": "R4-REWORK-01 issued to repair architecture payload whitespace",
+          "package_revision": "R4 static target bundle",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "NONE_MATERIAL_RECORDED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "semantic-decomposition",
+          "REWORK",
+          "arch-payload-defect",
+          "static-bundle",
+          "linked-chain"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CONTEXT_ONLY",
+      "observation": {
+        "Sample ID": "M3-S-006",
+        "Root Incident / Episode Cluster ID": "M1-SEMANTIC-DECOMPOSITION-CHAIN-01",
+        "Source Task / Blueprint Identity": "UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01 / R4-REWORK-01",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "94890cc746e50d8631de7b9daa9fdc82bd3732dd",
+          "claim_commit": "bcb151af0c7188b847a3fe4d43749733111cd90b",
+          "reviewed_delivery": "aa45a286c8077c05e203e8da4a71c945dd574472"
+        },
+        "Review Disposition": "REWORK / REMOTE ARCH REVIEWED / ARCH_PAYLOAD_DEFECT / SELF_APPLICATION_SEMANTIC_GATE_MISSING ONLY",
+        "Observed Task Shape": {
+          "family": "narrow architecture-payload repair",
+          "scope": "4-file exact target; two EOF deletions + State/ledger",
+          "decision_domain": [
+            "exact static payload execution",
+            "State abstract-role gate"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "State truth / role abstraction",
+          "novelty": "very low coder discretion"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "UNRESOLVED",
+          "mechanism": "AUTHORITATIVE_STATIC_TARGET_BUNDLE",
+          "environment": "ISOLATED_DETACHED_CLEAN"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "Exact four target blobs frozen by ARCH; semantic reopen limited to two EOF deletions."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical materialization only."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "CODE faithfully produced 4/4 frozen blobs; remote ARCH found the architecture-authored State target still contained a concrete model name.",
+        "Outcome Class": "REWORK",
+        "Primary Defect Attribution": "ARCH_PAYLOAD_DEFECT",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEUTRAL",
+        "Evidence References": [
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "reviewed_delivery": "aa45a286c8077c05e203e8da4a71c945dd574472"
+          },
+          {
+            "role": "state_history",
+            "path": ".ai-context/docs/context_memory/BLUEPRINT_STATE.md"
+          },
+          {
+            "role": "repair_blueprint",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M1-END-ACCEPT-01_Luna_Execution_Blueprint.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": true,
+          "prior_exposure": "YES; same M1 semantic incident",
+          "architecture_followup": "R4-REWORK-02 issued for State truth repair",
+          "package_revision": "R4-REWORK-01",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "NONE_MATERIAL_RECORDED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "semantic-decomposition",
+          "REWORK",
+          "arch-payload-defect",
+          "static-bundle",
+          "linked-chain"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-007",
+        "Root Incident / Episode Cluster ID": "M1-SEMANTIC-DECOMPOSITION-CHAIN-01",
+        "Source Task / Blueprint Identity": "UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01 / R4-REWORK-02",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "aa45a286c8077c05e203e8da4a71c945dd574472",
+          "claim_commit": "e176a7226887fd18b3f32f7ba7adac943f714199",
+          "reviewed_delivery": "1723a4f9c050d4da47740d04164fa27d73ea9f2b"
+        },
+        "Review Disposition": "ACCEPT / REMOTE ARCH REVIEWED (2026-08-13)",
+        "Observed Task Shape": {
+          "family": "narrow governance truth repair",
+          "scope": "2-file exact target",
+          "decision_domain": [
+            "exact payload execution",
+            "State role truth"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "State truth",
+          "novelty": "minimal semantic discretion"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "UNRESOLVED",
+          "mechanism": "AUTHORITATIVE_STATIC_TARGET_BUNDLE",
+          "environment": "ISOLATED_DETACHED_CLEAN"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "Exact two-file target and abstract-role correction frozen by ARCH."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical materialization/Git evidence only."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "Executed the exact two-file repair, passed State concrete-model denyset and preserve gates, and received remote ARCH ACCEPT.",
+        "Outcome Class": "success",
+        "Primary Defect Attribution": "NONE",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "POSITIVE",
+        "Evidence References": [
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "reviewed_delivery": "1723a4f9c050d4da47740d04164fa27d73ea9f2b"
+          },
+          {
+            "role": "state_history",
+            "path": ".ai-context/docs/context_memory/BLUEPRINT_STATE.md"
+          },
+          {
+            "role": "final_accept",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M1-FINAL-ACCEPT.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": true,
+          "prior_exposure": "YES; repeated M1 incident",
+          "architecture_followup": "YES",
+          "package_revision": "R4-REWORK-02",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "NONE_MATERIAL_RECORDED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "governance-truth-repair",
+          "success",
+          "no-defect",
+          "static-bundle",
+          "linked-chain"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-008",
+        "Root Incident / Episode Cluster ID": "M2-LEGACY-MAPPING-01",
+        "Source Task / Blueprint Identity": "UBF-M2-LEGACY-ASSET-MAPPING-WORK-01 / R1",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "c72a19b257550de7bb75dc9361b9f939fc220cb9",
+          "claim_commit": "416e36199cb47eacba0b10de0170af5082b42c83",
+          "reviewed_delivery": "84cd8508e213e3664ec898cd2b9a783570b28de5"
+        },
+        "Review Disposition": "ACCEPT / REMOTE ARCH REVIEWED (2026-08-13)",
+        "Observed Task Shape": {
+          "family": "legacy asset mapping persistence",
+          "scope": "48 architecture-frozen GC records across exact 7-file delivery",
+          "decision_domain": [
+            "exact static payload execution",
+            "recount",
+            "non-inference"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "legacy-to-universal contamination / premature inference",
+          "novelty": "large record set but labels frozen"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "UNRESOLVED",
+          "mechanism": "AUTHORITATIVE_STATIC_TARGET_BUNDLE",
+          "environment": "ISOLATED_DETACHED_CLEAN"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "GC-01..GC-48 mapping fields and target bytes frozen by ARCH; Universal Mapping explicitly UNRESOLVED for all records."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical materialization, stage verification and recount only."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "Executed exact seven-file payload, reproduced 48/48 unique records and preserved UNRESOLVED=48 without inventing Universal Level mappings.",
+        "Outcome Class": "success",
+        "Primary Defect Attribution": "NONE",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "POSITIVE",
+        "Evidence References": [
+          {
+            "role": "execution_report",
+            "path": ".ai-context/docs/UBF-M2-LEGACY-ASSET-MAPPING-WORK-01-Execution-Report.md",
+            "reviewed_delivery": "84cd8508e213e3664ec898cd2b9a783570b28de5"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M2-LEGACY-ASSET-MAPPING-WORK-01_Luna_Execution_Blueprint.md"
+          },
+          {
+            "role": "final_accept",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M2-FINAL-ACCEPT.md"
+          },
+          {
+            "role": "ledger",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": false,
+          "prior_exposure": "YES; M2 Preview/Start accepted",
+          "architecture_followup": "YES",
+          "package_revision": "R1",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "NONE_MATERIAL_RECORDED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "legacy-mapping",
+          "success",
+          "no-defect",
+          "static-bundle",
+          "record-recount"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-009",
+        "Root Incident / Episode Cluster ID": "M3-PREVIEW-START-01",
+        "Source Task / Blueprint Identity": "UBF-M3-PREVIEW-START-01 / R1",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "handoff_parent": "0cb6d95057485bebb088523a6fd44a7e5ef1c2a4",
+          "claim_commit": "9cba9edaa15c906bddee77356c7bb2a2775e364e",
+          "reviewed_delivery": "c07e4d582a485739144a38ed06267473596cadee"
+        },
+        "Review Disposition": "ACCEPT / REMOTE ARCH REVIEWED (2026-08-13)",
+        "Observed Task Shape": {
+          "family": "M3 stage-entry governance persistence",
+          "scope": "7-file static target; zero empirical rows",
+          "decision_domain": [
+            "exact static payload execution",
+            "lifecycle/non-inference gates"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "premature corpus/level inference",
+          "novelty": "new corpus contract but all semantics architecture-authored"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5.6 Luna"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "UNRESOLVED",
+          "mechanism": "AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE",
+          "environment": "ISOLATED_DETACHED_CLEAN"
+        },
+        "Assistance / Hidden Help": "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds.",
+        "Architecture-Closed Decision Set": [
+          "M3 schema/eligibility/evidence/attribution/confound/coverage/recount/acceptance contract frozen by ARCH.",
+          "Entry required empirical sample rows=0 and no M4/M5/Phase3B."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical exact-byte materialization and authorized adapter fallback only."
+        ],
+        "Reasonable Divergence Set": [
+          "Only explicitly authorized execution-adapter/fallback choices; no semantic redesign."
+        ],
+        "Unacceptable Divergence Set": [
+          "Scope expansion",
+          "invented architecture labels",
+          "false completion/evidence claims",
+          "unauthorized stage transition"
+        ],
+        "Observed Decision / Behavior": "Executed exact seven-file stage entry, preserved zero samples and non-inference, returned REVIEW; current remote ARCH audit accepts the delivery.",
+        "Outcome Class": "success",
+        "Primary Defect Attribution": "NONE",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "POSITIVE",
+        "Evidence References": [
+          {
+            "role": "remote_commit",
+            "commit": "c07e4d582a485739144a38ed06267473596cadee",
+            "message": "docs(governance): persist UBF M3 preview start"
+          },
+          {
+            "role": "claim_commit",
+            "commit": "9cba9edaa15c906bddee77356c7bb2a2775e364e"
+          },
+          {
+            "role": "execution_report",
+            "path": ".ai-context/docs/UBF-M3-PREVIEW-START-01-Execution-Report.md"
+          },
+          {
+            "role": "entry_contract",
+            "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-PREVIEW-START.md"
+          }
+        ],
+        "Evidence Independence": "Independent remote ARCH review + immutable repository commit/report/blueprint evidence; execution self-report is corroborative, not sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": false,
+          "prior_exposure": "YES; prior UBF package patterns",
+          "architecture_followup": "No mid-execution intervention established; package self-application defects were closed before delivery",
+          "package_revision": "R1",
+          "assistance_level": "PACKAGE_AUTHORED / NO MID-EXECUTION INTERVENTION ESTABLISHED",
+          "environment_constraint": "NONE_MATERIAL_RECORDED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "NOT_MATERIAL_ESTABLISHED",
+          "source_availability": "REPOSITORY_SNAPSHOT_AND_REMOTE_REVIEW",
+          "causal_use": "STRATIFY; DO NOT TREAT LINKED EPISODES AS INDEPENDENT WEIGHT"
+        },
+        "Coverage Tags": [
+          "stage-entry",
+          "success",
+          "no-defect",
+          "static-bundle",
+          "zero-sample"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    }
+  ],
+  "recount": {
+    "total_rows": 9,
+    "unique_sample_ids": 9,
+    "duplicate_sample_ids": 0,
+    "unique_episode_clusters": 5,
+    "episode_cluster_ids": [
+      "M0-END-ACCEPT-CHAIN-01",
+      "M0-GOV-REPAIR-CHAIN-01",
+      "M1-SEMANTIC-DECOMPOSITION-CHAIN-01",
+      "M2-LEGACY-MAPPING-01",
+      "M3-PREVIEW-START-01"
+    ],
+    "eligibility_counts": {
+      "CALIBRATION_ELIGIBLE": 5,
+      "CONTEXT_ONLY": 4,
+      "EXCLUDED": 0
+    },
+    "outcome_counts": {
+      "REWORK": 3,
+      "blocked/external": 1,
+      "incorrect STOP": 1,
+      "success": 4
+    },
+    "primary_attribution_counts": {
+      "ARCH_PAYLOAD_DEFECT": 3,
+      "COMPATIBILITY_EXHAUSTED": 1,
+      "EXECUTION_DEVIATION": 1,
+      "NONE": 4
+    },
+    "capability_signal_counts": {
+      "NEGATIVE": 1,
+      "NEUTRAL": 4,
+      "POSITIVE": 4
+    },
+    "missing_mandatory_field_records": 0,
+    "negative_signal_non_execution_deviation": 0,
+    "raw_rows_with_decided_universal_calibration": 0,
+    "sole_weak_truth_rows": 0,
+    "linked_incident_missing_cluster_id": 0,
+    "source_evidence_reference_failures": 0,
+    "actor_model_counts": {
+      "GPT-5.6 Luna": 9
+    },
+    "package_profile_counts": {
+      "FULL": 4,
+      "UNRESOLVED": 5
+    },
+    "mechanism_coverage": [
+      "blueprint-authorized fallback",
+      "DETERMINISTIC_ARCH_AUTHORED_TRANSFORM",
+      "AUTHORITATIVE_STATIC_TARGET_BUNDLE",
+      "AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE"
+    ]
+  },
+  "coverage_gaps": [
+    "Actor/model diversity is absent in Work-01: all nine rows observe GPT-5.6 Luna. No cross-model inference is permitted.",
+    "Structured Q, correct STOP and scope-escape outcomes are not represented.",
+    "BLUEPRINT_DEFECT, SOFT_COMPATIBILITY and EXTERNAL_TRUTH_CHANGE are not represented as primary attribution rows.",
+    "FULL/LITE profile metadata is incomplete for five static-bundle episodes and is preserved as UNRESOLVED rather than guessed.",
+    "Governance/static-payload task families dominate; production-feature delegations are not yet represented.",
+    "M0 and M1 contain linked repair chains with strong prior-exposure/order effects; later calibration must stratify and must not count revisions as independent incidents."
+  ],
+  "non_inference": {
+    "universal_level_count_decisions": 0,
+    "universal_level_name_decisions": 0,
+    "universal_threshold_decisions": 0,
+    "universal_envelope_decisions": 0,
+    "universal_mapping_decisions": 0,
+    "final_task_profile_decisions": 0,
+    "final_capability_profile_decisions": 0,
+    "level_selector_decisions": 0,
+    "statement": "Work-01 is evidence construction only. It neither proves nor disproves a one-dimensional Universal Level ladder."
+  },
+  "acceptance_precheck": {
+    "wrong_negative_count_must_be_zero": 0,
+    "raw_level_decision_count_must_be_zero": 0,
+    "sole_weak_truth_count_must_be_zero": 0,
+    "linked_missing_cluster_count_must_be_zero": 0,
+    "source_reference_failure_count_must_be_zero": 0,
+    "duplicate_sample_id_count_must_be_zero": 0,
+    "missing_schema_record_count_must_be_zero": 0,
+    "all_zero_error_gates_pass": true
+  }
+}

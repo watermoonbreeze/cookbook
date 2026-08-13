@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01 — Empirical Calibration Corpus Work-01 |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -22,12 +22,12 @@
 | Handoff Parent | `c07e4d582a485739144a38ed06267473596cadee` |
 | Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | M3 Preview/Start `c07e4d582a485739144a38ed06267473596cadee` = **ACCEPT / REMOTE ARCH REVIEWED** |
-| 范围 | 仅 claim 本 Work-01 delegated turn；尚未创建 corpus target；不得进行任何语义选择或后续阶段工作 |
+| 范围 | 仅持久化 ARCH 已冻结的 9 个 corpus records + Work-01 blueprint/report，并更新 Preview/Control/Ledger/State；不作 Level/Profile/Selector/canonical/routing/Graph/生产改动 |
 | Frozen recount | total=9；unique sample IDs=9；unique episode clusters=5；CALIBRATION_ELIGIBLE=5；CONTEXT_ONLY=4；EXCLUDED=0；POSITIVE=4；NEGATIVE=1；NEUTRAL=4；forbidden negative=0；raw calibration decisions=0 |
 | Coverage gap | single actor/model；structured Q/correct STOP/scope escape absent；部分 profile 未知；生产 feature family 不足；M0/M1 linked-chain order effect 必须 stratify |
-| UBF Stage | M3 Preview/Start **ACCEPT/CONSUMED**; M3 Corpus Work-01 **CLAIMED / IN PROGRESS**; M3 calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| UBF Stage | M3 Preview/Start **ACCEPT/CONSUMED**; M3 Corpus Work-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; M3 calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅机械落盘 manifest 七个 final targets，验证 exact schema/recount/blob/Preserve 后 RETURN TURN=REVIEW；不得自行继续 |
+| 下一步 | 仅等待 remote ARCH 核验本 Work-01；即使 ACCEPT，CODE 也不得自行开始 corpus Work-02、calibration analysis、M4/M5 |
 ## 上一批次：UBF-M3-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|

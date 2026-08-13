@@ -4,10 +4,10 @@ Document Role: Generated View / Stage Entry Contract
 Stage: `M3 — Empirical Calibration Corpus`
 Entry Task: `UBF-M3-PREVIEW-START-01`
 Exact Handoff Parent: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
-Entry Status: `PERSISTED / PENDING REMOTE ARCH REVIEW`
+Entry Status: `ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01`
 M0 / M1 / M2: `ACCEPT / CLOSED`
 M2→M3 Handoff: `ARCH ACCEPTED / CONSUMED BY THIS ENTRY`
-M3 Corpus: `NOT STARTED / NOT YET AUTHORIZED`
+M3 Corpus: `WORK-01 COMPLETE / PENDING REMOTE ARCH REVIEW`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
@@ -183,3 +183,9 @@ This entry does not authorize empirical rows, current-case retroactive labeling,
 ## 12. Entry acceptance and next gate
 
 This entry creates zero samples. Remote ARCH must first accept the `UBF-M3-PREVIEW-START-01` persistence delivery. Only then may ARCH issue a separate, architecture-frozen M3 corpus Work-01. CODE must not infer that this entry acceptance authorizes corpus construction on its own.
+
+## 13. Remote ARCH acceptance and Work-01 consumption
+
+Remote ARCH accepts the Preview/Start delivery `c07e4d582a485739144a38ed06267473596cadee` with chain `0cb6d950... -> 9cba9eda... -> c07e4d58...`, claim State-only, final exact seven paths, entry sample rows `0`, State denyset, Preserve, attribution gates and non-inference all intact.
+
+That acceptance authorizes only the separately architecture-authored `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01` payload. Work-01 creates exactly nine pre-adjudicated empirical records and leaves every raw `Universal Calibration Disposition` as `UNRESOLVED`. Work-01 is `COMPLETE / PENDING REMOTE ARCH REVIEW`; M3 calibration analysis has not started. M4/M5 and CookBook Phase 3B remain prohibited.
