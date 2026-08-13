@@ -8,8 +8,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01 — Blind Acquisition Protocol Repair |
-| 状态 | **CLAIMED / PROTOCOL REPAIR IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -17,7 +17,7 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE + RUNTIME_PROVENANCE |
 | Handoff Parent | `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01 / R1` single-use abstract-CODER claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01 / R1` single-use abstract-CODER claim **CONSUMED** |
 | Holder transition | `REVIEW -> CODE` after exact State-only claim push+remote verify；same-revision replacement CODER may resume exact in-flight claim；final/abort returns `REVIEW` |
 | Architecture input | Work-01 `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` = **CODE EXECUTION ACCEPT / 4-of-4 SEMANTIC PASS**；actor identity unresolved；Family-A matched reuse burned by canonical response exposure |
 | Defect attribution | sequential same-family canonical raw-response persistence = `BLUEPRINT_DEFECT / NON_CAPABILITY`；no coder negative sample |
@@ -26,7 +26,7 @@
 | Matrix progress | Family-A qualifying=0；Family-B=0/2；Family-C=0/2；production STRUCTURED_Q/HARD_STOP gaps OPEN |
 | UBF Stage | M3 Calibration — Evidence Gap Closure Acquisition Protocol Repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅机械持久化本 BAP-01 repair package；不得开始任何 evidence run。 |
+| 下一步 | 仅等待 remote ARCH 复核 BAP-01 repair；ACCEPT 后由 ARCH 单独签发 blind Family-B Cell-01；CODE 不得自行开始 evidence run。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01（2026-08-13）
 | 字段 | 值 |

@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / EVIDENCE GAP CLOSURE PREVIEW/START ACCEPT / MATCHED CONTROLLED FAMILY-A CELL-01 IN REVIEW`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / EGC WORK-01 4-of-4 SEMANTIC PASS BUT MATCHED-INELIGIBLE / BLIND ACQUISITION PROTOCOL REPAIR IN REVIEW`
 
 ## 1. Entry meaning
 
@@ -263,3 +263,20 @@ Work-01 uses immutable `UBF-M3-EGC-MC-FAMILY-A/R1` (`sha256=af32e947d7c21b4dce0a
 No answer key is shipped to CODE. Raw response correctness, normalized actor identity, assistance status, capability signal and corpus eligibility remain remote-ARCH decisions. New empirical corpus rows remain 0 and H4 remains preserved.
 
 Family-A Cell-02, Family-B, naturalistic production evidence capture and re-analysis remain separately gated. M4/M5 and CookBook Phase 3B remain prohibited.
+
+
+## 20. Work-01 adjudication and matched-acquisition blindness repair
+
+Remote ARCH reviews `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca`:
+
+- CODE transaction fidelity ACCEPT;
+- four Family-A scenario actions = 4/4 semantic PASS;
+- capability evidence is non-negative;
+- Runtime-Provenance concrete identity remains unresolved (`UNKNOWN_SELF_REPORT / UNAVAILABLE`);
+- no empirical corpus row is created.
+
+A protocol defect is identified: Cell-01 raw Response was persisted to canonical history before a second same-family observation. Later Family-A coders could therefore access prior choices, so absence of prior exposure cannot be independently established. This is `BLUEPRINT_DEFECT / NON_CAPABILITY`, not CODE deviation.
+
+Family-A is removed from future qualifying matched reuse. The matched matrix restarts with new Family-B and Family-C under BAP-01 blind capture: canonical commitment only, raw response/provenance outside repo until family pair completion.
+
+H4 remains preserved. Family-B Cell-01 is not authorized until this repair is separately accepted. M4/M5 and CookBook Phase 3B remain prohibited.

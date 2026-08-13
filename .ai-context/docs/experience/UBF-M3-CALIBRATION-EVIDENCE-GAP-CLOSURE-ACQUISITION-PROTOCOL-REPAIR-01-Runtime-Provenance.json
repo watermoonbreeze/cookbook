@@ -1,0 +1,20 @@
+﻿{
+    "schema_version":  "1.1",
+    "task_id":  "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01",
+    "package_revision":  "R1",
+    "handoff_parent":  "d43c73fe12cfe3abd3a5b5efa7b5492b0487beca",
+    "actor_role":  "CODER",
+    "resumed_from_existing_claim":  true,
+    "execution_segments":  [
+                               {
+                                   "segment_ordinal":  1,
+                                   "runtime_model_reported":  "Codex runtime",
+                                   "launcher_or_operator_model_label":  "UNAVAILABLE",
+                                   "execution_scope":  "FINAL_RESUME",
+                                   "availability_notes":  "NONE"
+                               }
+                           ],
+    "authoritative_normalized_model":  "PENDING_REMOTE_ARCH_REVIEW",
+    "capability_attribution":  "PENDING_REMOTE_ARCH_REVIEW",
+    "semantic_payload_changed_for_model_switch":  false
+}

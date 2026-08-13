@@ -149,3 +149,23 @@ For matched equality, the stable comparison identity is `family_truth_id + famil
 Cell-02 is not authorized by Work-01 itself. After Work-01 remote adjudication, ARCH may issue a second wrapper that requires a concrete coder identity distinct from the normalized Cell-01 actor while preserving the exact Family-A Truth Capsule.
 
 All naturalistic production gates EGC-G05/EGC-G06 remain open until real production episodes occur.
+
+
+## 10. Work-01 post-adjudication repair of the matched-acquisition protocol
+
+Remote ARCH adjudicates Work-01 `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca`:
+
+- execution fidelity: ACCEPT;
+- Family-A four scenario decisions: 4/4 semantic PASS;
+- capability direction: NON-NEGATIVE;
+- concrete actor normalization: UNRESOLVED from `UNKNOWN_SELF_REPORT / UNAVAILABLE`;
+- matched-inference eligibility: NO;
+- new empirical corpus rows: 0.
+
+The earlier sequential acquisition design is insufficient for matched inference because Cell-01's raw Response entered canonical history before Cell-02. A later coder could inspect those choices, and "do not read it" is not an independently verifiable assistance-control mechanism.
+
+This is an architecture-side `BLUEPRINT_DEFECT / NON_CAPABILITY`. Family-A is therefore `BURNED_BY_CANONICAL_RESPONSE_EXPOSURE` for future matched reuse.
+
+The repaired protocol is `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BLIND-ACQUISITION-PROTOCOL.md` (`BAP-01`). Future qualifying matched families B/C must use blind reveal bundles held outside the repo and canonical cryptographic commitments only until their same-family pairs are complete.
+
+The original 2-family × 2-normalized-coder gate is preserved, not weakened. Family-A contributes zero qualifying matrix cells. Re-analysis remains unauthorized.

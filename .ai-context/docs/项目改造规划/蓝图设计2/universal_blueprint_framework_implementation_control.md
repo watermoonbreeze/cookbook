@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS + PROBE ACCEPT / CONSUMED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; EVIDENCE GAP CLOSURE PREVIEW/START ACCEPT / CONSUMED; WORK-01 FAMILY-A CELL-01 RAW EVIDENCE IN REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS + PROBE ACCEPT / CONSUMED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; EGC PREVIEW ACCEPT; WORK-01 CODE+SEMANTIC PASS BUT MATCHED-INELIGIBLE; BLIND ACQUISITION PROTOCOL REPAIR IN REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — EVIDENCE GAP CLOSURE WORK-01 / MATCHED CONTROLLED FAMILY-A CELL-01`
-> Current Review Result: `423d7382d56765e17ea9395e2b167454d5e1450f = ARCH ACCEPT (Evidence Gap Closure Preview/Start)`
+> Current UBF Stage: `M3 CALIBRATION — EVIDENCE GAP CLOSURE BLIND ACQUISITION PROTOCOL REPAIR`
+> Current Review Result: `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca = CODE EXECUTION ACCEPT / 4-of-4 SEMANTIC PASS / MATCHED INFERENCE INELIGIBLE`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -17,9 +17,10 @@
 > M3 Calibration Analysis Work-01 Review Target: `b87726abc575a0c17cd1b76f663f242edbddc041` — execution fidelity ACCEPT; H4 preserved
 > M3 Analysis Lifecycle Repair Accepted Review Target: `bbd8bbbd5c97a9faef62fde50971a586322e625d`
 > M3 Evidence Gap Closure Preview/Start Accepted Review Target: `423d7382d56765e17ea9395e2b167454d5e1450f`
-> M3 Evidence Gap Closure Work-01 Review Target: `PENDING REMOTE ARCH ADJUDICATION`
+> M3 Evidence Gap Closure Work-01 Reviewed Target: `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` — CODE ACCEPT / SEMANTIC PASS / identity unresolved / Family-A matched reuse burned
+> M3 Blind Acquisition Protocol Repair Review Target: `PENDING REMOTE ARCH REVIEW`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R22 — M3 evidence-gap closure Work-01; immutable matched-controlled Family-A Truth + raw CODER evidence capture`
+> Process Revision: `R23 — M3 matched-controlled blind acquisition repair; canonical commitments + repo-external reveal bundles`
 
 ## 1. 目标
 
@@ -577,3 +578,17 @@ STOP：
 - A later Family-A Cell-02 must reuse the same Family Truth Capsule identity/digest but be executed by a different ARCH-normalized concrete coder identity before it can form a matched pair.
 - Family-A Cell-02, all Family-B cells, naturalistic production capture, re-analysis, M4/M5 and CookBook Phase 3B are **NOT AUTHORIZED** by this Work-01 execution.
 - H4 remains `H4_INSUFFICIENT_EVIDENCE`.
+
+
+## M3 Evidence Gap Closure — Blind Acquisition Protocol Repair
+
+- Work-01 `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca`: CODE fidelity **ACCEPT**, semantic actions **4/4 PASS**, non-negative.
+- Work-01 cannot satisfy matched inference because concrete actor identity is unresolved and the raw Response is already visible in canonical history.
+- Family-A is therefore **BURNED_BY_CANONICAL_RESPONSE_EXPOSURE** for future matched reuse. This is an acquisition-design `BLUEPRINT_DEFECT / NON_CAPABILITY`, not coder failure.
+- BAP-01 requires future matched families to commit only cryptographic commitments while holding raw Response + Runtime-Provenance outside the repository until the same-family pair is complete.
+- Qualifying matched matrix restarts with Family-B and Family-C; each requires two independently normalized concrete CODER identities under identical family truth.
+- Concrete model names remain runtime evidence only; package authority remains abstract `CODER`.
+- This repair creates 0 empirical corpus rows and runs 0 new acquisitions.
+- H4 remains `H4_INSUFFICIENT_EVIDENCE`.
+- Family-B Cell-01 is **NOT STARTED / NOT AUTHORIZED** until this repair receives remote ARCH ACCEPT.
+- Re-analysis, M4/M5 and CookBook Phase 3B remain unauthorized.
