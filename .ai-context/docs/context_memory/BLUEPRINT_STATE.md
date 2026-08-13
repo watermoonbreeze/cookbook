@@ -7,30 +7,37 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03（2026-08-13）
+## 当前批次：UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03 — Controlled Probe Adjudication Corpus Persistence |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01 — M3 Calibration Analysis Entry Contract Persistence |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `2326a94e5ee261888be527a2303962219cf422a6` |
-| Delegation | `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03 / R2` single-use claim **CONSUMED** |
-| Delegation binding | parent `2326a94e5ee261888be527a2303962219cf422a6` + target `origin/master` + State-only claim; final returns holder to REVIEW |
-| Holder transition | `REVIEW -> CODE` claim consumed; final `CODE -> REVIEW` complete pending remote ARCH review |
-| Host isolation | execution contract requires isolated detached clean checkout; original worktree dirtiness/local-behind state is preserved and is not task scope |
-| Architecture input | Probe-01 `2326a94e5ee261888be527a2303962219cf422a6` = **ACCEPT / REMOTE ARCH REVIEWED** |
-| 范围 | 仅机械持久化 ARCH 已裁决的 6 个 controlled-probe rows + blueprint/report，并更新 Preview/Control/Ledger/State；Probe raw evidence 与 Work-01/02 Preserve；不作 calibration/Level/Profile/Selector/routing/canonical/Graph/生产改动 |
-| Frozen recount | Work-03 total=6 / clusters=1 / eligible=6 / positive=6；combined total=21 / clusters=12 / eligible=15 / context=6 / positive=12 / negative=3 / neutral=6；forbidden negative=0；raw Universal decisions=0 |
-| Evidence identity boundary | Probe raw actor self-label 与 package/ledger executor identity 冲突；只允许 authority-priority normalization + raw Preserve；该 validator gap 属 ARCH package hygiene，不是 CODE negative |
-| UBF Stage | Work-01/02 **ACCEPT/CONSUMED**; Probe-01 **ACCEPT/CONSUMED**; Work-03 **COMPLETE / PENDING REMOTE ARCH REVIEW**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| Handoff Parent | `99dc95ddd682945bfa6936a7ca2391ff211393ec` |
+| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01 / R1` single-use claim **ACTIVE / CONSUMING** |
+| Delegation binding | parent `99dc95ddd682945bfa6936a7ca2391ff211393ec` + target `origin/master` + State-only claim; package/revision/single-use |
+| Holder transition | `REVIEW -> CODE` claim; final/authorized abort returns `REVIEW` |
+| Host isolation | original worktree may be dirty/behind; preserve it; isolated detached clean checkout only |
+| Architecture input | Work-03 `99dc95ddd682945bfa6936a7ca2391ff211393ec` = **ACCEPT / REMOTE ARCH REVIEWED** |
+| Evidence boundary | 21 rows / 12 clusters / 15 eligible / 6 context / 12 positive / 3 negative / 6 neutral；Work-03 six rows share one root cluster |
+| 范围 | 仅机械持久化 M3 Calibration Analysis Preview/Start 方法合同；不执行 Analysis Work-01；不决定 Level/Profile/Selector/model ranking/routing；不改 canonical/Graph/生产代码 |
+| UBF Stage | Work-01/02/03 **ACCEPT/CONSUMED**; Probe-01 **ACCEPT/CONSUMED**; Calibration Analysis Preview/Start **CLAIMED / IN PROGRESS**; Analysis Work-01 **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 复核 Work-03；CODE 不得自行开始 calibration analysis、M4/M5 或 Phase 3B |
+| 下一步 | 只机械落盘 exact 7 targets、验证 Preserve/non-inference 后返回 REVIEW；不得开始 Analysis Work-01。 |
+## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY CALIBRATION ANALYSIS PREVIEW/START** |
+| Reviewed delivery | `99dc95ddd682945bfa6936a7ca2391ff211393ec` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | R2 delegated turn contract 实际闭合；claim State-only；final exact 7 paths；Work-03=6 rows/1 cluster/6 positive；combined=21 rows/12 clusters/15 eligible/12 positive/3 negative/6 neutral；forbidden negative=0；raw Universal decisions=0 |
+| Transition authority | 仅授权本 Calibration Analysis Preview/Start 静态合同；不得开始 Analysis Work-01、M4/M5 或 Phase 3B |
 ## 上一批次：UBF-M3-CONTROLLED-CALIBRATION-PROBE-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
