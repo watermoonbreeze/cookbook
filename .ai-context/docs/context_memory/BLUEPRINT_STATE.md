@@ -2,31 +2,45 @@
 
 唯一握手状态文件。开工前先 `git pull` 读本文件；`TURN` 不是自己 → 停手，只报告当前持球方，不改代码。开工前除看 `TURN`，还须看 `颗粒度` 行确认本批蓝图应达到的级别。完成本方动作后在同一提交内更新本文件再 push。
 **ARCH/CODE 命名规则**：`ARCH`/`CODE`/`REVIEW`/`TURN` 这几个协议字段只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**——角色定义是抽象的，具体由哪个模型担任取决于当前会话，协议逻辑不依赖模型身份。
-**模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和运行时 provenance/执行报告，本文件不重复。
+**模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体 runtime/model identity 只写入 experience/runtime-provenance/执行报告，本文件不重复。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01（2026-08-13）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01 — Blind Acquisition Protocol Repair |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01 — State Model-Identity Hygiene Repair |
+| 状态 | **CLAIMED / STATE IDENTITY REPAIR IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Execution mode | ARCH_PROTOCOL_REPAIR / MECHANICAL |
+| Execution mode | ARCH_PAYLOAD_REPAIR / MECHANICAL |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE + RUNTIME_PROVENANCE |
-| Handoff Parent | `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01 / R1` single-use abstract-CODER claim **CONSUMED** |
-| Holder transition | `REVIEW -> CODE` after exact State-only claim push+remote verify；same-revision replacement CODER may resume exact in-flight claim；final/abort returns `REVIEW` |
-| Architecture input | Work-01 `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` = **CODE EXECUTION ACCEPT / 4-of-4 SEMANTIC PASS**；actor identity unresolved；Family-A matched reuse burned by canonical response exposure |
-| Defect attribution | sequential same-family canonical raw-response persistence = `BLUEPRINT_DEFECT / NON_CAPABILITY`；no coder negative sample |
-| Blind protocol | `BAP-01` persisted；future qualifying matched families restart at Family-B/Family-C；raw response/provenance held outside repo until family pair complete |
-| Evidence effect | repair only；new empirical corpus rows=0；new acquisition runs=0；H4 preserved |
-| Matrix progress | Family-A qualifying=0；Family-B=0/2；Family-C=0/2；production STRUCTURED_Q/HARD_STOP gaps OPEN |
-| UBF Stage | M3 Calibration — Evidence Gap Closure Acquisition Protocol Repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 **NOT STARTED** |
+| Handoff Parent | `15b3470703b3df0f1f7dcae8a815b3f660463f0c` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01 / R1` single-use abstract-CODER claim **ACTIVE / CONSUMING** |
+| Holder transition | `REVIEW -> CODE` after exact State-only claim push+remote verify；same-revision replacement CODER may resume exact in-flight claim；final/abort returns REVIEW |
+| Architecture input | BAP-01 repair `15b3470703b3df0f1f7dcae8a815b3f660463f0c` = **CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT STATE IDENTITY HYGIENE REPAIR REQUIRED** |
+| Verified BAP delivery | `15b3470703b3df0f1f7dcae8a815b3f660463f0c` chain from `d43c73f...` via State-only claim `eba909fad46a613e121f75f1ee66f443509cebcd`；final 9 files；BAP-01 semantic contract preserved |
+| Defect | historical Preview row repeated a concrete runtime/model label inside State, violating State abstract-role Truth |
+| Attribution | `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`；CODE execution fidelity remains ACCEPT；no coder/model negative sample |
+| Repair scope | remove concrete runtime/model label from State history；persist review/lifecycle truth only；BAP-01 protocol and all evidence Preserve |
+| Matrix | Family-A qualifying=0；Family-B=0/2；Family-C=0/2；production STRUCTURED_Q/HARD_STOP gaps OPEN |
+| Evidence effect | new evidence runs=0；new empirical corpus rows=0；H4=`H4_INSUFFICIENT_EVIDENCE` preserved |
+| UBF Stage | M3 Calibration — BAP-01 State Identity Hygiene Repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 NOT STARTED |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 复核 BAP-01 repair；ACCEPT 后由 ARCH 单独签发 blind Family-B Cell-01；CODE 不得自行开始 evidence run。 |
+| 下一步 | 仅机械持久化本 exact repair payload；不得开始 Family-B 或新 evidence run。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT STATE IDENTITY HYGIENE REPAIR REQUIRED** |
+| Reviewed delivery | `15b3470703b3df0f1f7dcae8a815b3f660463f0c` |
+| Claim delivery | `eba909fad46a613e121f75f1ee66f443509cebcd` |
+| Architecture disposition | BAP-01 execution fidelity ACCEPT；protocol semantics preserved；State history model-identity leak requires narrow repair |
+| 已验证 | two-commit chain；claim State-only 1 file；final 9 files；BAP-01 commitment/reveal protocol；Family-A burned；0 new evidence run；0 corpus row；H4 preserved；State returned REVIEW |
+| 未通过 | State historical Preview row repeated a concrete runtime/model label despite the State abstract-role contract |
+| 归因 | `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`；not CODE execution deviation；no negative capability sample |
+| Repair authority | 仅授权本 State identity hygiene + lifecycle/ledger truth repair；不得修改 BAP-01 protocol/evidence/corpus/analysis 或启动 Family-B |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01（2026-08-13）
 | 字段 | 值 |
@@ -48,7 +62,7 @@
 | Reviewed delivery | `423d7382d56765e17ea9395e2b167454d5e1450f` |
 | Architecture disposition | **ACCEPT** |
 | 已验证 | parent `bbd8bbb...` → State-only claim `a7fec4e...` → final `423d7382d56765e17ea9395e2b167454d5e1450f`；final exact 9 files；8/8 static blobs exact；Runtime-Provenance schema/non-inference；new rows=0；evidence runs=0；H4 preserved；State returned REVIEW |
-| Runtime provenance | raw model label=`Codex runtime`；launcher label unavailable；Preview is non-inferential, so concrete actor normalization is deferred and does not block ACCEPT |
+| Runtime provenance | raw runtime provenance exists；concrete actor normalization deferred；具体 runtime/model label 按抽象角色合同仅保留于 experience/runtime-provenance 层，不在 State 重复 |
 | Transition authority | 仅授权本 Work-01 的 `MC-FAMILY-A / R1 / CELL-01` raw evidence acquisition；不授权 Cell-02、Family-B、corpus eligibility、re-analysis、M4/M5 或 Phase 3B |
 
 ## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01（2026-08-13）
