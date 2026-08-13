@@ -7,26 +7,37 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M3-PREVIEW-START-01（2026-08-13）
+## 当前批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-PREVIEW-START-01 — Empirical Calibration Corpus Stage Entry |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01 — Empirical Calibration Corpus Work-01 |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` |
+| Handoff Parent | `c07e4d582a485739144a38ed06267473596cadee` |
 | Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
-| Architecture input | M2 End/Accept + M2→M3 Handoff persistence `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` = **ACCEPT** |
-| Source identity | package/user canonical hashes verified；root routing is shared coarse Actor/Capability Routing；provider-specific routing is a distinct optional layer and is not required or mutated by this entry |
-| 范围 | 仅消费已 ACCEPT 的 M2→M3 Handoff、持久化 M3 Preview/Start entry contract 与 corpus future-entry requirements；**empirical sample rows = 0**；不作 Level/Profile/Selector/canonical/routing/Graph/生产改动 |
-| UBF Stage | M0/M1/M2 **ACCEPT/CLOSED**; M2→M3 Handoff **ARCH ACCEPTED / CONSUMED BY UBF-M3-PREVIEW-START-01**; M3 Preview/Start **PERSISTED / PENDING REMOTE ARCH REVIEW**; M3 Corpus **NOT STARTED / NOT YET AUTHORIZED**; M4/M5 **NOT STARTED** |
+| Architecture input | M3 Preview/Start `c07e4d582a485739144a38ed06267473596cadee` = **ACCEPT / REMOTE ARCH REVIEWED** |
+| 范围 | 仅 claim 本 Work-01 delegated turn；尚未创建 corpus target；不得进行任何语义选择或后续阶段工作 |
+| Frozen recount | total=9；unique sample IDs=9；unique episode clusters=5；CALIBRATION_ELIGIBLE=5；CONTEXT_ONLY=4；EXCLUDED=0；POSITIVE=4；NEGATIVE=1；NEUTRAL=4；forbidden negative=0；raw calibration decisions=0 |
+| Coverage gap | single actor/model；structured Q/correct STOP/scope escape absent；部分 profile 未知；生产 feature family 不足；M0/M1 linked-chain order effect 必须 stratify |
+| UBF Stage | M3 Preview/Start **ACCEPT/CONSUMED**; M3 Corpus Work-01 **CLAIMED / IN PROGRESS**; M3 calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 核验 parent→claim→final、exact 7-file scope、7/7 blobs、Preserve、State denyset、zero-sample recount 与 M3 entry semantic gates；ACCEPT 后也只能由 ARCH 另发 M3 corpus Work-01，CODE 不得自行开始 |
+| 下一步 | 仅机械落盘 manifest 七个 final targets，验证 exact schema/recount/blob/Preserve 后 RETURN TURN=REVIEW；不得自行继续 |
+## 上一批次：UBF-M3-PREVIEW-START-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY WORK-01** |
+| Reviewed delivery | `c07e4d582a485739144a38ed06267473596cadee` |
+| Claim delivery | `9cba9edaa15c906bddee77356c7bb2a2775e364e` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | parent `0cb6d950...` → claim → final；claim State-only；final exact 7 paths；entry sample rows=0；State denyset；Preserve；attribution negative-signal gate；non-inference；lifecycle |
+| 未解决问题 | NONE |
+| Transition authority | 仅授权本 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01` exact static payload；不得自行增删/重标样本、决定 Universal Level/Profile/Selector、启动 M4/M5 或 CookBook Phase 3B |
 ## 上一批次：UBF-M2-END-ACCEPT-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
