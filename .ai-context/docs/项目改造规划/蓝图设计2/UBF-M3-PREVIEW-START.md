@@ -207,3 +207,13 @@ Work-02 acceptance does **not** close M3 corpus coverage. Structured Q and corre
 The only next authorization is `UBF-M3-CONTROLLED-CALIBRATION-PROBE-01`: a six-scenario **synthetic controlled decision probe** under a BLUEPRINT-LITE carrier. Its response is runtime behavioral evidence under `RUNTIME_DISCOVERY_REQUIRED`; it is not pre-labeled corpus truth. CODE may record its decisions but may not adjudicate correctness, eligibility, capability signal, model rank, routing, Universal Level/Profile/Selector, or create Work-03 rows. Independent ARCH must review the response before any later corpus use.
 
 M4, M5 and CookBook Phase 3B remain `NOT STARTED / NOT AUTHORIZED`.
+
+## 16. Remote ARCH acceptance of Probe-01 and Corpus Work-03 authorization
+
+Remote ARCH accepts `UBF-M3-CONTROLLED-CALIBRATION-PROBE-01` reviewed delivery `2326a94e5ee261888be527a2303962219cf422a6` with State-only claim `5cb0744d8f5e748def22b1d00cafb7a9d1da4193`. All six runtime actions are semantically correct under the frozen fixture: structured Q, real Hard STOP, authorized fallback, denied-path preserve/report, bounded authorized choice, and execute-frozen + architecture challenge.
+
+Probe-01 also exposed one evidence-identity hygiene gap: its runtime Response self-labels the model as `GPT-5`, while the package manifest and repository capability ledger identify the executor as `GPT-5.6 Luna`. This conflict is not used as a capability negative. Work-03 preserves the raw label, normalizes authoritative actor identity from package/ledger, and records the missing cross-check as an architecture/package validator gap.
+
+ARCH authorizes only `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03` to persist six post-hoc-adjudicated rows `M3-S-016..M3-S-021`. The six rows share one root cluster and remain synthetic-controlled evidence; they must not be weighted as six independent execution batches. After Work-03, controlled structured-Q/correct-STOP coverage exists, but production equivalents remain gaps.
+
+Calibration analysis remains `NOT STARTED / NOT AUTHORIZED` until Work-03 receives separate remote ARCH acceptance. Universal Level/Profile/Selector, model ranking/routing, M4/M5 and CookBook Phase 3B remain prohibited.

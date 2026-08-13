@@ -434,7 +434,7 @@ STOP：
 
 ## 10. 当前启动判定
 
-当前唯一在途治理事务是 `UBF-M3-CONTROLLED-CALIBRATION-PROBE-01` 的 controlled-probe delegated execution / remote review cycle：
+当前唯一在途治理事务是 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03` 的 adjudicated-corpus delegated execution / remote review cycle：
 
 1. M0/M1/M2 已 `ACCEPT / CLOSED`；M3 Preview/Start、Work-01、Work-02 已 REMOTE ARCH ACCEPT；
 2. Work-02 reviewed delivery `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821`，claim=`09e6f7590309ca6b97d70830982fe8baf8321cac`，accepted recount = 6 rows / 6 clusters / 4 eligible / 2 context / 2 positive / 2 negative / 2 neutral；combined Work-01+02 = 15 rows / 11 clusters / 9 eligible / 6 context / 6 positive / 3 negative / 6 neutral；
@@ -500,3 +500,17 @@ STOP：
 - Six scenarios target underdetermined structured-Q choice, real Hard STOP recognition, optional-helper fallback, denied-path scope discipline, reasonable authorized divergence, and architecture challenge without frozen-Truth mutation.
 - Response shape/non-inference is mechanically validated; semantic correctness is deliberately **not** package-validated. Independent ARCH owns adjudication.
 - Probe completion does not create Work-03 corpus rows and does not start calibration analysis. Universal Level/Profile/Selector, routing, M4/M5 and CookBook Phase 3B remain prohibited.
+
+## 16. M3 Empirical Calibration Corpus Work-03
+
+- Fixed Handoff Parent: `2326a94e5ee261888be527a2303962219cf422a6` = Probe-01 **REMOTE ARCH ACCEPT**.
+- Probe-01 claim: `5cb0744d8f5e748def22b1d00cafb7a9d1da4193`; final exact 7 paths; Response contains 6/6 semantically correct scenario actions after independent remote ARCH adjudication.
+- Machine-readable Work-03 target: `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03.json`.
+- Work-03 frozen recount: total=6, unique IDs=6, unique clusters=1, eligible=6, context-only=0, excluded=0, positive=6, negative=0, neutral=0.
+- Combined Work-01+02+03: total=21, unique IDs=21, unique clusters=12, eligible=15, context-only=6, positive=12, negative=3, neutral=6.
+- All six Work-03 rows share `M3-CONTROLLED-PROBE-01-CLUSTER`; later analysis must not treat them as six independent execution batches.
+- Controlled structured-Q and correct-STOP cells are now represented, but production equivalents remain coverage gaps.
+- Raw Response executor label conflicts with package/ledger identity. Work-03 preserves raw `GPT-5`, normalizes authoritative identity to `GPT-5.6 Luna`, and attributes missing cross-check to ARCH package validator hygiene; no negative capability signal is created.
+- All raw Universal Calibration dispositions remain `UNRESOLVED`.
+- Work-03 is evidence persistence only. Calibration analysis, model ranking/routing, Universal Level/Profile/Selector inference, M4/M5 and CookBook Phase 3B remain prohibited.
+- Work-03 final state is `COMPLETE / PENDING REMOTE ARCH REVIEW` and returns `TURN=REVIEW`.
