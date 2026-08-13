@@ -7,26 +7,34 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M1-END-ACCEPT-01 — M1 End/Accept + M1→M2 Handoff Persistence（2026-08-13）
+## 当前批次：UBF-M2-PREVIEW-START-01 — Legacy Asset Mapping Entry（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M1-END-ACCEPT-01 — M1 End/Accept + M1→M2 Handoff Persistence |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M2-PREVIEW-START-01 — Legacy Asset Mapping Entry |
+| 状态 | **CLAIMED / IN EXECUTION** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `1723a4f9c050d4da47740d04164fa27d73ea9f2b` |
-| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
-| Architecture input | R4-REWORK-02 remote delivery `1723a4f9c050d4da47740d04164fa27d73ea9f2b` = **ACCEPT** |
-| Accepted M1 evidence | 64 records/maps/matrices；R4/R4-REWORK-01/R4-REWORK-02 chain/scopes/blobs/whitespace/State-role/Preserve/lifecycle gates PASS |
-| 范围 | 已持久化 M1 Final Accept 与 M1→M2 Handoff；未执行 M2，未改 64 records/canonical/Graph/生产代码 |
-| UBF Stage | M0 **ACCEPT/CLOSED**; M1 **ACCEPT/CLOSED**; M1→M2 Handoff **PERSISTED / PENDING REMOTE ARCH REVIEW**; M2 **NOT STARTED / NOT AUTHORIZED** |
+| Handoff Parent | `2054899ad93d9c2bc1353914c31a1ef3b96c15ac` |
+| Architecture input | M1 End/Accept + M1→M2 Handoff persistence `2054899ad93d9c2bc1353914c31a1ef3b96c15ac` = **ACCEPT** |
+| Accepted handoff evidence | `1723a4f9... -> 5650c5c5... -> 2054899a...`; claim 1/final 7 paths; 7/7 blobs; State denyset; Preserve/whitespace/lifecycle PASS |
+| 范围 | 仅持久化 M2 Preview/Start 生命周期与 Legacy Asset Mapping entry contract；不创建 GC mapping rows，不决定 Universal Level |
+| UBF Stage | M0/M1 **ACCEPT/CLOSED**; M1→M2 Handoff **ACCEPT/CONSUMED BY THIS ENTRY**; M2 Preview/Start **IN EXECUTION**; M2 Mapping **NOT EXECUTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 核验本批两提交链、exact 7-file scope、target blobs、State denyset 与 M1/Handoff truth；ACCEPT 后另发 M2 Preview/Start |
+| 下一步 | 机械落盘 exact 7-file entry targets 后 TURN=REVIEW；entry 获 remote ARCH ACCEPT 后才可另发 M2 Mapping Work-01 |
+## 上一批次：UBF-M1-END-ACCEPT-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED** |
+| Reviewed delivery | `2054899ad93d9c2bc1353914c31a1ef3b96c15ac` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | `1723a4f9... -> 5650c5c5... -> 2054899a...`；claim exact 1 file；final exact 7 files；7/7 blobs；State denyset；4 Preserve blobs；diff-check；M1 Final Accept/Handoff/Control/State/Ledger truth |
+| 未解决问题 | NONE |
+| Transition authority | 仅授权本批 M2 Preview/Start entry；不得执行 GC mapping、M3 或 CookBook Phase 3B |
 ## 上一批次：UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-02（2026-08-13）
 | 字段 | 值 |
 |---|---|
