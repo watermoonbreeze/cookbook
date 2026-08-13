@@ -149,3 +149,12 @@ The ARCH-authored Work-01 result is `H4_INSUFFICIENT_EVIDENCE`; this is an evide
 Remote ARCH reviewed Analysis Work-01 delivery `b87726abc575a0c17cd1b76f663f242edbddc041` and accepts CODE execution fidelity. The frozen evidence disposition remains `H4_INSUFFICIENT_EVIDENCE`, with H1 not established and H2/H3 not distinguishable on current evidence.
 
 A lifecycle-view propagation omission in the architecture-authored Work-01 package is classified `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`. This repair may update only generated/current lifecycle views and acceptance bookkeeping. It may not change analysis data, evidence labels, falsification verdicts, hypothesis disposition, or any forbidden-decision counter.
+
+
+## 12. Work-01 lifecycle repair ACCEPT and H4 evidence-gap transition
+
+Remote ARCH accepts lifecycle-view repair `bbd8bbbd5c97a9faef62fde50971a586322e625d`. Analysis Work-01 H4 evidence disposition, its nine eligible root-cluster analysis and eight falsification verdicts remain unchanged.
+
+The only authorized next M3 direction is an architecture-authored Evidence Gap Closure Preview/Start. That entry may define evidence-acquisition/re-analysis gates, but it may not rewrite the accepted Work-01 analysis or convert H4 into a Level conclusion.
+
+`UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01` is therefore the sole next M3 entry authorized by this review. Evidence acquisition itself remains not started until that entry is separately accepted.

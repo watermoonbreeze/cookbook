@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS WORK-01/02/03 + PROBE-01 ACCEPT / CONSUMED; M3 CALIBRATION ANALYSIS WORK-01 EXECUTION ACCEPT / H4_INSUFFICIENT_EVIDENCE / ARCH PAYLOAD LIFECYCLE-VIEW REPAIR IN REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS + PROBE ACCEPT / CONSUMED; M3 ANALYSIS WORK-01 H4_INSUFFICIENT_EVIDENCE; LIFECYCLE REPAIR ACCEPT / CONSUMED; EVIDENCE GAP CLOSURE PREVIEW/START IN REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — ANALYSIS WORK-01 LIFECYCLE-VIEW REPAIR`
-> Current Review Result: `b87726abc575a0c17cd1b76f663f242edbddc041 = CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT NON_CAPABILITY`
+> Current UBF Stage: `M3 CALIBRATION — EVIDENCE GAP CLOSURE PREVIEW/START`
+> Current Review Result: `bbd8bbbd5c97a9faef62fde50971a586322e625d = ARCH ACCEPT (Analysis Work-01 lifecycle-view repair)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -14,9 +14,11 @@
 > M2→M3 Persistence Accepted Review Target: `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4`
 > M3 Preview/Start Accepted Review Target: `c07e4d582a485739144a38ed06267473596cadee`
 > M3 Corpus Work-01 Accepted Review Target: `1be1afa1185570e67d7d23e965f6f42ea38724df`
-> M3 Calibration Analysis Work-01 Review Target: `b87726abc575a0c17cd1b76f663f242edbddc041` — execution fidelity ACCEPT; lifecycle-view repair required
+> M3 Calibration Analysis Work-01 Review Target: `b87726abc575a0c17cd1b76f663f242edbddc041` — execution fidelity ACCEPT; H4 preserved
+> M3 Analysis Lifecycle Repair Accepted Review Target: `bbd8bbbd5c97a9faef62fde50971a586322e625d`
+> M3 Evidence Gap Closure Preview/Start Review Target: `PENDING REMOTE ARCH REVIEW`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R20 — M3 calibration analysis Work-01 lifecycle-view coherence repair; H4 evidence disposition preserved`
+> Process Revision: `R21 — M3 calibration evidence-gap closure Preview/Start; abstract CODER + matched/naturalistic acquisition gates`
 
 ## 1. 目标
 
@@ -549,3 +551,15 @@ STOP：
 - Classification: `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`. It must not become a negative coder/model sample.
 - This repair changes only lifecycle/current-status views and acceptance bookkeeping. It does **not** alter the Work-01 analysis JSON, H1/H2/H3/H4 adjudication, corpus labels, root clusters, falsification verdicts, or zero-decision gates.
 - After this repair is remotely accepted, M3 may proceed only to an architecture-authored evidence-gap-closure Preview/Start. M4/M5 and CookBook Phase 3B remain prohibited.
+
+
+## M3 Calibration Evidence Gap Closure Preview/Start — UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01
+
+- Parent lifecycle repair `bbd8bbbd5c97a9faef62fde50971a586322e625d` = **ARCH ACCEPT / CONSUMED**.
+- Analysis Work-01 remains **H4_INSUFFICIENT_EVIDENCE**; no Level/Profile/Selector/routing decision is created.
+- Preview/Start creates 0 empirical rows and starts 0 evidence-acquisition runs.
+- Gap closure uses two lanes: matched controlled evidence for actor/task/assistance confounds, and naturalistic production capture for production `STRUCTURED_Q` / correct `HARD_STOP`.
+- Re-analysis remains unauthorized until the full re-entry gate in `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01.md` is independently ARCH-verified.
+- Execution packages bind the abstract actor `CODER`; concrete model identity is runtime provenance only and model substitution does not require semantic repackaging.
+- Evidence Gap Closure Work-01 is **NOT STARTED / NOT AUTHORIZED** until this entry receives remote ARCH ACCEPT.
+- M4/M5 and CookBook Phase 3B remain prohibited.

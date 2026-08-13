@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 EXECUTION ACCEPT / H4_INSUFFICIENT_EVIDENCE / ARCH PAYLOAD LIFECYCLE-VIEW REPAIR IN REVIEW`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / LIFECYCLE REPAIR ACCEPT / EVIDENCE GAP CLOSURE PREVIEW/START IN REVIEW`
 
 ## 1. Entry meaning
 
@@ -241,3 +241,14 @@ Remote ARCH reviewed `b87726abc575a0c17cd1b76f663f242edbddc041`. The CODE transa
 The architecture package itself failed to propagate the new lifecycle into all current-status Generated Views. Specifically, this document's header still described Analysis Preview/Start as pending, while the implementation-control header still described M3 as Corpus Work-01. This is `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`, not an execution deviation.
 
 This repair changes lifecycle views only. The accepted analysis remains `H4_INSUFFICIENT_EVIDENCE`; Universal Level/Profile/Selector/model-ranking/routing decisions remain zero. Evidence expansion is not authorized until this repair receives remote ARCH acceptance and a separate evidence-gap-closure Preview/Start is issued.
+
+
+## 18. Analysis lifecycle repair ACCEPT and Evidence Gap Closure entry
+
+Remote ARCH accepts lifecycle repair `bbd8bbbd5c97a9faef62fde50971a586322e625d`. The earlier lifecycle/current-view defect remains classified `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`; its repair is consumed by this entry.
+
+The current analysis disposition remains `H4_INSUFFICIENT_EVIDENCE`. This Evidence Gap Closure Preview/Start creates no empirical row and authorizes no evidence acquisition yet. It freezes matched-controlled and naturalistic-production evidence gates only.
+
+Future execution packages use abstract actor `CODER`; concrete model names belong to runtime provenance and later ARCH normalization. Model capacity substitution alone does not require semantic package regeneration.
+
+Evidence Gap Closure Work-01 remains not started/not authorized until remote ARCH accepts this Preview/Start. M4/M5 and CookBook Phase 3B remain prohibited.

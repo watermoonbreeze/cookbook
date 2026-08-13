@@ -10,8 +10,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01 — Evidence Gap Closure Preview/Start |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -19,7 +19,7 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE + RUNTIME_PROVENANCE |
 | Handoff Parent | `bbd8bbbd5c97a9faef62fde50971a586322e625d` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01 / R1` single-use abstract-CODER claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01 / R1` single-use abstract-CODER claim **CONSUMED** |
 | Delegation binding | parent `bbd8bbbd5c97a9faef62fde50971a586322e625d` + target `origin/master` + exact State-only claim + package/revision/single-use + actor `CODER` |
 | Holder transition | `REVIEW -> CODE` after claim push+remote verify; valid same-revision in-flight claim may be resumed by another concrete coder; final/authorized abort returns `REVIEW` |
 | Host isolation | original worktree may be dirty/behind; preserve it; isolated detached clean checkout only |
@@ -27,7 +27,7 @@
 | Evidence boundary | Preview/Start only；new empirical rows=0；evidence acquisition runs=0；Work-01 not started |
 | UBF Stage | M3 Calibration — Evidence Gap Closure Preview/Start **COMPLETE / PENDING REMOTE ARCH REVIEW**；H4 preserved；M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 只机械落盘本 package final targets；完成后返回 REVIEW；不得开始 Evidence Gap Closure Work-01。 |
+| 下一步 | 仅等待 remote ARCH 复核本 Preview/Start；ACCEPT 后由 ARCH 单独签发 Evidence Gap Closure Work-01；CODE 不得自行继续。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01（2026-08-13）
 | 字段 | 值 |
