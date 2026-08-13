@@ -7,26 +7,41 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M3-CONTROLLED-CALIBRATION-PROBE-01（2026-08-13）
+## 当前批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CONTROLLED-CALIBRATION-PROBE-01 — Controlled Residual-Decision Calibration Probe |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03 — Controlled Probe Adjudication Corpus Persistence |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Execution mode | EVALUATION / INDEPENDENT / SYNTHETIC_CONTROLLED_PROBE |
+| Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
-| Payload mode | BLUEPRINT-LITE / RUNTIME_DISCOVERY_REQUIRED / SCHEMA-BOUND_RUNTIME_EVIDENCE |
-| Handoff Parent | `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821` |
-| Architecture input | M3 Corpus Work-02 `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821` = **ACCEPT / REMOTE ARCH REVIEWED** |
-| 范围 | 仅执行 6-scenario controlled probe；静态 fixture/blueprint/governance targets + schema-bound Response；不创建/重标 corpus row，不作 calibration/Level/Profile/Selector/routing/canonical/Graph/生产改动 |
-| Frozen evidence boundary | Work-01+02 accepted corpus Preserve=15 rows/11 clusters/9 eligible/6 context/6 positive/3 negative/6 neutral；Probe response 尚未 ARCH adjudicate |
-| Coverage purpose | controlled observation of structured-Q choice / correct Hard STOP / fallback / scope discipline / reasonable divergence / architecture challenge；不宣称等价于 production causal evidence |
-| UBF Stage | Work-01/02 **ACCEPT/CONSUMED**; Probe-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; Work-03 **NOT STARTED / NOT AUTHORIZED**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
+| Handoff Parent | `2326a94e5ee261888be527a2303962219cf422a6` |
+| Expected pre-claim TURN | `REVIEW` at exact Handoff Parent; this is required, not a blocker |
+| Delegation | architecture package `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03 / R2` = `DELEGATED_SINGLE_TASK_CLAIM` |
+| Delegation binding | package/revision + parent `2326a94e5ee261888be527a2303962219cf422a6` + target `origin/master` + State-only claim + single-use; exact claim bytes only |
+| Holder transition | `REVIEW -> exact State-only claim -> CODE`; effective only after claim push + remote verification |
+| Host isolation | original worktree may be dirty/behind; preserve it; fetch remote and execute in isolated detached clean checkout; do not pull/reset/clean/stash/rebase host |
+| Architecture input | Probe-01 `2326a94e5ee261888be527a2303962219cf422a6` = **ACCEPT / REMOTE ARCH REVIEWED** |
+| 范围 | 仅机械持久化 ARCH 已裁决的 6 个 controlled-probe rows + blueprint/report，并更新 Preview/Control/Ledger/State；Probe raw evidence 与 Work-01/02 Preserve；不作 calibration/Level/Profile/Selector/routing/canonical/Graph/生产改动 |
+| Frozen recount | Work-03 total=6 / clusters=1 / eligible=6 / positive=6；combined total=21 / clusters=12 / eligible=15 / context=6 / positive=12 / negative=3 / neutral=6；forbidden negative=0；raw Universal decisions=0 |
+| Evidence identity boundary | Probe raw actor self-label 与 package/ledger executor identity 冲突；只允许 authority-priority normalization + raw Preserve；该 validator gap 属 ARCH package hygiene，不是 CODE negative |
+| UBF Stage | Work-01/02 **ACCEPT/CONSUMED**; Probe-01 **ACCEPT/CONSUMED**; Work-03 **CLAIMED / IN PROGRESS**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 独立审阅 Response；CODE 不得自行创建 Work-03、开始 calibration analysis、M4/M5 或 Phase 3B |
+| 下一步 | 只机械落盘 exact static targets、验证 Work-03/combined recount 与 Preserve，然后 RETURN TURN=REVIEW；不得自行分析或继续 |
+## 上一批次：UBF-M3-CONTROLLED-CALIBRATION-PROBE-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY WORK-03** |
+| Reviewed delivery | `2326a94e5ee261888be527a2303962219cf422a6` |
+| Claim delivery | `5cb0744d8f5e748def22b1d00cafb7a9d1da4193` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | parent `318bbc27...` → claim → final；claim State-only；final exact 7 paths；Response schema/non-inference；6/6 scenario semantic actions correct；raw actor label 与 package/ledger executor identity 存在冲突但不影响 action correctness |
+| 身份归一化 | raw Response actor label 与 package/ledger authority 不一致；Work-03 仅按 authority-priority 归一化 actor identity，并保留 raw source；validator 未交叉校验归为 ARCH package hygiene gap，不记 CODE 负样本 |
+| Transition authority | 仅授权 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03` exact static adjudication persistence；不得开始 calibration analysis、M4/M5 或 CookBook Phase 3B |
 ## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02（2026-08-13）
 | 字段 | 值 |
 |---|---|
