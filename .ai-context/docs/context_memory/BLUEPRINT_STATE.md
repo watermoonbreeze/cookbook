@@ -7,27 +7,37 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01（2026-08-13）
+## 当前批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01 — Empirical Calibration Corpus Work-01 |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02 — Empirical Calibration Corpus Work-02 |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `c07e4d582a485739144a38ed06267473596cadee` |
+| Handoff Parent | `1be1afa1185570e67d7d23e965f6f42ea38724df` |
 | Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
-| Architecture input | M3 Preview/Start `c07e4d582a485739144a38ed06267473596cadee` = **ACCEPT / REMOTE ARCH REVIEWED** |
-| 范围 | 仅持久化 ARCH 已冻结的 9 个 corpus records + Work-01 blueprint/report，并更新 Preview/Control/Ledger/State；不作 Level/Profile/Selector/canonical/routing/Graph/生产改动 |
-| Frozen recount | total=9；unique sample IDs=9；unique episode clusters=5；CALIBRATION_ELIGIBLE=5；CONTEXT_ONLY=4；EXCLUDED=0；POSITIVE=4；NEGATIVE=1；NEUTRAL=4；forbidden negative=0；raw calibration decisions=0 |
-| Coverage gap | single actor/model；structured Q/correct STOP/scope escape absent；部分 profile 未知；生产 feature family 不足；M0/M1 linked-chain order effect 必须 stratify |
-| UBF Stage | M3 Preview/Start **ACCEPT/CONSUMED**; M3 Corpus Work-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; M3 calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| Architecture input | M3 Corpus Work-01 `1be1afa1185570e67d7d23e965f6f42ea38724df` = **ACCEPT / REMOTE ARCH REVIEWED** |
+| 范围 | 仅 claim Work-02 delegated turn；尚未创建/修改 final corpus targets；不得进行语义选择、样本重标或后续阶段工作 |
+| Frozen recount | Work-02 total=6；unique IDs=6；clusters=6；eligible=4；context=2；excluded=0；positive=2；negative=2；neutral=2；forbidden negative=0；raw calibration decisions=0；combined total=15 / clusters=11 / eligible=9 / context=6 / positive=6 / negative=3 / neutral=6 |
+| Coverage gap | structured Q/correct STOP 仍缺；GPT-5 无 eligible row；legacy production assistance/reviewer confound 必须 stratify；actor/task-family counts 仍不平衡 |
+| UBF Stage | M3 Work-01 **ACCEPT/CONSUMED**; M3 Corpus Work-02 **CLAIMED / IN PROGRESS**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 核验本 Work-01；即使 ACCEPT，CODE 也不得自行开始 corpus Work-02、calibration analysis、M4/M5 |
+| 下一步 | 仅机械落盘 manifest 七个 final targets并验证；完成后 RETURN TURN=REVIEW；不得自行继续 |
+## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY WORK-02** |
+| Reviewed delivery | `1be1afa1185570e67d7d23e965f6f42ea38724df` |
+| Claim delivery | `e427375912532bf47b3571a1cc5a602db0a40b61` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | parent `c07e4d58...` → claim → final；claim State-only；final exact 7 paths；7/7 authoritative target blobs；9 rows/5 clusters；eligible=5/context=4；positive=4/negative=1/neutral=4；forbidden negative=0；raw calibration UNRESOLVED 9/9；Preserve/State/non-inference |
+| 未解决问题 | coverage insufficiency only：single actor/model、production/scope-escape/structured-Q/correct-STOP 等覆盖缺口；不是 Work-01 acceptance defect |
+| Transition authority | 仅授权本 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02` exact static payload；不得开始 calibration analysis、Work-03、M4/M5 或 CookBook Phase 3B |
 ## 上一批次：UBF-M3-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
