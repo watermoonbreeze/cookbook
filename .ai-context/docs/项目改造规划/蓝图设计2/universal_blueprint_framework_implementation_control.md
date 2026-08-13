@@ -434,18 +434,19 @@ STOP：
 
 ## 10. 当前启动判定
 
-当前唯一在途治理事务是 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01` 的 remote review：
+当前唯一在途治理事务是 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02` 的 delegated execution / remote review cycle：
 
-1. M0/M1/M2 已 `ACCEPT / CLOSED`；
-2. M3 Preview/Start reviewed delivery `c07e4d582a485739144a38ed06267473596cadee` 已由 remote ARCH **ACCEPT** 并被本 Work-01 消费；
-3. Work-01 只持久化 ARCH 已冻结的 9 个 empirical episode records：5 `CALIBRATION_ELIGIBLE`、4 `CONTEXT_ONLY`、0 `EXCLUDED`；
-4. 唯一 `NEGATIVE` 行是 `M3-S-002 / EXECUTION_DEVIATION`；architecture payload/compatibility 类事件全部保持 non-negative；
-5. unique episode clusters=5；M0/M1 linked repair-chain confounds 必须保留，后续不得把 revisions 当独立权重；
-6. raw corpus 的 Universal Calibration Disposition 9/9 均为 `UNRESOLVED`；Level count/name/threshold/envelope/mapping、final Task/Capability Profile、Level Selector 均未启动；
-7. coverage gaps（single actor/model、缺 structured Q/correct STOP/scope escape、机制/profile 与生产任务覆盖不足）必须显式保留，不得通过猜测补齐；
-8. user-level canonical、GC registry、routing、State ownership split、Project Graph 和 production assets 保持 Preserve；
-9. M4/M5 均 `NOT STARTED`；CookBook Phase 3B 继续 `NOT AUTHORIZED TO START`；
-10. 若本 Work-01 REWORK，只允许 verified defect 的最小闭环；若 ACCEPT，下一步仍由 ARCH 决定是 M3 corpus coverage/challenge Work-02 还是单独的 calibration-analysis design，CODE 无 standing authority，且不得启动 M4/M5。
+1. M0/M1/M2 已 `ACCEPT / CLOSED`；M3 Preview/Start 已 ACCEPT；
+2. M3 Work-01 reviewed delivery `1be1afa1185570e67d7d23e965f6f42ea38724df` 已 **REMOTE ARCH ACCEPT**，claim=`e427375912532bf47b3571a1cc5a602db0a40b61`，final exact 7 paths/7 target blobs 与 R1 authoritative manifest 闭合；
+3. Work-01 accepted corpus remains 9 rows / 5 clusters / 5 eligible / 4 context / 4 positive / 1 negative / 4 neutral；raw Universal Calibration 9/9 `UNRESOLVED`；
+4. 因 Work-01 单 actor/model 且治理/static-payload task family 占主导，**不得直接启动 calibration analysis**；
+5. 本 Work-02 仅新增 6 个 ARCH-frozen historical observations：4 eligible + 2 context；引入 DeepSeek V4 Pro/Flash、production-feature 与 scope-escape coverage；
+6. Work-02 两个 NEGATIVE 均为独立证据支持的 `EXECUTION_DEVIATION`；AF-B456-05 的 blueprint/spec gap 单独记 architecture event，不作为 coder negative cause；
+7. legacy production rows 的 Co-Authored/reviewer assistance 必须显式作为 confound；不允许反推出“纯模型、无辅助”能力；
+8. GPT-5 的 Phase 3A/GOV 两行仅 `CONTEXT_ONLY / NEUTRAL / UNRESOLVED`，不得因 actor diversity 需求而升级资格；
+9. combined Work-01+02 = 15 rows / 11 clusters / 9 eligible / 6 context / 6 positive / 3 negative / 6 neutral；structured Q/correct STOP 等 coverage gaps 继续保留；
+10. user canonical、GC registry、routing、State ownership split、Project Graph 和 production assets Preserve；M3 calibration analysis、M4、M5、CookBook Phase 3B 继续 `NOT STARTED / NOT AUTHORIZED`；
+11. Work-02 若 ACCEPT，下一步仍由 ARCH 独立决定 Work-03/challenge slice 或 calibration-analysis entry；CODE 无 standing authority。
 
 ## 11. M1 Semantic Decomposition Work-01
 
@@ -476,3 +477,16 @@ STOP：
 - All raw Universal Calibration Disposition values are UNRESOLVED.
 - This is evidence construction, not Universal Level or routing inference.
 - Work-01 final state is COMPLETE / PENDING REMOTE ARCH REVIEW and returns TURN=REVIEW.
+
+## 14. M3 Empirical Calibration Corpus Work-02
+
+- Fixed Handoff Parent: `1be1afa1185570e67d7d23e965f6f42ea38724df` = Work-01 **REMOTE ARCH ACCEPT**.
+- Machine-readable Work-02 target: `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02.json`.
+- Work-02 frozen recount: total=6, unique IDs=6, unique clusters=6, eligible=4, context-only=2, excluded=0.
+- Capability signals: positive=2, negative=2, neutral=2; all negatives are `EXECUTION_DEVIATION`.
+- Combined Work-01+02: total=15, unique IDs=15, unique clusters=11, eligible=9, context-only=6, positive=6, negative=3, neutral=6.
+- Actor/model diversity is broadened but not balanced; GPT-5 rows are context-only and assisted-review confounds remain explicit.
+- Structured Q and correct STOP are still missing coverage cells; missing cells are gaps, not permission to invent samples.
+- All raw Universal Calibration dispositions remain `UNRESOLVED`.
+- Work-02 is evidence construction only. Calibration analysis, Universal Level/Profile/Selector inference, M4/M5 and CookBook Phase 3B remain prohibited.
+- Work-02 final state is `COMPLETE / PENDING REMOTE ARCH REVIEW` and returns `TURN=REVIEW`.

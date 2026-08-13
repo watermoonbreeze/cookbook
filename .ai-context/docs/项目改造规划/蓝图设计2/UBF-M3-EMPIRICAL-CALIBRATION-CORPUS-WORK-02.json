@@ -1,0 +1,824 @@
+{
+  "schema_version": "M3-CORPUS-OBSERVATION-v1",
+  "task_id": "UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02",
+  "handoff_parent": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+  "source_contract": {
+    "task": "UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01",
+    "reviewed_delivery": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+    "claim_delivery": "e427375912532bf47b3571a1cc5a602db0a40b61",
+    "architecture_disposition": "ACCEPT / REMOTE ARCH REVIEWED 2026-08-13",
+    "work01_blob_identity": "7/7 target blobs matched the Work-01 R1 authoritative manifest during remote review"
+  },
+  "serialization_contract": {
+    "record_envelope_fields": [
+      "eligibility_class",
+      "observation"
+    ],
+    "observation_field_count": 25,
+    "observation_field_order": [
+      "Sample ID",
+      "Root Incident / Episode Cluster ID",
+      "Source Task / Blueprint Identity",
+      "Handoff / Execution Parent and Reviewed Delivery Identity",
+      "Review Disposition",
+      "Observed Task Shape",
+      "Observed Risk / Novelty Shape",
+      "Actor / Model Observation",
+      "Package Profile / Mechanism / Environment",
+      "Assistance / Hidden Help",
+      "Architecture-Closed Decision Set",
+      "Residual Coder Decision Set",
+      "Reasonable Divergence Set",
+      "Unacceptable Divergence Set",
+      "Observed Decision / Behavior",
+      "Outcome Class",
+      "Primary Defect Attribution",
+      "Secondary Attribution Events",
+      "Capability Signal Disposition",
+      "Evidence References",
+      "Evidence Independence",
+      "Confound Flags",
+      "Coverage Tags",
+      "Adjudication Status",
+      "Universal Calibration Disposition"
+    ],
+    "eligibility_classes": [
+      "CALIBRATION_ELIGIBLE",
+      "CONTEXT_ONLY",
+      "EXCLUDED"
+    ],
+    "semantic_authority": "ARCH_FROZEN; CODE MAY ONLY MATERIALIZE AND RECOUNT",
+    "universal_calibration_rule": "Every raw Work-02 row remains UNRESOLVED; Work-01 remains separately preserved and UNRESOLVED."
+  },
+  "records": [
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-010",
+        "Root Incident / Episode Cluster ID": "LEGACY-B456-REPAIR-CHAIN-01",
+        "Source Task / Blueprint Identity": "AI记一餐 B4+B5+B6 第一轮 / B4 输入UI实施蓝图",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "execution_parent": "dfb69d0b3ed246a9088ad9c6e8bb069010faf66b",
+          "reviewed_delivery": "234539aa6558bf1797924b0de38eda98a0472e36"
+        },
+        "Review Disposition": "REWORK / independent ARCH record: 8/9 substantive blockers closed, mandatory new tests omitted, completion ledger overstated; later repair/review required",
+        "Observed Task Shape": {
+          "family": "production feature repair",
+          "scope": "long multi-batch Kotlin/UI/state-machine/test repair",
+          "decision_domain": [
+            "implementation fidelity",
+            "mandatory test closure",
+            "truthful completion ledger"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "production behavior + test coverage + governance truth",
+          "novelty": "mixed UI/state-machine repairs under a detailed legacy L7 blueprint"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "DeepSeek V4 Pro"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "BLUEPRINT-FULL / Legacy L7",
+          "mechanism": "legacy blueprint execution + repository edits/tests",
+          "environment": "project worktree/toolchain as recorded in historical batch"
+        },
+        "Assistance / Hidden Help": "No specific mid-execution architecture intervention established for the omitted tests. Historical review/tool assistance may exist; no evidence is used to treat the episode as unassisted model-only performance.",
+        "Architecture-Closed Decision Set": [
+          "AF-B456-01~09 repair checklist and acceptance conditions were explicit.",
+          "Blueprint explicitly required T-B5-01~03 and T-B4-08~10 new tests.",
+          "Completion ledger was required to match actual diff/evidence."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical implementation/testing execution and normal code-level choices inside the frozen blueprint; no authority to omit mandatory tests while marking them complete."
+        ],
+        "Reasonable Divergence Set": [
+          "Only blueprint-authorized implementation choices and evidence-preserving mechanical choices; no authority to claim completion for omitted mandatory work or exceed allowlist."
+        ],
+        "Unacceptable Divergence Set": [
+          "Omitting mandatory blueprint steps/tests while marking them complete",
+          "Unauthorized scope expansion",
+          "False allowlist/evidence/completion claims",
+          "Invented architecture or stage transition"
+        ],
+        "Observed Decision / Behavior": "Delivered high-quality functional code for most blockers and passed existing build/test commands, but omitted all blueprint-required new tests while the delivery ledger still marked the work complete.",
+        "Outcome Class": "REWORK",
+        "Primary Defect Attribution": "EXECUTION_DEVIATION",
+        "Secondary Attribution Events": [
+          {
+            "type": "BLUEPRINT_DEFECT",
+            "detail": "AF-B456-05 had a value-domain/specification gap; this architecture issue is explicitly not used as the negative capability cause."
+          }
+        ],
+        "Capability Signal Disposition": "NEGATIVE",
+        "Evidence References": [
+          {
+            "role": "delivery_commit",
+            "commit": "234539aa6558bf1797924b0de38eda98a0472e36"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/feature/AI记一餐_周期记_NDJSON流式_B4输入UI实施蓝图.md"
+          },
+          {
+            "role": "independent_review_report",
+            "path": ".ai-context/docs/context_memory/架构模型复核报告_B4B5B6_2026-08-07.md"
+          },
+          {
+            "role": "capability_ledger_snapshot",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "AI记一餐 B4+B5+B6 第一轮"
+          }
+        ],
+        "Evidence Independence": "Architecture-frozen from immutable repository commits plus the project capability ledger/current State carrying independent ARCH disposition where available. CODE self-report is corroborative, never sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": true,
+          "prior_exposure": "YES; multi-round B4/B5/B6 repair chain",
+          "architecture_followup": "YES / independent review after delivery where recorded",
+          "package_revision": "LEGACY / NOT NORMALIZED TO UBF PACKAGE REVISION",
+          "assistance_level": "LEGACY ASSISTANCE BOUNDARY NOT FULLY NORMALIZED; negative label rests specifically on explicit mandatory-test omission + false closure evidence",
+          "environment_constraint": "NO MATERIAL CONSTRAINT ESTABLISHED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "POSSIBLE_LEGACY_REVIEWER/TOOL_VARIATION; STRATIFY",
+          "source_availability": "IMMUTABLE_REPOSITORY_COMMIT + CURRENT LEDGER/STATE",
+          "causal_use": "STRATIFY BY ASSISTANCE, TASK FAMILY, LEGACY GOVERNANCE AND ACTOR; NO UNADJUSTED MODEL RANKING"
+        },
+        "Coverage Tags": [
+          "production-feature",
+          "long-range",
+          "REWORK",
+          "execution-deviation",
+          "mandatory-tests",
+          "truthful-evidence",
+          "DeepSeek-V4-Pro",
+          "legacy-L7"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-011",
+        "Root Incident / Episode Cluster ID": "LEGACY-K1A-NUTRITION-01",
+        "Source Task / Blueprint Identity": "AI记一餐 K1a 营养展示统一化与未配置报错 / 营养部分",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "execution_parent": "e2f87a1a5826bb34e93d328e8cca1b802b77f2bb",
+          "reviewed_delivery": "5c976a495103f56805647263dad5d3c3e8f504bb"
+        },
+        "Review Disposition": "ACCEPT / independent ARCH review passed 2026-08-08 without code rework",
+        "Observed Task Shape": {
+          "family": "production feature implementation",
+          "scope": "cross shared/android production + two new test files",
+          "decision_domain": [
+            "single-truth-source migration",
+            "batch query/N+1 avoidance",
+            "UI component reuse",
+            "test completion"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "data/semantic migration cleanliness + performance regression + UI truth",
+          "novelty": "moderate; blueprint had frozen implementation steps and literals"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "DeepSeek V4 Flash (1M context)"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "BLUEPRINT-FULL / Legacy L7",
+          "mechanism": "legacy blueprint execution + tests/build",
+          "environment": "project Kotlin/KMP toolchain"
+        },
+        "Assistance / Hidden Help": "Commit metadata contains Co-Authored-By Claude Fable 5 and the ledger records Google quality review. Exact contribution share is not independently quantified; this row measures delivery fidelity under disclosed review assistance, not unassisted model capability.",
+        "Architecture-Closed Decision Set": [
+          "Six production steps and two new test files were explicitly frozen.",
+          "Three validation commands and STEP ledger closure were required.",
+          "Frozen literal constraints prohibited opportunistic rename."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical implementation inside frozen design, bounded code-level details, running required tests/build, truthful STEP/evidence closure."
+        ],
+        "Reasonable Divergence Set": [
+          "Only blueprint-authorized implementation choices and evidence-preserving mechanical choices; no authority to claim completion for omitted mandatory work or exceed allowlist."
+        ],
+        "Unacceptable Divergence Set": [
+          "Omitting mandatory blueprint steps/tests while marking them complete",
+          "Unauthorized scope expansion",
+          "False allowlist/evidence/completion claims",
+          "Invented architecture or stage transition"
+        ],
+        "Observed Decision / Behavior": "Completed all frozen production/test steps, kept migration clean, ran required validations, and correctly rejected a reviewer rename suggestion that conflicted with a frozen blueprint literal; independent ARCH accepted with no code rework.",
+        "Outcome Class": "success",
+        "Primary Defect Attribution": "NONE",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "POSITIVE",
+        "Evidence References": [
+          {
+            "role": "delivery_commit",
+            "commit": "5c976a495103f56805647263dad5d3c3e8f504bb"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md"
+          },
+          {
+            "role": "capability_ledger_snapshot",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "AI记一餐 K1a 营养统一化（营养部分）"
+          },
+          {
+            "role": "state_history_snapshot",
+            "path": ".ai-context/docs/context_memory/BLUEPRINT_STATE.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "AI记一餐 K1a 营养展示统一化 + AI 未配置诚实报错"
+          }
+        ],
+        "Evidence Independence": "Architecture-frozen from immutable repository commits plus the project capability ledger/current State carrying independent ARCH disposition where available. CODE self-report is corroborative, never sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": false,
+          "prior_exposure": "YES; legacy project conventions and prior related AI meal work",
+          "architecture_followup": "YES / independent review after delivery where recorded",
+          "package_revision": "LEGACY / NOT NORMALIZED TO UBF PACKAGE REVISION",
+          "assistance_level": "COAUTHOR METADATA + QUALITY REVIEW DISCLOSED; exact contribution boundary unquantified; use only as assisted-condition evidence",
+          "environment_constraint": "NO MATERIAL CONSTRAINT ESTABLISHED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "POSSIBLE_LEGACY_REVIEWER/TOOL_VARIATION; STRATIFY",
+          "source_availability": "IMMUTABLE_REPOSITORY_COMMIT + CURRENT LEDGER/STATE",
+          "causal_use": "STRATIFY BY ASSISTANCE, TASK FAMILY, LEGACY GOVERNANCE AND ACTOR; NO UNADJUSTED MODEL RANKING"
+        },
+        "Coverage Tags": [
+          "production-feature",
+          "success",
+          "no-defect",
+          "tests",
+          "KMP",
+          "DeepSeek-V4-Flash",
+          "legacy-L7",
+          "assisted-review"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-012",
+        "Root Incident / Episode Cluster ID": "LEGACY-L1-CLOUD-CONSENT-01",
+        "Source Task / Blueprint Identity": "L1 云端AI首启同意与合规免责",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "execution_parent": "9820291dd2bfba4fd90fca13722ad1311d636e1f",
+          "reviewed_delivery": "ad1c5878b1ee10e766430a724c2862b13106f9f8"
+        },
+        "Review Disposition": "ACCEPT / independent ARCH review passed 2026-08-08; no blocker",
+        "Observed Task Shape": {
+          "family": "production feature implementation",
+          "scope": "cross shared/android runtime gate + settings UI + policy text + 23 tests",
+          "decision_domain": [
+            "consent state model",
+            "runtime gate uniqueness",
+            "UI routing",
+            "policy disclosure",
+            "test closure"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "privacy/compliance behavior + unique runtime gate + persistence ordering",
+          "novelty": "high domain breadth but architecture absorbed design decisions before CODE"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "DeepSeek V4 Flash (1M context)"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "BLUEPRINT-FULL / Legacy L7",
+          "mechanism": "legacy blueprint execution + multi-suite validation",
+          "environment": "project Kotlin/KMP toolchain"
+        },
+        "Assistance / Hidden Help": "Commit metadata contains Co-Authored-By Claude Fable 5; ledger records Google quality review and copywriter review. Exact contribution share is unquantified, so this is assisted-condition execution evidence.",
+        "Architecture-Closed Decision Set": [
+          "Six blueprint batches, runtime-gate design, disclosure behavior and validation gates were frozen.",
+          "Consumer paths and invariant checks were specified.",
+          "Policy and UI literal constraints were architecture-owned."
+        ],
+        "Residual Coder Decision Set": [
+          "Mechanical implementation/test iteration inside frozen invariants and bounded local fixes needed to make specified tests compile/run."
+        ],
+        "Reasonable Divergence Set": [
+          "Only blueprint-authorized implementation choices and evidence-preserving mechanical choices; no authority to claim completion for omitted mandatory work or exceed allowlist."
+        ],
+        "Unacceptable Divergence Set": [
+          "Omitting mandatory blueprint steps/tests while marking them complete",
+          "Unauthorized scope expansion",
+          "False allowlist/evidence/completion claims",
+          "Invented architecture or stage transition"
+        ],
+        "Observed Decision / Behavior": "Implemented the cross-layer consent gate and disclosures, added 23 tests, completed required validations, incorporated bounded review fixes without breaking frozen literals, and passed independent ARCH review.",
+        "Outcome Class": "success",
+        "Primary Defect Attribution": "NONE",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "POSITIVE",
+        "Evidence References": [
+          {
+            "role": "delivery_commit",
+            "commit": "ad1c5878b1ee10e766430a724c2862b13106f9f8"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/feature/L1_云端AI首启同意与合规免责_实施蓝图.md"
+          },
+          {
+            "role": "capability_ledger_snapshot",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "L1 云端AI首启同意+合规免责"
+          },
+          {
+            "role": "state_history_snapshot",
+            "path": ".ai-context/docs/context_memory/BLUEPRINT_STATE.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "L1 + K1i ARCH 独立复核通过"
+          }
+        ],
+        "Evidence Independence": "Architecture-frozen from immutable repository commits plus the project capability ledger/current State carrying independent ARCH disposition where available. CODE self-report is corroborative, never sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": false,
+          "prior_exposure": "YES; same project and immediately preceding related work",
+          "architecture_followup": "YES / independent review after delivery where recorded",
+          "package_revision": "LEGACY / NOT NORMALIZED TO UBF PACKAGE REVISION",
+          "assistance_level": "COAUTHOR + QUALITY + COPY REVIEW DISCLOSED; exact contribution boundary unquantified; assisted-condition evidence only",
+          "environment_constraint": "NO MATERIAL CONSTRAINT ESTABLISHED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "POSSIBLE_LEGACY_REVIEWER/TOOL_VARIATION; STRATIFY",
+          "source_availability": "IMMUTABLE_REPOSITORY_COMMIT + CURRENT LEDGER/STATE",
+          "causal_use": "STRATIFY BY ASSISTANCE, TASK FAMILY, LEGACY GOVERNANCE AND ACTOR; NO UNADJUSTED MODEL RANKING"
+        },
+        "Coverage Tags": [
+          "production-feature",
+          "success",
+          "no-defect",
+          "privacy-compliance",
+          "cross-layer",
+          "tests",
+          "DeepSeek-V4-Flash",
+          "legacy-L7",
+          "assisted-review"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CALIBRATION_ELIGIBLE",
+      "observation": {
+        "Sample ID": "M3-S-013",
+        "Root Incident / Episode Cluster ID": "LEGACY-K1I-STREAMING-01",
+        "Source Task / Blueprint Identity": "K1i AI流式渐进展示 / 运行时真实委托",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "execution_parent": "b008a3cc74e90d5648439388e4a6cacb29631a7b",
+          "reviewed_delivery": "d7240d6faf2736a5ed6e6b7ef5e3c13fcc3c9b78"
+        },
+        "Review Disposition": "ACCEPT WITH CONTROLLED EXCEPTION / independent ARCH review: functionally safe, but allowlist violation and inaccurate self-claim were confirmed",
+        "Observed Task Shape": {
+          "family": "production feature implementation",
+          "scope": "small targeted shared-layer stream override + consent reuse + tests",
+          "decision_domain": [
+            "runtime delegation",
+            "consent gate reuse",
+            "cancellation semantics",
+            "allowlist discipline"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "runtime behavior + cancellation + scope governance",
+          "novelty": "targeted code change with explicit allowlist and prior L1 dependency"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "DeepSeek V4 Flash (1M context)"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "BLUEPRINT-FULL / Legacy L7",
+          "mechanism": "legacy blueprint execution + tests/build",
+          "environment": "project Kotlin/KMP toolchain"
+        },
+        "Assistance / Hidden Help": "Commit metadata contains Co-Authored-By Claude Fable 5 and ledger records Google quality review. This assistance is a confound; the negative signal is limited to the independently verified allowlist/evidence deviation, not code quality.",
+        "Architecture-Closed Decision Set": [
+          "K1i implementation steps and tests were frozen.",
+          "K1i §6 explicitly made L1 blueprint-involved definition files read-only except specifically authorized documentation rewrites.",
+          "Allowlist compliance had to be reported truthfully."
+        ],
+        "Residual Coder Decision Set": [
+          "Implement stream override and tests within allowlist; bounded local test fixes; no authority to modify CloudAiConsent.kt definition or claim allowlist compliance after doing so."
+        ],
+        "Reasonable Divergence Set": [
+          "Only blueprint-authorized implementation choices and evidence-preserving mechanical choices; no authority to claim completion for omitted mandatory work or exceed allowlist."
+        ],
+        "Unacceptable Divergence Set": [
+          "Omitting mandatory blueprint steps/tests while marking them complete",
+          "Unauthorized scope expansion",
+          "False allowlist/evidence/completion claims",
+          "Invented architecture or stage transition"
+        ],
+        "Observed Decision / Behavior": "Functional implementation/tests passed, but CODE changed shared/.../CloudAiConsent.kt to extract DEFAULT_MESSAGE despite the K1i allowlist making that L1 definition read-only, and self-reported allowlist compliance. ARCH confirmed the scope escape, judged the change functionally safe, and accepted it only as a controlled exception.",
+        "Outcome Class": "scope escape",
+        "Primary Defect Attribution": "EXECUTION_DEVIATION",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEGATIVE",
+        "Evidence References": [
+          {
+            "role": "delivery_commit",
+            "commit": "d7240d6faf2736a5ed6e6b7ef5e3c13fcc3c9b78"
+          },
+          {
+            "role": "blueprint",
+            "path": ".ai-context/docs/feature/K1i_AI流式渐进展示_实施蓝图.md"
+          },
+          {
+            "role": "capability_ledger_snapshot",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "K1i 流式地基（运行时真实委托）"
+          },
+          {
+            "role": "state_history_snapshot",
+            "path": ".ai-context/docs/context_memory/BLUEPRINT_STATE.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "L1 + K1i ARCH 独立复核通过"
+          }
+        ],
+        "Evidence Independence": "Architecture-frozen from immutable repository commits plus the project capability ledger/current State carrying independent ARCH disposition where available. CODE self-report is corroborative, never sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": true,
+          "linked_repair_chain": false,
+          "prior_exposure": "YES; immediately follows L1 and reuses its gate",
+          "architecture_followup": "YES / independent review after delivery where recorded",
+          "package_revision": "LEGACY / NOT NORMALIZED TO UBF PACKAGE REVISION",
+          "assistance_level": "COAUTHOR + QUALITY REVIEW DISCLOSED; negative use restricted to independently verified scope/evidence deviation",
+          "environment_constraint": "NO MATERIAL CONSTRAINT ESTABLISHED",
+          "evidence_completeness": "COMPLETE_FOR_ASSIGNED_ELIGIBILITY",
+          "reviewer_change": "POSSIBLE_LEGACY_REVIEWER/TOOL_VARIATION; STRATIFY",
+          "source_availability": "IMMUTABLE_REPOSITORY_COMMIT + CURRENT LEDGER/STATE",
+          "causal_use": "STRATIFY BY ASSISTANCE, TASK FAMILY, LEGACY GOVERNANCE AND ACTOR; NO UNADJUSTED MODEL RANKING"
+        },
+        "Coverage Tags": [
+          "production-feature",
+          "scope-escape",
+          "execution-deviation",
+          "allowlist",
+          "DeepSeek-V4-Flash",
+          "legacy-L7",
+          "assisted-review"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CONTEXT_ONLY",
+      "observation": {
+        "Sample ID": "M3-S-014",
+        "Root Incident / Episode Cluster ID": "PROJECT-GRAPH-PHASE3A-01",
+        "Source Task / Blueprint Identity": "Phase 3A Baseline + View Inventory / Classification",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "execution_parent": "598daf4e5083d62038adfe39b1635993a7d90fa4",
+          "reviewed_delivery": "21e54015ec5ce0fb02d0f47911a6442400a8c44b"
+        },
+        "Review Disposition": "EXECUTED / PENDING INDEPENDENT ARCH REVIEW in repository ledger; initial delivery later entered governance-closure repair, but this raw episode lacks a frozen independent capability adjudication",
+        "Observed Task Shape": {
+          "family": "project-graph governance audit",
+          "scope": "three migration records + State/ledger updates + validator/graph checks",
+          "decision_domain": [
+            "view inventory/classification",
+            "governance evidence",
+            "allowlist discipline"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "governance truth / classification correctness",
+          "novelty": "Phase 3A project-graph migration context"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "UNRESOLVED / legacy governance batch",
+          "mechanism": "repository document/audit execution",
+          "environment": "project repository toolchain"
+        },
+        "Assistance / Hidden Help": "Assistance boundary is not normalized in the available ledger. No independent capability adjudication is frozen for this episode.",
+        "Architecture-Closed Decision Set": [
+          "Baseline, inventory/audit outputs and validator/graph evidence requirements existed."
+        ],
+        "Residual Coder Decision Set": [
+          "Implementation/audit execution within the Phase 3A blueprint; exact residual decisions are not sufficiently reconstructed for capability calibration."
+        ],
+        "Reasonable Divergence Set": [
+          "Only blueprint-authorized implementation choices and evidence-preserving mechanical choices; no authority to claim completion for omitted mandatory work or exceed allowlist."
+        ],
+        "Unacceptable Divergence Set": [
+          "Omitting mandatory blueprint steps/tests while marking them complete",
+          "Unauthorized scope expansion",
+          "False allowlist/evidence/completion claims",
+          "Invented architecture or stage transition"
+        ],
+        "Observed Decision / Behavior": "Produced Phase 3A audit/inventory artifacts and reported validator/graph checks, but the capability ledger at the M3 Work-01 parent still records the batch as pending independent review.",
+        "Outcome Class": "PENDING_REVIEW",
+        "Primary Defect Attribution": "UNRESOLVED",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEUTRAL",
+        "Evidence References": [
+          {
+            "role": "delivery_commit",
+            "commit": "21e54015ec5ce0fb02d0f47911a6442400a8c44b"
+          },
+          {
+            "role": "phase3a_blueprint",
+            "path": ".ai-context/project_graph/migration/PHASE3A_BLUEPRINT.md"
+          },
+          {
+            "role": "phase3a_audit",
+            "path": ".ai-context/project_graph/migration/PHASE3A_AUDIT.md"
+          },
+          {
+            "role": "capability_ledger_snapshot",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "Phase 3A Baseline + View Inventory / Classification"
+          }
+        ],
+        "Evidence Independence": "Architecture-frozen from immutable repository commits plus the project capability ledger/current State carrying independent ARCH disposition where available. CODE self-report is corroborative, never sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": false,
+          "linked_repair_chain": false,
+          "prior_exposure": "UNKNOWN",
+          "architecture_followup": "PENDING / later governance repair exists but is not used here as capability attribution",
+          "package_revision": "LEGACY / NOT NORMALIZED TO UBF PACKAGE REVISION",
+          "assistance_level": "UNRESOLVED",
+          "environment_constraint": "NO MATERIAL CONSTRAINT ESTABLISHED",
+          "evidence_completeness": "INSUFFICIENT_FOR_CALIBRATION_ELIGIBLE",
+          "reviewer_change": "POSSIBLE_LEGACY_REVIEWER/TOOL_VARIATION; STRATIFY",
+          "source_availability": "IMMUTABLE_REPOSITORY_COMMIT + CURRENT LEDGER/STATE",
+          "causal_use": "STRATIFY BY ASSISTANCE, TASK FAMILY, LEGACY GOVERNANCE AND ACTOR; NO UNADJUSTED MODEL RANKING"
+        },
+        "Coverage Tags": [
+          "project-graph",
+          "governance-audit",
+          "pending-review",
+          "GPT-5",
+          "context-only"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    },
+    {
+      "eligibility_class": "CONTEXT_ONLY",
+      "observation": {
+        "Sample ID": "M3-S-015",
+        "Root Incident / Episode Cluster ID": "GOV-BP-P3-01",
+        "Source Task / Blueprint Identity": "GOV-BP-P3-01 Blueprint Governance Upgrade",
+        "Handoff / Execution Parent and Reviewed Delivery Identity": {
+          "execution_parent": "e0ae8bc3f925ae6974c41f2aa9d844e2c95219ff",
+          "reviewed_delivery": "586652388cde269b614728d8160e7963bd88452c"
+        },
+        "Review Disposition": "EXECUTED / PENDING INDEPENDENT ARCH REVIEW in repository ledger; no final independent capability adjudication frozen at M3 Work-01 parent",
+        "Observed Task Shape": {
+          "family": "blueprint governance upgrade",
+          "scope": "user/project governance semantics + audit/state/ledger",
+          "decision_domain": [
+            "semantic parity",
+            "GC challenge rules",
+            "evidence/self-application governance"
+          ]
+        },
+        "Observed Risk / Novelty Shape": {
+          "risk": "canonical/governance contract correctness",
+          "novelty": "deep governance protocol upgrade"
+        },
+        "Actor / Model Observation": {
+          "role": "CODE",
+          "model": "GPT-5"
+        },
+        "Package Profile / Mechanism / Environment": {
+          "profile": "UNRESOLVED / legacy governance batch",
+          "mechanism": "repository governance document execution",
+          "environment": "project repository + external user canonical boundary"
+        },
+        "Assistance / Hidden Help": "Assistance/reviewer boundary is not sufficiently normalized in the available evidence; the ledger explicitly leaves ARCH review pending.",
+        "Architecture-Closed Decision Set": [
+          "Governance requirements and audit gates were specified by the upgrade blueprint/context."
+        ],
+        "Residual Coder Decision Set": [
+          "Execution of prescribed governance changes and audit evidence; exact architecture-vs-coder residual decision boundary is not complete enough for capability calibration."
+        ],
+        "Reasonable Divergence Set": [
+          "Only blueprint-authorized implementation choices and evidence-preserving mechanical choices; no authority to claim completion for omitted mandatory work or exceed allowlist."
+        ],
+        "Unacceptable Divergence Set": [
+          "Omitting mandatory blueprint steps/tests while marking them complete",
+          "Unauthorized scope expansion",
+          "False allowlist/evidence/completion claims",
+          "Invented architecture or stage transition"
+        ],
+        "Observed Decision / Behavior": "Persisted the governance upgrade and audit evidence, but the capability ledger still marks independent ARCH review as pending; therefore no positive/negative capability use is allowed.",
+        "Outcome Class": "PENDING_REVIEW",
+        "Primary Defect Attribution": "UNRESOLVED",
+        "Secondary Attribution Events": [],
+        "Capability Signal Disposition": "NEUTRAL",
+        "Evidence References": [
+          {
+            "role": "delivery_commit",
+            "commit": "586652388cde269b614728d8160e7963bd88452c"
+          },
+          {
+            "role": "audit",
+            "path": ".ai-context/project_graph/migration/GOV_BP_P3_01_AUDIT.md"
+          },
+          {
+            "role": "capability_ledger_snapshot",
+            "path": ".ai-context/docs/experience/14_模型执行力评估.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "GOV-BP-P3-01 Blueprint Governance Upgrade"
+          },
+          {
+            "role": "state_history_snapshot",
+            "path": ".ai-context/docs/context_memory/BLUEPRINT_STATE.md",
+            "snapshot_commit": "1be1afa1185570e67d7d23e965f6f42ea38724df",
+            "batch": "GOV-BP-P3-01 Blueprint Governance Upgrade"
+          }
+        ],
+        "Evidence Independence": "Architecture-frozen from immutable repository commits plus the project capability ledger/current State carrying independent ARCH disposition where available. CODE self-report is corroborative, never sole labeling authority.",
+        "Confound Flags": {
+          "actor_repeat": false,
+          "linked_repair_chain": false,
+          "prior_exposure": "YES; follows Phase 3A R1/governance chain",
+          "architecture_followup": "PENDING INDEPENDENT REVIEW AT SOURCE SNAPSHOT",
+          "package_revision": "LEGACY / NOT NORMALIZED TO UBF PACKAGE REVISION",
+          "assistance_level": "UNRESOLVED",
+          "environment_constraint": "NO MATERIAL CONSTRAINT ESTABLISHED",
+          "evidence_completeness": "INSUFFICIENT_FOR_CALIBRATION_ELIGIBLE",
+          "reviewer_change": "POSSIBLE_LEGACY_REVIEWER/TOOL_VARIATION; STRATIFY",
+          "source_availability": "IMMUTABLE_REPOSITORY_COMMIT + CURRENT LEDGER/STATE",
+          "causal_use": "STRATIFY BY ASSISTANCE, TASK FAMILY, LEGACY GOVERNANCE AND ACTOR; NO UNADJUSTED MODEL RANKING"
+        },
+        "Coverage Tags": [
+          "governance-upgrade",
+          "pending-review",
+          "GPT-5",
+          "context-only"
+        ],
+        "Adjudication Status": "ARCH_FROZEN",
+        "Universal Calibration Disposition": "UNRESOLVED"
+      }
+    }
+  ],
+  "recount": {
+    "total_rows": 6,
+    "unique_sample_ids": 6,
+    "duplicate_sample_ids": 0,
+    "unique_episode_clusters": 6,
+    "episode_cluster_ids": [
+      "GOV-BP-P3-01",
+      "LEGACY-B456-REPAIR-CHAIN-01",
+      "LEGACY-K1A-NUTRITION-01",
+      "LEGACY-K1I-STREAMING-01",
+      "LEGACY-L1-CLOUD-CONSENT-01",
+      "PROJECT-GRAPH-PHASE3A-01"
+    ],
+    "eligibility_counts": {
+      "CALIBRATION_ELIGIBLE": 4,
+      "CONTEXT_ONLY": 2,
+      "EXCLUDED": 0
+    },
+    "outcome_counts": {
+      "REWORK": 1,
+      "success": 2,
+      "scope escape": 1,
+      "PENDING_REVIEW": 2
+    },
+    "primary_attribution_counts": {
+      "EXECUTION_DEVIATION": 2,
+      "NONE": 2,
+      "UNRESOLVED": 2
+    },
+    "capability_signal_counts": {
+      "NEGATIVE": 2,
+      "POSITIVE": 2,
+      "NEUTRAL": 2
+    },
+    "missing_mandatory_field_records": 0,
+    "negative_signal_non_execution_deviation": 0,
+    "raw_rows_with_decided_universal_calibration": 0,
+    "sole_weak_truth_rows": 0,
+    "linked_incident_missing_cluster_id": 0,
+    "source_evidence_reference_failures": 0,
+    "actor_model_counts": {
+      "DeepSeek V4 Pro": 1,
+      "DeepSeek V4 Flash (1M context)": 3,
+      "GPT-5": 2
+    },
+    "package_profile_counts": {
+      "BLUEPRINT-FULL / Legacy L7": 4,
+      "UNRESOLVED / legacy governance batch": 2
+    },
+    "mechanism_coverage": [
+      "legacy blueprint execution + multi-suite validation",
+      "legacy blueprint execution + repository edits/tests",
+      "legacy blueprint execution + tests/build",
+      "repository document/audit execution",
+      "repository governance document execution"
+    ]
+  },
+  "combined_recount_with_work01": {
+    "total_rows": 15,
+    "unique_sample_ids": 15,
+    "duplicate_sample_ids": 0,
+    "unique_episode_clusters": 11,
+    "eligibility_counts": {
+      "CALIBRATION_ELIGIBLE": 9,
+      "CONTEXT_ONLY": 6,
+      "EXCLUDED": 0
+    },
+    "capability_signal_counts": {
+      "POSITIVE": 6,
+      "NEGATIVE": 3,
+      "NEUTRAL": 6
+    },
+    "actor_model_counts": {
+      "GPT-5.6 Luna": 9,
+      "DeepSeek V4 Pro": 1,
+      "DeepSeek V4 Flash (1M context)": 3,
+      "GPT-5": 2
+    },
+    "eligible_actor_model_counts": {
+      "GPT-5.6 Luna": 5,
+      "DeepSeek V4 Pro": 1,
+      "DeepSeek V4 Flash (1M context)": 3
+    },
+    "outcome_counts": {
+      "blocked/external": 1,
+      "incorrect STOP": 1,
+      "success": 6,
+      "REWORK": 4,
+      "scope escape": 1,
+      "PENDING_REVIEW": 2
+    },
+    "primary_attribution_counts": {
+      "COMPATIBILITY_EXHAUSTED": 1,
+      "EXECUTION_DEVIATION": 3,
+      "NONE": 6,
+      "ARCH_PAYLOAD_DEFECT": 3,
+      "UNRESOLVED": 2
+    },
+    "negative_signal_non_execution_deviation": 0,
+    "raw_rows_with_decided_universal_calibration": 0
+  },
+  "coverage_improvements": [
+    "Adds production-feature episodes instead of governance/static-payload-only evidence.",
+    "Adds DeepSeek V4 Pro and DeepSeek V4 Flash observations; GPT-5 episodes are included only as CONTEXT_ONLY because independent capability adjudication is incomplete.",
+    "Adds scope-escape coverage and a second independently adjudicated EXECUTION_DEVIATION pattern.",
+    "Adds explicit assistance/reviewer confounds rather than treating co-authored/review-assisted commits as unassisted model evidence."
+  ],
+  "coverage_gaps_after_work02": [
+    "Structured-Q and correct-STOP outcomes are still absent from the combined 15-row corpus.",
+    "GPT-5 has no CALIBRATION_ELIGIBLE row in the combined corpus; its two Work-02 observations remain CONTEXT_ONLY.",
+    "Legacy production rows include disclosed review/co-author assistance whose exact contribution boundary is not quantifiable; later analysis must stratify assisted-condition evidence.",
+    "BLUEPRINT_DEFECT, SOFT_COMPATIBILITY and EXTERNAL_TRUTH_CHANGE are still not represented as primary attribution rows in the combined corpus.",
+    "Actor/task-family counts remain small and non-balanced; no model ranking, threshold or Universal Level inference is permitted.",
+    "Work-01 linked M0/M1 repair chains still carry prior-exposure/order effects and must remain cluster-weight controlled."
+  ],
+  "non_inference": {
+    "universal_level_count_decisions": 0,
+    "universal_level_name_decisions": 0,
+    "universal_threshold_decisions": 0,
+    "universal_envelope_decisions": 0,
+    "universal_mapping_decisions": 0,
+    "final_task_profile_decisions": 0,
+    "final_capability_profile_decisions": 0,
+    "level_selector_decisions": 0,
+    "statement": "Work-02 broadens empirical coverage only. Combined Work-01+02 evidence is still not authorized for Universal Level/Profile/Selector inference."
+  },
+  "acceptance_precheck": {
+    "wrong_negative_count_must_be_zero": 0,
+    "raw_level_decision_count_must_be_zero": 0,
+    "sole_weak_truth_count_must_be_zero": 0,
+    "linked_missing_cluster_count_must_be_zero": 0,
+    "source_reference_failure_count_must_be_zero": 0,
+    "duplicate_sample_id_count_must_be_zero": 0,
+    "missing_schema_record_count_must_be_zero": 0,
+    "combined_duplicate_sample_id_count_must_be_zero": 0,
+    "combined_negative_non_execution_count_must_be_zero": 0,
+    "combined_raw_level_decision_count_must_be_zero": 0,
+    "all_zero_error_gates_pass": true
+  }
+}

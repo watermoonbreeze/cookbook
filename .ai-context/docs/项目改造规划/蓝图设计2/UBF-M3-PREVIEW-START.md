@@ -189,3 +189,11 @@ This entry creates zero samples. Remote ARCH must first accept the `UBF-M3-PREVI
 Remote ARCH accepts the Preview/Start delivery `c07e4d582a485739144a38ed06267473596cadee` with chain `0cb6d950... -> 9cba9eda... -> c07e4d58...`, claim State-only, final exact seven paths, entry sample rows `0`, State denyset, Preserve, attribution gates and non-inference all intact.
 
 That acceptance authorizes only the separately architecture-authored `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01` payload. Work-01 creates exactly nine pre-adjudicated empirical records and leaves every raw `Universal Calibration Disposition` as `UNRESOLVED`. Work-01 is `COMPLETE / PENDING REMOTE ARCH REVIEW`; M3 calibration analysis has not started. M4/M5 and CookBook Phase 3B remain prohibited.
+
+## 14. Remote ARCH acceptance of Work-01 and Work-02 coverage slice
+
+Remote ARCH accepts `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01` reviewed delivery `1be1afa1185570e67d7d23e965f6f42ea38724df` with claim `e427375912532bf47b3571a1cc5a602db0a40b61`. Exact final scope is seven paths and all seven repository target blobs match the Work-01 R1 authoritative manifest. Accepted Work-01 evidence remains 9 rows / 5 clusters / 5 eligible / 4 context / 4 positive / 1 negative / 4 neutral, with all raw Universal Calibration dispositions `UNRESOLVED`.
+
+The accepted slice is insufficient to begin calibration analysis because it observes only one actor/model and is dominated by governance/static-payload tasks. ARCH therefore authorizes only `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02`, a six-row coverage expansion. Work-02 adds production-feature observations, DeepSeek V4 Pro/Flash, scope escape, and explicitly represented review/co-author confounds. Two GPT-5 historical deliveries remain `CONTEXT_ONLY` because independent capability adjudication is incomplete.
+
+Work-02 does not close the corpus. After Work-02 the combined corpus is frozen at 15 rows / 11 clusters / 9 eligible / 6 context, with 6 positive / 3 negative / 6 neutral and zero forbidden negative combinations. Structured Q and correct STOP remain uncovered. Calibration analysis, Level/Profile/Selector decisions, M4/M5 and CookBook Phase 3B remain unauthorized until a later ARCH decision.

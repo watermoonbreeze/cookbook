@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02 — Empirical Calibration Corpus Work-02 |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -22,12 +22,12 @@
 | Handoff Parent | `1be1afa1185570e67d7d23e965f6f42ea38724df` |
 | Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | M3 Corpus Work-01 `1be1afa1185570e67d7d23e965f6f42ea38724df` = **ACCEPT / REMOTE ARCH REVIEWED** |
-| 范围 | 仅 claim Work-02 delegated turn；尚未创建/修改 final corpus targets；不得进行语义选择、样本重标或后续阶段工作 |
+| 范围 | 仅持久化 ARCH 已冻结的 6 个 Work-02 observations + blueprint/report，并更新 Preview/Control/Ledger/State；Work-01 evidence Preserve；不作 Level/Profile/Selector/canonical/routing/Graph/生产改动 |
 | Frozen recount | Work-02 total=6；unique IDs=6；clusters=6；eligible=4；context=2；excluded=0；positive=2；negative=2；neutral=2；forbidden negative=0；raw calibration decisions=0；combined total=15 / clusters=11 / eligible=9 / context=6 / positive=6 / negative=3 / neutral=6 |
 | Coverage gap | structured Q/correct STOP 仍缺；GPT-5 无 eligible row；legacy production assistance/reviewer confound 必须 stratify；actor/task-family counts 仍不平衡 |
-| UBF Stage | M3 Work-01 **ACCEPT/CONSUMED**; M3 Corpus Work-02 **CLAIMED / IN PROGRESS**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| UBF Stage | M3 Work-01 **ACCEPT/CONSUMED**; M3 Corpus Work-02 **COMPLETE / PENDING REMOTE ARCH REVIEW**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅机械落盘 manifest 七个 final targets并验证；完成后 RETURN TURN=REVIEW；不得自行继续 |
+| 下一步 | 仅等待 remote ARCH 核验本 Work-02；即使 ACCEPT，CODE 也不得自行开始 Work-03、calibration analysis、M4/M5 |
 ## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
