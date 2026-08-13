@@ -197,3 +197,13 @@ Remote ARCH accepts `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01` reviewed deliv
 The accepted slice is insufficient to begin calibration analysis because it observes only one actor/model and is dominated by governance/static-payload tasks. ARCH therefore authorizes only `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02`, a six-row coverage expansion. Work-02 adds production-feature observations, DeepSeek V4 Pro/Flash, scope escape, and explicitly represented review/co-author confounds. Two GPT-5 historical deliveries remain `CONTEXT_ONLY` because independent capability adjudication is incomplete.
 
 Work-02 does not close the corpus. After Work-02 the combined corpus is frozen at 15 rows / 11 clusters / 9 eligible / 6 context, with 6 positive / 3 negative / 6 neutral and zero forbidden negative combinations. Structured Q and correct STOP remain uncovered. Calibration analysis, Level/Profile/Selector decisions, M4/M5 and CookBook Phase 3B remain unauthorized until a later ARCH decision.
+
+## 15. Remote ARCH acceptance of Work-02 and Controlled Calibration Probe-01
+
+Remote ARCH accepts `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02` reviewed delivery `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821` with State-only claim `09e6f7590309ca6b97d70830982fe8baf8321cac`. The delivery preserves the frozen Work-02 recount (6 rows / 6 clusters / 4 eligible / 2 context / 2 positive / 2 negative / 2 neutral) and combined Work-01+02 recount (15 rows / 11 clusters / 9 eligible / 6 context / 6 positive / 3 negative / 6 neutral), with forbidden negative combinations and raw Universal calibration decisions both zero.
+
+Work-02 acceptance does **not** close M3 corpus coverage. Structured Q and correct STOP remain absent from historical eligible evidence; legacy production rows retain assistance/reviewer confounds; actor/task-family balance is still weak. ARCH therefore does not authorize calibration analysis or a static Work-03 sample expansion from guessed history.
+
+The only next authorization is `UBF-M3-CONTROLLED-CALIBRATION-PROBE-01`: a six-scenario **synthetic controlled decision probe** under a BLUEPRINT-LITE carrier. Its response is runtime behavioral evidence under `RUNTIME_DISCOVERY_REQUIRED`; it is not pre-labeled corpus truth. CODE may record its decisions but may not adjudicate correctness, eligibility, capability signal, model rank, routing, Universal Level/Profile/Selector, or create Work-03 rows. Independent ARCH must review the response before any later corpus use.
+
+M4, M5 and CookBook Phase 3B remain `NOT STARTED / NOT AUTHORIZED`.

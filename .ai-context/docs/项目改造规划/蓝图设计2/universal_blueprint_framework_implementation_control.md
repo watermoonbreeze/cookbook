@@ -434,19 +434,18 @@ STOP：
 
 ## 10. 当前启动判定
 
-当前唯一在途治理事务是 `UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02` 的 delegated execution / remote review cycle：
+当前唯一在途治理事务是 `UBF-M3-CONTROLLED-CALIBRATION-PROBE-01` 的 controlled-probe delegated execution / remote review cycle：
 
-1. M0/M1/M2 已 `ACCEPT / CLOSED`；M3 Preview/Start 已 ACCEPT；
-2. M3 Work-01 reviewed delivery `1be1afa1185570e67d7d23e965f6f42ea38724df` 已 **REMOTE ARCH ACCEPT**，claim=`e427375912532bf47b3571a1cc5a602db0a40b61`，final exact 7 paths/7 target blobs 与 R1 authoritative manifest 闭合；
-3. Work-01 accepted corpus remains 9 rows / 5 clusters / 5 eligible / 4 context / 4 positive / 1 negative / 4 neutral；raw Universal Calibration 9/9 `UNRESOLVED`；
-4. 因 Work-01 单 actor/model 且治理/static-payload task family 占主导，**不得直接启动 calibration analysis**；
-5. 本 Work-02 仅新增 6 个 ARCH-frozen historical observations：4 eligible + 2 context；引入 DeepSeek V4 Pro/Flash、production-feature 与 scope-escape coverage；
-6. Work-02 两个 NEGATIVE 均为独立证据支持的 `EXECUTION_DEVIATION`；AF-B456-05 的 blueprint/spec gap 单独记 architecture event，不作为 coder negative cause；
-7. legacy production rows 的 Co-Authored/reviewer assistance 必须显式作为 confound；不允许反推出“纯模型、无辅助”能力；
-8. GPT-5 的 Phase 3A/GOV 两行仅 `CONTEXT_ONLY / NEUTRAL / UNRESOLVED`，不得因 actor diversity 需求而升级资格；
-9. combined Work-01+02 = 15 rows / 11 clusters / 9 eligible / 6 context / 6 positive / 3 negative / 6 neutral；structured Q/correct STOP 等 coverage gaps 继续保留；
-10. user canonical、GC registry、routing、State ownership split、Project Graph 和 production assets Preserve；M3 calibration analysis、M4、M5、CookBook Phase 3B 继续 `NOT STARTED / NOT AUTHORIZED`；
-11. Work-02 若 ACCEPT，下一步仍由 ARCH 独立决定 Work-03/challenge slice 或 calibration-analysis entry；CODE 无 standing authority。
+1. M0/M1/M2 已 `ACCEPT / CLOSED`；M3 Preview/Start、Work-01、Work-02 已 REMOTE ARCH ACCEPT；
+2. Work-02 reviewed delivery `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821`，claim=`09e6f7590309ca6b97d70830982fe8baf8321cac`，accepted recount = 6 rows / 6 clusters / 4 eligible / 2 context / 2 positive / 2 negative / 2 neutral；combined Work-01+02 = 15 rows / 11 clusters / 9 eligible / 6 context / 6 positive / 3 negative / 6 neutral；
+3. structured Q / correct STOP 仍为历史 coverage gaps；不得复制、重标或猜测旧案例来填空；
+4. 因历史 coverage/confound 不足，calibration analysis 仍 `NOT STARTED / NOT AUTHORIZED`；
+5. 本 Probe-01 仅授权 6 个 frozen scenario cards + 1 个 schema-bound runtime response；response 是 synthetic controlled evidence，不是预先 ACCEPT 的 corpus row；
+6. carrier=`BLUEPRINT-LITE`，mechanism=`RUNTIME_DISCOVERY_REQUIRED`；静态 authoring response 会污染观测，因此只有 fixture/contract/static governance targets 预冻结；
+7. CODE 只能选择 fixture 枚举动作并写简洁可审理由，不得自评正确性、eligibility、capability signal、模型排名或 Universal Level/Profile/Selector；
+8. independent ARCH review 后才可决定是否进入 Work-03、是否把某些 probe observations 纳入 corpus、是否仍需更多 coverage；
+9. user canonical、GC registry、routing、State ownership split、Project Graph、accepted Work-01/02 evidence 和 production assets Preserve；
+10. M4、M5、CookBook Phase 3B 继续 `NOT STARTED / NOT AUTHORIZED`。
 
 ## 11. M1 Semantic Decomposition Work-01
 
@@ -490,3 +489,14 @@ STOP：
 - All raw Universal Calibration dispositions remain `UNRESOLVED`.
 - Work-02 is evidence construction only. Calibration analysis, Universal Level/Profile/Selector inference, M4/M5 and CookBook Phase 3B remain prohibited.
 - Work-02 final state is `COMPLETE / PENDING REMOTE ARCH REVIEW` and returns `TURN=REVIEW`.
+
+## 15. M3 Controlled Calibration Probe-01
+
+- Fixed Handoff Parent: `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821` = Work-02 **REMOTE ARCH ACCEPT**.
+- Fixture: `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-CONTROLLED-CALIBRATION-PROBE-01-Fixture.json`.
+- Runtime evidence: `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-CONTROLLED-CALIBRATION-PROBE-01-Response.json`.
+- Carrier profile is BLUEPRINT-LITE: task card + exact allowlist + invariant table + test matrix; constraint strength is not reduced.
+- Mechanism class is `RUNTIME_DISCOVERY_REQUIRED` because the CODE response is the observation and cannot be pre-authored without contaminating it.
+- Six scenarios target underdetermined structured-Q choice, real Hard STOP recognition, optional-helper fallback, denied-path scope discipline, reasonable authorized divergence, and architecture challenge without frozen-Truth mutation.
+- Response shape/non-inference is mechanically validated; semantic correctness is deliberately **not** package-validated. Independent ARCH owns adjudication.
+- Probe completion does not create Work-03 corpus rows and does not start calibration analysis. Universal Level/Profile/Selector, routing, M4/M5 and CookBook Phase 3B remain prohibited.

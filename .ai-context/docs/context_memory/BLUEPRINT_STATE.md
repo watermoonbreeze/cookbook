@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CONTROLLED-CALIBRATION-PROBE-01 — Controlled Residual-Decision Calibration Probe |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -24,9 +24,9 @@
 | 范围 | 仅执行 6-scenario controlled probe；静态 fixture/blueprint/governance targets + schema-bound Response；不创建/重标 corpus row，不作 calibration/Level/Profile/Selector/routing/canonical/Graph/生产改动 |
 | Frozen evidence boundary | Work-01+02 accepted corpus Preserve=15 rows/11 clusters/9 eligible/6 context/6 positive/3 negative/6 neutral；Probe response 尚未 ARCH adjudicate |
 | Coverage purpose | controlled observation of structured-Q choice / correct Hard STOP / fallback / scope discipline / reasonable divergence / architecture challenge；不宣称等价于 production causal evidence |
-| UBF Stage | Work-01/02 **ACCEPT/CONSUMED**; Probe-01 **CLAIMED / IN PROGRESS**; Work-03 **NOT STARTED / NOT AUTHORIZED**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| UBF Stage | Work-01/02 **ACCEPT/CONSUMED**; Probe-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; Work-03 **NOT STARTED / NOT AUTHORIZED**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 只机械落盘 static targets、填写 schema-bound Response、验证 exact 7-path transaction，随后 RETURN TURN=REVIEW；不得自行 adjudicate 或继续 |
+| 下一步 | 仅等待 remote ARCH 独立审阅 Response；CODE 不得自行创建 Work-03、开始 calibration analysis、M4/M5 或 Phase 3B |
 ## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02（2026-08-13）
 | 字段 | 值 |
 |---|---|
