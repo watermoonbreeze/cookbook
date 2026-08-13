@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M2-LEGACY-ASSET-MAPPING-WORK-01 — GC-01～GC-48 exact legacy mapping |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,13 +20,13 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `c72a19b257550de7bb75dc9361b9f939fc220cb9` |
-| Execution Parent | 本 claim commit（push 后以 remote 40 位 identity 为准） |
+| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | M2 Preview/Start `c72a19b257550de7bb75dc9361b9f939fc220cb9` = **ACCEPT** |
-| Delegation | architecture package `UBF-M2-LEGACY-ASSET-MAPPING-WORK-01 / R1` single-use State-only claim |
-| 范围 | 只允许机械落盘包内 GC-01～GC-48 exact mapping 与 7 个 final targets；CODE 不作 mapping/Level/Profile 决策 |
-| UBF Stage | M0/M1 **ACCEPT/CLOSED**; M1→M2 Handoff **ACCEPT/CONSUMED**; M2 Preview/Start **ACCEPT/CONSUMED**; M2 Work-01 **CLAIMED/IN PROGRESS**; M3 **NOT STARTED / NOT AUTHORIZED** |
+| Accepted entry evidence | `2054899a... -> 15d97682... -> c72a19b2...`; claim 1/final 7 paths; 7/7 blobs; State denyset; 4 Preserve blobs; whitespace/mapping-non-start/lifecycle PASS |
+| 范围 | 已机械持久化架构冻结的 GC-01～GC-48 exact mapping；48 total/unique，missing=0，duplicate=0；Universal Mapping UNRESOLVED=48；不改 canonical/Graph/生产代码 |
+| UBF Stage | M0/M1 **ACCEPT/CLOSED**; M1→M2 Handoff **ACCEPT/CONSUMED**; M2 Preview/Start **ACCEPT/CONSUMED**; M2 Work-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; M2 **IN PROGRESS / NOT CLOSED**; M3 **NOT STARTED / NOT AUTHORIZED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅落盘 package exact seven final targets，验证 manifest/evidence 后提交、push、remote verify、返回 REVIEW 并 STOP |
+| 下一步 | 仅等待 remote ARCH 核验两提交链、exact 7-file scope、target blobs、48-record recount、State denyset、Preserve、whitespace 与 lifecycle；不得自行关闭 M2 或启动 M3 |
 ## 上一批次：UBF-M2-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|

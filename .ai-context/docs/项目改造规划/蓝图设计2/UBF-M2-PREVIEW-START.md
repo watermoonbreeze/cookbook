@@ -4,16 +4,16 @@ Document Role: Generated View / Stage Entry Contract
 Stage: `M2 — Legacy Asset Mapping`
 Entry Task: `UBF-M2-PREVIEW-START-01`
 Exact Handoff Parent: `2054899ad93d9c2bc1353914c31a1ef3b96c15ac`
-Entry Status: `PERSISTED / PENDING REMOTE ARCH REVIEW`
+Entry Status: `ACCEPT / CONSUMED BY UBF-M2-LEGACY-ASSET-MAPPING-WORK-01`
 M1 Status: `ACCEPT / CLOSED`
 M1→M2 Handoff: `ARCH ACCEPTED / CONSUMED BY THIS ENTRY`
-M2 Mapping: `NOT EXECUTED / NOT YET AUTHORIZED`
+M2 Mapping: `WORK-01 ARCHITECTURE FROZEN / PENDING MECHANICAL PERSISTENCE AND REMOTE ARCH REVIEW`
 M3: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 
 ## 1. Entry meaning
 
-This document defines the M2 stage-entry contract. It does not contain mappings and is not canonical Truth. Entry acceptance is required before architecture may issue mapping work.
+This document defines the M2 stage-entry contract. It does not contain mappings and is not canonical Truth. Remote ARCH accepted this entry at `c72a19b257550de7bb75dc9361b9f939fc220cb9`; it is consumed only by the separately architecture-authored Work-01.
 
 ## 2. Objective
 
@@ -43,4 +43,4 @@ This entry does not authorize mapping rows, Universal Level count/names, Task/Ca
 
 ## 6. Next gate
 
-After remote ARCH accepts this entry delivery, architecture may issue `UBF-M2-LEGACY-ASSET-MAPPING-WORK-01`. Until then mapping remains not executed and unauthorized.
+Entry gate is closed. `UBF-M2-LEGACY-ASSET-MAPPING-WORK-01` now carries the exact 48-record architecture result. Its persistence and remote acceptance are separate gates; this entry does not authorize M2 closure, M3 or CookBook Phase 3B.
