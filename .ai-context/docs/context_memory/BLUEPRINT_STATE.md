@@ -7,30 +7,38 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01（2026-08-13）
+## 当前批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-ANALYSIS-WORK-01 — Cluster-Aware Calibration Analysis Persistence |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01 — Analysis Work-01 Lifecycle-View Coherence Repair |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Execution mode | EVALUATION / INDEPENDENT |
+| Execution mode | REPAIR / MECHANICAL / NON_CAPABILITY |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `5d6eda046be0b2a09f52059e438cb51f7db38e40` |
-| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-WORK-01 / R1` single-use claim **CONSUMED** |
-| Delegation binding | parent `5d6eda046be0b2a09f52059e438cb51f7db38e40` + target `origin/master` + exact State-only claim + package/revision/single-use |
+| Handoff Parent | `b87726abc575a0c17cd1b76f663f242edbddc041` |
+| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-WORK-01-ARCH-PAYLOAD-REPAIR-01 / R1` single-use claim **ACTIVE / CONSUMING** |
+| Delegation binding | parent `b87726abc575a0c17cd1b76f663f242edbddc041` + target `origin/master` + exact State-only claim + package/revision/single-use |
 | Holder transition | `REVIEW -> CODE` after claim push+remote verify; final/authorized abort returns `REVIEW` |
 | Host isolation | original worktree may be dirty/behind; preserve it; isolated detached clean checkout only |
-| Architecture input | Calibration Analysis Preview/Start `5d6eda046be0b2a09f52059e438cb51f7db38e40` = **ACCEPT / REMOTE ARCH REVIEWED** |
-| Analysis boundary | 21 rows / 12 total clusters / 15 eligible rows -> 9 eligible root clusters；cluster outcome 6 positive-only / 2 negative-only / 1 mixed；8 falsification tests |
-| Analysis disposition | **H4_INSUFFICIENT_EVIDENCE**；H1 NOT_ESTABLISHED；H2/H3 PLAUSIBLE_BUT_NOT_DISTINGUISHABLE |
-| 范围 | 仅机械持久化 ARCH 已冻结的 Work-01 analysis；不重分析/重标；Universal Level/Profile/Selector/model ranking/routing decisions=0；不改 canonical/Graph/生产代码 |
-| UBF Stage | Corpus Work-01/02/03 + Probe-01 **ACCEPT/CONSUMED**; Calibration Analysis Preview/Start **ACCEPT/CONSUMED**; Analysis Work-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; M4/M5 **NOT STARTED** |
+| Architecture input | Analysis Work-01 `b87726abc575a0c17cd1b76f663f242edbddc041` = **CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT NON_CAPABILITY** |
+| Repair boundary | 仅修 implementation-control/M3 Preview/current lifecycle views 与 acceptance bookkeeping；Analysis JSON/H4/corpus/falsification/zero-decision 均 Preserve |
+| UBF Stage | M3 Calibration Analysis Work-01 evidence disposition **H4_INSUFFICIENT_EVIDENCE**；lifecycle-view repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 复核 Work-01；CODE 不得自行进入后续分析、M4/M5 或 Phase 3B。 |
+| 下一步 | 只机械落盘 manifest exact final targets；验证 lifecycle coherence/Preserve/zero-decision 后返回 REVIEW；不得扩大范围。 |
+
+## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-WORK-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT REPAIR REQUIRED** |
+| Reviewed delivery | `b87726abc575a0c17cd1b76f663f242edbddc041` |
+| Architecture disposition | CODE execution ACCEPT；package lifecycle-view propagation defect = `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY` |
+| 已验证 | State-only claim；final exact 8 paths；H4 analysis payload/recount/falsification/zero-decision preserved；State returned REVIEW |
+| Reopen set | generated/current lifecycle views only；不得修改 analysis/corpus/canonical/routing/Graph/production assets |
+
 ## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
