@@ -8,8 +8,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01 — State Model-Identity Hygiene Repair |
-| 状态 | **CLAIMED / STATE IDENTITY REPAIR IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -17,7 +17,7 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE + RUNTIME_PROVENANCE |
 | Handoff Parent | `15b3470703b3df0f1f7dcae8a815b3f660463f0c` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01 / R1` single-use abstract-CODER claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01 / R1` single-use abstract-CODER claim **CONSUMED** |
 | Holder transition | `REVIEW -> CODE` after exact State-only claim push+remote verify；same-revision replacement CODER may resume exact in-flight claim；final/abort returns REVIEW |
 | Architecture input | BAP-01 repair `15b3470703b3df0f1f7dcae8a815b3f660463f0c` = **CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT STATE IDENTITY HYGIENE REPAIR REQUIRED** |
 | Verified BAP delivery | `15b3470703b3df0f1f7dcae8a815b3f660463f0c` chain from `d43c73f...` via State-only claim `eba909fad46a613e121f75f1ee66f443509cebcd`；final 9 files；BAP-01 semantic contract preserved |
@@ -28,7 +28,7 @@
 | Evidence effect | new evidence runs=0；new empirical corpus rows=0；H4=`H4_INSUFFICIENT_EVIDENCE` preserved |
 | UBF Stage | M3 Calibration — BAP-01 State Identity Hygiene Repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 NOT STARTED |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅机械持久化本 exact repair payload；不得开始 Family-B 或新 evidence run。 |
+| 下一步 | 仅等待 remote ARCH 复核 State denyset + lifecycle coherence；ACCEPT 后由 ARCH 单独签发 blind Family-B Cell-01。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01（2026-08-13）
 | 字段 | 值 |

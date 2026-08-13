@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS + PROBE ACCEPT / CONSUMED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; EGC PREVIEW ACCEPT; WORK-01 CODE+SEMANTIC PASS BUT MATCHED-INELIGIBLE; BLIND ACQUISITION PROTOCOL REPAIR IN REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS+PROBE ACCEPT; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 CODE FIDELITY ACCEPT; STATE MODEL-IDENTITY HYGIENE REPAIR IN REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — EVIDENCE GAP CLOSURE BLIND ACQUISITION PROTOCOL REPAIR`
-> Current Review Result: `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca = CODE EXECUTION ACCEPT / 4-of-4 SEMANTIC PASS / MATCHED INFERENCE INELIGIBLE`
+> Current UBF Stage: `M3 CALIBRATION — BAP-01 STATE MODEL-IDENTITY HYGIENE REPAIR`
+> Current Review Result: `15b3470703b3df0f1f7dcae8a815b3f660463f0c = CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT STATE IDENTITY HYGIENE REPAIR REQUIRED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -18,9 +18,10 @@
 > M3 Analysis Lifecycle Repair Accepted Review Target: `bbd8bbbd5c97a9faef62fde50971a586322e625d`
 > M3 Evidence Gap Closure Preview/Start Accepted Review Target: `423d7382d56765e17ea9395e2b167454d5e1450f`
 > M3 Evidence Gap Closure Work-01 Reviewed Target: `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` — CODE ACCEPT / SEMANTIC PASS / identity unresolved / Family-A matched reuse burned
-> M3 Blind Acquisition Protocol Repair Review Target: `PENDING REMOTE ARCH REVIEW`
+> M3 Blind Acquisition Protocol Repair Reviewed Target: `15b3470703b3df0f1f7dcae8a815b3f660463f0c` — CODE fidelity ACCEPT / State identity hygiene repair required
+> M3 BAP-01 State Identity Repair Review Target: `PENDING REMOTE ARCH REVIEW`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R23 — M3 matched-controlled blind acquisition repair; canonical commitments + repo-external reveal bundles`
+> Process Revision: `R24 — BAP-01 State abstract-role identity hygiene repair; protocol/evidence Preserve`
 
 ## 1. 目标
 
@@ -592,3 +593,17 @@ STOP：
 - H4 remains `H4_INSUFFICIENT_EVIDENCE`.
 - Family-B Cell-01 is **NOT STARTED / NOT AUTHORIZED** until this repair receives remote ARCH ACCEPT.
 - Re-analysis, M4/M5 and CookBook Phase 3B remain unauthorized.
+
+
+## M3 BAP-01 State Model-Identity Hygiene Repair
+
+- Reviewed BAP-01 delivery `15b3470703b3df0f1f7dcae8a815b3f660463f0c`: **CODE EXECUTION FIDELITY ACCEPT**.
+- BAP-01 blind commitment/reveal protocol semantics remain accepted as the intended repair Truth.
+- One architecture-authored State historical row repeated a concrete runtime/model label, violating the State abstract-role contract.
+- Classification: `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`; no coder/model negative sample.
+- Repair scope is strictly State identity hygiene + lifecycle/ledger truth.
+- `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BLIND-ACQUISITION-PROTOCOL.md`, Work-01 evidence, accepted analysis and corpus assets are Preserve.
+- Family-A qualifying=0; Family-B=0/2; Family-C=0/2.
+- new evidence runs=0; new empirical rows=0; H4=`H4_INSUFFICIENT_EVIDENCE`.
+- Blind Family-B Cell-01 remains **NOT STARTED / NOT AUTHORIZED** until this repair receives remote ARCH ACCEPT.
+- M4/M5 and CookBook Phase 3B remain prohibited.

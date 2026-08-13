@@ -169,3 +169,22 @@ This is an architecture-side `BLUEPRINT_DEFECT / NON_CAPABILITY`. Family-A is th
 The repaired protocol is `.ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BLIND-ACQUISITION-PROTOCOL.md` (`BAP-01`). Future qualifying matched families B/C must use blind reveal bundles held outside the repo and canonical cryptographic commitments only until their same-family pairs are complete.
 
 The original 2-family × 2-normalized-coder gate is preserved, not weakened. Family-A contributes zero qualifying matrix cells. Re-analysis remains unauthorized.
+
+
+## 11. BAP-01 delivery review and State identity-hygiene repair
+
+Remote ARCH reviews BAP-01 repair `15b3470703b3df0f1f7dcae8a815b3f660463f0c`:
+
+- CODE execution fidelity: ACCEPT;
+- blind commitment/reveal protocol: preserved;
+- new evidence runs: 0;
+- new empirical rows: 0;
+- H4: preserved.
+
+The architecture payload nevertheless repeated a concrete runtime/model label in a historical `BLUEPRINT_STATE.md` row. State is an abstract-role lifecycle owner and must not duplicate concrete model identity.
+
+Classification: `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`.
+
+The narrow repair removes that label from State and records review truth. It does not alter BAP-01, Work-01 evidence, Family-A burn, the qualifying matrix or any calibration result.
+
+Blind Family-B Cell-01 remains not authorized until this repair receives remote ARCH ACCEPT.

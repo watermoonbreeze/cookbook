@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / EGC WORK-01 4-of-4 SEMANTIC PASS BUT MATCHED-INELIGIBLE / BLIND ACQUISITION PROTOCOL REPAIR IN REVIEW`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 CODE FIDELITY ACCEPT / STATE MODEL-IDENTITY HYGIENE REPAIR IN REVIEW`
 
 ## 1. Entry meaning
 
@@ -280,3 +280,14 @@ A protocol defect is identified: Cell-01 raw Response was persisted to canonical
 Family-A is removed from future qualifying matched reuse. The matched matrix restarts with new Family-B and Family-C under BAP-01 blind capture: canonical commitment only, raw response/provenance outside repo until family pair completion.
 
 H4 remains preserved. Family-B Cell-01 is not authorized until this repair is separately accepted. M4/M5 and CookBook Phase 3B remain prohibited.
+
+
+## 21. BAP-01 delivery review — State abstract-role hygiene repair
+
+Remote ARCH reviews `15b3470703b3df0f1f7dcae8a815b3f660463f0c` as CODE execution fidelity ACCEPT for the BAP-01 protocol repair.
+
+A package-generated State historical row repeated a concrete runtime/model label. That violates the State abstract-role identity boundary even though the underlying runtime provenance itself is legitimate in the experience/provenance layer.
+
+This is `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`. The only authorized repair removes the concrete label from State and updates lifecycle/ledger review truth. BAP-01, Family-A adjudication, H4 and all accepted evidence remain unchanged.
+
+Family-B blind acquisition is not started until this repair is separately accepted.
