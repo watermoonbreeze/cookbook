@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M2-END-ACCEPT-01 — M2 End/Accept + M2→M3 Handoff Persistence |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,13 +20,13 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `84cd8508e213e3664ec898cd2b9a783570b28de5` |
-| Execution Parent | 本 claim commit（push 后以 remote 40 位 identity 为准） |
+| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | M2 Work-01 `84cd8508e213e3664ec898cd2b9a783570b28de5` = **ACCEPT** |
-| Delegation | architecture package `UBF-M2-END-ACCEPT-01 / R1` single-use State-only claim |
-| 范围 | 只允许机械落盘包内 M2 Final Accept、M2→M3 Handoff 与 exact seven final targets；CODE 不作 acceptance/M3/Level/Profile 决策 |
-| UBF Stage | M0/M1 **ACCEPT/CLOSED**; M2 Work-01 **ACCEPT**; M2 End/Accept persistence **CLAIMED/IN PROGRESS**; M3 **NOT STARTED / NOT AUTHORIZED** |
+| Accepted Work-01 evidence | `c72a19b2... -> 416e3619... -> 84cd8508...`; claim 1/final 7 paths; 7/7 blobs; 48/48 unique; missing/duplicate=0; Legacy 9/8/9/7/5/4/6; UNRESOLVED=48; State denyset; 5 Preserve blobs; whitespace/lifecycle/remote PASS |
+| 范围 | 仅持久化已由 ARCH 作出的 M2 ACCEPT/CLOSED 与 M2→M3 handoff；未启动 M3、未改 mapping/canonical/Graph/生产代码 |
+| UBF Stage | M0/M1/M2 **ACCEPT/CLOSED**; M2→M3 Handoff **PERSISTED / PENDING REMOTE ARCH REVIEW**; M3 **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅落盘 package exact seven final targets，验证 manifest/evidence 后提交、push、remote verify、返回 REVIEW 并 STOP |
+| 下一步 | 仅等待 remote ARCH 核验两提交链、exact 7-file scope、target blobs、State denyset、Preserve、whitespace 与 M2/Handoff/M3 lifecycle；不得自行启动 M3 |
 ## 上一批次：UBF-M2-LEGACY-ASSET-MAPPING-WORK-01（2026-08-13）
 | 字段 | 值 |
 |---|---|

@@ -1,17 +1,18 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1 ACCEPT / CLOSED; M1→M2 HANDOFF ARCH ACCEPTED / CONSUMED; M2 PREVIEW/START ACCEPT / CONSUMED; M2 MAPPING WORK-01 ARCHITECTURE FROZEN / PENDING MECHANICAL PERSISTENCE AND REMOTE ARCH REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M2→M3 HANDOFF PERSISTED / PENDING REMOTE ARCH REVIEW; M3 NOT STARTED / NOT AUTHORIZED`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M2 — LEGACY ASSET MAPPING WORK-01`
-> Current Review Result: `c72a19b257550de7bb75dc9361b9f939fc220cb9 = ACCEPT (M2 Preview/Start)`
+> Current UBF Stage: `M2 END/ACCEPT + M2→M3 HANDOFF PERSISTENCE`
+> Current Review Result: `84cd8508e213e3664ec898cd2b9a783570b28de5 = ACCEPT (M2 Legacy Asset Mapping Work-01)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
 > M1→M2 Persistence Accepted Review Target: `2054899ad93d9c2bc1353914c31a1ef3b96c15ac`
 > M2 Preview/Start Accepted Review Target: `c72a19b257550de7bb75dc9361b9f939fc220cb9`
+> M2 Accepted Review Target: `84cd8508e213e3664ec898cd2b9a783570b28de5`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R11 — M2 Work-01 exact 48-record legacy mapping; Universal Mapping remains UNRESOLVED`
+> Process Revision: `R12 — M2 ACCEPT/CLOSED; M2→M3 handoff persisted; M3 not started`
 
 ## 1. 目标
 
@@ -96,7 +97,7 @@
 
 ### M1 — Current-State Semantic Decomposition
 
-Lifecycle result: `ACCEPT / CLOSED` at reviewed delivery `1723a4f9c050d4da47740d04164fa27d73ea9f2b`. The M1→M2 handoff persisted by `UBF-M1-END-ACCEPT-01` remains pending its own remote ARCH review and does not start M2.
+Lifecycle result: `ACCEPT / CLOSED` at reviewed delivery `1723a4f9c050d4da47740d04164fa27d73ea9f2b`. The M1→M2 persistence was remotely accepted at `2054899ad93d9c2bc1353914c31a1ef3b96c15ac` and its handoff was consumed by the separately accepted M2 entry; this historical transition no longer carries a pending gate.
 
 目标：把现行协议拆成真正的语义对象，而不是直接改文案。
 
@@ -112,7 +113,7 @@ Lifecycle result: `ACCEPT / CLOSED` at reviewed delivery `1723a4f9c050d4da47740d
 
 ### M2 — Legacy Asset Mapping
 
-Entry status: `PREVIEW/START ACCEPT / CONSUMED BY WORK-01`. Remote ARCH accepted `c72a19b257550de7bb75dc9361b9f939fc220cb9`. Work-01 is architecture-frozen and pending mechanical persistence plus remote review; M2 is not closed.
+Lifecycle result: `ACCEPT / CLOSED` at reviewed delivery `84cd8508e213e3664ec898cd2b9a783570b28de5`. The M2→M3 handoff persisted by `UBF-M2-END-ACCEPT-01` remains pending its own remote ARCH review and does not start M3.
 
 目标：非破坏性映射 CookBook Legacy L7 与 GC-01～GC-48。
 
@@ -140,7 +141,17 @@ Work-01 frozen result:
 - M1 64-record decomposition is not reopened;
 - M3 and CookBook Phase 3B remain not started/not authorized.
 
+Accepted result:
+
+- Work-01 remote delivery chain/scope/blobs/Preserve/State/whitespace/lifecycle all PASS;
+- 48 total and unique records; missing=0; duplicate=0;
+- Legacy counts L1=9, L2=8, L3=9, L4=7, L5=5, L6=4, L7=6;
+- `UNRESOLVED=48` is accepted M2 uncertainty, not permission for CODE to infer a ladder;
+- M2 is closed only by the architecture acceptance snapshot; M3 remains gated behind handoff acceptance and separate Preview/Start.
+
 ### M3 — Empirical Calibration Corpus
+
+Entry status: `NOT STARTED / NOT AUTHORIZED`. M2→M3 handoff persistence is pending remote ARCH review. No corpus record or Universal Level candidate is authorized by M2 closure.
 
 目标：用真实 Blueprint 与执行结果确定“一维 Universal Level”是否可形成单调、可比较的 closure ladder。
 
