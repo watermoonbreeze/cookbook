@@ -1,33 +1,45 @@
 # BLUEPRINT_STATE
 
 唯一握手状态文件。开工前先 `git pull` 读本文件；`TURN` 不是自己 → 停手，只报告当前持球方，不改代码。开工前除看 `TURN`，还须看 `颗粒度` 行确认本批蓝图应达到的级别。完成本方动作后在同一提交内更新本文件再 push。
-
 **ARCH/CODE 命名规则**：`ARCH`/`CODE`/`REVIEW`/`TURN` 这几个协议字段只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**——角色定义是抽象的，具体由哪个模型担任取决于当前会话，协议逻辑不依赖模型身份。
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和运行时 provenance/执行报告，本文件不重复。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01（2026-08-13）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01 — Matched Controlled Family-A Cell-01 |
-| 状态 | **COMPLETE / RAW EVIDENCE CAPTURED / PENDING REMOTE ARCH ADJUDICATION** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01 — Blind Acquisition Protocol Repair |
+| 状态 | **CLAIMED / PROTOCOL REPAIR IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Execution mode | EVIDENCE_ACQUISITION / MATCHED_CONTROLLED / RAW_ONLY |
+| Execution mode | ARCH_PROTOCOL_REPAIR / MECHANICAL |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
-| Payload mode | STATIC_FAMILY_TRUTH + DYNAMIC_RESPONSE + RUNTIME_PROVENANCE |
-| Handoff Parent | `423d7382d56765e17ea9395e2b167454d5e1450f` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01 / R1` single-use abstract-CODER claim **CONSUMED** |
+| Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE + RUNTIME_PROVENANCE |
+| Handoff Parent | `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01 / R1` single-use abstract-CODER claim **ACTIVE / CONSUMING** |
 | Holder transition | `REVIEW -> CODE` after exact State-only claim push+remote verify；same-revision replacement CODER may resume exact in-flight claim；final/abort returns `REVIEW` |
-| Family Truth | `UBF-M3-EGC-MC-FAMILY-A / R1`；SHA-256 `af32e947d7c21b4dce0ad9e012b0de28d865a0183f4aa53d13bc006ce45bf33b` |
-| Cell | `MC-A-CELL-01`；one execution = one candidate independent root cluster pending ARCH adjudication |
-| Architecture input | Evidence Gap Closure Preview/Start `423d7382d56765e17ea9395e2b167454d5e1450f` = **ARCH ACCEPT / CONSUMED**；H4=`INSUFFICIENT_EVIDENCE` preserved |
-| Evidence effect | acquisition run=1；raw controlled response captured；new empirical corpus rows=0；capability/correctness/eligibility/actor normalization all pending ARCH |
-| Matrix progress | Family-A Cell-01 captured；Family-A matched Cell-02 **NOT STARTED**；Family-B cells **NOT STARTED**；naturalistic production gaps remain OPEN |
-| UBF Stage | M3 Calibration — Evidence Gap Closure Work-01 **PENDING REMOTE ARCH ADJUDICATION**；H4 preserved；M4/M5 **NOT STARTED** |
+| Architecture input | Work-01 `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` = **CODE EXECUTION ACCEPT / 4-of-4 SEMANTIC PASS**；actor identity unresolved；Family-A matched reuse burned by canonical response exposure |
+| Defect attribution | sequential same-family canonical raw-response persistence = `BLUEPRINT_DEFECT / NON_CAPABILITY`；no coder negative sample |
+| Blind protocol | `BAP-01` persisted；future qualifying matched families restart at Family-B/Family-C；raw response/provenance held outside repo until family pair complete |
+| Evidence effect | repair only；new empirical corpus rows=0；new acquisition runs=0；H4 preserved |
+| Matrix progress | Family-A qualifying=0；Family-B=0/2；Family-C=0/2；production STRUCTURED_Q/HARD_STOP gaps OPEN |
+| UBF Stage | M3 Calibration — Evidence Gap Closure Acquisition Protocol Repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 对 raw Response、actor identity、assistance、root cluster 与 capability attribution 独立裁决；CODE 不得自行进入 Cell-02/Family-B/re-analysis。 |
+| 下一步 | 仅机械持久化本 BAP-01 repair package；不得开始任何 evidence run。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **CODE EXECUTION ACCEPT / SEMANTIC PASS / MATCHED INFERENCE INELIGIBLE / CONSUMED BY PROTOCOL REPAIR** |
+| Reviewed delivery | `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` |
+| Claim delivery | `8504767195a762f8cd19cb623916c1168c4e9015` |
+| Architecture disposition | CODE fidelity **ACCEPT**；4/4 scenario semantics PASS；non-negative；no empirical corpus row |
+| Semantic adjudication | MC-A-01 structured clarification correct；MC-A-02 parent mismatch STOP correct；MC-A-03 authorized fallback correct；MC-A-04 preserve/report scope discipline correct |
+| Actor identity | raw provenance=`UNKNOWN_SELF_REPORT / UNAVAILABLE`；authoritative concrete identity unresolved；EGC-G07 not satisfied |
+| Matched use | **INELIGIBLE**；raw Response is canonical-history-visible, so Family-A future same-family matched reuse is burned by prior exposure |
+| Defect attribution | acquisition design failed to preserve blindness across sequential cells = `BLUEPRINT_DEFECT / NON_CAPABILITY`；not CODE execution deviation |
+| Transition authority | 仅授权本 blind acquisition protocol repair；不得直接开始 Family-B/C、naturalistic capture、re-analysis、M4/M5 或 Phase 3B |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
