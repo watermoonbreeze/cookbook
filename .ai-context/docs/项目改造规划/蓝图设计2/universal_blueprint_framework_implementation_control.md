@@ -1,14 +1,15 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0 ACCEPT / CLOSED; M1 PREVIEW/START ARCH ACCEPTED / CONSUMED; M1 SEMANTIC DECOMPOSITION WORK-01 PERSISTED / PENDING REMOTE ARCH REVIEW`
+> 状态：`M0 ACCEPT / CLOSED; M1 ACCEPT / CLOSED; M1→M2 HANDOFF PERSISTED / PENDING REMOTE ARCH REVIEW; M2 NOT STARTED / NOT AUTHORIZED`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M1 — CURRENT-STATE SEMANTIC DECOMPOSITION`
-> Current Review Result: `795d2b9c807fe3954f1ac5f4cda60392c7ff9cc9 = ACCEPT (M1 Preview/Start entry)`
+> Current UBF Stage: `M1 — END/ACCEPT + M1→M2 HANDOFF PERSISTENCE`
+> Current Review Result: `1723a4f9c050d4da47740d04164fa27d73ea9f2b = ACCEPT (M1 Work-01 closure)`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
+> M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R8 — Execution Architecture v2 + M1 Work-01 STATIC_TARGET_BUNDLE`
+> Process Revision: `R9 — M1 ACCEPT/CLOSED + M1→M2 governed handoff persistence`
 
 ## 1. 目标
 
@@ -92,6 +93,8 @@
 门禁：Truth Pack 完整、commit 与工作区状态明确之前，不进入语义重构。
 
 ### M1 — Current-State Semantic Decomposition
+
+Lifecycle result: `ACCEPT / CLOSED` at reviewed delivery `1723a4f9c050d4da47740d04164fa27d73ea9f2b`. The M1→M2 handoff persisted by `UBF-M1-END-ACCEPT-01` remains pending its own remote ARCH review and does not start M2.
 
 目标：把现行协议拆成真正的语义对象，而不是直接改文案。
 

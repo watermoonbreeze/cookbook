@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M1-END-ACCEPT-01 — M1 End/Accept + M1→M2 Handoff Persistence |
-| 状态 | **CLAIMED / IN EXECUTION** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,12 +20,13 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `1723a4f9c050d4da47740d04164fa27d73ea9f2b` |
+| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
 | Architecture input | R4-REWORK-02 remote delivery `1723a4f9c050d4da47740d04164fa27d73ea9f2b` = **ACCEPT** |
 | Accepted M1 evidence | 64 records/maps/matrices；R4/R4-REWORK-01/R4-REWORK-02 chain/scopes/blobs/whitespace/State-role/Preserve/lifecycle gates PASS |
-| 范围 | 仅持久化 M1 Final Accept、M1→M2 Handoff 与事务证据；不执行 M2，不改 64 records/canonical/Graph/生产代码 |
-| UBF Stage | M0 **ACCEPT/CLOSED**; M1 **ARCH ACCEPT DECIDED / PERSISTENCE IN EXECUTION**; M2 **NOT STARTED / NOT AUTHORIZED** |
+| 范围 | 已持久化 M1 Final Accept 与 M1→M2 Handoff；未执行 M2，未改 64 records/canonical/Graph/生产代码 |
+| UBF Stage | M0 **ACCEPT/CLOSED**; M1 **ACCEPT/CLOSED**; M1→M2 Handoff **PERSISTED / PENDING REMOTE ARCH REVIEW**; M2 **NOT STARTED / NOT AUTHORIZED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 机械落盘 exact 7-file final 后 TURN=REVIEW；本 persistence 获 remote ARCH ACCEPT 后才可另发 M2 Preview/Start |
+| 下一步 | 仅等待 remote ARCH 核验本批两提交链、exact 7-file scope、target blobs、State denyset 与 M1/Handoff truth；ACCEPT 后另发 M2 Preview/Start |
 ## 上一批次：UBF-M1-SEMANTIC-DECOMPOSITION-WORK-01-R4-REWORK-02（2026-08-13）
 | 字段 | 值 |
 |---|---|
