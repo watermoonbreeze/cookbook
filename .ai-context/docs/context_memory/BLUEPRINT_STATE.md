@@ -11,8 +11,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-ANALYSIS-WORK-01 — Cluster-Aware Calibration Analysis Persistence |
-| 状态 | **CLAIMED / IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -20,7 +20,7 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
 | Handoff Parent | `5d6eda046be0b2a09f52059e438cb51f7db38e40` |
-| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-WORK-01 / R1` single-use claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-ANALYSIS-WORK-01 / R1` single-use claim **CONSUMED** |
 | Delegation binding | parent `5d6eda046be0b2a09f52059e438cb51f7db38e40` + target `origin/master` + exact State-only claim + package/revision/single-use |
 | Holder transition | `REVIEW -> CODE` after claim push+remote verify; final/authorized abort returns `REVIEW` |
 | Host isolation | original worktree may be dirty/behind; preserve it; isolated detached clean checkout only |
@@ -28,9 +28,9 @@
 | Analysis boundary | 21 rows / 12 total clusters / 15 eligible rows -> 9 eligible root clusters；cluster outcome 6 positive-only / 2 negative-only / 1 mixed；8 falsification tests |
 | Analysis disposition | **H4_INSUFFICIENT_EVIDENCE**；H1 NOT_ESTABLISHED；H2/H3 PLAUSIBLE_BUT_NOT_DISTINGUISHABLE |
 | 范围 | 仅机械持久化 ARCH 已冻结的 Work-01 analysis；不重分析/重标；Universal Level/Profile/Selector/model ranking/routing decisions=0；不改 canonical/Graph/生产代码 |
-| UBF Stage | Corpus Work-01/02/03 + Probe-01 **ACCEPT/CONSUMED**; Calibration Analysis Preview/Start **ACCEPT/CONSUMED**; Analysis Work-01 **CLAIMED / IN PROGRESS**; M4/M5 **NOT STARTED** |
+| UBF Stage | Corpus Work-01/02/03 + Probe-01 **ACCEPT/CONSUMED**; Calibration Analysis Preview/Start **ACCEPT/CONSUMED**; Analysis Work-01 **COMPLETE / PENDING REMOTE ARCH REVIEW**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 只机械落盘 exact 8 targets、验证 corpus Preserve/analysis recount/zero-decision 后返回 REVIEW；不得自行分析或继续。 |
+| 下一步 | 仅等待 remote ARCH 复核 Work-01；CODE 不得自行进入后续分析、M4/M5 或 Phase 3B。 |
 ## 上一批次：UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|

@@ -133,3 +133,12 @@ M4/M5 NOT STARTED
 PHASE 3B NOT AUTHORIZED TO START
 TURN REVIEW
 ```
+
+
+## 10. Remote ARCH acceptance and Analysis Work-01 authorization
+
+Remote ARCH accepts this Preview/Start at reviewed delivery `5d6eda046be0b2a09f52059e438cb51f7db38e40`. The method contract is therefore **ACCEPT / CONSUMED** and authorizes only the separately architecture-authored `UBF-M3-CALIBRATION-ANALYSIS-WORK-01 / R1` static payload.
+
+Work-01 is permitted to persist an evidence disposition after executing the frozen cluster-aware procedure and eight falsification tests. It is **not** authorized to define Universal Level count/names/thresholds/envelopes/mappings, finalize Task/Capability Profiles or Level Selector, rank models, recommend routing, start M4/M5, or start CookBook Phase 3B.
+
+The ARCH-authored Work-01 result is `H4_INSUFFICIENT_EVIDENCE`; this is an evidence sufficiency disposition, not a Universal Level decision.

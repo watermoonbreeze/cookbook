@@ -526,3 +526,15 @@ STOP：
 - This Preview/Start creates **zero** Universal Level/Profile/Selector/model-ranking/routing decisions.
 - Analysis Work-01 is **NOT STARTED / NOT AUTHORIZED** until remote ARCH accepts this entry.
 - M4/M5 remain NOT STARTED; CookBook Phase 3B remains NOT AUTHORIZED.
+
+
+## M3 Calibration Analysis Work-01 — UBF-M3-CALIBRATION-ANALYSIS-WORK-01
+
+- Parent Preview/Start `5d6eda046be0b2a09f52059e438cb51f7db38e40` = **ACCEPT / CONSUMED**.
+- Accepted inferential unit = root cluster; 15 eligible rows collapse to 9 eligible clusters.
+- Cluster outcome = 6 positive-only / 2 negative-only / 1 mixed; synthetic controlled evidence = 1 cluster.
+- Actor cluster coverage = GPT-5.6 Luna 5 / DeepSeek V4 Flash 3 / DeepSeek V4 Pro 1, with material task/assistance mismatch.
+- Mandatory falsification result: pseudo-replication, synthetic-dependence, actor imbalance, assistance sensitivity and coverage gaps are material; crossover is present; negative-attribution purity and legacy-contamination guards pass.
+- Hypothesis disposition: H1 NOT ESTABLISHED; H2/H3 PLAUSIBLE BUT NOT DISTINGUISHABLE; **H4 INSUFFICIENT EVIDENCE selected**.
+- `H4` is not a Level design decision. Universal Level/Profile/Selector/model ranking/routing decision counters remain 0.
+- Any subsequent M3 task requires a new remote ARCH decision after Work-01 review. M4/M5 and CookBook Phase 3B remain prohibited.

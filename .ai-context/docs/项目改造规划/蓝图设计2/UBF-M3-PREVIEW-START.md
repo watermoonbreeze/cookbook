@@ -225,3 +225,10 @@ Calibration analysis remains `NOT STARTED / NOT AUTHORIZED` until Work-03 receiv
 Remote ARCH accepted Work-03 `99dc95ddd682945bfa6936a7ca2391ff211393ec`. The accepted evidence boundary is 21 rows / 12 root clusters / 15 eligible / 6 context / 12 positive / 3 negative / 6 neutral. Calibration Analysis Preview/Start is now persisted, but Analysis Work-01 remains not started/not authorized.
 
 The analysis contract requires root-cluster independence, synthetic/production stratification, actor/task/assistance confound sensitivity, explicit H1/H2/H3/H4 alternatives and falsification tests. No Universal Level/Profile/Selector/model-ranking/routing conclusion is authorized by this entry.
+
+
+## 17. Calibration Analysis Preview/Start ACCEPT and Work-01 persistence
+
+Remote ARCH accepts `UBF-M3-CALIBRATION-ANALYSIS-PREVIEW-START-01` reviewed delivery `5d6eda046be0b2a09f52059e438cb51f7db38e40` and consumes its root-cluster/falsification method contract. `UBF-M3-CALIBRATION-ANALYSIS-WORK-01` is the only authorized next M3 action.
+
+The ARCH-authored Work-01 analysis collapses 15 eligible rows into 9 eligible root clusters, detects material pseudo-replication/synthetic/actor/assistance/coverage sensitivity, observes task/decision-axis crossover, and selects `H4_INSUFFICIENT_EVIDENCE`. H1 is not established; H2 and H3 remain observationally indistinguishable. Universal Level/Profile/Selector/model-ranking/routing decisions remain zero.

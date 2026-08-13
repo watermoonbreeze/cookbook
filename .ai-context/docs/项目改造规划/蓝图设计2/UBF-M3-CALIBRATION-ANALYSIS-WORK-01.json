@@ -1,0 +1,553 @@
+{
+  "schema_version": "UBF-M3-CALIBRATION-ANALYSIS-WORK-01/1.0",
+  "task_id": "UBF-M3-CALIBRATION-ANALYSIS-WORK-01",
+  "handoff_parent": "5d6eda046be0b2a09f52059e438cb51f7db38e40",
+  "architecture_input": {
+    "preview_start_reviewed_delivery": "5d6eda046be0b2a09f52059e438cb51f7db38e40",
+    "preview_start_disposition": "ARCH_ACCEPT",
+    "accepted_corpus": {
+      "rows": 21,
+      "unique_root_clusters": 12,
+      "eligible_rows": 15,
+      "context_only_rows": 6,
+      "positive_rows": 12,
+      "negative_rows": 3,
+      "neutral_rows": 6
+    },
+    "inferential_unit": "ROOT_INCIDENT_EPISODE_CLUSTER",
+    "eligible_root_clusters": 9,
+    "context_only_numeric_weight": 0
+  },
+  "evidence_inputs": [
+    {
+      "work": "WORK-01",
+      "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01.json",
+      "reviewed_delivery": "1be1afa1185570e67d7d23e965f6f42ea38724df"
+    },
+    {
+      "work": "WORK-02",
+      "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02.json",
+      "reviewed_delivery": "318bbc27f4d485fa0f8de6c66b92c7dc14a3c821"
+    },
+    {
+      "work": "WORK-03",
+      "path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-03.json",
+      "reviewed_delivery": "99dc95ddd682945bfa6936a7ca2391ff211393ec"
+    }
+  ],
+  "procedure": {
+    "weighting": "QUALITATIVE_ORDINAL_CLUSTER_AWARE / NO_ROW_COUNT_SUCCESS_RATE",
+    "steps": [
+      "Filter inferential evidence to CALIBRATION_ELIGIBLE records only.",
+      "Collapse linked records to Root Incident / Episode Cluster ID before confidence claims.",
+      "Stratify synthetic vs production/governance evidence before combined interpretation.",
+      "Inspect actor/model, task-family, package-profile, assistance and decision-axis overlap before any closure-ladder inference.",
+      "Run all eight Preview/Start falsification tests.",
+      "Evaluate H1/H2/H3/H4 without preference for H1.",
+      "If H2 and H3 remain observationally indistinguishable or material coverage gaps could reverse the conclusion, select H4."
+    ]
+  },
+  "eligible_cluster_summary": [
+    {
+      "cluster_id": "M0-GOV-REPAIR-CHAIN-01",
+      "sample_ids": [
+        "M3-S-002",
+        "M3-S-003"
+      ],
+      "signals": [
+        "NEGATIVE",
+        "POSITIVE"
+      ],
+      "models": [
+        "GPT-5.6 Luna"
+      ],
+      "families": [
+        "governance repair"
+      ],
+      "profiles": [
+        "FULL"
+      ],
+      "decision_domains": [
+        "mechanical source application",
+        "truthful completion",
+        "fallback gate",
+        "exact payload execution",
+        "Git transaction",
+        "validation honesty"
+      ],
+      "coverage_tags": [
+        "governance-repair",
+        "incorrect-stop",
+        "execution-deviation",
+        "FULL",
+        "linked-chain",
+        "success",
+        "no-defect"
+      ],
+      "assistance": [
+        "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "MIXED_SEQUENCE"
+    },
+    {
+      "cluster_id": "M1-SEMANTIC-DECOMPOSITION-CHAIN-01",
+      "sample_ids": [
+        "M3-S-007"
+      ],
+      "signals": [
+        "POSITIVE"
+      ],
+      "models": [
+        "GPT-5.6 Luna"
+      ],
+      "families": [
+        "narrow governance truth repair"
+      ],
+      "profiles": [
+        "UNRESOLVED"
+      ],
+      "decision_domains": [
+        "exact payload execution",
+        "State role truth"
+      ],
+      "coverage_tags": [
+        "governance-truth-repair",
+        "success",
+        "no-defect",
+        "static-bundle",
+        "linked-chain"
+      ],
+      "assistance": [
+        "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "POSITIVE"
+    },
+    {
+      "cluster_id": "M2-LEGACY-MAPPING-01",
+      "sample_ids": [
+        "M3-S-008"
+      ],
+      "signals": [
+        "POSITIVE"
+      ],
+      "models": [
+        "GPT-5.6 Luna"
+      ],
+      "families": [
+        "legacy asset mapping persistence"
+      ],
+      "profiles": [
+        "UNRESOLVED"
+      ],
+      "decision_domains": [
+        "exact static payload execution",
+        "recount",
+        "non-inference"
+      ],
+      "coverage_tags": [
+        "legacy-mapping",
+        "success",
+        "no-defect",
+        "static-bundle",
+        "record-recount"
+      ],
+      "assistance": [
+        "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "POSITIVE"
+    },
+    {
+      "cluster_id": "M3-PREVIEW-START-01",
+      "sample_ids": [
+        "M3-S-009"
+      ],
+      "signals": [
+        "POSITIVE"
+      ],
+      "models": [
+        "GPT-5.6 Luna"
+      ],
+      "families": [
+        "M3 stage-entry governance persistence"
+      ],
+      "profiles": [
+        "UNRESOLVED"
+      ],
+      "decision_domains": [
+        "exact static payload execution",
+        "lifecycle/non-inference gates"
+      ],
+      "coverage_tags": [
+        "stage-entry",
+        "success",
+        "no-defect",
+        "static-bundle",
+        "zero-sample"
+      ],
+      "assistance": [
+        "No mid-execution ARCH intervention established beyond package/previous reviewed context; historical carry-over disclosed in confounds."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "POSITIVE"
+    },
+    {
+      "cluster_id": "LEGACY-B456-REPAIR-CHAIN-01",
+      "sample_ids": [
+        "M3-S-010"
+      ],
+      "signals": [
+        "NEGATIVE"
+      ],
+      "models": [
+        "DeepSeek V4 Pro"
+      ],
+      "families": [
+        "production feature repair"
+      ],
+      "profiles": [
+        "BLUEPRINT-FULL / Legacy L7"
+      ],
+      "decision_domains": [
+        "implementation fidelity",
+        "mandatory test closure",
+        "truthful completion ledger"
+      ],
+      "coverage_tags": [
+        "production-feature",
+        "long-range",
+        "REWORK",
+        "execution-deviation",
+        "mandatory-tests",
+        "truthful-evidence",
+        "DeepSeek-V4-Pro",
+        "legacy-L7"
+      ],
+      "assistance": [
+        "No specific mid-execution architecture intervention established for the omitted tests. Historical review/tool assistance may exist; no evidence is used to treat the episode as unassisted model-only performance."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "NEGATIVE"
+    },
+    {
+      "cluster_id": "LEGACY-K1A-NUTRITION-01",
+      "sample_ids": [
+        "M3-S-011"
+      ],
+      "signals": [
+        "POSITIVE"
+      ],
+      "models": [
+        "DeepSeek V4 Flash (1M context)"
+      ],
+      "families": [
+        "production feature implementation"
+      ],
+      "profiles": [
+        "BLUEPRINT-FULL / Legacy L7"
+      ],
+      "decision_domains": [
+        "single-truth-source migration",
+        "batch query/N+1 avoidance",
+        "UI component reuse",
+        "test completion"
+      ],
+      "coverage_tags": [
+        "production-feature",
+        "success",
+        "no-defect",
+        "tests",
+        "KMP",
+        "DeepSeek-V4-Flash",
+        "legacy-L7",
+        "assisted-review"
+      ],
+      "assistance": [
+        "Commit metadata contains Co-Authored-By Claude Fable 5 and the ledger records Google quality review. Exact contribution share is not independently quantified; this row measures delivery fidelity under disclosed review assistance, not unassisted model capability."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "POSITIVE"
+    },
+    {
+      "cluster_id": "LEGACY-L1-CLOUD-CONSENT-01",
+      "sample_ids": [
+        "M3-S-012"
+      ],
+      "signals": [
+        "POSITIVE"
+      ],
+      "models": [
+        "DeepSeek V4 Flash (1M context)"
+      ],
+      "families": [
+        "production feature implementation"
+      ],
+      "profiles": [
+        "BLUEPRINT-FULL / Legacy L7"
+      ],
+      "decision_domains": [
+        "consent state model",
+        "runtime gate uniqueness",
+        "UI routing",
+        "policy disclosure",
+        "test closure"
+      ],
+      "coverage_tags": [
+        "production-feature",
+        "success",
+        "no-defect",
+        "privacy-compliance",
+        "cross-layer",
+        "tests",
+        "DeepSeek-V4-Flash",
+        "legacy-L7",
+        "assisted-review"
+      ],
+      "assistance": [
+        "Commit metadata contains Co-Authored-By Claude Fable 5; ledger records Google quality review and copywriter review. Exact contribution share is unquantified, so this is assisted-condition execution evidence."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "POSITIVE"
+    },
+    {
+      "cluster_id": "LEGACY-K1I-STREAMING-01",
+      "sample_ids": [
+        "M3-S-013"
+      ],
+      "signals": [
+        "NEGATIVE"
+      ],
+      "models": [
+        "DeepSeek V4 Flash (1M context)"
+      ],
+      "families": [
+        "production feature implementation"
+      ],
+      "profiles": [
+        "BLUEPRINT-FULL / Legacy L7"
+      ],
+      "decision_domains": [
+        "runtime delegation",
+        "consent gate reuse",
+        "cancellation semantics",
+        "allowlist discipline"
+      ],
+      "coverage_tags": [
+        "production-feature",
+        "scope-escape",
+        "execution-deviation",
+        "allowlist",
+        "DeepSeek-V4-Flash",
+        "legacy-L7",
+        "assisted-review"
+      ],
+      "assistance": [
+        "Commit metadata contains Co-Authored-By Claude Fable 5 and ledger records Google quality review. This assistance is a confound; the negative signal is limited to the independently verified allowlist/evidence deviation, not code quality."
+      ],
+      "synthetic": false,
+      "cluster_outcome": "NEGATIVE"
+    },
+    {
+      "cluster_id": "M3-CONTROLLED-PROBE-01-CLUSTER",
+      "sample_ids": [
+        "M3-S-016",
+        "M3-S-017",
+        "M3-S-018",
+        "M3-S-019",
+        "M3-S-020",
+        "M3-S-021"
+      ],
+      "signals": [
+        "POSITIVE",
+        "POSITIVE",
+        "POSITIVE",
+        "POSITIVE",
+        "POSITIVE",
+        "POSITIVE"
+      ],
+      "models": [
+        "GPT-5.6 Luna"
+      ],
+      "families": [
+        "synthetic controlled residual-decision probe"
+      ],
+      "profiles": [
+        "BLUEPRINT-LITE"
+      ],
+      "decision_domains": [
+        "semantic authority",
+        "question escalation",
+        "repository authority",
+        "hard-stop",
+        "adapter selection",
+        "compatibility",
+        "mutation boundary",
+        "reporting",
+        "residual choice",
+        "adapter equivalence",
+        "feedback separation",
+        "frozen payload"
+      ],
+      "coverage_tags": [
+        "synthetic-controlled-probe",
+        "BLUEPRINT-LITE",
+        "runtime-discovery",
+        "structured-q",
+        "semantic-underdetermination",
+        "correct-stop",
+        "handoff-parent-truth",
+        "soft-compatibility",
+        "authorized-fallback",
+        "scope-discipline",
+        "denied-path",
+        "reasonable-divergence",
+        "authorized-choice",
+        "architecture-challenge",
+        "frozen-truth"
+      ],
+      "assistance": [
+        "ARCH authored fixture constraints, action enum, transaction boundary and schema, but no semantic answer key or correctness validator; no mid-execution ARCH semantic rescue is established."
+      ],
+      "synthetic": true,
+      "cluster_outcome": "POSITIVE"
+    }
+  ],
+  "cluster_recount": {
+    "eligible_root_clusters": 9,
+    "positive_only_clusters": 6,
+    "negative_only_clusters": 2,
+    "mixed_sequence_clusters": 1,
+    "synthetic_clusters": 1,
+    "non_synthetic_clusters": 8
+  },
+  "actor_cluster_recount": {
+    "GPT-5.6 Luna": 5,
+    "DeepSeek V4 Pro": 1,
+    "DeepSeek V4 Flash (1M context)": 3
+  },
+  "mandatory_falsification_tests": [
+    {
+      "id": "PSEUDO_REPLICATION",
+      "verdict": "MATERIAL_SENSITIVITY / BLOCKS_NAIVE_SCALAR_INFERENCE",
+      "evidence": "Eligible row signals are 12 POSITIVE / 3 NEGATIVE, but cluster-aware evidence is 6 positive-only / 2 negative-only / 1 mixed across 9 eligible clusters. The six Work-03 positive rows collapse to one synthetic cluster.",
+      "effect": "Row-count success rates are invalid and materially overstate the synthetic positive slice."
+    },
+    {
+      "id": "SYNTHETIC_DEPENDENCE",
+      "verdict": "MATERIAL_DEPENDENCE",
+      "evidence": "The single Work-03 synthetic cluster is the only accepted direct evidence for structured-Q, correct STOP, authorized fallback, reasonable divergence and architecture-challenge behavior.",
+      "effect": "Removing it eliminates several decision-axis coverage claims; production generalization on those axes is unsupported."
+    },
+    {
+      "id": "ACTOR_IMBALANCE",
+      "verdict": "MATERIAL_CONFOUND",
+      "evidence": "Eligible clusters are concentrated in GPT-5.6 Luna (5), DeepSeek V4 Flash (3) and DeepSeek V4 Pro (1), with materially different task/profile strata.",
+      "effect": "No population model ranking or actor-independent scalar threshold can be inferred."
+    },
+    {
+      "id": "ASSISTANCE_SENSITIVITY",
+      "verdict": "MATERIAL_CONFOUND",
+      "evidence": "The three DeepSeek V4 Flash production clusters explicitly retain reviewer/co-author assistance confounds; the synthetic Luna cluster is package-constrained and not production causal equivalence.",
+      "effect": "Unassisted production capability cannot be isolated from current observations."
+    },
+    {
+      "id": "TASK_FAMILY_CROSSOVER",
+      "verdict": "CROSSOVER_PRESENT / H1_NOT_ESTABLISHED",
+      "evidence": "The same DeepSeek V4 Flash legacy FULL/L7 production stratum contains two positive clusters and one negative scope-discipline cluster. GPT-5.6 Luna also has a mixed repair-chain cluster plus positive governance/static clusters.",
+      "effect": "Observed outcomes vary by decision surface/task family even within similar actor/profile strata, which is evidence against using profile/risk/task size as a simple scalar proxy."
+    },
+    {
+      "id": "NEGATIVE_ATTRIBUTION_PURITY",
+      "verdict": "PASS",
+      "evidence": "All 3 negative eligible rows remain independently adjudicated EXECUTION_DEVIATION; forbidden negative attribution combinations remain 0.",
+      "effect": "Negative evidence purity is adequate for the limited analysis, but does not cure coverage/confound limitations."
+    },
+    {
+      "id": "COVERAGE_GAP",
+      "verdict": "MATERIAL_GAP",
+      "evidence": "Production structured-Q and correct-STOP evidence remain absent; controlled probe supplies only synthetic coverage. Actor/task/profile overlap is sparse, and DeepSeek V4 Pro has only one eligible cluster.",
+      "effect": "Missing strata could plausibly change H1/H2/H3 discrimination; strong closure claims are not authorized."
+    },
+    {
+      "id": "LEGACY_CONTAMINATION",
+      "verdict": "PASS_WITH_GUARD",
+      "evidence": "Legacy L1-L7/FULL/LITE labels are retained only as observed historical profile metadata and are not treated as Universal Level truth or ordinal targets.",
+      "effect": "No legacy label is used to manufacture a Universal Level mapping."
+    }
+  ],
+  "hypothesis_evaluation": [
+    {
+      "hypothesis": "H1_ONE_DIMENSIONAL_CLOSURE_LADDER_SUPPORTED",
+      "status": "NOT_ESTABLISHED",
+      "basis": [
+        "pseudo-replication sensitivity is material",
+        "synthetic-dependence is material",
+        "actor/task/assistance overlap is insufficient",
+        "within-actor/profile crossover is present"
+      ],
+      "confidence": "LOW"
+    },
+    {
+      "hypothesis": "H2_ONE_DIMENSIONAL_CORE_WITH_SECONDARY_AXES",
+      "status": "PLAUSIBLE_BUT_NOT_DISTINGUISHABLE",
+      "basis": [
+        "a closure core could explain some static/governance successes",
+        "decision-axis crossovers require secondary dimensions",
+        "current matched strata are too sparse to establish the core independently"
+      ],
+      "confidence": "LOW"
+    },
+    {
+      "hypothesis": "H3_MULTI_DIMENSIONAL_ONLY",
+      "status": "PLAUSIBLE_BUT_NOT_DISTINGUISHABLE",
+      "basis": [
+        "decision-domain crossover and synthetic/production separation are compatible with multidimensional capability",
+        "sample and actor overlap are insufficient to rule out a latent one-dimensional core"
+      ],
+      "confidence": "LOW"
+    },
+    {
+      "hypothesis": "H4_INSUFFICIENT_EVIDENCE",
+      "status": "SELECTED",
+      "basis": [
+        "H2 and H3 remain observationally indistinguishable",
+        "multiple mandatory falsification tests show material sensitivity/confounding",
+        "coverage gaps could plausibly reverse a stronger conclusion"
+      ],
+      "confidence": "HIGH_FOR_CURRENT_EVIDENCE_LIMIT"
+    }
+  ],
+  "analysis_disposition": "H4_INSUFFICIENT_EVIDENCE",
+  "bounded_findings": [
+    "Current evidence does not support adopting a simple one-dimensional Universal execution-closure ladder.",
+    "Current evidence also does not prove that no useful one-dimensional core exists; H2 and H3 remain unresolved against each other.",
+    "Package profile, legacy level labels, task size and risk cannot be used as scalar Universal Level proxies from this corpus.",
+    "A future conclusion phase requires better matched production evidence across actors and decision axes, especially structured-Q/correct-STOP and unassisted comparable tasks."
+  ],
+  "next_evidence_requirements": [
+    "At least one production/non-synthetic structured-Q or semantic-underdetermination episode with independent adjudication.",
+    "At least one production/non-synthetic correct Hard STOP episode with independent adjudication.",
+    "Matched or near-matched task-family/decision-axis observations across at least two actors without materially different assistance conditions.",
+    "Additional DeepSeek V4 Pro (or another actor) eligible clusters; one cluster is insufficient for actor comparison.",
+    "At least one unassisted production slice comparable to the assisted DeepSeek V4 Flash production slice.",
+    "Preserve root-cluster identity so retries/repairs do not inflate evidence weight."
+  ],
+  "forbidden_decision_counters": {
+    "universal_level_count_decisions": 0,
+    "universal_level_name_decisions": 0,
+    "universal_level_threshold_decisions": 0,
+    "universal_level_envelope_decisions": 0,
+    "legacy_to_universal_level_mappings": 0,
+    "task_profile_finalizations": 0,
+    "capability_profile_finalizations": 0,
+    "level_selector_finalizations": 0,
+    "model_rankings": 0,
+    "routing_recommendations": 0,
+    "m4_started": 0,
+    "m5_started": 0,
+    "cookbook_phase3b_started": 0
+  },
+  "non_inference": "This Work-01 selects an evidence disposition only. H4_INSUFFICIENT_EVIDENCE is not a Universal Level definition and does not authorize Level/Profile/Selector/model-ranking/routing design."
+}
