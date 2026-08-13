@@ -7,27 +7,36 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02（2026-08-13）
+## 当前批次：UBF-M3-CONTROLLED-CALIBRATION-PROBE-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02 — Empirical Calibration Corpus Work-02 |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CONTROLLED-CALIBRATION-PROBE-01 — Controlled Residual-Decision Calibration Probe |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Execution mode | EVALUATION / INDEPENDENT |
+| Execution mode | EVALUATION / INDEPENDENT / SYNTHETIC_CONTROLLED_PROBE |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
-| Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `1be1afa1185570e67d7d23e965f6f42ea38724df` |
-| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
-| Architecture input | M3 Corpus Work-01 `1be1afa1185570e67d7d23e965f6f42ea38724df` = **ACCEPT / REMOTE ARCH REVIEWED** |
-| 范围 | 仅持久化 ARCH 已冻结的 6 个 Work-02 observations + blueprint/report，并更新 Preview/Control/Ledger/State；Work-01 evidence Preserve；不作 Level/Profile/Selector/canonical/routing/Graph/生产改动 |
-| Frozen recount | Work-02 total=6；unique IDs=6；clusters=6；eligible=4；context=2；excluded=0；positive=2；negative=2；neutral=2；forbidden negative=0；raw calibration decisions=0；combined total=15 / clusters=11 / eligible=9 / context=6 / positive=6 / negative=3 / neutral=6 |
-| Coverage gap | structured Q/correct STOP 仍缺；GPT-5 无 eligible row；legacy production assistance/reviewer confound 必须 stratify；actor/task-family counts 仍不平衡 |
-| UBF Stage | M3 Work-01 **ACCEPT/CONSUMED**; M3 Corpus Work-02 **COMPLETE / PENDING REMOTE ARCH REVIEW**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| Payload mode | BLUEPRINT-LITE / RUNTIME_DISCOVERY_REQUIRED / SCHEMA-BOUND_RUNTIME_EVIDENCE |
+| Handoff Parent | `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821` |
+| Architecture input | M3 Corpus Work-02 `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821` = **ACCEPT / REMOTE ARCH REVIEWED** |
+| 范围 | 仅执行 6-scenario controlled probe；静态 fixture/blueprint/governance targets + schema-bound Response；不创建/重标 corpus row，不作 calibration/Level/Profile/Selector/routing/canonical/Graph/生产改动 |
+| Frozen evidence boundary | Work-01+02 accepted corpus Preserve=15 rows/11 clusters/9 eligible/6 context/6 positive/3 negative/6 neutral；Probe response 尚未 ARCH adjudicate |
+| Coverage purpose | controlled observation of structured-Q choice / correct Hard STOP / fallback / scope discipline / reasonable divergence / architecture challenge；不宣称等价于 production causal evidence |
+| UBF Stage | Work-01/02 **ACCEPT/CONSUMED**; Probe-01 **CLAIMED / IN PROGRESS**; Work-03 **NOT STARTED / NOT AUTHORIZED**; calibration analysis **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 核验本 Work-02；即使 ACCEPT，CODE 也不得自行开始 Work-03、calibration analysis、M4/M5 |
+| 下一步 | 只机械落盘 static targets、填写 schema-bound Response、验证 exact 7-path transaction，随后 RETURN TURN=REVIEW；不得自行 adjudicate 或继续 |
+## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-02（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY PROBE-01** |
+| Reviewed delivery | `318bbc27f4d485fa0f8de6c66b92c7dc14a3c821` |
+| Claim delivery | `09e6f7590309ca6b97d70830982fe8baf8321cac` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | parent `1be1afa...` → claim → final；claim State-only；final exact 7 paths；Work-02=6 rows/6 clusters/4 eligible/2 context/2 positive/2 negative/2 neutral；combined=15 rows/11 clusters/9 eligible/6 context/6 positive/3 negative/6 neutral；forbidden negative=0；raw Universal calibration decisions=0；confounds/Preserve/non-inference |
+| 未解决问题 | coverage insufficiency only：structured Q/correct STOP 缺口、legacy assistance confound、actor/task-family imbalance；不是 Work-02 acceptance defect |
+| Transition authority | 仅授权 `UBF-M3-CONTROLLED-CALIBRATION-PROBE-01` controlled probe；不得开始 Work-03、calibration analysis、M4/M5 或 CookBook Phase 3B |
 ## 上一批次：UBF-M3-EMPIRICAL-CALIBRATION-CORPUS-WORK-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
