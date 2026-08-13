@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / LIFECYCLE REPAIR ACCEPT / EVIDENCE GAP CLOSURE PREVIEW/START IN REVIEW`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / EVIDENCE GAP CLOSURE PREVIEW/START ACCEPT / MATCHED CONTROLLED FAMILY-A CELL-01 IN REVIEW`
 
 ## 1. Entry meaning
 
@@ -252,3 +252,14 @@ The current analysis disposition remains `H4_INSUFFICIENT_EVIDENCE`. This Eviden
 Future execution packages use abstract actor `CODER`; concrete model names belong to runtime provenance and later ARCH normalization. Model capacity substitution alone does not require semantic package regeneration.
 
 Evidence Gap Closure Work-01 remains not started/not authorized until remote ARCH accepts this Preview/Start. M4/M5 and CookBook Phase 3B remain prohibited.
+
+
+## 19. Evidence Gap Closure Preview/Start ACCEPT and Work-01 raw acquisition
+
+Remote ARCH accepts Evidence Gap Closure Preview/Start `423d7382d56765e17ea9395e2b167454d5e1450f`. The entry is consumed only to authorize one specifically frozen matched-controlled raw observation.
+
+Work-01 uses immutable `UBF-M3-EGC-MC-FAMILY-A/R1` (`sha256=af32e947d7c21b4dce0ad9e012b0de28d865a0183f4aa53d13bc006ce45bf33b`). The four scenario responses belong to one execution/root-cluster candidate and MUST NOT be counted as four independent successes/failures.
+
+No answer key is shipped to CODE. Raw response correctness, normalized actor identity, assistance status, capability signal and corpus eligibility remain remote-ARCH decisions. New empirical corpus rows remain 0 and H4 remains preserved.
+
+Family-A Cell-02, Family-B, naturalistic production evidence capture and re-analysis remain separately gated. M4/M5 and CookBook Phase 3B remain prohibited.

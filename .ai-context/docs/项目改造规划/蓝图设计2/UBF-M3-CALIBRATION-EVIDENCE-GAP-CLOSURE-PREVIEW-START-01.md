@@ -126,3 +126,26 @@ Expected repository state after mechanical persistence:
 `H4_INSUFFICIENT_EVIDENCE = PRESERVED`
 `Evidence Gap Closure Work-01 = NOT STARTED / NOT AUTHORIZED`
 `TURN = REVIEW`
+
+
+## 9. Preview/Start remote ACCEPT and Work-01 authorization
+
+Remote ARCH accepts this Preview/Start at `423d7382d56765e17ea9395e2b167454d5e1450f`.
+
+The only acquired evidence now authorized is `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01 / R1`:
+
+- lane: `MATCHED_CONTROLLED`;
+- Family Truth: `UBF-M3-EGC-MC-FAMILY-A/R1`;
+- Family Truth SHA-256: `af32e947d7c21b4dce0ad9e012b0de28d865a0183f4aa53d13bc006ce45bf33b`;
+- cell: `MC-A-CELL-01`;
+- one concrete coder execution = at most one independent root cluster;
+- four scenario responses are within-cluster observations, not four independent clusters;
+- no answer key is included in the execution package;
+- raw evidence only; ARCH correctness/actor normalization/attribution/eligibility remains pending;
+- new empirical corpus rows = 0.
+
+For matched equality, the stable comparison identity is `family_truth_id + family_truth_revision + family_truth_sha256`. Future Git transaction wrappers may have different Handoff Parents/revisions solely to persist later cells; they must reuse this exact Family Truth Capsule unchanged.
+
+Cell-02 is not authorized by Work-01 itself. After Work-01 remote adjudication, ARCH may issue a second wrapper that requires a concrete coder identity distinct from the normalized Cell-01 actor while preserving the exact Family-A Truth Capsule.
+
+All naturalistic production gates EGC-G05/EGC-G06 remain open until real production episodes occur.

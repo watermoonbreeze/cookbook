@@ -9,8 +9,8 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01 — Matched Controlled Family-A Cell-01 |
-| 状态 | **CLAIMED / RAW EVIDENCE ACQUISITION IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / RAW EVIDENCE CAPTURED / PENDING REMOTE ARCH ADJUDICATION** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
@@ -18,16 +18,16 @@
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | STATIC_FAMILY_TRUTH + DYNAMIC_RESPONSE + RUNTIME_PROVENANCE |
 | Handoff Parent | `423d7382d56765e17ea9395e2b167454d5e1450f` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01 / R1` single-use abstract-CODER claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-WORK-01 / R1` single-use abstract-CODER claim **CONSUMED** |
 | Holder transition | `REVIEW -> CODE` after exact State-only claim push+remote verify；same-revision replacement CODER may resume exact in-flight claim；final/abort returns `REVIEW` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-A / R1`；SHA-256 `af32e947d7c21b4dce0ad9e012b0de28d865a0183f4aa53d13bc006ce45bf33b` |
 | Cell | `MC-A-CELL-01`；one execution = one candidate independent root cluster pending ARCH adjudication |
 | Architecture input | Evidence Gap Closure Preview/Start `423d7382d56765e17ea9395e2b167454d5e1450f` = **ARCH ACCEPT / CONSUMED**；H4=`INSUFFICIENT_EVIDENCE` preserved |
-| Evidence effect | acquisition run ACTIVE；raw response not yet persisted；new empirical corpus rows=0；all adjudication remains pending ARCH |
+| Evidence effect | acquisition run=1；raw controlled response captured；new empirical corpus rows=0；capability/correctness/eligibility/actor normalization all pending ARCH |
 | Matrix progress | Family-A Cell-01 captured；Family-A matched Cell-02 **NOT STARTED**；Family-B cells **NOT STARTED**；naturalistic production gaps remain OPEN |
 | UBF Stage | M3 Calibration — Evidence Gap Closure Work-01 **PENDING REMOTE ARCH ADJUDICATION**；H4 preserved；M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅执行本 package 的 Family-A Cell-01 raw response acquisition + exact final persistence；不得自行裁决正确性/能力/eligibility 或继续下一 cell。 |
+| 下一步 | 仅等待 remote ARCH 对 raw Response、actor identity、assistance、root cluster 与 capability attribution 独立裁决；CODE 不得自行进入 Cell-02/Family-B/re-analysis。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
