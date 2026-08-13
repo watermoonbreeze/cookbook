@@ -7,26 +7,35 @@
 **模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体模型名、执行模式与能力证据只写入该台账和执行报告，本文件不重复。
 
 ---
-## 当前批次：UBF-M2-END-ACCEPT-01（2026-08-13）
+## 当前批次：UBF-M3-PREVIEW-START-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M2-END-ACCEPT-01 — M2 End/Accept + M2→M3 Handoff Persistence |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-PREVIEW-START-01 — Empirical Calibration Corpus Stage Entry |
+| 状态 | **CLAIMED / IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Execution mode | EVALUATION / INDEPENDENT |
 | Worktree mode | ISOLATED_DETACHED_CLEAN |
 | Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE / ADAPTER_INDEPENDENT_EVIDENCE |
-| Handoff Parent | `84cd8508e213e3664ec898cd2b9a783570b28de5` |
-| Execution Parent | claim commit（exact 40 位 identity 由 remote Git evidence 持有） |
-| Architecture input | M2 Work-01 `84cd8508e213e3664ec898cd2b9a783570b28de5` = **ACCEPT** |
-| Accepted Work-01 evidence | `c72a19b2... -> 416e3619... -> 84cd8508...`; claim 1/final 7 paths; 7/7 blobs; 48/48 unique; missing/duplicate=0; Legacy 9/8/9/7/5/4/6; UNRESOLVED=48; State denyset; 5 Preserve blobs; whitespace/lifecycle/remote PASS |
-| 范围 | 仅持久化已由 ARCH 作出的 M2 ACCEPT/CLOSED 与 M2→M3 handoff；未启动 M3、未改 mapping/canonical/Graph/生产代码 |
-| UBF Stage | M0/M1/M2 **ACCEPT/CLOSED**; M2→M3 Handoff **PERSISTED / PENDING REMOTE ARCH REVIEW**; M3 **NOT STARTED / NOT AUTHORIZED**; M4/M5 **NOT STARTED** |
+| Handoff Parent | `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` |
+| Execution Parent | 本 claim commit 自身（exact 40 位 identity 由 remote Git evidence 持有） |
+| Architecture input | M2 End/Accept + M2→M3 Handoff persistence `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` = **ACCEPT** |
+| Source identity | package/user canonical hashes verified；root routing is shared coarse Actor/Capability Routing；provider-specific routing is a distinct optional layer and is not required or mutated by this entry |
+| 范围 | 仅消费已 ACCEPT 的 M2→M3 Handoff、持久化 M3 Preview/Start entry contract 与 corpus future-entry requirements；**empirical sample rows = 0**；不作 Level/Profile/Selector/canonical/routing/Graph/生产改动 |
+| UBF Stage | M0/M1/M2 **ACCEPT/CLOSED**; M2→M3 Handoff **ARCH ACCEPTED / AWAITING CONSUMPTION**; M3 Preview/Start **CLAIMED / IN PROGRESS**; M3 Corpus **NOT STARTED / NOT YET AUTHORIZED**; M4/M5 **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 核验两提交链、exact 7-file scope、target blobs、State denyset、Preserve、whitespace 与 M2/Handoff/M3 lifecycle；不得自行启动 M3 |
+| 下一步 | 仅机械落盘 manifest 七个 final targets 并完成证据门禁；不得创建 corpus row；完成后必须 RETURN TURN=REVIEW 并 STOP |
+## 上一批次：UBF-M2-END-ACCEPT-01（2026-08-13）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED** |
+| Reviewed delivery | `0cb6d95057485bebb088523a6fd44a7e5ef1c2a4` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | `84cd8508... -> d8d72673... -> 0cb6d950...`；claim exact 1 State path；final exact 7 paths；7/7 target blobs；7 Preserve blobs；State concrete-model denyset；clean whitespace；remote ref 与 M2/Handoff lifecycle truth；M2 mapping 48/48 unique、missing/duplicate=0、Legacy 9/8/9/7/5/4/6、UNRESOLVED=48 |
+| 未解决问题 | NONE |
+| Transition authority | 仅授权独立 `UBF-M3-PREVIEW-START-01` stage-entry persistence；不得创建 empirical corpus sample row、决定 Universal Level/Profile/Selector、启动 M4/M5 或 CookBook Phase 3B |
 ## 上一批次：UBF-M2-LEGACY-ASSET-MAPPING-WORK-01（2026-08-13）
 | 字段 | 值 |
 |---|---|
