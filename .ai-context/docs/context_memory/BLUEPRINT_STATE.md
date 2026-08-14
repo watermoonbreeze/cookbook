@@ -1,11 +1,37 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01（2026-08-14）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 — Non-Revealing Pre-Pair Seal |
+| 状态 | **CLAIMED / CODE / EXACT NON-REVEALING SEAL AUTHORIZED** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `442096fe81697360049d9b5df8e6986587873809` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Architecture input | Cell-01 transaction after LF repair + repo-external Reveal private review = **ARCH ACCEPT / CONSUMED BY THIS SEAL** |
+| Protocol | `BAP-01` |
+| Sealed result boundary | raw Reveal、response、nonce、concrete actor、scenario outcome and capability result remain ARCH-private |
+| Canonical seal | hashes + integrity/blindness/normalization/eligibility state only；no private result is published |
+| Evidence effect | acquisition runs +0；empirical rows +0；Family-C matched credit remains deferred until peer capture and pair review |
+| Matrix | qualifying families=1/2；Family-B=2/2；Family-C sealed qualifying candidates=1/2 with credit deferred |
+| H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
+| M4/M5 | **NOT STARTED** |
+| CookBook Phase 3B | **NOT AUTHORIZED TO START** |
+| 下一步 | materialize exact seal payload；push final and return its full hash；Cell-02 is not executable until this seal receives remote ARCH ACCEPT and a separate package。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01 — Commitment LF-only canonicalization |
-| 状态 | **COMPLETE / COMMITMENT LF-ONLY CANONICALIZATION APPLIED / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY FAMILY-C CELL-01 PRE-PAIR SEAL** |
+| Reviewed delivery | `442096fe81697360049d9b5df8e6986587873809` |
+| Claim delivery | `79763148c7e7fcbd11c30bb1feab6daf199b0436` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | exact two-commit chain；State-only claim；final exact 8 paths=2A+6M；8/8 blobs；15/15 Preserve；Commitment JSON exact；CRLF=0/LF=22；dual hashes preserved；clean diff；no private leakage；TURN=REVIEW；H4 preserved |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -20,7 +46,7 @@
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | operator gives the full final commit hash to remote ARCH；only after repair ACCEPT may the original repo-external Cell-01 Reveal be submitted for private review。 |
+| Transition authority | only current non-revealing Pre-Pair Seal；private Cell-01 result remains sealed；Cell-02 requires seal ACCEPT and a separate package。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01（2026-08-14）
 | 字段 | 值 |
