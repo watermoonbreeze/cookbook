@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-C QUALIFYING PAIR SEALED / LANE MC 2-FAMILY MATRIX COMPLETE / REMOTE REVIEW PENDING`
+Current Acquisition Status: `FAMILY-C PAIR SEAL ARCH ACCEPT / LANE MC COMPLETE / NP GAPS OPEN / PASSIVE CAPTURE CONTRACT PENDING REMOTE ARCH REVIEW`
 
 ## 1. Purpose
 
@@ -289,3 +289,11 @@ Family-C is sealed as `QUALIFYING_MATCHED_PAIR` with 2/2 cells. Concrete actors,
 Overall qualifying matched-family completion becomes 2/2: Family-B 2/2 and Family-C 2/2. The Lane MC minimum matrix is therefore complete. This seal creates no acquisition run or empirical row and preserves H4 pending the remaining evidence gates.
 
 Naturalistic production gaps EGC-G05 and EGC-G06 remain open. Their required `STRUCTURED_Q` and correct-`HARD_STOP` episodes must be captured from real production context, not manufactured. Re-analysis, M4/M5 and Phase 3B remain unauthorized until all §6 gates receive a fresh ARCH review.
+
+## 23. Naturalistic-production gap reassessment and passive capture contract
+
+Remote ARCH accepts Family-C Pair Seal `f4744068092a8af89e44f0d1920b14a4050e3887` and independently reassesses repository history against §§2–6.
+
+No existing candidate closes Lane NP. The accepted structured-Q/correct-STOP probe rows and Family-A/B/C scenarios are controlled/synthetic; M0 R3 is context-only blocked/external rather than correct Hard STOP; M0 R4 is incorrect STOP; the Family-B R1 correct governance STOP occurred inside a matched-controlled evidence-acquisition wrapper; recovered custody/isolation stops are protocol misreads; early clarification notes lack the full immutable task/parent/actor/residual-boundary/independent-adjudication evidence minimum. Normal completion STOP is not Hard STOP.
+
+Therefore EGC-G05 and EGC-G06 are each `OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL`, not satisfied. The protocol may preserve a candidate only when it occurs naturally during future independently necessary work. It may not create, induce or simulate an event. This persistence creates zero runs, rows and manufactured events, preserves H4, and does not authorize re-analysis, M4/M5 or Phase 3B.

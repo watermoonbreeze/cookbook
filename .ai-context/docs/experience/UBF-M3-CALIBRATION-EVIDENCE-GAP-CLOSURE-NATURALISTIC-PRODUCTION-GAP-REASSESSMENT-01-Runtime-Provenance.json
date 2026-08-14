@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01",
+  "package_revision": "R1",
+  "handoff_parent": "f4744068092a8af89e44f0d1920b14a4050e3887",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": false,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "UNKNOWN_SELF_REPORT",
+      "launcher_or_operator_model_label": "Codex API",
+      "execution_scope": "CLAIM_AND_FINAL",
+      "availability_notes": "NONE"
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

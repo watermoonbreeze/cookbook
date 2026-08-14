@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; MATCHED FAMILIES 2/2 SEALED; NP GAPS OPEN`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4_INSUFFICIENT_EVIDENCE; MATCHED FAMILIES 2/2; NP GAPS OPEN WITH PASSIVE CAPTURE`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — FAMILY-C NON-REVEALING QUALIFYING PAIR SEAL / REMOTE REVIEW GATED`
-> Current Review Result: `88c1f352fae5a3b397b427d9bf8e978b285bb546 = CELL-02 CODE TRANSACTION ACCEPT / PRIVATE FAMILY-C PAIR REVIEW PASS`
+> Current UBF Stage: `M3 CALIBRATION — NATURALISTIC PRODUCTION GAP REASSESSMENT / PASSIVE CAPTURE PERSISTENCE`
+> Current Review Result: `f4744068092a8af89e44f0d1920b14a4050e3887 = FAMILY-C PAIR SEAL ARCH ACCEPT / CONSUMED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -28,8 +28,9 @@
 > M3 Family-C Cell-01 LF Repair Accepted Review Target: `442096fe81697360049d9b5df8e6986587873809`
 > M3 Family-C Cell-01 Pre-Pair Seal Accepted Review Target: `4ebe04088bdc4dfbe0495b2478ecffefe449a038`
 > M3 Family-C Cell-02 Reviewed Target: `88c1f352fae5a3b397b427d9bf8e978b285bb546` — qualifying matched-pair member / private results sealed
+> M3 Family-C Pair Seal Accepted Review Target: `f4744068092a8af89e44f0d1920b14a4050e3887`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R34 — non-revealing Family-C qualifying Pair Seal; Lane MC complete; NP gaps preserved`
+> Process Revision: `R35 — Pair Seal ACCEPT; NP gaps reassessed OPEN; passive non-manufacturing capture contract`
 
 ## 1. 目标
 
@@ -733,3 +734,13 @@ STOP：
 - This seal creates 0 acquisition runs and 0 empirical rows; H4 remains `H4_INSUFFICIENT_EVIDENCE`.
 - Naturalistic production gaps EGC-G05 (`STRUCTURED_Q`) and EGC-G06 (correct `HARD_STOP`) remain open and may not be synthetically manufactured.
 - Re-analysis, M4/M5 and Phase 3B remain unauthorized pending separate evidence and fresh ARCH review.
+
+## M3 Naturalistic Production Gap Reassessment 01
+
+- Pair Seal `f4744068092a8af89e44f0d1920b14a4050e3887` = **ARCH ACCEPT / CONSUMED**.
+- Lane MC minimum matrix remains complete: Family-B 2/2 and Family-C 2/2.
+- Exhaustive public-history reassessment found no existing candidate that simultaneously meets naturalistic-production lane identity, actual Q/STOP behavior, immutable task/parent/root-cluster evidence, actor/assistance provenance and independent ARCH adjudication.
+- EGC-G05 and EGC-G06 are both `OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL`; accepted NP clusters remain 0/0.
+- The passive protocol applies only to future normally authorized real tasks. It forbids dedicated probes, seeded ambiguity, fake parent/preimage changes, hidden fallbacks and any other event manufacture.
+- This persistence creates 0 production events, 0 acquisition runs and 0 empirical rows. Existing analysis/corpus/BAP/Family Truth and private evidence remain Preserve.
+- H4 remains `H4_INSUFFICIENT_EVIDENCE`; re-analysis, M4/M5 and Phase 3B remain unauthorized. After persistence ACCEPT, the system waits for natural occurrence rather than issuing an acquisition run.

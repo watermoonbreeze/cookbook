@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / MATCHED FAMILIES 2/2 SEALED / NP GAPS EGC-G05/G06 OPEN`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / MATCHED FAMILIES 2/2 SEALED / NP GAPS OPEN WITH PASSIVE NON-MANUFACTURING CAPTURE`
 
 ## 1. Entry meaning
 
@@ -385,3 +385,11 @@ Family-C becomes a qualifying matched family with 2/2 cells. Only non-revealing 
 Together with Family-B, the matched-controlled matrix now covers 2/2 required task families. This closes the Lane MC minimum acquisition matrix only; it does not close Evidence Gap Closure as a whole.
 
 Naturalistic production EGC-G05/G06 remain open and cannot be satisfied by synthetic tasks. H4 remains `H4_INSUFFICIENT_EVIDENCE`; re-analysis, M4/M5 and Phase 3B remain unauthorized pending separate evidence and fresh ARCH review.
+
+## 33. Naturalistic-production gap reassessment
+
+Remote ARCH accepts Pair Seal `f4744068092a8af89e44f0d1920b14a4050e3887`, then rechecks canonical history against the frozen Lane NP eligibility and evidence-minimum contract.
+
+No existing episode qualifies for EGC-G05 or EGC-G06. Controlled/synthetic Q/STOP results do not generalize to production; historical blocked/incorrect/protocol-misread events do not become correct Hard STOP; early clarification notes lack the immutable task/provenance/adjudication facets required for calibration eligibility.
+
+Both gaps remain OPEN with an authorized passive capture protocol. The protocol observes future normal work only and forbids manufactured ambiguity, fake parent/preimage failure or dedicated probes. Until independently adjudicated naturalistic clusters exist for both gaps, H4 and every reanalysis/M4/M5/Phase 3B prohibition remain unchanged.

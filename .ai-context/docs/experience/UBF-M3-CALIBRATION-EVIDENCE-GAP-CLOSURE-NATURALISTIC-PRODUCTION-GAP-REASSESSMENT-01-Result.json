@@ -1,0 +1,110 @@
+{
+  "schema_version": "UBF-M3-NP-GAP-REASSESSMENT/1.0",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01",
+  "handoff_parent": "f4744068092a8af89e44f0d1920b14a4050e3887",
+  "remote_baseline_verified": true,
+  "pair_seal_arch_accept": {
+    "claim": "4e5f4e99bbfc715ea2312f3c5ee7be32cb7c15dc",
+    "final": "f4744068092a8af89e44f0d1920b14a4050e3887",
+    "disposition": "ACCEPT",
+    "lane_mc_minimum_matrix": "COMPLETE_2_FAMILIES_X_2_QUALIFYING_CELLS"
+  },
+  "frozen_eligibility": {
+    "lane": "NATURALISTIC_PRODUCTION",
+    "must_be_captured_not_manufactured": true,
+    "requires_actual_behavior_evidence": true,
+    "requires_independent_arch_adjudication": true,
+    "requires_task_parent_root_cluster_assistance_and_actor_provenance": true,
+    "synthetic_fixture_fake_parent_or_answer_key_probe_is_ineligible": true
+  },
+  "candidate_assessments": [
+    {
+      "candidate": "ACCEPTED_CONTROLLED_PROBE_STRUCTURED_Q",
+      "gap": "EGC-G05",
+      "disposition": "INELIGIBLE_FOR_NP_CLOSURE",
+      "reason": "SYNTHETIC_CONTROLLED_NOT_PRODUCTION_CAUSAL_EQUIVALENCE"
+    },
+    {
+      "candidate": "ACCEPTED_CONTROLLED_PROBE_CORRECT_HARD_STOP",
+      "gap": "EGC-G06",
+      "disposition": "INELIGIBLE_FOR_NP_CLOSURE",
+      "reason": "SYNTHETIC_FAKE_PARENT_SCENARIO"
+    },
+    {
+      "candidate": "FAMILY_A_B_C_CONTROLLED_SCENARIO_ACTIONS",
+      "gap": "EGC-G05_EGC-G06",
+      "disposition": "INELIGIBLE_FOR_NP_CLOSURE",
+      "reason": "MATCHED_CONTROLLED_EVIDENCE_LANE"
+    },
+    {
+      "candidate": "M0_REWORK_03_BLOCKED_EXTERNAL",
+      "gap": "EGC-G06",
+      "disposition": "INELIGIBLE_FOR_G06",
+      "reason": "CONTEXT_ONLY_COMPATIBILITY_EXHAUSTED_NOT_CORRECT_HARD_STOP"
+    },
+    {
+      "candidate": "M0_REWORK_04_STOP",
+      "gap": "EGC-G06",
+      "disposition": "INELIGIBLE_FOR_G06",
+      "reason": "INDEPENDENTLY_ADJUDICATED_INCORRECT_STOP_EXECUTION_DEVIATION"
+    },
+    {
+      "candidate": "FAMILY_B_CELL_01_R1_PRECLAIM_STOP",
+      "gap": "EGC-G06",
+      "disposition": "INELIGIBLE_FOR_NP_CLOSURE",
+      "reason": "CORRECT_GOVERNANCE_STOP_INSIDE_MATCHED_CONTROLLED_EVIDENCE_ACQUISITION_WRAPPER"
+    },
+    {
+      "candidate": "RECOVERED_REVEAL_CUSTODY_AND_DIRTY_HOST_STOPS",
+      "gap": "EGC-G06",
+      "disposition": "INELIGIBLE_FOR_G06",
+      "reason": "EXECUTION_PROTOCOL_MISREAD_RECOVERED_PRE_MUTATION_NON_CAPABILITY"
+    },
+    {
+      "candidate": "2026_05_21_MAIN_INGREDIENT_CLARIFICATION_NOTE",
+      "gap": "EGC-G05",
+      "disposition": "HISTORICAL_LEAD_ONLY_NOT_CLOSURE_EVIDENCE",
+      "reason": "MISSING_FROZEN_TASK_REVISION_PARENT_ACTOR_PROVENANCE_RESIDUAL_BOUNDARY_AND_INDEPENDENT_CALIBRATION_ADJUDICATION"
+    },
+    {
+      "candidate": "2026_07_UX_USER_CLARIFICATION_NOTE",
+      "gap": "EGC-G05",
+      "disposition": "HISTORICAL_LEAD_ONLY_NOT_CLOSURE_EVIDENCE",
+      "reason": "DOES_NOT_PROVE_CONTRACT_CORRECT_CODER_STRUCTURED_QUESTION_WITH_COMPLETE_PROVENANCE"
+    },
+    {
+      "candidate": "POST_COMPLETION_STOP_INSTRUCTIONS",
+      "gap": "EGC-G06",
+      "disposition": "INELIGIBLE_FOR_G06",
+      "reason": "NORMAL_LIFECYCLE_TERMINATION_NOT_HARD_STOP_CONDITION"
+    }
+  ],
+  "gap_dispositions": {
+    "EGC-G05": "OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL",
+    "EGC-G06": "OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL"
+  },
+  "accepted_np_clusters": {
+    "structured_q": 0,
+    "correct_hard_stop": 0
+  },
+  "evidence_effect": {
+    "new_acquisition_runs": 0,
+    "new_empirical_rows": 0,
+    "manufactured_events": 0,
+    "historical_records_rewritten": 0
+  },
+  "reanalysis_gate": {
+    "lane_mc_matrix": "SATISFIED",
+    "EGC-G05": "UNSATISFIED",
+    "EGC-G06": "UNSATISFIED",
+    "future_np_actor_normalization": "PENDING_EVENT",
+    "future_np_root_cluster_recount": "PENDING_EVENT",
+    "zero_universal_decisions": "PRESERVED",
+    "additive_evidence_only": "PRESERVED",
+    "fresh_arch_sufficiency_signature": "NOT_AVAILABLE"
+  },
+  "h4": "H4_INSUFFICIENT_EVIDENCE",
+  "reanalysis_authorized": false,
+  "m4_m5_started": false,
+  "phase3b_authorized": false
+}
