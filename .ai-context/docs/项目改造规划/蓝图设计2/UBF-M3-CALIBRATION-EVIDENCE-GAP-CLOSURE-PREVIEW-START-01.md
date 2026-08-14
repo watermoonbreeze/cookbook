@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-C CELL-01 BLIND ACQUISITION COMPLETE / PENDING REMOTE ARCH REVEAL AND PRE-PAIR REVIEW`
+Current Acquisition Status: `FAMILY-C CELL-01 CAPTURED / COMMITMENT LF REPAIR COMPLETE / PENDING REMOTE ARCH REVIEW`
 
 ## 1. Purpose
 
@@ -251,3 +251,11 @@ Cell-01 introduces frozen Family-C Truth R1 with SHA-256 `c98fd56ad559657107c8cf
 Canonical history contains the Family-C Truth and Cell-01 Commitment only. This acquisition adds no empirical corpus row and preserves H4. Family-C matched credit remains deferred pending remote ARCH reveal review and a separate non-revealing Pre-Pair Seal.
 
 Cell-02, naturalistic capture, re-analysis, M4/M5 and Phase 3B remain unauthorized.
+
+## 19. Family-C Cell-01 Commitment LF repair
+
+Remote ARCH reviews Cell-01 delivery `13d63ee407fd4ac60e25f370091294073f1372d5`: the two-commit chain, claim scope, final 9-path scope, 8/8 static blobs, Preserve set, blind schema and no-leakage checks pass. The sole failure is the runtime Commitment blob using CRLF on 22/22 lines, so default `git diff --check` fails the frozen final gate.
+
+This repair changes only canonical line endings for that Commitment to LF. Parsed JSON values, `response_commitment_sha256=e528239a2557729ff861a18c410a84f4a7bf0d1a8799a5f8afbaa8be4a66cdb9` and `reveal_payload_sha256=8f87d9e0d54811164a2651355e49388c930fba53c3178cca497d2798096531a8` remain exact. No Reveal is needed, read or published.
+
+The repair adds no acquisition run or empirical row and preserves Family-C credit as deferred plus H4. Cell-02, naturalistic capture, re-analysis, M4/M5 and Phase 3B remain unauthorized until their separate gates.

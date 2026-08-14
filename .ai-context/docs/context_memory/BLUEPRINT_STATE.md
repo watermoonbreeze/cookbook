@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01 — Commitment LF-only canonicalization |
-| 状态 | **CLAIMED / CODE / EXACT LF-ONLY REPAIR AUTHORIZED** |
-| TURN | CODE |
+| 状态 | **COMPLETE / COMMITMENT LF-ONLY CANONICALIZATION APPLIED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `13d63ee407fd4ac60e25f370091294073f1372d5` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01 / R1` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Family-C Cell-01 delivery `13d63ee407fd4ac60e25f370091294073f1372d5` = **REWORK / COMMITMENT CRLF ONLY** |
 | Repair boundary | normalize the existing Cell-01 Commitment from CRLF to LF；preserve parsed JSON values and both cryptographic hashes exactly |
 | Blind boundary | no Reveal required, read or published；raw actions/rationales/nonce/provenance and concrete actor remain repo-external |
@@ -20,7 +20,7 @@
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | materialize the exact architecture-authored final payload；verify LF-only Commitment, clean diff and exact allowlist；push final and return only its full hash。 |
+| 下一步 | operator gives the full final commit hash to remote ARCH；only after repair ACCEPT may the original repo-external Cell-01 Reveal be submitted for private review。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01（2026-08-14）
 | 字段 | 值 |

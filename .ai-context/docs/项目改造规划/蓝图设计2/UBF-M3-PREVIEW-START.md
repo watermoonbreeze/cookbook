@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C GATED`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C CELL-01 LF REPAIR REVIEW GATED`
 
 ## 1. Entry meaning
 
@@ -351,3 +351,9 @@ Remote ARCH accepts Family-B Pair Seal `6e4214c26ea42467cdf9616d4783ee17fc68ae00
 The new byte-frozen Family-C Truth (`sha256=c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b`) measures source identity, snapshot/view ownership, deterministic regeneration and acceptance-evidence closure under BAP-01.
 
 Only Family-C Truth plus a cryptographic Commitment enters repository history. Raw response, provenance and nonce remain repo-external. New empirical rows remain zero; H4 remains preserved; Family-C Cell-02 requires a separate Pre-Pair Seal ACCEPT and package.
+
+## 29. Family-C Cell-01 Commitment LF repair
+
+Remote ARCH classifies Cell-01 delivery `13d63ee407fd4ac60e25f370091294073f1372d5` as REWORK solely because its Commitment uses CRLF and fails the default clean-diff gate. Transaction shape, eight static artifacts, Preserve, blind schema and confidentiality otherwise pass.
+
+The repair canonicalizes only those line endings to LF while preserving every JSON value and both cryptographic hashes. It does not inspect or publish the repo-external Reveal, create an acquisition run or corpus row, change matched credit, or authorize Cell-02. H4 remains `H4_INSUFFICIENT_EVIDENCE`.
