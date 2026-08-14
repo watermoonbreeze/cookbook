@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 CODE FIDELITY ACCEPT / STATE MODEL-IDENTITY HYGIENE REPAIR IN REVIEW`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B CELL-01 PRE-PAIR SEALED / CELL-02 IN REVIEW`
 
 ## 1. Entry meaning
 
@@ -305,3 +305,13 @@ Canonical repository records only non-revealing seal status/hashes. It does not 
 After separate remote ACCEPT of this seal, Family-B Cell-02 may begin with a concrete coder selected by the operator to differ from the ARCH-sealed Cell-01 actor. Cell-01 Reveal must not be disclosed to that coder.
 
 H4 remains preserved; rows/runs added by this seal = 0.
+
+## 24. Blind Family-B Cell-02
+
+Remote ARCH accepts the Cell-01 Pre-Pair Seal at `673cc9f1a0eb163058edf9fb7f467c429999cebf` and consumes it only to authorize blind Cell-02.
+
+Cell-02 uses the same byte-identical Family-B Truth (`sha256=b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`) under BAP-01. Package authority is abstract `CODER`; the operator selects a distinct concrete coder without exposing the sealed peer identity or Reveal to this execution.
+
+The repository stores only the Cell-02 Commitment. Pair acquisition completion does not equal pair adjudication: actor normalization/distinctness, semantic outcomes, capability signals, eligibility and matched credit remain pending remote ARCH review. New empirical corpus rows remain 0 and H4 remains preserved.
+
+Cell-02 does not authorize Family-C, naturalistic production capture, re-analysis, M4/M5 or CookBook Phase 3B.

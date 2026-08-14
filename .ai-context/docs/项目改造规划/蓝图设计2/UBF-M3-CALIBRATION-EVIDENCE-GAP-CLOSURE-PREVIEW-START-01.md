@@ -202,3 +202,13 @@ To preserve BAP-01 blindness, semantic adjudication, concrete actor identity and
 This seal repairs only the malformed capability-ledger row and persists non-revealing hash/status evidence. It creates 0 new empirical rows and 0 evidence runs.
 
 After this seal is remotely accepted, Cell-02 may be issued. The operator must select a concrete coder different from the sealed Cell-01 actor, and Cell-01 Reveal must not be provided to the Cell-02 coder.
+
+## 14. Blind Family-B Cell-02
+
+The Cell-01 Pre-Pair Seal is remote ARCH ACCEPT at `673cc9f1a0eb163058edf9fb7f467c429999cebf` and is consumed only by this blind Cell-02 acquisition.
+
+Cell-02 reuses exact Family-B Truth revision R1 and SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`. The package remains abstract-CODER-bound. Concrete identity is supplied only in the repo-external Reveal so ARCH can later verify the operator's distinct-actor selection without exposing the sealed peer identity to this coder.
+
+Canonical scope stores a cryptographic Commitment only. Pair acquisition completion still leaves semantic adjudication, actor normalization/distinctness, assistance/blindness, capability signal, corpus eligibility and matched credit pending remote ARCH review. This cell adds 0 empirical rows and preserves H4.
+
+No later acquisition or re-analysis is authorized by Cell-02 itself.

@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02 — Blind Family-B Cell-02 |
-| 状态 | **CLAIMED / BLIND FAMILY-B CELL-02 IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / BLIND COMMITMENT CAPTURED / FAMILY-B PAIR ACQUISITION COMPLETE / PENDING REMOTE ARCH REVEAL AND PAIR REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `673cc9f1a0eb163058edf9fb7f467c429999cebf` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02 / R1` abstract-CODER single-use claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02 / R1` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Cell-01 Pre-Pair Seal `673cc9f1a0eb163058edf9fb7f467c429999cebf` = **ARCH ACCEPT / CONSUMED BY THIS CELL** |
 | Protocol | `BAP-01` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`；must remain byte-identical |
@@ -19,12 +19,12 @@
 | Sealed-peer boundary | no Cell-01 Reveal、raw response、actor identity、semantic result or capability result is supplied to this CODER |
 | Canonical evidence | Cell-02 commitment only；raw actions/rationales/nonce/concrete model/provenance remain outside repo |
 | Reveal | repo-external `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-Blind-Reveal-Bundle.json`；only operator→ARCH |
-| Evidence effect | Cell-02 blind acquisition in progress；new empirical corpus rows=0；matched credit remains deferred |
-| Matrix | Family-A qualifying=0；Family-B Cell-01 PRE-PAIR SEALED；Cell-02 IN PROGRESS；Family-C=0/2 |
+| Evidence effect | Cell-02 blind acquisition run=1；new empirical corpus rows=0；matched credit remains deferred pending ARCH reveal and pair adjudication |
+| Matrix | Family-A qualifying=0；Family-B pair acquisition=2 commitments captured；raw reveals remain repo-external；pair eligibility not yet canonicalized；Family-C=0/2 |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 完成 blind capture 后仅返回 final 40-char commit、repo-external Cell-02 Reveal 路径和 Commitment SHA-256；不得自行 canonicalize pair 或启动后续任务。 |
+| 下一步 | operator 仅把 final 40-char commit、repo-external Cell-02 Reveal 与 Commitment SHA-256 交 remote ARCH；CODE 不得自行 adjudicate/canonicalize pair 或启动 Family-C/naturalistic/re-analysis/M4/M5/Phase3B。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |
