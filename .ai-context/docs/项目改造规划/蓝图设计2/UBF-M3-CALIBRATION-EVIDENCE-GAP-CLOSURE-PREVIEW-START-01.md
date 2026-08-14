@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-B REPLACEMENT CELL-03 CAPTURED / PAIR CANDIDATE IN REVIEW`
+Current Acquisition Status: `FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C CELL-01 GATED`
 
 ## 1. Purpose
 
@@ -233,3 +233,11 @@ Cell-03 uses exact Family-B Truth R1 and SHA-256 `b3d053f2940d0d960f6ea9d4bd370c
 No peer/collision Reveal, raw response, actor identity or outcome is disclosed to this CODER. Canonical history stores only the Cell-03 Commitment. Pair eligibility, distinctness, semantic outcomes, capability signal and matched credit remain pending remote ARCH review.
 
 This replacement adds no empirical row and preserves H4. No later acquisition or re-analysis is authorized by Cell-03 itself.
+
+## 17. Family-B qualifying pair seal
+
+Remote ARCH verifies both qualifying Commitment/Reveal pairs, blindness/exposure control and distinct normalized actors. Family-B is sealed as `QUALIFYING_MATCHED_PAIR` with 2/2 cells.
+
+Concrete actors, responses, scenario outcomes and capability results remain ARCH-private. The excluded Cell-02 collision remains `NON_CAPABILITY` with no coder-negative signal.
+
+Overall matched-family completion is 1/2: Family-B complete, Family-C 0/2. The seal creates no acquisition run or empirical row and leaves H4 unchanged. Only Family-C Cell-01 may be separately authorized after seal ACCEPT.

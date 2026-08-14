@@ -5,25 +5,25 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01 — Non-Revealing Qualifying Pair Seal |
-| 状态 | **CLAIMED / QUALIFYING PAIR SEAL IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / FAMILY-B QUALIFYING PAIR SEALED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `716e3cbb8df0d0f29f1af580be390276ad4c0f7e` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01 / R2` abstract-CODER single-use claim **ACTIVE** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01 / R2` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Cell-03 `15ee0f0fcb721c86200bd234a06ed9bdad42fd87` transaction/reveal integrity = ACCEPT；private Family-B pair review = qualifying；actors/results remain sealed |
 | Protocol | `BAP-01` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`；must remain byte-identical |
 | Actor boundary | concrete actors remain ARCH-private；canonical seal publishes distinctness PASS without naming actors |
-| Sealed-result boundary | no raw Reveal、response、nonce、actor identity、scenario outcome or capability result is supplied to CODER |
+| Sealed-result boundary | raw Reveal、response、nonce、actor identity、scenario outcome and capability result remain sealed |
 | Canonical seal | integrity/blindness/distinctness/eligibility status and cryptographic hashes only |
-| Evidence effect | no new acquisition run；new empirical corpus rows=0；Family-B qualifying matched cells=2/2 after seal |
+| Evidence effect | no new acquisition run；new empirical corpus rows=0；Family-B qualifying matched cells=2/2 |
 | Matrix | qualifying families=1/2；Family-B=2/2 qualifying sealed；Cell-02 remains ineligible collision；Family-C=0/2 |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | CODE 仅完成 non-revealing Pair Seal 并返回 REVIEW；不得读取私有 Reveal/result 或启动 Family-C；Family-C Cell-01 only after remote ARCH ACCEPT。 |
+| 下一步 | operator 仅把 Pair Seal final 40-char commit 交 remote ARCH；ACCEPT 后仅可签发 blind Family-C Cell-01；不得自行启动。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-03（2026-08-14）
 | 字段 | 值 |
@@ -34,7 +34,7 @@
 | Commitment | `d653784f64034c00d786542fb32b8a38683598f7d60d36d965f18262f294f083` |
 | Reveal payload | `217fdea7bc1efcf23821e9715c101e887bb1c03078c3cf5949e27fca2e4f6b79` |
 | Blind review | integrity/blindness/actor distinctness PASS；actors, responses, semantic and capability results remain SEALED |
-| Pair effect | Cell-01 + Cell-03 qualify as Family-B matched pair；canonicalization only through current non-revealing seal |
+| Pair effect | Cell-01 + Cell-03 qualify as Family-B matched pair；canonicalized only by current non-revealing seal |
 | Transition authority | only current Pair Seal；Family-C remains unauthorized until seal ACCEPT |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01（2026-08-14）

@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS+PROBE ACCEPT; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B REPLACEMENT CELL-03 CAPTURED / IN REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C GATED`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — BLIND FAMILY-B REPLACEMENT CELL-03 / PAIR CANDIDATE REVIEW`
-> Current Review Result: `c8741c97e8a31c16ac42636600b8c019a8f53292 = ARCH ACCEPT / IDENTITY-COLLISION SEAL / CONSUMED BY CELL-03`
+> Current UBF Stage: `M3 CALIBRATION — FAMILY-B QUALIFYING PAIR SEAL / FAMILY-C ENTRY GATED`
+> Current Review Result: `15ee0f0fcb721c86200bd234a06ed9bdad42fd87 = CODE TRANSACTION ACCEPT / REVEAL INTEGRITY+BLINDNESS+DISTINCTNESS PASS`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -23,8 +23,9 @@
 > M3 Family-B Cell-01 Pre-Pair Seal Accepted Review Target: `673cc9f1a0eb163058edf9fb7f467c429999cebf`
 > M3 Family-B Cell-02 Reviewed Target: `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` — identity collision / matched inference ineligible / non-capability
 > M3 Family-B Cell-02 Identity-Collision Seal Accepted Review Target: `c8741c97e8a31c16ac42636600b8c019a8f53292`
+> M3 Family-B Cell-03 Reviewed Target: `15ee0f0fcb721c86200bd234a06ed9bdad42fd87` — qualifying matched-pair member / private results sealed
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R28 — blind Family-B replacement Cell-03 capture; pair candidate remains sealed pending remote ARCH review`
+> Process Revision: `R29 — non-revealing Family-B qualifying pair seal; Family-C Cell-01 gated by remote ARCH ACCEPT`
 
 ## 1. 目标
 
@@ -665,3 +666,13 @@ STOP：
 - Capture completion does not establish semantic correctness, actor distinctness, capability signal, corpus eligibility or matched credit; all remain pending remote ARCH reveal/pair adjudication.
 - This cell creates 0 empirical corpus rows and preserves `H4_INSUFFICIENT_EVIDENCE`.
 - Family-C, naturalistic production capture, re-analysis, M4/M5 and CookBook Phase 3B remain unauthorized.
+
+## M3 Family-B Qualifying Pair Seal
+
+- Cell-01 and Cell-03 Commitment/Reveal integrity = PASS; blindness/exposure control = PASS.
+- Private actor normalization establishes `PASS_DISTINCT_NORMALIZED_ACTORS`; actor identities remain ARCH-private.
+- Family-B is a `QUALIFYING_MATCHED_PAIR` with 2/2 qualifying cells. Cell-02 remains ineligible identity collision/non-capability.
+- Semantic/capability details remain sealed and are not published by this mechanical seal.
+- Matched-family matrix is now 1/2 families complete: Family-B 2/2; Family-C 0/2.
+- This seal creates 0 evidence runs and 0 empirical rows; H4 remains `H4_INSUFFICIENT_EVIDENCE`.
+- After remote ARCH ACCEPT, only blind Family-C Cell-01 may be issued. All later work remains separately gated.

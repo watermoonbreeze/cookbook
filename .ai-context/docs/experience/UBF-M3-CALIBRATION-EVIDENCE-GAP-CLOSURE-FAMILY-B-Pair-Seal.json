@@ -1,0 +1,52 @@
+{
+  "schema_version": "UBF-M3-EGC-QUALIFYING-PAIR-SEAL/1.0",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01",
+  "package_revision": "R2",
+  "handoff_parent": "716e3cbb8df0d0f29f1af580be390276ad4c0f7e",
+  "protocol": "BAP-01",
+  "family_truth": {
+    "id": "UBF-M3-EGC-MC-FAMILY-B",
+    "revision": "R1",
+    "sha256": "b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163"
+  },
+  "qualifying_cells": [
+    {
+      "cell_id": "MC-B-CELL-01",
+      "delivery": "bd96410bd20e3a41848ca61a98eb41875e7c8829",
+      "commitment_sha256": "4dc7307c6c3fc3529a4f77400d183cb84f3e7a2f39e3aadf89a2c4a6cf170227",
+      "reveal_payload_sha256": "8ac02e8747bb457ffbb344c11b99e5b75f9050751b6fdc8385dd4056337aa15f",
+      "concrete_actor": "SEALED_ARCH_PRIVATE",
+      "semantic_result": "SEALED_ARCH_PRIVATE",
+      "capability_result": "SEALED_ARCH_PRIVATE"
+    },
+    {
+      "cell_id": "MC-B-CELL-03",
+      "claim": "41100feed3a5e76a90421dbdd1e3a0f9f65aad53",
+      "delivery": "15ee0f0fcb721c86200bd234a06ed9bdad42fd87",
+      "commitment_sha256": "d653784f64034c00d786542fb32b8a38683598f7d60d36d965f18262f294f083",
+      "reveal_payload_sha256": "217fdea7bc1efcf23821e9715c101e887bb1c03078c3cf5949e27fca2e4f6b79",
+      "concrete_actor": "SEALED_ARCH_PRIVATE",
+      "semantic_result": "SEALED_ARCH_PRIVATE",
+      "capability_result": "SEALED_ARCH_PRIVATE"
+    }
+  ],
+  "excluded_cell": {
+    "cell_id": "MC-B-CELL-02",
+    "status": "INELIGIBLE_IDENTITY_COLLISION",
+    "defect_attribution": "NON_CAPABILITY",
+    "coder_negative_signal": "NONE"
+  },
+  "commitment_reveal_integrity": "PASS_BOTH_QUALIFYING_CELLS",
+  "blindness_and_exposure_control": "PASS",
+  "actor_distinctness": "PASS_DISTINCT_NORMALIZED_ACTORS",
+  "matched_pair_eligibility": "QUALIFYING_MATCHED_PAIR",
+  "family_b_qualifying_cells": 2,
+  "family_b_required_cells": 2,
+  "qualifying_families_complete": 1,
+  "qualifying_families_required": 2,
+  "private_results_publication": "PROHIBITED",
+  "next_authorized_after_remote_accept": "MC-C-CELL-01",
+  "new_evidence_runs": 0,
+  "new_empirical_rows": 0,
+  "h4": "H4_INSUFFICIENT_EVIDENCE"
+}

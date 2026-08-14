@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B REPLACEMENT CELL-03 CAPTURED / PAIR CANDIDATE IN REVIEW`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C GATED`
 
 ## 1. Entry meaning
 
@@ -335,3 +335,11 @@ Cell-03 reuses the byte-identical Family-B Truth under BAP-01. The operator sele
 The repository stores only Cell-03 Commitment. Its raw response, provenance and nonce remain outside repository history. Cell-01 + Cell-03 becomes only a pair candidate: actor normalization/distinctness, semantic outcomes, assistance/blindness, capability signals, eligibility and matched credit remain pending remote ARCH review.
 
 New empirical rows remain zero and H4 remains preserved. Cell-03 does not authorize Family-C, naturalistic production capture, re-analysis, M4/M5 or CookBook Phase 3B.
+
+## 27. Family-B qualifying pair seal
+
+Remote ARCH verifies Cell-01 and Cell-03 Commitment/Reveal integrity, blindness controls and distinct normalized actors. Family-B therefore becomes one qualifying matched family with 2/2 cells.
+
+The canonical seal publishes only hashes and integrity/blindness/distinctness/eligibility status. Concrete actors, raw responses, scenario outcomes and capability results remain ARCH-private. Cell-02 remains an ineligible non-capability identity-collision record.
+
+The matched-family gate is now 1/2 families complete; Family-C remains 0/2. This seal adds no run or row and preserves H4. Family-C Cell-01 requires separate remote ARCH ACCEPT/package.
