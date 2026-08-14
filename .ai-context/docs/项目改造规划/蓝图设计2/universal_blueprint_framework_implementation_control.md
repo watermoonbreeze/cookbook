@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B QUALIFYING; FAMILY-C CELL-01 CAPTURED / COMMITMENT LF REPAIR REVIEW GATED`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B QUALIFYING; FAMILY-C CELL-01 PRE-PAIR SEALED`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — FAMILY-C CELL-01 COMMITMENT LF REPAIR / REMOTE REVIEW GATED`
-> Current Review Result: `13d63ee407fd4ac60e25f370091294073f1372d5 = REWORK / COMMITMENT CRLF ONLY`
+> Current UBF Stage: `M3 CALIBRATION — FAMILY-C CELL-01 NON-REVEALING PRE-PAIR SEAL / REMOTE REVIEW GATED`
+> Current Review Result: `442096fe81697360049d9b5df8e6986587873809 = LF REPAIR ARCH ACCEPT / CELL-01 PRIVATE REVIEW COMPLETE AND SEALED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -25,8 +25,9 @@
 > M3 Family-B Cell-02 Identity-Collision Seal Accepted Review Target: `c8741c97e8a31c16ac42636600b8c019a8f53292`
 > M3 Family-B Cell-03 Reviewed Target: `15ee0f0fcb721c86200bd234a06ed9bdad42fd87` — qualifying matched-pair member / private results sealed
 > M3 Family-B Pair Seal Accepted Review Target: `6e4214c26ea42467cdf9616d4783ee17fc68ae00`
+> M3 Family-C Cell-01 LF Repair Accepted Review Target: `442096fe81697360049d9b5df8e6986587873809`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R31 — Family-C Cell-01 Commitment LF-only canonicalization; Reveal and Cell-02 remain gated`
+> Process Revision: `R32 — Family-C Cell-01 non-revealing Pre-Pair Seal; Cell-02 gated by seal ACCEPT and distinct actor`
 
 ## 1. 目标
 
@@ -696,3 +697,14 @@ STOP：
 - Repo-external Reveal is neither required nor inspected by this repair. Actor, response, nonce and semantic/capability outcome stay sealed.
 - New acquisition runs=0; new empirical rows=0; Family-C matched credit remains deferred; H4 remains `H4_INSUFFICIENT_EVIDENCE`.
 - After repair remote ACCEPT, the operator may submit the original Cell-01 Reveal privately to ARCH. Family-C Cell-02 remains unauthorized until a separate Pre-Pair Seal ACCEPT/package.
+
+## M3 Family-C Cell-01 Pre-Pair Seal
+
+- LF repair `442096fe81697360049d9b5df8e6986587873809` = **ARCH ACCEPT / CONSUMED**.
+- Cell-01 Commitment/Reveal integrity and blindness/exposure controls = PASS under private ARCH review.
+- Semantic adjudication and concrete actor normalization are complete but remain sealed until the Family-C pair is complete.
+- Canonical persistence is limited to hashes plus non-revealing sealed status. Raw Reveal, response, nonce, actor, scenario outcome and capability result remain outside repository history.
+- Cell-01 contributes one sealed pair candidate; Family-C matched credit remains deferred until peer acquisition and private pair review.
+- This seal creates 0 acquisition runs and 0 empirical rows; H4 remains `H4_INSUFFICIENT_EVIDENCE`.
+- After remote ARCH ACCEPT of this seal, only blind Family-C Cell-02 may be issued. Its operator-selected concrete coder must differ from the ARCH-sealed Cell-01 actor.
+- Cell-01 Reveal must never be disclosed to Cell-02 CODER. Naturalistic capture, re-analysis, M4/M5 and Phase 3B remain unauthorized.

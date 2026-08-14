@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 — Non-Revealing Pre-Pair Seal |
-| 状态 | **CLAIMED / CODE / EXACT NON-REVEALING SEAL AUTHORIZED** |
-| TURN | CODE |
+| 状态 | **COMPLETE / NON-REVEALING PRE-PAIR SEAL MATERIALIZED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `442096fe81697360049d9b5df8e6986587873809` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Cell-01 transaction after LF repair + repo-external Reveal private review = **ARCH ACCEPT / CONSUMED BY THIS SEAL** |
 | Protocol | `BAP-01` |
 | Sealed result boundary | raw Reveal、response、nonce、concrete actor、scenario outcome and capability result remain ARCH-private |
@@ -21,7 +21,7 @@
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | materialize exact seal payload；push final and return its full hash；Cell-02 is not executable until this seal receives remote ARCH ACCEPT and a separate package。 |
+| 下一步 | operator gives the full final commit hash to remote ARCH；after seal ACCEPT, ARCH may issue only blind Family-C Cell-02 under a different concrete actor。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01（2026-08-14）
 | 字段 | 值 |

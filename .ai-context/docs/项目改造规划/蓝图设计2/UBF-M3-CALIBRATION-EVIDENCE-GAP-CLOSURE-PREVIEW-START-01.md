@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-C CELL-01 CAPTURED / COMMITMENT LF REPAIR COMPLETE / PENDING REMOTE ARCH REVIEW`
+Current Acquisition Status: `FAMILY-C CELL-01 PRE-PAIR SEALED / CELL-02 GATED BY SEAL ACCEPT`
 
 ## 1. Purpose
 
@@ -259,3 +259,13 @@ Remote ARCH reviews Cell-01 delivery `13d63ee407fd4ac60e25f370091294073f1372d5`:
 This repair changes only canonical line endings for that Commitment to LF. Parsed JSON values, `response_commitment_sha256=e528239a2557729ff861a18c410a84f4a7bf0d1a8799a5f8afbaa8be4a66cdb9` and `reveal_payload_sha256=8f87d9e0d54811164a2651355e49388c930fba53c3178cca497d2798096531a8` remain exact. No Reveal is needed, read or published.
 
 The repair adds no acquisition run or empirical row and preserves Family-C credit as deferred plus H4. Cell-02, naturalistic capture, re-analysis, M4/M5 and Phase 3B remain unauthorized until their separate gates.
+
+## 20. Family-C Cell-01 Pre-Pair Seal
+
+Remote ARCH accepts LF repair `442096fe81697360049d9b5df8e6986587873809` and privately verifies the original Cell-01 Commitment/Reveal pair, exposure controls, semantic disposition and concrete actor normalization.
+
+The canonical seal publishes only commitment/reveal hashes plus non-revealing integrity, sealed-adjudication and sealed-normalization states. Raw Reveal, response, nonce, concrete actor, scenario outcome and capability result remain ARCH-private and are not supplied to CODER.
+
+Cell-01 is one sealed Family-C pair candidate; canonical matched credit remains deferred until the peer is acquired and the pair is privately reviewed. This seal creates no acquisition run or empirical row and preserves H4.
+
+After this seal receives remote ARCH ACCEPT, only blind Family-C Cell-02 may be separately issued. The operator must select a concrete coder different from the ARCH-sealed Cell-01 actor, and Cell-01 Reveal must never be disclosed to that coder.
