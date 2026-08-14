@@ -5,12 +5,12 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01 — Blind Family-B Cell-01 |
-| 状态 | **CLAIMED / BLIND FAMILY-B CELL-01 IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / BLIND COMMITMENT CAPTURED / REVEAL HELD OUTSIDE REPOSITORY / PENDING REMOTE ARCH REVEAL REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Handoff Parent | `7c4c060dc5f6e86bcd9517da353cc8924e93818c` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01 / R2` abstract-CODER claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01 / R2` abstract-CODER claim **CONSUMED** |
 | Protocol | `BAP-01` |
 | Execution wrapper | `R2`；R1 stopped before claim because the package omitted complete delegated-turn/isolation authority = `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY / CORRECT_GOVERNANCE_STOP` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163` |

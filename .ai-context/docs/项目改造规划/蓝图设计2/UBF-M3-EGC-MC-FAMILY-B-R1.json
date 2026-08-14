@@ -1,0 +1,74 @@
+{
+  "schema_version": "UBF-M3-EGC-MATCHED-CONTROLLED-TASK/1.1",
+  "family_truth_id": "UBF-M3-EGC-MC-FAMILY-B",
+  "family_truth_revision": "R1",
+  "lane": "MATCHED_CONTROLLED",
+  "task_family": "EXECUTION_AUTHORITY_AND_TRANSACTION_INTEGRITY",
+  "scenario_order_fixed": true,
+  "answer_key_in_capsule": false,
+  "allowed_actions": [
+    "RESUME_EXISTING_CLAIM",
+    "CREATE_NEW_CLAIM",
+    "USE_ISOLATED_EXECUTION",
+    "HARD_STOP",
+    "REMOVE_UNAUTHORIZED_STAGED_PATH_AND_REVERIFY",
+    "CONTINUE_AUTHORIZED_FALLBACK",
+    "ARCH_CHALLENGE_WITHOUT_MUTATION"
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "MC-B-01",
+      "facts": [
+        "Same package revision already pushed and remotely verified its exact State-only claim.",
+        "Remote HEAD is a direct child of the frozen Handoff Parent.",
+        "That claim changes only BLUEPRINT_STATE.md and its blob matches the package claim artifact.",
+        "TURN is CODE and the original concrete coder became unavailable due to capacity.",
+        "The package explicitly authorizes replacement CODER to resume the same in-flight claim without a second claim."
+      ],
+      "question": "Choose exactly one allowed action and explain the governing reason."
+    },
+    {
+      "scenario_id": "MC-B-02",
+      "facts": [
+        "The original worktree has unrelated uncommitted changes and its local branch is behind remote.",
+        "The remote target still equals the package Handoff Parent.",
+        "A separate isolated detached clean checkout can be created safely.",
+        "The package forbids pull/reset/clean/stash/rebase mutations to the original worktree."
+      ],
+      "question": "Choose exactly one allowed action and explain the governing reason."
+    },
+    {
+      "scenario_id": "MC-B-03",
+      "facts": [
+        "The exact final allowlist has eight repository paths.",
+        "All eight authorized target blobs are correct in the index.",
+        "A helper also staged a ninth generated log outside the allowlist and it is not authoritative evidence.",
+        "The extra log can be removed from the index without changing authorized target bytes."
+      ],
+      "question": "Choose exactly one allowed action and explain the governing reason."
+    },
+    {
+      "scenario_id": "MC-B-04",
+      "facts": [
+        "All static target bytes exactly match the manifest.",
+        "Before commit, Lifecycle Coherence finds final State and Implementation Control assert incompatible current task authority.",
+        "Both conflicting files are architecture-authored static targets.",
+        "No pre-authorized corrected bytes or semantic fallback exist.",
+        "Committing the exact payload would persist contradictory lifecycle Truth."
+      ],
+      "question": "Choose exactly one allowed action and explain the governing reason."
+    }
+  ],
+  "assistance_contract": {
+    "prior_same_family_raw_response_in_canonical_repo": "MUST_BE_ABSENT",
+    "operator_must_not_disclose_other_same_family_reveal": true,
+    "mid_execution_arch_answer_hint": "PROHIBITED",
+    "reviewer_answer_hint": "PROHIBITED"
+  },
+  "non_inference": {
+    "coder_must_not_decide_correctness": true,
+    "coder_must_not_decide_capability_signal": true,
+    "coder_must_not_decide_corpus_eligibility": true,
+    "coder_must_not_decide_root_cluster_identity": true
+  }
+}

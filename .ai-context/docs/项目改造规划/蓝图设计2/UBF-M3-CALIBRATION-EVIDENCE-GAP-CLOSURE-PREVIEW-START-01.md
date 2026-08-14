@@ -188,3 +188,7 @@ Classification: `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`.
 The narrow repair removes that label from State and records review truth. It does not alter BAP-01, Work-01 evidence, Family-A burn, the qualifying matrix or any calibration result.
 
 Blind Family-B Cell-01 remains not authorized until this repair receives remote ARCH ACCEPT.
+
+
+## 12. Blind Family-B Cell-01 authorization
+Parent `7c4c060dc5f6e86bcd9517da353cc8924e93818c` accepted. Family SHA `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`. Reveal only to ARCH. Cell-02 is not authorized.

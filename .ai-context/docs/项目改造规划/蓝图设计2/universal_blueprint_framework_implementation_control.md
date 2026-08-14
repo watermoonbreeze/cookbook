@@ -607,3 +607,10 @@ STOP：
 - new evidence runs=0; new empirical rows=0; H4=`H4_INSUFFICIENT_EVIDENCE`.
 - Blind Family-B Cell-01 remains **NOT STARTED / NOT AUTHORIZED** until this repair receives remote ARCH ACCEPT.
 - M4/M5 and CookBook Phase 3B remain prohibited.
+
+
+## Blind Family-B Cell-01
+- Parent `7c4c060dc5f6e86bcd9517da353cc8924e93818c` ARCH ACCEPT.
+- Family SHA `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`.
+- Canonical commitment only; raw response/model/nonce outside repo.
+- rows=0; matched credit=0 before reveal; Cell-02 **NOT STARTED / NOT AUTHORIZED**; H4=`H4_INSUFFICIENT_EVIDENCE`.

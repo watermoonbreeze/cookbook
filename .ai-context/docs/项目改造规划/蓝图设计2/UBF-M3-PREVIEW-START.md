@@ -291,3 +291,7 @@ A package-generated State historical row repeated a concrete runtime/model label
 This is `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`. The only authorized repair removes the concrete label from State and updates lifecycle/ledger review truth. BAP-01, Family-A adjudication, H4 and all accepted evidence remain unchanged.
 
 Family-B blind acquisition is not started until this repair is separately accepted.
+
+
+## 22. Blind Family-B Cell-01
+Parent `7c4c060dc5f6e86bcd9517da353cc8924e93818c` ARCH ACCEPT. Family SHA `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`. Only commitment is canonical; rows=0; qualifying matrix credit=0; H4 preserved; Cell-02 not authorized.
