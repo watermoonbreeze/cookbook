@@ -1,6 +1,0 @@
-ingredients=502 nutrition=502 candidates=79
-NOT in ingredients.json: 4
-  idx#42  name='帕玛森'  inNutrition=False
-  idx#43  name='切达'  inNutrition=False
-  idx#44  name='车达'  inNutrition=False
-  idx#45  name='马苏里拉'  inNutrition=False
