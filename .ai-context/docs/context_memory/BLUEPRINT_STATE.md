@@ -1,27 +1,42 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01（2026-08-14）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01 — Blind Family-B Cell-01 |
-| 状态 | **COMPLETE / BLIND COMMITMENT CAPTURED / REVEAL HELD OUTSIDE REPOSITORY / PENDING REMOTE ARCH REVEAL REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01 — Cell-01 Pre-Pair Seal + Ledger Repair |
+| 状态 | **CLAIMED / PRE-PAIR SEAL PERSISTENCE IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
-| Handoff Parent | `7c4c060dc5f6e86bcd9517da353cc8924e93818c` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01 / R2` abstract-CODER claim **CONSUMED** |
-| Protocol | `BAP-01` |
-| Execution wrapper | `R2`；R1 stopped before claim because the package omitted complete delegated-turn/isolation authority = `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY / CORRECT_GOVERNANCE_STOP` |
-| Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163` |
-| Canonical evidence | commitment only；raw actions/rationales/nonce/concrete model/provenance NOT in repo |
-| Reveal | repo-external `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-Blind-Reveal-Bundle.json`；仅交 ARCH；不得给 Cell-02 CODER |
-| Evidence effect | blind acquisition run=1；new empirical corpus rows=0；qualifying matrix credit=0 pending reveal |
-| Matrix | Family-A qualifying=0；Family-B Cell-01 reveal pending；Cell-02 NOT STARTED；Family-C=0/2 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `bd96410bd20e3a41848ca61a98eb41875e7c8829` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **ACTIVE / CONSUMING** |
+| Architecture input | Family-B Cell-01 `bd96410bd20e3a41848ca61a98eb41875e7c8829` transaction fidelity **ACCEPT**；Commitment/Reveal integrity verified by ARCH |
+| Blind confidentiality | semantic adjudication、concrete actor、capability result remain **SEALED UNTIL FAMILY-B PAIR COMPLETE** |
+| Canonical seal | `.ai-context/docs/experience/UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-Pre-Pair-Seal.json`；contains hashes/status only；no raw answer/no concrete actor/no semantic result |
+| Ledger repair | Family-B Cell-01 row separated from previous row；model/result remain SEALED_PRE_PAIR |
+| Evidence effect | new evidence runs=0；new empirical corpus rows=0；matched credit remains deferred until pair completion |
+| Matrix | Family-A qualifying=0；Family-B Cell-01 **PRE-PAIR SEALED**；Cell-02 NOT STARTED；Family-C=0/2 |
+| Cell-02 gate | after remote ARCH ACCEPT of this seal, ARCH may issue Cell-02；operator must choose concrete coder different from ARCH-sealed Cell-01 actor；Cell-01 Reveal must not be shown to Cell-02 coder |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | operator 仅把 final commit hash + repo-external reveal 交 ARCH；CODE 不得继续下一 cell。 |
+| 下一步 | 仅机械持久化 Pre-Pair Seal + ledger formatting repair；不得开始 Cell-02。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 状态 | **CODE TRANSACTION ACCEPT / COMMITMENT-REVEAL INTEGRITY PASS / PRE-PAIR SEALED** |
+| Reviewed delivery | `bd96410bd20e3a41848ca61a98eb41875e7c8829` |
+| Claim delivery | `e00cabe703aec65efbc60b18679e4b69fd6b2b56` |
+| Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163` |
+| Commitment | `4dc7307c6c3fc3529a4f77400d183cb84f3e7a2f39e3aadf89a2c4a6cf170227` |
+| Reveal payload | `8ac02e8747bb457ffbb344c11b99e5b75f9050751b6fdc8385dd4056337aa15f` |
+| Blind result | ARCH has completed private reveal review; semantic result and concrete actor remain sealed from canonical repo until Family-B pair completes |
+| Canonical matched credit | **DEFERRED**；not published as 1/2 before peer acquisition |
+| Architecture defect | capability-ledger row concatenation = `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`；narrow repair included in current task |
+| Transition authority | 仅授权当前 Pre-Pair Seal + ledger formatting repair；不得自行启动 Cell-02 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01（2026-08-14）
 | 字段 | 值 |
