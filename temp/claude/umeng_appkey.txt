@@ -1,5 +1,0 @@
-友盟 U-App 统计 AppKey（Cookbook "今天吃啥" · com.sxdbsm.cookbook.android）
-AppKey = 6a5cd910cbfa6959517ccd4b
-用户 2026-07-19 提供。
-接入：填 UmengAnalyticsSink 的 UMConfigure.init；别明文提交 git；init 须在用户同意匿名统计之后。
-（本文件在 temp/ 下，已被 .gitignore 排除，不会提交。）
