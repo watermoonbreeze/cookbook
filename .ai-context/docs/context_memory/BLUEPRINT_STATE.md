@@ -1,11 +1,39 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01（2026-08-14）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01 — Blind Family-C Cell-01 |
+| 状态 | **CLAIMED / BLIND ACQUISITION IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `6e4214c26ea42467cdf9616d4783ee17fc68ae00` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Architecture input | Family-B Pair Seal `6e4214c26ea42467cdf9616d4783ee17fc68ae00` = **ARCH ACCEPT / CONSUMED BY THIS CELL** |
+| Protocol | `BAP-01` |
+| Family Truth | `UBF-M3-EGC-MC-FAMILY-C/R1`；SHA-256 `c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b`；new frozen capsule；must remain byte-identical for Cell-02 |
+| Actor boundary | package authority=`CODER`；concrete actor provenance only in repo-external Reveal and normalized privately by ARCH |
+| Sealed-peer boundary | first Family-C cell；no same-family peer Reveal/raw response exists or is supplied |
+| Canonical evidence | Family-C Truth + Cell-01 Commitment only；raw actions/rationales/nonce/provenance remain outside repo |
+| Reveal | repo-external `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-Blind-Reveal-Bundle.json`；operator→remote ARCH only |
+| Evidence effect | current acquisition not complete；new empirical corpus rows=0；Family-C matched credit deferred |
+| Matrix | qualifying families=1/2；Family-B=2/2；Family-C=0/2 before this acquisition completes |
+| H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
+| M4/M5 | **NOT STARTED** |
+| CookBook Phase 3B | **NOT AUTHORIZED TO START** |
+| 下一步 | CODE completes only blind Family-C Cell-01, pushes Commitment-only canonical transaction, returns Reveal to operator and returns State to REVIEW；不得启动 Cell-02。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01 — Non-Revealing Qualifying Pair Seal |
-| 状态 | **COMPLETE / FAMILY-B QUALIFYING PAIR SEALED / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY FAMILY-C CELL-01** |
+| Reviewed delivery | `6e4214c26ea42467cdf9616d4783ee17fc68ae00` |
+| Claim delivery | `ed2afe42e1b7c762316ec2aa1691d93f7af1c237` |
+| Architecture disposition | **ACCEPT** |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -23,7 +51,7 @@
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | operator 仅把 Pair Seal final 40-char commit 交 remote ARCH；ACCEPT 后仅可签发 blind Family-C Cell-01；不得自行启动。 |
+| Transition authority | only current blind Family-C Cell-01；private Family-B results remain sealed。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-03（2026-08-14）
 | 字段 | 值 |
