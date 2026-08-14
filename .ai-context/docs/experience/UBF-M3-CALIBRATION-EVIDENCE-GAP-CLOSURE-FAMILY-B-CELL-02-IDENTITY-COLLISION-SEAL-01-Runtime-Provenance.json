@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01",
+  "package_revision": "R1",
+  "handoff_parent": "72e296a80eb71eb9a864c528e3c1ae3ba791ce4a",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": false,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "Codex",
+      "launcher_or_operator_model_label": "Codex",
+      "execution_scope": "CLAIM_AND_FINAL",
+      "availability_notes": "NONE"
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

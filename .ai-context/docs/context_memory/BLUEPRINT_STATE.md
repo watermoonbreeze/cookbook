@@ -5,31 +5,31 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01 — Non-Revealing Identity-Collision Seal |
-| 状态 | **CLAIMED / IDENTITY-COLLISION SEAL IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / IDENTITY COLLISION SEALED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01 / R1` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Cell-02 `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` transaction and Commitment/Reveal integrity = **ACCEPT**；private actor normalization found same-actor collision；private actor identities/results remain sealed |
 | Protocol | `BAP-01` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`；must remain byte-identical |
-| Actor boundary | package authority=`CODER`；both concrete actor identities remain ARCH-private and MUST NOT be written into State/package/repo |
-| Sealed-result boundary | no raw Reveal、response、nonce、actor identity、per-scenario outcome or capability result is supplied to this CODER |
-| Canonical seal | persist only collision class, integrity status, non-capability attribution, zero matched credit and replacement requirement |
+| Actor boundary | package authority=`CODER`；both concrete actor identities remain ARCH-private and are not written into State/package/repo |
+| Sealed-result boundary | raw Reveal、response、nonce、actor identity、per-scenario outcome and capability result remain sealed |
+| Canonical seal | collision class, integrity status, non-capability attribution, zero matched credit and replacement requirement only |
 | Defect attribution | `OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY / ACQUISITION_IDENTITY_CONFOUND / NON_CAPABILITY`；coder-negative signal=`NONE` |
 | Evidence effect | no new acquisition run；new empirical corpus rows=0；Family-B qualifying matched credit remains 0/deferred |
 | Matrix | Family-A qualifying=0；Family-B Cell-01 retained sealed；Cell-02 ineligible due identity collision；Cell-03 not started；Family-C=0/2 |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | CODE 仅完成本 non-revealing collision seal 并返回 REVIEW；不得读取/请求 Reveal、不得推断或写入演员/语义私有事实、不得启动 Cell-03/Family-C/naturalistic/re-analysis/M4/M5/Phase3B。 |
+| 下一步 | operator 仅把本 seal final 40-char commit 交 remote ARCH；remote ACCEPT 后才可签发 blind replacement Cell-03，并须由与 sealed peer 不同的 concrete actor 执行；CODE 不得自行启动。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02（2026-08-14）
 | 字段 | 值 |
 |---|---|
-| 状态 | **CODE TRANSACTION ACCEPT / COMMITMENT-REVEAL INTEGRITY PASS / IDENTITY COLLISION PENDING NON-REVEALING SEAL** |
+| 状态 | **CODE TRANSACTION ACCEPT / COMMITMENT-REVEAL INTEGRITY PASS / IDENTITY COLLISION SEALED** |
 | Reviewed delivery | `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` |
 | Claim delivery | `40f801da882e2b1240f07f6ec6dde72cb87d094f` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163` |
@@ -38,7 +38,7 @@
 | Blind review | integrity PASS；normalized actor distinctness FAIL；actor identities, raw response and semantic/capability outcomes remain SEALED |
 | Canonical matched credit | **0 / DEFERRED**；Cell-02 ineligible for matched inference |
 | Defect attribution | `OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY / ACQUISITION_IDENTITY_CONFOUND / NON_CAPABILITY`；not CODE execution deviation |
-| Transition authority | only this non-revealing seal；replacement Cell-03 requires separate remote ARCH ACCEPT and distinct concrete actor |
+| Transition authority | replacement Cell-03 requires separate remote ARCH ACCEPT and distinct concrete actor |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |

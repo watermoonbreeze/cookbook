@@ -1,0 +1,52 @@
+{
+  "schema_version": "UBF-M3-EGC-IDENTITY-COLLISION-SEAL/1.0",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01",
+  "package_revision": "R1",
+  "handoff_parent": "72e296a80eb71eb9a864c528e3c1ae3ba791ce4a",
+  "protocol": "BAP-01",
+  "family_truth": {
+    "id": "UBF-M3-EGC-MC-FAMILY-B",
+    "revision": "R1",
+    "sha256": "b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163"
+  },
+  "cell_01": {
+    "delivery": "bd96410bd20e3a41848ca61a98eb41875e7c8829",
+    "commitment_sha256": "4dc7307c6c3fc3529a4f77400d183cb84f3e7a2f39e3aadf89a2c4a6cf170227",
+    "reveal_payload_sha256": "8ac02e8747bb457ffbb344c11b99e5b75f9050751b6fdc8385dd4056337aa15f",
+    "concrete_actor": "SEALED",
+    "semantic_result": "SEALED",
+    "capability_result": "SEALED"
+  },
+  "cell_02": {
+    "claim": "40f801da882e2b1240f07f6ec6dde72cb87d094f",
+    "delivery": "72e296a80eb71eb9a864c528e3c1ae3ba791ce4a",
+    "commitment_sha256": "c0fcf24d733977354e6d33a04099903e7d2687fe7b222f58a5a1a9f2eebf909c",
+    "reveal_payload_sha256": "6866c00b5e212d9d99f30bf295747ec2d728957df7c987a1115015d398c564f0",
+    "concrete_actor": "SEALED",
+    "semantic_result": "SEALED",
+    "capability_result": "SEALED"
+  },
+  "commitment_reveal_integrity": "PASS",
+  "actor_distinctness": "FAIL_SAME_NORMALIZED_ACTOR",
+  "matched_inference": "INELIGIBLE_IDENTITY_COLLISION",
+  "canonical_matched_credit": 0,
+  "defect_attribution": {
+    "primary": "OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY",
+    "confound": "ACQUISITION_IDENTITY_CONFOUND",
+    "capability_class": "NON_CAPABILITY",
+    "coder_negative_signal": "NONE"
+  },
+  "blindness": {
+    "raw_reveals_in_repo": false,
+    "raw_responses_in_repo": false,
+    "actor_identities_published": false,
+    "scenario_outcomes_published": false,
+    "capability_results_published": false
+  },
+  "family_b_status": "NEEDS_DISTINCT_REPLACEMENT_CELL",
+  "replacement_cell": "MC-B-CELL-03",
+  "replacement_authorization": "PENDING_REMOTE_ARCH_ACCEPT_OF_THIS_SEAL",
+  "new_evidence_runs": 0,
+  "new_empirical_rows": 0,
+  "h4": "H4_INSUFFICIENT_EVIDENCE"
+}

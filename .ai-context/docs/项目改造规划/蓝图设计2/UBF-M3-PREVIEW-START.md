@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B CELL-01 PRE-PAIR SEALED / CELL-02 IN REVIEW`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B CELL-02 IDENTITY COLLISION SEALED / DISTINCT REPLACEMENT REQUIRED`
 
 ## 1. Entry meaning
 
@@ -315,3 +315,13 @@ Cell-02 uses the same byte-identical Family-B Truth (`sha256=b3d053f2940d0d960f6
 The repository stores only the Cell-02 Commitment. Pair acquisition completion does not equal pair adjudication: actor normalization/distinctness, semantic outcomes, capability signals, eligibility and matched credit remain pending remote ARCH review. New empirical corpus rows remain 0 and H4 remains preserved.
 
 Cell-02 does not authorize Family-C, naturalistic production capture, re-analysis, M4/M5 or CookBook Phase 3B.
+
+## 25. Family-B Cell-02 identity-collision seal
+
+Remote ARCH accepts Cell-02 transaction fidelity and Commitment/Reveal integrity at `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a`, but private normalization establishes that the required cross-cell actor-distinctness gate failed.
+
+The canonical seal records only `FAIL_SAME_NORMALIZED_ACTOR`, `INELIGIBLE_IDENTITY_COLLISION`, zero matched credit and the non-capability attribution. It does not publish either actor, raw response, scenario outcome or capability result.
+
+This event is an `OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY / ACQUISITION_IDENTITY_CONFOUND / NON_CAPABILITY`, not an execution deviation and not a coder-negative sample. It creates no new evidence run or corpus row and preserves H4.
+
+Family-B remains recoverable through a separately authorized replacement `MC-B-CELL-03` executed by a distinct concrete actor after this seal receives remote ARCH ACCEPT. No later acquisition or re-analysis is authorized by the seal itself.

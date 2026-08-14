@@ -11,6 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
+Current Acquisition Status: `FAMILY-B CELL-02 IDENTITY COLLISION SEALED / DISTINCT REPLACEMENT REQUIRED`
 
 ## 1. Purpose
 
@@ -212,3 +213,13 @@ Cell-02 reuses exact Family-B Truth revision R1 and SHA-256 `b3d053f2940d0d960f6
 Canonical scope stores a cryptographic Commitment only. Pair acquisition completion still leaves semantic adjudication, actor normalization/distinctness, assistance/blindness, capability signal, corpus eligibility and matched credit pending remote ARCH review. This cell adds 0 empirical rows and preserves H4.
 
 No later acquisition or re-analysis is authorized by Cell-02 itself.
+
+## 15. Family-B Cell-02 identity-collision seal
+
+Cell-02 delivery `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` passed transaction and Commitment/Reveal integrity review. Private actor normalization nevertheless failed the required distinctness gate with `FAIL_SAME_NORMALIZED_ACTOR`.
+
+Both actor identities, raw Reveals, responses, scenario outcomes and capability results remain sealed. Canonical matched credit is `0 / DEFERRED`, and Cell-02 is `INELIGIBLE_IDENTITY_COLLISION` for matched inference.
+
+The event is classified `OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY / ACQUISITION_IDENTITY_CONFOUND / NON_CAPABILITY` with coder-negative signal `NONE`. This seal adds no evidence run or empirical row and does not change H4.
+
+The Family-B Truth is not burned because raw responses remain outside canonical history. After this seal receives remote ARCH ACCEPT, ARCH may issue replacement `MC-B-CELL-03` for a concrete actor distinct from the sealed peer. Cell-03 and all later lanes remain unauthorized until separately issued.
