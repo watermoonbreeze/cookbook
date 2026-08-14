@@ -1,30 +1,44 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02（2026-08-14）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02 — Blind Family-B Cell-02 |
-| 状态 | **COMPLETE / BLIND COMMITMENT CAPTURED / FAMILY-B PAIR ACQUISITION COMPLETE / PENDING REMOTE ARCH REVEAL AND PAIR REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01 — Non-Revealing Identity-Collision Seal |
+| 状态 | **CLAIMED / IDENTITY-COLLISION SEAL IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Handoff Parent | `673cc9f1a0eb163058edf9fb7f467c429999cebf` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02 / R1` abstract-CODER single-use claim **CONSUMED** |
-| Architecture input | Cell-01 Pre-Pair Seal `673cc9f1a0eb163058edf9fb7f467c429999cebf` = **ARCH ACCEPT / CONSUMED BY THIS CELL** |
+| Handoff Parent | `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-IDENTITY-COLLISION-SEAL-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Architecture input | Cell-02 `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` transaction and Commitment/Reveal integrity = **ACCEPT**；private actor normalization found same-actor collision；private actor identities/results remain sealed |
 | Protocol | `BAP-01` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`；must remain byte-identical |
-| Actor boundary | package authority=`CODER`；concrete actor identity exists only in repo-external provenance and is normalized by ARCH after reveal |
-| Sealed-peer boundary | no Cell-01 Reveal、raw response、actor identity、semantic result or capability result is supplied to this CODER |
-| Canonical evidence | Cell-02 commitment only；raw actions/rationales/nonce/concrete model/provenance remain outside repo |
-| Reveal | repo-external `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02-Blind-Reveal-Bundle.json`；only operator→ARCH |
-| Evidence effect | Cell-02 blind acquisition run=1；new empirical corpus rows=0；matched credit remains deferred pending ARCH reveal and pair adjudication |
-| Matrix | Family-A qualifying=0；Family-B pair acquisition=2 commitments captured；raw reveals remain repo-external；pair eligibility not yet canonicalized；Family-C=0/2 |
+| Actor boundary | package authority=`CODER`；both concrete actor identities remain ARCH-private and MUST NOT be written into State/package/repo |
+| Sealed-result boundary | no raw Reveal、response、nonce、actor identity、per-scenario outcome or capability result is supplied to this CODER |
+| Canonical seal | persist only collision class, integrity status, non-capability attribution, zero matched credit and replacement requirement |
+| Defect attribution | `OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY / ACQUISITION_IDENTITY_CONFOUND / NON_CAPABILITY`；coder-negative signal=`NONE` |
+| Evidence effect | no new acquisition run；new empirical corpus rows=0；Family-B qualifying matched credit remains 0/deferred |
+| Matrix | Family-A qualifying=0；Family-B Cell-01 retained sealed；Cell-02 ineligible due identity collision；Cell-03 not started；Family-C=0/2 |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | operator 仅把 final 40-char commit、repo-external Cell-02 Reveal 与 Commitment SHA-256 交 remote ARCH；CODE 不得自行 adjudicate/canonicalize pair 或启动 Family-C/naturalistic/re-analysis/M4/M5/Phase3B。 |
+| 下一步 | CODE 仅完成本 non-revealing collision seal 并返回 REVIEW；不得读取/请求 Reveal、不得推断或写入演员/语义私有事实、不得启动 Cell-03/Family-C/naturalistic/re-analysis/M4/M5/Phase3B。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-02（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 状态 | **CODE TRANSACTION ACCEPT / COMMITMENT-REVEAL INTEGRITY PASS / IDENTITY COLLISION PENDING NON-REVEALING SEAL** |
+| Reviewed delivery | `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` |
+| Claim delivery | `40f801da882e2b1240f07f6ec6dde72cb87d094f` |
+| Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163` |
+| Commitment | `c0fcf24d733977354e6d33a04099903e7d2687fe7b222f58a5a1a9f2eebf909c` |
+| Reveal payload | `6866c00b5e212d9d99f30bf295747ec2d728957df7c987a1115015d398c564f0` |
+| Blind review | integrity PASS；normalized actor distinctness FAIL；actor identities, raw response and semantic/capability outcomes remain SEALED |
+| Canonical matched credit | **0 / DEFERRED**；Cell-02 ineligible for matched inference |
+| Defect attribution | `OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY / ACQUISITION_IDENTITY_CONFOUND / NON_CAPABILITY`；not CODE execution deviation |
+| Transition authority | only this non-revealing seal；replacement Cell-03 requires separate remote ARCH ACCEPT and distinct concrete actor |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |
