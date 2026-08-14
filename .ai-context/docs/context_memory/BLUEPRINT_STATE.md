@@ -1,11 +1,38 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01（2026-08-14）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01 — Commitment LF-only canonicalization |
+| 状态 | **CLAIMED / CODE / EXACT LF-ONLY REPAIR AUTHORIZED** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `13d63ee407fd4ac60e25f370091294073f1372d5` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Architecture input | Family-C Cell-01 delivery `13d63ee407fd4ac60e25f370091294073f1372d5` = **REWORK / COMMITMENT CRLF ONLY** |
+| Repair boundary | normalize the existing Cell-01 Commitment from CRLF to LF；preserve parsed JSON values and both cryptographic hashes exactly |
+| Blind boundary | no Reveal required, read or published；raw actions/rationales/nonce/provenance and concrete actor remain repo-external |
+| Evidence effect | acquisition runs +0；empirical rows +0；Family-C matched credit remains deferred |
+| Matrix | qualifying families=1/2；Family-B=2/2；Family-C commitments captured=1/2 with qualifying credit deferred |
+| H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
+| M4/M5 | **NOT STARTED** |
+| CookBook Phase 3B | **NOT AUTHORIZED TO START** |
+| 下一步 | materialize the exact architecture-authored final payload；verify LF-only Commitment, clean diff and exact allowlist；push final and return only its full hash。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01 — Blind Family-C Cell-01 |
-| 状态 | **COMPLETE / BLIND COMMITMENT CAPTURED / FAMILY-C CELL-01 ACQUISITION COMPLETE / PENDING REMOTE ARCH REVEAL AND PRE-PAIR REVIEW** |
+| 状态 | **REWORK / REMOTE ARCH REVIEWED / COMMITMENT LF CANONICALIZATION REQUIRED** |
+| Reviewed delivery | `13d63ee407fd4ac60e25f370091294073f1372d5` |
+| Claim delivery | `ec2f2ef42b28cfd89e04840d55c44f0f201d2d40` |
+| Architecture disposition | **REWORK** |
+| 已验证 | two-commit chain；claim exact State-only；final exact 9 paths=4A+5M；8/8 static blobs；12/12 Preserve；Commitment schema/forbidden-key/no-leakage PASS；TURN=REVIEW；H4 preserved |
+| 未通过 | Commitment blob `d6d668e3f06bbc4cb34f06fb0e5b84c0c181effd` uses CRLF on 22/22 lines；default `git diff --check ec2f2ef... 13d63ee...` reports 22 trailing-whitespace failures |
+| 归因 | `CODE_EXECUTION_GATE_DEVIATION / NON_SEMANTIC / NON_CAPABILITY`；response commitment and reveal payload hashes remain unchanged；private Reveal not adjudicated |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -24,7 +51,7 @@
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | operator gives final 40-char commit + repo-external Reveal + Commitment SHA-256 only to remote ARCH；Cell-02 requires separate Pre-Pair Seal ACCEPT/package。 |
+| Transition authority | only the current LF repair；do not resubmit or expose Reveal；Cell-02 remains unauthorized。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |
