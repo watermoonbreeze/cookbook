@@ -1,27 +1,44 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02（2026-08-14）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 — Non-Revealing Pre-Pair Seal |
-| 状态 | **COMPLETE / NON-REVEALING PRE-PAIR SEAL MATERIALIZED / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02 — Blind Family-C Cell-02 |
+| 状态 | **CLAIMED / CODE / EXACT BLIND ACQUISITION AUTHORIZED** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
-| Handoff Parent | `442096fe81697360049d9b5df8e6986587873809` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **CONSUMED** |
-| Architecture input | Cell-01 transaction after LF repair + repo-external Reveal private review = **ARCH ACCEPT / CONSUMED BY THIS SEAL** |
+| Handoff Parent | `4ebe04088bdc4dfbe0495b2478ecffefe449a038` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Architecture input | Family-C Cell-01 Pre-Pair Seal `4ebe04088bdc4dfbe0495b2478ecffefe449a038` = **ARCH ACCEPT / CONSUMED BY THIS CELL** |
 | Protocol | `BAP-01` |
-| Sealed result boundary | raw Reveal、response、nonce、concrete actor、scenario outcome and capability result remain ARCH-private |
-| Canonical seal | hashes + integrity/blindness/normalization/eligibility state only；no private result is published |
-| Evidence effect | acquisition runs +0；empirical rows +0；Family-C matched credit remains deferred until peer capture and pair review |
-| Matrix | qualifying families=1/2；Family-B=2/2；Family-C sealed qualifying candidates=1/2 with credit deferred |
+| Family Truth | `UBF-M3-EGC-MC-FAMILY-C/R1`；SHA-256 `c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b`；must remain byte-identical |
+| Actor boundary | package authority=`CODER`；operator selects a concrete actor different from the ARCH-sealed Cell-01 actor；private identity is repo-external only |
+| Sealed-peer boundary | Cell-01 Reveal、raw response、concrete actor、semantic result and capability result are not supplied to this CODER |
+| Evidence effect | blind acquisition run in progress；empirical rows +0；Family-C matched credit remains deferred pending private pair review |
+| Matrix | qualifying families=1/2；Family-B=2/2；Family-C pair capture in progress with canonical credit deferred |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | operator gives the full final commit hash to remote ARCH；after seal ACCEPT, ARCH may issue only blind Family-C Cell-02 under a different concrete actor。 |
+| 下一步 | complete the exact BAP-01 Commitment transaction；return full final hash and repo-external Reveal custody receipt；do not adjudicate the pair。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 — Non-Revealing Pre-Pair Seal |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY FAMILY-C CELL-02** |
+| Reviewed delivery | `4ebe04088bdc4dfbe0495b2478ecffefe449a038` |
+| Claim delivery | `d442e95d60f3f81ef186abe21852ca27b169c5b4` |
+| 已验证 | exact two-commit chain；State-only claim；final exact 9 paths=4A+5M；8/8 static blobs；18/18 Preserve；Runtime-Provenance schema；no private leakage；TURN=REVIEW；H4 preserved |
+| TURN | REVIEW |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **CONSUMED** |
+| Sealed result boundary | raw Reveal、response、nonce、concrete actor、scenario outcome and capability result remain ARCH-private |
+| Evidence effect | acquisition runs +0；empirical rows +0；Family-C matched credit remains deferred |
+| Transition authority | only current blind Family-C Cell-02 under a distinct concrete actor；no private Cell-01 evidence may be disclosed。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-COMMITMENT-LF-REPAIR-01（2026-08-14）
 | 字段 | 值 |
