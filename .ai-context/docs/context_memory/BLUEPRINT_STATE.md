@@ -5,23 +5,23 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01 — Non-Revealing Family-C Qualifying Pair Seal |
-| 状态 | **CLAIMED / CODE / EXACT NON-REVEALING PAIR SEAL AUTHORIZED** |
-| TURN | CODE |
+| 状态 | **COMPLETE / FAMILY-C QUALIFYING PAIR SEALED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `88c1f352fae5a3b397b427d9bf8e978b285bb546` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Cell-01 sealed candidate + Cell-02 transaction/Reveal private review = **QUALIFYING MATCHED PAIR / CONSUMED BY THIS SEAL** |
 | Protocol | `BAP-01` |
 | Sealed result boundary | raw Reveals、responses、nonces、concrete actors、scenario outcomes and capability results remain ARCH-private |
 | Canonical seal | commitment/reveal hashes + integrity/blindness/distinctness/eligibility state only；no private result is published |
-| Evidence effect | acquisition runs +0；empirical rows +0；Family-C canonical pair credit materialized only by this non-revealing seal |
-| Matrix | qualifying families=1/2 before this seal；Family-B=2/2；Family-C private pair review PASS / seal in progress |
+| Evidence effect | acquisition runs +0；empirical rows +0；Family-C=2/2 qualifying cells；canonical matched-family credit=1 |
+| Matrix | qualifying families=2/2；Family-B=2/2；Family-C=2/2；Lane MC minimum matrix complete |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | materialize exact non-revealing pair seal；push final and return full hash；do not start naturalistic capture or re-analysis。 |
+| 下一步 | operator gives full final hash to remote ARCH；after seal ACCEPT, ARCH reassesses remaining NP production gaps；re-analysis remains unauthorized while EGC-G05/G06 are open。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02（2026-08-14）
 | 字段 | 值 |

@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C CELL-02 CAPTURED, PAIR REVIEW PENDING`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / MATCHED FAMILIES 2/2 SEALED / NP GAPS EGC-G05/G06 OPEN`
 
 ## 1. Entry meaning
 
@@ -375,3 +375,13 @@ Cell-02 reuses the exact Family-C Truth under BAP-01. The operator selects a con
 The repository stores only the Cell-02 Commitment. Its raw response, provenance and nonce remain outside repository history and must be handed from the generating CODER to the operator with a receipt-bearing custody return. Cell-01 plus Cell-02 becomes only a pair candidate: integrity, distinctness, semantic outcomes, assistance controls, capability signals, eligibility and matched credit remain pending private ARCH pair review.
 
 New empirical rows remain zero and H4 remains preserved. This cell does not authorize a Pair Seal, naturalistic production capture, re-analysis, M4/M5 or CookBook Phase 3B.
+
+## 32. Family-C qualifying Pair Seal
+
+Remote ARCH verifies both Family-C Commitment/Reveal pairs, blindness controls and distinct normalized actors after Cell-02 delivery `88c1f352fae5a3b397b427d9bf8e978b285bb546`.
+
+Family-C becomes a qualifying matched family with 2/2 cells. Only non-revealing hashes and integrity/distinctness/eligibility states are published; actors, responses, scenario results and capability outcomes remain sealed.
+
+Together with Family-B, the matched-controlled matrix now covers 2/2 required task families. This closes the Lane MC minimum acquisition matrix only; it does not close Evidence Gap Closure as a whole.
+
+Naturalistic production EGC-G05/G06 remain open and cannot be satisfied by synthetic tasks. H4 remains `H4_INSUFFICIENT_EVIDENCE`; re-analysis, M4/M5 and Phase 3B remain unauthorized pending separate evidence and fresh ARCH review.

@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01",
+  "package_revision": "R1",
+  "handoff_parent": "88c1f352fae5a3b397b427d9bf8e978b285bb546",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": true,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "GPT-5",
+      "launcher_or_operator_model_label": "Codex",
+      "execution_scope": "FINAL_RESUME",
+      "availability_notes": "NONE"
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

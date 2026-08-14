@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-C CELL-02 COMMITMENT CAPTURED / PAIR REVIEW PENDING`
+Current Acquisition Status: `FAMILY-C QUALIFYING PAIR SEALED / LANE MC 2-FAMILY MATRIX COMPLETE / REMOTE REVIEW PENDING`
 
 ## 1. Purpose
 
@@ -279,3 +279,13 @@ Cell-02 reuses the byte-identical Family-C Truth (`sha256=c98fd56ad559657107c8cf
 Canonical history stores only the Cell-02 Commitment. Raw actions, rationales, nonce and concrete provenance remain repo-external in operator/ARCH custody. The generating CODER must return the outside-repo path and hash and retain the file until receipt is confirmed; ARCH-private-after-handoff does not prohibit operator delivery.
 
 Cell-02 completes pair capture only, not pair qualification. Actor normalization/distinctness, semantic outcomes, assistance controls, capability signals, corpus eligibility and matched credit remain pending private ARCH review. New empirical rows remain zero and H4 remains preserved. Naturalistic capture, re-analysis, M4/M5 and Phase 3B remain separately gated.
+
+## 22. Family-C qualifying Pair Seal
+
+Remote ARCH accepts Cell-02 transaction `88c1f352fae5a3b397b427d9bf8e978b285bb546` and privately verifies both Family-C Commitment/Reveal pairs, blindness/exposure controls and distinct normalized actors.
+
+Family-C is sealed as `QUALIFYING_MATCHED_PAIR` with 2/2 cells. Concrete actors, responses, scenario outcomes and capability results remain ARCH-private. The canonical seal publishes only cryptographic hashes and non-revealing integrity/distinctness/eligibility status.
+
+Overall qualifying matched-family completion becomes 2/2: Family-B 2/2 and Family-C 2/2. The Lane MC minimum matrix is therefore complete. This seal creates no acquisition run or empirical row and preserves H4 pending the remaining evidence gates.
+
+Naturalistic production gaps EGC-G05 and EGC-G06 remain open. Their required `STRUCTURED_Q` and correct-`HARD_STOP` episodes must be captured from real production context, not manufactured. Re-analysis, M4/M5 and Phase 3B remain unauthorized until all §6 gates receive a fresh ARCH review.

@@ -1,0 +1,55 @@
+{
+  "schema_version": "UBF-M3-EGC-QUALIFYING-PAIR-SEAL/1.0",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01",
+  "package_revision": "R1",
+  "handoff_parent": "88c1f352fae5a3b397b427d9bf8e978b285bb546",
+  "protocol": "BAP-01",
+  "family_truth": {
+    "id": "UBF-M3-EGC-MC-FAMILY-C",
+    "revision": "R1",
+    "sha256": "c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b"
+  },
+  "qualifying_cells": [
+    {
+      "cell_id": "MC-C-CELL-01",
+      "claim": "ec2f2ef42b28cfd89e04840d55c44f0f201d2d40",
+      "delivery": "13d63ee407fd4ac60e25f370091294073f1372d5",
+      "canonical_repair_delivery": "442096fe81697360049d9b5df8e6986587873809",
+      "pre_pair_seal_delivery": "4ebe04088bdc4dfbe0495b2478ecffefe449a038",
+      "commitment_sha256": "e528239a2557729ff861a18c410a84f4a7bf0d1a8799a5f8afbaa8be4a66cdb9",
+      "reveal_payload_sha256": "8f87d9e0d54811164a2651355e49388c930fba53c3178cca497d2798096531a8",
+      "concrete_actor": "SEALED_ARCH_PRIVATE",
+      "semantic_result": "SEALED_ARCH_PRIVATE",
+      "capability_result": "SEALED_ARCH_PRIVATE"
+    },
+    {
+      "cell_id": "MC-C-CELL-02",
+      "claim": "c408a090fc0733d0f268e32084e3ff223b107edb",
+      "delivery": "88c1f352fae5a3b397b427d9bf8e978b285bb546",
+      "commitment_sha256": "188ac0acd203fd2a88329d5eb035259c740df1d72179a6b75de9dcab63867d9e",
+      "reveal_payload_sha256": "d3d1832db8201ddcb220f1033164ae83abfe9cf6c6ace44a6f6be1a265af8592",
+      "concrete_actor": "SEALED_ARCH_PRIVATE",
+      "semantic_result": "SEALED_ARCH_PRIVATE",
+      "capability_result": "SEALED_ARCH_PRIVATE"
+    }
+  ],
+  "commitment_reveal_integrity": "PASS_BOTH_QUALIFYING_CELLS",
+  "blindness_and_exposure_control": "PASS",
+  "actor_distinctness": "PASS_DISTINCT_NORMALIZED_ACTORS",
+  "matched_pair_eligibility": "QUALIFYING_MATCHED_PAIR",
+  "family_c_qualifying_cells": 2,
+  "family_c_required_cells": 2,
+  "qualifying_families_complete": 2,
+  "qualifying_families_required": 2,
+  "lane_mc_minimum_matrix": "COMPLETE",
+  "private_results_publication": "PROHIBITED",
+  "next_authorized_after_remote_accept": "ARCH_REASSESS_REMAINING_NATURALISTIC_PRODUCTION_GAPS_ONLY",
+  "naturalistic_structured_q_gap": "OPEN_EGC-G05",
+  "naturalistic_correct_hard_stop_gap": "OPEN_EGC-G06",
+  "reanalysis_authorized": false,
+  "new_evidence_runs": 0,
+  "new_empirical_rows": 0,
+  "h4": "H4_INSUFFICIENT_EVIDENCE",
+  "m4_m5_started": false,
+  "phase3b_authorized": false
+}
