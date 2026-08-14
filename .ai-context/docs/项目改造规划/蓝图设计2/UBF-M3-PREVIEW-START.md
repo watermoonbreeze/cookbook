@@ -295,3 +295,13 @@ Family-B blind acquisition is not started until this repair is separately accept
 
 ## 22. Blind Family-B Cell-01
 Parent `7c4c060dc5f6e86bcd9517da353cc8924e93818c` ARCH ACCEPT. Family SHA `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`. Only commitment is canonical; rows=0; qualifying matrix credit=0; H4 preserved; Cell-02 not authorized.
+
+## 23. Family-B Cell-01 Pre-Pair Seal
+
+Remote ARCH has verified the Cell-01 Commitment/Reveal pair for `bd96410bd20e3a41848ca61a98eb41875e7c8829`. The private semantic adjudication and actor normalization are complete but remain sealed until the Family-B pair is complete.
+
+Canonical repository records only non-revealing seal status/hashes. It does not publish the actor, scenario outcomes, capability result or raw Reveal.
+
+After separate remote ACCEPT of this seal, Family-B Cell-02 may begin with a concrete coder selected by the operator to differ from the ARCH-sealed Cell-01 actor. Cell-01 Reveal must not be disclosed to that coder.
+
+H4 remains preserved; rows/runs added by this seal = 0.

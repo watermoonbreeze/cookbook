@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01 — Cell-01 Pre-Pair Seal + Ledger Repair |
-| 状态 | **CLAIMED / PRE-PAIR SEAL PERSISTENCE IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `bd96410bd20e3a41848ca61a98eb41875e7c8829` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **ACTIVE / CONSUMING** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01 / R1` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Family-B Cell-01 `bd96410bd20e3a41848ca61a98eb41875e7c8829` transaction fidelity **ACCEPT**；Commitment/Reveal integrity verified by ARCH |
 | Blind confidentiality | semantic adjudication、concrete actor、capability result remain **SEALED UNTIL FAMILY-B PAIR COMPLETE** |
 | Canonical seal | `.ai-context/docs/experience/UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-Pre-Pair-Seal.json`；contains hashes/status only；no raw answer/no concrete actor/no semantic result |
@@ -22,7 +22,7 @@
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅机械持久化 Pre-Pair Seal + ledger formatting repair；不得开始 Cell-02。 |
+| 下一步 | 仅等待 remote ARCH 复核本 Pre-Pair Seal；ACCEPT 后进入安全会话切换点并由新 ARCH 会话签发 blind Family-B Cell-02。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01（2026-08-14）
 | 字段 | 值 |

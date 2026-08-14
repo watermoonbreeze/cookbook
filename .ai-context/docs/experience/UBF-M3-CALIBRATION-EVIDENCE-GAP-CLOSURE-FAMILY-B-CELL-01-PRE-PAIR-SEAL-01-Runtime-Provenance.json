@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-PRE-PAIR-SEAL-01",
+  "package_revision": "R1",
+  "handoff_parent": "bd96410bd20e3a41848ca61a98eb41875e7c8829",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": true,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "UNKNOWN_SELF_REPORT",
+      "launcher_or_operator_model_label": "UNAVAILABLE",
+      "execution_scope": "CLAIM_AND_FINAL",
+      "availability_notes": "NONE"
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

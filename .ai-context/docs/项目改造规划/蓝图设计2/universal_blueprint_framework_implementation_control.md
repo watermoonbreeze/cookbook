@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS+PROBE ACCEPT; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 CODE FIDELITY ACCEPT; STATE MODEL-IDENTITY HYGIENE REPAIR IN REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS+PROBE ACCEPT; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B CELL-01 PRE-PAIR SEAL IN REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — BAP-01 STATE MODEL-IDENTITY HYGIENE REPAIR`
-> Current Review Result: `15b3470703b3df0f1f7dcae8a815b3f660463f0c = CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT STATE IDENTITY HYGIENE REPAIR REQUIRED`
+> Current UBF Stage: `M3 CALIBRATION — FAMILY-B CELL-01 PRE-PAIR SEAL / LEDGER REPAIR`
+> Current Review Result: `bd96410bd20e3a41848ca61a98eb41875e7c8829 = CODE TRANSACTION ACCEPT / COMMITMENT-REVEAL INTEGRITY PASS / PRIVATE ADJUDICATION SEALED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -19,9 +19,9 @@
 > M3 Evidence Gap Closure Preview/Start Accepted Review Target: `423d7382d56765e17ea9395e2b167454d5e1450f`
 > M3 Evidence Gap Closure Work-01 Reviewed Target: `d43c73fe12cfe3abd3a5b5efa7b5492b0487beca` — CODE ACCEPT / SEMANTIC PASS / identity unresolved / Family-A matched reuse burned
 > M3 Blind Acquisition Protocol Repair Reviewed Target: `15b3470703b3df0f1f7dcae8a815b3f660463f0c` — CODE fidelity ACCEPT / State identity hygiene repair required
-> M3 BAP-01 State Identity Repair Review Target: `PENDING REMOTE ARCH REVIEW`
+> M3 BAP-01 State Identity Repair Accepted Review Target: `7c4c060dc5f6e86bcd9517da353cc8924e93818c`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R24 — BAP-01 State abstract-role identity hygiene repair; protocol/evidence Preserve`
+> Process Revision: `R25 — Family-B Cell-01 pre-pair seal; blind adjudication remains private; ledger row repair`
 
 ## 1. 目标
 
@@ -614,3 +614,17 @@ STOP：
 - Family SHA `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`.
 - Canonical commitment only; raw response/model/nonce outside repo.
 - rows=0; matched credit=0 before reveal; Cell-02 **NOT STARTED / NOT AUTHORIZED**; H4=`H4_INSUFFICIENT_EVIDENCE`.
+
+## M3 Family-B Cell-01 Pre-Pair Seal
+
+- Cell-01 final `bd96410bd20e3a41848ca61a98eb41875e7c8829` transaction fidelity = **ACCEPT**.
+- R2 claim `e00cabe703aec65efbc60b18679e4b69fd6b2b56` is State-only; final canonical scope is 9 files.
+- BAP-01 Commitment/Reveal hashes were independently recomputed by ARCH and match `4dc7307c6c3fc3529a4f77400d183cb84f3e7a2f39e3aadf89a2c4a6cf170227` / `8ac02e8747bb457ffbb344c11b99e5b75f9050751b6fdc8385dd4056337aa15f`.
+- Cell-01 semantic adjudication, normalized concrete actor and capability result are intentionally **SEALED UNTIL FAMILY-B PAIR COMPLETE**.
+- This seal does not persist raw Reveal, raw response, concrete actor or semantic result.
+- The ledger formatting defect that concatenated the Cell-01 row to the prior row is `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY` and is repaired here.
+- Canonical matched credit remains deferred; this avoids exposing peer outcome before Cell-02.
+- After this seal receives remote ARCH ACCEPT, Family-B Cell-02 becomes the only authorized matched-controlled next acquisition. Its operator-selected concrete coder must differ from the ARCH-sealed Cell-01 actor.
+- Cell-01 Reveal must never be given to Cell-02 CODER.
+- H4 remains `H4_INSUFFICIENT_EVIDENCE`; no new evidence run or empirical row is created.
+- Family-C/naturalistic/re-analysis/M4/M5/Phase3B remain unauthorized.

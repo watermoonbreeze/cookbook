@@ -192,3 +192,13 @@ Blind Family-B Cell-01 remains not authorized until this repair receives remote 
 
 ## 12. Blind Family-B Cell-01 authorization
 Parent `7c4c060dc5f6e86bcd9517da353cc8924e93818c` accepted. Family SHA `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`. Reveal only to ARCH. Cell-02 is not authorized.
+
+## 13. Family-B Cell-01 Pre-Pair Seal
+
+Cell-01 delivery `bd96410bd20e3a41848ca61a98eb41875e7c8829` has passed transaction and Commitment/Reveal integrity review.
+
+To preserve BAP-01 blindness, semantic adjudication, concrete actor identity and capability attribution remain ARCH-private/sealed until the same-family peer cell is captured. Canonical matched credit therefore remains deferred.
+
+This seal repairs only the malformed capability-ledger row and persists non-revealing hash/status evidence. It creates 0 new empirical rows and 0 evidence runs.
+
+After this seal is remotely accepted, Cell-02 may be issued. The operator must select a concrete coder different from the sealed Cell-01 actor, and Cell-01 Reveal must not be provided to the Cell-02 coder.
