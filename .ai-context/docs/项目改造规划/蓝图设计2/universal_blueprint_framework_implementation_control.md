@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS+PROBE ACCEPT; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B CELL-02 IDENTITY COLLISION SEALED / REPLACEMENT REQUIRED`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 CORPUS+PROBE ACCEPT; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B REPLACEMENT CELL-03 CAPTURED / IN REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — FAMILY-B IDENTITY-COLLISION SEAL / DISTINCT REPLACEMENT GATED`
-> Current Review Result: `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a = CODE TRANSACTION ACCEPT / REVEAL INTEGRITY PASS / ACTOR DISTINCTNESS FAIL`
+> Current UBF Stage: `M3 CALIBRATION — BLIND FAMILY-B REPLACEMENT CELL-03 / PAIR CANDIDATE REVIEW`
+> Current Review Result: `c8741c97e8a31c16ac42636600b8c019a8f53292 = ARCH ACCEPT / IDENTITY-COLLISION SEAL / CONSUMED BY CELL-03`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -22,8 +22,9 @@
 > M3 BAP-01 State Identity Repair Accepted Review Target: `7c4c060dc5f6e86bcd9517da353cc8924e93818c`
 > M3 Family-B Cell-01 Pre-Pair Seal Accepted Review Target: `673cc9f1a0eb163058edf9fb7f467c429999cebf`
 > M3 Family-B Cell-02 Reviewed Target: `72e296a80eb71eb9a864c528e3c1ae3ba791ce4a` — identity collision / matched inference ineligible / non-capability
+> M3 Family-B Cell-02 Identity-Collision Seal Accepted Review Target: `c8741c97e8a31c16ac42636600b8c019a8f53292`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R27 — non-revealing Cell-02 identity-collision seal; distinct replacement Cell-03 gated by remote ARCH ACCEPT`
+> Process Revision: `R28 — blind Family-B replacement Cell-03 capture; pair candidate remains sealed pending remote ARCH review`
 
 ## 1. 目标
 
@@ -653,3 +654,14 @@ STOP：
 - This seal creates 0 evidence runs and 0 empirical rows; H4 remains `H4_INSUFFICIENT_EVIDENCE`.
 - Family-B is not burned. After remote ARCH ACCEPT of this seal, a replacement `MC-B-CELL-03` may be separately authorized using a concrete actor distinct from the sealed peer.
 - Cell-03, Family-C, naturalistic production capture, re-analysis, M4/M5 and CookBook Phase 3B remain unauthorized until separately issued.
+
+## Blind Family-B Replacement Cell-03
+
+- Identity-Collision Seal `c8741c97e8a31c16ac42636600b8c019a8f53292` = **ARCH ACCEPT / CONSUMED**.
+- Cell-03 reuses exact byte-identical `UBF-M3-EGC-MC-FAMILY-B/R1` Truth with SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`.
+- The operator selects a concrete actor distinct from the sealed peer/collision actor; package authority remains abstract `CODER` and discloses no actor identity.
+- Canonical repository receives only the Cell-03 Commitment. Raw actions, rationales, nonce and concrete provenance remain in the repo-external Reveal.
+- Cell-03 supersedes ineligible Cell-02 only for Family-B matched acquisition. Cell-02's non-capability collision record remains preserved.
+- Capture completion does not establish semantic correctness, actor distinctness, capability signal, corpus eligibility or matched credit; all remain pending remote ARCH reveal/pair adjudication.
+- This cell creates 0 empirical corpus rows and preserves `H4_INSUFFICIENT_EVIDENCE`.
+- Family-C, naturalistic production capture, re-analysis, M4/M5 and CookBook Phase 3B remain unauthorized.

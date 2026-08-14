@@ -1,0 +1,22 @@
+{
+  "schema_version": "UBF-M3-EGC-BLIND-COMMITMENT/1.0",
+  "protocol_revision": "BAP-01",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-03",
+  "package_revision": "R1",
+  "handoff_parent": "c8741c97e8a31c16ac42636600b8c019a8f53292",
+  "family_truth_id": "UBF-M3-EGC-MC-FAMILY-B",
+  "family_truth_revision": "R1",
+  "family_truth_sha256": "b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163",
+  "cell_id": "MC-B-CELL-03",
+  "actor_role": "CODER",
+  "response_commitment_sha256": "d653784f64034c00d786542fb32b8a38683598f7d60d36d965f18262f294f083",
+  "reveal_payload_sha256": "217fdea7bc1efcf23821e9715c101e887bb1c03078c3cf5949e27fca2e4f6b79",
+  "reveal_bundle_status": "HELD_OUTSIDE_REPOSITORY",
+  "concrete_actor": "SEALED_PENDING_ARCH_REVEAL",
+  "semantic_adjudication": "PENDING_REMOTE_ARCH_REVEAL_AND_PAIR_ADJUDICATION",
+  "actor_distinctness": "PENDING_REMOTE_ARCH_REVEAL_AND_PAIR_ADJUDICATION",
+  "capability_signal": "PENDING_REMOTE_ARCH_REVEAL_AND_PAIR_ADJUDICATION",
+  "corpus_eligibility": "PENDING_REMOTE_ARCH_REVEAL_AND_PAIR_ADJUDICATION",
+  "root_cluster_identity": "PENDING_REMOTE_ARCH_REVEAL_AND_PAIR_ADJUDICATION",
+  "universal_calibration_disposition": "UNRESOLVED"
+}

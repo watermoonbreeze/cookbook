@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-B CELL-02 IDENTITY COLLISION SEALED / DISTINCT REPLACEMENT REQUIRED`
+Current Acquisition Status: `FAMILY-B REPLACEMENT CELL-03 CAPTURED / PAIR CANDIDATE IN REVIEW`
 
 ## 1. Purpose
 
@@ -223,3 +223,13 @@ Both actor identities, raw Reveals, responses, scenario outcomes and capability 
 The event is classified `OPERATOR_SELECTION_ATTESTATION_INCONSISTENCY / ACQUISITION_IDENTITY_CONFOUND / NON_CAPABILITY` with coder-negative signal `NONE`. This seal adds no evidence run or empirical row and does not change H4.
 
 The Family-B Truth is not burned because raw responses remain outside canonical history. After this seal receives remote ARCH ACCEPT, ARCH may issue replacement `MC-B-CELL-03` for a concrete actor distinct from the sealed peer. Cell-03 and all later lanes remain unauthorized until separately issued.
+
+## 16. Blind Family-B replacement Cell-03
+
+The identity-collision seal is remote ARCH ACCEPT at `c8741c97e8a31c16ac42636600b8c019a8f53292` and is consumed only by replacement `MC-B-CELL-03`.
+
+Cell-03 uses exact Family-B Truth R1 and SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163`. Package authority remains abstract `CODER`; operator-selected concrete provenance is supplied only in the repo-external Reveal.
+
+No peer/collision Reveal, raw response, actor identity or outcome is disclosed to this CODER. Canonical history stores only the Cell-03 Commitment. Pair eligibility, distinctness, semantic outcomes, capability signal and matched credit remain pending remote ARCH review.
+
+This replacement adds no empirical row and preserves H4. No later acquisition or re-analysis is authorized by Cell-03 itself.
