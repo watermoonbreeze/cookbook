@@ -1,34 +1,36 @@
 # BLUEPRINT_STATE
-
-唯一握手状态文件。开工前先 `git pull` 读本文件；`TURN` 不是自己 → 停手，只报告当前持球方，不改代码。开工前除看 `TURN`，还须看 `颗粒度` 行确认本批蓝图应达到的级别。完成本方动作后在同一提交内更新本文件再 push。
-**ARCH/CODE 命名规则**：`ARCH`/`CODE`/`REVIEW`/`TURN` 这几个协议字段只写角色名+机器标识（如 `架构师@主力机`、`Coder@副机`），**禁止出现具体模型名称**——角色定义是抽象的，具体由哪个模型担任取决于当前会话，协议逻辑不依赖模型身份。
-**模型执行力评估台账**：独立文档 `docs/experience/14_模型执行力评估.md`。具体 runtime/model identity 只写入 experience/runtime-provenance/执行报告，本文件不重复。
+唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01（2026-08-13）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01 — State Model-Identity Hygiene Repair |
-| 状态 | **COMPLETE / PENDING REMOTE ARCH REVIEW** |
-| TURN | REVIEW |
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01 — Blind Family-B Cell-01 |
+| 状态 | **CLAIMED / BLIND FAMILY-B CELL-01 IN PROGRESS** |
+| TURN | CODE |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
-| Review mode | REMOTE_READ_ONLY_ARCH |
-| Execution mode | ARCH_PAYLOAD_REPAIR / MECHANICAL |
-| Worktree mode | ISOLATED_DETACHED_CLEAN |
-| Payload mode | AUTHORITATIVE_STATIC_TARGET_BUNDLE + RUNTIME_PROVENANCE |
-| Handoff Parent | `15b3470703b3df0f1f7dcae8a815b3f660463f0c` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01 / R1` single-use abstract-CODER claim **CONSUMED** |
-| Holder transition | `REVIEW -> CODE` after exact State-only claim push+remote verify；same-revision replacement CODER may resume exact in-flight claim；final/abort returns REVIEW |
-| Architecture input | BAP-01 repair `15b3470703b3df0f1f7dcae8a815b3f660463f0c` = **CODE EXECUTION FIDELITY ACCEPT / ARCH_PAYLOAD_DEFECT STATE IDENTITY HYGIENE REPAIR REQUIRED** |
-| Verified BAP delivery | `15b3470703b3df0f1f7dcae8a815b3f660463f0c` chain from `d43c73f...` via State-only claim `eba909fad46a613e121f75f1ee66f443509cebcd`；final 9 files；BAP-01 semantic contract preserved |
-| Defect | historical Preview row repeated a concrete runtime/model label inside State, violating State abstract-role Truth |
-| Attribution | `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY`；CODE execution fidelity remains ACCEPT；no coder/model negative sample |
-| Repair scope | remove concrete runtime/model label from State history；persist review/lifecycle truth only；BAP-01 protocol and all evidence Preserve |
-| Matrix | Family-A qualifying=0；Family-B=0/2；Family-C=0/2；production STRUCTURED_Q/HARD_STOP gaps OPEN |
-| Evidence effect | new evidence runs=0；new empirical corpus rows=0；H4=`H4_INSUFFICIENT_EVIDENCE` preserved |
-| UBF Stage | M3 Calibration — BAP-01 State Identity Hygiene Repair **COMPLETE / PENDING REMOTE ARCH REVIEW**；M4/M5 NOT STARTED |
+| Handoff Parent | `7c4c060dc5f6e86bcd9517da353cc8924e93818c` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01 / R2` abstract-CODER claim **ACTIVE / CONSUMING** |
+| Protocol | `BAP-01` |
+| Execution wrapper | `R2`；R1 stopped before claim because the package omitted complete delegated-turn/isolation authority = `ARCH_PAYLOAD_DEFECT / NON_CAPABILITY / CORRECT_GOVERNANCE_STOP` |
+| Family Truth | `UBF-M3-EGC-MC-FAMILY-B/R1`；SHA-256 `b3d053f2940d0d960f6ea9d4bd370c5a2c124256adfab55f48ce554e603da163` |
+| Canonical evidence | commitment only；raw actions/rationales/nonce/concrete model/provenance NOT in repo |
+| Reveal | repo-external `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-B-CELL-01-Blind-Reveal-Bundle.json`；仅交 ARCH；不得给 Cell-02 CODER |
+| Evidence effect | blind acquisition run=1；new empirical corpus rows=0；qualifying matrix credit=0 pending reveal |
+| Matrix | Family-A qualifying=0；Family-B Cell-01 reveal pending；Cell-02 NOT STARTED；Family-C=0/2 |
+| H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
+| M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | 仅等待 remote ARCH 复核 State denyset + lifecycle coherence；ACCEPT 后由 ARCH 单独签发 blind Family-B Cell-01。 |
+| 下一步 | operator 仅把 final commit hash + repo-external reveal 交 ARCH；CODE 不得继续下一 cell。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-BAP-01-STATE-IDENTITY-REPAIR-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY FAMILY-B CELL-01** |
+| Reviewed delivery | `7c4c060dc5f6e86bcd9517da353cc8924e93818c` |
+| Architecture disposition | **ACCEPT** |
+| 已验证 | `15b3470... -> d72b116... -> 7c4c060dc5f6e86bcd9517da353cc8924e93818c`；State-only claim；final exact 8 files；full-State denyset PASS；0 run/row；H4 preserved |
+| Transition authority | 仅授权本 blind Family-B Cell-01 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-ACQUISITION-PROTOCOL-REPAIR-01（2026-08-13）
 | 字段 | 值 |
