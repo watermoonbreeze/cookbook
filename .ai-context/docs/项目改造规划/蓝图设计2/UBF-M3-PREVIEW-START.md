@@ -343,3 +343,11 @@ Remote ARCH verifies Cell-01 and Cell-03 Commitment/Reveal integrity, blindness 
 The canonical seal publishes only hashes and integrity/blindness/distinctness/eligibility status. Concrete actors, raw responses, scenario outcomes and capability results remain ARCH-private. Cell-02 remains an ineligible non-capability identity-collision record.
 
 The matched-family gate is now 1/2 families complete; Family-C remains 0/2. This seal adds no run or row and preserves H4. Family-C Cell-01 requires separate remote ARCH ACCEPT/package.
+
+## 28. Blind Family-C Cell-01
+
+Remote ARCH accepts Family-B Pair Seal `6e4214c26ea42467cdf9616d4783ee17fc68ae00` and authorizes only blind Family-C Cell-01.
+
+The new byte-frozen Family-C Truth (`sha256=c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b`) measures source identity, snapshot/view ownership, deterministic regeneration and acceptance-evidence closure under BAP-01.
+
+Only Family-C Truth plus a cryptographic Commitment enters repository history. Raw response, provenance and nonce remain repo-external. New empirical rows remain zero; H4 remains preserved; Family-C Cell-02 requires a separate Pre-Pair Seal ACCEPT and package.

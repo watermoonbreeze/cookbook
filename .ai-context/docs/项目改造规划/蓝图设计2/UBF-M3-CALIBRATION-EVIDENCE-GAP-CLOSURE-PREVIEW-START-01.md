@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C CELL-01 GATED`
+Current Acquisition Status: `FAMILY-C CELL-01 BLIND ACQUISITION COMPLETE / PENDING REMOTE ARCH REVEAL AND PRE-PAIR REVIEW`
 
 ## 1. Purpose
 
@@ -241,3 +241,13 @@ Remote ARCH verifies both qualifying Commitment/Reveal pairs, blindness/exposure
 Concrete actors, responses, scenario outcomes and capability results remain ARCH-private. The excluded Cell-02 collision remains `NON_CAPABILITY` with no coder-negative signal.
 
 Overall matched-family completion is 1/2: Family-B complete, Family-C 0/2. The seal creates no acquisition run or empirical row and leaves H4 unchanged. Only Family-C Cell-01 may be separately authorized after seal ACCEPT.
+
+## 18. Blind Family-C Cell-01
+
+Remote ARCH accepts Family-B Pair Seal `6e4214c26ea42467cdf9616d4783ee17fc68ae00` and consumes it only to authorize blind `MC-C-CELL-01`.
+
+Cell-01 introduces frozen Family-C Truth R1 with SHA-256 `c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b`. The package remains abstract-CODER-bound. Concrete provenance, scenario actions, rationales and nonce are held only in the repo-external Reveal.
+
+Canonical history contains the Family-C Truth and Cell-01 Commitment only. This acquisition adds no empirical corpus row and preserves H4. Family-C matched credit remains deferred pending remote ARCH reveal review and a separate non-revealing Pre-Pair Seal.
+
+Cell-02, naturalistic capture, re-analysis, M4/M5 and Phase 3B remain unauthorized.

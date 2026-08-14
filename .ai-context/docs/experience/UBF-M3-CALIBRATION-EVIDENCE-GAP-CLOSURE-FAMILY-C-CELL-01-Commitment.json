@@ -1,0 +1,22 @@
+{
+  "schema_version": "UBF-M3-EGC-BLIND-COMMITMENT/1.0",
+  "protocol_revision": "BAP-01",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01",
+  "package_revision": "R1",
+  "handoff_parent": "6e4214c26ea42467cdf9616d4783ee17fc68ae00",
+  "family_truth_id": "UBF-M3-EGC-MC-FAMILY-C",
+  "family_truth_revision": "R1",
+  "family_truth_sha256": "c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b",
+  "cell_id": "MC-C-CELL-01",
+  "actor_role": "CODER",
+  "response_commitment_sha256": "e528239a2557729ff861a18c410a84f4a7bf0d1a8799a5f8afbaa8be4a66cdb9",
+  "reveal_payload_sha256": "8f87d9e0d54811164a2651355e49388c930fba53c3178cca497d2798096531a8",
+  "reveal_bundle_status": "HELD_OUTSIDE_REPOSITORY",
+  "concrete_actor": "SEALED_PENDING_ARCH_REVEAL",
+  "semantic_adjudication": "PENDING_REMOTE_ARCH_REVEAL_AND_PRE_PAIR_REVIEW",
+  "actor_distinctness": "NOT_APPLICABLE_UNTIL_FAMILY_C_PEER_CAPTURE",
+  "capability_signal": "PENDING_REMOTE_ARCH_REVEAL_AND_PRE_PAIR_REVIEW",
+  "corpus_eligibility": "PENDING_REMOTE_ARCH_REVEAL_AND_PRE_PAIR_REVIEW",
+  "root_cluster_identity": "PENDING_REMOTE_ARCH_REVEAL_AND_PRE_PAIR_REVIEW",
+  "universal_calibration_disposition": "UNRESOLVED"
+}
