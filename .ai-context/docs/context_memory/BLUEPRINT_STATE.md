@@ -1,11 +1,33 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
-## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01（2026-08-14）
+## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01 — ARCH Reassessment Persistence + Passive Capture Contract |
+| 状态 | **CLAIMED / CODE / EXACT REASSESSMENT PERSISTENCE AUTHORIZED** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `f4744068092a8af89e44f0d1920b14a4050e3887` |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Architecture input | Family-C Pair Seal `f4744068092a8af89e44f0d1920b14a4050e3887` = **ARCH ACCEPT / CONSUMED BY THIS CLAIM** |
+| Authorized payload | exact 10-path persistence only；no production event/probe/corpus row/reanalysis |
+| EGC-G05/G06 | remain OPEN while exact ARCH reassessment and passive non-manufacturing capture contract are materialized |
+| H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
+| M4/M5 | **NOT STARTED** |
+| CookBook Phase 3B | **NOT AUTHORIZED TO START** |
+| 下一步 | materialize exact package payload；push final and return full hash；do not run capture or reanalysis。 |
+
+## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01 — Non-Revealing Family-C Qualifying Pair Seal |
-| 状态 | **COMPLETE / FAMILY-C QUALIFYING PAIR SEALED / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY NP GAP REASSESSMENT CLAIM** |
+| Reviewed delivery | `f4744068092a8af89e44f0d1920b14a4050e3887` |
+| Claim delivery | `4e5f4e99bbfc715ea2312f3c5ee7be32cb7c15dc` |
+| Architecture disposition | **ACCEPT** |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -21,7 +43,7 @@
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | operator gives full final hash to remote ARCH；after seal ACCEPT, ARCH reassesses remaining NP production gaps；re-analysis remains unauthorized while EGC-G05/G06 are open。 |
+| 下一步 | consumed only by current reassessment persistence；private Pair-Seal inputs remain sealed；re-analysis remains unauthorized while EGC-G05/G06 are open。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02（2026-08-14）
 | 字段 | 值 |
