@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C CELL-01 PRE-PAIR SEALED`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / FAMILY-B QUALIFYING PAIR SEALED / FAMILY-C CELL-02 CAPTURED, PAIR REVIEW PENDING`
 
 ## 1. Entry meaning
 
@@ -365,3 +365,13 @@ Remote ARCH accepts repair `442096fe81697360049d9b5df8e6986587873809` and comple
 Only non-revealing hashes and sealed status are canonicalized. No raw response, nonce, concrete actor, scenario result or capability outcome is published. Family-C matched credit remains deferred at one sealed pair candidate.
 
 This seal adds zero runs and rows and preserves H4. After separate seal ACCEPT, blind Cell-02 may be issued only to a different concrete actor without disclosing Cell-01 Reveal. Naturalistic capture, re-analysis, M4/M5 and Phase 3B remain separately gated.
+
+## 31. Blind Family-C Cell-02
+
+Remote ARCH accepts the Cell-01 Pre-Pair Seal `4ebe04088bdc4dfbe0495b2478ecffefe449a038` and authorizes only blind Family-C Cell-02.
+
+Cell-02 reuses the exact Family-C Truth under BAP-01. The operator selects a concrete actor different from the sealed Cell-01 actor; no Cell-01 Reveal, response, identity, semantic result or capability result is supplied to this execution.
+
+The repository stores only the Cell-02 Commitment. Its raw response, provenance and nonce remain outside repository history and must be handed from the generating CODER to the operator with a receipt-bearing custody return. Cell-01 plus Cell-02 becomes only a pair candidate: integrity, distinctness, semantic outcomes, assistance controls, capability signals, eligibility and matched credit remain pending private ARCH pair review.
+
+New empirical rows remain zero and H4 remains preserved. This cell does not authorize a Pair Seal, naturalistic production capture, re-analysis, M4/M5 or CookBook Phase 3B.

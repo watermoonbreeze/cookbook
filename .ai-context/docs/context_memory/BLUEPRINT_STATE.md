@@ -5,24 +5,25 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02 — Blind Family-C Cell-02 |
-| 状态 | **CLAIMED / CODE / EXACT BLIND ACQUISITION AUTHORIZED** |
-| TURN | CODE |
+| 状态 | **COMPLETE / BLIND COMMITMENT CAPTURED / PENDING REMOTE ARCH REVEAL + PAIR REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `4ebe04088bdc4dfbe0495b2478ecffefe449a038` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02 / R1` abstract-CODER single-use claim **ACTIVE** |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-02 / R1` abstract-CODER single-use claim **CONSUMED** |
 | Architecture input | Family-C Cell-01 Pre-Pair Seal `4ebe04088bdc4dfbe0495b2478ecffefe449a038` = **ARCH ACCEPT / CONSUMED BY THIS CELL** |
 | Protocol | `BAP-01` |
 | Family Truth | `UBF-M3-EGC-MC-FAMILY-C/R1`；SHA-256 `c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b`；must remain byte-identical |
 | Actor boundary | package authority=`CODER`；operator selects a concrete actor different from the ARCH-sealed Cell-01 actor；private identity is repo-external only |
 | Sealed-peer boundary | Cell-01 Reveal、raw response、concrete actor、semantic result and capability result are not supplied to this CODER |
-| Evidence effect | blind acquisition run in progress；empirical rows +0；Family-C matched credit remains deferred pending private pair review |
-| Matrix | qualifying families=1/2；Family-B=2/2；Family-C pair capture in progress with canonical credit deferred |
+| Canonical evidence | Family-C Truth + Cell-01 Commitment/Seal + Cell-02 Commitment only；raw Cell-02 actions/rationales/nonce/provenance remain outside repository |
+| Evidence effect | blind acquisition run=1；new empirical corpus rows=0；Family-C matched credit remains deferred pending private pair review |
+| Matrix | qualifying families=1/2；Family-B=2/2；Family-C commitments captured=2/2 with qualifying credit deferred |
 | H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | complete the exact BAP-01 Commitment transaction；return full final hash and repo-external Reveal custody receipt；do not adjudicate the pair。 |
+| 下一步 | operator gives full final hash plus the repo-external Cell-02 Reveal to remote ARCH；only ARCH may verify distinctness, adjudicate the pair and issue a separate non-revealing Pair Seal。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-CELL-01-PRE-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |

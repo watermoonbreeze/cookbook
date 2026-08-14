@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-C CELL-01 PRE-PAIR SEALED / CELL-02 GATED BY SEAL ACCEPT`
+Current Acquisition Status: `FAMILY-C CELL-02 COMMITMENT CAPTURED / PAIR REVIEW PENDING`
 
 ## 1. Purpose
 
@@ -269,3 +269,13 @@ The canonical seal publishes only commitment/reveal hashes plus non-revealing in
 Cell-01 is one sealed Family-C pair candidate; canonical matched credit remains deferred until the peer is acquired and the pair is privately reviewed. This seal creates no acquisition run or empirical row and preserves H4.
 
 After this seal receives remote ARCH ACCEPT, only blind Family-C Cell-02 may be separately issued. The operator must select a concrete coder different from the ARCH-sealed Cell-01 actor, and Cell-01 Reveal must never be disclosed to that coder.
+
+## 21. Blind Family-C Cell-02
+
+Remote ARCH accepts the Cell-01 Pre-Pair Seal at `4ebe04088bdc4dfbe0495b2478ecffefe449a038` and consumes it only to authorize blind `MC-C-CELL-02`.
+
+Cell-02 reuses the byte-identical Family-C Truth (`sha256=c98fd56ad559657107c8cfc21ebd6d80de58241c95bcf008db93690991ab406b`) under BAP-01. Package authority remains abstract `CODER`; the operator selects a concrete actor different from the ARCH-sealed Cell-01 actor without exposing the peer identity, Reveal or result.
+
+Canonical history stores only the Cell-02 Commitment. Raw actions, rationales, nonce and concrete provenance remain repo-external in operator/ARCH custody. The generating CODER must return the outside-repo path and hash and retain the file until receipt is confirmed; ARCH-private-after-handoff does not prohibit operator delivery.
+
+Cell-02 completes pair capture only, not pair qualification. Actor normalization/distinctness, semantic outcomes, assistance controls, capability signals, corpus eligibility and matched credit remain pending private ARCH review. New empirical rows remain zero and H4 remains preserved. Naturalistic capture, re-analysis, M4/M5 and Phase 3B remain separately gated.

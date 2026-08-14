@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B QUALIFYING; FAMILY-C CELL-01 PRE-PAIR SEALED`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 ANALYSIS H4_INSUFFICIENT_EVIDENCE; BAP-01 ACCEPT; FAMILY-B QUALIFYING; FAMILY-C CELL-02 CAPTURED / PAIR REVIEW PENDING`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — FAMILY-C CELL-01 NON-REVEALING PRE-PAIR SEAL / REMOTE REVIEW GATED`
-> Current Review Result: `442096fe81697360049d9b5df8e6986587873809 = LF REPAIR ARCH ACCEPT / CELL-01 PRIVATE REVIEW COMPLETE AND SEALED`
+> Current UBF Stage: `M3 CALIBRATION — BLIND FAMILY-C CELL-02 / REMOTE REVEAL + PAIR REVIEW GATED`
+> Current Review Result: `4ebe04088bdc4dfbe0495b2478ecffefe449a038 = CELL-01 PRE-PAIR SEAL ARCH ACCEPT / CONSUMED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -26,8 +26,9 @@
 > M3 Family-B Cell-03 Reviewed Target: `15ee0f0fcb721c86200bd234a06ed9bdad42fd87` — qualifying matched-pair member / private results sealed
 > M3 Family-B Pair Seal Accepted Review Target: `6e4214c26ea42467cdf9616d4783ee17fc68ae00`
 > M3 Family-C Cell-01 LF Repair Accepted Review Target: `442096fe81697360049d9b5df8e6986587873809`
+> M3 Family-C Cell-01 Pre-Pair Seal Accepted Review Target: `4ebe04088bdc4dfbe0495b2478ecffefe449a038`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R32 — Family-C Cell-01 non-revealing Pre-Pair Seal; Cell-02 gated by seal ACCEPT and distinct actor`
+> Process Revision: `R33 — blind Family-C Cell-02 capture; hardened isolation/delegation and repo-external custody contract`
 
 ## 1. 目标
 
@@ -708,3 +709,15 @@ STOP：
 - This seal creates 0 acquisition runs and 0 empirical rows; H4 remains `H4_INSUFFICIENT_EVIDENCE`.
 - After remote ARCH ACCEPT of this seal, only blind Family-C Cell-02 may be issued. Its operator-selected concrete coder must differ from the ARCH-sealed Cell-01 actor.
 - Cell-01 Reveal must never be disclosed to Cell-02 CODER. Naturalistic capture, re-analysis, M4/M5 and Phase 3B remain unauthorized.
+
+## Blind Family-C Cell-02
+
+- Cell-01 Pre-Pair Seal `4ebe04088bdc4dfbe0495b2478ecffefe449a038` = **ARCH ACCEPT / CONSUMED**.
+- Cell-02 reuses Family-C Truth R1 byte-identically under BAP-01; only its Commitment enters canonical history.
+- The operator selects a concrete actor different from the ARCH-sealed Cell-01 actor. Cell-01 private identity, Reveal, response and results are not supplied to CODER.
+- The generating CODER must return the repo-external Reveal path and hash to the operator and retain it until receipt confirmation. `ARCH_PRIVATE_AFTER_HANDOFF` is a custody destination, not a refusal-to-deliver rule.
+- Parent `TURN=REVIEW`, dirty/ahead/behind original host and pull failure are not Hard STOPs. The architecture package supplies one-time delegation and execution proceeds in a clean temporary clone after full package inspection.
+- These two recovered protocol-misread events are `NON_CAPABILITY / RECOVERED_PRE_MUTATION`; they create no empirical capability row.
+- Cell-02 completion creates a pair candidate only. Integrity, actor distinctness, semantics, assistance, eligibility and matched credit remain pending private remote ARCH review.
+- New acquisition runs=1; new empirical rows=0; H4 remains `H4_INSUFFICIENT_EVIDENCE`.
+- Pair Seal, naturalistic production capture, re-analysis, M4/M5 and Phase 3B remain unauthorized until separately issued.
