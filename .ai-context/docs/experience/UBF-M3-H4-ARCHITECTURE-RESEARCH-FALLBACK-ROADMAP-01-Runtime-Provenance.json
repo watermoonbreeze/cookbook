@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01",
+  "package_revision": "R1",
+  "handoff_parent": "476910270016a325e767143c3361e20cdeee77b6",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": true,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "gpt-5.6-terra",
+      "launcher_or_operator_model_label": "Codex API session",
+      "execution_scope": "FINAL_RESUME",
+      "availability_notes": "Runtime model was available for this execution; no private architecture input was used."
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

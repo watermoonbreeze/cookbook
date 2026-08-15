@@ -401,3 +401,19 @@ Remote ARCH accepts reassessment delivery `64f071261559d0239837d210ab2f10c518849
 Passive wait is a lifecycle condition only. It authorizes observation during future independently necessary work but does not authorize a dedicated capture task or any induced Q/STOP condition. A future candidate remains non-corpus evidence until fresh ARCH review establishes naturalistic identity, provenance, root-cluster independence and behavioral correctness.
 
 H4 stays `H4_INSUFFICIENT_EVIDENCE`. Re-analysis, Universal Level/Profile/Selector/Ranking/Routing decisions, M4/M5 and CookBook Phase 3B remain unauthorized.
+
+
+## H4 fallback roadmap architecture-research amendment — UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01
+
+Remote ARCH accepts `476910270016a325e767143c3361e20cdeee77b6` as the passive-wait persistence baseline. No naturalistic candidate has appeared after that entry; EGC-G05/G06 remain open with accepted clusters 0/0.
+
+The implementation-control M3 Exit rule already requires failure or non-support to return to architecture research instead of inventing Levels. This amendment activates that research path without changing the empirical disposition:
+
+1. `H4_INSUFFICIENT_EVIDENCE` remains the evidence result; this amendment is not an H3 or H2 finding.
+2. The passive evidence lane remains active and non-manufacturing. No dedicated Q/STOP probe, fake parent, seeded ambiguity or hidden fallback may be created.
+3. A parallel architecture-research lane may study a reversible non-ordinal closure-core candidate expressed by decision domains and explicit closure/delegation states. It may not call those states Universal Levels or infer an ordering from H4.
+4. This batch finalizes zero Level/Profile/Selector/mapping decisions. It performs no reanalysis and creates zero events, runs and rows.
+5. M4/M5 remain not started. Only an independently accepted fallback Work-01 plus an explicit roadmap amendment and stage handoff can make a revised M4 entry reachable.
+6. If later natural evidence satisfies G05/G06, the empirical lane may resume under its existing fresh-adjudication and reanalysis gates; neither lane silently overrides the other.
+
+The only next design activity after ACCEPT is a separate ARCH-authored `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01` package. CODE has no standing authority to design the fallback semantics.

@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01 — H4 Fallback Roadmap Architecture Research Persistence |
-| 状态 | **CLAIMED / H4 FALLBACK ROADMAP RESEARCH IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / H4 FALLBACK ROADMAP RESEARCH PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `476910270016a325e767143c3361e20cdeee77b6` |
-| Delegation | `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Delegation | `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01 / R1` abstract-CODER single-use claim CONSUMED |
 | Architecture input | Passive Wait Entry `476910270016a325e767143c3361e20cdeee77b6` = **ARCH ACCEPT / CONSUMED** |
 | M3 disposition | `H4_INSUFFICIENT_EVIDENCE` PRESERVED；M3 remains active in architecture-research + passive-evidence dual track |
 | Fallback-roadmap decision | authorize architecture research for a non-ordinal, reversible closure-core candidate；this is a design-policy branch, not an H3 empirical conclusion |

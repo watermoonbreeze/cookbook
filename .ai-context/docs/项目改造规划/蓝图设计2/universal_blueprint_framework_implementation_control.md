@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4_INSUFFICIENT_EVIDENCE; MATCHED FAMILIES 2/2; NP GAPS OPEN WITH PASSIVE CAPTURE`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4_INSUFFICIENT_EVIDENCE; PASSIVE CAPTURE + H4 FALLBACK ARCHITECTURE RESEARCH`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — NATURALISTIC PRODUCTION GAP REASSESSMENT / PASSIVE CAPTURE PERSISTENCE`
-> Current Review Result: `f4744068092a8af89e44f0d1920b14a4050e3887 = FAMILY-C PAIR SEAL ARCH ACCEPT / CONSUMED`
+> Current UBF Stage: `M3 CALIBRATION — PASSIVE EVIDENCE WAIT + H4 FALLBACK ARCHITECTURE RESEARCH`
+> Current Review Result: `476910270016a325e767143c3361e20cdeee77b6 = PASSIVE WAIT ENTRY ARCH ACCEPT / CONSUMED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -30,7 +30,7 @@
 > M3 Family-C Cell-02 Reviewed Target: `88c1f352fae5a3b397b427d9bf8e978b285bb546` — qualifying matched-pair member / private results sealed
 > M3 Family-C Pair Seal Accepted Review Target: `f4744068092a8af89e44f0d1920b14a4050e3887`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R35 — Pair Seal ACCEPT; NP gaps reassessed OPEN; passive non-manufacturing capture contract`
+> Process Revision: `R36 — H4 dual-track architecture research; passive evidence contract preserved`
 
 ## 1. 目标
 
@@ -192,6 +192,23 @@ Accepted result:
 **Corpus Work-01 start gate:** only a **separate architecture-authored package after remote ARCH ACCEPT of this Preview/Start delivery** may create empirical rows. CODE has no standing authorization to start corpus work from the presence of this entry document alone.
 
 **Exit:** accepted corpus evidence and subsequent architecture analysis establish whether a monotonic/comparable closure ladder is empirically supportable; failure returns to architecture research instead of inventing levels.
+
+
+
+## H4 fallback roadmap architecture-research amendment — UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01
+
+Remote ARCH accepts `476910270016a325e767143c3361e20cdeee77b6` as the passive-wait persistence baseline. No naturalistic candidate has appeared after that entry; EGC-G05/G06 remain open with accepted clusters 0/0.
+
+The implementation-control M3 Exit rule already requires failure or non-support to return to architecture research instead of inventing Levels. This amendment activates that research path without changing the empirical disposition:
+
+1. `H4_INSUFFICIENT_EVIDENCE` remains the evidence result; this amendment is not an H3 or H2 finding.
+2. The passive evidence lane remains active and non-manufacturing. No dedicated Q/STOP probe, fake parent, seeded ambiguity or hidden fallback may be created.
+3. A parallel architecture-research lane may study a reversible non-ordinal closure-core candidate expressed by decision domains and explicit closure/delegation states. It may not call those states Universal Levels or infer an ordering from H4.
+4. This batch finalizes zero Level/Profile/Selector/mapping decisions. It performs no reanalysis and creates zero events, runs and rows.
+5. M4/M5 remain not started. Only an independently accepted fallback Work-01 plus an explicit roadmap amendment and stage handoff can make a revised M4 entry reachable.
+6. If later natural evidence satisfies G05/G06, the empirical lane may resume under its existing fresh-adjudication and reanalysis gates; neither lane silently overrides the other.
+
+The only next design activity after ACCEPT is a separate ARCH-authored `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01` package. CODE has no standing authority to design the fallback semantics.
 
 ### M4 — Universal Contracts
 
