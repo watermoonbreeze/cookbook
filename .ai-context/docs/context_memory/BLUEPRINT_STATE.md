@@ -1,11 +1,35 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
+## 当前批次：UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01（2026-08-15）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01 — Non-Ordinal Closure-Core Candidate Research |
+| 状态 | **CLAIMED / H4 FALLBACK WORK-01 IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529` |
+| Delegation | `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Architecture input | H4 Fallback Roadmap `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529` = **ARCH ACCEPT / CONSUMED** |
+| Research result | non-ordinal closure-vector candidate + fail-closed delegation rule + independent challenge contract persisted |
+| Empirical meaning | design-policy candidate only；not H1/H2/H3 evidence and not a Universal Level conclusion |
+| Candidate domains | 7 provisional decision domains inherited from M2 candidate labels；not final Task Profile schema |
+| Candidate states | `NOT_APPLICABLE / ARCH_CLOSED / BOUNDED_DELEGATION / UNRESOLVED_STOP` per domain；no cross-domain total order |
+| Evidence lane | H4 preserved；G05/G06 open；accepted NP clusters=0/0；passive non-manufacturing wait active |
+| Evidence effect | manufactured events=0；acquisition runs=0；empirical rows=0；reanalysis runs=0 |
+| Frozen non-decisions | Universal Level count/name/threshold/envelope/mapping=0；final Task/Capability Profile and production Selector=0 |
+| M4/M5 | **NOT STARTED / NOT AUTHORIZED BY THIS BATCH** |
+| M6/M7/M8 | **NOT STARTED** |
+| CookBook Phase 3B | **NOT AUTHORIZED TO START** |
+| 下一步 | after remote ARCH ACCEPT, run a separate independent architecture challenge against the candidate；only an accepted challenge disposition may authorize an exact roadmap-rewrite package。 |
+
 ## 当前批次：UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01 — H4 Fallback Roadmap Architecture Research Persistence |
-| 状态 | **COMPLETE / H4 FALLBACK ROADMAP RESEARCH PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY H4 FALLBACK WORK-01** |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -21,7 +45,7 @@
 | M4/M5 | **NOT STARTED / NOT AUTHORIZED BY THIS BATCH** |
 | M6/M7/M8 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | after remote ARCH ACCEPT, only a separate ARCH-authored H4 fallback research Work-01 may specify a candidate non-ordinal closure contract and independent challenge；no M4 entry until that research changes the roadmap through an explicit accepted handoff。 |
+| 下一步 | accepted roadmap authority is consumed only by current Work-01；the empirical wait lane remains active and unchanged。 |
 
 ## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01（2026-08-14）
 | 字段 | 值 |
