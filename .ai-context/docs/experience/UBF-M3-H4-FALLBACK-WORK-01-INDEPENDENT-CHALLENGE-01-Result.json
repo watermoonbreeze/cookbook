@@ -1,0 +1,33 @@
+{
+  "schema_version": "UBF-M3-H4-FALLBACK-CHALLENGE-RESULT/1.0",
+  "task_id": "UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01",
+  "handoff_parent": "a7d9209220241dc677ae9bd32f761b98cabc9821",
+  "status": "COMPLETE_PENDING_REMOTE_ARCH_REVIEW",
+  "overall_disposition": "REWORK",
+  "attribution": "ARCHITECTURE_RESEARCH_CANDIDATE_DEFECT_NON_CAPABILITY",
+  "gate_recount": {
+    "PASS": 5,
+    "REWORK": 5,
+    "REJECT": 0
+  },
+  "primary_defect": "DOMAIN_LEVEL_SINGLE_STATE_CONFLICTS_WITH_MULTI_DECISION_MIXED_STATES",
+  "reopen_items": 6,
+  "preserved_four_state_semantics": true,
+  "candidate_mutated_in_this_batch": false,
+  "empirical_disposition": "H4_INSUFFICIENT_EVIDENCE_PRESERVED",
+  "effects": {
+    "manufactured_events": 0,
+    "acquisition_runs": 0,
+    "empirical_rows": 0,
+    "reanalysis_runs": 0
+  },
+  "stage_status": {
+    "M4": "NOT_STARTED",
+    "M5": "NOT_STARTED",
+    "M6": "NOT_STARTED",
+    "M7": "NOT_STARTED",
+    "M8": "NOT_STARTED",
+    "CookBook_Phase_3B": "NOT_AUTHORIZED"
+  },
+  "next_authority": "UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01"
+}

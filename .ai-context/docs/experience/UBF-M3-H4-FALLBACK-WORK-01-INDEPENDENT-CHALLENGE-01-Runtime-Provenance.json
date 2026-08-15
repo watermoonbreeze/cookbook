@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01",
+  "package_revision": "R1",
+  "handoff_parent": "a7d9209220241dc677ae9bd32f761b98cabc9821",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": false,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "GPT-5",
+      "launcher_or_operator_model_label": "Codex API",
+      "execution_scope": "CLAIM_AND_FINAL",
+      "availability_notes": "Runtime model identity was available from the current Codex execution context; no private architecture input was used."
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

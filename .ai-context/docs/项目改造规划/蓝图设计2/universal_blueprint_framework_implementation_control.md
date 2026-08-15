@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4_INSUFFICIENT_EVIDENCE; NON-ORDINAL FALLBACK CANDIDATE PENDING CHALLENGE`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4 FALLBACK CANDIDATE REWORK REQUIRED`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — H4 FALLBACK WORK-01 / PASSIVE EVIDENCE WAIT`
-> Current Review Result: `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529 = H4 FALLBACK ROADMAP ARCH ACCEPT / CONSUMED`
+> Current UBF Stage: `M3 CALIBRATION — H4 FALLBACK INDEPENDENT CHALLENGE / REWORK`
+> Current Review Result: `a7d9209220241dc677ae9bd32f761b98cabc9821 = H4 FALLBACK WORK-01 CODE ACCEPT / SEMANTIC REWORK`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -30,7 +30,7 @@
 > M3 Family-C Cell-02 Reviewed Target: `88c1f352fae5a3b397b427d9bf8e978b285bb546` — qualifying matched-pair member / private results sealed
 > M3 Family-C Pair Seal Accepted Review Target: `f4744068092a8af89e44f0d1920b14a4050e3887`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R37 — non-ordinal closure-core candidate; independent challenge required`
+> Process Revision: `R38 — independent challenge REWORK; decision-record authority repair`
 
 ## 1. 目标
 
@@ -219,6 +219,12 @@ The accepted fallback-roadmap authority at `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c17
 This is a reversible design-policy candidate, not an H3 empirical conclusion. It creates no evidence and finalizes no Universal Level, Task Profile, Capability Profile, Selector, mapping or routing semantics. H4, G05/G06 open 0/0 and passive non-manufacturing observation remain unchanged. M4–M8 and CookBook Phase 3B remain not started.
 
 Only a separate independent architecture challenge may follow remote ACCEPT. Challenge ACCEPT still requires a separate exact roadmap rewrite and explicit stage handoff before any revised M4 entry.
+
+
+
+## Independent challenge — UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01
+
+Remote execution `a7d9209220241dc677ae9bd32f761b98cabc9821` is accepted. Independent architecture challenge returns `REWORK` with architecture attribution `NON_CAPABILITY`. The authoritative-unit/domain-state conflict and four precision gaps must be repaired exactly; the empirical lane, H4, four state meanings, fail-closed rule and later-stage prohibitions remain preserved. Only the named Exact Repair may follow ACCEPT.
 
 ### M4 — Universal Contracts
 

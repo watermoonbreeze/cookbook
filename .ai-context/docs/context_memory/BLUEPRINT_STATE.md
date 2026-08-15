@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01 — Independent Architecture Challenge |
-| 状态 | **CLAIMED / INDEPENDENT CHALLENGE PERSISTENCE IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / CHALLENGE REWORK PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `a7d9209220241dc677ae9bd32f761b98cabc9821` |
-| Delegation | `UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Delegation | `UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01 / R1` abstract-CODER single-use claim CONSUMED |
 | Architecture input | H4 Fallback Work-01 `a7d9209220241dc677ae9bd32f761b98cabc9821` = **CODE EXECUTION ACCEPT / CANDIDATE CHALLENGED** |
 | Challenge result | **REWORK**；PASS=5，REWORK=5，REJECT=0 |
 | Primary defect | authoritative state unit conflicts: one state per domain cannot represent multiple decision records with mixed states |

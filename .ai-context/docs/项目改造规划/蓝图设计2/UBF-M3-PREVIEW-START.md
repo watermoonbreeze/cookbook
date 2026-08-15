@@ -426,3 +426,8 @@ The accepted fallback-roadmap authority at `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c17
 This is a reversible design-policy candidate, not an H3 empirical conclusion. It creates no evidence and finalizes no Universal Level, Task Profile, Capability Profile, Selector, mapping or routing semantics. H4, G05/G06 open 0/0 and passive non-manufacturing observation remain unchanged. M4–M8 and CookBook Phase 3B remain not started.
 
 Only a separate independent architecture challenge may follow remote ACCEPT. Challenge ACCEPT still requires a separate exact roadmap rewrite and explicit stage handoff before any revised M4 entry.
+
+
+## Independent challenge — UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01
+
+Remote execution `a7d9209220241dc677ae9bd32f761b98cabc9821` is accepted. Independent architecture challenge returns `REWORK` with architecture attribution `NON_CAPABILITY`. The authoritative-unit/domain-state conflict and four precision gaps must be repaired exactly; the empirical lane, H4, four state meanings, fail-closed rule and later-stage prohibitions remain preserved. Only the named Exact Repair may follow ACCEPT.
