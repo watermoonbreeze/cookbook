@@ -436,3 +436,8 @@ Remote execution `a7d9209220241dc677ae9bd32f761b98cabc9821` is accepted. Indepen
 ## Exact Repair — UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01
 
 Challenge `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` is accepted and consumed. The candidate is repaired so the unique Decision Record is authoritative, domain summaries are generated/non-aggregating views, taxonomy is open with extension/overlap controls, BOUNDED_DELEGATION requires adjudicated SUFFICIENT capability evidence, UNKNOWN fails closed, Project Overlay has no scalar floor, and a JSON Schema plus invariants makes the register inspectable. No empirical or later-stage authority changes.
+
+
+## Roadmap Rewrite — UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01
+
+Exact Repair `d825bf1681ec7dacfac2240f52b2c25d33532dec` is ARCH ACCEPT and passes all ten challenge gates. The control now exposes dormant `M4-L` and conditionally reachable `M4-NO`. H4/passive evidence remain, but G05/G06 are no longer a critical-path blocker for M4-NO after a separate M3 End/Accept and handoff. This batch starts no stage.

@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01",
+  "package_revision": "R1",
+  "handoff_parent": "d825bf1681ec7dacfac2240f52b2c25d33532dec",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": false,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "GPT-5",
+      "launcher_or_operator_model_label": "Codex API execution environment",
+      "execution_scope": "CLAIM_AND_FINAL",
+      "availability_notes": "Execution performed in the configured Codex runtime; no separate model override or private architecture input was supplied."
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01 — Dual-Path M3→M4 Roadmap Rewrite |
-| 状态 | **CLAIMED / ROADMAP REWRITE IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / ROADMAP REWRITE PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `d825bf1681ec7dacfac2240f52b2c25d33532dec` |
-| Delegation | `UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Delegation | `UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01 / R1` abstract-CODER single-use claim CONSUMED |
 | Architecture input | Exact Repair `d825bf1681ec7dacfac2240f52b2c25d33532dec` = **ARCH ACCEPT / TEN-GATE PASS 10/10 / CONSUMED** |
 | Roadmap decision | M4 becomes dual-path: dormant evidence-supported Level path + reachable H4 non-ordinal Closure Core path |
 | Active path candidate | `M4-NO` — Decision Record / non-ordinal closure contracts；not Universal Levels |

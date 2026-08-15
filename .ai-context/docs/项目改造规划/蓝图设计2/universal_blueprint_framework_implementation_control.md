@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4 FALLBACK EXACT REPAIR PENDING REVIEW`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4 FALLBACK ROADMAP REWRITE PENDING REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — H4 FALLBACK EXACT REPAIR / PASSIVE EVIDENCE WAIT`
-> Current Review Result: `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a = INDEPENDENT CHALLENGE ARCH ACCEPT / REWORK CONSUMED`
+> Current UBF Stage: `M3 — H4 FALLBACK ROADMAP REWRITE / PASSIVE EVIDENCE SIDECAR`
+> Current Review Result: `d825bf1681ec7dacfac2240f52b2c25d33532dec = EXACT REPAIR ARCH ACCEPT / TEN-GATE PASS`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -30,7 +30,7 @@
 > M3 Family-C Cell-02 Reviewed Target: `88c1f352fae5a3b397b427d9bf8e978b285bb546` — qualifying matched-pair member / private results sealed
 > M3 Family-C Pair Seal Accepted Review Target: `f4744068092a8af89e44f0d1920b14a4050e3887`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R39 — decision-record authority exact repair; ten-gate rereview required`
+> Process Revision: `R40 — dual-path M4-L/M4-NO roadmap; M3 End/Handoff required`
 
 ## 1. 目标
 
@@ -191,7 +191,7 @@ Accepted result:
 
 **Corpus Work-01 start gate:** only a **separate architecture-authored package after remote ARCH ACCEPT of this Preview/Start delivery** may create empirical rows. CODE has no standing authorization to start corpus work from the presence of this entry document alone.
 
-**Exit:** accepted corpus evidence and subsequent architecture analysis establish whether a monotonic/comparable closure ladder is empirically supportable; failure returns to architecture research instead of inventing levels.
+**Exit (dual path):** `M4-L` requires accepted corpus evidence and analysis establishing a supportable ordered closure core. `M4-NO` requires an independently challenged non-ordinal Decision Record candidate, explicit preservation of H4, and separate M3 End/Accept plus M3→M4-NO handoff. Failure never permits invented Levels.
 
 
 
@@ -232,39 +232,21 @@ Remote execution `a7d9209220241dc677ae9bd32f761b98cabc9821` is accepted. Indepen
 
 Challenge `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` is accepted and consumed. The candidate is repaired so the unique Decision Record is authoritative, domain summaries are generated/non-aggregating views, taxonomy is open with extension/overlap controls, BOUNDED_DELEGATION requires adjudicated SUFFICIENT capability evidence, UNKNOWN fails closed, Project Overlay has no scalar floor, and a JSON Schema plus invariants makes the register inspectable. No empirical or later-stage authority changes.
 
-### M4 — Universal Contracts
 
-目标：在校准证据基础上形成候选 Global Core。
 
-产物：
+## Roadmap Rewrite — UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01
 
-- Blueprint 第一性定义；
-- Universal Level closure contracts；
-- 各 Level 的 coder discretion allow/deny contract；
-- 通用 Q/STOP 与 structured feedback；
-- Task Profile schema；
-- Capability Profile schema；
-- Minimum Safe Level Selector；
-- FULL/LITE package rules；
-- GC validation 与 promotion lifecycle；
-- Delegation Preservation 与 over-design gate。
+Exact Repair `d825bf1681ec7dacfac2240f52b2c25d33532dec` is ARCH ACCEPT and passes all ten challenge gates. The control now exposes dormant `M4-L` and conditionally reachable `M4-NO`. H4/passive evidence remain, but G05/G06 are no longer a critical-path blocker for M4-NO after a separate M3 End/Accept and handoff. This batch starts no stage.
 
-门禁：任何 Level 条款必须指出“关闭了什么真实决策、保留了什么自由、如何验证”，不能只列工件或 GC。
+### M4 — Universal Contracts (selected-path stage)
 
-### M5 — CookBook Overlay Migration Design
+`M4-L` is dormant under H4 and retains the original evidence-supported Universal Level objective. `M4-NO` is conditionally reachable after accepted M3 End/Handoff and builds non-ordinal Decision Record closure contracts. The selected path must be named in Preview/Start; paths may not be blended implicitly.
 
-目标：把项目事实与 Universal Core 分离，同时保持历史连续性。
+M4-NO outputs are the ten items frozen by `UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01.md` §3. Its gate requires every behavior-affecting decision to be a validated Decision Record, bounded delegation to satisfy the capability predicate, and every aggregation/Level inference to remain forbidden.
 
-产物：
+### M5 — CookBook Overlay Migration Design (selected-path stage)
 
-- CookBook Project Overlay；
-- Legacy L7 双标签迁移状态；
-- GC-01～GC-48 authority mapping；
-- project closure floor 候选；
-- 项目 validation commands 与 defect patterns；
-- 旧入口、registry 与 generated views 的 pointer migration。
-
-门禁：Overlay 可以规定最低安全 floor，但不得修改 Universal Level 的含义。
+M5 follows the selected M4 path. Under M5-NO, Legacy L7 stays historical; GC-01..48 map to Decision Record/domain/evidence roles; project constraints add or strengthen individual records and cannot create a scalar floor or redefine Core states. Historical authority, validation commands, defect patterns, registries and generated-view pointers remain required.
 
 ### M6 — Canonical Mutation Blueprint & Challenge
 
