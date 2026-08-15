@@ -1,18 +1,22 @@
-# UBF M3 H4 Fallback — Non-Ordinal Closure-Core Candidate 01
+# UBF M3 H4 Fallback — Non-Ordinal Closure-Core Candidate 01 / Exact Repair
 
 > Identity: architecture-research candidate, not canonical Universal Core
 > Empirical disposition: `H4_INSUFFICIENT_EVIDENCE`
 > Stage effect: M3 research only; M4–M8 remain not started
 
-## 1. Why this candidate exists
+## 1. Purpose and non-inference
 
-Current evidence does not establish a useful one-dimensional Universal Level ladder and does not distinguish H2 from H3. The accepted roadmap therefore permits a reversible architecture-research candidate while naturalistic evidence remains under passive observation. This document does not infer multidimensional truth from H4; it defines a fail-closed design option for independent challenge.
+Current evidence neither establishes a useful one-dimensional Universal Level ladder nor distinguishes H2 from H3. This reversible design-policy candidate is therefore not an H2/H3 empirical conclusion and cannot define a Universal Level, final Profile, production Selector, model ranking or routing rule.
 
-## 2. Candidate identity
+## 2. Authoritative object
 
-The candidate object is a `Closure Vector`, not a Level. A task receives one independent state per applicable decision domain. Two tasks are not ranked by counting closed domains, comparing state strings or calculating a scalar score.
+The authoritative unit is a stable `Decision Record`. A task closure object is a set/map of uniquely identified Decision Records. Each record has exactly one state. A domain is only a classification label; it never owns or collapses record state.
 
-Candidate domains reuse M2's provisional labels only:
+One domain may contain multiple records with mixed states. Domain summaries are Generated Views only. They must list the underlying record IDs and states without reducing them to a single status, worst/best state, count, percentage, score, rank, Level or routing input.
+
+## 3. Open candidate taxonomy
+
+The seven M2-derived seed domains are provisional and non-exhaustive:
 
 1. `D-DECISION-SCOPE`
 2. `D-EVIDENCE-TRACEABILITY`
@@ -22,77 +26,56 @@ Candidate domains reuse M2's provisional labels only:
 6. `D-USER-SIDE-EFFECT`
 7. `D-MECHANICAL-DELIVERY`
 
-These are research-domain labels, not a finalized Task Profile schema. Future challenge may split, merge, rename or reject them without rewriting M2 legacy identities.
+Every Decision Record has exactly one `primary_domain` and zero-or-more unique `secondary_domain_tags`. Secondary tags support discovery only and never create duplicate authority, coverage credit or acceptance credit.
 
-## 3. Per-domain states
+A new `D-EXT-*` domain requires stable ID, semantic definition, inclusion/exclusion examples, overlap audit against every active domain, source/rationale, lifecycle state and independent challenge. Extension does not imply a new Level or taxonomy completeness.
+
+## 4. Decision Record states
 
 | State | Meaning | Required proof | Coder authority |
 |---|---|---|---|
-| `NOT_APPLICABLE` | domain is outside the task after explicit applicability review | exclusion reason + affected-surface inventory | none in excluded domain |
-| `ARCH_CLOSED` | architecture supplies the unique behavior-affecting answer | exact rule/target/forbidden set + validation | mechanical implementation only |
-| `BOUNDED_DELEGATION` | coder may choose among explicitly safe alternatives | allowed set + equivalence boundary + evidence + Q/STOP trigger | choose only inside the frozen set |
-| `UNRESOLVED_STOP` | safe authority cannot yet be assigned | unresolved question + consequence + owner + required Truth | no mutation in that domain |
+| `NOT_APPLICABLE` | decision is outside the task after explicit applicability review | exclusion reason + affected-surface inventory | none |
+| `ARCH_CLOSED` | architecture supplies the unique behavior-affecting answer | exact rule/target/forbidden set + validation | only separately recorded safe implementation choices |
+| `BOUNDED_DELEGATION` | coder may choose within an explicit safe set | allowed set + equivalence boundary + evidence + capability predicate + Q/STOP | only choices inside that record's allowed set |
+| `UNRESOLVED_STOP` | safe authority cannot yet be assigned | unresolved Truth + consequence + owner + acquisition route | no mutation in that decision |
 
-The states are not numeric grades. `NOT_APPLICABLE` is not below or above another state. `UNRESOLVED_STOP` is a safety barrier, not a low Level. Cross-domain state aggregation into a total order is forbidden.
+These names and meanings are preserved. They are non-numeric and have no cross-record or cross-domain total order.
 
-## 4. Residual Decision Register
+## 5. Machine-checkable Residual Decision Register
 
-Every applicable domain must expose:
+Every record follows `UBF-M3-H4-FALLBACK-DECISION-RECORD-CANDIDATE-SCHEMA-01.json` and contains stable decision ID, primary domain, secondary tags, owner, state, applicability, decision contract, allowed and forbidden choices, preconditions, invalidating conditions, evidence references, Q/STOP contract, lifecycle, mutation authority and capability evidence.
 
-- stable decision ID;
-- domain;
-- authoritative owner;
-- current state;
-- exact closed decision or bounded allowed set;
-- forbidden choices;
-- preconditions and invalidating conditions;
-- evidence/validation;
-- Q/STOP trigger;
-- lifecycle and mutation authority.
+Required invariants beyond JSON Schema syntax:
 
-Missing fields resolve to `UNRESOLVED_STOP`, never inferred delegation.
+1. `decision_id` is unique in the task closure object.
+2. every `primary_domain` and secondary tag resolves to a seed domain or a complete extension registry entry.
+3. primary domain cannot repeat as a secondary tag; secondary tags are unique.
+4. exactly one state exists per Decision Record; no authoritative domain state exists.
+5. `BOUNDED_DELEGATION` requires capability status `SUFFICIENT`, nonempty adjudicator, evidence references and applicability conditions.
+6. capability `UNKNOWN`, missing, stale or inapplicable always forbids `BOUNDED_DELEGATION`; ARCH must close the decision from Truth or use `UNRESOLVED_STOP`.
+7. domain summaries, record counts/ratios and any `level/score/rank/floor/aggregate_state/coverage_ratio` field are non-authoritative and forbidden from selector, routing, package-profile or acceptance decisions.
+8. every record has an explicit Q/STOP consequence and mutation authority.
 
-## 5. Fail-closed delegation rule
+## 6. Fail-closed bounded delegation
 
-`BOUNDED_DELEGATION` is permitted only when all are true:
+`BOUNDED_DELEGATION` is allowed only when alternatives and equivalence boundary are enumerated; no choice escapes user-visible/persistence/protocol/security/authority/irreversibility boundaries; validation is executable or independently reviewable; conditional actor capability evidence is adjudicated SUFFICIENT; and failure has a precise Q/STOP route without silent fallback.
 
-1. alternatives and their equivalence boundary are enumerated;
-2. no alternative can change user-visible, persistence, protocol, security, authority or irreversible semantics outside that boundary;
-3. required evidence is executable or independently reviewable;
-4. actor capability evidence is sufficient for this decision type under the stated conditions;
-5. failure has a precise Q/STOP route and cannot silently fall back.
+If any predicate is false or UNKNOWN, delegation is forbidden. ARCH uses `ARCH_CLOSED` only when authoritative Truth supports a unique decision; otherwise the record is `UNRESOLVED_STOP`. Full closure across all records requires an explicit over-design/Delegation Preservation justification.
 
-If any condition is false or unknown, the state is `ARCH_CLOSED` when ARCH can decide from Truth, otherwise `UNRESOLVED_STOP`. This is a design-policy safeguard, not a capability ranking.
+## 7. Orthogonal objects and Project Overlay
 
-## 6. Orthogonal objects
+Risk/novelty constrains individual delegation decisions but is not a state or Level. FULL/LITE carries and proves the Decision Records without weakening them. GC validates named records/evidence and never computes state. Actor routing remains separately authoritative.
 
-- Risk/novelty constrains whether delegation is safe; it is not a domain state or Level.
-- FULL/LITE selects the carrier needed to express and prove the vector; it cannot weaken closure.
-- GC validates required closure/evidence and preserves stable identity; GC count never computes the vector.
-- Actor routing remains owned by routing policy; the vector does not rank models.
-- Project Overlay may set a stricter floor or close additional project decisions, but may not redefine state meanings.
+Project Overlay may add project-specific Decision Records or strengthen an individual existing record from bounded delegation to architecture closure when project Truth requires it. It may not define a scalar floor, aggregate domain state, Level, score or altered state meaning.
 
-## 7. Reversibility
+## 8. Reversibility and empirical coexistence
 
-The candidate is versioned and replaceable. M2 legacy mappings stay `UNRESOLVED`. Later accepted evidence may restore a level-based path, support a core-plus-residual structure, or reject this candidate. Migration must preserve Stable Identity, historical snapshots and acceptance evidence.
+M2 legacy identities and mappings remain preserved/UNRESOLVED. Passive G05/G06 evidence observation remains active. Later accepted evidence may restore a level-based path, support another structure or reject this candidate. Migration preserves Stable Identity, lifecycle, snapshots and acceptance evidence.
 
-## 8. Independent challenge contract
+## 9. Challenge closure
 
-The next challenge must issue PASS/REWORK/REJECT for each gate:
+Exact repair addresses authoritative-unit consistency, taxonomy completeness/overlap, capability predicate, scalar-floor removal and mechanical schema. Remote ARCH must re-run all ten challenge gates. Repair delivery alone does not start M4 or authorize roadmap rewrite.
 
-1. non-inference from H4;
-2. no hidden scalar or total ordering;
-3. domain completeness and overlap;
-4. safety of `BOUNDED_DELEGATION`;
-5. Delegation Preservation and over-design control;
-6. Q/STOP completeness;
-7. FULL/LITE, GC, risk and actor-routing orthogonality;
-8. Overlay non-redefinition;
-9. empirical-lane coexistence and reversibility;
-10. mechanical inspectability of the Residual Decision Register.
+## 10. Frozen non-results
 
-Any REWORK/REJECT must provide a minimal Reopen Set, Preserve Set and exact repair. Challenge acceptance alone does not start M4. A separate roadmap rewrite, M3 disposition and explicit stage handoff are still required.
-
-## 9. Frozen non-results
-
-This candidate establishes zero Universal Level count/name/threshold/envelope/mapping decisions, zero final Task/Capability Profile decisions, zero production Selector decisions, zero model rankings/routing decisions, and zero new empirical events/runs/rows/reanalysis.
+Universal Level/Profile/Selector/mapping/routing finalizations=0; new events/runs/rows/reanalysis=0; M4–M8 and CookBook Phase 3B remain not started/not authorized.

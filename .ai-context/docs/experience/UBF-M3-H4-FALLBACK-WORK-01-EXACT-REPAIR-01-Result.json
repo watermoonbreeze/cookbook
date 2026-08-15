@@ -1,0 +1,43 @@
+{
+  "schema_version": "UBF-M3-H4-FALLBACK-EXACT-REPAIR-RESULT/1.0",
+  "task_id": "UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01",
+  "handoff_parent": "d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a",
+  "status": "COMPLETE_PENDING_REMOTE_ARCH_REVIEW",
+  "repair_disposition": "EXACT_REPAIR_READY_FOR_TEN_GATE_REREVIEW",
+  "authoritative_unit": "DECISION_RECORD",
+  "domain_role": "NON_AUTHORITATIVE_CLASSIFICATION",
+  "domain_taxonomy": "OPEN_NON_EXHAUSTIVE",
+  "domain_aggregation": "FORBIDDEN",
+  "bounded_delegation_capability_unknown": "FORBIDDEN_FAIL_CLOSED",
+  "project_scalar_floor": "FORBIDDEN",
+  "schema_path": ".ai-context/docs/项目改造规划/蓝图设计2/UBF-M3-H4-FALLBACK-DECISION-RECORD-CANDIDATE-SCHEMA-01.json",
+  "challenge_items_targeted": [
+    "C-02",
+    "C-03",
+    "C-04",
+    "C-07",
+    "C-10"
+  ],
+  "preserved_items": [
+    "C-01",
+    "C-05",
+    "C-06",
+    "C-08",
+    "C-09"
+  ],
+  "effects": {
+    "manufactured_events": 0,
+    "acquisition_runs": 0,
+    "empirical_rows": 0,
+    "reanalysis_runs": 0
+  },
+  "stage_status": {
+    "M4": "NOT_STARTED",
+    "M5": "NOT_STARTED",
+    "M6": "NOT_STARTED",
+    "M7": "NOT_STARTED",
+    "M8": "NOT_STARTED",
+    "CookBook_Phase_3B": "NOT_AUTHORIZED"
+  },
+  "next_authority": "REMOTE_ARCH_TEN_GATE_REREVIEW_ONLY"
+}

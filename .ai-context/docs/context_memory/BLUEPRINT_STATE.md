@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01 — Decision-Record Authority Exact Repair |
-| 状态 | **CLAIMED / EXACT REPAIR IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / EXACT REPAIR PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` |
-| Delegation | `UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Delegation | `UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01 / R1` abstract-CODER single-use claim CONSUMED |
 | Architecture input | Independent Challenge `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` = **ARCH ACCEPT / REWORK CONSUMED** |
 | Repair | authoritative unit=`Decision Record`；domain=non-authoritative classification；mixed states preserved without aggregation |
 | Taxonomy | seven seed domains are open/non-exhaustive；extensions require stable identity + definition + overlap audit + challenge |

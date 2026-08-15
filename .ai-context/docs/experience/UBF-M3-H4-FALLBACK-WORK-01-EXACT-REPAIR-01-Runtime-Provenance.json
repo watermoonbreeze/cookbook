@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01",
+  "package_revision": "R1",
+  "handoff_parent": "d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": false,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "GPT-5",
+      "launcher_or_operator_model_label": "Codex API",
+      "execution_scope": "CLAIM_AND_FINAL",
+      "availability_notes": "运行于本地 Windows 工作区；按执行包适配器完成 claim 与 final 两段执行，未使用外部子代理或私有架构输入。"
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

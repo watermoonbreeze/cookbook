@@ -1,0 +1,324 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ubf:m3:h4-fallback:decision-record-candidate:1",
+  "title": "UBF H4 Fallback Decision Record Candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_id",
+    "task_id",
+    "domain_extensions",
+    "decision_records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "UBF-H4-DECISION-RECORD-CANDIDATE/1.0"
+    },
+    "contract_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain_extensions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "domain_id",
+          "definition",
+          "inclusion_examples",
+          "exclusion_examples",
+          "overlap_audit",
+          "source_rationale",
+          "lifecycle",
+          "challenge_ref"
+        ],
+        "properties": {
+          "domain_id": {
+            "type": "string",
+            "pattern": "^D-EXT-[A-Z0-9-]+$"
+          },
+          "definition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "inclusion_examples": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "exclusion_examples": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "overlap_audit": {
+            "type": "array",
+            "minItems": 7,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "source_rationale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lifecycle": {
+            "enum": [
+              "CANDIDATE",
+              "ACTIVE",
+              "SUPERSEDED"
+            ]
+          },
+          "challenge_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "decision_records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision_record"
+      }
+    }
+  },
+  "$defs": {
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "domain": {
+      "anyOf": [
+        {
+          "enum": [
+            "D-DECISION-SCOPE",
+            "D-EVIDENCE-TRACEABILITY",
+            "D-TRUTH-AUTHORITY",
+            "D-LIFECYCLE-CONCURRENCY",
+            "D-COLLECTION-IDENTITY",
+            "D-USER-SIDE-EFFECT",
+            "D-MECHANICAL-DELIVERY"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^D-EXT-[A-Z0-9-]+$"
+        }
+      ]
+    },
+    "decision_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "primary_domain",
+        "secondary_domain_tags",
+        "owner",
+        "state",
+        "applicability",
+        "decision_contract",
+        "allowed_choices",
+        "forbidden_choices",
+        "preconditions",
+        "invalidating_conditions",
+        "evidence_refs",
+        "q_stop",
+        "lifecycle",
+        "mutation_authority",
+        "capability_evidence"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "pattern": "^DR-[A-Z0-9][A-Z0-9._-]*$"
+        },
+        "primary_domain": {
+          "$ref": "#/$defs/domain"
+        },
+        "secondary_domain_tags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/domain"
+          }
+        },
+        "owner": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "state": {
+          "enum": [
+            "NOT_APPLICABLE",
+            "ARCH_CLOSED",
+            "BOUNDED_DELEGATION",
+            "UNRESOLVED_STOP"
+          ]
+        },
+        "applicability": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "decision_contract": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "allowed_choices": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        },
+        "forbidden_choices": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        },
+        "invalidating_conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        },
+        "q_stop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "trigger",
+            "consequence",
+            "owner",
+            "required_truth"
+          ],
+          "properties": {
+            "trigger": {
+              "$ref": "#/$defs/nonempty"
+            },
+            "consequence": {
+              "$ref": "#/$defs/nonempty"
+            },
+            "owner": {
+              "$ref": "#/$defs/nonempty"
+            },
+            "required_truth": {
+              "$ref": "#/$defs/nonempty"
+            }
+          }
+        },
+        "lifecycle": {
+          "enum": [
+            "CANDIDATE",
+            "ACTIVE",
+            "SUPERSEDED",
+            "CLOSED"
+          ]
+        },
+        "mutation_authority": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "capability_evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "adjudicator",
+            "evidence_refs",
+            "applicability_conditions"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "NOT_REQUIRED",
+                "SUFFICIENT",
+                "INSUFFICIENT",
+                "UNKNOWN",
+                "STALE"
+              ]
+            },
+            "adjudicator": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/nonempty"
+              }
+            },
+            "applicability_conditions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/nonempty"
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "BOUNDED_DELEGATION"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "properties": {
+              "allowed_choices": {
+                "minItems": 1
+              },
+              "evidence_refs": {
+                "minItems": 1
+              },
+              "capability_evidence": {
+                "properties": {
+                  "status": {
+                    "const": "SUFFICIENT"
+                  },
+                  "adjudicator": {
+                    "minLength": 1
+                  },
+                  "evidence_refs": {
+                    "minItems": 1
+                  },
+                  "applicability_conditions": {
+                    "minItems": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

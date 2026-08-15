@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4 FALLBACK CANDIDATE REWORK REQUIRED`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4 FALLBACK EXACT REPAIR PENDING REVIEW`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — H4 FALLBACK INDEPENDENT CHALLENGE / REWORK`
-> Current Review Result: `a7d9209220241dc677ae9bd32f761b98cabc9821 = H4 FALLBACK WORK-01 CODE ACCEPT / SEMANTIC REWORK`
+> Current UBF Stage: `M3 CALIBRATION — H4 FALLBACK EXACT REPAIR / PASSIVE EVIDENCE WAIT`
+> Current Review Result: `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a = INDEPENDENT CHALLENGE ARCH ACCEPT / REWORK CONSUMED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -30,7 +30,7 @@
 > M3 Family-C Cell-02 Reviewed Target: `88c1f352fae5a3b397b427d9bf8e978b285bb546` — qualifying matched-pair member / private results sealed
 > M3 Family-C Pair Seal Accepted Review Target: `f4744068092a8af89e44f0d1920b14a4050e3887`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R38 — independent challenge REWORK; decision-record authority repair`
+> Process Revision: `R39 — decision-record authority exact repair; ten-gate rereview required`
 
 ## 1. 目标
 
@@ -225,6 +225,12 @@ Only a separate independent architecture challenge may follow remote ACCEPT. Cha
 ## Independent challenge — UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01
 
 Remote execution `a7d9209220241dc677ae9bd32f761b98cabc9821` is accepted. Independent architecture challenge returns `REWORK` with architecture attribution `NON_CAPABILITY`. The authoritative-unit/domain-state conflict and four precision gaps must be repaired exactly; the empirical lane, H4, four state meanings, fail-closed rule and later-stage prohibitions remain preserved. Only the named Exact Repair may follow ACCEPT.
+
+
+
+## Exact Repair — UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01
+
+Challenge `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` is accepted and consumed. The candidate is repaired so the unique Decision Record is authoritative, domain summaries are generated/non-aggregating views, taxonomy is open with extension/overlap controls, BOUNDED_DELEGATION requires adjudicated SUFFICIENT capability evidence, UNKNOWN fails closed, Project Overlay has no scalar floor, and a JSON Schema plus invariants makes the register inspectable. No empirical or later-stage authority changes.
 
 ### M4 — Universal Contracts
 

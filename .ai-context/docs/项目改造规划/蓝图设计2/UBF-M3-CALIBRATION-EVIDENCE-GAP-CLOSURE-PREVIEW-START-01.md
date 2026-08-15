@@ -335,3 +335,8 @@ Only a separate independent architecture challenge may follow remote ACCEPT. Cha
 ## Independent challenge — UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01
 
 Remote execution `a7d9209220241dc677ae9bd32f761b98cabc9821` is accepted. Independent architecture challenge returns `REWORK` with architecture attribution `NON_CAPABILITY`. The authoritative-unit/domain-state conflict and four precision gaps must be repaired exactly; the empirical lane, H4, four state meanings, fail-closed rule and later-stage prohibitions remain preserved. Only the named Exact Repair may follow ACCEPT.
+
+
+## Exact Repair — UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01
+
+Challenge `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` is accepted and consumed. The candidate is repaired so the unique Decision Record is authoritative, domain summaries are generated/non-aggregating views, taxonomy is open with extension/overlap controls, BOUNDED_DELEGATION requires adjudicated SUFFICIENT capability evidence, UNKNOWN fails closed, Project Overlay has no scalar floor, and a JSON Schema plus invariants makes the register inspectable. No empirical or later-stage authority changes.
