@@ -1,11 +1,32 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
+## 当前批次：UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01（2026-08-15）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01 — Independent Architecture Challenge |
+| 状态 | **CLAIMED / INDEPENDENT CHALLENGE PERSISTENCE IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `a7d9209220241dc677ae9bd32f761b98cabc9821` |
+| Delegation | `UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Architecture input | H4 Fallback Work-01 `a7d9209220241dc677ae9bd32f761b98cabc9821` = **CODE EXECUTION ACCEPT / CANDIDATE CHALLENGED** |
+| Challenge result | **REWORK**；PASS=5，REWORK=5，REJECT=0 |
+| Primary defect | authoritative state unit conflicts: one state per domain cannot represent multiple decision records with mixed states |
+| Exact repair | make Decision Record authoritative；domain is non-authoritative classification；forbid domain aggregation；replace scalar floor wording；add taxonomy/capability/schema invariants |
+| Preserve | H4, passive wait, four state meanings, fail-closed rule, Residual Decision Register concept, orthogonal-object boundaries, reversibility |
+| Evidence effect | events/runs/rows/reanalysis=0/0/0/0；G05/G06 remain open 0/0 |
+| M4–M8 | **NOT STARTED / NOT AUTHORIZED** |
+| CookBook Phase 3B | **NOT AUTHORIZED** |
+| 下一步 | after remote ARCH ACCEPT, only `UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01` may edit the candidate inside the frozen Reopen Set。 |
+
 ## 当前批次：UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01（2026-08-15）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01 — Non-Ordinal Closure-Core Candidate Research |
-| 状态 | **COMPLETE / NON-ORDINAL CANDIDATE PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY INDEPENDENT CHALLENGE** |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -23,7 +44,7 @@
 | M4/M5 | **NOT STARTED / NOT AUTHORIZED BY THIS BATCH** |
 | M6/M7/M8 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | after remote ARCH ACCEPT, run a separate independent architecture challenge against the candidate；only an accepted challenge disposition may authorize an exact roadmap-rewrite package。 |
+| 下一步 | candidate execution is accepted；current independent challenge owns semantic disposition。 |
 
 ## 当前批次：UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01（2026-08-14）
 | 字段 | 值 |
