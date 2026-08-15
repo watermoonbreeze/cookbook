@@ -11,7 +11,7 @@ M3 Corpus: `WORK-01 / WORK-02 / WORK-03 ACCEPT / CONSUMED`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
 Empirical Sample Rows Created By This Entry: `0`
-Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / MATCHED FAMILIES 2/2 SEALED / NP GAPS OPEN WITH PASSIVE NON-MANUFACTURING CAPTURE`
+Calibration Analysis: `WORK-01 H4_INSUFFICIENT_EVIDENCE / BAP-01 ACCEPT / MATCHED FAMILIES 2/2 SEALED / NP REASSESSMENT ACCEPT / PASSIVE WAIT ACTIVE`
 
 ## 1. Entry meaning
 
@@ -393,3 +393,11 @@ Remote ARCH accepts Pair Seal `f4744068092a8af89e44f0d1920b14a4050e3887`, then r
 No existing episode qualifies for EGC-G05 or EGC-G06. Controlled/synthetic Q/STOP results do not generalize to production; historical blocked/incorrect/protocol-misread events do not become correct Hard STOP; early clarification notes lack the immutable task/provenance/adjudication facets required for calibration eligibility.
 
 Both gaps remain OPEN with an authorized passive capture protocol. The protocol observes future normal work only and forbids manufactured ambiguity, fake parent/preimage failure or dedicated probes. Until independently adjudicated naturalistic clusters exist for both gaps, H4 and every reanalysis/M4/M5/Phase 3B prohibition remain unchanged.
+
+## 34. Naturalistic-production passive wait entry
+
+Remote ARCH accepts reassessment delivery `64f071261559d0239837d210ab2f10c518849687`. The accepted decision is backfilled without adding evidence: G05/G06 remain open, accepted NP clusters remain 0/0, and production events/acquisition runs/empirical rows remain 0/0/0.
+
+Passive wait is a lifecycle condition only. It authorizes observation during future independently necessary work but does not authorize a dedicated capture task or any induced Q/STOP condition. A future candidate remains non-corpus evidence until fresh ARCH review establishes naturalistic identity, provenance, root-cluster independence and behavioral correctness.
+
+H4 stays `H4_INSUFFICIENT_EVIDENCE`. Re-analysis, Universal Level/Profile/Selector/Ranking/Routing decisions, M4/M5 and CookBook Phase 3B remain unauthorized.

@@ -11,7 +11,7 @@ Evidence Acquisition Runs Started By This Preview/Start: `0`
 Universal Level/Profile/Selector/Ranking/Routing Decisions: `0`
 M4 / M5: `NOT STARTED`
 CookBook Phase 3B: `NOT AUTHORIZED TO START`
-Current Acquisition Status: `FAMILY-C PAIR SEAL ARCH ACCEPT / LANE MC COMPLETE / NP GAPS OPEN / PASSIVE CAPTURE CONTRACT PENDING REMOTE ARCH REVIEW`
+Current Acquisition Status: `NP GAP REASSESSMENT ARCH ACCEPT / LANE MC COMPLETE / NP GAPS OPEN / PASSIVE WAIT ACTIVE`
 
 ## 1. Purpose
 
@@ -297,3 +297,11 @@ Remote ARCH accepts Family-C Pair Seal `f4744068092a8af89e44f0d1920b14a4050e3887
 No existing candidate closes Lane NP. The accepted structured-Q/correct-STOP probe rows and Family-A/B/C scenarios are controlled/synthetic; M0 R3 is context-only blocked/external rather than correct Hard STOP; M0 R4 is incorrect STOP; the Family-B R1 correct governance STOP occurred inside a matched-controlled evidence-acquisition wrapper; recovered custody/isolation stops are protocol misreads; early clarification notes lack the full immutable task/parent/actor/residual-boundary/independent-adjudication evidence minimum. Normal completion STOP is not Hard STOP.
 
 Therefore EGC-G05 and EGC-G06 are each `OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL`, not satisfied. The protocol may preserve a candidate only when it occurs naturally during future independently necessary work. It may not create, induce or simulate an event. This persistence creates zero runs, rows and manufactured events, preserves H4, and does not authorize re-analysis, M4/M5 or Phase 3B.
+
+## 24. Passive wait entry
+
+Remote ARCH accepts the reassessment delivery `64f071261559d0239837d210ab2f10c518849687` after verifying the exact claim/final chain, `10 paths=5A+5M`, all static blobs, runtime provenance, preimages, Preserve boundary and semantic gates.
+
+The passive non-manufacturing capture contract is now active as a wait condition, not as an acquisition assignment. No dedicated task, ambiguity, fake parent/preimage condition, hidden fallback or probe may be created to obtain G05/G06 evidence.
+
+This entry creates zero production events, zero acquisition runs and zero empirical rows. EGC-G05/G06 remain open with accepted clusters 0/0; H4 remains insufficient. Re-analysis, M4/M5 and Phase 3B remain unauthorized. A naturally occurring candidate requires fresh ARCH eligibility and correctness adjudication before any additive corpus persistence.

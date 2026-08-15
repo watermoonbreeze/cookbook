@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01",
+  "package_revision": "R1",
+  "handoff_parent": "64f071261559d0239837d210ab2f10c518849687",
+  "actor_role": "CODER",
+  "resumed_from_existing_claim": false,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "UNKNOWN_SELF_REPORT",
+      "launcher_or_operator_model_label": "Codex API",
+      "execution_scope": "CLAIM_AND_FINAL",
+      "availability_notes": "当前会话未向执行器暴露具体后端模型标识；按真实可见信息记录为 UNKNOWN_SELF_REPORT。"
+    }
+  ],
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false
+}

@@ -5,22 +5,28 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01 — ACCEPT Backfill + Passive Wait Entry |
-| 状态 | **CLAIMED / EXACT ACCEPT-BACKFILL PAYLOAD AUTHORIZED** |
-| TURN | CODE |
+| 状态 | **COMPLETE / PREVIOUS ACCEPT BACKFILLED / PASSIVE WAIT ACTIVE / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `64f071261559d0239837d210ab2f10c518849687` |
-| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01 / R1` abstract-CODER single-use claim **ACTIVE** |
-| Architecture input | NP Gap Reassessment `64f071261559d0239837d210ab2f10c518849687` = **ARCH ACCEPT / TO BE BACKFILLED** |
-| Authorized mutation | exact package payload only；no event capture、probe、run、row、reanalysis or later-stage start |
-| Return condition | final exact allowlist and blobs verified；TURN returns REVIEW |
+| Delegation | `UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01 / R1` abstract-CODER single-use claim **CONSUMED** |
+| Architecture input | NP Gap Reassessment `64f071261559d0239837d210ab2f10c518849687` = **ARCH ACCEPT / CONSUMED** |
+| Wait contract | passive observation only during future independently authorized real work；this entry creates no acquisition task and no production event |
+| EGC-G05 / G06 | both `OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL`；accepted NP clusters=0/0 |
+| Evidence effect | production events manufactured=0；acquisition runs +0；empirical rows +0；historical corpus rewrites=0 |
+| H4 | `H4_INSUFFICIENT_EVIDENCE` PRESERVED |
+| Reanalysis | **NOT AUTHORIZED** |
+| M4/M5 | **NOT STARTED** |
+| CookBook Phase 3B | **NOT AUTHORIZED TO START** |
+| 下一步 | remote ARCH reviews this exact wait-entry persistence；after ACCEPT, issue no dedicated capture task；wait until an event occurs naturally in independently necessary work, then require a fresh ARCH eligibility/adjudication package。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01 — ARCH Reassessment Persistence + Passive Capture Contract |
-| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / PENDING CURRENT BACKFILL** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / CONSUMED BY PASSIVE WAIT ENTRY** |
 | Reviewed delivery | `64f071261559d0239837d210ab2f10c518849687` |
 | Claim delivery | `0aaa2f3ab28343917fa0eef17732b2544d606419` |
 | Architecture disposition | **ACCEPT** |
@@ -40,7 +46,7 @@
 | Reanalysis | **NOT AUTHORIZED** |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | remote ARCH reviews this exact persistence；after ACCEPT, wait for a natural qualifying event under the passive protocol；without accepted G05+G06 clusters do not reanalyze。 |
+| 下一步 | accepted and consumed only by current passive-wait entry；wait for natural occurrence；without accepted G05+G06 clusters do not reanalyze。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-FAMILY-C-PAIR-SEAL-01（2026-08-14）
 | 字段 | 值 |

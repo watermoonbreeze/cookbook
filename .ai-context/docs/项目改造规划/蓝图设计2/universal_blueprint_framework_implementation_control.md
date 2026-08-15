@@ -744,3 +744,12 @@ STOP：
 - The passive protocol applies only to future normally authorized real tasks. It forbids dedicated probes, seeded ambiguity, fake parent/preimage changes, hidden fallbacks and any other event manufacture.
 - This persistence creates 0 production events, 0 acquisition runs and 0 empirical rows. Existing analysis/corpus/BAP/Family Truth and private evidence remain Preserve.
 - H4 remains `H4_INSUFFICIENT_EVIDENCE`; re-analysis, M4/M5 and Phase 3B remain unauthorized. After persistence ACCEPT, the system waits for natural occurrence rather than issuing an acquisition run.
+
+## M3 Naturalistic Production Passive Wait Entry 01
+
+- Reassessment delivery `64f071261559d0239837d210ab2f10c518849687` = **ARCH ACCEPT / CONSUMED**.
+- The passive non-manufacturing capture protocol is active as a wait condition only. It creates no dedicated task, production event, acquisition run or empirical row.
+- EGC-G05/G06 remain `OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL`; accepted NP structured-Q/correct-HARD_STOP clusters remain 0/0.
+- No event may be manufactured through seeded ambiguity, fake parent/preimage state, hidden fallback, synthetic prompt or dedicated probe.
+- A naturally occurring candidate may be preserved only from independently necessary authorized work and remains ineligible until fresh ARCH provenance, root-cluster, behavior and correctness adjudication.
+- H4 remains `H4_INSUFFICIENT_EVIDENCE`; re-analysis, M4/M5 and Phase 3B remain unauthorized.

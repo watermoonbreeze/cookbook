@@ -1,0 +1,40 @@
+{
+  "schema_version": "UBF-M3-NP-PASSIVE-WAIT/1.0",
+  "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01",
+  "handoff_parent": "64f071261559d0239837d210ab2f10c518849687",
+  "accepted_input": {
+    "task_id": "UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01",
+    "claim": "0aaa2f3ab28343917fa0eef17732b2544d606419",
+    "final": "64f071261559d0239837d210ab2f10c518849687",
+    "disposition": "ARCH_ACCEPT",
+    "consumed": true
+  },
+  "wait_state": "PASSIVE_NON_MANUFACTURING_CAPTURE_WAIT_ACTIVE",
+  "gap_dispositions": {
+    "EGC-G05": "OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL",
+    "EGC-G06": "OPEN_WITH_AUTHORIZED_NON_MANUFACTURING_CAPTURE_PROTOCOL"
+  },
+  "accepted_np_clusters": {
+    "structured_q": 0,
+    "correct_hard_stop": 0
+  },
+  "evidence_effect": {
+    "production_events_created_or_manufactured": 0,
+    "new_acquisition_runs": 0,
+    "new_empirical_rows": 0,
+    "historical_records_rewritten": 0
+  },
+  "event_constraints": {
+    "dedicated_capture_task_authorized": false,
+    "synthetic_probe_authorized": false,
+    "seeded_ambiguity_authorized": false,
+    "fake_parent_or_preimage_condition_authorized": false,
+    "hidden_fallback_authorized": false,
+    "fresh_arch_adjudication_required_for_candidate": true
+  },
+  "h4": "H4_INSUFFICIENT_EVIDENCE",
+  "reanalysis_authorized": false,
+  "m4_m5_started": false,
+  "phase3b_authorized": false,
+  "turn": "REVIEW"
+}
