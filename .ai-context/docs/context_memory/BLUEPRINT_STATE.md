@@ -1,6 +1,23 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
+## 当前批次：UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01（2026-08-15）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01 — M3 H4 Closure + M3→M4-NO Handoff Persistence |
+| 状态 | **IN PROGRESS / DELEGATED CLAIM / EXACT DELTA PENDING** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `bfe8ba239ea00164dbf1fc7838168059593b2e97` |
+| Delegation | `UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Architecture input | Roadmap Rewrite `bfe8ba239ea00164dbf1fc7838168059593b2e97` = **ARCH ACCEPT** |
+| Authorized scope | exact M3 End/Accept + M3→M4-NO handoff persistence only |
+| Frozen evidence truth | `H4_INSUFFICIENT_EVIDENCE`；G05/G06 open 0/0；passive non-manufacturing sidecar preserved |
+| Stage boundary | M4-L dormant；M4-NO not started；M5–M8 not started；CookBook Phase 3B not authorized |
+| 下一步 | CODE must apply the package-owned exact final delta, verify every gate, push, return `TURN=REVIEW`, and STOP。 |
+
 ## 当前批次：UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01（2026-08-15）
 | 字段 | 值 |
 |---|---|
