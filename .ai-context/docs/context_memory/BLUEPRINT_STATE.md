@@ -1,11 +1,33 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
+## 当前批次：UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01（2026-08-15）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01 — Decision-Record Authority Exact Repair |
+| 状态 | **CLAIMED / EXACT REPAIR IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` |
+| Delegation | `UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Architecture input | Independent Challenge `d1b8e62431bfeb02891ea5dc6896ca1d37afaa2a` = **ARCH ACCEPT / REWORK CONSUMED** |
+| Repair | authoritative unit=`Decision Record`；domain=non-authoritative classification；mixed states preserved without aggregation |
+| Taxonomy | seven seed domains are open/non-exhaustive；extensions require stable identity + definition + overlap audit + challenge |
+| Capability | `BOUNDED_DELEGATION` requires SUFFICIENT evidence, adjudicator, refs and conditions；UNKNOWN forbids delegation |
+| Machine contract | JSON Schema candidate + uniqueness/reference/no-scalar-aggregation invariants |
+| Challenge closure target | closes C-02/C-03/C-04/C-07/C-10；preserves C-01/C-05/C-06/C-08/C-09 |
+| Evidence effect | events/runs/rows/reanalysis=0/0/0/0；H4 preserved；G05/G06 open 0/0 |
+| M4–M8 | **NOT STARTED / NOT AUTHORIZED** |
+| CookBook Phase 3B | **NOT AUTHORIZED** |
+| 下一步 | remote ARCH reviews exact repair and explicitly re-runs all ten challenge gates；only full closure may authorize a separate roadmap rewrite。 |
+
 ## 当前批次：UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01（2026-08-15）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01 — Independent Architecture Challenge |
-| 状态 | **COMPLETE / CHALLENGE REWORK PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / REWORK CONSUMED BY EXACT REPAIR** |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -20,7 +42,7 @@
 | Evidence effect | events/runs/rows/reanalysis=0/0/0/0；G05/G06 remain open 0/0 |
 | M4–M8 | **NOT STARTED / NOT AUTHORIZED** |
 | CookBook Phase 3B | **NOT AUTHORIZED** |
-| 下一步 | after remote ARCH ACCEPT, only `UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01` may edit the candidate inside the frozen Reopen Set。 |
+| 下一步 | accepted challenge authority is consumed only by current Exact Repair。 |
 
 ## 当前批次：UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01（2026-08-15）
 | 字段 | 值 |
