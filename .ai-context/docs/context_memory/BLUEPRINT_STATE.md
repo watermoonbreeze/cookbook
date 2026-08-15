@@ -1,11 +1,31 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
+## 当前批次：UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01（2026-08-15）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01 — Dual-Path M3→M4 Roadmap Rewrite |
+| 状态 | **CLAIMED / ROADMAP REWRITE IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `d825bf1681ec7dacfac2240f52b2c25d33532dec` |
+| Delegation | `UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Architecture input | Exact Repair `d825bf1681ec7dacfac2240f52b2c25d33532dec` = **ARCH ACCEPT / TEN-GATE PASS 10/10 / CONSUMED** |
+| Roadmap decision | M4 becomes dual-path: dormant evidence-supported Level path + reachable H4 non-ordinal Closure Core path |
+| Active path candidate | `M4-NO` — Decision Record / non-ordinal closure contracts；not Universal Levels |
+| Empirical sidecar | H4 and passive G05/G06 observation continue；future evidence may reopen the Level path through separate review |
+| Stage effect | roadmap rewritten only；M3 not yet End/Accept；M4–M8 remain NOT STARTED |
+| Evidence effect | events/runs/rows/reanalysis=0/0/0/0 |
+| CookBook Phase 3B | **NOT AUTHORIZED** |
+| 下一步 | after remote ARCH ACCEPT, issue separate M3 End/Accept + M3→M4-NO handoff persistence；M4 Preview/Start remains separately gated。 |
+
 ## 当前批次：UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01（2026-08-15）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-FALLBACK-WORK-01-EXACT-REPAIR-01 — Decision-Record Authority Exact Repair |
-| 状态 | **COMPLETE / EXACT REPAIR PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / TEN-GATE PASS / CONSUMED BY ROADMAP REWRITE** |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -21,7 +41,7 @@
 | Evidence effect | events/runs/rows/reanalysis=0/0/0/0；H4 preserved；G05/G06 open 0/0 |
 | M4–M8 | **NOT STARTED / NOT AUTHORIZED** |
 | CookBook Phase 3B | **NOT AUTHORIZED** |
-| 下一步 | remote ARCH reviews exact repair and explicitly re-runs all ten challenge gates；only full closure may authorize a separate roadmap rewrite。 |
+| 下一步 | exact repair ACCEPT and 10/10 gate closure are consumed only by current roadmap rewrite。 |
 
 ## 当前批次：UBF-M3-H4-FALLBACK-WORK-01-INDEPENDENT-CHALLENGE-01（2026-08-15）
 | 字段 | 值 |
