@@ -321,3 +321,12 @@ The implementation-control M3 Exit rule already requires failure or non-support 
 6. If later natural evidence satisfies G05/G06, the empirical lane may resume under its existing fresh-adjudication and reanalysis gates; neither lane silently overrides the other.
 
 The only next design activity after ACCEPT is a separate ARCH-authored `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01` package. CODE has no standing authority to design the fallback semantics.
+
+
+## H4 fallback research Work-01 — UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01
+
+The accepted fallback-roadmap authority at `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529` is consumed by Work-01. ARCH freezes a research candidate consisting of seven provisional decision domains, four non-numeric per-domain closure states, a Residual Decision Register, a fail-closed bounded-delegation rule and ten independent challenge gates.
+
+This is a reversible design-policy candidate, not an H3 empirical conclusion. It creates no evidence and finalizes no Universal Level, Task Profile, Capability Profile, Selector, mapping or routing semantics. H4, G05/G06 open 0/0 and passive non-manufacturing observation remain unchanged. M4–M8 and CookBook Phase 3B remain not started.
+
+Only a separate independent architecture challenge may follow remote ACCEPT. Challenge ACCEPT still requires a separate exact roadmap rewrite and explicit stage handoff before any revised M4 entry.

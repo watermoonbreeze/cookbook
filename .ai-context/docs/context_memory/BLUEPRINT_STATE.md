@@ -5,13 +5,13 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01 — Non-Ordinal Closure-Core Candidate Research |
-| 状态 | **CLAIMED / H4 FALLBACK WORK-01 IN PROGRESS** |
-| TURN | CODE |
+| 状态 | **COMPLETE / NON-ORDINAL CANDIDATE PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529` |
-| Delegation | `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Delegation | `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01 / R1` abstract-CODER single-use claim CONSUMED |
 | Architecture input | H4 Fallback Roadmap `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529` = **ARCH ACCEPT / CONSUMED** |
 | Research result | non-ordinal closure-vector candidate + fail-closed delegation rule + independent challenge contract persisted |
 | Empirical meaning | design-policy candidate only；not H1/H2/H3 evidence and not a Universal Level conclusion |

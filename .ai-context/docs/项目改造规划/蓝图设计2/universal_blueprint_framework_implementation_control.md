@@ -1,10 +1,10 @@
 # Universal Blueprint Framework 实施总控
 
 > 文档身份：实施控制文档（Implementation Control）
-> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4_INSUFFICIENT_EVIDENCE; PASSIVE CAPTURE + H4 FALLBACK ARCHITECTURE RESEARCH`
+> 状态：`M0/M1/M2 ACCEPT / CLOSED; M3 H4_INSUFFICIENT_EVIDENCE; NON-ORDINAL FALLBACK CANDIDATE PENDING CHALLENGE`
 > 制定日期：2026-08-11
-> Current UBF Stage: `M3 CALIBRATION — PASSIVE EVIDENCE WAIT + H4 FALLBACK ARCHITECTURE RESEARCH`
-> Current Review Result: `476910270016a325e767143c3361e20cdeee77b6 = PASSIVE WAIT ENTRY ARCH ACCEPT / CONSUMED`
+> Current UBF Stage: `M3 CALIBRATION — H4 FALLBACK WORK-01 / PASSIVE EVIDENCE WAIT`
+> Current Review Result: `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529 = H4 FALLBACK ROADMAP ARCH ACCEPT / CONSUMED`
 > M0 Accepted Review Target: `3489523db6508ba742ee835022d7e2a9a64f2c4f`
 > M0→M1 Persistence Accepted Review Target: `eb1bdc846b3f746dde80e8a1fec234f6434b411f`
 > M1 Accepted Review Target: `1723a4f9c050d4da47740d04164fa27d73ea9f2b`
@@ -30,7 +30,7 @@
 > M3 Family-C Cell-02 Reviewed Target: `88c1f352fae5a3b397b427d9bf8e978b285bb546` — qualifying matched-pair member / private results sealed
 > M3 Family-C Pair Seal Accepted Review Target: `f4744068092a8af89e44f0d1920b14a4050e3887`
 > CookBook Project Graph: `Phase 3A EXECUTED / REWORK REQUIRED / PAUSED; Phase 3B NOT AUTHORIZED TO START`
-> Process Revision: `R36 — H4 dual-track architecture research; passive evidence contract preserved`
+> Process Revision: `R37 — non-ordinal closure-core candidate; independent challenge required`
 
 ## 1. 目标
 
@@ -209,6 +209,16 @@ The implementation-control M3 Exit rule already requires failure or non-support 
 6. If later natural evidence satisfies G05/G06, the empirical lane may resume under its existing fresh-adjudication and reanalysis gates; neither lane silently overrides the other.
 
 The only next design activity after ACCEPT is a separate ARCH-authored `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01` package. CODE has no standing authority to design the fallback semantics.
+
+
+
+## H4 fallback research Work-01 — UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-WORK-01
+
+The accepted fallback-roadmap authority at `b6a6ab9f95f9be9a0ef2ad1bc2f36e638c178529` is consumed by Work-01. ARCH freezes a research candidate consisting of seven provisional decision domains, four non-numeric per-domain closure states, a Residual Decision Register, a fail-closed bounded-delegation rule and ten independent challenge gates.
+
+This is a reversible design-policy candidate, not an H3 empirical conclusion. It creates no evidence and finalizes no Universal Level, Task Profile, Capability Profile, Selector, mapping or routing semantics. H4, G05/G06 open 0/0 and passive non-manufacturing observation remain unchanged. M4–M8 and CookBook Phase 3B remain not started.
+
+Only a separate independent architecture challenge may follow remote ACCEPT. Challenge ACCEPT still requires a separate exact roadmap rewrite and explicit stage handoff before any revised M4 entry.
 
 ### M4 — Universal Contracts
 
