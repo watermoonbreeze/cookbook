@@ -1,11 +1,33 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 ---
+## 当前批次：UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01（2026-08-14）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01 — H4 Fallback Roadmap Architecture Research Persistence |
+| 状态 | **CLAIMED / H4 FALLBACK ROADMAP RESEARCH IN PROGRESS** |
+| TURN | CODE |
+| CODE | Coder@当前机 |
+| ARCH | 架构师@主力机 |
+| Review mode | REMOTE_READ_ONLY_ARCH |
+| Handoff Parent | `476910270016a325e767143c3361e20cdeee77b6` |
+| Delegation | `UBF-M3-H4-ARCHITECTURE-RESEARCH-FALLBACK-ROADMAP-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Architecture input | Passive Wait Entry `476910270016a325e767143c3361e20cdeee77b6` = **ARCH ACCEPT / CONSUMED** |
+| M3 disposition | `H4_INSUFFICIENT_EVIDENCE` PRESERVED；M3 remains active in architecture-research + passive-evidence dual track |
+| Fallback-roadmap decision | authorize architecture research for a non-ordinal, reversible closure-core candidate；this is a design-policy branch, not an H3 empirical conclusion |
+| Evidence lane | G05/G06 stay open；accepted NP clusters=0/0；passive non-manufacturing capture remains active |
+| Evidence effect | production events manufactured=0；acquisition runs +0；empirical rows +0；reanalysis=0 |
+| Frozen non-decisions | Universal Level count/name/threshold/envelope/mapping remain unresolved；Task Profile、Capability Profile、Selector remain unfinalized |
+| M4/M5 | **NOT STARTED / NOT AUTHORIZED BY THIS BATCH** |
+| M6/M7/M8 | **NOT STARTED** |
+| CookBook Phase 3B | **NOT AUTHORIZED TO START** |
+| 下一步 | after remote ARCH ACCEPT, only a separate ARCH-authored H4 fallback research Work-01 may specify a candidate non-ordinal closure contract and independent challenge；no M4 entry until that research changes the roadmap through an explicit accepted handoff。 |
+
 ## 当前批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01（2026-08-14）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-PASSIVE-WAIT-ENTRY-01 — ACCEPT Backfill + Passive Wait Entry |
-| 状态 | **COMPLETE / PREVIOUS ACCEPT BACKFILLED / PASSIVE WAIT ACTIVE / PENDING REMOTE ARCH REVIEW** |
+| 状态 | **ACCEPT / REMOTE ARCH REVIEWED / PASSIVE WAIT ACTIVE / CONSUMED BY H4 FALLBACK ROADMAP RESEARCH** |
 | TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
@@ -20,7 +42,7 @@
 | Reanalysis | **NOT AUTHORIZED** |
 | M4/M5 | **NOT STARTED** |
 | CookBook Phase 3B | **NOT AUTHORIZED TO START** |
-| 下一步 | remote ARCH reviews this exact wait-entry persistence；after ACCEPT, issue no dedicated capture task；wait until an event occurs naturally in independently necessary work, then require a fresh ARCH eligibility/adjudication package。 |
+| 下一步 | accepted passive observation continues unchanged；the current H4 fallback-roadmap research is non-evidentiary and does not consume or satisfy G05/G06。 |
 
 ## 上一批次：UBF-M3-CALIBRATION-EVIDENCE-GAP-CLOSURE-NATURALISTIC-PRODUCTION-GAP-REASSESSMENT-01（2026-08-14）
 | 字段 | 值 |
