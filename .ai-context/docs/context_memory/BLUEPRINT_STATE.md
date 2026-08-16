@@ -5,18 +5,20 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01 — M3 H4 Closure + M3→M4-NO Handoff Persistence |
-| 状态 | **IN PROGRESS / DELEGATED CLAIM / EXACT DELTA PENDING** |
-| TURN | CODE |
+| 状态 | **BLOCKED / R3 STOP EVIDENCE PERSISTED / PENDING REMOTE ARCH REVIEW** |
+| TURN | REVIEW |
 | CODE | Coder@当前机 |
 | ARCH | 架构师@主力机 |
 | Review mode | REMOTE_READ_ONLY_ARCH |
 | Handoff Parent | `bfe8ba239ea00164dbf1fc7838168059593b2e97` |
-| Delegation | `UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01 / R1` abstract-CODER single-use claim ACTIVE |
+| Delegation | R1 exact claim `da1c5d7014b05a7f4819813f048a64bf20833d09` consumed only by R3 STOP evidence persistence |
 | Architecture input | Roadmap Rewrite `bfe8ba239ea00164dbf1fc7838168059593b2e97` = **ARCH ACCEPT** |
-| Authorized scope | exact M3 End/Accept + M3→M4-NO handoff persistence only |
+| Attempt result | R3 execution did not reach the normal final；exact error is stored in remote Execution-Result JSON |
 | Frozen evidence truth | `H4_INSUFFICIENT_EVIDENCE`；G05/G06 open 0/0；passive non-manufacturing sidecar preserved |
-| Stage boundary | M4-L dormant；M4-NO not started；M5–M8 not started；CookBook Phase 3B not authorized |
-| 下一步 | CODE must apply the package-owned exact final delta, verify every gate, push, return `TURN=REVIEW`, and STOP。 |
+| Lifecycle effect | M3 End/Accept **NOT PERSISTED**；M3→M4-NO handoff **NOT PERSISTED** |
+| Stage boundary | M4-L dormant；M4-NO not started/not authorized；M5–M8 not started；CookBook Phase 3B not authorized |
+| Remote evidence | `.ai-context/docs/execution_results/UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01-R3-{Execution-Result,Review-Request}.json` |
+| 下一步 | Remote ARCH must read the containing STOP commit and issue ACCEPTed recovery/repair authority；CODE must not retry independently。 |
 
 ## 当前批次：UBF-M3-H4-FALLBACK-ROADMAP-REWRITE-01（2026-08-15）
 | 字段 | 值 |

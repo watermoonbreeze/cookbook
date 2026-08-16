@@ -1,0 +1,22 @@
+{
+  "schema_version": "UBF-REMOTE-ARCH-REVIEW-REQUEST/1.0",
+  "task_id": "UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01",
+  "package_revision": "R3",
+  "handoff_parent": "bfe8ba239ea00164dbf1fc7838168059593b2e97",
+  "claim": "da1c5d7014b05a7f4819813f048a64bf20833d09",
+  "review_target": "CONTAINING_COMMIT",
+  "operator_json_relay_required": false,
+  "review_kind": "STOP_DIAGNOSIS",
+  "execution_result_path": ".ai-context/docs/execution_results/UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01-R3-Execution-Result.json",
+  "runtime_provenance_path": ".ai-context/docs/experience/UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01-Runtime-Provenance.json",
+  "requested_arch_checks": [
+    "stop_code",
+    "failure_stage",
+    "claim_preservation",
+    "TURN",
+    "scope",
+    "noncapability_attribution",
+    "exact_recovery_authority"
+  ],
+  "next_task_authorized": false
+}

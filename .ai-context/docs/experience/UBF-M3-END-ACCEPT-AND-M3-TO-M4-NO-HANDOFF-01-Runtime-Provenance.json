@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.1",
+  "task_id": "UBF-M3-END-ACCEPT-AND-M3-TO-M4-NO-HANDOFF-01",
+  "package_revision": "R3",
+  "handoff_parent": "bfe8ba239ea00164dbf1fc7838168059593b2e97",
+  "actor_role": "CODER",
+  "authoritative_normalized_model": "PENDING_REMOTE_ARCH_REVIEW",
+  "capability_attribution": "PENDING_REMOTE_ARCH_REVIEW",
+  "semantic_payload_changed_for_model_switch": false,
+  "resumed_from_existing_claim": true,
+  "execution_segments": [
+    {
+      "segment_ordinal": 1,
+      "runtime_model_reported": "GPT-5",
+      "launcher_or_operator_model_label": "Codex API",
+      "execution_scope": "STOP_EVIDENCE",
+      "availability_notes": "当前可访问本地仓库与 origin 远程；按 R3 受控执行器完成远程结果持久化。"
+    }
+  ]
+}
