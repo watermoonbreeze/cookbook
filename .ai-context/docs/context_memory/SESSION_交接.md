@@ -11,7 +11,7 @@
 1. **`BLUEPRINT_STATE.md`** —— TURN 当前应为 `USER`（L1/K1i 均 ACCEPTED；K1b 仍 DRAFT·PARKED；真机验证待用户）。
 2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
 3. **Project Graph 阶段状态**：`.ai-context/project_graph/README.md`（Phase 2 FINAL ACCEPT / FROZEN；Phase 3 AUTHORIZED / NOT STARTED；Graph 仍 draft）→ `migration/PHASE2_FINAL_ACCEPT.md` → `migration/PHASE2_TO_PHASE3_HANDOFF.md`。
-4. Phase 2D 历史蓝图：`docs/项目改造规划/Phase-2D-R1.md`；收口记录见 `project_graph/migration/PHASE2D_ACCEPT.md`，下一阶段入口见 `PHASE2D_TO_2E_HANDOFF.md`。
+4. Phase 2D 收口记录见 `project_graph/migration/PHASE2D_ACCEPT.md`，下一阶段入口见 `PHASE2D_TO_2E_HANDOFF.md`（迭代过程蓝图已归档至 `docs/项目改造规划/_archive/`，不需要再读）。「蓝图架构设计」整体现状统一看 `docs/项目改造规划/README.md`。
 5. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（权威清单共 114 条 Verification Rows：17 pass、97 pending）。**2026-08-09 起全表统一新增「验证结果/原因」反馈列**——用户验证后在每行填 `✅/⚠️/❌/跳过` + 具体现象，AI 读这两列即可精确定位。
 
 ---
