@@ -8,7 +8,21 @@
 >
 > 该字段空白即视为批次未收口，不得转 TURN。设计与判据见 `projectReview/00` §落图与回写门禁、`projectReview/08` D-20。
 ---
-## 当前批次：GOVERNANCE-GOV-BP-P3-01-OBSERVATIONS-CLOSEOUT-01（2026-08-18）
+## 当前批次：AIMEAL-B7FOLLOWUP-BLUEPRINTS-01（2026-08-19）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | 承接 AI记一餐 B7 后续批（`cc806cb3`，已交付并推送）里明确排除的 3 项延后决策，出正式实施蓝图：批A（死代码清理+cuisine落库兜底）、批B（NDJSON协议扩展：菜系/标签/做法透传）、批C（确认页展开UI）。 |
+| 状态 | **批A：`BLUEPRINT_READY`**（已过 GC-37 独立挑战，4 项 CONFIRMED-ISSUE 全部处置）；**批B：`BLUEPRINT_READY`**（已过 GC-37 独立挑战，7 项 CONFIRMED-ISSUE 全部处置，含 1 处对既有 `handleCookingStepEvent` 行为的事实性订正）；**批C：`PENDING_UX_DESIGN`**（部分蓝图，§6/§7/§8 UI 细节留白，不可执行，待批B交付+真机验证AI填充率数据+`apple_ux_designer`门禁后补全） |
+| TURN | **USER**——3 份蓝图已就绪，等用户指派编码模型执行（用户计划在另一台机器用编码模型跑批A/批B；批C 在依赖链闭合前禁止执行） |
+| CODE | N/A（本批为纯蓝图设计批次，未委派 CODE 执行；蓝图本身是**下一批**CODE 执行的输入） |
+| ARCH | 本机 ARCH（Claude）起草；独立挑战由独立 general-purpose/opus agent 执行（未参与起草过程，只读蓝图成文逐条回源码核实） |
+| 蓝图文件 | `docs/feature/AI记一餐_死代码清理与菜系兜底_实施蓝图.md`（批A）、`docs/feature/AI记一餐_协议扩展_菜系标签做法透传_实施蓝图.md`（批B）、`docs/feature/AI记一餐_确认页展开UI_实施蓝图.md`（批C，部分） |
+| 跨批次协调提醒 | 批A/批B在 `AutoGenModels.kt`（`cuisine` 字段）与 `DishAutoGenerator`（`preview()`/`commit()` 的 cuisine 传参）上有共享改动点，两批蓝图 §4.1 均已用"先 grep 判定对方是否已落地"处理任意顺序，**CODE 执行前必须先跑判定 grep，不得凭假设跳过**（该判定逻辑本身是独立挑战 A-I-1/A-I-2/B-I-7 修复的核心内容，执行前建议 CODE 完整读一遍两份蓝图 §4.1，不要只读自己那一份） |
+| 全景图回写 | `N/A — 纯蓝图/文档批次，无产品代码改动` |
+| 下一步 | ①指派编码模型执行批A（建议先做，风险最低、决策最少）；②执行批B（协议扩展，交付后**必须**真机验证 AI 实际填充率，见批B §9）；③批A/批B CODE 完成后走 `google_quality_engineer` 终审（阻断必修复复验，参照 B7 后续批的两轮审查先例）；④拿到批B真机数据后走 `apple_ux_designer` 门禁，补全批C §6/§7/§8 转 `BLUEPRINT_READY`；⑤真机验证积压仍未清（`E-B7F-01~05` + 存量 `E-L1-01~12`/`E-K1I-01/02` 等 ~95+ 项），与本批蓝图执行可并行推进，不互相阻塞。 |
+
+---
+## 上一批次：GOVERNANCE-GOV-BP-P3-01-OBSERVATIONS-CLOSEOUT-01（2026-08-18）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | GOVERNANCE-GOV-BP-P3-01-OBSERVATIONS-CLOSEOUT-01 — 处理上一批次（GOV-BP-P3-01 裁决）遗留的 3 条非阻断观察项 |

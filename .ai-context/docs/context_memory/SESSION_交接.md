@@ -1,85 +1,91 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-18 · 全景图治理全天收官（6 批 commit，待 push）**
-> 当前工作域：**治理/文档架构工作全部收口，无遗留 blocker**。下一步正式转向 DELIVERY——真机验证 + 真实功能开发。
+> 更新时间：**2026-08-19 · AI 记一餐 B7 后续批交付 + 3 项延后决策蓝图化收官**
+> 当前工作域：**AI 记一餐主线**——B7 后续批（10 项待办 + NDJSON 协议容错）已交付并推送；剩余 3 项延后决策（菜系/标签透传、确认页展开 UI、死代码整组清理）已出正式实施蓝图（批A/批B `BLUEPRINT_READY`，批C `PENDING_UX_DESIGN`），登记进 `BLUEPRINT_STATE.md`，等用户在另一台机器指派编码模型执行。
 > 执行角色：本机 ARCH（Claude）。
 
 ---
 
 ## 一、先读清单（按序）
 
-1. **`BLUEPRINT_STATE.md`** —— 今天最新批次在最上面，按序可回溯全部 5 个批次。
-2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
-3. **`projectReview/08_决策记录.md` D-21/D-22/D-23** —— 今天三条结构性决策：蓝图/治理系统设计阶段收尾、GOV-BP-P3-01 归因订正、全景图新增单功能小全景图层。
-4. **`projectReview/00_导读与索引.md`** —— 新增了"查某个具体功能现状"的导览指针，先看这个熟悉新结构。
-5. **`projectReview/07_项目现状.md`** —— 能力成熟度表已重组为 13 行对应 13 个 Feature，点链接进 `projectReview/features/<F-ID>.md` 看详情。
-6. Project Graph 阶段状态：`.ai-context/project_graph/README.md`（Phase 2 FINAL ACCEPT / FROZEN；Phase 3 AUTHORIZED / NOT STARTED，`GOV-BP-P3-01` 流程阻塞已裁决解除，但不主动启动 Phase 3）。
-7. 真机验证：`.ai-context/docs/真机验证/真机待验证清单_202608182200.md`（**目录已从 `feature/` 搬到独立的 `真机验证/`**）顶部汇总表（114 条 Verification Rows：17 pass、97 pending）。
+1. **`BLUEPRINT_STATE.md`**——当前批次 `AIMEAL-B7FOLLOWUP-BLUEPRINTS-01`（本次新增，在最上面）；再往下能看到本次之前的治理收官批次历史。
+2. **`SESSION_交接.md`**（本文件）——当前状态与 ⏭下一步。
+3. **`projectReview/features/F-AI-MEAL.md`**——AI 记一餐单功能全景图，本次改动的现状/待办/已知问题都已同步进这里，比翻 commit history 更快。
+4. **`projectReview/08_决策记录.md` D-24**——本次日志门禁走单点收口、NDJSON 协议容错"自愈不放松"两条设计取舍的完整推理，含交付前审查追记（两个真实阻断的教训）。
+5. **3 份实施蓝图**（`.ai-context/docs/feature/`）：
+   - `AI记一餐_死代码清理与菜系兜底_实施蓝图.md`（批A，`BLUEPRINT_READY`）
+   - `AI记一餐_协议扩展_菜系标签做法透传_实施蓝图.md`（批B，`BLUEPRINT_READY`）
+   - `AI记一餐_确认页展开UI_实施蓝图.md`（批C，`PENDING_UX_DESIGN`，部分蓝图，不可直接执行）
+6. **真机验证**：`.ai-context/docs/真机验证/真机待验证清单_202608182200.md`（本次新增 `E-B7F-01~05`；存量积压 `E-L1-01~12`/`E-K1I-01~02` 等 ~95+ 项仍未验证，是这条主线最大的未知数）。
+7. **`06_问题与踩坑.md`**"AI 记一餐 B7 后续批 + 3 项延后决策蓝图化"段——4 条本次提炼的可复用红线（已同步写入项目根 `CLAUDE.md` 踩坑红线区）。
 
 ---
 
 ## 二、工作规则（当前任务域）
 
-- **全景图新结构（2026-08-18 起生效，D-23）**：全景图现在是**两根轴**——横轴 `01/02/04/06/20/21/22`（跨功能的架构/流程/数据/算法/AI/预设治理/约定，不变）+ 纵轴 `projectReview/features/<F-ID>.md`（13 个，单功能深度详情，新增）。**内容归属判断规则**（见 `06`）：只影响一个功能→纵轴；影响≥2个功能→横轴；两边沾边则窄边只放摘要+链接，不重复写。`07` 的能力成熟度表是两轴之间的导览层，一句话状态+链接，不装细节。
-- **`feature/` 目录 127 个文件不做一次性 triage**：跟着后续真实开发批次逐个归档/迁移到对应 `features/<F-ID>.md`——处理到哪个功能，就顺手把 `feature/` 里那堆相关文件整理进对应目录，不要一次性大扫。
-- **真机验证清单已搬家**：新路径 `.ai-context/docs/真机验证/真机待验证清单_<yyyyMMddHHmm>.md`（原在 `feature/` 下），全部结构性指针已同步更新，`feature/` 下不再有这个文件。
-- **独立复核归口**（不变）：方案评估/执行质量类复核统一交给独立 Opus 子智能体。**两种失败模式处理不同**：`Connection lost mid-response`（基础设施断连）→ 重试新 agent；`session limit resets HH:MMpm`（用量限额撞线）→ 等过重置时间后 `SendMessage` 恢复同一 agent 续写，不要重开。
-- **长跑 agent 必须边核实边写入**（不变，2026-08-18 起实战验证有效）：进度文件写到 `temp/claude/`，每完成一个子问题立即写完整版（非 diff）。
-- **蓝图/治理系统维护模式**（D-21，不变）：只在真实批次撞到具体摩擦时才改，不主动发起新一轮方案评估。
-- **全景图回写门禁**（D-20，不变）：批次状态转 `ACCEPTED` 时 `BLUEPRINT_STATE.md` 必填「全景图回写」字段。
-- **Project Graph 阶段纪律**（不变）：Graph mode 必须保持 `draft`；Schema / Validator / 生产代码禁止修改。
+- **批A/批B蓝图执行前必读 §4.1**：两份蓝图在 `AutoGenModels.kt`/`DishAutoGenerator` 上有共享改动点，各自都有"先 grep 判定对方是否已落地"的幂等分支——CODE 执行任一批前必须先读**两份**蓝图的 §4.1（不能只读自己要执行的那一份），按判定结果决定哪些 STEP 要跳过。这是本次 GC-37 独立挑战抓出的真实编译冲突点，蓝图文本已修好，但依赖 CODE 严格按判定走，不能凭假设跳过判定步骤。
+- **批C 不可执行**：状态 `PENDING_UX_DESIGN`，§6/§7/§8 UI 细节留白。依赖链：批B 落地 → 真机验证 AI 实际填充率（批B §9 强制项）→ `apple_ux_designer` 门禁 → 补全批C §6/§7/§8 → 转 `BLUEPRINT_READY` → 才能进 CODE。不得跳步。
+- **改动触达 `androidApp/` 层必须双跑单测**：`:shared:testDebugUnitTest` **与** `:androidApp:testDebugUnitTest` 都要显式列进验收命令，不能因改动主体在 shared 就默认省略后者（本次 B7 后续批就因为漏跑后者，被 `google_quality_engineer` 首轮审查揪出一个真实回归）。
+- **代码质量门禁不变**：CODE 完成、构建+单测通过后走 `google_quality_engineer` 终审，阻断必修复复验；本次两批（B7 后续批本身、以及蓝图起草阶段的 GC-37 独立挑战）都证明这道门禁/独立视角复核是真的在拦真问题，不是走过场，不能因为"这批看起来简单"而降级或跳过。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
 
 ---
 
 ## 三、当前状态
 
-### 今天完成的六批工作（均已 commit，未 push）
+### 本次完成的工作（均已确认，B7 后续批已 commit+push；3 份蓝图待本次交接后一并提交）
 
-| # | 批次 | commit | 内容 |
+| # | 工作 | 产出/commit | 状态 |
 |---|---|---|---|
-| ① | ANTIDRIFT 独立复核收口 | `63b0549d` | 全景图防漂移机制复核意见落地 |
-| ② | 蓝图设计阶段收尾 | `1d02abbc`+`34863e02` | DeepSeek 方案评估+2项改进+D-21 |
-| ③ | GOV-BP-P3-01 独立裁决 | `1571183d` | PARTIAL ACCEPT，发现并作废 Section B/E 自证式虚构证据，D-22 |
-| ④ | 观察项处理 | `f46d26eb` | §14.6 悬空引用订正 |
-| ⑤ | 真机验证目录重整 | `1cbad713` | `feature/`→`真机验证/`，全仓指针+Graph YAML 同步 |
-| ⑥ | 全景图 features/ 层 | `bf547196` | 13 个单功能小全景图 + `07` 表格重组 + D-23 |
-| — | 经验总结（zongjie） | `fad98d8c` | 06/07/INDEX 沉淀今日经验 |
+| ① | B7 后续批：日志门禁+标签清洗+回归测试+死代码清理+NDJSON协议容错 | `cc806cb3`（已推送） | 已交付，经两轮 `google_quality_engineer` 审查（首轮 2 阻断，复验通过） |
+| ② | 3 项延后决策出正式实施蓝图（批A/B/C） | `.ai-context/docs/feature/` 3 个文件 | 批A/批B `BLUEPRINT_READY`（已过 GC-37 独立挑战）；批C `PENDING_UX_DESIGN` |
+| ③ | GC-37 独立挑战复核并修订蓝图 | 批A 4 项、批B 7 项 CONFIRMED-ISSUE 全部处置 | 完成 |
+| ④ | 登记进 `BLUEPRINT_STATE.md` | 新批次 `AIMEAL-B7FOLLOWUP-BLUEPRINTS-01` | 完成 |
+| ⑤ | 经验总结（zongjie） | `06_问题与踩坑.md`+`07_操作记录.md`+`INDEX.md`+项目 `CLAUDE.md` 踩坑红线 | 完成（本次） |
+| ⑥ | 会话交接（本文件） | — | 进行中 |
 
-**全部 7 个 commit 尚未 push**，本次交接后即执行 push。
+### B7 后续批交付细节回顾（`cc806cb3`）
 
-### Project Graph 阶段
+- **S1 标签清洗**：`DishRepository.saveDish` 的 `tagNames` 补 trim+去空过滤。
+- **日志门禁**：`AppLogger.write()` 单点加 debug 门禁；两处防御性异常不再拼具体菜名/食材名；VM 日志调用去重复拼接。
+- **S3 回归测试**：`T-B7-02`（REUSE 不覆盖原菜）、`T-B7-03`（steps 端到端落库）。
+- **S2 决策**：`DishJson.cuisine` 默认值 `"家常菜"→""`，本批不做真透传（留给批B）。
+- **S4**：删除死代码 `AiMealRecorder.kt`+DI 注册；4 个无生产调用方文件加警示注释。
+- **透明准则子集**：确认页新增"本次将新建 X 道菜、Y 种食材"文案。
+- **NDJSON 协议容错（核心）**：`DiagnosticCode` 分类人话化诊断；`meal_id` 自愈归一（date/slot 独立合法时按其归一而非整条拒绝）；`dish_id` 本地序号化（顺带修复 AI 复用 dish_id 给不同名菜时的静默覆盖隐藏 bug）。
+- **交付前审查修复 2 项阻断**：①`canonicalMealId` 别名优先级颠倒致真实餐次被劫持（已改为"真实存在的 key 永远优先于别名表"）；②段级失败诊断被新分类逻辑漏接静默丢弃 + 漏跑 `:androidApp:testDebugUnitTest`（已补齐兜底分支 + 补跑）。
 
-```text
-Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN
-Phase 2  — Bootstrap           : FINAL ACCEPT / FROZEN
-Phase 3  — Views + Activation  : AUTHORIZED / NOT STARTED（流程阻塞已解除，仍不主动启动）
-Graph Mode                     : draft（`project_graph.py check` 复验：13/109/4/98/10）
-```
+### 3 份蓝图内容回顾
 
-### 遗留但未处理
-
-- **真机验证积压**：L1（`E-L1-01~12`）、K1i（`E-K1I-01/02` 阻断性）、更早 AI 记一餐 ~30 项，权威清单 97 条 pending。**这是下一步的主线工作**。
-- K1b 蓝图仍 `DRAFT·PARKED`；K1i-2 仅登记名字未设计。
-- `feature/` 目录 127 个文件的渐进式 triage（跟真实开发批次走，非立即）。
+- **批A**（死代码清理+cuisine落库兜底）：删 4 死文件+1死测试；`DishAutoGenerator.commit()` 加 `cuisine = preview.cuisine.ifBlank { Cuisines.HOME }` 兜底（解决 AI 建菜 `source='ai'` 不在存量自建菜回填 `WHERE source='user'` 范围内、永久缺席菜系筛选 Tab 的问题）。
+- **批B**（协议扩展）：NDJSON `dish` 事件新增 `cuisine`/`tags`/`steps` 三个可选字段，全链路打通到落库；新增 `CuisineNormalizer` 白名单归一；prompt 改写。**不收** `description`/`meal_slots`（用户拍板，理由见批B §1.3/`08_决策记录.md`）。
+- **批C**（确认页展开UI）：仅交付"移交 apple_ux_designer 的功能性需求与约束清单"（9条硬约束），UI 视觉/交互规范留白待设计门禁产出。
 
 ---
 
 ## 四、⏭ 下一步
 
-无待用户决定项。用户已明确下一步顺序：
+无待用户决定项（3 份蓝图的产品决策已在起草前由用户拍板）。用户已明确下一步：
 
-1. **真机验证**——按 `真机验证/真机待验证清单_202608182200.md` 逐项验证，优先 L1 快速路径 → K1i → 其余。
-2. **真实功能开发**——排真实 CODE 批次（当前 CODE 模型 DeepSeek V4 Flash），按 `14_模型执行力评估.md` 画像表出蓝图；新任务族触发"零样本默认处方"；每个功能批次顺手把 `feature/` 里对应的旧文件 triage 进 `projectReview/features/<F-ID>.md`。
-3. **不再安排治理/设计类工作**，除非 D-21 列出的触发条件真实出现。
+1. **登记进 `BLUEPRINT_STATE.md`**——已完成（本次交接内完成）。
+2. **检查真机验证清单是否要更新**——已检查，本次交接（纯文档/蓝图批次）不产生新的真机验证项，无需更新。
+3. **总结经验 + 会话交接**——进行中（本文件）。
+4. **提交推送到远程**——待本文件写完后执行，commit message 用 `docs:` 前缀（纯文档/蓝图批次，非产品代码改动）。
+
+**再往后**（后续会话/另一台机器的工作）：
+1. 指派编码模型执行批A（建议先做，风险最低、决策最少）→ 批B（协议扩展）。
+2. 两批 CODE 完成后走 `google_quality_engineer` 终审（阻断必修复复验）。
+3. 批B 交付后**必须**真机验证 AI 实际填充率（cuisine/tags/steps 命中率、`TRUNCATED`/`PARSE_ERROR` 发生率）——这是批C 能否启动设计的前置输入。
+4. 拿到批B真机数据后走 `apple_ux_designer` 门禁，补全批C 蓝图转 `BLUEPRINT_READY`。
+5. **真机验证积压是这条主线最大的未知数**：`E-B7F-01~05`（本次新增）+ 存量 `E-L1-01~12`/`E-K1I-01~02` 等 ~95+ 项从未在真机走过，应与蓝图执行并行推进，不互相阻塞。
 
 ---
 
 ## 五、本轮沉淀
 
-- 决策：`08_决策记录.md` D-21（设计阶段收尾）、D-22（GOV-BP-P3-01 归因订正）、D-23（全景图 features/ 层新增）。
-- 经验：`06_问题与踩坑.md`「全景图治理收官 + GOV-BP-P3-01 独立裁决 session」段（独立复核两种失败模式、长跑 agent 边核实边写入实测有效、正式治理工件也可能含自证式虚构证据、全景图横轴纵轴分离模式）。
-- 跨会话记忆：`agent-batch-checkpoint-strategy` 已更新，记录本次真实断连场景验证结果。
+- 决策：`08_决策记录.md` D-24（B7 后续批：日志门禁单点收口 + NDJSON 协议容错"自愈不放松"，含交付前审查追记）。
+- 经验：`06_问题与踩坑.md`"AI 记一餐 B7 后续批 + 3 项延后决策蓝图化"段（4 条：跨模块验证范围要显式列全、自愈逻辑现实优先于历史推导表、多蓝图共享改动点判定要覆盖全部调用点、GC-37 独立挑战两次实战均抓到真问题）——已同步提炼进项目根 `CLAUDE.md` 踩坑红线区。
+- 跨会话记忆：`agent-batch-checkpoint-strategy` 相关机制（fork 因会话限额中断、`SendMessage` 恢复同一 agent 续写）本次第二次实战验证有效，完整交付 3 份蓝图无内容损失。
 
 ---
 
@@ -87,21 +93,21 @@ Graph Mode                     : draft（`project_graph.py check` 复验：13/10
 
 > 跑 `python .ai-context/tools/review_freshness.py`。`ANCHOR-MISMATCH` 一律当场修；`STALE` 可 `DEFER` 但必须写到期批次。
 
-**最近一次执行（2026-08-18，本次交接时重跑）**：
+**最近一次执行（2026-08-19，本次交接时重跑）**：
 
 | 册 | 页脚 sha | 之后提交数 | 判定 | 处置 |
 |---|---|---|---|---|
 | 00_导读与索引 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
-| 01_架构与技术底座 | 742611ce | 5 | STALE(5) | DEFER → 下次交接判断是否需补核 |
+| 01_架构与技术底座 | 742611ce | 6 | STALE(6) | DEFER → 下次交接判断是否需补核 |
 | 02_业务流程全景 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
 | 03_界面与交互 | 742611ce | 2 | STALE(2) | DEFER → 下次交接判断是否需补核 |
-| 04_数据层 | 742611ce | 0 | FRESH | — |
+| 04_数据层 | 742611ce | 1 | STALE(1) | DEFER → 下次交接判断是否需补核 |
 | 05_诊断地图 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
 | 06_约定与红线 | 1571183d | — | N/A（未声明监视路径/事实锚） | — |
-| 07_项目现状（本次重组，Tier A 不适用监视路径） | 742611ce | — | N/A（未声明监视路径/事实锚，走 G1 交付回写门禁） | — |
-| 08_决策记录 | 1571183d | — | N/A（未声明监视路径/事实锚） | — |
-| 20_健康与算法逻辑 | 742611ce | 1 | STALE(1) | DEFER → 下次交接判断是否需补核 |
-| 21_AI与网络请求策略 | 742611ce | 26 | STALE(26) | DEFER → 下次交接判断是否需补核（AI/Runtime 区近期改动多，符合预期） |
+| 07_项目现状 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
+| 08_决策记录 | — | — | N/A（未声明监视路径/事实锚） | — |
+| 20_健康与算法逻辑 | 742611ce | 3 | STALE(3) | DEFER → 下次交接判断是否需补核 |
+| 21_AI与网络请求策略 | 742611ce | 28 | STALE(28) | **DEFER，但持续增长（上次26→本次28），建议下次 AI 记一餐相关大批次落地时优先补核**——本次+上次两轮都是 AI 记一餐主线密集改动，该册作为主案例来源理应更贴近现状 |
 | 22_预设与参考资料治理 | 742611ce | 0 | FRESH | — |
 
-无 `ANCHOR-MISMATCH`（`tables=39`/`migrations=32`/`sqm_max=32`/`seed_files=13`/`screens=34` 与页脚声明全部一致），退出码 2（仅 STALE，非确定性违规——今天全部改动都是治理/文档级，未走查产品代码，不构成"重新走查"故未上抬 sha）。下次交接重跑本命令覆盖本表。止损条件见 `projectReview/08` D-20。
+无 `ANCHOR-MISMATCH`（03/04 两个有声明监视锚的册"锚=全部一致"，退出码 2（仅 STALE，非确定性违规——本次改动是 AI 记一餐代码+蓝图批次，未做治理/文档以外的全景图重新走查，故不构成"重新走查"未上抬 sha）。下次交接重跑本命令覆盖本表。止损条件见 `projectReview/08` D-20。
