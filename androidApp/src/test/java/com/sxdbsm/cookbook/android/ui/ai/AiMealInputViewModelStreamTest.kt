@@ -243,9 +243,11 @@ class AiMealInputViewModelStreamTest {
         // [AI修改] Google质量复核：parseWarnings 现在过 humanizeWarning，不再是原始 "STREAM_ENDED_WITHOUT_TERMINAL"
         // 代号，而是人读文案"AI 响应异常中断"——断言改用人读文案，原始代号不该出现在用户可见文本里。
         assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        // [AI修改 Google质量复核二轮] 去掉恒假的 `|| diagnostic != null`（state.diagnostic 全仓无非空赋值处）——
+        // 断言只应由真实生效的 parseWarnings 兜底分支决定，否则将来给 diagnostic 赋值会让这条测试变成侥幸通过。
         assertTrue(
             "应有人读的 AI 响应异常中断诊断",
-            vm.state.value.parseWarnings.any { it.contains("AI 响应异常中断") } || vm.state.value.diagnostic != null,
+            vm.state.value.parseWarnings.any { it.contains("AI 响应异常中断") },
         )
         assertTrue(
             "不得把内部代号原样吐给用户",

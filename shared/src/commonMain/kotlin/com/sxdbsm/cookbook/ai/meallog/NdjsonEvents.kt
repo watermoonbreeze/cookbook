@@ -215,6 +215,27 @@ data class StreamDiagnostic(
     val mealId: String?,
     val dishId: String?,
     val message: String,
+    // [AI修改 10-a] 按分类出人话文案 + 同类合并计数用，默认值保证既有位置参数构造不受影响。
+    val code: DiagnosticCode = DiagnosticCode.OTHER,
 )
 
 enum class DiagnosticLevel { WARNING, ERROR, INFO }
+
+/** 诊断分类代号——供上层按类合并/出人话文案，不依赖脆弱的 message 字符串匹配。[AI生成 10-a] */
+enum class DiagnosticCode {
+    INVALID_SLOT,       // 餐次类型不合法
+    MEAL_ID_MISMATCH,   // meal_id 与 date|slot 冲突（先后指向不同餐次，拒绝）
+    MEAL_ID_NORMALIZED, // meal_id 已按 date|slot 自愈归一（非阻断，仅提示）
+    DISH_ID_FORMAT,     // dish_id 格式/前缀不合法
+    DISH_ID_REUSED,     // dish_id 被复用于不同的菜，已按新菜处理（非阻断，仅提示）
+    ORPHAN_DISH,        // 菜品找不到父餐次
+    ORPHAN_INGREDIENT,  // 食材/调料找不到所属菜品
+    DISH_CONFLICT,      // dish_id 跨餐冲突
+    TRUNCATED,          // 响应被截断
+    TAIL_INCOMPLETE,    // 结束时仍有未完成的半行内容
+    UNKNOWN_TYPE,       // 未知事件类型
+    SEGMENT_MISMATCH,   // segment_id 不匹配/缺失
+    INVALID_DATE,       // 日期格式无效
+    PARSE_ERROR,        // NDJSON 行解析失败
+    OTHER,              // 未分类（含整体 JSON fallback 相关提示）
+}

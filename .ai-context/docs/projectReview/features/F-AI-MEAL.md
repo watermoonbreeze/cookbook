@@ -11,7 +11,20 @@ AI 主导解析用户输入（文字/语音）生成餐食记录，双阶段：�
 - ✅ **AI 记餐长输入改造（NDJSON 流式）已实现，K1g 真机验证中**：快速记 ≤200 字；周期记按周/日期分段；云端 max token 按场景放大覆盖一周；确认页发送后即进入生成页 + NDJSON/JSONL 流式解析 + 已合法内容可确认；整体 JSON 作为同一协议的兼容输入规范化。代码见 `StreamingMealParser.kt`/`StreamingMealSession.kt`。验收门禁见 `feature/AI记一餐_周期记_NDJSON流式开发规范.md` B1–B6（→`21`）。B3–B6 均已交付并 ACCEPTED（`.ai-context/docs/功能路径索引.md` 此前"B4-B6未开始"描述过期，2026-08-18 已订正）。
 - ✅ **L1 云端 AI 首启同意 + 合规免责**已落地（同意状态模型 + 运行时闸门 + 设置页政策披露，`ad1c5878`），ARCH 独立复核通过，真机待验 `E-L1-01~12`。
 - ✅ **K1i AI 流式渐进展示**已落地（`SwitchableAiRuntime.stream()` 真实委托，复用 L1 同意闸门，`d7240d6f`），ARCH 独立复核通过，真机待验 `E-K1I-01`（阻断性）/`E-K1I-02`。
-- ✅ **B7：CREATE 路径做法/烹饪方式/标签/描述/特别说明丢失 bug 已修复（2026-08-18）**：根因 `DishAutoGenerator.preview()` 未把 `SemanticDish` 已解析字段透传进 `DishPreview`，`commit()` 又对 `dishRepo.saveDish()` 硬编码空值——AI 解析出的做法从未真正落库。改动：`AutoGenModels.kt`（`SemanticDish`/`DishPreview` 补字段）+ `DishAutoGenerator.kt`（preview/commit 透传）+ `MultiDayRecorder.kt`（补 `steps` 映射），回归测试 `T-B7-01`，653 个 shared 单测全绿，经 `google_quality_engineer` 审查无阻断项。**尚未提交 git**。此前"讨论中的方案"里"份量、做法持久化…后续完成"这条的确切根因即此。
+- ✅ **B7：CREATE 路径做法/烹饪方式/标签/描述/特别说明丢失 bug 已修复（2026-08-18，`b7d7c254`）**：根因 `DishAutoGenerator.preview()` 未把 `SemanticDish` 已解析字段透传进 `DishPreview`，`commit()` 又对 `dishRepo.saveDish()` 硬编码空值——AI 解析出的做法从未真正落库。改动：`AutoGenModels.kt`（`SemanticDish`/`DishPreview` 补字段）+ `DishAutoGenerator.kt`（preview/commit 透传）+ `MultiDayRecorder.kt`（补 `steps` 映射），回归测试 `T-B7-01`。
+- ✅ **B7 后续批：日志门禁 + 标签清洗 + 回归测试 + 死代码清理 + NDJSON 协议容错收窄（2026-08-18）**：Opus 出详细方案（含对原判断的关键订正）后按方案实施，构建+全量 shared 单测通过，经 `google_quality_engineer` 审查。要点：
+  - **S1 标签清洗**：`DishRepository.saveDish` 的 `tagNames` 补 trim+去空过滤（`DishRepositoryTest` 新增回归）；排查发现该 sink 在生产 AI 链路上恒为空（AI 从不产出 `tags`），主要防的是手工建菜路径。
+  - **日志门禁**：`AppLogger.write()` 单点加 `isDebuggable()` 门禁——release 包不再持久化写盘 `i/w/e` 级别日志（崩溃摘要走独立的 `writeSync`，不受影响）；`DishAutoGenerator`/`IngredientAutoGenerator` 的防御性 `error()` 不再拼具体菜名/食材名；`AiMealInputViewModel` 两处日志调用去重复拼接、错误文案不再暴露原始异常信息给用户。
+  - **S3 回归测试**：`DishAutoGeneratorTest` 新增 `T-B7-02`（REUSE 不被同名新内容覆盖）、`MultiDayRecorderK1aTest` 新增 `T-B7-03`（`toSemanticDay→DB` 的 `steps` 端到端）。
+  - **S2 决策**：`DishJson.cuisine` 默认值由 `"家常菜"` 改为 `""`（消除"AI没提"和"AI明确说家常菜"两种语义被默认值混淆的陷阱），**本批不做 cuisine/meal_slots 真透传**——NDJSON 协议目前没有这两个字段的信号来源，且 `meal_slots` 若透传会因大小写口径不对（协议小写四值 vs `meal_type.code` 大写五值）打穿"永不出现无餐次菜"的安全网，见待办。
+  - **S4**：确认 `AiMealRecorder.kt` 全仓零生产引用（仅 DI 注册）后直接删除该文件 + `SharedModule.kt` 对应注册；`AiMealParser.kt`/`SchemaValidator.kt`/`SchemaMigration.kt`/`AiMealInputSchema.kt` 确认同样无生产调用方（B3 后主链路走 `StreamingMealParser`），本批只加 KDoc 警示注释未删除（牵连 `FlatToDayMealConverter`/`MealParseCanonicalizer`，留待单独批次理清）。
+  - **透明准则子集**：确认页健康摘要文案扩成"本次将新建 X 道菜、Y 种食材（营养为自动估算，仅供参考）"（`buildHealthSafetyReport`），只做免设计的纯文案小改；展开显示做法/标签/食材清单的完整 UI 判定需先过 Apple UX 设计门禁，且 AI 目前从不产出 `cooking_step`/`tags`/`description` 事件（prompt 未要求），做了也是空的，故本批不做，见待办。
+  - **NDJSON 协议容错（10-a/10-b/10-c，见下）**：排查"AI 返回内容被本地规则拦截"问题，确认快速记（`AiMealParser`/`SchemaValidator`）路径已是死代码、真正的拦截发生在周期记走的 `StreamingMealParser`。在不削弱 AF-03「非法归属不可进入预览」目标的前提下收窄了两处误伤 + 修了一个新发现的隐藏 bug：
+    - **诊断人话化**：`StreamDiagnostic` 新增 `DiagnosticCode` 分类字段，VM 侧 `summarizeDiagnostics()` 按类合并计数出人话文案（原先逐条透传"dish_id「xxx」格式无效，已拒绝"这类协议原文，用户看不懂）。
+    - **meal_id 自愈**：一条 `meal` 事件里 `date`/`slot` 各自校验合法时，`meal_id` 只是 AI 的复述——复述串对不上按 `date|slot` 归一（WARNING，不再整条拒绝）；同一 AI `meal_id` 先后指向不同 `date|slot` 仍按冲突拒绝后到者（不放松）。`dish` 补建父节点分支（唯一信号来源、无交叉校验）维持严格不自愈。
+    - **dish_id 本地序号（连带修了一个隐藏 bug）**：AI 若把同一 `dish_id` 复用给两道不同名的菜，此前会**静默**用后者覆盖前者、无任何诊断（比拒绝更糟——AF-05"同键合并"对"同一道菜的重复描述"和"两道菜撞了同一个 dish_id"未加区分）。现按 `(mealId, 原始dish_id, name)` 判定：同名精确复用同一本地 key（仍走 AF-05 合并），不同名分配新本地序号且不覆盖原菜（记 WARNING）。
+    - 新增 5 条 `StreamingMealParserTest` 用例锁定新行为，原有全部测试（T-01~T-08、AF-03/05/07/08、D-01~D-08）保持绿。规范文档 `AI记一餐_周期记_NDJSON流式开发规范.md` §4.3 已同步订正。
+  - **交付前审查发现并修复 2 项阻断（`google_quality_engineer` 首轮复核）**：①`canonicalMealId` 的别名优先级颠倒——AI 若把 meal_id 打错复制成另一个真实存在的餐次字符串，会被陈旧别名重定向、整餐菜静默挂错餐次（比拒绝更糟），修复为"真实存在的餐次 key 永远优先于别名表"并补 2 条正反顺序回归测试；②`StreamingMealSession.snapshot()` 包装的段级失败诊断（如 `STREAM_ENDED_WITHOUT_TERMINAL`）未带 `DiagnosticCode` 默认落 `OTHER`，被 `summarizeDiagnostics` 的 8 个分类桶漏接、静默丢弃，且发现审查范围遗漏了 `:androidApp:testDebugUnitTest`（该模块单测此前从未在本批跑过，`T-B3-02` 因此没能暴露回归），补一个"未分类 ERROR 兜底走 `humanizeWarning`"分支后复验通过。二次复核见下方待办登记。
 
 ## 讨论中的方案
 - 🔄 **核心实体能力层统一**：手工建菜/食材库/自由搭配仍有路径绕过 `IngredientAutoGenerator`，目标是统一的食材、营养、菜品语义能力入口（跨 F-DISH/F-INGREDIENT）。
@@ -20,17 +33,15 @@ AI 主导解析用户输入（文字/语音）生成餐食记录，双阶段：�
 
 ## 已知问题
 - ⚠ **AI 日志隐私风险**：云端 Runtime 仍可能记录完整请求/响应，须脱敏后才能宣称符合隐私口径。
-- ⚠ **`AppLogger.e/w/i` 无 debug 门禁，release 包也持久化写盘（2026-08-18 排查发现）**：`androidApp/.../util/AppLogger.kt` 的 `e/w/i` 不经 `isDebuggable()` 判断，release 下仍把日志写入 app 专属外部目录 `/sdcard/cookbook/log/yyyy-MM-dd.log`；对比同文件 `debugLong()`（专供"AI 原始请求/响应"用，明确注释"只允许 debuggable 包输出"）——项目已意识到 AI 原始载荷需要门禁，但没推广到 `e/w/i`，是执行不一致。已排查 `AiMealInputViewModel.kt:732/832` 两处 `AppLogger.e()` 本身不拼接用户原始饮食文本（只拼 `e.message`），但 `DishAutoGenerator.kt:147`/`IngredientAutoGenerator.kt:123` 两处防御性 `error("...for ${preview.inputName}")` 会把具体菜名/食材名（用户饮食片段）写进这份持久化日志（触发概率低，属不该发生的边界断言）。严重度中低，暴露面限于物理接触设备/adb pull，不构成远程泄漏。修复建议见待办。
-- 🐛 **S1：AI 标签写库未清洗（2026-08-18 code review 发现，B7 修复引入的新 sink）**：`DishRepository.kt:534-538` 的 `tagNames.distinct().forEach { q.insertDishTag(...) }` 无 `trim()`/空值过滤（对比同文件 `ensureCookingMethodIds` 有守卫）。B7 修复后 AI 标签首次接入这条写入点，AI 吐出空白/带前后空格标签会在 `dish_tag` 字典留脏数据（空名标签排序靠前、`" 下饭菜"` 与 `"下饭菜"` 分裂成两条）。
 
 ## 待办
-- 真机验证详单见 `真机验证/真机待验证清单_<最新>.md`（`E-L1-01~12`/`E-K1I-01~02`/`E-B4/B5/B6-*` 等 ~30+ 项），本文件不重复摘抄。
-- **B7 后续 S1**：`DishRepository.kt:534` 收口 `tagNames.map{it.trim()}.filter{it.isNotBlank()}.distinct()`。
-- **B7 后续 · 日志门禁**：①`AiMealInputViewModel.kt:732/832` 改用 `AppLogger.e("AiMealInput","preview failed",e)` 不手动拼 `e.message`；②`AppLogger.e/w/i` 补齐与 `debugLong()` 一致的 release 门禁（至少持久化写文件这步区分 debug/release）；③`DishAutoGenerator.kt:147`/`IngredientAutoGenerator.kt:123` 防御性 `error()` 去掉具体菜名/食材名。
-- **B7 后续 S3**：补两个回归测试——① REUSE 不会被同名新内容覆盖（本次修复安全前提，目前只有代码逻辑保证没有测试钉住）；② `MultiDayRecorder→DB` 的 `steps` 端到端测试（目前只有 `DishAutoGenerator` 单测覆盖，`MultiDayRecorder.toSemanticDay` 那行映射本身无测试）。
-- **B7 后续 S2（决策项，非纯 bug）**：`DishJson.cuisine`/`meal_slots`/`note` 同样在 `MultiDayRecorder.toSemanticDay` 里未透传进 `SemanticDish`。`cuisine` 有坑——schema 默认值"家常菜"、AI 未被要求填此字段，直接透传等于给所有 AI 建的菜盖章"家常菜"，需要先决定要不要收，不能照搬 B7 做法。
-- **B7 后续 S4**：遗留文件 `AiMealRecorder.kt`（`resolveDish()`，功能路径索引标"遗留未接入"）里有 B7 同一个 bug 的另一份拷贝（硬编码 `tagNames=emptyList()`/`description=""`/`steps=emptyList()`）。当前不在实际调用路径上，但仍在 DI 注册，建议确认后直接删除，否则是"哪天被复用就复发"的雷。
-- **B7 后续 · 透明准则交叉项**：确认页 `AiMealInputSheet.kt` 目前只渲染菜名+「新」标+营养行，B7 修复后 AI 生成的做法/标签/描述会跟着确认动作落库，但用户确认时看不到这些内容。按项目 Tiered Transparency 准则可能需要 Apple UX 视角评估是否要在「新」标菜下露出"含 N 步做法"之类摘要。
+- 真机验证详单见 `真机验证/真机待验证清单_<最新>.md`（`E-L1-01~12`/`E-K1I-01~02`/`E-B4/B5/B6-*`/本批新增项 等 ~40+ 项），本文件不重复摘抄。
+- **cuisine/meal_slots 真透传（决策项，需先扩协议）**：NDJSON 事件加可选 `cuisine`/`meal_slots` 字段 + prompt 明确"不确定不填"，透传时加空值守卫；`meal_slots` 若收，只能做"菜名推断兜底 ∪ AI 给的值"的并集（归一后为空要退回兜底），不能让 AI 的窄口径替换掉宽口径兜底。
+- **确认页展开 UI（需先过 Apple UX 设计门禁）**：展示新建菜的做法/标签/食材清单摘要，建议与下一条"prompt 补 `cooking_step` 等事件"合并成一批——否则做出来的展开区在真机上恒空、验不出效果。
+- **AI 从未产出 steps/tags/description 事件**：`AiMealPrompt.NDJSON_SYSTEM_PROMPT` 目前只要求 `meal`/`dish`/`ingredient`/`seasoning` 事件，未要求 `cooking_step`；即使 B7 修复了透传链路，AI 现在也没有内容可透传。是否要求 AI 产出这些内容（token 成本 vs 内容完整性）待决策。
+- **死代码整组清理**：`AiMealParser.kt`/`SchemaValidator.kt`/`SchemaMigration.kt`/`AiMealInputSchema.kt` 已确认零生产调用方，本批只加了警示注释；完整删除需先理清 `FlatToDayMealConverter`（仍被 `StreamingMealParser` 用）/`MealParseCanonicalizer`（仍被 `RuleMealParser` 用）的共用关系，避免误删还在用的依赖。
+- **dish_id 本地序号的边界情况**：当前实现里，无 `dish_id` 也无 `dish_name` 的子事件（食材/调料/做法步骤）仍无法归属，这是协议本身的限制（AI 必须提供至少一种归属信号），非本批引入。
+- **`google_quality_engineer` 复核遗留 4 项建议（非阻断，本批未做）**：①`summarizeDiagnostics` 的 8 个分类桶穷尽性靠人工维护，新增 `DiagnosticCode` 时容易漏接（已加通用 ERROR 兜底缓解，但精细分类计数仍需手动维护，建议改 `when` 穷尽式让编译器强制处理）；②`handleDishChildEvent`/`handleCookingStepEvent` 等子事件按"最近一次解析出的本地 dishId"指针挂靠，dish_id 被复用后**迟到**的子事件仍可能挂错菜（`dish_name` 精确匹配优先级应高于"最近一次"指针，当前是反过来的）；③`summarizeDiagnostics` 无专门单测，目前靠 `AiMealInputViewModelStreamTest` 间接覆盖；④二轮复核新发现：`summarizeDiagnostics` 的未分类 ERROR 兜底分支是**原文透传**（未做人话化），且无条数上限——极端情况下会在诊断区刷出十几条开发者协议措辞（如"NDJSON 行缺少 segment_id，已丢弃: …"），建议后续把 `SEGMENT_MISMATCH`/`INVALID_DATE` 也纳入分类桶 + 兜底列表加条数上限（如最多 3 条+"等 N 条"）。
 
 ## 关联横轴
 - `21_AI与网络请求策略（专属）.md`（本功能的 AI 调用/隐私/重试策略权威定义，本功能是该册主案例）
@@ -38,4 +49,4 @@ AI 主导解析用户输入（文字/语音）生成餐食记录，双阶段：�
 - `08_决策记录.md` D-13/D-14/D-15/D-16/D-17（AI 显式语义优先、双阶段、日期锚点、NDJSON 流式、冻结蓝图门禁）
 
 ---
-最后更新：2026-08-18 · 来源：本次代码级排查 + B7 修复批次实核，B7 之前的条目来自 `07_项目现状.md` 能力成熟度表重组迁移未逐条重新核实，后续随真实开发批次继续校准。
+最后更新：2026-08-18 · 来源：B7 修复批次 + B7 后续批（10 项待办，含 Opus 详细方案 + NDJSON 协议容错收窄）实核，B7 之前的条目来自 `07_项目现状.md` 能力成熟度表重组迁移未逐条重新核实，后续随真实开发批次继续校准。

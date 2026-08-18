@@ -11,6 +11,9 @@ import kotlinx.datetime.LocalDate
  * 校验规则：日期范围合理、餐次至少一道菜、食材名非空等。
  * 纯函数，可单测。
  * <p>
+ * ⚠️ [AI修改 2026-08-18] 无生产调用方：唯一调用方 AiMealParser.validate() 本身已无生产调用方
+ * （B3 后主链路走 StreamingMealParser）。本文件仅存量供 AiMealParser 单测间接覆盖。改动前先确认是否应直接删除。
+ * <p>
  * [AI生成] K2 AI快捷输入记餐专项重构：Schema 校验层。
  **/
 object SchemaValidator {

@@ -10,6 +10,9 @@ package com.sxdbsm.cookbook.ai.meallog
  * - toAiMealParseResult(DayMealJson) → AiMealParseResult（新→旧，用于旧预览 UI 过渡）
  * 纯函数，无副作用。
  * <p>
+ * ⚠️ [AI修改 2026-08-18] 无生产调用方：B3 NDJSON 流式改造后主链路走 StreamingMealParser，
+ * 本文件仅存量供 AiMealParser 内部与其单测使用。改动前先确认是否应直接删除。
+ * <p>
  * [AI生成] K2 AI快捷输入记餐专项重构：Schema 迁移兼容层。
  **/
 object SchemaMigration {

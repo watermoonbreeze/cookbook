@@ -77,7 +77,9 @@ data class DishJson(
     val name: String,                              // 必填：菜名
     val cooking_methods: List<String> = emptyList(),// 烹饪方式
     val tags: List<String> = emptyList(),           // 标签（下饭菜/快手菜等）
-    val cuisine: String = "家常菜",                 // 菜系
+    // [AI修改] 默认值改为空串：协议里没有任何来源会显式填这个字段(生产 0 处传参)，
+    //   非空默认值会让"AI没提菜系"和"AI明确说是家常菜"两种语义无法区分，避免被误当真实信号采信。
+    val cuisine: String = "",                       // 菜系
     val special_note: String = "",                  // 特别说明
     val description: String = "",                   // 菜品描述
     val steps: List<String> = emptyList(),           // 步骤描述（简单文字列表）

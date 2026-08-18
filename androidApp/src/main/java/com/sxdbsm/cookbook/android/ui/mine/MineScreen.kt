@@ -807,6 +807,14 @@ private fun LogFileListDialog(
             ) {
                 if (files.isEmpty()) {
                     Text("暂无日志文件", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    // [AI修改] 日志门禁：正式版本只落盘崩溃摘要(AppLogger.write 已加 debug 门禁)，
+                    // 空态时补一句说明，避免用户误以为日志功能坏了。
+                    Text(
+                        "正式版本仅记录崩溃摘要，用于排查闪退；日常操作日志不落盘",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
                 } else {
                     files.forEach { file ->
                         Row(

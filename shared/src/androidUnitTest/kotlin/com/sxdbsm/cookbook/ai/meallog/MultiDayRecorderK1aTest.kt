@@ -156,6 +156,46 @@ class MultiDayRecorderK1aTest {
         assertEquals(1, counting.selectNutritionInputsCount, "单次 previewAll 内批量营养查询必须恰好 1 次（零 N+1·INV-K1A-02）")
         Unit
     }
+
+    @Test
+    fun `T-B7-03 DayMealJson的steps经toSemanticDay与commit端到端落库`() = runBlocking {
+        val day = DayMealJson(
+            date = "2026-08-08",
+            meals = listOf(
+                MealJson(
+                    meal_type = "lunch", // 故意用小写，贴近流式路径真实值
+                    meal_time = "12:00",
+                    dishes = listOf(
+                        MealDishRefJson(
+                            name = "番茄炒蛋",
+                            dish = DishJson(
+                                name = "番茄炒蛋",
+                                cooking_methods = listOf("炒"),
+                                steps = listOf("打散鸡蛋", "下锅翻炒", "加番茄"),
+                                ingredients = listOf(DishIngredientJson(food = FoodJson(name = "番茄"), quantity = 100.0)),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val preview = recorder.previewAll(listOf(day), LocalDate(2026, 8, 8))
+        val dish = preview.days.single().meals.single().dishes.single()
+        assertEquals(ResolveKind.CREATE, dish.resolution)
+        assertEquals(
+            listOf("打散鸡蛋", "下锅翻炒", "加番茄"), dish.steps,
+            "toSemanticDay 必须把 DishJson.steps 透传进 SemanticDish→DishPreview",
+        )
+
+        recorder.commitPreview(preview)
+        val repo = DishRepository(db)
+        val savedId = assertNotNull(repo.dishIdByName("番茄炒蛋"))
+        val saved = assertNotNull(repo.getDishById(savedId))
+        assertEquals(listOf("打散鸡蛋", "下锅翻炒", "加番茄"), saved.steps.map { it.text })
+        assertEquals(setOf("炒"), saved.cookingMethods.map { it.name }.toSet())
+        Unit
+    }
 }
 
 /**

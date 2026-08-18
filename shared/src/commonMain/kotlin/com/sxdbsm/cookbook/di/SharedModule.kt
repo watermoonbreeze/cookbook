@@ -54,8 +54,6 @@ val sharedModule: Module = module {
     // [AI生成] AI 运行时配置(云/端/Key)；AiRuntime 具体实现由 androidModule 绑定 SwitchableAiRuntime。
     single { AiRuntimeConfig(get()) }
     single { RecommendationOrchestrator(get()) }
-    // [AI生成] K1 AI快捷输入记餐：入库编排 UseCase（shared 纯逻辑，调已有 Repo）
-    single { com.sxdbsm.cookbook.ai.meallog.AiMealRecorder(get(), get(), get()) }
     // [AI生成] K1f 别名归一·从 seed JSON 构建·静态不变·可单测
     single { IngredientAliasResolver.fromJson(SeedResourceLoader.readText("seed/ingredient_aliases.json") ?: "{}") }
     // [AI生成] 自动化基础能力层 Phase 1-4 入库适配器；AutoGenContext 在 recordAll 内按需 load（保持字典新鲜）

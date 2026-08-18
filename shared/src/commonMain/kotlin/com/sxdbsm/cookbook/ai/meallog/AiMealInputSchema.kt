@@ -12,6 +12,9 @@ import kotlinx.serialization.Serializable
  * AI 返回的 JSON 必须符合本 Schema，字段多余/缺失由 Json{ignoreUnknownKeys} + 默认值兼容。
  * 解析失败时走 AiMealParser.localFallback() 本地兜底。
  * <p>
+ * ⚠️ [AI修改 2026-08-18] 无生产调用方：B3 NDJSON 流式改造后主链路走 StreamingMealParser，
+ * 本文件仅存量供 AiMealParser/SchemaMigration 内部与其单测使用。改动前先确认是否应直接删除。
+ * <p>
  * [AI生成] K1 AI快捷输入记餐：Schema 层，shared 纯数据，无平台依赖。
  **/
 

@@ -120,7 +120,8 @@ class IngredientAutoGenerator(
         when (preview.resolution) {
             ResolveKind.REUSE -> {
                 // 已存在：直接复用已有 id
-                preview.existingId ?: error("REUSE but existingId is null for ${preview.normalizedName}")
+                // [AI修改] 日志门禁：不拼具体食材名(用户饮食文本)，理由同 DishAutoGenerator.commit() 的同类改动。
+                preview.existingId ?: error("IngredientPreview inconsistent: resolution=REUSE but existingId=null (nameLen=${preview.normalizedName.length})")
             }
             ResolveKind.CREATE -> {
                 // 新建食材

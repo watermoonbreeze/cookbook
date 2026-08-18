@@ -9,6 +9,9 @@ import com.sxdbsm.cookbook.ai.LlmStreamEvent
 import com.sxdbsm.cookbook.ai.meallog.AiMealPrompt
 import com.sxdbsm.cookbook.ai.meallog.AiMealHealthAdvice
 import com.sxdbsm.cookbook.ai.meallog.DayMealJson
+import com.sxdbsm.cookbook.ai.meallog.DiagnosticCode
+import com.sxdbsm.cookbook.ai.meallog.DiagnosticLevel
+import com.sxdbsm.cookbook.ai.meallog.StreamDiagnostic
 import com.sxdbsm.cookbook.ai.meallog.InputSegment
 import com.sxdbsm.cookbook.ai.meallog.InputSegmentFactory
 import com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder
@@ -636,6 +639,51 @@ class AiMealInputViewModel(
     }
 
     /**
+     * [AI新增 10-a] 把 StreamingMealParser 的协议级诊断（如 "dish_id「xxx」格式无效，已拒绝" 这类
+     * 开发者措辞）按分类代号合并计数，转成用户能看懂、能行动的文案，取代此前逐条原样透传。
+     * 非阻断的自愈类代号（MEAL_ID_NORMALIZED/DISH_ID_REUSED）不展示——没有内容丢失，克制去噪。
+     *
+     * [AI修改 Google质量复核🔴-2/🟡-1修复] 只处理了 8 个分类代号会导致"漏一个就永久静默"：
+     * 段级失败原因（如 STREAM_ENDED_WITHOUT_TERMINAL）由 StreamingMealSession.snapshot() 包装时
+     * 未带 code（默认 OTHER），若不兜底会连同其余未分类 ERROR（缺字段/整体JSON拒绝等协议原文）
+     * 一起被静默丢弃——用户"AI 中断且规则兜底也没产出"时会看不到任何解释。末尾补一个通用兜底：
+     * 未被上面分类覆盖的 ERROR 级诊断统一走 [humanizeWarning]（转人话 + 过滤 ENGINE_NOT_CONFIGURED_REASON
+     * 等内部哨兵），保证"总有话可说"而不是无声无息。
+     */
+    private fun summarizeDiagnostics(diagnostics: List<StreamDiagnostic>): List<String> {
+        val byCode = diagnostics.groupBy { it.code }
+        val handledCodes = setOf(
+            DiagnosticCode.INVALID_SLOT, DiagnosticCode.MEAL_ID_MISMATCH,
+            DiagnosticCode.DISH_ID_FORMAT, DiagnosticCode.ORPHAN_DISH, DiagnosticCode.DISH_CONFLICT,
+            DiagnosticCode.ORPHAN_INGREDIENT, DiagnosticCode.TRUNCATED, DiagnosticCode.PARSE_ERROR,
+        )
+        return buildList {
+            val mealIssues = (byCode[DiagnosticCode.INVALID_SLOT].orEmpty() + byCode[DiagnosticCode.MEAL_ID_MISMATCH].orEmpty())
+                .distinctBy { it.mealId ?: it.message }
+            if (mealIssues.isNotEmpty()) add("有 ${mealIssues.size} 餐没能对上餐次，这部分没有记录")
+
+            val dishIssues = (
+                byCode[DiagnosticCode.DISH_ID_FORMAT].orEmpty() +
+                    byCode[DiagnosticCode.ORPHAN_DISH].orEmpty() +
+                    byCode[DiagnosticCode.DISH_CONFLICT].orEmpty()
+                ).distinctBy { it.dishId ?: it.message }
+            if (dishIssues.isNotEmpty()) add("有 ${dishIssues.size} 道菜的信息不完整，已跳过——可以重说一遍，或改用规则解析")
+
+            val ingredientIssues = byCode[DiagnosticCode.ORPHAN_INGREDIENT].orEmpty()
+            if (ingredientIssues.isNotEmpty()) add("有 ${ingredientIssues.size} 种食材没能对应到具体菜品，已跳过（不影响已识别的菜）")
+
+            if (byCode[DiagnosticCode.TRUNCATED].orEmpty().isNotEmpty()) add("AI 的回复被截断了，已保留能识别的部分")
+            if (byCode[DiagnosticCode.PARSE_ERROR].orEmpty().isNotEmpty()) add("AI 的部分回复格式有问题，已跳过")
+
+            diagnostics.asSequence()
+                .filter { it.level == DiagnosticLevel.ERROR && it.code !in handledCodes }
+                .mapNotNull { humanizeWarning(it.message) }
+                .distinct()
+                .forEach { add(it) }
+        }
+    }
+
+    /**
      * B3: 将 session 快照落为 UI 状态。[AI修改]
      *
      * - 无合法餐食且非 final：仅更新进度/诊断，不调 preview。
@@ -653,9 +701,9 @@ class AiMealInputViewModel(
         val progress = computeProgress(session, snap)
         val mergedDays = mergeDays(session)
         val hasValidMeals = mergedDays.any { day -> day.meals.any { it.dishes.isNotEmpty() } }
-        // [AI新增] 诊断消息统一走 humanizeWarning 过滤内部哨兵/代号 + 并入规则解析自身的 warning
-        // （Google质量复核：原实现把 ENGINE_NOT_CONFIGURED_REASON 等内部代号原样吐给用户）。
-        val displayWarnings = (snap.diagnostics.mapNotNull { humanizeWarning(it.message) } + ruleWarnings.values).distinct()
+        // [AI修改 10-a] 诊断消息改走 summarizeDiagnostics 按分类代号合并计数出人话文案（此前逐条原样
+        // 透传开发者协议措辞，如"dish_id「xxx」格式无效，已拒绝"，用户看不懂也不知道少了哪道菜）+ 并入规则解析自身的 warning。
+        val displayWarnings = (summarizeDiagnostics(snap.diagnostics) + ruleWarnings.values).distinct()
 
         // [B5] 快速路径：无合法餐食 + 非 final → 仅更新进度，不调 preview
         if (!hasValidMeals && !isFinal) {
@@ -729,11 +777,12 @@ class AiMealInputViewModel(
             throw e
         } catch (e: Exception) {
             if (!isCurrentGeneration(generationId)) return
-            com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "preview failed: ${e.message}", e)
+            com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "preview failed", e)
             _state.update {
                 it.copy(
                     phase = AiMealPhase.ERROR,
-                    errorMessage = "预览生成失败：${e.message ?: "未知错误"}",
+                    // [AI修改] 文案准则：不把原始异常 message 直接展示给用户，诊断信息走 parseWarnings 通道。
+                    errorMessage = "预览生成失败，请重新试试",
                     isGenerating = false,
                 )
             }
@@ -829,9 +878,9 @@ class AiMealInputViewModel(
                 throw e
             } catch (e: Exception) {
                 if (!isCurrentGeneration(fallbackGenerationId)) return@launch
-                com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "rule fallback failed: ${e.message}", e)
+                com.sxdbsm.cookbook.android.util.AppLogger.e("AiMealInput", "rule fallback failed", e)
                 _state.update {
-                    it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析失败：${e.message ?: "未知错误"}")
+                    it.copy(phase = AiMealPhase.ERROR, errorMessage = "规则解析失败，请重新试试")
                 }
             }
         }
@@ -840,11 +889,20 @@ class AiMealInputViewModel(
     /** 只使用本地档案和预览事实；不调用云端、不阻断真实记录。 [AI生成] */
     private suspend fun buildHealthSafetyReport(preview: AutoGenPreview): HealthSafetyReport {
         val enabled = healthSummaryLabels()
-        val pendingIngredients = preview.days.flatMap { it.meals }.flatMap { it.dishes }
-            .flatMap { it.ingredients }.count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
+        val allDishes = preview.days.flatMap { it.meals }.flatMap { it.dishes }
+        val newDishCount = allDishes.count { it.resolution == com.sxdbsm.cookbook.domain.autogen.ResolveKind.CREATE }
+        val pendingIngredients = allDishes.flatMap { it.ingredients }
+            .count { it.careFlag == com.sxdbsm.cookbook.domain.autogen.CareFlag.PENDING_REVIEW }
         return HealthSafetyReport(buildList {
+            // [AI修改] 透明准则交叉项：确认页此前只报"新食材数"，没告知会新建几道菜——
+            // 补上"改动清单"最小充分形态，是否要写库仍由用户点确认决定。
+            if (newDishCount > 0 || pendingIngredients > 0) {
+                add(
+                    "本次将新建 $newDishCount 道菜" +
+                        if (pendingIngredients > 0) "、$pendingIngredients 种食材（营养为自动估算，仅供参考）" else "",
+                )
+            }
             if (enabled.isNotEmpty()) add("已结合健康档案：${enabled.joinToString("、")}")
-            if (pendingIngredients > 0) add("本餐有 $pendingIngredients 种新食材，营养和适宜性待复核")
             if (isEmpty()) add("未设置健康档案；可按个人情况核对本餐")
         })
     }

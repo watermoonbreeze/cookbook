@@ -125,12 +125,14 @@
 
 ### 4.3 归属校验与容错
 
-- `meal`：`date` 必须是有效 ISO 日期，`slot` 仅能为 `breakfast/lunch/dinner/snack`。`meal_id` 与 `date|slot` 不符即拒绝该事件。
-- `dish`：父 `meal_id` 不存在时，只有同事件可验证的 `date + slot` 能精确生成该父餐次才可补建；否则标记“未归属菜品”。
-- `ingredient/seasoning/cooking_step`：父 `dish_id` 不存在时，仅在 `dish_name + meal_id` 精确且唯一命中时可补挂并增加 warning；其余为“未归属明细”。
+- `meal`：`date` 必须是有效 ISO 日期，`slot` 仅能为 `breakfast/lunch/dinner/snack`。**[2026-08-18 10-b 修订]** `date`/`slot` 各自独立校验合法后即为权威信号，`meal_id` 只是 AI 的复述——与 `date|slot` 不符时按 `date|slot` 归一(记 WARNING，事件不拒绝)，而非整条拒绝；但同一 AI `meal_id` 先后指向不同 `date|slot` 时，仍按"先到的合法归属保留，后到的冲突事件拒绝"处理(ERROR)，不放松。
+- `dish`：父 `meal_id` 不存在时，只有同事件可验证的 `date + slot` 能精确生成该父餐次才可补建；否则标记"未归属菜品"。**该补建分支不适用上条的 meal_id 自愈**——它是唯一信号来源、无独立信号交叉验证，`meal_id` 必须与 `date|slot` 精确一致才可补建，维持原有严格拒绝。
+- `dish_id` 格式仍要求 `{meal_id}|d{正整数}` 且前缀等于事件自带的 `meal_id`（证明 AI 理解归属关系，格式校验对齐的是 AI 自己在本事件里给出的 `meal_id`，与上条的归一是两回事）。**[2026-08-18 10-c 修订]** 但 `d{正整数}` 的序号不再是查找主键：同一 `(meal_id, 原始 dish_id, name)` 精确复用同一本地 key（仍按下条"同键合并"）；同一原始 `dish_id` 换了 `name` 时视为 AI 把 `dish_id` 复用给了另一道菜，本地分配新序号并记 WARNING，不覆盖原有菜（此前会静默覆盖，是已知敞口，现已收口）。
+- `ingredient/seasoning/cooking_step`：父 `dish_id` 不存在时，仅在 `dish_name + meal_id` 精确且唯一命中时可补挂并增加 warning；其余为"未归属明细"。有 `dish_id` 时按上条本地化后的 key 挂靠"最近一次解析出的同 `dish_id` 菜品"。
 - 同一 `dish_id` 归到不同 `meal_id` 时，先到的合法归属保留，后到的冲突事件拒绝并诊断。
 - 同键重复事件按字段合并：菜品/餐次以最新非空字段覆盖；食材和调料按规范名去重并合并信息，不能重复展示。
 - 任何孤儿、冲突、无效日期或半行都不能成为 `DayMealJson`，更不能写库。
+- **[2026-08-18 10-a 新增]** 诊断信息统一带 `DiagnosticCode` 分类代号（见 `NdjsonEvents.kt`），上层按代号分类合并计数出人话文案，不再逐条透传本节描述的开发者协议措辞给用户。
 
 ### 4.4 日期处理
 

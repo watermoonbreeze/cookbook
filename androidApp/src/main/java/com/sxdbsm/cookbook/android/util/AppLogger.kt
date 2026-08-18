@@ -145,6 +145,12 @@ object AppLogger {
     }
 
     private fun write(level: String, tag: String, message: String, throwable: Throwable?) {
+        // [AI修改] 日志门禁：i/w/e 此前无 debug 门禁，release 包也会把 message/异常原文持久化写盘
+        // （可能含用户饮食文本）。d()/debugLong() 已有门禁，此处统一在唯一落盘入口收口，
+        // 不做"文本 vs 敏感数据"逐调用点分级(执行不一致才是本项目吃过的亏)。
+        // logcat 侧 Log.i/w/e 不受影响(仍保留，不落盘，需物理接触设备才能读到)；
+        // 崩溃摘要走 writeSync(installCrashHandler 直调)，有意不受本门禁约束，release 仍需要闪退可诊断。
+        if (!isDebuggable()) return
         val context = appContext ?: return
         executor.execute {
             runCatching {
@@ -153,6 +159,7 @@ object AppLogger {
         }
     }
 
+    /** release 包唯一有意保留的落盘内容——崩溃摘要，不受 [write] 的 debug 门禁约束。 */
     private fun writeSync(level: String, tag: String, message: String, throwable: Throwable?) {
         val context = appContext ?: return
         runCatching { writeLine(context, level, tag, message, throwable) }

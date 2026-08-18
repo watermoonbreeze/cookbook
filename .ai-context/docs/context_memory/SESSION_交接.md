@@ -14,7 +14,7 @@
 4. **`projectReview/00_导读与索引.md`** —— 新增了"查某个具体功能现状"的导览指针，先看这个熟悉新结构。
 5. **`projectReview/07_项目现状.md`** —— 能力成熟度表已重组为 13 行对应 13 个 Feature，点链接进 `projectReview/features/<F-ID>.md` 看详情。
 6. Project Graph 阶段状态：`.ai-context/project_graph/README.md`（Phase 2 FINAL ACCEPT / FROZEN；Phase 3 AUTHORIZED / NOT STARTED，`GOV-BP-P3-01` 流程阻塞已裁决解除，但不主动启动 Phase 3）。
-7. 真机验证：`.ai-context/docs/真机验证/真机待验证清单_202608082330.md`（**目录已从 `feature/` 搬到独立的 `真机验证/`**）顶部汇总表（114 条 Verification Rows：17 pass、97 pending）。
+7. 真机验证：`.ai-context/docs/真机验证/真机待验证清单_202608182200.md`（**目录已从 `feature/` 搬到独立的 `真机验证/`**）顶部汇总表（114 条 Verification Rows：17 pass、97 pending）。
 
 ---
 
@@ -69,7 +69,7 @@ Graph Mode                     : draft（`project_graph.py check` 复验：13/10
 
 无待用户决定项。用户已明确下一步顺序：
 
-1. **真机验证**——按 `真机验证/真机待验证清单_202608082330.md` 逐项验证，优先 L1 快速路径 → K1i → 其余。
+1. **真机验证**——按 `真机验证/真机待验证清单_202608182200.md` 逐项验证，优先 L1 快速路径 → K1i → 其余。
 2. **真实功能开发**——排真实 CODE 批次（当前 CODE 模型 DeepSeek V4 Flash），按 `14_模型执行力评估.md` 画像表出蓝图；新任务族触发"零样本默认处方"；每个功能批次顺手把 `feature/` 里对应的旧文件 triage 进 `projectReview/features/<F-ID>.md`。
 3. **不再安排治理/设计类工作**，除非 D-21 列出的触发条件真实出现。
 

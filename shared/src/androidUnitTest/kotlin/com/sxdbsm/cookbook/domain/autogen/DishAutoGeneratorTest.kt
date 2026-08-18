@@ -5,6 +5,9 @@ import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.NutritionRepository
 import com.sxdbsm.cookbook.data.repository.RepositoryTestDatabase
 import com.sxdbsm.cookbook.db.CookbookDatabase
+import com.sxdbsm.cookbook.domain.model.DishIngredient
+import com.sxdbsm.cookbook.domain.model.DishStep
+import com.sxdbsm.cookbook.domain.model.Ingredient
 import com.sxdbsm.cookbook.domain.model.IngredientNutrition
 import com.sxdbsm.cookbook.domain.model.NutritionCalculator
 import com.sxdbsm.cookbook.domain.model.NutritionInput
@@ -36,6 +39,8 @@ class DishAutoGeneratorTest {
     private lateinit var db: CookbookDatabase
     private lateinit var ctx: AutoGenContext
     private lateinit var generator: DishAutoGenerator
+    private var porkId: Long = 0 // [AI修改] T-B7-02 复用：提为类字段
+    private var gramUnitId: Long = 0 // [AI修改] T-B7-02 复用：生产真实单位名"g"（踩坑红线，非"克"）
 
     @BeforeTest
     fun setUp() = runBlocking {
@@ -46,6 +51,7 @@ class DishAutoGeneratorTest {
         q.insertMeasurementUnit("g", "preset", 1.0)
         q.insertMeasurementUnit("个", "preset", null)
         q.insertMeasurementUnit("ml", "preset", 1.0)
+        gramUnitId = q.selectMeasurementUnitIdByName("g").executeAsOne()
 
         // 种入餐次
         q.insertMealType("BREAKFAST", "早餐", "07:30", 1, "preset")
@@ -64,7 +70,7 @@ class DishAutoGeneratorTest {
 
         // 种入五花肉（带营养·近似命中 Match）
         q.insertIngredient("五花肉", "", "wuhuarou", "", "", "🥩", 1, "preset", 0)
-        val porkId = q.lastInsertId().executeAsOne()
+        porkId = q.lastInsertId().executeAsOne()
         val meatCatId = q.selectAllFoodCategories().executeAsList().first { it.name == "畜禽肉类" }.id
         q.linkIngredientCategory(porkId, meatCatId)
         q.upsertIngredientNutrition(
@@ -174,6 +180,52 @@ class DishAutoGeneratorTest {
         assertEquals("经典家常做法", saved.description)
         assertEquals("小火慢炖", saved.specialNote)
         assertEquals(listOf("焯水去腥", "炒糖色", "加水炖煮40分钟"), saved.steps.map { it.text })
+        Unit
+    }
+
+    @Test
+    fun `T-B7-02 已存在同名菜再次走CREATE输入时不覆盖其原有做法标签描述`() = runBlocking {
+        val repo = DishRepository(db)
+        // ① 先落一版"用户手工建"的完整菜
+        val originalId = repo.saveDish(
+            id = 0, name = "红烧排骨", cookingMethodId = null, cookingMethodNames = listOf("炖"),
+            specialNote = "原始特别说明", description = "原始描述", imagePath = "", thumbnailPath = "",
+            tagNames = listOf("原始标签"),
+            ingredients = listOf(
+                DishIngredient(
+                    ingredient = Ingredient(id = porkId, name = "五花肉"),
+                    quantity = 100.0, unitId = gramUnitId, isMain = true,
+                ),
+            ),
+            steps = listOf(DishStep(sortOrder = 0, text = "原始步骤")), source = "user",
+        )
+
+        // ② AI 再次给出同名菜，内容完全不同
+        val preview = generator.preview(
+            SemanticDish(
+                name = "红烧排骨",
+                ingredients = listOf(SemanticIngredient(name = "番茄", quantity = 50.0)),
+                cookingMethods = listOf("炸"),
+                tags = listOf("AI标签"),
+                description = "AI描述",
+                specialNote = "AI特别说明",
+                steps = listOf("AI步骤1", "AI步骤2"),
+            ),
+            ctx,
+        )
+        assertEquals(ResolveKind.REUSE, preview.resolution, "同名菜必须走 REUSE 而非 CREATE")
+        assertEquals(originalId, preview.existingId)
+
+        val committedId = generator.commit(preview)
+        assertEquals(originalId, committedId, "REUSE 必须复用原 id，不得新建第二条同名菜")
+
+        val saved = assertNotNull(DishRepository(db).getDishById(originalId))
+        assertEquals("原始描述", saved.description, "REUSE 不得用 AI 内容覆盖原描述")
+        assertEquals("原始特别说明", saved.specialNote, "REUSE 不得用 AI 内容覆盖原特别说明")
+        assertEquals(listOf("原始标签"), saved.tags, "REUSE 不得用 AI 内容覆盖原标签")
+        assertEquals(listOf("原始步骤"), saved.steps.map { it.text }, "REUSE 不得用 AI 内容覆盖原做法")
+        assertEquals(setOf("炖"), saved.cookingMethods.map { it.name }.toSet(), "REUSE 不得用 AI 内容覆盖原烹饪方式")
+        assertEquals(listOf("五花肉"), saved.ingredients.map { it.ingredient.name }, "REUSE 不得改动原配料")
         Unit
     }
 

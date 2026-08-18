@@ -209,4 +209,27 @@ class DishRepositoryTest {
         assertNull(repo.getDishById(dishId))
         assertEquals(emptyList(), repo.searchDishes("待删除菜品"))
     }
+
+    @Test
+    fun saveDishCleansBlankAndPaddedTagNames() = runBlocking {
+        // [AI修改] 对齐 ensureCookingMethodIds 的 trim+去空守卫：防 AI/用户输入带空格或空白标签污染 dish_tag 字典。
+        val db = RepositoryTestDatabase.create()
+        val repo = DishRepository(db)
+        val dishId = repo.saveDish(
+            id = 0,
+            name = "标签清洗菜品",
+            cookingMethodId = null,
+            specialNote = "",
+            description = "",
+            imagePath = "",
+            thumbnailPath = "",
+            tagNames = listOf(" 下饭菜 ", "", "   ", "下饭菜"),
+            ingredients = emptyList(),
+        )
+
+        val dish = repo.getDishById(dishId)
+
+        assertNotNull(dish)
+        assertEquals(listOf("下饭菜"), dish.tags, "前后空格应被去除，空白项应被过滤，去重后只剩一条")
+    }
 }

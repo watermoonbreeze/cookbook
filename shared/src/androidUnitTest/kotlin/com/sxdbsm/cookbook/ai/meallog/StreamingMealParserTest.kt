@@ -292,6 +292,102 @@ class StreamingMealParserTest {
 
     // ════════════════════ 周期记多段 NDJSON ════════════════════
 
+    // ════════════════════ 10-b: meal_id 自愈归一 ════════════════════
+
+    @Test fun `10-b meal_id与date竖线slot不一致但各自合法时按date竖线slot归一而非拒绝`() {
+        val p = parser(InputSegment("q1", LocalDate(2026, 8, 5), "x", 0))
+        // meal_id 写错了(用了中文"午餐")，但 date/slot 各自都合法
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"2026-08-05|午餐","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|午餐","dish_id":"2026-08-05|午餐|d1","name":"米饭"}""" + "\n")
+        val d = p.finish("stop")
+        val meal = d.segments["q1"]!!.meals["2026-08-05|lunch"]
+        assertNotNull(meal, "meal_id 应按 date|slot 归一，不因复述串不一致整条拒绝")
+        assertEquals(1, meal!!.dishes.size, "dish 事件复用 AI 自己写错的 meal_id 也应归一挂上同一餐次")
+        assertEquals("米饭", meal.dishes.values.single().name)
+        assertTrue(d.diagnostics.any { it.code == DiagnosticCode.MEAL_ID_NORMALIZED }, "应有非阻断的归一提示")
+    }
+
+    @Test fun `10-b 同一AI meal_id先后指向不同date竖线slot仍按冲突拒绝后到`() {
+        val p = parser(InputSegment("q1", LocalDate(2026, 8, 5), "x", 0))
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"m1","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"m1","date":"2026-08-06","slot":"dinner"}""" + "\n")
+        val d = p.finish("stop")
+        assertNotNull(d.segments["q1"]!!.meals["2026-08-05|lunch"], "先到的合法归属应保留")
+        assertTrue(d.segments["q1"]!!.meals["2026-08-06|dinner"] == null, "后到冲突的应被拒绝，不覆盖先到")
+        assertTrue(d.diagnostics.any { it.code == DiagnosticCode.MEAL_ID_MISMATCH })
+    }
+
+    @Test fun `10-b 真实存在的餐次优先于陈旧别名不被劫持_typo在前`() {
+        // Google质量复核🔴-1修复回归：AI 把上一条 meal_id 复制粘贴后只改了 slot（typo），
+        // 注册了别名 "2026-08-05|lunch" -> "2026-08-05|dinner"；随后一条自洽的真实 lunch 事件
+        // 到达时，不能让后续引用 "2026-08-05|lunch" 的 dish 被陈旧别名重定向到 dinner。
+        val p = parser(InputSegment("q1", LocalDate(2026, 8, 5), "x", 0))
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"dinner"}""" + "\n")
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"米饭"}""" + "\n")
+        val d = p.finish("stop")
+        val lunch = d.segments["q1"]!!.meals["2026-08-05|lunch"]
+        val dinner = d.segments["q1"]!!.meals["2026-08-05|dinner"]
+        assertNotNull(lunch, "真实午餐节点必须存在")
+        assertNotNull(dinner, "typo 那条事件仍应自愈归一出晚餐节点")
+        assertEquals(1, lunch!!.dishes.size, "dish 事件复述真实存在的 meal_id 时必须挂到该真实餐次，不被陈旧别名劫持")
+        assertEquals("米饭", lunch.dishes.values.single().name)
+        assertEquals(0, dinner!!.dishes.size, "晚餐不应平白多出一道不相干的菜")
+    }
+
+    @Test fun `10-b 真实存在的餐次优先于陈旧别名不被劫持_真实餐次在前`() {
+        // 反向顺序：先有合法午餐，后来一条 typo 事件复用了午餐的 meal_id 字符串自愈成晚餐；
+        // 之后引用午餐 id 的迟到 dish 仍必须挂真实午餐，不能被后到的别名影响。
+        val p = parser(InputSegment("q1", LocalDate(2026, 8, 5), "x", 0))
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"dinner"}""" + "\n")
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"米饭"}""" + "\n")
+        val d = p.finish("stop")
+        val lunch = d.segments["q1"]!!.meals["2026-08-05|lunch"]
+        assertNotNull(lunch, "真实午餐节点必须存在")
+        assertEquals(1, lunch!!.dishes.size, "迟到 dish 复述真实存在的 meal_id 时必须挂到该真实餐次")
+        assertEquals("米饭", lunch.dishes.values.single().name)
+    }
+
+    @Test fun `10-b dish补建分支仍维持严格不自愈`() {
+        // 既有 AF-03 回归场景：dish 先到，自带 date/slot 与其声明的 meal_id 不一致 → 补建分支不适用自愈，仍拒绝
+        val p = parser(InputSegment("q1", LocalDate(2026, 8, 5), "x", 0))
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"红烧肉","date":"2026-08-05","slot":"dinner"}""" + "\n")
+        val d = p.finish("stop")
+        assertEquals(0, d.segments["q1"]?.meals?.size ?: 0)
+    }
+
+    // ════════════════════ 10-c: dish_id 本地序号 + 复用不覆盖 ════════════════════
+
+    @Test fun `10-c 同dish_id复用给不同名的菜时各自成菜不静默覆盖`() {
+        val p = parser(InputSegment("q1", LocalDate(2026, 8, 5), "x", 0))
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"米饭"}""" + "\n")
+        p.feedDelta("""{"type":"ingredient","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"大米"}""" + "\n")
+        // AI 把 d1 复用给了另一道完全不同的菜（未递增序号）
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"清炒时蔬"}""" + "\n")
+        p.feedDelta("""{"type":"ingredient","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"生菜"}""" + "\n")
+        val d = p.finish("stop")
+        val dishes = d.segments["q1"]!!.meals["2026-08-05|lunch"]!!.dishes.values
+        assertEquals(2, dishes.size, "复用同一 dish_id 给不同名的菜必须各自成菜，不能只剩1道")
+        val rice = dishes.single { it.name == "米饭" }
+        val veg = dishes.single { it.name == "清炒时蔬" }
+        assertEquals(listOf("大米"), rice.ingredients.map { it.name }, "第一道菜的食材不应被第二道菜的食材冲掉")
+        assertEquals(listOf("生菜"), veg.ingredients.map { it.name }, "第二道菜的食材应挂在自己名下，不混进第一道菜")
+        assertTrue(d.diagnostics.any { it.code == DiagnosticCode.DISH_ID_REUSED })
+    }
+
+    @Test fun `10-c 同dish_id同名多次事件仍按AF-05合并非新增`() {
+        // 锁住 AF-05 dish同键合并 未被 10-c 破坏：与既有 AF-05 测试同构，多断言一次 dishes.size
+        val p = parser(InputSegment("q1", LocalDate(2026, 8, 5), "x", 0))
+        p.feedDelta("""{"type":"meal","segment_id":"q1","meal_id":"2026-08-05|lunch","date":"2026-08-05","slot":"lunch"}""" + "\n")
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"红烧肉","cooking_method":"烧"}""" + "\n")
+        p.feedDelta("""{"type":"dish","segment_id":"q1","meal_id":"2026-08-05|lunch","dish_id":"2026-08-05|lunch|d1","name":"红烧肉","quantity":2}""" + "\n")
+        val meal = p.finish("stop").segments["q1"]!!.meals["2026-08-05|lunch"]!!
+        assertEquals(1, meal.dishes.size, "同名同dish_id的重复描述必须合并为1道菜，不能被10-c误判成新菜")
+        assertEquals(2.0, meal.dishes.values.single().quantity)
+    }
+
     @Test fun `周期记两段按segment_id隔离`() {
         val p = parser(
             InputSegment("s-1", LocalDate(2026, 8, 5), "周一", 0),

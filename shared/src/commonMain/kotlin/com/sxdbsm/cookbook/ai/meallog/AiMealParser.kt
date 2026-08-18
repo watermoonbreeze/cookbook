@@ -15,6 +15,9 @@ import kotlinx.datetime.LocalDate
  * <p>
  * [AI修改] 修复 AI 模式 Schema 不匹配：AI 输出 items(FlatMealJson) vs Parser 期望 meals(AiMealParseResult)
  * → 新增 parseToDayMealJsonList() 优先尝试扁平格式。
+ * <p>
+ * ⚠️ [AI修改 2026-08-18] 无生产调用方（全仓 grep 确认）：B3 NDJSON 流式改造后快速记/周期记
+ * 均走 StreamingMealParser，本文件仅存量供其自身单测使用。改动前先确认是否应直接删除。
  **/
 object AiMealParser {
 

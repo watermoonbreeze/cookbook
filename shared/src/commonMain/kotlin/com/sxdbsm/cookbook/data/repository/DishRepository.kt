@@ -530,8 +530,9 @@ class DishRepository(private val db: CookbookDatabase) {
             }
 
             // [AI修改] 同步标签：先清空关联再重建，避免编辑时残留旧标签。
+            //   trim+去空对齐 ensureCookingMethodIds 的同类守卫，防空名/带空格标签污染 dish_tag 字典。
             q.unlinkAllTagsOfDish(dishId)
-            tagNames.distinct().forEach { tagName ->
+            tagNames.map { it.trim() }.filter { it.isNotBlank() }.distinct().forEach { tagName ->
                 q.insertDishTag(name = tagName, source = "user", created_at = now)
                 val tagId = q.selectDishTagByName(tagName).executeAsOneOrNull()?.id ?: return@forEach
                 q.linkDishTag(dishId, tagId)

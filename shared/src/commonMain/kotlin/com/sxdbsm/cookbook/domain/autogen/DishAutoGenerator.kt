@@ -144,7 +144,9 @@ class DishAutoGenerator(
     suspend fun commit(preview: DishPreview): Long = withContext(ioDispatcher) {
         when (preview.resolution) {
             ResolveKind.REUSE -> {
-                preview.existingId ?: error("REUSE but existingId is null for ${preview.inputName}")
+                // [AI修改] 日志门禁：不拼具体菜名(用户饮食文本)，error() 会冒泡进 AppLogger.e→Log.e/落盘。
+                //   nameLen 保留"确实拿到了名字"这一非可逆信号，根因是 preview() REUSE 分支的结构性不变量违反，与具体是哪道菜无关。
+                preview.existingId ?: error("DishPreview inconsistent: resolution=REUSE but existingId=null (nameLen=${preview.inputName.length})")
             }
             ResolveKind.CREATE -> {
                 // 防御 commit retry 重复创建：preview 缓存在 state 中，retry 仍为 CREATE
