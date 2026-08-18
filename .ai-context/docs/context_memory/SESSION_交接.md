@@ -12,7 +12,7 @@
 2. **`SESSION_交接.md`**（本文件）—— 当前状态与 ⏭下一步。
 3. **`projectReview/08_决策记录.md` D-20**（含本次追记的独立复核结论与修复清单）。
 4. `git status --short` 确认本次改动（7 个文件）是否已 commit（若已 commit，按新状态继续，不重复本节工作）。
-5. Project Graph 阶段状态：`.ai-context/project_graph/README.md`（Phase 2 FINAL ACCEPT / FROZEN；Phase 3 AUTHORIZED / NOT STARTED，卡在未裁决的 `GOV-BP-P3-01`）。
+5. Project Graph 阶段状态：`.ai-context/project_graph/README.md`（Phase 2 FINAL ACCEPT / FROZEN；Phase 3 AUTHORIZED / NOT STARTED。**`GOV-BP-P3-01` 已于 2026-08-18 裁决结清**，流程阻塞解除；但按 D-21 反应式维护，**解除阻塞 ≠ 启动 Phase 3**）。
 6. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（114 条 Verification Rows：17 pass、97 pending）。
 
 ---
@@ -56,14 +56,14 @@
 ```text
 Phase 1  — Model Contract      : FINAL ACCEPT / FROZEN   （83623a3）
 Phase 2  — Bootstrap           : FINAL ACCEPT / FROZEN
-Phase 3  — Views + Activation  : AUTHORIZED / NOT STARTED（卡在未裁决的 GOV-BP-P3-01）
+Phase 3  — Views + Activation  : AUTHORIZED / NOT STARTED（GOV-BP-P3-01 已裁决结清；按 D-21 不主动启动）
 Graph Mode                     : draft
 ```
 
 ### 遗留但未处理（沿用历史，仍未推进）
 
 - **真机验证被阻塞**：L1（`E-L1-01~12`）、K1i（`E-K1I-01/02` 阻断性）、更早 AI 记一餐 ~30 项，权威清单 97 条 pending。
-- **`GOV-BP-P3-01`（Phase 3A 治理升级审计）未裁决**：保持 `EXECUTED / PENDING ARCH REVIEW`，本机 ARCH 可直接读 diff 裁决，尚未安排。
+- ~~**`GOV-BP-P3-01` 未裁决**~~ → **已结清（2026-08-18）**：独立 ARCH 裁决结果 **PARTIAL ACCEPT** —— Section G 与项目侧 §14.6~14.8 / GC-38~48 / L7·48 基线接受补签；**Section B/E 判定为不可复现的自证式虚构证据、驳回作废**。详见 `BLUEPRINT_STATE.md` 批次 `GOVERNANCE-GOV-BP-P3-01-ADJUDICATION-01`。
 - K1b 蓝图仍 `DRAFT·PARKED`；K1i-2（AI推荐/周计划健康建议流式化）仅登记名字未设计。
 
 ---
@@ -77,7 +77,6 @@ Graph Mode                     : draft
 
 **其后按序**：
 
-3. 裁决 `GOV-BP-P3-01`（ACCEPT/REWORK），解锁 Project Graph Phase 3。
 4. 清真机验证积压（优先 L1 快速路径 → K1i → 其余）。
 5. 下一个真实 CODE 批次（当前模型 DeepSeek V4 Flash）按 `UBF退休与模型执行力评估重设计.md` §3~§4.5 的四步循环执行，ARCH 复核须验证「全景图回写」字段已填。
 

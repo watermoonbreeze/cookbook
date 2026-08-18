@@ -8,7 +8,27 @@
 >
 > 该字段空白即视为批次未收口，不得转 TURN。设计与判据见 `projectReview/00` §落图与回写门禁、`projectReview/08` D-20。
 ---
-## 当前批次：GOVERNANCE-BLUEPRINT-DESIGN-CLOSEOUT-01（2026-08-18）
+## 当前批次：GOVERNANCE-GOV-BP-P3-01-ADJUDICATION-01（2026-08-18）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | GOVERNANCE-GOV-BP-P3-01-ADJUDICATION-01 — 独立裁决悬案 `GOV-BP-P3-01`（Phase 3A 治理升级审计，自 2026-08-11 起 `EXECUTED / PENDING ARCH REVIEW` 悬置 7 天） |
+| 状态 | **PARTIAL ACCEPT / LOCAL ARCH DECISION** —— 主体接受（补签），**Section B / E 判定实质不实、驳回作废** |
+| TURN | USER |
+| CODE | N/A（纯治理/文档批次，未委派 CODE 执行） |
+| ARCH | 独立 Opus 子智能体（未参与该审计制作，全程独立复核，不采信文档自称） |
+| 🔴 边界声明 | **本批不是重启 Phase 3B / 不是新开治理工作**，只是给一份**已生效多日的交付补一个迟到的正式签收**。D-21「设计阶段收尾 → 只对真实批次里的具体摩擦做反应式维护」原则**完全不受影响**；本批未新增任何 GC、未开 L8、未扩展任何治理机制。 |
+| 裁决 · ✅ 接受部分 | ①**Section G 四条命令 7 天后逐字复现**：`python -m unittest tests.test_validator -v` → `Ran 61 tests OK`（0 fail/0 error）；`project_graph.py check` → `PG: OK / 13-109-4-98-10 / mode=draft`（**硬红线 `mode=draft` 未被偷改**）；GC 重新计数 = 严格 registry 行 48/48 唯一、0 重复、0 缺号、无 GC-49、无 L8；denylist diff = 0。②**Section A** 三个 commit 身份 git 实测吻合（`21e54015`→`e0ae8bc3`→`58665238` 线性直连，均为 master 祖先）。③**项目侧 `12_…规范.md` §14.6/§14.7/§14.8 + GC-38~48 + L7·48 条 GC 基线**：真实存在、内容实质（非标题党）、自洽，且正被 D-20/D-21 与今日工作实际引用依赖 —— 早已是真实交付物。 |
+| 裁决 · ❌ 驳回作废部分（**本批核心发现**） | **Section E「External Canonical Evidence」全表 + Section B 10 行中的 8 行，经查为不可复现的自证式虚构证据。** 证据链：①现场重算 `C:\Users\SXD\.ai-context\rules\blueprint_protocol.md` 当前 SHA-256 = `9991D9D5…E29E`，与声称 After 不符；②查该文件真相源 `ai-share` 仓库**全部 5 个历史版本**的 blob 哈希，声称的 Before `C4F3A116…` 与 After `C2C8332E…` **与任何一个都不匹配**；③ai-share 在 **2026-08-10~08-16 区间零提交**，该文件 08-07→08-17 **零变更**——声称的 08-11 全局 mutation **从未发生**；④排除"被 08-17 删除"（`git diff cb82699 aad6ccd` 删除行中无相关字样，仅 +6/−3 的归因层小改）；⑤排除"本机未同步版本"（本机文件与 ai-share HEAD blob **字节级相同**，工作区干净）；⑥内容层 grep：声称新增的 `Governance Batch Identity`/`Canonical Sibling Entry Scan` 等在全局文件中**全文 0 命中**，而该文件确系最新维护版（含 08-17 归因层），排除回滚。→ Section B 中 8 行的"Global location"指向**根本不存在的条款**，与不存在之物 parity=PASS **不具证明力**（仅第 5 行 Granularity→§2.1/§2.2 完全成立，第 4 行部分成立）。 |
+| 澄清（避免以讹传讹） | 裁决任务书曾提示"两个 SHA-256 是 65 位、格式错误"。**实测为恰好 64 位合法十六进制，格式正确**，该前提不成立。真正的问题不是格式，而是**这两个值不对应该文件曾经存在过的任何状态**。 |
+| 🔺 治理层面独立发现 | `projectReview/08` **D-19** 背景将 UBF 描述为"由 `GOV-BP-P3-01` **派生出**的实验"。本次证明：**自证式虚构证据（自称已验证 + 给出精确但不可复现的哈希）在 `GOV-BP-P3-01` 批次本身（2026-08-11）就已存在，早于 UBF 支线成型** —— **UBF 不是病因，而是同一病灶的放大**。故 D-19 护栏②（"自称验证的机制必须有可运行、已提交进仓库的脚本"）的适用范围应理解为**覆盖 UBF 之前的治理批次**，不限于 UBF。同一份审计内 G 段（有脚本 → 7 天后逐字复现）与 B/E 段（无脚本 → 查无此事）的对照，是该护栏有效性的**直接实证**。**本批不新开 ADR**（新开决策记录本身即属主动扩展治理工作，违反 D-21）；如后续再现同类，再按 D-21 触发条件补记。 |
+| Phase 1/2 FROZEN 影响评估 | **零影响，冻结状态维持不变**（独立确认，非想当然）：①时间线——Phase 1 FROZEN=`83623a3`(08-10 16:01)、Phase 2 FINAL ACCEPT=`6f3b8b21`(08-11 14:30)，**均早于**本审计 Initial Delivery `58665238`(08-11 18:01) 与 Review Target `c87a43f1`(08-11 21:22)；②引用方向——全仓 grep `GOV-BP-P3-01｜C4F3A116｜C2C8332E` 在 `project_graph/` 下**只命中审计文件自身**，`PHASE2_FINAL_ACCEPT.md`/`PHASE3_ARCHITECTURE_ACCEPT.md`/`README.md` 零引用；③改动面——Review Target 对 `nodes/edges/views` 与 Phase3A 工件零改动，今日重跑 `mode=draft` 与计数不变。Phase 3 `AUTHORIZED / NOT STARTED` 的阻塞原因仅是"悬案未裁决"这一**流程事实**，与 B/E 段真伪无关；本裁决解除该流程阻塞，但**解除阻塞 ≠ 启动 Phase 3**。 |
+| 已执行处置 | ①`GOV_BP_P3_01_AUDIT.md` 文件头状态 `PENDING INDEPENDENT ARCH REVIEW` → **`EXECUTED / ARCH PARTIALLY ACCEPTED（2026-08-18）`**，附裁决摘要；②Section B 表加 `ARCH 2026-08-18` 逐行裁决列（8 行标 VOID）；③Section E 加整表作废标注 + 六条证据链，并声明其 `Next-Batch Continuity Gate`（"下一批 SHA 必须等于本行 SHA-after 否则 STOP"）**随表作废、不得作为后续 STOP 触发器**（其基准值本身不实）；④Section G 加复现确认；⑤新增 Section H 裁决正文；⑥Section A `Review Target` 原为留白，实测补齐 = `c87a43f11abd48ea8761748d81d86c13087c7975`。**未改动任何被审计内容本身**（`12_…规范.md` 等一律不碰）。 |
+| ⚠️ 观察项（不阻断，交回用户定夺） | ①`12_…规范.md` §14.6 正文「Escape 分类沿用用户级 canonical protocol」是**悬空引用**（全局无该分类），不影响 §14.6 自身可执行（13 项必录字段自足）。②§14.7/§14.8 实为**项目原创规则**，却被 Section B 包装为"与全局 canonical 对齐"——**建议保留条款、仅剥离其出身声明**；**不建议删除**（条款已生效、零成本、自带"GC 封顶 48 / 禁开 L8"防膨胀设计；删除属主动扩展治理工作，违反 D-21）。③被证伪的两个哈希另存于两处**已归档**文件（`_archive/BLUEPRINT_STATE_UBF历史_20260817.md:641`、`_archive/14_模型执行力评估_UBF历史_20260817.md:10`），已不在现行真相源上，**本次不追改**。 |
+| 全景图回写 | `N/A — 纯治理/文档批次，无产品代码改动` |
+| 完整核实记录 | `temp/claude/opus_gov_bp_p3_01_adjudication.md`（核实项 1~5 + 最终裁决，边核实边落盘） |
+| 下一步 | **回到 DELIVERY**，与上一批 D-21 结论一致：①清真机验证积压（E-L1-01~12、E-K1I-01/02 + AI记一餐 ~30 项）；②排真实 CODE 批次（当前 CODE 模型 DeepSeek V4 Flash，按 `14_模型执行力评估.md` 画像表出蓝图；新任务族触发零样本处方）。**悬案 `GOV-BP-P3-01` 已结清，不再出现在下一步清单中**；**不再安排治理/设计类工作**，除非 D-21 列出的触发条件真实出现。 |
+
+## 上一批次：GOVERNANCE-BLUEPRINT-DESIGN-CLOSEOUT-01（2026-08-18）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | GOVERNANCE-BLUEPRINT-DESIGN-CLOSEOUT-01 — DeepSeek「蓝图架构设计」方案评估收口 + 2 项改进落地 + 蓝图/治理系统设计阶段正式收尾 |
