@@ -13,11 +13,18 @@
     python blueprint_check.py --allowlist <蓝图.md> --range <range> --evidence <蓝图.md>   # 可同批一起跑
 
 退出码：0=全部通过；1=存在确定性违规（禁改文件被改 / T-ID 查无实据）；2=存在需要人工复核的可疑项（未在
-allowlist 表中匹配到、但也不在禁改清单里的改动文件——解析是启发式的，这种情况不代表一定违规）。
+allowlist 表中匹配到、但也不在禁改清单里的改动文件——启发式解析下这种情况不代表一定违规）。
+
+allowlist 解析有两条路径，优先级从高到低：
+  A. **固定块（推荐，2026-08-18 起）**：蓝图内存在 ```allowlist 围栏块（语法见
+     `12_多模型协作与实施蓝图规范.md` §11），逐行 `路径glob | 说明`，`allow:` / `forbidden:` 分节。
+     这条路径是确定性解析，不含猜测，[UNLISTED] 结果可直接采信为越界嫌疑。
+  B. **启发式（向后兼容旧蓝图）**：未找到固定块时，退回按标题小节 + 反引号路径样式 + 粗体禁改标记的
+     正则猜测。这条路径可能漏解析或多解析，[UNLISTED] 只代表"需人工确认"。
+运行时会打印当前用的是哪条路径。
 
 设计前提（诚实声明，避免重蹈"未经工具验证的密码学承诺"覆辙）：
-- 蓝图 Markdown 是自由格式文档，不是机器 schema，本工具用启发式正则解析表格与列表，解析结果建议先用
-  --debug 过一眼再信；
+- 走路径 B 时，蓝图 Markdown 是自由格式文档、不是机器 schema，解析结果建议先用 --debug 过一眼再信；
 - 本工具只做"存在性"检查（文件是否越界、T-ID 是否存在），不检查语义是否正确——AT-04 SURFACE 型偏差
   （字面满足但语义未达成）机器查不出来，仍需 ARCH 人工复核。
 """
@@ -133,8 +140,73 @@ def _split_forbidden_bullets(section_text: str) -> tuple[str, str]:
     return forbidden_text, allow_only
 
 
+# ---- 固定块解析（优先路径 A）----------------------------------------------------------------
+# ```allowlist
+# # 注释行
+# allow:
+# shared/.../ai/AiRuntimeConfig.kt | 新增 override fun stream(...)
+# forbidden:
+# androidApp/.../ai/CloudAiRuntime.kt | 只读引用，不改
+# ```
+ALLOWLIST_BLOCK_RE = re.compile(
+    r"^[ \t]*```[ \t]*allowlist[ \t]*\r?\n(?P<body>.*?)^[ \t]*```[ \t]*$",
+    re.MULTILINE | re.DOTALL,
+)
+SECTION_HEADER_RE = re.compile(r"^(allow|forbidden)\s*:\s*$", re.IGNORECASE)
+
+
+def parse_allowlist_block(md_text: str, debug: bool = False) -> tuple[list[str], list[str]] | None:
+    """解析 ```allowlist 固定块；未找到该块返回 None（由调用方退回启发式）。
+
+    语法（见 `12_多模型协作与实施蓝图规范.md` §11）：
+      - 块内以 `allow:` / `forbidden:` 独占一行分节，缺省分节为 `allow`；
+      - 条目行 `路径glob | 说明`，`|` 前是路径（可带反引号），`|` 后是自由文本说明，不参与匹配；
+      - `#` 开头为注释，空行忽略；
+      - 路径里 `...` 与 `*` 都按"任意字符"展开（同启发式路径的 path_token_to_pattern）。
+    不合语法的行不静默丢弃，一律打印警告——治理工具里"悄悄少解析一条"等于放行越界。
+    """
+    m = ALLOWLIST_BLOCK_RE.search(md_text)
+    if m is None:
+        return None
+
+    allowed_tokens: list[str] = []
+    forbidden_tokens: list[str] = []
+    current = allowed_tokens
+    warnings: list[str] = []
+
+    for raw_line in m.group("body").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        header = SECTION_HEADER_RE.match(line)
+        if header:
+            current = allowed_tokens if header.group(1).lower() == "allow" else forbidden_tokens
+            continue
+        if "|" not in line:
+            warnings.append(f"缺少 `|` 分隔符，整行忽略：{line}")
+            continue
+        token = line.split("|", 1)[0].strip().strip("`").strip()
+        if not token:
+            warnings.append(f"`|` 左侧路径为空，整行忽略：{line}")
+            continue
+        current.append(token)
+
+    for w in warnings:
+        print(f"  [WARN] allowlist 固定块解析：{w}")
+
+    if debug:
+        print("[debug] allowlist 固定块原文：\n" + m.group("body"), file=sys.stderr)
+        print(f"[debug] 解析出 allowed={allowed_tokens}", file=sys.stderr)
+        print(f"[debug] 解析出 forbidden={forbidden_tokens}", file=sys.stderr)
+
+    return (
+        [path_token_to_pattern(t) for t in allowed_tokens],
+        [path_token_to_pattern(t) for t in forbidden_tokens],
+    )
+
+
 def parse_allowlist(md_text: str, debug: bool = False) -> tuple[list[str], list[str]]:
-    """返回 (allowed_patterns, forbidden_patterns)，均已转成锚定正则字符串。"""
+    """返回 (allowed_patterns, forbidden_patterns)，均已转成锚定正则字符串。启发式路径（B）。"""
     section = extract_section(md_text, r"[Aa]llowlist|文件改动清单")
     if section is None:
         raise RuntimeError("未找到含 'allowlist' 或 '文件改动清单' 字样的标题小节")
@@ -156,7 +228,13 @@ def parse_allowlist(md_text: str, debug: bool = False) -> tuple[list[str], list[
 
 def check_allowlist(blueprint: Path, git_range: str, repo_root: Path, debug: bool = False) -> int:
     md_text = blueprint.read_text(encoding="utf-8")
-    allowed_patterns, forbidden_patterns = parse_allowlist(md_text, debug=debug)
+    block = parse_allowlist_block(md_text, debug=debug)
+    if block is not None:
+        allowed_patterns, forbidden_patterns = block
+        parse_mode = "固定块（确定性解析）"
+    else:
+        allowed_patterns, forbidden_patterns = parse_allowlist(md_text, debug=debug)
+        parse_mode = "启发式（旧格式兼容，结果需人工确认）"
     changed = [f for f in run_git(["diff", "--name-only", git_range], repo_root).splitlines() if f]
 
     forbidden_re = [re.compile(p) for p in forbidden_patterns]
@@ -169,13 +247,19 @@ def check_allowlist(blueprint: Path, git_range: str, repo_root: Path, debug: boo
         elif not any(r.match(f) for r in allowed_re):
             unlisted.append(f)
 
-    print(f"[allowlist] 蓝图={blueprint.name}  改动范围={git_range}  改动文件数={len(changed)}")
+    print(
+        f"[allowlist] 蓝图={blueprint.name}  改动范围={git_range}  改动文件数={len(changed)}"
+        f"  解析路径={parse_mode}"
+    )
     if forbidden_hits:
         print("  [FORBIDDEN] 命中蓝图显式禁改清单（AT-03 SCOPE，确定性违规）：")
         for f in forbidden_hits:
             print(f"    - {f}")
     if unlisted:
-        print("  [UNLISTED] 未在 allowlist 表中匹配到（启发式解析，需人工确认是否真的越界）：")
+        if block is not None:
+            print("  [UNLISTED] 未在 allowlist 固定块中匹配到（确定性解析，视为越界嫌疑）：")
+        else:
+            print("  [UNLISTED] 未在 allowlist 表中匹配到（启发式解析，需人工确认是否真的越界）：")
         for f in unlisted:
             print(f"    - {f}")
     if not forbidden_hits and not unlisted:
