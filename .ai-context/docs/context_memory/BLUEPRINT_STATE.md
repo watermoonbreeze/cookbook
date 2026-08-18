@@ -8,7 +8,23 @@
 >
 > 该字段空白即视为批次未收口，不得转 TURN。设计与判据见 `projectReview/00` §落图与回写门禁、`projectReview/08` D-20。
 ---
-## 当前批次：GOVERNANCE-PROJECTREVIEW-ANTIDRIFT-01（2026-08-17）
+## 当前批次：GOVERNANCE-BLUEPRINT-DESIGN-CLOSEOUT-01（2026-08-18）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | GOVERNANCE-BLUEPRINT-DESIGN-CLOSEOUT-01 — DeepSeek「蓝图架构设计」方案评估收口 + 2 项改进落地 + 蓝图/治理系统设计阶段正式收尾 |
+| 状态 | **ACCEPT / LOCAL ARCH DECISION** |
+| TURN | USER |
+| CODE | N/A（纯治理/文档+工具批次，未委派 CODE 执行） |
+| ARCH | 本机 ARCH |
+| 背景 | 用户老板从 DeepSeek 取得一份"蓝图架构设计"方案，交独立 Opus 子智能体评估（结论 `temp/claude/opus_blueprint_review_progress.md`）：**基本不值得借鉴**——其每个"新"机制项目都有更可判定的对应物，其独有部分（EMA 路由/ε-greedy/DAG 并行/PG·Redis·S3·Celery·K8s·Prometheus）需要本项目不存在的规模（CODE 候选基数=1、瓶颈在人工复核），目标形状与刚退休的 UBF 同构、直接冲突 D-19 护栏②③。仅 2 条值得取，均属修现有已知缺陷、零新基础设施。 |
+| 已落地 · 改进① | allowlist 段改机器可解析固定块：`experience/12_…规范.md` §11 模板改指固定块 + 新增 §11.1（语法说明 + 示例 + 与旧蓝图关系）；`.ai-context/tools/blueprint_check.py` 新增 `parse_allowlist_block()`（```allowlist 围栏块，`allow:`/`forbidden:` 分节，`路径glob \| 说明` 逐行，不合语法行打 `[WARN]` 不静默丢弃），`check_allowlist` **优先固定块、未命中退回原启发式**并打印当前解析路径。修的是脚本自述的"解析是启发式的，不代表一定违规"——而它正是 AT-03 `SCOPE` 的唯一对症对策。 |
+| 已落地 · 改进② | `experience/14_模型执行力评估.md` 消费点新增「零样本默认处方」：`(模型,任务族)` 样本=0 时该批强制实跑 `blueprint_check.py --allowlist <蓝图> --range <基线>..<交付>` + `--evidence <蓝图>`，连续 2 批无偏差按 **AT-09** 撤销通道退出。明写 🔴 **只加严复核动作、不碰 Level**（L7 基线不因模型陌生下调，也不构成提 Level 依据——提 Level 仍只认 AT-07）。 |
+| 已落地 · 收尾记录 | `projectReview/08` 新增 **D-21**（设计阶段收尾 → 反应式维护，四类触发条件全部复用已有机制 AT-07 / AT-02·03 / D-20 退出条件 / 规模质变须重走决策记录；并列出活文档及其更新触发，引用 D-19 护栏原文说明本次是延续而非违反）；`experience/12_…规范.md` 新增 §0「维护模式」小节作醒目提醒，细节指回 D-21。 |
+| 验证 | 7 份既有 `*_实施蓝图.md` 全部实跑 `blueprint_check.py --allowlist ... --debug`，改造前后 `allowed`/`forbidden` 解析结果**逐字节一致**（含 B3 蓝图无 allowlist 小节仍按原样报 RuntimeError），无回归；另用固定块 fixture 冒烟：正确分节、剥反引号、对缺 `\|` 的行打 `[WARN]`、输出标注"解析路径=固定块（确定性解析）"。 |
+| 全景图回写 | `N/A — 纯治理/文档批次，无产品代码改动` |
+| 下一步 | **回到 DELIVERY**：①裁决 `GOV-BP-P3-01`（Phase 3A 治理升级审计，仍 `EXECUTED / PENDING ARCH REVIEW`）；②清真机验证积压（E-L1-01~12、E-K1I-01/02 + AI记一餐 ~30 项）；③排真实 CODE 批次（当前 CODE 模型 DeepSeek V4 Flash，按 `14_模型执行力评估.md` 画像表出蓝图；新任务族触发零样本处方）。**不再安排治理/设计类工作**，除非 D-21 列出的触发条件真实出现。 |
+
+## 上一批次：GOVERNANCE-PROJECTREVIEW-ANTIDRIFT-01（2026-08-17）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | GOVERNANCE-PROJECTREVIEW-ANTIDRIFT-01 — 修正全景图内容漂移 + 建立防漂移长效机制 |
