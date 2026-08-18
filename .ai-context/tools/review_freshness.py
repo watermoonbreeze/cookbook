@@ -89,7 +89,7 @@ def _anchor_sqm_max(root: Path) -> int:
 
 def _anchor_seed_files(root: Path) -> int:
     d = root / "shared/src/commonMain/resources/seed"
-    return len([f for f in d.iterdir() if f.is_file()])
+    return len([f for f in d.iterdir() if f.is_file() and f.suffix == ".json"])
 
 
 def _anchor_screens(root: Path) -> int:
@@ -123,7 +123,8 @@ def parse_footer(md_text: str) -> dict | None:
             if m:
                 result["sha"] = m.group(1)
         elif seg.startswith("监视路径"):
-            result["paths"] = FOOTER_PATH_RE.findall(seg)
+            # 只收形似路径的反引号项（含 / 或 .），过滤段内夹带的说明性反引号文字（如"不含 `test`"）
+            result["paths"] = [p for p in FOOTER_PATH_RE.findall(seg) if "/" in p or "." in p]
         elif seg.startswith("事实锚"):
             result["anchors"] = {k: int(v) for k, v in FOOTER_ANCHOR_RE.findall(seg)}
     return result
@@ -142,11 +143,13 @@ def check_volume(path: Path, repo_root: Path) -> dict:
     row["sha"] = footer["sha"] or "—"
 
     mismatches = []
+    unknown_keys = []
     if footer["anchors"]:
         for key, declared in footer["anchors"].items():
             fn = FACT_ANCHORS.get(key)
             if fn is None:
-                mismatches.append(f"{key}=未知锚key")
+                # 未知 key 只降级为提示（段内混入非锚说明文字时常见），不计入 ANCHOR-MISMATCH 判定
+                unknown_keys.append(f"{key}=未知锚key（忽略）")
                 continue
             try:
                 actual = fn(repo_root)
@@ -155,7 +158,8 @@ def check_volume(path: Path, repo_root: Path) -> dict:
                 continue
             if actual != declared:
                 mismatches.append(f"{key}: 声明{declared}≠实际{actual}")
-        row["anchor_result"] = "; ".join(mismatches) if mismatches else "全部一致"
+        anchor_notes = mismatches + unknown_keys
+        row["anchor_result"] = "; ".join(anchor_notes) if anchor_notes else "全部一致"
 
     if footer["paths"] and footer["sha"]:
         try:
@@ -184,8 +188,12 @@ def check_volume(path: Path, repo_root: Path) -> dict:
         row["verdict"] = f"STALE({row['commits_after']})"
     elif row["commits_after"] is not None:
         row["verdict"] = "FRESH"
+    elif footer["anchors"]:
+        # 只声明事实锚、未声明监视路径：锚全部一致也算一次明确的通过判定，不落回"未声明"
+        row["verdict"] = "FRESH（仅事实锚，无监视路径）"
     elif not footer["paths"] and not footer["anchors"]:
-        row["verdict"] = "N/A（Tier C，不适用）"
+        # 不判定 Tier（Tier 分级唯一真相源在 projectReview/00，本脚本不重复维护以防二次漂移）
+        row["verdict"] = "N/A（未声明监视路径/事实锚）"
 
     return row
 

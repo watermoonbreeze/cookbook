@@ -79,6 +79,9 @@ lint/tmp/
 
 # 数据核对工具输出/缓存
 scripts/data/reports/
-scripts/data/__pycache__/
 temp/db/
 temp/claude/
+
+# Python 缓存（任意目录，含 .ai-context/tools/）
+__pycache__/
+*.pyc
