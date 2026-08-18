@@ -79,8 +79,8 @@ lint/tmp/
 
 # 数据核对工具输出/缓存
 scripts/data/reports/
-temp/db/
-temp/claude/
+# temp/ 全目录本地保留、整体忽略（含 codex worktree、claude 临时产物、db、log）
+temp/
 
 # Python 缓存（任意目录，含 .ai-context/tools/）
 __pycache__/
