@@ -8,7 +8,20 @@
 >
 > 该字段空白即视为批次未收口，不得转 TURN。设计与判据见 `projectReview/00` §落图与回写门禁、`projectReview/08` D-20。
 ---
-## 当前批次：GOVERNANCE-GOV-BP-P3-01-ADJUDICATION-01（2026-08-18）
+## 当前批次：GOVERNANCE-GOV-BP-P3-01-OBSERVATIONS-CLOSEOUT-01（2026-08-18）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | GOVERNANCE-GOV-BP-P3-01-OBSERVATIONS-CLOSEOUT-01 — 处理上一批次（GOV-BP-P3-01 裁决）遗留的 3 条非阻断观察项 |
+| 状态 | **ACCEPT / LOCAL ARCH DECISION** |
+| TURN | USER |
+| CODE | N/A（纯治理/文档批次，未委派 CODE 执行） |
+| ARCH | 本机 ARCH |
+| 处置 | ①`12_…规范.md` §14.6 悬空引用"Escape 分类沿用用户级 canonical protocol"改为"本节自定义"，不再声称外部依据；②§14.6 开头新增"出身说明"提示块，明确 §14.6~14.8 是项目原创规则、不是与全局 `blueprint_protocol.md` 对齐的产物（条款本身不动，只订正出身声明）；③`08_决策记录.md` 新增 **D-22**——最小成本的订正型 ADR，把"GOV-BP-P3-01 自证式虚构证据早于 UBF"这一历史事实钉进永久可查路径，同时订正 D-19 背景段"UBF 由 GOV-BP-P3-01 派生"的归因表述（应理解为该模式在 GOV-BP-P3-01 批次本身即已存在，UBF 是同一病灶的放大，非病因）。 |
+| 未处置（有意为之） | 被证伪的两个哈希在两处已归档文件（`_archive/BLUEPRINT_STATE_UBF历史_20260817.md`、`_archive/14_模型执行力评估_UBF历史_20260817.md`）中仍保留原文，不在现行真相源阅读路径上，不追改（避免主动扩大改动面）。 |
+| 全景图回写 | `N/A — 纯治理/文档批次，无产品代码改动` |
+| 下一步 | 与上一批一致：**回到 DELIVERY**——清真机验证积压、排真实 CODE 批次。观察项至此全部清空，无遗留。 |
+
+## 上一批次：GOVERNANCE-GOV-BP-P3-01-ADJUDICATION-01（2026-08-18）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | GOVERNANCE-GOV-BP-P3-01-ADJUDICATION-01 — 独立裁决悬案 `GOV-BP-P3-01`（Phase 3A 治理升级审计，自 2026-08-11 起 `EXECUTED / PENDING ARCH REVIEW` 悬置 7 天） |
