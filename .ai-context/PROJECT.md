@@ -33,7 +33,7 @@ Phase 2 Frozen Truth Hierarchy：Runtime Truth（Code / DB / schema / runtime co
 - 当前批次 / TURN / 当前执行状态：唯一读取 `docs/context_memory/BLUEPRINT_STATE.md`。
 - 任何编码模型实施前必须读 `docs/experience/12_多模型协作与实施蓝图规范.md`（蓝图协议 + GC 条款）。
 - 规则与反查：`docs/projectReview/21_AI与网络请求策略（专属）.md`、`08_决策记录.md` D-15/D-16、`05_诊断地图.md`。
-- 真机验证只认 `docs/feature/真机待验证清单_<yyyyMMddHHmm>.md` 中时间最新的一份。
+- 真机验证只认 `docs/真机验证/真机待验证清单_<yyyyMMddHHmm>.md` 中时间最新的一份。
 
 ## 文档分层
 

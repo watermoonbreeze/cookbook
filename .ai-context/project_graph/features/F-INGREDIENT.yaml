@@ -120,6 +120,6 @@ verifications:
     work_item: K1f
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R6
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#R6
       - .ai-context/docs/feature/待办_功能算法.md#K1f
     reason: 西红柿/番茄同义食材应复用已有条目而不重复建库，验收 K1f 别名归一责任。

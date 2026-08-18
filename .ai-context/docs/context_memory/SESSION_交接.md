@@ -13,7 +13,7 @@
 3. **`projectReview/08_决策记录.md` D-21**（蓝图/治理系统设计阶段收尾，今天最重要的一条治理决策，定了"以后什么时候才允许改这套系统"）。
 4. **`temp/claude/opus_gov_bp_p3_01_adjudication.md`** —— 若要深挖 GOV-BP-P3-01 裁决的完整取证过程（含 Section B/E 造假的详细证据链），读这份；本文件第三节只摘要。
 5. Project Graph 阶段状态：`.ai-context/project_graph/README.md`（Phase 2 FINAL ACCEPT / FROZEN；Phase 3 AUTHORIZED / NOT STARTED——流程阻塞已随 GOV-BP-P3-01 裁决解除，但**解除阻塞 ≠ 启动 Phase 3**，按 D-21 不主动启动）。
-6. 若真机解封：`docs/feature/真机待验证清单_202608082330.md` 顶部汇总表（114 条 Verification Rows：17 pass、97 pending）。
+6. 若真机解封：`docs/真机验证/真机待验证清单_202608082330.md` 顶部汇总表（114 条 Verification Rows：17 pass、97 pending）——**该清单已从 `feature/` 移到独立目录 `真机验证/`（2026-08-18），`feature/` 太杂找不到东西，以后新清单也存这**。
 
 ---
 

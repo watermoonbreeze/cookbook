@@ -26,7 +26,7 @@
 - 公共项目知识只写 `.ai-context/`；`.claude/` 与 `.codex/` 仅保留各自工具配置。
 - 修改架构、流程、页面、算法、数据、AI/网络或公共能力时，同任务更新项目地图、诊断地图、ADR 和功能路径索引。
 - 会话接续只读/更新 `context_memory/SESSION_交接.md`；历史只追加到 `SESSION_交接_历史.md`。
-- 真机验证只使用时间戳最新的 `feature/真机待验证清单_<yyyyMMddHHmm>.md`。
+- 真机验证只使用时间戳最新的 `真机验证/真机待验证清单_<yyyyMMddHHmm>.md`。
 - 代码、数据与文档冲突时，优先级见 `.ai-context/PROJECT.md`；未经确认的方案不得描述为已实现。
 
 ## 资料分级

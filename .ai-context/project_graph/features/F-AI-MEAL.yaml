@@ -161,8 +161,8 @@ work_items:
     title: AI记餐规则解析动词剥离与连接词切分
     feature: F-AI-MEAL
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-1
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-2
       - .ai-context/docs/feature/20260802_AI记一餐解析全链路错误_排查报告.md
     intent: 规则解析剥离“吃了/准备吃/想吃/打算吃/要喝”等动作短语，正确处理“和/还有”等连接词，避免把动作或连接残片写成菜名/食材；R7 为同一解析回归责任。
   - id: BUG-AI-MEAL-003
@@ -171,7 +171,7 @@ work_items:
     title: AI记餐份量语义误判
     feature: F-AI-MEAL
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-5
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-5
       - .ai-context/docs/feature/2026-08-04_AI记一餐MVP算法审查与修复方案.md
       - .ai-context/project_graph/migration/PHASE2E_VERIFICATION_RECONCILIATION.md
     intent: 规则解析不得把“差不多”等模糊量词误判为固定半份比例；保留真实份量语义并交由用户确认。
@@ -249,7 +249,7 @@ verifications:
     work_item: K1i
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#K1i-流式地基
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#K1i-流式地基
     reason: E-K1I-01 阻断性真机项待验证（流式真委托 + 解析主路径切换 4 条判据）
   - id: E-K1I-02
     kind: device
@@ -257,7 +257,7 @@ verifications:
     work_item: K1i
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#K1i-流式地基
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#K1i-流式地基
     reason: 周期记流式同样生效待真机验证：周一/周三/周五多段渐进解析、日期归属及流式 Delta 表现
   - id: E-K1A-01
     kind: device
@@ -265,7 +265,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#K1a-营养展示统一化
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#K1a-营养展示统一化
     reason: AI 快捷记预览页 CREATE/REUSE 营养行、估算尾注与钠提示待真机验证
   - id: E-CFG-01
     kind: device
@@ -273,7 +273,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#AI-快捷记引擎标签
     reason: 引擎标签随 AI 配置状态即时切换待真机验证
   - id: E-CFG-02
     kind: device
@@ -281,7 +281,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#AI-快捷记引擎标签
     reason: 未配置 AI 时直接走规则解析待真机验证
   - id: E-CFG-03
     kind: device
@@ -289,7 +289,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#AI-快捷记引擎标签
     reason: AI 失败自动回退规则且展示人话原因待真机验证
   - id: E-CFG-04
     kind: device
@@ -297,7 +297,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#AI-快捷记引擎标签
     reason: AI 成功时优先使用 AI 且标签与结果一致待真机验证
   - id: E-CFG-05
     kind: device
@@ -305,7 +305,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#AI-快捷记引擎标签
     reason: AI 无可识别菜品时自动兜底规则解析待真机验证
   - id: E-CFG-06
     kind: device
@@ -313,7 +313,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#AI-快捷记引擎标签
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#AI-快捷记引擎标签
     reason: 周期记模式 AI 失败时逐日规则兜底及日期归属待真机验证
   - id: E-B4-01
     kind: device
@@ -321,7 +321,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B4-新增
     reason: 快速记/周期记模式切换与草稿保留待真机验证
   - id: E-B4-02
     kind: device
@@ -329,7 +329,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B4-新增
     reason: 周期记日期段导航与当前周标记待真机验证
   - id: E-B4-03
     kind: device
@@ -337,7 +337,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B4-新增
     reason: 每日输入字符计数、200 字截断与提示待真机验证
   - id: E-B4-04
     kind: device
@@ -345,7 +345,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B4-新增
     reason: 周期记仅发送非空日期并显示流式进度待真机验证
   - id: E-B4-05
     kind: device
@@ -353,7 +353,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B4-新增
     reason: 快速记与周期记草稿相互独立保留待真机验证
   - id: E-B4-06
     kind: device
@@ -361,7 +361,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B4-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B4-新增
     reason: 两种模式全部为空时禁止发送待真机验证
   - id: E-B5-01
     kind: device
@@ -369,7 +369,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 周期记生成中合法菜品渐进展示待真机验证
   - id: E-B5-02
     kind: device
@@ -377,7 +377,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 分段完成/当前/未开始状态指示待真机验证
   - id: E-B5-03
     kind: device
@@ -385,7 +385,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 中间段失败时保留已完成餐食并允许部分确认待真机验证
   - id: E-B5-04
     kind: device
@@ -393,7 +393,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 截断诊断可见且已解析内容保留待真机验证
   - id: E-B5-05
     kind: device
@@ -401,7 +401,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 多天结果按日期餐次菜品稳定重排待真机验证
   - id: E-B5-06
     kind: device
@@ -409,7 +409,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 中途确认仅保存已完成日期待真机验证
   - id: E-B5-07
     kind: device
@@ -417,7 +417,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 快速记/周期记字符计数展示统一待真机验证
   - id: E-B5-08
     kind: device
@@ -425,7 +425,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 切周撤销可恢复原周与草稿待真机验证
   - id: E-B5-09
     kind: device
@@ -433,7 +433,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 快速记单日渐进展示待真机验证
   - id: E-B5-10
     kind: device
@@ -441,7 +441,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B5-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B5-新增
     reason: 快速记与周期记输入框长按粘贴交互待真机验证
   - id: E-B6-01
     kind: device
@@ -449,7 +449,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 单天保存后 Sheet 正常关闭不冻屏待真机验证
   - id: E-B6-02
     kind: device
@@ -457,7 +457,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 长输入完整解析且不触发 token 截断待真机验证
   - id: E-B6-03
     kind: device
@@ -465,7 +465,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 已有餐食日期灰显并仍可选中待真机验证
   - id: E-B6-04
     kind: device
@@ -473,7 +473,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 切周后已有餐食灰显刷新行为待真机验证（已知缺陷可记录失败）
   - id: E-B6-05
     kind: device
@@ -481,7 +481,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 超 200 字粘贴截断与一次性 Snackbar 提示待真机验证
   - id: E-B6-VOICE-01
     kind: device
@@ -489,7 +489,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 语音实例释放与连续录音稳定性待真机验证
   - id: E-B6-TRUNC-01
     kind: device
@@ -497,7 +497,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 截断提示仅在跨越阈值时重复出现待真机验证
   - id: E-B6-DOT-01
     kind: device
@@ -505,7 +505,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#B6-新增
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#B6-新增
     reason: 多段进度圆点仅当前段显示脉冲待真机验证
 
   - id: E-P0-01
@@ -514,7 +514,7 @@ verifications:
     work_item: K1c
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#P0-1
       - .ai-context/docs/feature/待办_功能算法.md#K1c
     reason: 绝对日期输入与选择日期不一致时，日期解析和保存锚点保持原文日期，验收 K1c 日期归属责任。
   - id: E-P0-02
@@ -523,7 +523,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#P0-2
       - .ai-context/docs/feature/2026-08-04_AI记一餐MVP算法审查与修复方案.md
     reason: 非法日期或份量不得进入可保存预览，验收 AI 记餐解析与校验链路。
   - id: E-P0-03
@@ -532,7 +532,7 @@ verifications:
     work_item: K15
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-3
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#P0-3
       - .ai-context/docs/feature/待办_功能算法.md#K15
     reason: 已有餐食合并需先提示并由用户确认，验收可控确认/写库责任。
   - id: E-P0-04
@@ -541,7 +541,7 @@ verifications:
     work_item: K1c
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-4
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#P0-4
       - .ai-context/docs/feature/待办_功能算法.md#K1c
     reason: 无日期文本使用添加页所选日期，验收日期锚点责任。
   - id: E-P0-05
@@ -550,7 +550,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-5
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#P0-5
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 多天周期记完整解析且不把日期文本当菜名，验收 K1g 周期分段责任。
   - id: E-P0-06
@@ -559,7 +559,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-6
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#P0-6
       - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
     reason: Schema 可选字段为 null 时仍能进入有效预览，验收 AI 记餐解析兼容链路。
   - id: E-P0-07
@@ -568,7 +568,7 @@ verifications:
     work_item: K1c
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#P0-7
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#P0-7
       - .ai-context/docs/feature/待办_功能算法.md#K1c
     reason: 中文日期/时间解析后不得污染菜名，验收规则日期时间归属责任。
   - id: E-D-01
@@ -577,7 +577,7 @@ verifications:
     work_item: K1c
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D1
       - .ai-context/docs/feature/待办_功能算法.md#K1c
     reason: 无日期文本必须落在用户选择日期，验收日期锚点责任。
   - id: E-D-02
@@ -586,7 +586,7 @@ verifications:
     work_item: K1c
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D2
       - .ai-context/docs/feature/待办_功能算法.md#K1c
     reason: 周一/周二/周三映射到选择日期所在周，验收 weekdayHint/date_offset。
   - id: E-D-03
@@ -595,7 +595,7 @@ verifications:
     work_item: I4
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D3
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D3
       - .ai-context/docs/feature/待办_Bug修复.md#I4
     reason: 括号内复合食材拆分并保留主菜，验收 I4 复合菜/括号责任。
   - id: E-D-04
@@ -604,7 +604,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D4
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D4
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 确认后食历立即刷新，验收 AI 记餐保存主链路。
   - id: E-D-05
@@ -613,7 +613,7 @@ verifications:
     work_item: I6
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D5
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D5
       - .ai-context/docs/feature/待办_Bug修复.md#I6
     reason: 多天 AI 输出不被 token 截断，验收 I6 截断缺陷责任。
   - id: E-D-06
@@ -622,7 +622,7 @@ verifications:
     work_item: K1c
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D6
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D6
       - .ai-context/docs/feature/待办_功能算法.md#K1c
     reason: 倒序星期输入仍映射到目标周，验收 weekdayHint/date_offset。
   - id: E-D-07
@@ -631,7 +631,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D7
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D7
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 多日确认后进入周计划并保留三天餐食，验收周期记保存主链路。
   - id: E-D-08
@@ -640,7 +640,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D8
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D8
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 单日确认后刷新当前日期且不误跳周计划，验收 AI 记餐主链路。
   - id: E-D-09
@@ -649,7 +649,7 @@ verifications:
     work_item: I4
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D9
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D9
       - .ai-context/docs/feature/待办_Bug修复.md#I4
     reason: 括号配料与复合菜并存时保留菜名和食材，验收 I4。
   - id: E-D-10
@@ -658,7 +658,7 @@ verifications:
     work_item: I7
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D10
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D10
       - .ai-context/docs/feature/待办_Bug修复.md#I7
     reason: AI 未配置/失败时显式说明规则解析原因，验收 I7 可控降级责任。
   - id: E-D-11
@@ -667,7 +667,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D11
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D11
       - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
     reason: AI 结果与规则结果共享日期/括号约束，验收 AI 记餐解析主链路。
   - id: E-D-12
@@ -676,7 +676,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D12
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D12
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: AI 记餐确认触发食材自动创建并标记来源，验收 K1g 记餐入库链路。
   - id: E-D-13
@@ -685,7 +685,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D13
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D13
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: AI 记餐输入框系统复制/粘贴与自有粘贴入口一致，验收输入链路。
   - id: E-D-14
@@ -694,7 +694,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D14
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D14
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 多天模板与分隔规则说明对应周期记输入契约，验收 K1g。
   - id: E-D-15
@@ -703,7 +703,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#D15
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#D15
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 多日预览重复确认不得重复写库，验收周期记确认幂等链路。
   - id: E-F1-01
@@ -712,7 +712,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-1
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: 吃动词剥离与和连接词拆分属于 BUG-AI-MEAL-002。
   - id: E-F1-02
@@ -721,7 +721,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-1
       - .ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md
     reason: 预览每道菜显示营养值而非待完善，验收 K1a 营养展示责任。
   - id: E-F1-03
@@ -730,7 +730,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-1
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: 动词剥离后的两道菜正确进入午餐，验收解析修复写入边界。
   - id: E-F1-04
@@ -739,7 +739,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-1
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: “吃了”不得成为食材，验收动作短语剥离责任。
   - id: E-F2-01
@@ -748,7 +748,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-2
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: “准备吃”动作短语剥离，验收同一解析缺陷修复。
   - id: E-F2-02
@@ -757,7 +757,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-2
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: “想吃”动作短语剥离，验收同一解析缺陷修复。
   - id: E-F2-03
@@ -766,7 +766,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-2
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: “打算吃”动作短语剥离，验收同一解析缺陷修复。
   - id: E-F2-04
@@ -775,7 +775,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-2
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: “要喝”动作短语剥离，验收同一解析缺陷修复。
   - id: E-F3-01
@@ -784,7 +784,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-3
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-3
       - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
     reason: AI 模式结构化结果可进入预览，验收 K1g 解析与预览责任。
   - id: E-F3-02
@@ -793,7 +793,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-3
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-3
       - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
     reason: 规则模式与 AI 模式共享可保存结构，验收 K1g 解析与预览责任。
   - id: E-F3-03
@@ -802,7 +802,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-3
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-3
       - .ai-context/docs/feature/AI记一餐_周期记_NDJSON流式开发规范.md
     reason: AI/规则结果一致性属于同一记餐解析主链路的回归验收。
   - id: E-F4-01
@@ -811,7 +811,7 @@ verifications:
     work_item: BUG-AI-MEAL-001
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-4
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-4
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: 长按语音按钮进入聆听状态并出现波形反馈。
   - id: E-F4-02
@@ -820,7 +820,7 @@ verifications:
     work_item: BUG-AI-MEAL-001
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-4
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-4
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: 松开语音按钮后识别结果回填 AI 记餐输入框。
   - id: E-F4-03
@@ -829,7 +829,7 @@ verifications:
     work_item: BUG-AI-MEAL-001
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-4
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-4
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: 首次无权限使用语音时触发系统麦克风权限请求。
   - id: E-F5-01
@@ -838,7 +838,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-5
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-5
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: AI 记餐确认入库的菜品查重属于 K1g 记餐入库链路。
   - id: E-F5-02
@@ -847,7 +847,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-5
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-5
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: AI 创建食材的名称完整性属于 K1g IngredientAutoGenerator 入库链路。
   - id: E-F5-03
@@ -856,7 +856,7 @@ verifications:
     work_item: BUG-AI-MEAL-003
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#FIX-5
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#FIX-5
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: “差不多”不得被误判为固定半份比例，验收份量语义缺陷。
   - id: E-R-01
@@ -865,7 +865,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#R1
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 预览阶段零写库属于 AI 记餐确认链路验收。
   - id: E-R-02
@@ -874,7 +874,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#R2
       - .ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md
     reason: AI 创建食材的营养来源标注“自动估算”，验收 K1a 营养展示/估算尾注。
   - id: E-R-03
@@ -883,7 +883,7 @@ verifications:
     work_item: TODO-AI-MEAL-004
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R3
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#R3
       - .ai-context/docs/feature/待办_功能算法.md
     reason: AI 创建营养项进入待复核筛选，验收 AI 营养补全/复核责任。
   - id: E-R-04
@@ -892,7 +892,7 @@ verifications:
     work_item: K1c
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R4
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#R4
       - .ai-context/docs/feature/待办_功能算法.md#K1c
     reason: 星期日期推算为前一日，验收 weekdayHint/date_offset。
   - id: E-R-07
@@ -901,7 +901,7 @@ verifications:
     work_item: BUG-AI-MEAL-002
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R7
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#R7
       - .ai-context/docs/feature/待办_Bug修复.md
     reason: “宫保鸡丁”不得被连接词规则误拆，验收解析切分缺陷责任。
   - id: E-R-08
@@ -910,7 +910,7 @@ verifications:
     work_item: K15
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#R8
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#R8
       - .ai-context/docs/feature/待办_功能算法.md#K15
     reason: 来源 R8：重新输入后不残留旧解析状态，验收 K15 会话/降级状态责任。
   - id: E-LEG-01
@@ -919,7 +919,7 @@ verifications:
     work_item: K1a
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#LEG-1
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#LEG-1
       - .ai-context/docs/feature/AI记一餐_K1a营养展示统一化与未配置报错_实施蓝图.md
     reason: 热量数值开关影响预览营养展示，验收 K1a。
   - id: E-LEG-02
@@ -928,7 +928,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#LEG-2
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#LEG-2
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: AI 新菜品标记属于记餐自动创建预览链路，验收 K1g。
   - id: E-LEG-03
@@ -937,7 +937,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#LEG-3
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#LEG-3
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: AI 记餐输入粘贴入口属于 K1g 输入链路。
   - id: E-LEG-04
@@ -946,7 +946,7 @@ verifications:
     work_item: K1g
     required: true
     source_refs:
-      - .ai-context/docs/feature/真机待验证清单_202608082330.md#LEG-4
+      - .ai-context/docs/真机验证/真机待验证清单_202608082330.md#LEG-4
       - .ai-context/docs/feature/待办_功能算法.md#K1g
     reason: 多天 AI 记餐预览属于 K1g 周期记分段/确认链路。
 
