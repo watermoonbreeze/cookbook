@@ -93,6 +93,7 @@ class MultiDayRecorder(
                         tags = dishJson?.tags ?: emptyList(),
                         description = dishJson?.description ?: "",
                         specialNote = dishJson?.special_note ?: "",
+                        steps = dishJson?.steps ?: emptyList(),
                         eatenRatio = dishRef.eaten_ratio,
                         source = dishJson?.source?.ifBlank { "ai" } ?: "ai",
                     )

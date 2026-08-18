@@ -5,6 +5,7 @@ import com.sxdbsm.cookbook.domain.DishNameIngredientGuesser
 import com.sxdbsm.cookbook.domain.NutritionGuessSource
 import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.DishNutrition
+import com.sxdbsm.cookbook.domain.model.DishStep
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import com.sxdbsm.cookbook.domain.model.IngredientNutrition
 import com.sxdbsm.cookbook.domain.model.NutritionCalculator
@@ -105,6 +106,13 @@ class DishAutoGenerator(
             source = input.source,
             nutrition = nutrition,
             eatenRatio = input.eatenRatio,
+            // [AI修改] 修复：此前 CREATE 菜品的做法/烹饪方式/标签/描述/特别说明在 preview 阶段就被丢弃，
+            // commit() 只能写死空值——AI 记一餐解析出的"做法"因此从未真正落库。
+            cookingMethods = input.cookingMethods,
+            tags = input.tags,
+            description = input.description,
+            specialNote = input.specialNote,
+            steps = input.steps,
         )
     }
 
@@ -158,19 +166,19 @@ class DishAutoGenerator(
                     )
                 }
 
-                // saveDish（内部 db.transaction·已回填 unitId=null→gramUnit）
+                // saveDish（内部 db.transaction·已回填 unitId=null→gramUnit）[AI修改] 修复：不再写死丢弃做法/烹饪方式/标签/描述
                 dishRepo.saveDish(
                     id = 0,
                     name = preview.inputName,
                     cookingMethodId = null,
-                    cookingMethodNames = emptyList(),
-                    specialNote = "",
-                    description = "",
+                    cookingMethodNames = preview.cookingMethods,
+                    specialNote = preview.specialNote,
+                    description = preview.description,
                     imagePath = "",
                     thumbnailPath = "",
-                    tagNames = emptyList(),
+                    tagNames = preview.tags,
                     ingredients = dishIngredients,
-                    steps = emptyList(),
+                    steps = preview.steps.mapIndexed { index, text -> DishStep(sortOrder = index, text = text) },
                     source = preview.source.ifBlank { "auto" },
                 )
             }

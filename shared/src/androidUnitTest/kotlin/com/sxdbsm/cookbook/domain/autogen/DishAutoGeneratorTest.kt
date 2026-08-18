@@ -147,6 +147,37 @@ class DishAutoGeneratorTest {
     }
 
     @Test
+    fun `T-B7-01 CREATE菜commit后做法烹饪方式标签描述特别说明全部落库`() = runBlocking {
+        val preview = generator.preview(
+            SemanticDish(
+                name = "红烧排骨",
+                ingredients = listOf(SemanticIngredient(name = "五花肉", quantity = 100.0)),
+                cookingMethods = listOf("炖", "焖"),
+                tags = listOf("下饭菜"),
+                description = "经典家常做法",
+                specialNote = "小火慢炖",
+                steps = listOf("焯水去腥", "炒糖色", "加水炖煮40分钟"),
+            ),
+            ctx,
+        )
+        // preview 阶段必须原样透传（此前 bug：preview() 就已丢弃这些字段）
+        assertEquals(listOf("炖", "焖"), preview.cookingMethods)
+        assertEquals(listOf("下饭菜"), preview.tags)
+        assertEquals("经典家常做法", preview.description)
+        assertEquals("小火慢炖", preview.specialNote)
+        assertEquals(listOf("焯水去腥", "炒糖色", "加水炖煮40分钟"), preview.steps)
+
+        val dishId = generator.commit(preview)
+        val saved = assertNotNull(DishRepository(db).getDishById(dishId), "commit 后应能查到刚建的菜")
+        assertEquals(setOf("炖", "焖"), saved.cookingMethods.map { it.name }.toSet(), "烹饪方式应落库（此前 bug：commit() 写死 emptyList）")
+        assertEquals(listOf("下饭菜"), saved.tags)
+        assertEquals("经典家常做法", saved.description)
+        assertEquals("小火慢炖", saved.specialNote)
+        assertEquals(listOf("焯水去腥", "炒糖色", "加水炖煮40分钟"), saved.steps.map { it.text })
+        Unit
+    }
+
+    @Test
     fun `T-K1A-01d CREATE菜含Group均值食材_estimated=true`() = runBlocking {
         // 大白菜不在 nutritionCandidates（未种营养）→ classify 蔬菜 → GROUP_AVG 均值 → source=Group
         val preview = generator.preview(

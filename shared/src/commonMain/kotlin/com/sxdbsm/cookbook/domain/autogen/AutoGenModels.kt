@@ -36,6 +36,7 @@ data class SemanticDish(
     val tags: List<String> = emptyList(),
     val description: String = "",
     val specialNote: String = "",
+    val steps: List<String> = emptyList(), // 做法步骤（简单文字列表）·[AI修改] 修复CREATE路径丢做法
     val eatenRatio: Double? = null, // 餐次维度回填用
     val source: String = "auto",    // "ai"/"link"/"user"·标来源
 )
@@ -95,6 +96,12 @@ data class DishPreview(
     val nutrition: DishNutrition?,
     /** 从 SemanticDish 透传·commit 后回填 eaten_ratio·null 或 1.0 跳过 */
     val eatenRatio: Double? = null,
+    // 以下四项仅 CREATE 有意义（REUSE 沿用已有菜品数据，不覆盖）·[AI修改] 修复CREATE路径丢做法/烹饪方式/标签/描述
+    val cookingMethods: List<String> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val description: String = "",
+    val specialNote: String = "",
+    val steps: List<String> = emptyList(),
 )
 
 /** 餐次预览。[AI生成] */
