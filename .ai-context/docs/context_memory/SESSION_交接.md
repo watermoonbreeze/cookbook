@@ -1,113 +1,117 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-19 · AI 记一餐 B7 后续批交付 + 3 项延后决策蓝图化收官**
-> 当前工作域：**AI 记一餐主线**——B7 后续批（10 项待办 + NDJSON 协议容错）已交付并推送；剩余 3 项延后决策（菜系/标签透传、确认页展开 UI、死代码整组清理）已出正式实施蓝图（批A/批B `BLUEPRINT_READY`，批C `PENDING_UX_DESIGN`），登记进 `BLUEPRINT_STATE.md`，等用户在另一台机器指派编码模型执行。
-> 执行角色：本机 ARCH（Claude）。
+> 更新时间：**2026-08-19 · L1 hotfix v1.1 交付 + 全景图纵轴改文件夹与机械新鲜度门禁（D-25）+ 通用化提取到 `~/.ai-context`**
+> 当前工作域：本次是超长跨域会话，先做了 AI 记一餐 L1 云端 AI 首启同意的真机反馈修复，随后转向一个更大的主题——"全景图新鲜度怎么长期保持"，经四轮独立 Opus 评估收敛出一套机械新鲜度门禁方案，在 cookbook 项目落地（纵轴 `features/` 改文件夹结构），验证有效后提炼成跨项目通用版落进用户级 `~/.ai-context/skills/project_review/`。
+> 执行角色：本机 ARCH（Claude Sonnet），Opus 承担多轮独立评估/规划，Haiku 承担 L1 hotfix 的精确编码。
 
 ---
 
 ## 一、先读清单（按序）
 
-1. **`BLUEPRINT_STATE.md`**——当前批次 `AIMEAL-B7FOLLOWUP-BLUEPRINTS-01`（本次新增，在最上面）；再往下能看到本次之前的治理收官批次历史。
-2. **`SESSION_交接.md`**（本文件）——当前状态与 ⏭下一步。
-3. **`projectReview/features/F-AI-MEAL.md`**——AI 记一餐单功能全景图，本次改动的现状/待办/已知问题都已同步进这里，比翻 commit history 更快。
-4. **`projectReview/08_决策记录.md` D-24**——本次日志门禁走单点收口、NDJSON 协议容错"自愈不放松"两条设计取舍的完整推理，含交付前审查追记（两个真实阻断的教训）。
-5. **3 份实施蓝图**（`.ai-context/docs/feature/`）：
-   - `AI记一餐_死代码清理与菜系兜底_实施蓝图.md`（批A，`BLUEPRINT_READY`）
-   - `AI记一餐_协议扩展_菜系标签做法透传_实施蓝图.md`（批B，`BLUEPRINT_READY`）
-   - `AI记一餐_确认页展开UI_实施蓝图.md`（批C，`PENDING_UX_DESIGN`，部分蓝图，不可直接执行）
-6. **真机验证**：`.ai-context/docs/真机验证/真机待验证清单_202608182200.md`（本次新增 `E-B7F-01~05`；存量积压 `E-L1-01~12`/`E-K1I-01~02` 等 ~95+ 项仍未验证，是这条主线最大的未知数）。
-7. **`06_问题与踩坑.md`**"AI 记一餐 B7 后续批 + 3 项延后决策蓝图化"段——4 条本次提炼的可复用红线（已同步写入项目根 `CLAUDE.md` 踩坑红线区）。
+1. **`SESSION_交接.md`**（本文件）——当前状态与 ⏭下一步。
+2. **`08_决策记录.md` D-25**——全景图纵轴改文件夹 + 新鲜度机械门禁的完整设计依据（四轮评估+用户三条拍板+与既有决策 D-18/D-19/D-20/D-21/D-23 的关系对照表），比翻本次全部对话记录快得多。
+3. **`.ai-context/tools/feature_sync_check.py` 文件头注释**——新机制的机械检查工具，C1~C6 六项检查的判定逻辑与 CLI 用法。
+4. **`projectReview/features/`**——13 个功能文件夹的实际样子（先看任意一个的 `README.md` 建立直觉）。
+5. **`真机验证/真机待验证清单_202608182200.md`**——L1 hotfix 相关的 `E-L1-03`/`E-L1-06`/`E-L1-11` 三项待你真机复验，文件头新增了"功能归属"说明段。
+6. **`06_问题与踩坑.md`"L1 hotfix v1.1 + 全景图纵轴改文件夹与机械新鲜度门禁"段**——本次 8 条可复用经验（Compose 弹层契约核对、`git mv` 自动暂存陷阱、多轮独立评估会互相推翻、发现重复系统时该合一、零默认值配置设计、交付前自我复核抓真bug、角色分工 Opus规划-Sonnet执行、长会话压缩前主动落盘）。
 
 ---
 
 ## 二、工作规则（当前任务域）
 
-- **批A/批B蓝图执行前必读 §4.1**：两份蓝图在 `AutoGenModels.kt`/`DishAutoGenerator` 上有共享改动点，各自都有"先 grep 判定对方是否已落地"的幂等分支——CODE 执行任一批前必须先读**两份**蓝图的 §4.1（不能只读自己要执行的那一份），按判定结果决定哪些 STEP 要跳过。这是本次 GC-37 独立挑战抓出的真实编译冲突点，蓝图文本已修好，但依赖 CODE 严格按判定走，不能凭假设跳过判定步骤。
-- **批C 不可执行**：状态 `PENDING_UX_DESIGN`，§6/§7/§8 UI 细节留白。依赖链：批B 落地 → 真机验证 AI 实际填充率（批B §9 强制项）→ `apple_ux_designer` 门禁 → 补全批C §6/§7/§8 → 转 `BLUEPRINT_READY` → 才能进 CODE。不得跳步。
-- **改动触达 `androidApp/` 层必须双跑单测**：`:shared:testDebugUnitTest` **与** `:androidApp:testDebugUnitTest` 都要显式列进验收命令，不能因改动主体在 shared 就默认省略后者（本次 B7 后续批就因为漏跑后者，被 `google_quality_engineer` 首轮审查揪出一个真实回归）。
-- **代码质量门禁不变**：CODE 完成、构建+单测通过后走 `google_quality_engineer` 终审，阻断必修复复验；本次两批（B7 后续批本身、以及蓝图起草阶段的 GC-37 独立挑战）都证明这道门禁/独立视角复核是真的在拦真问题，不是走过场，不能因为"这批看起来简单"而降级或跳过。
+- **全景图 Project Truth 唯一权威是 `projectReview/features/`**，`project_graph/` 已于本次整体归档（`_archive/project_graph_20260819/`），**不再被任何工具/流程引用**——历史资料可查，但不要在新任务里再去读它当作当前状态的依据。
+- **纵轴功能文件夹的机械门禁尚未真正挂上强制关卡**：`feature_sync_check.py --range` 已写好且验证有效，但目前 cookbook 还没有一个批次真正把它接进 `BLUEPRINT_STATE.md` 的"全景图回写"字段走一遍完整流程（D-25 设计的挂载点是"批次转 ACCEPTED 时"，下一个真实批次收口时才是第一次实战检验，注意留痕）。
+- **改动触达 `androidApp/`/`shared/` 代码时，验收命令必须显式列出两个模块的单测**（沿用既有红线，本次 L1 hotfix 已按此执行）。
+- **`git mv` 之后想分开提交，先 commit 掉 mv 那批，再开始下一批 `git add`**（本次真实踩过，见 `06` 新增红线，已写入 CLAUDE.md 踩坑区）。
 - 其余通用规则见 `.ai-context/rules/通用规则.md` + 全局 `~/.ai-context/GLOBAL.md`。
 
 ---
 
 ## 三、当前状态
 
-### 本次完成的工作（均已确认，B7 后续批已 commit+push；3 份蓝图待本次交接后一并提交）
+### 本次完成的工作（均已确认，两批均已提交并推送到各自远端）
 
 | # | 工作 | 产出/commit | 状态 |
 |---|---|---|---|
-| ① | B7 后续批：日志门禁+标签清洗+回归测试+死代码清理+NDJSON协议容错 | `cc806cb3`（已推送） | 已交付，经两轮 `google_quality_engineer` 审查（首轮 2 阻断，复验通过） |
-| ② | 3 项延后决策出正式实施蓝图（批A/B/C） | `.ai-context/docs/feature/` 3 个文件 | 批A/批B `BLUEPRINT_READY`（已过 GC-37 独立挑战）；批C `PENDING_UX_DESIGN` |
-| ③ | GC-37 独立挑战复核并修订蓝图 | 批A 4 项、批B 7 项 CONFIRMED-ISSUE 全部处置 | 完成 |
-| ④ | 登记进 `BLUEPRINT_STATE.md` | 新批次 `AIMEAL-B7FOLLOWUP-BLUEPRINTS-01` | 完成 |
-| ⑤ | 经验总结（zongjie） | `06_问题与踩坑.md`+`07_操作记录.md`+`INDEX.md`+项目 `CLAUDE.md` 踩坑红线 | 完成（本次） |
-| ⑥ | 会话交接（本文件） | — | 进行中 |
+| ① | L1 hotfix v1.1：E-L1-03/E-L1-06 真实缺陷 + 复审追加兄弟场景 | cookbook `c2ab8593`（已推送） | 已交付，`google_quality_engineer` 复审 0 阻断，新增回归测试验证过红→绿 |
+| ② | 全景图纵轴改文件夹 + 新鲜度改机械门禁（D-25） | cookbook `13a4da82`（已推送），164 文件 | 已交付，`--struct`/`--range`/`--backlog`/`--emit-index` 四模式全部真实验证通过 |
+| ③ | 通用化提取到 `~/.ai-context` | ai-share `00483b9`+`1ec7283`（已推送） | 已交付，用 cookbook 真实数据验证外部配置版本与本地写死版本结果一致 |
+| ④ | 经验总结（zongjie） | `06_问题与踩坑.md`+`07_操作记录.md`+`INDEX.md`+项目 `CLAUDE.md` 踩坑红线 | 完成（本次） |
+| ⑤ | 会话交接（本文件） | — | 进行中 |
 
-### B7 后续批交付细节回顾（`cc806cb3`）
+### L1 hotfix v1.1 交付细节回顾（`c2ab8593`）
 
-- **S1 标签清洗**：`DishRepository.saveDish` 的 `tagNames` 补 trim+去空过滤。
-- **日志门禁**：`AppLogger.write()` 单点加 debug 门禁；两处防御性异常不再拼具体菜名/食材名；VM 日志调用去重复拼接。
-- **S3 回归测试**：`T-B7-02`（REUSE 不覆盖原菜）、`T-B7-03`（steps 端到端落库）。
-- **S2 决策**：`DishJson.cuisine` 默认值 `"家常菜"→""`，本批不做真透传（留给批B）。
-- **S4**：删除死代码 `AiMealRecorder.kt`+DI 注册；4 个无生产调用方文件加警示注释。
-- **透明准则子集**：确认页新增"本次将新建 X 道菜、Y 种食材"文案。
-- **NDJSON 协议容错（核心）**：`DiagnosticCode` 分类人话化诊断；`meal_id` 自愈归一（date/slot 独立合法时按其归一而非整条拒绝）；`dish_id` 本地序号化（顺带修复 AI 复用 dish_id 给不同名菜时的静默覆盖隐藏 bug）。
-- **交付前审查修复 2 项阻断**：①`canonicalMealId` 别名优先级颠倒致真实餐次被劫持（已改为"真实存在的 key 永远优先于别名表"）；②段级失败诊断被新分类逻辑漏接静默丢弃 + 漏跑 `:androidApp:testDebugUnitTest`（已补齐兜底分支 + 补跑）。
+- **E-L1-03**：`onReenableConsent` 直接打开完整同意面板未带入已保存密钥，`grantConsent` 无条件写回导致密钥被空串覆盖清空。修复：先取 `reenableKeyDraft(state.keyByVendor, vendor)`；密钥已删除时改引导去填而非直接弹"已启用"假成功提示。
+- **E-L1-06**：换厂商轻量确认框内"看看发送哪些内容"链接的 `onClick` 里多写了 `vendorConfirmOpen = false`，把外层确认框一并关闭。修复：只置内层只读披露面板的开关，两个独立 `Dialog` 天然可叠加。
+- `grantConsent` 加空 Key 免疫（`if key.isNotBlank()`），纵深防御。
+- 真机验证清单：E-L1-03/E-L1-06/E-L1-11 三项状态回退为 🔧 待复验，E-L1-12 保持"通过"。
 
-### 3 份蓝图内容回顾
+### 全景图重构细节回顾（`13a4da82`，D-25）
 
-- **批A**（死代码清理+cuisine落库兜底）：删 4 死文件+1死测试；`DishAutoGenerator.commit()` 加 `cuisine = preview.cuisine.ifBlank { Cuisines.HOME }` 兜底（解决 AI 建菜 `source='ai'` 不在存量自建菜回填 `WHERE source='user'` 范围内、永久缺席菜系筛选 Tab 的问题）。
-- **批B**（协议扩展）：NDJSON `dish` 事件新增 `cuisine`/`tags`/`steps` 三个可选字段，全链路打通到落库；新增 `CuisineNormalizer` 白名单归一；prompt 改写。**不收** `description`/`meal_slots`（用户拍板，理由见批B §1.3/`08_决策记录.md`）。
-- **批C**（确认页展开UI）：仅交付"移交 apple_ux_designer 的功能性需求与约束清单"（9条硬约束），UI 视觉/交互规范留白待设计门禁产出。
+- **四轮独立 Opus 评估收敛路径**：①既有 STALE/ANCHOR-MISMATCH 机制设计合理，缺口在"发现问题后没人处理"；②用户"git diff 驱动更新"直觉证实有效但触发粒度错——不该逐 commit、该批次收口时检查；③深挖发现 `project_graph/`（Phase 1/2 已完成的独立系统）与 `projectReview` 实为重复系统，用户当场拍板"只要一份真相源"；④正式架构规划，产出可执行方案。
+- **落地**：`project_graph/` 整体归档；13 个功能从扁平 `.md` 改文件夹（`STATE.yml`+`README`+按需 `10_界面/20_实现/30_待办/40_缺陷/60_方案与决策`+`_archive/`）；新增 `feature_sync_check.py`（C1 UNMAPPED/C2 BEHIND/C3 FAKE-BUMP/C4 STRUCT/C5 BACKLOG软信号/C6 INDEX-STALE）；新增 `09_跨功能待办与战略.md`；6 个旧跨功能待办文件拆分（56条功能待办/11条缺陷/20条跨功能/81条归档）；`功能路径索引.md` 物理迁入 `projectReview/`，切成生成段+手写段；`PROJECT.md`/`BLUEPRINT_STATE.md`/`06`/`00`/`CLAUDE.md` 契约文件同步。
+- **收尾自我复核抓到真 bug**：ID 去重检查判据"当前位置≠已记录位置"在同文件内二次重复时恒假测不出，已修复检查逻辑并清理一条真实重复内容（`K1d` 待办项）。
+
+### 通用化提取细节回顾（ai-share `00483b9`）
+
+- 新增 `~/.ai-context/skills/project_review/tools/feature_sync_check.py`：唯一项目接入点 `--config`，暴露 `PRODUCT_DOMAIN_GLOBS`/`PRODUCT_EXCLUDE_GLOBS`/`TEST_PATH_NORMALIZATIONS`，**零默认值**，未配置直接报 `CONFIG-ERROR` 拒绝跑（不猜测）。
+- `SKILL.md` 新增纵轴完整生成流程（§3.4~§3.6）+ §7 机械门禁章节；核心红线"Project Truth 只能有一处"写入两处文档。
+- `框架规范.md` §三拆分横轴/纵轴，新增 §8.2。
+- cookbook 项目本地那份 `feature_sync_check.py` 保持原样不动，两边独立维护，未做任何回指关联。
 
 ---
 
 ## 四、⏭ 下一步
 
-无待用户决定项（3 份蓝图的产品决策已在起草前由用户拍板）。用户已明确下一步：
+**无待用户决定项**（本次三个批次的产品/架构决策均已在实施前拍板）。用户下一步可选、无强制顺序：
 
-1. **登记进 `BLUEPRINT_STATE.md`**——已完成（本次交接内完成）。
-2. **检查真机验证清单是否要更新**——已检查，本次交接（纯文档/蓝图批次）不产生新的真机验证项，无需更新。
-3. **总结经验 + 会话交接**——进行中（本文件）。
-4. **提交推送到远程**——待本文件写完后执行，commit message 用 `docs:` 前缀（纯文档/蓝图批次，非产品代码改动）。
-
-**再往后**（后续会话/另一台机器的工作）：
-1. 指派编码模型执行批A（建议先做，风险最低、决策最少）→ 批B（协议扩展）。
-2. 两批 CODE 完成后走 `google_quality_engineer` 终审（阻断必修复复验）。
-3. 批B 交付后**必须**真机验证 AI 实际填充率（cuisine/tags/steps 命中率、`TRUNCATED`/`PARSE_ERROR` 发生率）——这是批C 能否启动设计的前置输入。
-4. 拿到批B真机数据后走 `apple_ux_designer` 门禁，补全批C 蓝图转 `BLUEPRINT_READY`。
-5. **真机验证积压是这条主线最大的未知数**：`E-B7F-01~05`（本次新增）+ 存量 `E-L1-01~12`/`E-K1I-01~02` 等 ~95+ 项从未在真机走过，应与蓝图执行并行推进，不互相阻塞。
+1. **真机复验 E-L1-03/E-L1-06/E-L1-11**（真机验证清单已更新，直接照着走）。
+2. **下一个真实开发批次收口时，实战检验 `feature_sync_check.py --range` 机械门禁**——这是 D-25 设计出来但还没被真实批次踩过的环节，第一次实战可能暴露设计遗漏（如 §5.2 已知的 C2 粒度可能偏粗——纯重构/改名触发 NOOP 频率待观察，若 >50% 需要细化判据）。
+3. **cookbook 自己也有一处真实 UNMAPPED 待处理**：`AiSettingsScreen.kt`/`AiSettingsViewModel.kt`/`CloudAiSaveRoute.kt`（AI 设置/云端同意相关）目前不在任何功能的 `match:` 里，也不在任何横轴册的监视路径里——下次跑 `--range` 会被拦下，建议在那之前主动补一条 glob（大概率该路由到 `21_AI与网络请求策略` 的监视路径，因为这是跨 F-AI-MEAL/F-RECOMMEND/F-WEEKPLAN 的公共基础设施，不属于单一功能）。
+4. **`review_freshness.py` 对 `07_项目现状.md`/`功能路径索引.md` 报 `CONFIG-ERROR`**——这是预期内的良性提示，不是真问题：这两个文件已经从"人工维护+`review_freshness.py`页脚约定"转成"`feature_sync_check.py --emit-index` 机器生成"，页脚格式天然不再匹配旧工具的解析规则，它们的新鲜度现在由 `feature_sync_check.py`（尤其 C6）自己管，不需要 `review_freshness.py` 再管。如果这条提示影响观感，可以考虑给 `review_freshness.py` 加一条"跳过声明了『生成于』而非『最后更新』的文件"的识别规则，但这是锦上添花，不紧急。
+5. **是否要把这套机制推广到用户的其它项目**——通用版已就绪并验证过，具体哪个项目先用、什么时候用，由用户按需发起（说"生成项目说明书"即可触发）。
 
 ---
 
 ## 五、本轮沉淀
 
-- 决策：`08_决策记录.md` D-24（B7 后续批：日志门禁单点收口 + NDJSON 协议容错"自愈不放松"，含交付前审查追记）。
-- 经验：`06_问题与踩坑.md`"AI 记一餐 B7 后续批 + 3 项延后决策蓝图化"段（4 条：跨模块验证范围要显式列全、自愈逻辑现实优先于历史推导表、多蓝图共享改动点判定要覆盖全部调用点、GC-37 独立挑战两次实战均抓到真问题）——已同步提炼进项目根 `CLAUDE.md` 踩坑红线区。
-- 跨会话记忆：`agent-batch-checkpoint-strategy` 相关机制（fork 因会话限额中断、`SendMessage` 恢复同一 agent 续写）本次第二次实战验证有效，完整交付 3 份蓝图无内容损失。
+- 决策：`08_决策记录.md` D-25（全景图纵轴改文件夹 + 新鲜度改机械门禁，含四轮评估收敛路径、用户三条现场拍板、与 D-18/D-19/D-20/D-21/D-23 的关系对照表、残余风险诚实标注）。
+- 经验：`06_问题与踩坑.md`"L1 hotfix v1.1 + 全景图纵轴改文件夹与机械新鲜度门禁"段，8 条：Compose 弹层契约核对要逐入口做、独立 Dialog 叠加误关外层的笔误模式、复审揪出问题要顺带查兄弟场景、`git mv` 自动暂存陷阱、多轮独立评估会互相实质推翻不是简单确认、发现重复系统时该合一不该分层共存、跨项目工具零默认值配置优于给合理默认值、交付前最后一次自我复核仍可能抓到真bug、角色分工"已拍板决策落成文档"是执行工作、长会话压缩前主动把结论蒸馏成文件。
+- 跨会话记忆：`agent-batch-checkpoint-strategy`（长跑 agent 分批落盘+续连）本次未触发中断，但沿用同一原则主动做了一次"压缩前先落盘 manifest"的实践，效果符合预期（通用化提取阶段完整衔接，无信息丢失）。
 
 ---
 
 ## 六、全景图新鲜度（每次交接必填，禁止留空或写"待查"）
 
-> 跑 `python .ai-context/tools/review_freshness.py`。`ANCHOR-MISMATCH` 一律当场修；`STALE` 可 `DEFER` 但必须写到期批次。
+> 跑 `python .ai-context/tools/review_freshness.py --md` + `python .ai-context/tools/feature_sync_check.py --struct` + `python .ai-context/tools/feature_sync_check.py --backlog`。`ANCHOR-MISMATCH` 一律当场修；`STALE` 可 `DEFER` 但必须写到期批次。
 
 **最近一次执行（2026-08-19，本次交接时重跑）**：
 
+### 横轴（`review_freshness.py`）
+
 | 册 | 页脚 sha | 之后提交数 | 判定 | 处置 |
 |---|---|---|---|---|
-| 00_导读与索引 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
-| 01_架构与技术底座 | 742611ce | 6 | STALE(6) | DEFER → 下次交接判断是否需补核 |
-| 02_业务流程全景 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
-| 03_界面与交互 | 742611ce | 2 | STALE(2) | DEFER → 下次交接判断是否需补核 |
-| 04_数据层 | 742611ce | 1 | STALE(1) | DEFER → 下次交接判断是否需补核 |
-| 05_诊断地图 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
-| 06_约定与红线 | 1571183d | — | N/A（未声明监视路径/事实锚） | — |
-| 07_项目现状 | 742611ce | — | N/A（未声明监视路径/事实锚） | — |
-| 08_决策记录 | — | — | N/A（未声明监视路径/事实锚） | — |
-| 20_健康与算法逻辑 | 742611ce | 3 | STALE(3) | DEFER → 下次交接判断是否需补核 |
-| 21_AI与网络请求策略 | 742611ce | 28 | STALE(28) | **DEFER，但持续增长（上次26→本次28），建议下次 AI 记一餐相关大批次落地时优先补核**——本次+上次两轮都是 AI 记一餐主线密集改动，该册作为主案例来源理应更贴近现状 |
-| 22_预设与参考资料治理 | 742611ce | 0 | FRESH | — |
+| 00_导读与索引 | — | — | N/A（未声明监视路径/事实锚） | — |
+| 01_架构与技术底座 | 742611ce | 6 | STALE(6) | DEFER → 下次真实开发批次落地时优先补核 |
+| 02_业务流程全景 | 742611ce | — | N/A | — |
+| 03_界面与交互 | 742611ce | 2 | STALE(2) | DEFER → 下次交接判断 |
+| 04_数据层 | 742611ce | 1 | STALE(1) | DEFER → 下次交接判断 |
+| 05_诊断地图 | 742611ce | — | N/A | — |
+| 06_约定与红线 | — | — | N/A | — |
+| 07_项目现状 | None | — | **CONFIG-ERROR（预期内，见上方⏭下一步第4条，非真问题）** | 不处置，已知良性 |
+| 08_决策记录 | — | — | N/A | — |
+| 09_跨功能待办与战略 | — | — | N/A（本次新增册，未声明监视路径，设计如此） | — |
+| 20_健康与算法逻辑（专属） | 742611ce | 3 | STALE(3) | DEFER → 下次交接判断 |
+| 21_AI与网络请求策略（专属） | 742611ce | 28 | STALE(28) | **DEFER，持续增长（本次仍是28，与上次交接一致——本次改动未触及该册对应的 AI 记一餐主线代码），建议下次 AI 记一餐相关批次落地时优先补核** |
+| 22_预设与参考资料治理（专属） | 742611ce | 0 | FRESH | — |
+| 功能路径索引 | None | — | **CONFIG-ERROR（预期内，同 07，见上方⏭下一步第4条）** | 不处置，已知良性 |
 
-无 `ANCHOR-MISMATCH`（03/04 两个有声明监视锚的册"锚=全部一致"，退出码 2（仅 STALE，非确定性违规——本次改动是 AI 记一餐代码+蓝图批次，未做治理/文档以外的全景图重新走查，故不构成"重新走查"未上抬 sha）。下次交接重跑本命令覆盖本表。止损条件见 `projectReview/08` D-20。
+无 `ANCHOR-MISMATCH`。两个 `CONFIG-ERROR` 均为已知良性（生成物页脚格式与旧工具不匹配，新鲜度已转由 `feature_sync_check.py` C6 管理），不计入止损条件的"未处理问题"。
+
+### 纵轴（`feature_sync_check.py`，本次新增，D-25）
+
+- `--struct`：**[OK] 结构体检通过**（0 处结构问题，含 ID 去重）。
+- `--backlog`：**[OK] 无历史欠账**（13 个功能的 `synced_to` 均已跟到本次交付的最新 commit）。
+- `--range` 尚未在真实批次收口场景实战过，见⏭下一步第2条。
+
+止损条件见 `projectReview/08` D-20（横轴机制）与 D-25（纵轴机制新增的止损条件：C2 粒度、无 CI 场景仍需人主动跑等，见 D-25 §残余风险）。下次交接重跑本命令覆盖本表。
