@@ -1,0 +1,10 @@
+id: F-PANTRY
+name: 库存
+lifecycle: active
+headline: "✅ 库存份数已落地；部分子项真机待验（库存份数迁移、库存挂钩开关）。"
+synced_to: 511fa61c
+match:
+  - androidApp/**/ui/component/PantryHook*
+  - shared/**/data/repository/PantryRepository*
+  - shared/**/pantry/**
+notes: ""

@@ -1,0 +1,18 @@
+id: F-HEALTH
+name: 健康判定与忌口引擎
+lifecycle: active
+headline: "✅ 慢病深挖：高血压（钠罚 + 钾正向）、糖尿病（GI 罚 + 纤维正向）已落地。"
+synced_to: 511fa61c
+match:
+  - shared/**/ai/HealthRuleEngine*
+  - shared/**/ai/MemberDishHealthUseCase*
+  - shared/**/ai/MealHealthHintUseCase*
+  - shared/**/ai/ChronicDiseasePenalty*
+  - shared/**/domain/DietaryGuideline*
+  - shared/**/domain/StapleFood*
+  - shared/**/domain/SeasoningDefaults*
+  - shared/**/domain/NutritionGuesser*
+  - shared/**/domain/DishNameIngredientGuesser*
+  - shared/**/domain/model/MemberDishVerdict*
+  - androidApp/**/ui/reference/**
+notes: ""

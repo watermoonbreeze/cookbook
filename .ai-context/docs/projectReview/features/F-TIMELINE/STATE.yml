@@ -1,0 +1,9 @@
+id: F-TIMELINE
+name: 食历/时间线
+lifecycle: active
+headline: "✅ **已落地**，`FoodTimelineScreen`/`TimelineViewModel`，长期稳定运行。"
+synced_to: 511fa61c
+match:
+  - androidApp/**/ui/timeline/**
+  - androidApp/**/ui/component/DayMealCardView*
+notes: ""

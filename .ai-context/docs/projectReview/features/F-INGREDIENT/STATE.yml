@@ -1,0 +1,15 @@
+id: F-INGREDIENT
+name: 食材体系
+lifecycle: active
+headline: "✅ 食材库 + 分类 + 属性标签体系已落地。"
+synced_to: 511fa61c
+match:
+  - androidApp/**/ui/ingredients/**
+  - androidApp/**/ui/picker/Ingredient*
+  - shared/**/domain/FoodGroup*
+  - shared/**/domain/FoodAttribute*
+  - shared/**/domain/IngredientCrowdCare*
+  - shared/**/domain/MedicinalFoods*
+  - shared/**/data/repository/IngredientRepository*
+  - shared/**/data/repository/IngredientGroupRepository*
+notes: ""

@@ -1,0 +1,11 @@
+id: F-SYNC
+name: 双设备同步
+lifecycle: active
+headline: "✅ 备份导出、双设备选择性同步已落地；部分真机待验（备份同传、双设备选择性同步）。"
+synced_to: 511fa61c
+match:
+  - androidApp/**/ui/sync/**
+  - androidApp/**/sync/**
+  - shared/**/sync/**
+  - shared/**/platform/BackupManager*
+notes: ""

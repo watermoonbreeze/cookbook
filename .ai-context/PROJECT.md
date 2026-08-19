@@ -12,14 +12,14 @@
 ## 首读顺序与真相优先级
 
 1. 项目入口规则：仓库根 `AGENTS.md`（Codex）或 `CLAUDE.md`（Claude）。
-2. 项目视图与历史资料：`docs/projectReview/00_导读与索引.md`，再按其阅读路径下钻；Project Truth 仍以 Project Graph 为准。
-3. Project Truth 入口：`.ai-context/project_graph/README.md`、`.ai-context/project_graph/project.yaml`；Feature、WorkItem、Plan、Verification、Relation、CurrentWork 以 Project Graph 为准。
-4. 当前进行中状态：`docs/context_memory/SESSION_交接.md`；它是 Handoff Context，不覆盖 Project Graph 或已接受决策。
-5. 代码定位：`docs/功能路径索引.md`。
-6. 任务范围：`docs/feature/待办索引.md` 与相应专项文档；工程与踩坑：`docs/experience/INDEX.md`。
-7. 具体功能按需读 `docs/feature/`；架构、流程、数据、AI 和诊断按需读 `docs/projectReview/`。
+2. 项目视图与历史资料：`docs/projectReview/00_导读与索引.md`，再按其阅读路径下钻；Project Truth 即 `docs/projectReview/features/`（见下条）。
+3. Project Truth 入口：`docs/projectReview/features/<F-ID>/`（每功能一个文件夹：STATE.yml 机器状态锚 + README/10_界面/20_实现/30_待办/40_缺陷/60_方案与决策）；全项目一览生成视图 `docs/projectReview/07_项目现状.md`。**`.ai-context/project_graph/` 已于 2026-08-19 整体归档至 `_archive/project_graph_20260819/`，不再是 Project Truth，只读存档，不再被任何工具引用**（见 `08_决策记录.md` D-25）。
+4. 当前进行中状态：`docs/context_memory/SESSION_交接.md`；它是 Handoff Context，不覆盖 `projectReview/features/` 或已接受决策。
+5. 代码定位：`docs/projectReview/功能路径索引.md`（原 `docs/功能路径索引.md` 已物理迁移，「分功能落点」段由脚本生成、「跨功能基础设施」段手写）。
+6. 任务范围：`docs/projectReview/features/<F-ID>/30_待办.md`+`40_缺陷.md`（单功能）或 `docs/projectReview/09_跨功能待办与战略.md`（跨功能，原 `docs/feature/待办索引.md` 已迁移至此）；工程与踩坑：`docs/experience/INDEX.md`。
+7. 具体功能实施方案/蓝图按需读 `docs/feature/`（不含待办/状态，那些已迁 `projectReview/features/`）；架构、流程、数据、AI 和诊断按需读 `docs/projectReview/`。
 
-Phase 2 Frozen Truth Hierarchy：Runtime Truth（Code / DB / schema / runtime config）> Project Truth（Project Graph）> Decision Truth（Accepted Plan / ADR / Formal Blueprint）> Execution Extension（BLUEPRINT_STATE）> Handoff Context（SESSION）。任何“待实现”不等于已经存在于代码。
+Truth Hierarchy（2026-08-19 修订，D-25）：Runtime Truth（Code / DB / schema / runtime config）> Project Truth（`docs/projectReview/features/`）> Decision Truth（Accepted Plan / ADR / Formal Blueprint）> Execution Extension（BLUEPRINT_STATE）> Handoff Context（SESSION）。任何”待实现”不等于已经存在于代码。**Project Truth 层已从 Project Graph 移交 `projectReview/features/`**（原因：Project Graph 停摆在 2026-08-11 后再未更新，而 `projectReview/features/` 一直随真实开发批次同步；机制细节见 D-25）。
 
 ## 协作模式
 
@@ -39,9 +39,10 @@ Phase 2 Frozen Truth Hierarchy：Runtime Truth（Code / DB / schema / runtime co
 
 | 位置 | 内容与使用方式 |
 |---|---|
-| `docs/projectReview/` | 架构、流程、UI、数据、决策、诊断等项目视图与历史资料；Project Truth 仍以 Project Graph 为准。 |
+| `docs/projectReview/` | 架构、流程、UI、数据、决策、诊断等横轴视图 + `features/<F-ID>/` 纵轴功能文件夹；**Project Truth 权威载体**（见 D-25）。 |
 | `docs/context_memory/SESSION_交接.md` | 唯一当前会话接续入口；其他日期文件均为历史快照。 |
-| `docs/feature/` | 当前功能方案、待办、验收与唯一真机清单。 |
+| `docs/feature/` | 功能实施方案/蓝图文档（不含待办/状态，已迁 `projectReview/features/`）。 |
+| `docs/真机验证/真机待验证清单_<yyyyMMddHHmm>.md` | 唯一真机清单，内部按功能分节；各功能文件夹 `60_方案与决策.md` 只放链接不重复摘抄。 |
 | `docs/experience/` | 可复用工程经验与踩坑；由 `INDEX.md` 导航。 |
 | `docs/feature/_archive/` | 历史资料，只用于追溯，不能覆盖当前方案或状态。 |
 

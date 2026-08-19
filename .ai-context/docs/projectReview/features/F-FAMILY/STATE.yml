@@ -1,0 +1,11 @@
+id: F-FAMILY
+name: 家庭与健康档案
+lifecycle: active
+headline: "✅ 健康档案（家庭成员/慢病忌口/达标切换）已落地。"
+synced_to: 511fa61c
+match:
+  - androidApp/**/ui/family/**
+  - shared/**/data/repository/FamilyRepository*
+  - shared/**/data/repository/HealthProfileRepository*
+  - shared/**/domain/model/HealthMetrics*
+notes: ""
