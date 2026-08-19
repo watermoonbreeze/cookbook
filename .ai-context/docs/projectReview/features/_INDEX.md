@@ -1,6 +1,6 @@
 # features/_INDEX.md（生成视图）
 
-生成于 HEAD=4f208c93
+生成于 HEAD=0894c68c
 
 | Feature | lifecycle | 已跟到 |
 |---|---|---|

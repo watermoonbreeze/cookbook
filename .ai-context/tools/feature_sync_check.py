@@ -29,8 +29,10 @@ from pathlib import Path
 
 FEATURES_DIR = "docs/projectReview/features"  # 相对 .ai-context/
 FUNC_INDEX_PATH = "docs/projectReview/功能路径索引.md"  # 相对 .ai-context/
+CROSS_FEATURE_PATH = "docs/projectReview/09_跨功能待办与战略.md"  # 相对 .ai-context/
 GENERATED_BEGIN = "<!-- GENERATED:BEGIN -->"
 GENERATED_END = "<!-- GENERATED:END -->"
+BRIEF_MAX_LEN = 60  # 简要清单每条截断长度（字符数，CJK 近似）
 
 CHILD_WHITELIST = {"STATE.yml", "README.md", "10_界面.md", "20_实现.md", "30_待办.md", "40_缺陷.md", "60_方案与决策.md"}
 REQUIRED_CHILDREN = {"STATE.yml", "README.md"}
@@ -447,7 +449,36 @@ def emit_index(repo_root: Path, ai_context: Path, write: bool) -> int:
     for fid, headline, todo_n, bug_n, synced_to, behind in rows:
         index_07.append(f"| [{fid}](features/{fid}/) | {headline} | {todo_n} | {bug_n} | {synced_to} | {behind} |")
     index_07.append("")
-    index_07.append("## 跨功能项 → 见 [09_跨功能待办与战略](09_跨功能待办与战略.md)")
+
+    # 待办/缺陷简要清单：单文件汇总（用户 2026-08-19 明确要求"只想在一个里面看到所有的，不想逐个点进
+    # 功能文件夹" ——上面的计数表格解决了"有多少"，这里解决"是什么"）。只取一句话摘要，不含长「说明」，
+    # 详情仍需点进源文件——保持"每条待办只有一处权威描述"，这份清单是视图不是副本。
+    index_07.append("## 待办与缺陷简要清单（逐条一句话，来源=各功能 `30_待办.md`/`40_缺陷.md` + `09_跨功能待办与战略.md`）")
+    index_07.append("")
+    any_items = False
+    for fid, headline, todo_n, bug_n, synced_to, behind in rows:
+        fdir = features_dir / fid
+        todos = _extract_brief_items(fdir / "30_待办.md")
+        bugs = _extract_brief_items(fdir / "40_缺陷.md")
+        if not todos and not bugs:
+            continue
+        any_items = True
+        index_07.append(f"### [{fid}](features/{fid}/)")
+        for t in todos:
+            index_07.append(f"- 🔧 {t}")
+        for b in bugs:
+            index_07.append(f"- 🐛 {b}")
+        index_07.append("")
+    cross_items = _extract_brief_items(ai_context / CROSS_FEATURE_PATH)
+    if cross_items:
+        any_items = True
+        index_07.append("### 跨功能 · [09_跨功能待办与战略](09_跨功能待办与战略.md)")
+        for c in cross_items:
+            index_07.append(f"- 🔧 {c}")
+        index_07.append("")
+    if not any_items:
+        index_07.append("（暂无）")
+        index_07.append("")
     content_07 = "\n".join(index_07) + "\n"
 
     idx_features = ["# features/_INDEX.md（生成视图）", "", f"生成于 HEAD={head}", "",
@@ -488,6 +519,45 @@ def _count_table_rows(md: Path) -> int:
         if ID_TABLE_ROW_RE.match(line) and not line.strip().startswith("|---"):
             n += 1
     return n
+
+
+def _truncate_brief(text: str, max_len: int = BRIEF_MAX_LEN) -> str:
+    text = text.strip()
+    if len(text) <= max_len:
+        return text
+    cut = text[:max_len].rstrip()
+    # 源文本常含 `代码字体` 反引号：硬切可能切断一对反引号中间，留下奇数个——Markdown
+    # 会把后续整篇文档误渲染成代码字体，不是纯美观问题。退到最后一个未闭合反引号之前。
+    if cut.count("`") % 2 == 1:
+        cut = cut[: cut.rfind("`")].rstrip()
+    return cut + "…"
+
+
+def _extract_brief_items(md: Path) -> list[str]:
+    """从 30_待办.md/40_缺陷.md/09_跨功能待办与战略.md 提取一句话摘要列表（用于 --emit-index 的汇总清单）。
+    自由体顶层 bullet（`- ...`）原样截断一行；表格行（`| ID | 状态 | 项 | 说明 |`）取 ID+状态+项三列，
+    不含「说明」列——这是有意的："简要"是设计目标，完整上下文仍要点进源文件看，别让生成清单反过来变成
+    第二份要维护的详细文档（重复真相源）。"""
+    if not md.exists():
+        return []
+    items: list[str] = []
+    for line in md.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        m = ID_TABLE_ROW_RE.match(line)
+        if m:
+            item_id = m.group(1)
+            if item_id in ("ID", "---", ""):
+                continue
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            if len(cells) >= 3:
+                status, title = cells[1], cells[2].replace("**", "")
+                items.append(_truncate_brief(f"[{item_id}] {status} {title}"))
+            continue
+        if stripped.startswith("- ") and not stripped.startswith("（"):
+            items.append(_truncate_brief(stripped[2:].replace("**", "")))
+    return items
 
 
 # ---- --backlog：C5 历史欠账软信号 ------------------------------------------------------------
