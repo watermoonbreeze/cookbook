@@ -109,7 +109,17 @@ fun AiSettingsScreen(
                         onShowGuide = { guideOpen = true },
                         onShowStatusDetail = { readonlyPanelOpen = true }, // [AI修改] L1："发送哪些内容"
                         onCloseCloudAi = { closeSheetOpen = true }, // [AI修改] L1：常驻状态块"关闭"
-                        onReenableConsent = { consentPanelOpen = true }, // [AI修改] L1：DECLINED 后"重新启用"
+                        onReenableConsent = {
+                            val draft = reenableKeyDraft(state.keyByVendor, vm.selectedModel().vendor)
+                            if (draft.isBlank()) {
+                                // [AI修改] hotfix v1.1 E-L1-03兄弟场景：密钥已被删除，没有"重新启用"的资格，引导先补填 Key
+                                //   （填完后 KeyDialog.onConfirm 的 routeOnSave 会判到 FULL_CONSENT，走正常首次同意路径）。
+                                keyDialogOpen = true
+                            } else {
+                                pendingKeyDraft = draft
+                                consentPanelOpen = true
+                            }
+                        }, // [AI修改] L1：DECLINED 后"重新启用"
                     )
                 }
                 com.sxdbsm.cookbook.android.ui.component.InsetDivider(startIndent = 48)
@@ -153,7 +163,7 @@ fun AiSettingsScreen(
         )
     }
 
-    // [AI修改] L1：轻量换厂商确认（同意已满足但 vendor 未确认）。"看看发送哪些内容"下钻只读面板，不自动弹回（§5.1 显式简化）。
+    // [AI修改] L1：轻量换厂商确认（同意已满足但 vendor 未确认）。"看看发送哪些内容"下钻只读面板，叠在换厂商确认框之上，关闭后外层原样可继续操作（§5.1"不自动弹回"简化已被 hotfix v1.1 E-L1-06 推翻，见主蓝图 §5.1 标注）。
     if (vendorConfirmOpen) {
         val model = vm.selectedModel()
         AlertDialog(
@@ -169,7 +179,8 @@ fun AiSettingsScreen(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .clickable {
-                                vendorConfirmOpen = false
+                                // [AI修改] hotfix E-L1-06：不关闭外层"切换到 xxx"确认框——CloudAiConsentPanel 是独立 Dialog，
+                                //   天然可叠在 AlertDialog 之上，"知道了"关闭后外层确认框应原样保留可继续操作。
                                 readonlyPanelOpen = true
                             }
                             .padding(vertical = 2.dp),
@@ -216,7 +227,7 @@ fun AiSettingsScreen(
         )
     }
 
-    // [AI修改] L1：只读态披露面板（常驻状态块"发送哪些内容"入口）。"知道了"关闭后不自动弹回换厂商确认框（§5.1 显式简化）。
+    // [AI修改] L1：只读态披露面板（常驻状态块"发送哪些内容"入口）。只读面板本就叠在换厂商确认框之上（若从该入口打开），"知道了"只关自己，外层原样保留（hotfix v1.1 E-L1-06）。
     if (readonlyPanelOpen) {
         val model = vm.selectedModel()
         CloudAiConsentPanel(

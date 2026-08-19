@@ -25,3 +25,7 @@ fun routeOnSave(consent: CloudAiConsent, vendor: String, key: String): SaveRoute
 /** [AI生成] v2b：AI 设置页常驻状态块是否渲染（INV-L1-10），抽纯函数供 JVM 单测覆盖（蓝图 §10 v2 挑战第19项）。 */
 fun shouldShowCloudStatusBlock(consent: CloudAiConsent, keyByVendor: Map<String, String>, vendor: String): Boolean =
     consent.status == ConsentStatus.GRANTED && keyByVendor[vendor].orEmpty().isNotBlank()
+
+/** [AI生成] 重新启用云端 AI 时应带入的 Key 草稿——沿用已保存的 Key，不清空（回应真机 E-L1-03）。（INV-L1-12，回应真机 E-L1-03） */
+fun reenableKeyDraft(keyByVendor: Map<String, String>, vendor: String): String =
+    keyByVendor[vendor].orEmpty()

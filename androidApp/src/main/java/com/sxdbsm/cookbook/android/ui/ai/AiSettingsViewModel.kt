@@ -87,7 +87,7 @@ class AiSettingsViewModel(private val config: AiRuntimeConfig) : ViewModel() {
             )
             config.setCloudAiConsent(next)
             state = state.copy(cloudAiConsent = next)
-            onSaveVendorKey(vendor, key)
+            if (key.isNotBlank()) onSaveVendorKey(vendor, key) // [AI修改] hotfix v1.1：空Key不覆盖已存Key（INV-L1-05 精神：清空动作不该经此函数发生）
         }
     }
 

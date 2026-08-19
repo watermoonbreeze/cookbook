@@ -9,7 +9,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * L1 蓝图 §8.2：`routeOnSave`/`shouldShowCloudStatusBlock` 纯函数单测（JVM，无需 Compose/Robolectric）。
+ * L1 蓝图 §8.2：`routeOnSave`/`shouldShowCloudStatusBlock`/`reenableKeyDraft` 纯函数单测（JVM，无需 Compose/Robolectric）。
  *
  * INV-L1-04/05/08/10——分流逻辑从 Composable 抽出纯函数后可直接 JVM 单测（蓝图 §10 C-19）。
  * [AI生成] L1。
@@ -73,5 +73,17 @@ class CloudAiSaveRouteTest {
         assertFalse(shouldShowCloudStatusBlock(CloudAiConsent(status = ConsentStatus.DECLINED), mapOf("zhipu" to "sk-abc"), "zhipu"))
         assertFalse(shouldShowCloudStatusBlock(CloudAiConsent(status = ConsentStatus.NOT_ASKED), mapOf("zhipu" to "sk-abc"), "zhipu"))
         assertFalse(shouldShowCloudStatusBlock(CloudAiConsent(status = ConsentStatus.GRANDFATHER_PENDING), mapOf("zhipu" to "sk-abc"), "zhipu"))
+    }
+
+    // ── hotfix E-L1-03：reenableKeyDraft ──
+
+    @Test
+    fun `T-L1-03a reenableKeyDraft在已配置Key时返回该Key`() {
+        assertEquals("sk-abc123", reenableKeyDraft(mapOf("zhipu" to "sk-abc123"), "zhipu"))
+    }
+
+    @Test
+    fun `T-L1-03b reenableKeyDraft在该厂商未配置Key时返回空串`() {
+        assertEquals("", reenableKeyDraft(mapOf("deepseek" to "sk-xyz"), "zhipu"))
     }
 }

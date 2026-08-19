@@ -172,4 +172,12 @@ class AiSettingsViewModelConsentTest {
         // "云端 AI 已被你关闭 · 重新启用 ›"行渲染判据：type==CLOUD && status==DECLINED（与 CloudSection 内联条件一致）
         assertTrue(vm.state.type == AiRuntimeType.CLOUD && vm.state.cloudAiConsent.status == ConsentStatus.DECLINED)
     }
+
+    @Test
+    fun `T-L1-03 grantConsent以空Key调用不得清空已保存Key`() = runVmTest { vm, config ->
+        config.setVendorApiKey("zhipu", "sk-keep")
+        vm.grantConsent("zhipu", "", ConsentSource.EXPLICIT_FIRST_ENABLE)
+        awaitUntil { config.cloudAiConsent().status == ConsentStatus.GRANTED }
+        assertEquals("sk-keep", config.vendorApiKey("zhipu"))
+    }
 }
