@@ -155,6 +155,7 @@ fun AddDayFoodScreen(
     aiPickedDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐回传给餐次块的菜品 id。
     onAiPickedConsumed: () -> Unit = {},
     vm: AddMealViewModel = koinViewModel(),
+    embedded: Boolean = false,
 ) {
     // [AI修改] 页面订阅 ViewModel 状态，任何字段变化都会触发相关 UI 重组。
     val state by vm.state.collectAsStateWithLifecycle()
@@ -188,11 +189,15 @@ fun AddDayFoodScreen(
     //   在返回后的目标页(食历/首页)显示,替代原离页即散的 Toast。本地 snackbar 只用于留页的撤销条。
     val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current
     // [AI生成] §9.17：未保存返回守卫(复用 UnsavedGuard)——厨房场景误触返回易丢这餐编辑。
-    val requestBack = com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard(
-        isDirty = { vm.isDirty() },
-        onConfirmLeave = onBack,
-        dialogText = "你的改动还没保存，返回将丢失。", // [AI修改] 文案:统一到 UnsavedGuard 默认文案(守卫措辞全项目一致)
-    )
+    val requestBack = if (embedded) {
+        onBack
+    } else {
+        com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard(
+            isDirty = { vm.isDirty() },
+            onConfirmLeave = onBack,
+            dialogText = "你的改动还没保存，返回将丢失。", // [AI修改] 文案:统一到 UnsavedGuard 默认文案(守卫措辞全项目一致)
+        )
+    }
 
     // [AI生成] AI 推荐从餐次块进入并"选它"回传：把菜品加入发起的那个餐次块。
     LaunchedEffect(aiPickedDishIds) {
@@ -235,6 +240,7 @@ fun AddDayFoodScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 避免页面 Scaffold 和根 Scaffold 重复避让系统栏。
         snackbarHost = { SnackbarHost(snackbar) }, // [AI生成] A6：移除撤销
         topBar = {
+            if (!embedded) {
             // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛。[AI修改] 家族化 P3/§9.13:保存 CTA 从顶栏右上下移底部 FormBottomBar。
             com.sxdbsm.cookbook.android.ui.component.AppTopBar(
                 title = "添加餐食",
@@ -259,10 +265,12 @@ fun AddDayFoodScreen(
                     }
                 },
             )
+            }
         },
         // [AI修改] 家族化 P3(§9.13/基调§一.1):保存/主 CTA 永远在底部胶囊常驻。
         //   navBarPadding=false——本页是 MainScaffold 无底栏路由,已在 NavHost 层加过 navigationBarsPadding(见 MainScaffold:175),此处不再消费防双下边距。
         bottomBar = {
+            if (!embedded) {
             com.sxdbsm.cookbook.android.ui.component.FormBottomBar(
                 primaryText = if (state.isPlan) "保存计划" else "保存",
                 // [AI修改] D-07(用户2026-07-18二次确认):所有保存餐食(记一餐/实录 与 计划)都先弹预览确认再存。
@@ -270,6 +278,7 @@ fun AddDayFoodScreen(
                 primaryEnabled = state.canSave,
                 navBarPadding = false,
             )
+            }
         },
     ) { padding ->
         Column(
@@ -580,7 +589,7 @@ fun AddDayFoodScreen(
     }
 
     // [AI生成] K1 AI快捷输入记餐 Sheet：始终可见，ViewModel 参数化传入空初始文本
-    if (aiSheetOpen) {
+    if (!embedded && aiSheetOpen) {
         val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel(
             key = "ai-meal-${state.date}-$aiSheetOpenNonce", // [AI修改] 日期切换后重新打开必须重新注入 targetDate。
         ) { parametersOf("", state.date) }

@@ -51,6 +51,7 @@ fun WeekPlanScreen(
     onOpenDish: (Long) -> Unit = {},
     initialDate: LocalDate? = null, // [AI生成] 报告空周期跳入时定位到该日期所在周(空=从今天所在周)
     vm: WeekPlanViewModel = koinViewModel(),
+    embedded: Boolean = false,
 ) {
     val ui by vm.uiState.collectAsStateWithLifecycle()
     // [AI生成] 带目标日期进入→定位到该周(仅一次·initialDate 变化才重跳)。
@@ -59,11 +60,13 @@ fun WeekPlanScreen(
 
     Scaffold(
         topBar = {
+            if (!embedded) {
             // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛。
             com.sxdbsm.cookbook.android.ui.component.AppTopBar(
                 title = "一周计划",
                 onBack = onBack,
             )
+            }
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {

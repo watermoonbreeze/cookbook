@@ -192,10 +192,46 @@ fun AiMealInputSheet(
     }
 }
 
+/**
+ * AI 记餐业务内容的全屏复用入口。
+ *
+ * [AI修改] UEN：统一添加餐食页面只复用阶段分发和输入/预览内容，不再嵌套
+ * ModalBottomSheet；状态仍由同一个 AiMealInputViewModel 持有。
+ */
+@Composable
+fun AiMealBody(
+    vm: AiMealInputViewModel,
+    onSaved: (AiMealInputUiState) -> Unit = {},
+) {
+    val state by vm.state.collectAsStateWithLifecycle()
+    val snackbar = LocalAppSnackbar.current
+
+    LaunchedEffect(Unit) {
+        vm.refreshEngineStatus()
+        vm.snackbarEvent.collect { action ->
+            snackbar?.showUndo(action.message, action.actionLabel, onUndo = action.onAction)
+        }
+    }
+
+    when (state.phase) {
+        AiMealPhase.INPUT -> InputPhase(vm, state, showHeader = false, showModeSelector = false)
+        AiMealPhase.GENERATING, AiMealPhase.PARTIAL_READY -> GeneratingPhase(state)
+        AiMealPhase.PREVIEW_READY -> PreviewPhase(vm, state)
+        AiMealPhase.SAVING -> SavingPhase()
+        AiMealPhase.DONE -> LaunchedEffect(state.phase) { onSaved(state) }
+        AiMealPhase.ERROR -> ErrorPhase(vm, state)
+    }
+}
+
 /** [AI修改] B4: 输入阶段——快速记/周期记双模式。 */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
+private fun InputPhase(
+    vm: AiMealInputViewModel,
+    state: AiMealInputUiState,
+    showHeader: Boolean = true,
+    showModeSelector: Boolean = true,
+) {
     val context = LocalContext.current
 
     // 剪贴板状态（仅快速记模式使用）
@@ -244,72 +280,65 @@ private fun InputPhase(vm: AiMealInputViewModel, state: AiMealInputUiState) {
             .padding(horizontal = 20.dp)
             .padding(bottom = 32.dp),
     ) {
-        // ── 标题栏（文字跟随模式） ──
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        if (showHeader) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                // [AI修改] Google质量复核：与右侧固定宽度的 IconButton 同处一个 SpaceBetween Row，
-                // 本 Row 必须限宽（weight 且不强制填满），否则标签+标题在窄屏/长模型名下会把说明按钮挤出可视区。
-                modifier = Modifier.weight(1f, fill = false),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.AutoAwesome,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp),
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = if (state.inputMode == InputMode.QUICK) "AI 快捷记一餐" else "AI 周期记一餐",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                // [AI新增] 引擎标签：始终展示当前会用 AI 还是规则解析，未刷新完成前不显示。
-                if (state.engineLabel.isNotBlank()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f, fill = false),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.AutoAwesome,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp),
+                    )
                     Spacer(Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                    ) {
-                        Text(
-                            text = state.engineLabel,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        )
+                    if (state.engineLabel.isNotBlank()) {
+                        Spacer(Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                        ) {
+                            Text(
+                                text = state.engineLabel,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            )
+                        }
                     }
                 }
+                IconButton(onClick = { showHelp = true }, modifier = Modifier.size(40.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = "操作说明",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
-            IconButton(onClick = { showHelp = true }, modifier = Modifier.size(40.dp)) {
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = "操作说明",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
+            Spacer(Modifier.height(12.dp))
         }
 
-        Spacer(Modifier.height(12.dp))
-
         // ── [B4] 模式切换 SegmentedControl ──
-        SegmentedControl(
-            options = listOf("快速记", "周期记"),
-            selectedIndex = if (state.inputMode == InputMode.QUICK) 0 else 1,
-            onSelect = { index ->
-                vm.setInputMode(if (index == 0) InputMode.QUICK else InputMode.WEEK)
-            },
-        )
-
-        Spacer(Modifier.height(16.dp))
+        if (showModeSelector) {
+            SegmentedControl(
+                options = listOf("快速记", "周期记"),
+                selectedIndex = if (state.inputMode == InputMode.QUICK) 0 else 1,
+                onSelect = { index ->
+                    vm.setInputMode(if (index == 0) InputMode.QUICK else InputMode.WEEK)
+                },
+            )
+            Spacer(Modifier.height(16.dp))
+        }
 
         // ── [B4] 按模式分叉输入区 ──
         when (state.inputMode) {

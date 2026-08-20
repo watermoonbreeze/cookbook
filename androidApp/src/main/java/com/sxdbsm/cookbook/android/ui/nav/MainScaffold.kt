@@ -8,6 +8,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -26,6 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sxdbsm.cookbook.android.ui.addmeal.AddDayFoodScreen
+import com.sxdbsm.cookbook.android.ui.addmeal.UnifiedAddMealScreen
 import com.sxdbsm.cookbook.android.ui.kitchen.CookingTimerScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiRecommendScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiSettingsScreen
@@ -160,7 +162,7 @@ fun MainScaffold(
             if (showBottomBar) BottomBar(
                 nav = nav,
                 currentRoute = currentRoute,
-                onAddMeal = { nav.navigate(Routes.addMeal()) },
+                onAddMeal = { nav.navigate(Routes.UNIFIED_ADD_MEAL) },
             )
         },
     ) { padding ->
@@ -428,6 +430,9 @@ fun MainScaffold(
                     },
                 )
             }
+            composable(Routes.UNIFIED_ADD_MEAL) {
+                UnifiedAddMealScreen(nav = nav)
+            }
             composable(
                 route = Routes.NEW_DISH,
                 arguments = listOf(
@@ -482,49 +487,39 @@ private const val KEY_CREATED_DISH_ID = "createdDishId" // [AI生成] 添加餐�
  */
 @Composable
 private fun BottomBar(nav: NavController, currentRoute: String?, onAddMeal: () -> Unit) {
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        // [AI修改] 沉浸式：去掉圆角裁剪，让底栏背景铺满到屏幕底边(延伸到系统导航栏下)，内容由默认 navigationBars inset 顶上去。
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        bottomTabs.take(2).forEach { tab ->
-            NavigationBarItem(
-                selected = currentRoute == tab.route,
-                onClick = {
-                    nav.navigateRootTab(tab.route)
-                },
-                icon = { Icon(tab.icon, contentDescription = tab.label) },
-                label = { Text(tab.label, style = MaterialTheme.typography.labelMedium) },
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                ),
-            )
+        Surface(
+            modifier = Modifier.weight(1f).height(58.dp),
+            shape = RoundedCornerShape(29.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 4.dp,
+        ) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                bottomTabs.forEach { tab ->
+                    NavigationBarItem(
+                        modifier = Modifier.weight(1f),
+                        selected = currentRoute == tab.route,
+                        onClick = { nav.navigateRootTab(tab.route) },
+                        icon = { Icon(tab.icon, contentDescription = tab.label, modifier = Modifier.size(22.dp)) },
+                        label = { Text(tab.label, style = MaterialTheme.typography.labelSmall) },
+                        alwaysShowLabel = true,
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    )
+                }
+            }
         }
-        // [AI修改] 中间加号融入 NavigationBar 正中，不再悬浮在导航栏上方。
-        NavigationBarItem(
-            selected = false,
-            onClick = onAddMeal,
-            icon = { CenterPlusFab(onClick = onAddMeal) },
-            label = { Spacer(Modifier.height(0.dp)) },
-            alwaysShowLabel = false,
-        )
-        bottomTabs.drop(2).forEach { tab ->
-            NavigationBarItem(
-                selected = currentRoute == tab.route,
-                onClick = {
-                    nav.navigateRootTab(tab.route)
-                },
-                icon = { Icon(tab.icon, contentDescription = tab.label) },
-                label = { Text(tab.label, style = MaterialTheme.typography.labelMedium) },
-                colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                ),
-            )
-        }
+        CenterPlusFab(onClick = onAddMeal)
     }
 }
 

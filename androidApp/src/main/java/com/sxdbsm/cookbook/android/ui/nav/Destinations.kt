@@ -19,6 +19,7 @@ object Routes {
     // [AI生成] 打开食历并可选定位到某日期(空=默认今天)。
     fun timelineAt(date: String? = null) = "timeline_full?date=${date.orEmpty()}"
     const val ADD_MEAL = "addmeal?date={date}&dishIds={dishIds}&copyFrom={copyFrom}"
+    const val UNIFIED_ADD_MEAL = "unified_add_meal" // [AI生成] UEN：统一添加餐食全屏入口
     const val DISHES = "dishes"
     const val INGREDIENTS = "ingredients"
     const val SEARCH = "search"
