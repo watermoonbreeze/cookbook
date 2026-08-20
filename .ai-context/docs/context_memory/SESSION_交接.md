@@ -1,18 +1,19 @@
 # 🔖 SESSION 交接入口
 
-> 更新时间：**2026-08-20（同日第四次）· 统一添加入口 + 悬浮导航栏方案讨论完毕，实施蓝图已出，交给远程主机 luna 落地编码**
-> 当前工作域：延续同日前三次交接（`edbaa711`/`b71bce13`/`9cc864c9`）之后，用户开了新话题——App 里"添加餐食"入口太碎（首页+号只管单天手动、AI快捷记藏在顶栏、周期记和一周计划各自独立）+ 导航栏太高，要求方案讨论。本次走了"讨论→用户拿去网页版ChatGPT出方案→我审核ChatGPT方案+补代码级事实校正→出实施蓝图"的完整链路，**本 session 本身不写业务代码，只产出规划/蓝图文档**，实际编码交给用户远程主机上的 `luna` 执行。
-> 执行角色：本机 ARCH（Claude Sonnet）主导方案讨论、审核外部（ChatGPT）方案、补代码级事实校正、出蓝图；`dev_research_engineer` 子智能体独立完成 Material3 升级可行性调研（部分结论因本环境网络限制未闭环，已标注）。
+> 更新时间：**2026-08-20（同日第五次）· 统一添加入口 + 悬浮导航栏蓝图已升级为项目 L7/48-GC 全量合规版，`BLUEPRINT_STATE.md` 已正式握手，TURN=CODE 交给远程主机 luna 落地编码**
+> 当前工作域：延续同日前三次交接（`edbaa711`/`b71bce13`/`9cc864c9`）之后，用户开了新话题——App 里"添加餐食"入口太碎（首页+号只管单天手动、AI快捷记藏在顶栏、周期记和一周计划各自独立）+ 导航栏太高，要求方案讨论。走了"讨论→用户拿去网页版ChatGPT出方案→我审核ChatGPT方案+补代码级事实校正→出实施蓝图"的链路后，**用户当面指出蓝图交接漏了项目"蓝图模式"协议的两处硬要求**：①`BLUEPRINT_STATE.md` 握手状态文件未同步登记本批次、`TURN` 未设为 `CODE`；②蓝图本身未按 `12_多模型协作与实施蓝图规范.md` 的 L7/48-GC 全量模板成文（缺 §0.1 颗粒度勾销表/allowlist固定块/INV表/STEP编号脚本/测试矩阵等）。两处均已按用户选定方案（"补齐全量模板后再交付"）修复。**本 session 本身不写业务代码，只产出规划/蓝图文档**，实际编码交给用户远程主机上的 `luna` 执行。
+> 执行角色：本机 ARCH（Claude Sonnet）主导方案讨论、审核外部（ChatGPT）方案、补代码级事实校正、出 L7 全量蓝图、维护 `BLUEPRINT_STATE.md` 握手；`dev_research_engineer` 子智能体独立完成 Material3 升级可行性调研（部分结论因本环境网络限制未闭环，已标注）。
 
 ---
 
 ## 一、先读清单（按序）
 
 1. **`SESSION_交接.md`**（本文件）——当前状态与 ⏭下一步。
-2. **`.ai-context/docs/feature/统一添加入口+悬浮导航栏_实施蓝图.md`**——**这是交给 `luna` 执行的唯一权威实施文档**，本文件的"审核修正"部分（第3-9节）修正了 ChatGPT 原方案里一个不成立的假设（"四个 Body 各自独立需要四份 Draft 状态"，实际 AI 相关的单天/周期两格本来就共享同一个 `AiMealInputViewModel`），不要只看 ChatGPT 原文档而漏看这个修正。
-3. **`.ai-context/docs/外部方案/Cookbook_统一添加入口与悬浮导航栏_实现规格_20260820.md`** + **`Cookbook_统一添加入口_页面级交互与状态流转规格_20260820.md`**——ChatGPT 产出的原始方案（产品模型/2×2矩阵/悬浮栏dp规格/状态机骨架），已审核通过，蓝图第0节声明了与本文件冲突时以蓝图为准的优先级。
-4. **`F-AI-MEAL/30_待办.md` 的 `AIMEAL-UX-REDESIGN` 条目④**——统一入口范围决策的完整历史（承载形式/2×2矩阵/收编范围/AI推荐不并入/`AiPlanScreen`死代码误判已撤回）。
-5. **`F-TOOLS/30_待办.md` 的 `NAV-COMPACT`/`MATERIAL3-UPGRADE` 两条**——悬浮导航栏决策 + Material3 升级独立评估项（调研结论已登记，含遗留未闭环项清单）。
+2. **`BLUEPRINT_STATE.md` 当前批次 `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01`**——**唯一握手状态**，`状态=BLUEPRINT_READY`、`TURN=CODE`，luna 开工前必读，交付后要按此表回填基线sha/交付commit/全景图回写并把状态转 `ACCEPTED`。
+3. **`.ai-context/docs/feature/统一添加入口+悬浮导航栏_实施蓝图.md`**——**交给 `luna` 执行的唯一权威实施文档，已是 L7/48-GC 全量合规版**（§0.1颗粒度勾销表/§2.1 allowlist固定块/§13 STEP编号脚本/§17 INV表/§18测试矩阵齐全）。核心审核修正在 §3-§12：ChatGPT 原方案有一个不成立的假设（"四个 Body 各自独立需要四份 Draft 状态"），实际 AI 相关的单天/周期两格本来就共享同一个 `AiMealInputViewModel`，不要只看 ChatGPT 原文档而漏看这个修正。
+4. **`.ai-context/docs/外部方案/Cookbook_统一添加入口与悬浮导航栏_实现规格_20260820.md`** + **`Cookbook_统一添加入口_页面级交互与状态流转规格_20260820.md`**——ChatGPT 产出的原始方案（产品模型/2×2矩阵/悬浮栏dp规格/状态机骨架），已审核通过，蓝图开头声明了与本文件冲突时以蓝图为准的优先级。
+5. **`F-AI-MEAL/30_待办.md` 的 `AIMEAL-UX-REDESIGN` 条目④**——统一入口范围决策的完整历史（承载形式/2×2矩阵/收编范围/AI推荐不并入/`AiPlanScreen`死代码误判已撤回）。
+6. **`F-TOOLS/30_待办.md` 的 `NAV-COMPACT`/`MATERIAL3-UPGRADE` 两条**——悬浮导航栏决策 + Material3 升级独立评估项（调研结论已登记，含遗留未闭环项清单）。
 6. **`F-MEAL/30_待办.md` 的 `HOME-MERGE` 条目**——首页"今日+计划"合并三天视图，本次讨论的第二个话题，**尚未过 apple_ux_designer 设计，排在统一入口之后做**，本 session 未深入。
 7. **`F-WEEKPLAN/30_待办.md`** 底部的跨功能提醒——指回 `AIMEAL-UX-REDESIGN`，`WeekPlanScreen` 会成为"周期+手动"分支承载体。
 
@@ -39,14 +40,16 @@
 | ④ | 生成独立讨论材料文档供用户粘贴到网页版ChatGPT | `temp/claude/统一添加入口+悬浮导航栏_讨论材料_20260820.md`（含角色设定/项目背景/现状拆解/已锁定决策/需产出内容） | 完成（temp/ 已 gitignore，不进仓库） |
 | ⑤ | 审核 ChatGPT 产出的两份外部方案 | 归档至 `.ai-context/docs/外部方案/`，用户放的位置，本次只读未改动原文件 | 完成 |
 | ⑥ | 代码级事实核验（实读 `AiMealInputViewModel.kt`/`AiMealInputSheet.kt`/`AddDayFoodScreen.kt`/`WeekPlanScreen.kt`/`UnsavedGuard.kt`/`MainScaffold.kt`/`Destinations.kt`），发现并修正 ChatGPT 方案的状态管理假设错误 | 见 ⑦ | 完成 |
-| ⑦ | 出实施蓝图 | `.ai-context/docs/feature/统一添加入口+悬浮导航栏_实施蓝图.md`（14节：审核结论摘要/已验证代码事实/修正后状态模型/Range-Method切换真实约束/Dirty Guard整合/Body提取任务清单/新增路由/验收测试/实施阶段/禁止事项/交给luna的执行说明） | 完成 |
+| ⑦ | 出实施蓝图（第一版） | `.ai-context/docs/feature/统一添加入口+悬浮导航栏_实施蓝图.md`（14节轻量补丁体裁） | 完成（后被 ⑪ 升级） |
 | ⑧ | Material3 1.1.2→1.3.x 升级可行性调研（`dev_research_engineer` 子智能体后台完成） | 结论登记进 `F-TOOLS/30_待办.md` `MATERIAL3-UPGRADE`（含遗留未闭环项） | 完成 |
 | ⑨ | 全景图新鲜度自检 | 见下方第六节 | 完成 |
-| ⑩ | 会话交接（本文件，覆盖式更新） | — | 完成 |
+| ⑩ | 提交+推送第一版蓝图（用户授权本次推送） | commit `a3849046`，已 push `origin/master` | 完成 |
+| ⑪ | **用户指出蓝图交接流程漏了项目"蓝图模式"两处硬要求**：`BLUEPRINT_STATE.md` 未握手/`TURN`未设、蓝图未按L7/48-GC全量模板成文 | 询问用户后按"补齐全量模板"方案处理：①蓝图重写为 L7 全量合规版（§0.1颗粒度勾销表48条全部勾销/§2.1 allowlist固定块/§13 STEP编号脚本/§17 INV表16条/§18测试矩阵/§21交付/§22 Q-AF格式）；②`BLUEPRINT_STATE.md` 新增当前批次 `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01`，`状态=BLUEPRINT_READY`，`TURN=CODE` | 完成 |
+| ⑫ | 会话交接（本文件，覆盖式更新） | — | 完成 |
 
 ### 未完成/明确留待下次的部分
 
-- **蓝图尚未被 `luna` 执行**：本次只出了规划文档，一行业务代码没改。下次交接时要确认 `luna` 是否已经开始/完成实施，如果完成了要对着蓝图第11-12节逐条验收（含真机验证长按复制粘贴是否恢复）。
+- **蓝图尚未被 `luna` 执行**：`BLUEPRINT_STATE.md` 当前批次 `TURN=CODE`，等 luna 按蓝图 §20 Phase 1-5 执行。下次交接时先看 `BLUEPRINT_STATE.md` 本批状态是否已变化（luna 或用户可能已推进），若已交付要按蓝图 §21/§24 走 ARCH 复核（diff逐STEP核对+实跑三条构建命令+INV逐条对照+真机验证长按复制粘贴），通过后回写状态→`ACCEPTED`+基线sha+交付commit+全景图回写+`TURN`→`USER`。
 - **`HOME-MERGE`（首页改版）尚未设计**：按讨论顺序排在统一入口之后，`apple_ux_designer` 门禁还没走。
 - **Material3 升级的遗留未闭环项**：Kotlin 是否强制2.0+、精确 Compose UI 版本号、issue tracker 具体状态，见 `MATERIAL3-UPGRADE` 待办，真要做之前必须先在分支里实测钉死。
 - 上一轮遗留的"全项目其余 `ModalBottomSheet`+Snackbar 组合排查"（`EatenAdjustSheet`/`ActionSheet`）——本次调研顺带确认了这些文件确实都用 `ModalBottomSheet`（Material3升级评估的一部分佐证），但排查/修复本身仍未做，如果 Material3 升级被采纳会一并解决，否则仍是独立欠账。
@@ -56,7 +59,7 @@
 
 ## 四、⏭ 下一步
 
-1. **确认 `luna` 在远程主机的实施进度**：如果还没开始，提醒用户去启动；如果已完成，按蓝图第11-12节验收（构建三件套 + `google_quality_engineer` 复审 + 真机验证长按复制粘贴菜单是否恢复）。
+1. **确认 `luna` 在远程主机的实施进度**：先看 `BLUEPRINT_STATE.md` 当前批次字段（`TURN`是否还是`CODE`）。如果还没开始，提醒用户去启动 luna；如果已完成，按蓝图 §20-§21 验收（STEP勾销表逐条diff核对 + 构建三件套 + `google_quality_engineer` 复审 + 真机验证长按复制粘贴菜单是否恢复，即 `E-UEN-13`），通过后回写 `BLUEPRINT_STATE.md` 状态。
 2. **验收通过后**：更新真机待验证清单登记新入口的验证项，同批维护 `F-AI-MEAL`/`F-MEAL`/`F-WEEKPLAN`/`F-TOOLS` 四个 Feature 文件夹的 `20_实现.md`/`30_待办.md`。
 3. **`HOME-MERGE` 首页改版设计**：等统一入口落地效果稳定后，按讨论顺序过 `apple_ux_designer` 门禁出正式交互规范。
 4. 若有余力：评估是否要为 Material3 升级开一个短分支，实测钉死遗留未闭环项（不代表要真升级，只是把决策依据补完整）。
