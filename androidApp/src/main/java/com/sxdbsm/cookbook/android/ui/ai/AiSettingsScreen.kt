@@ -70,7 +70,7 @@ fun AiSettingsScreen(
 
     // [AI修改] L1 v2b：以 state.loaded 为 key（reload() 完成后从 false 翻 true 触发）；额外三弹层互斥守卫，
     //   避免冷启动首屏 loaded 翻转之前用户已手动打开其他弹层时与 grandfather 面板同屏堆叠（蓝图 §10 v2 挑战第12项）。
-    LaunchedEffect(state.loaded) {
+    LaunchedEffect(state.loaded, keyDialogOpen, consentPanelOpen, vendorConfirmOpen) {
         if (state.loaded && state.cloudAiConsent.status == ConsentStatus.GRANDFATHER_PENDING &&
             !keyDialogOpen && !consentPanelOpen && !vendorConfirmOpen
         ) grandfatherPanelOpen = true

@@ -11,7 +11,21 @@
 >
 > 该字段空白、或内容对不上脚本可复现结果，即视为批次未收口，不得转 TURN。设计与判据见 `projectReview/08` D-25（升级前的 D-20 设计背景仍有效，仅承重方式从"人填三选一"改"脚本判定二选一"，`07`/`DEFER` 相关表述已废止）。
 ---
-## 当前批次：AIMEAL-B7FOLLOWUP-BLUEPRINTS-01（2026-08-19）
+## 当前批次：AIMEAL-B7F-BUGFIX-TIMEOUT-DIALOG-01（2026-08-20）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | 修复真机验证反馈定位的两处真实代码缺陷：E-B7F-03（流式请求无总时长超时兜底，可无限期卡死）+ E-L1-11（三弹层互斥守卫只在首次 loaded 翻转时检查一次，关闭 KeyDialog 后不重新弹出 grandfather 面板）。用户要求本批用蓝图模式（Sonnet 出蓝图/审核，Haiku 执行代码），作为跨模型执行力评估的一次实证样本。 |
+| 状态 | **SELF_CHECKED → REVIEWED，验证通过，尚未提交（working tree 未 commit，待用户确认）**——两轮执行：第一轮 CODE 忠实实现了 ARCH 有设计缺陷的蓝图（`withTimeoutOrNull` 对纯阻塞 IO 无效，ARCH 独立实跑测试发现进程真实挂起 7 分钟，判 `BP` 蓝图侧缺口非编码偏离）；ARCH 修订蓝图（看门狗协程+强制 disconnect）后第二轮 CODE 重新实现，ARCH 独立复核 diff 逐字节核对 allowlist 合规 + 亲自实跑四条命令全部通过（`--tests StreamTransportTimeoutTest` 1/1、`androidApp:testDebugUnitTest` 全量 53/53、`shared:testDebugUnitTest` 绿、`assembleDebug` BUILD SUCCESSFUL 46s），无阻断 |
+| 规模/颗粒度 | BLUEPRINT-LITE / L7（项目基线，多数 GC 因体量微小标 N/A，见蓝图 §0.1） |
+| TURN | USER（验证已完成，待用户确认是否提交 commit；提交后回填「基线 sha」+「全景图回写」转 `ACCEPTED`） |
+| CODE | Haiku（claude-haiku-4-5，本次为 `14_模型执行力评估.md` 新增评估样本，含 1 次蓝图侧 `BP` 缺口→ARCH修订→CODE 二次机械转录的完整闭环） |
+| ARCH | 本机 ARCH（Sonnet）起草+两轮复核；独立挑战由 ARCH 本人换轮次自查（单人开发场景允许形式）；关键发现：起草阶段的方案本身也需要真实验证，不能仅靠"编译通过+既有测试绿"就采信新逻辑正确，详见蓝图 §9 |
+| 蓝图文件 | `docs/feature/AI记一餐_B7F反馈_流式超时兜底与弹层重触发_实施蓝图.md`（含 §9 复核记录） |
+| 全景图回写 | 待提交后填写（预计涉及 `21_AI与网络请求策略` 分册） |
+| 下一步 | ①用户确认是否提交 commit；②提交后真机待验证清单登记 E-B7F-03/E-L1-11 状态更新为"🔧 已修复待真机确认"；③`14_模型执行力评估.md` 评估台账补记本次 Haiku 表现（已完成，见该文档新增行）。 |
+
+---
+## 上一批次：AIMEAL-B7FOLLOWUP-BLUEPRINTS-01（2026-08-19）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | 承接 AI记一餐 B7 后续批（`cc806cb3`，已交付并推送）里明确排除的 3 项延后决策，出正式实施蓝图：批A（死代码清理+cuisine落库兜底）、批B（NDJSON协议扩展：菜系/标签/做法透传）、批C（确认页展开UI）。 |

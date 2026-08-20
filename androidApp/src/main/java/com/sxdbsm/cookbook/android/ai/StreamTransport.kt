@@ -3,6 +3,9 @@ package com.sxdbsm.cookbook.android.ai
 import com.sxdbsm.cookbook.ai.GlmProtocol
 import com.sxdbsm.cookbook.android.util.AppLogger
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -91,6 +94,8 @@ internal class HttpUrlStreamCall(
     private val connectionFactory: (String) -> HttpURLConnection = {
         URL(it).openConnection() as HttpURLConnection
     },
+    // E-B7F-03: 仅可测试性而引入的 internal 默认总超时；生产用 TOTAL_TIMEOUT_MS_DEFAULT，不暴露到 Koin/公开 API。
+    private val totalTimeoutMs: Long = TOTAL_TIMEOUT_MS_DEFAULT,
 ) : StreamCall {
     @Volatile
     private var connection: HttpURLConnection? = null
@@ -99,7 +104,11 @@ internal class HttpUrlStreamCall(
     @Volatile
     private var cancelled = false
 
-    override suspend fun execute(onDelta: suspend (String) -> Unit): SseStreamResult {
+    // E-B7F-03: 总时长超时标记；与 cancelled 分离，区分"看门狗强制超时"与"用户主动取消"。
+    @Volatile
+    private var timedOut = false
+
+    override suspend fun execute(onDelta: suspend (String) -> Unit): SseStreamResult = coroutineScope {
         checkNotCancelled("before connect")
         val started = System.currentTimeMillis()
         val conn = connectionFactory(request.endpoint).apply {
@@ -112,26 +121,41 @@ internal class HttpUrlStreamCall(
             setRequestProperty("Accept", "text/event-stream")
         }
         connection = conn
+        // E-B7F-03: 阻塞式 HttpURLConnection 读写不响应协程取消（无挂起点时 withTimeout 系无效，
+        // 已实测证实），看门狗改用"delay 到期后强制 disconnect()"打断阻塞 read——复用本类已有且
+        // 被 AF-21 验证过的"disconnect() 可打断阻塞中的 read() 并抛 IOException"机制。
+        val watchdog = launch {
+            delay(totalTimeoutMs)
+            timedOut = true
+            conn.disconnect()
+        }
         try {
             checkNotCancelled("before write body")
-            conn.outputStream.use { it.write(request.body.toByteArray(Charsets.UTF_8)) }
-            checkNotCancelled("before read response")
-            val code = conn.responseCode
-            if (code !in 200..299) {
-                AppLogger.debugLong("CloudAiRaw", "stream http[$code] errorLength",
-                    conn.errorStream?.bufferedReader(Charsets.UTF_8)?.use { "${it.readText().length} bytes" }.orEmpty())
-                // AF-20: 仅 408/429/5xx 可重试；其余 4xx 确定性失败不重试
-                throw StreamTransportException(code, "STREAM_HTTP_ERROR", retryable = isHttpRetryable(code))
+            val result = try {
+                conn.outputStream.use { it.write(request.body.toByteArray(Charsets.UTF_8)) }
+                checkNotCancelled("before read response")
+                val code = conn.responseCode
+                if (code !in 200..299) {
+                    AppLogger.debugLong("CloudAiRaw", "stream http[$code] errorLength",
+                        conn.errorStream?.bufferedReader(Charsets.UTF_8)?.use { "${it.readText().length} bytes" }.orEmpty())
+                    // AF-20: 仅 408/429/5xx 可重试；其余 4xx 确定性失败不重试
+                    throw StreamTransportException(code, "STREAM_HTTP_ERROR", retryable = isHttpRetryable(code))
+                }
+                val sse = readSseStream(conn.inputStream, onDelta)
+                AppLogger.i("CloudAi", "stream http=$code cost=${System.currentTimeMillis() - started}ms chars=${sse.totalChars} finish=${sse.finishReason}")
+                sse
+            } finally {
+                watchdog.cancel()
             }
-            val result = readSseStream(conn.inputStream, onDelta)
-            AppLogger.i("CloudAi", "stream http=$code cost=${System.currentTimeMillis() - started}ms chars=${result.totalChars} finish=${result.finishReason}")
-            return result
+            result
         } catch (e: CancellationException) {
             throw e
         } catch (e: IOException) {
             // AF-19: 用户取消造成的 IOException（disconnect 常见）必须优先转为取消，
             // 不得包装为可重试网络失败。
             if (cancelled) throw CancellationException("call cancelled during IO", e)
+            // E-B7F-03: 看门狗强制 disconnect 造成的 IOException 转为超时兜底，复用既有段级失败路径。
+            if (timedOut) throw StreamTransportException(httpStatus = null, code = "STREAM_TIMEOUT_ERROR", retryable = true)
             // AF-16: 非取消网络 IO 失败统一安全包装
             if (e is StreamTransportException) throw e
             throw StreamTransportException(httpStatus = null, code = "STREAM_IO_ERROR", retryable = true)
@@ -154,5 +178,8 @@ internal class HttpUrlStreamCall(
         /** AF-20: 固定 HTTP 重试分类——仅 408/429/5xx 可重试；其余 4xx 确定性失败。 */
         internal fun isHttpRetryable(code: Int): Boolean =
             code == 408 || code == 429 || code in 500..599
+
+        /** E-B7F-03: 请求总时长上限（含心跳行防止无限期挂起）；只读单次超时(readTimeout=60000)之外的整体兜底。 */
+        private const val TOTAL_TIMEOUT_MS_DEFAULT = 180_000L
     }
 }
