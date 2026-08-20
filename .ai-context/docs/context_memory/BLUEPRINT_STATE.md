@@ -15,14 +15,16 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | 修复真机验证反馈定位的两处真实代码缺陷：E-B7F-03（流式请求无总时长超时兜底，可无限期卡死）+ E-L1-11（三弹层互斥守卫只在首次 loaded 翻转时检查一次，关闭 KeyDialog 后不重新弹出 grandfather 面板）。用户要求本批用蓝图模式（Sonnet 出蓝图/审核，Haiku 执行代码），作为跨模型执行力评估的一次实证样本。 |
-| 状态 | **SELF_CHECKED → REVIEWED，验证通过，尚未提交（working tree 未 commit，待用户确认）**——两轮执行：第一轮 CODE 忠实实现了 ARCH 有设计缺陷的蓝图（`withTimeoutOrNull` 对纯阻塞 IO 无效，ARCH 独立实跑测试发现进程真实挂起 7 分钟，判 `BP` 蓝图侧缺口非编码偏离）；ARCH 修订蓝图（看门狗协程+强制 disconnect）后第二轮 CODE 重新实现，ARCH 独立复核 diff 逐字节核对 allowlist 合规 + 亲自实跑四条命令全部通过（`--tests StreamTransportTimeoutTest` 1/1、`androidApp:testDebugUnitTest` 全量 53/53、`shared:testDebugUnitTest` 绿、`assembleDebug` BUILD SUCCESSFUL 46s），无阻断 |
+| 状态 | **ACCEPTED（部分）**——代码/测试/文档全部验证通过并已提交推送；「全景图回写」因脚本发现一个与本批无关的既有索引缺口暂未转 `SYNC-OK`，见下方说明。两轮执行：第一轮 CODE 忠实实现了 ARCH 有设计缺陷的蓝图（`withTimeoutOrNull` 对纯阻塞 IO 无效，ARCH 独立实跑测试发现进程真实挂起 7 分钟，判 `BP` 蓝图侧缺口非编码偏离）；ARCH 修订蓝图（看门狗协程+强制 disconnect）后第二轮 CODE 重新实现，ARCH 独立复核 diff 逐字节核对 allowlist 合规 + 亲自实跑四条命令全部通过（`--tests StreamTransportTimeoutTest` 1/1、`androidApp:testDebugUnitTest` 全量 53/53、`shared:testDebugUnitTest` 绿、`assembleDebug` BUILD SUCCESSFUL 46s），无阻断 |
 | 规模/颗粒度 | BLUEPRINT-LITE / L7（项目基线，多数 GC 因体量微小标 N/A，见蓝图 §0.1） |
-| TURN | USER（验证已完成，待用户确认是否提交 commit；提交后回填「基线 sha」+「全景图回写」转 `ACCEPTED`） |
+| TURN | USER（代码已提交推送，仅剩一项非阻断的索引缺口待用户决定是否处理） |
 | CODE | Haiku（claude-haiku-4-5，本次为 `14_模型执行力评估.md` 新增评估样本，含 1 次蓝图侧 `BP` 缺口→ARCH修订→CODE 二次机械转录的完整闭环） |
 | ARCH | 本机 ARCH（Sonnet）起草+两轮复核；独立挑战由 ARCH 本人换轮次自查（单人开发场景允许形式）；关键发现：起草阶段的方案本身也需要真实验证，不能仅靠"编译通过+既有测试绿"就采信新逻辑正确，详见蓝图 §9 |
 | 蓝图文件 | `docs/feature/AI记一餐_B7F反馈_流式超时兜底与弹层重触发_实施蓝图.md`（含 §9 复核记录） |
-| 全景图回写 | 待提交后填写（预计涉及 `21_AI与网络请求策略` 分册） |
-| 下一步 | ①用户确认是否提交 commit；②提交后真机待验证清单登记 E-B7F-03/E-L1-11 状态更新为"🔧 已修复待真机确认"；③`14_模型执行力评估.md` 评估台账补记本次 Haiku 表现（已完成，见该文档新增行）。 |
+| 基线 sha | `6f2bbe9b`（本批第一个 commit `effde7c4` 的父 commit） |
+| 交付 commit | `effde7c4`（已 push 到 `origin/master`） |
+| 全景图回写 | **SYNC-FAIL（非本批引入，待处理）**：`python .ai-context/tools/feature_sync_check.py --range 6f2bbe9b..effde7c4` 报 `[UNMAPPED] androidApp/.../ui/ai/AiSettingsScreen.kt`——该文件从未被任何功能的 `STATE.yml` glob 覆盖（本批只改了其中一行 `LaunchedEffect` key 列表，未新增/删除/改名/移动组件，按功能路径索引规范触发条件本不要求为此改索引，但脚本按文件路径硬性要求归属，属既有索引缺口非本批引入）。**未强行编 glob 补齐**（不了解 `STATE.yml` 匹配全貌前不擅自改治理配置），留给用户决定：①补 `F-AI-MEAL` 的 `STATE.yml` 加一条 `AiSettingsScreen.kt` 的 match glob（一次性修复，可能是唯一正确做法）；②或维持现状下次遇到再处理。 |
+| 下一步 | ①（已完成）代码提交并推送 `effde7c4`；②（已完成）真机待验证清单登记 E-B7F-03/E-L1-11 状态更新为"🔧 已修复待真机确认"；③（已完成）`14_模型执行力评估.md` 评估台账补记本次 Haiku 表现；④待用户决定是否处理上方"全景图回写"的索引缺口。 |
 
 ---
 ## 上一批次：AIMEAL-B7FOLLOWUP-BLUEPRINTS-01（2026-08-19）
