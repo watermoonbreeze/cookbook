@@ -27,3 +27,13 @@ fun UnifiedAddMealUiState.reduce(event: UnifiedAddMealEvent): UnifiedAddMealUiSt
 /** AI 保存完成后必须离开统一入口，避免 DONE 态被误判为未保存草稿。[AI修复] AF-UEN-02 */
 fun shouldLeaveAfterAiSave(phase: com.sxdbsm.cookbook.android.ui.ai.AiMealPhase): Boolean =
     phase == com.sxdbsm.cookbook.android.ui.ai.AiMealPhase.DONE
+
+/** [AI修改] AF-UEN-03：AI 会话未完成前锁定范围，避免预览与范围语义错配。 */
+fun canChangeMealRange(phase: com.sxdbsm.cookbook.android.ui.ai.AiMealPhase): Boolean =
+    phase == com.sxdbsm.cookbook.android.ui.ai.AiMealPhase.INPUT
+
+/** [AI修改] AF-UEN-03：稳定预览/错误态允许仅切换 AI 与手动，保留会话。 */
+fun canChangeMealMethod(phase: com.sxdbsm.cookbook.android.ui.ai.AiMealPhase): Boolean =
+    phase == com.sxdbsm.cookbook.android.ui.ai.AiMealPhase.INPUT ||
+        phase == com.sxdbsm.cookbook.android.ui.ai.AiMealPhase.PREVIEW_READY ||
+        phase == com.sxdbsm.cookbook.android.ui.ai.AiMealPhase.ERROR

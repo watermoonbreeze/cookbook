@@ -21,6 +21,7 @@ import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
@@ -99,7 +100,7 @@ fun DayMealCardView(
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = formatDateCompact(data),
+                    text = formatDateCompact(data.date),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
@@ -110,7 +111,7 @@ fun DayMealCardView(
                 if (data.isToday) {
                     Badge("今天", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
                 } else if (data.isPlanState) {
-                    Badge("计划", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+                    Badge("计划", MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
                 }
                 Spacer(Modifier.weight(1f))
                 // [AI修改] B-4：复制/编辑/删除三图标收进一个"⋯"→ ActionSheet(§9.16)，卡面更干净、破坏项红字。
@@ -344,8 +345,8 @@ private fun LackText(text: String) {
  *
  * 去补零、本年省年份，让日期+角标+操作图标一行放下；跨年日期(如去年/明年)补年份避免歧义。
  */
-private fun formatDateCompact(data: DayMealCardData): String {
-    val d = data.date
+internal fun formatDateCompact(date: kotlinx.datetime.LocalDate): String {
+    val d = date
     val weekday = when (d.dayOfWeek.isoDayNumber) {
         1 -> "周一"; 2 -> "周二"; 3 -> "周三"; 4 -> "周四"; 5 -> "周五"; 6 -> "周六"; 7 -> "周日"
         else -> ""

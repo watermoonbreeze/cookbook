@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -101,6 +102,12 @@ class AddMealViewModel(
 
     private val _state = MutableStateFlow(AddMealUiState()) // [AI修改] 内部可变状态，只允许 ViewModel 修改。
     val state: StateFlow<AddMealUiState> = _state.asStateFlow() // [AI修改] 对 UI 暴露只读 StateFlow。
+
+    /** [AI修改] 日期月历直接复用食历同一数据真相源，不逐日查询。 */
+    val mealDates: StateFlow<Set<LocalDate>> =
+        mealRepo.observeTimelineDates()
+            .map { it.toSet() }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
     /**
      * "常吃"菜品(供餐次块内一键 chips 快捷加菜)。[AI生成] part1 餐次常吃 chips

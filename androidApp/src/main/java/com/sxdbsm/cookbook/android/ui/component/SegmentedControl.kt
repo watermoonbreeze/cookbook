@@ -36,6 +36,7 @@ fun SegmentedControl(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     val trackShape = RoundedCornerShape(10.dp)
     val thumbShape = RoundedCornerShape(8.dp)
@@ -54,7 +55,7 @@ fun SegmentedControl(
                     .weight(1f)
                     .clip(thumbShape)
                     .background(if (selected) MaterialTheme.colorScheme.surface else Color.Transparent)
-                    .clickable(interactionSource = interaction, indication = null) { if (!selected) onSelect(index) }
+                    .clickable(enabled = enabled, interactionSource = interaction, indication = null) { if (!selected) onSelect(index) }
                     .padding(vertical = 7.dp, horizontal = 4.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -62,7 +63,8 @@ fun SegmentedControl(
                     text = label,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (!enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+                    else if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                 )
             }

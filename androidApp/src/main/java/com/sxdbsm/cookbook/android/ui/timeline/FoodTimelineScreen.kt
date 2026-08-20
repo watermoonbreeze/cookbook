@@ -182,8 +182,11 @@ fun FoodTimelineScreen(
     }
 
     if (calendarOpen) {
-        TimelineCalendarDialog(
+        com.sxdbsm.cookbook.android.ui.component.MealDateCalendarDialog(
             mealDates = state.mealDates,
+            initialDate = DateTime.today(),
+            selectedDate = null,
+            selectionMode = com.sxdbsm.cookbook.android.ui.component.MealDateCalendarSelectionMode.MEAL_DATES_ONLY,
             onDismiss = { calendarOpen = false },
             onDateClick = { date ->
                 vm.jumpToDate(date)
@@ -200,121 +203,3 @@ fun FoodTimelineScreen(
 private fun formatRange(start: LocalDate?, end: LocalDate?): String =
     if (start == null || end == null) "暂无记录" else "$start - $end"
 
-/**
- * 食历日期选择月历。[AI生成]
- *
- * Material3 当前使用版本不支持给 DatePicker 日期格子添加小圆点，因此这里实现轻量月历。
- */
-@Composable
-private fun TimelineCalendarDialog(
-    mealDates: Set<LocalDate>,
-    onDismiss: () -> Unit,
-    onDateClick: (LocalDate) -> Unit,
-) {
-    var monthStart by remember { mutableStateOf(firstDayOfMonth(DateTime.today())) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                TextButton(onClick = { monthStart = addMonths(monthStart, -1) }) { Text("上月") }
-                Text(
-                    "${monthStart.year}年${monthStart.monthNumber.toString().padStart(2, '0')}月",
-                    fontWeight = FontWeight.SemiBold,
-                )
-                TextButton(onClick = { monthStart = addMonths(monthStart, 1) }) { Text("下月") }
-            }
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(Modifier.fillMaxWidth()) {
-                    listOf("一", "二", "三", "四", "五", "六", "日").forEach { label ->
-                        Text(
-                            label,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    }
-                }
-                monthRows(monthStart).forEach { week ->
-                    Row(Modifier.fillMaxWidth()) {
-                        week.forEach { date ->
-                            CalendarDayCell(
-                                date = date,
-                                visibleMonth = monthStart.monthNumber,
-                                hasMeal = date in mealDates,
-                                onDateClick = onDateClick,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        },
-    )
-}
-
-@Composable
-private fun CalendarDayCell(
-    date: LocalDate,
-    visibleMonth: Int,
-    hasMeal: Boolean,
-    onDateClick: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val enabled = hasMeal && date.monthNumber == visibleMonth
-    Column(
-        modifier = modifier
-            .height(44.dp)
-            .then(if (enabled) Modifier.clickable { onDateClick(date) } else Modifier),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            date.dayOfMonth.toString(),
-            color = when {
-                date.monthNumber != visibleMonth -> MaterialTheme.colorScheme.outline
-                enabled -> MaterialTheme.colorScheme.primary
-                else -> MaterialTheme.colorScheme.onSurface
-            },
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Box(
-            modifier = Modifier
-                .padding(top = 2.dp)
-                .size(5.dp)
-                .background(
-                    color = if (hasMeal && date.monthNumber == visibleMonth) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.surface
-                    },
-                    shape = CircleShape,
-                ),
-        )
-    }
-}
-
-private fun firstDayOfMonth(date: LocalDate): LocalDate = LocalDate(date.year, date.monthNumber, 1)
-
-private fun addMonths(date: LocalDate, delta: Int): LocalDate {
-    val zeroBased = date.year * 12 + (date.monthNumber - 1) + delta
-    val year = zeroBased.floorDiv(12)
-    val month = zeroBased.mod(12) + 1
-    return LocalDate(year, month, 1)
-}
-
-private fun monthRows(monthStart: LocalDate): List<List<LocalDate>> {
-    val firstOffset = monthStart.dayOfWeek.ordinal // [AI修改] kotlinx-datetime 当前版本无 isoDayNumber；枚举从周一开始。
-    val gridStart = DateTime.plusDays(monthStart, -firstOffset)
-    return (0 until 6).map { week ->
-        (0 until 7).map { day -> DateTime.plusDays(gridStart, week * 7 + day) }
-    }
-}

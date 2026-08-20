@@ -4,8 +4,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import com.sxdbsm.cookbook.util.DateTime
 
 /**
  * @File : MealRecordRepositoryTest
@@ -18,6 +20,31 @@ import kotlinx.datetime.LocalTime
  * [AI生成] 为添加/编辑餐食流程建立基础回归测试。
  **/
 class MealRecordRepositoryTest {
+
+    @Test
+    fun todayMissingStillReturnsOnlyTwoFutureDates() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "测试菜", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val draft = DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(dishId))
+        val today = LocalDate(2026, 6, 5)
+        mealRepo.saveDayMeals(DateTime.plusDays(today, 2), listOf(draft))
+        mealRepo.saveDayMeals(DateTime.plusDays(today, 3), listOf(draft))
+        mealRepo.saveDayMeals(DateTime.plusDays(today, 4), listOf(draft))
+
+        val result = mealRepo.observeTodayPlusFuture(today).first()
+
+        assertEquals(2, result.size)
+        assertTrue(result.all { it.date != today })
+        assertEquals(listOf(DateTime.plusDays(today, 2), DateTime.plusDays(today, 3)), result.map { it.date })
+    }
 
     @Test
     fun saveDayMealsWithEmptyListClearsThatDay() = runBlocking {

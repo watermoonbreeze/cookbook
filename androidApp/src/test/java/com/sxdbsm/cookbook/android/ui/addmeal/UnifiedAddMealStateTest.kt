@@ -37,4 +37,24 @@ class UnifiedAddMealStateTest {
         assertEquals(true, shouldLeaveAfterAiSave(AiMealPhase.DONE))
         assertEquals(false, shouldLeaveAfterAiSave(AiMealPhase.PREVIEW_READY))
     }
+
+    @Test
+    fun previewLocksRangeButAllowsMethodChange() {
+        assertEquals(false, canChangeMealRange(AiMealPhase.PREVIEW_READY))
+        assertEquals(true, canChangeMealMethod(AiMealPhase.PREVIEW_READY))
+    }
+
+    @Test
+    fun generatingPartialAndSavingLockBothSelectors() {
+        listOf(AiMealPhase.GENERATING, AiMealPhase.PARTIAL_READY, AiMealPhase.SAVING).forEach { phase ->
+            assertEquals(false, canChangeMealRange(phase))
+            assertEquals(false, canChangeMealMethod(phase))
+        }
+    }
+
+    @Test
+    fun errorLocksRangeButAllowsMethodChange() {
+        assertEquals(false, canChangeMealRange(AiMealPhase.ERROR))
+        assertEquals(true, canChangeMealMethod(AiMealPhase.ERROR))
+    }
 }

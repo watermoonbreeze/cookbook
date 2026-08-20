@@ -29,6 +29,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.DayMealCardView
+import com.sxdbsm.cookbook.android.ui.component.DayPlaceholderCard
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SectionHeader
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
@@ -199,17 +200,33 @@ fun HomeScreen(
             item { Spacer(Modifier.height(28.dp)) }
         }
 
-        // [AI生成] UX深挖#7：今天独立成"今日"区，与"计划(未来)"分开——消除"今天混在计划里、语义模糊"。
-        //   数据层 observeTodayPlusFuture 已把今天(isToday)与未来分开，这里仅在展示层拆分渲染，不改 VM 数据流。
+        // [AI修改] HOME-MERGE-01：今天始终占一个槽位，未来只显示真实存在的最多两天。
         val todayCard = ui.plans.firstOrNull { it.isToday }
         val futureCards = ui.plans.filter { !it.isToday }
-        item { SectionHeader(title = "今日") }
+        item {
+            Surface(
+                onClick = onOpenWeekPlan,
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 0.dp,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+            ) {
+                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("🗓", style = MaterialTheme.typography.titleMedium)
+                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                        Text("一周计划", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("排下周饭：整周概览 + 逐日安排", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                }
+            }
+        }
+        item { SectionHeader(title = "今天和接下来") }
         if (todayCard == null) {
-            // 今天没记：空态给下一步(§9.6)，比"混在计划里看不到今天"更清晰。
             item {
-                EmptyState(
-                    text = "今天还没记，随手记一餐吧",
-                    icon = "🍽",
+                DayPlaceholderCard(
+                    dateLabel = com.sxdbsm.cookbook.android.ui.component.formatDateCompact(com.sxdbsm.cookbook.util.DateTime.today()),
+                    badgeText = "今天还没记",
                     actionLabel = "记一餐",
                     onAction = { onEditMealDate(com.sxdbsm.cookbook.util.DateTime.today()) },
                 )
@@ -234,42 +251,8 @@ fun HomeScreen(
         }
         item { Spacer(Modifier.height(20.dp)) }
 
-        // [AI修改] "计划"区只管未来(今天已独立到"今日"区，UX深挖#7)。
-        item { SectionHeader(title = "计划", action = "全部 ▸", onActionClick = onOpenTimeline) } // [AI修改] 文案:去标题装饰emoji(与同页其余SectionHeader一致)
-        // [AI生成] B3：一周计划入口——"周末排下周饭"整周概览 + 逐日安排。
-        // [AI修改] 苹果风格：去描边按钮，改无边框白卡点击行 + chevron。
-        item {
-            Surface(
-                onClick = onOpenWeekPlan,
-                color = MaterialTheme.colorScheme.surface,
-                shape = MaterialTheme.shapes.medium,
-                tonalElevation = 0.dp,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-            ) {
-                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("🗓", style = MaterialTheme.typography.titleMedium)
-                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
-                        Text("一周计划", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                        Text("排下周饭：整周概览 + 逐日安排", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline) // [AI修改] UX:统一列表 chevron 图标(替代文本"›",对齐苹果分组列表)
-                }
-            }
-        }
-        // [AI生成] #2:说明计划卡只展示"下一个有安排的日期"(观 observeTodayPlusFuture 逻辑,今天已独立"今日"区);仅有未来计划时显示。
-        if (futureCards.isNotEmpty()) {
-            item {
-                Text(
-                    "只显示下一个有安排的日期，点「全部」看完整食历",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                )
-            }
-        }
         if (futureCards.isEmpty()) {
-            // [AI修改] UX深挖#7：未来空态给下一步(排一周计划)，比"暂无计划"更有引导。
-            item { EmptyState(text = "接下来还没安排", icon = "📅", actionLabel = "排一周计划", onAction = onOpenWeekPlan) }
+            // [AI修改] 没有未来真实餐食时不伪造计划卡，也不渲染巨大空态。
         } else {
             items(futureCards, key = { it.date.toString() }) { card ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -285,6 +268,11 @@ fun HomeScreen(
                     )
                 }
             }
+        }
+
+        item {
+            Text("查看全部食历 ›", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.fillMaxWidth().clickable { onOpenTimeline() }.padding(horizontal = 16.dp, vertical = 12.dp))
         }
 
         // [AI修改] 用户 2026-07-16：去除首页"🔥热门/⏱最近"发现区——菜品页(最近/喜爱Tab)已有相关推荐，

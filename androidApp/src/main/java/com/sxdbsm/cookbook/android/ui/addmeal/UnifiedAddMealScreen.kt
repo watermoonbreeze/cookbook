@@ -45,7 +45,6 @@ fun UnifiedAddMealScreen(
     val aiState by aiVm.state.collectAsStateWithLifecycle()
     val appSnackbar = LocalAppSnackbar.current
     var pageState by remember { mutableStateOf(UnifiedAddMealUiState()) }
-    var pendingChange by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     val aiDirty = aiState.phase != AiMealPhase.INPUT ||
         aiState.quickDraftText.isNotBlank() ||
@@ -54,34 +53,6 @@ fun UnifiedAddMealScreen(
         isDirty = { aiDirty || singleManualVm.isDirty() },
         onConfirmLeave = { aiVm.cancelGeneration(); nav.popBackStack() },
     )
-
-    fun requestChange(action: () -> Unit) {
-        if (pageState.method == MealInputMethod.AI && aiState.phase == AiMealPhase.SAVING) return
-        if (pageState.method == MealInputMethod.AI && aiState.phase != AiMealPhase.INPUT) {
-            pendingChange = action
-        } else {
-            action()
-        }
-    }
-
-    if (pendingChange != null) {
-        AlertDialog(
-            onDismissRequest = { pendingChange = null },
-            title = { Text("放弃当前预览？") },
-            text = { Text("AI 已解析的餐食预览将不会被保存。") },
-            confirmButton = {
-                TextButton(onClick = {
-                    val action = pendingChange
-                    pendingChange = null
-                    aiVm.cancelGeneration()
-                    action?.invoke()
-                }) { Text("放弃") }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingChange = null }) { Text("继续编辑") }
-            },
-        )
-    }
 
     androidx.compose.material3.Scaffold(
         topBar = { AppTopBar(title = "记录饮食", onBack = requestBack) },
@@ -94,13 +65,12 @@ fun UnifiedAddMealScreen(
             SegmentedControl(
                 options = listOf("单天", "周期"),
                 selectedIndex = if (pageState.range == MealRange.SINGLE_DAY) 0 else 1,
+                enabled = canChangeMealRange(aiState.phase),
                 onSelect = { index ->
                     val range = if (index == 0) MealRange.SINGLE_DAY else MealRange.PERIOD
-                    requestChange {
-                        pageState = pageState.reduce(UnifiedAddMealEvent.SelectRange(range))
-                        if (pageState.method == MealInputMethod.AI) {
-                            aiVm.setInputMode(if (range == MealRange.SINGLE_DAY) InputMode.QUICK else InputMode.WEEK)
-                        }
+                    pageState = pageState.reduce(UnifiedAddMealEvent.SelectRange(range))
+                    if (pageState.method == MealInputMethod.AI) {
+                        aiVm.setInputMode(if (range == MealRange.SINGLE_DAY) InputMode.QUICK else InputMode.WEEK)
                     }
                 },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -108,13 +78,12 @@ fun UnifiedAddMealScreen(
             SegmentedControl(
                 options = listOf("AI 快捷", "手动选择"),
                 selectedIndex = if (pageState.method == MealInputMethod.AI) 0 else 1,
+                enabled = canChangeMealMethod(aiState.phase),
                 onSelect = { index ->
                     val method = if (index == 0) MealInputMethod.AI else MealInputMethod.MANUAL
-                    requestChange {
-                        pageState = pageState.reduce(UnifiedAddMealEvent.SelectMethod(method))
-                        if (method == MealInputMethod.AI) {
-                            aiVm.setInputMode(if (pageState.range == MealRange.SINGLE_DAY) InputMode.QUICK else InputMode.WEEK)
-                        }
+                    pageState = pageState.reduce(UnifiedAddMealEvent.SelectMethod(method))
+                    if (method == MealInputMethod.AI) {
+                        aiVm.setInputMode(if (pageState.range == MealRange.SINGLE_DAY) InputMode.QUICK else InputMode.WEEK)
                     }
                 },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

@@ -80,6 +80,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sxdbsm.cookbook.android.ui.component.MealDishGrid
+import com.sxdbsm.cookbook.android.ui.component.MealDateCalendarDialog
+import com.sxdbsm.cookbook.android.ui.component.MealDateCalendarSelectionMode
 import com.sxdbsm.cookbook.android.ui.component.ActionSheet // [AI生成] 餐次简洁化:低频操作收纳(§9.11)
 import com.sxdbsm.cookbook.android.ui.component.SheetAction
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
@@ -159,6 +161,7 @@ fun AddDayFoodScreen(
 ) {
     // [AI修改] 页面订阅 ViewModel 状态，任何字段变化都会触发相关 UI 重组。
     val state by vm.state.collectAsStateWithLifecycle()
+    val mealDates by vm.mealDates.collectAsStateWithLifecycle()
     val frequentDishes by vm.frequentDishes.collectAsStateWithLifecycle() // [AI生成] part1：餐次块"常吃"一键 chips 候选
     var pickerOpen by rememberSaveable { mutableStateOf(false) }
     var pickingBlockId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -303,30 +306,6 @@ fun AddDayFoodScreen(
                 )
             }
             FormFieldLabel("日期", startPadding = 16.dp)
-            // [AI生成] UX深挖#9：昨天·今天·明天 快捷 chip(补记/排期最高频，免开月历)；命中当前 date 才高亮，远日走下方月历。
-            //   编辑既有餐食时日期锁定→整行不渲染(与月历按钮 disabled 一致，避免"可点却改不了"矛盾)。
-            if (!state.isEditingExisting) {
-                val todayDate = com.sxdbsm.cookbook.util.DateTime.today()
-                val quickDates = listOf(
-                    "昨天" to com.sxdbsm.cookbook.util.DateTime.plusDays(todayDate, -1),
-                    "今天" to todayDate,
-                    "明天" to com.sxdbsm.cookbook.util.DateTime.plusDays(todayDate, 1),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    quickDates.forEach { (label, date) ->
-                        FilterChip(
-                            selected = state.date == date,
-                            onClick = { vm.setDate(date) },
-                            label = { Text(label) },
-                        )
-                    }
-                }
-            }
             // [AI修改] N3：编辑既有某天餐食时日期锁定不可改；[UX打磨]编辑态改**纯文本行**(不做成禁用按钮外观·免用户反复误点)，仅新增/复制可点改。
             if (state.isEditingExisting) {
                 Row(
@@ -436,13 +415,13 @@ fun AddDayFoodScreen(
     }
 
     if (dateDialogOpen) {
-        DatePickerDialogContent(
+        MealDateCalendarDialog(
+            mealDates = mealDates,
             initialDate = state.date,
+            selectedDate = state.date,
+            selectionMode = MealDateCalendarSelectionMode.ANY_VISIBLE_DATE,
             onDismiss = { dateDialogOpen = false },
-            onConfirm = { date ->
-                vm.setDate(date)
-                dateDialogOpen = false
-            },
+            onDateClick = { date -> vm.setDate(date); dateDialogOpen = false },
         )
     }
 

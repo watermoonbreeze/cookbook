@@ -74,7 +74,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         }.flowOn(ioDispatcher)
     }
 
-    /** 主页用：只展示今天及未来真实存在的两条餐食记录。[AI修改] */
+    /** 主页用：今天真实记录（若有）加未来最多两个真实有餐食日期。[AI修改] */
     fun observeTodayPlusFuture(today: LocalDate): Flow<List<DayMealCardData>> {
         val todayStr = DateTime.formatDate(today)
         // [AI修改] N2：原来 LIMIT=2 是限"行数"，今天有早/中/晚会被截成 2 条(餐食不完整)。
@@ -83,15 +83,20 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             .asFlow()
             .mapToList(ioDispatcher)
             .map { records ->
-                records
-                    .groupBy { it.date }
-                    .entries
+                val grouped = records.groupBy { it.date }
+                val todayEntry = grouped[todayStr]
+                val futureEntries = grouped.entries
+                    .filter { it.key > todayStr }
                     .sortedBy { it.key }
-                    .take(2) // 当天 + 下一个有餐食的日期
-                    .map { (dateStr, rows) ->
-                        val date = DateTime.parseDate(dateStr)
-                        buildDayMealCard(date, rows, plan = date > today)
-                    }
+                    .take(2)
+                val todayCards = todayEntry?.let { rows ->
+                    listOf(buildDayMealCard(today, rows, plan = false))
+                } ?: emptyList()
+                val futureCards = futureEntries.map { (dateStr, rows) ->
+                    val date = DateTime.parseDate(dateStr)
+                    buildDayMealCard(date, rows, plan = true)
+                }
+                todayCards + futureCards
             }
             .flowOn(ioDispatcher)
     }
