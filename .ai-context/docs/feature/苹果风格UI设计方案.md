@@ -537,3 +537,12 @@ fun PrimaryTabRow(
 - **②权威份量轻入口**：推荐页/周期计划页脚 + **今日卡下方**加**文字型**"各类每天吃多少 ›"(`DailyAmountRefLink`·`TextButton` 无卡片无图标·`internal` 跨包复用)→跳膳食参考依据页。让权威份量**可达可溯源**却不喧宾(吸收"静态份量参考"·不孤立贴份量表)。推荐四入口放页脚各出一次；今日卡挂在 HomeScreen `todayCard` 下方(**不进 6 处共用的 `DayMealCardView`**·仅今日卡·其余 timeline/search/weekplan 用法零影响·遵"能力显隐由回调传入决定"红线)。
 - **绝不做(防过度设计·留待办)**：份量达成度进度条/某层克数偏少警示/"达标%"(需可靠逐人逐日克重+易焦虑·违反 §9.40 反考核红线)、减法说教(油盐/肉偏多)、份量个性化(按成员年龄活动量)。要做须单独立项、全程无红无%无目标线。
 - **口径收敛(算法侧顺带·呈现无感)**：周计划营养线缺口口径由自创三支柱收敛到宝塔四正向层(`layerGapDays`)·`NutritionLineCard` 只渲染 advices 文本零改。落地样板 `AiRecommendScreen.MealStructureHintRow/DailyAmountRefLink` + `AiPlanScreen.AiPlanBody`。
+
+### 9.43 首页「今天 + 接下来」三天合并视图（HOME-MERGE·apple_ux_designer 会诊）
+> [AI生成 2026-08-20] 首页"今日"+"计划"两个 section 合并、"一周计划"卡上移。核心裁决：**用"降未来的调"而非"抬今天的调"建层级**（今天角标改实心 primary/onPrimary，未来角标降为透明底+onSurfaceVariant 灰字，日期文字未来也降为 onSurface）；**取消所有大空态，改成"今天永远占一格（有记录=真卡/无记录=占位卡），未来有几天显几天（0~2），入口行常驻"**——不是"一个大空态 vs 三个独立空态"二选一，是"取消空态本身"。
+- **结构**：`NextMealCard`（签名元素不动）→（营养色系墙，可选）→统一 `Spacer(20dp)`控制点→"一周计划"入口卡（原样上移，不动内容/点击行为）→单一 `SectionHeader("今天和接下来")`（不带 action，去掉现有"全部▸"与"只显示下一个有安排的日期"提示灰字）→今天卡（有记录用 `DayMealCardView`，无记录用新建 `DayPlaceholderCard`）→未来 0~2 张 `DayMealCardView`（三张卡统一 12dp 间隔，不加分隔线/分组）→列表末尾文字链接行"查看全部食历 ›"（不叫"加载更多"——本项目"加载更多"语义已固定为原地展开/自动预加载，这里是整页跳转，用导航行而非按钮/卡片）。
+- **今天/未来视觉差异**（改 `DayMealCardView.kt` 的 `Badge()` 调用参数，签名不用改）：今天角标 `Badge("今天", onPrimary, primary)`（实心，全区块唯一 filled 元素）；未来角标 `Badge("计划", onSurfaceVariant, Color.Transparent)`；未来日期文字色降为 `onSurface`（今天维持 `primary`）。**注意**：开启营养色系时卡片底色会被营养色接管，今天/未来的容器色差异会消失，所以层级必须只靠"角标+日期色"独立成立，不能依赖容器色。
+- **`DayPlaceholderCard`**（新建，与 `DayMealCardView` 同族同宽同圆角同角标位置）：单行"今天还没记"+"记一餐 ›"，整卡点击 `onEditMealDate(today)`，不挂 `⋯` ActionSheet（无内容可操作）、不挂份量参考轻入口（无记录谈份量是空谈）。
+- **边界情况（零特例的一条规则）**：今天没记且未来也空→只显 `DayPlaceholderCard`+入口行，不再额外弹"接下来还没安排"（一周计划卡已置顶常驻，是天然引导，重复即噪声）；未来只有1天→只显1天，不补占位（占位卡只对"日期确定但内容缺失"成立，未来第2个有安排的日子日期不确定，补假占位无意义）；"查看全部食历"入口行默认常驻（食历含过去，未来空≠食历空），仅整库零餐食记录时隐藏（需 VM 新增 `hasAnyMealRecord`，或退路：始终显示，`FoodTimelineScreen` 自带空态兜底，多一跳但非死胡同）。
+- **数据层**：`MealRecordRepository.observeTodayPlusFuture` 的 `.take(2)` 语义要改成"今天(0~1)+未来.take(2)"分别取，不能直接改 `take(3)`（今天没记录时会把未来第3天错顶进来，今天位置被挤没）。
+- **反过度设计**：不做骨架屏（本地 DB 够快，首帧按占位卡渲染再替换，无闪烁）；入口行不加动态计数（"还有N天有安排"）；三天视图不承诺完整性，完整性由入口行兜底。

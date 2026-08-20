@@ -29,6 +29,24 @@
 | 下一步 | ①`luna` 按蓝图 §22.1 修复 AF-UEN-01（补齐 `SINGLE_DAY+MANUAL` 保存入口）+ AF-UEN-02（`AiMealBody` 保存完成后正确离开+反馈，含 DONE 态清理策略）；②补 `INV-UEN-17` 对应测试；③重跑三条构建命令；④真机验证 `E-UEN-01`（完整单天手动保存）+ 新增 `E-UEN-16`（完整AI保存离开无假性未保存提示）；⑤交回 ARCH 二次复核，通过后才回写 `ACCEPTED`+基线sha+交付commit+全景图回写+`TURN=USER`。 |
 
 ---
+## 当前批次：HOME-MERGE-01（2026-08-20，与上方 UEN 批次并行、互不阻塞）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | 首页"今日"+"计划"两个 section 合并为"今天+未来2天"统一三天视图，"一周计划"入口卡上移。用户原话（同一次会话追加）："首页的界面需要调整一下，把一周计划提到今日上方，今日和计划中的餐食融为一体…这几个你也一起在蓝图上设计一下"。已过 `apple_ux_designer` 门禁（产出沉淀 `苹果风格UI设计方案.md` §9.43），本机 ARCH 审核+代码级事实核验后整合为 L7 全量蓝图。 |
+| 状态 | **BLUEPRINT_READY**——蓝图已过 §0.1 颗粒度勾销表全量自查（48条GC，0未满足），未执行任何代码改动 |
+| 规模/颗粒度 | BLUEPRINT-FULL / L7（项目基线，§0.1 勾销表见蓝图文件） |
+| **TURN** | **CODE**——蓝图就绪，交由 `luna` 执行，本机 ARCH 停手等待交付；与 `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01` 批次 allowlist 零重叠（前者动 `ui/home`+`MealRecordRepository`，后者动 `ui/addmeal`+`ui/ai`+`ui/nav`），可与其并行推进，不必等 UEN 批次 rework 收尾 |
+| CODE | `luna` |
+| ARCH | 本机 ARCH（Sonnet）审核 `apple_ux_designer` 产出+代码级事实核验（`DayMealCardView.kt`/`MealRecordRepository.kt`/`HomeScreen.kt` 实读核实）+起草 L7 全量蓝图；独立挑战=本人换轮次读源码验证设计产出的技术判断（未走独立 agent 二次挑战，见蓝图 §12 说明） |
+| 蓝图文件 | `docs/feature/首页今日与计划合并_实施蓝图.md`（含 §0.1 颗粒度勾销表/§2.1 allowlist固定块/§10 STEP脚本/§8 INV表10条/§9 测试矩阵） |
+| 设计产出 | `苹果风格UI设计方案.md` §9.43（`apple_ux_designer` 2026-08-20 出，已审核） |
+| 基线 sha | 待 CODE 交付首个 commit 时回填 |
+| 交付 commit | 待回填 |
+| 全景图回写 | 待回填（`BLUEPRINT_READY`状态不要求本字段） |
+| 下一步 | ①`luna` 按蓝图 §14 执行，`observeTodayPlusFuture` 修复建议先写复现单测（§14第4条）；②交付前跑 `google_quality_engineer` 复审；③交付时更新真机待验证清单 `E-HM-01~08`；④交付后本机 ARCH 独立复核（diff逐STEP核对+实跑三条构建命令+INV逐条对照，**不采信 CODE 自评**——UEN 批次 AF-UEN-01/02 已证明自评会漏掉真实阻断），通过后回写 `ACCEPTED`+基线sha+交付commit+全景图回写+`TURN=USER`。 |
+
+---
 ## 上一批次：AIMEAL-B7F-BUGFIX-TIMEOUT-DIALOG-01（2026-08-20）
 | 字段 | 值 |
 |---|---|
