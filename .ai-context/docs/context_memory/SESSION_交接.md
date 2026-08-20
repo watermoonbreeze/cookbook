@@ -107,7 +107,7 @@
 
 - `--struct`：**[OK] 结构体检通过**。
 - `--backlog --since 332c26cf`：初始报告 F-AI-MEAL/F-WEEKPLAN 落后（`synced_to` 停在更早的 `511fa61c`，非本次引入的历史欠账）。
-- `--range 332c26cf..edbaa711`：首次报 `SYNC-FAIL`（F-WEEKPLAN BEHIND——`PeriodDayBlock.kt` 命中其 match 但文件夹未同批更新），已修复：F-WEEKPLAN 新增缺陷记录 + 两个 Feature 的 `synced_to` 均回填至 `edbaa711`，本次交接提交后需再跑一次 `--range <本次交接commit的父commit>..<本次交接commit>` 确认转 `SYNC-OK`（交接提交本身只动文档、不再新增 match 命中的产品代码，预期直接过）。
+- `--range 332c26cf..edbaa711`：首次报 `SYNC-FAIL`（F-WEEKPLAN BEHIND——`PeriodDayBlock.kt` 命中其 match 但文件夹未同批更新），已修复：F-WEEKPLAN 新增缺陷记录 + 两个 Feature 的 `synced_to` 均回填至 `edbaa711`。交接提交（`b71bce13`）后已复验两次：`--range edbaa711..b71bce13` 与全批 `--range 332c26cf..b71bce13` **均 `SYNC-OK b71bce13`**（F-AI-MEAL/F-WEEKPLAN 均 `folder-updated=yes`、`synced_to=edbaa711`）。
 - `--emit-index --write`：本次未执行（本批改动是 bugfix + 待办/缺陷记录，未新增/关闭功能状态条目，判断不需要重新生成索引）。
 
 止损条件见 `08` D-20（横轴）与 D-25（纵轴）。下次交接重跑本命令覆盖本表。
