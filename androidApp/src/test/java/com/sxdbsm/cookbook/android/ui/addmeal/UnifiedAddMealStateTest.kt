@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.android.ui.addmeal
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import com.sxdbsm.cookbook.android.ui.ai.AiMealPhase
 
 /** UEN 页面壳状态回归测试，覆盖 T-UEN-01~03/06/07 的纯状态不变量。[AI生成] */
 class UnifiedAddMealStateTest {
@@ -29,5 +30,11 @@ class UnifiedAddMealStateTest {
             UnifiedAddMealUiState(MealRange.PERIOD, MealInputMethod.MANUAL),
             state.reduce(UnifiedAddMealEvent.SelectMethod(MealInputMethod.MANUAL)),
         )
+    }
+
+    @Test
+    fun aiDoneRequiresLeavingUnifiedEntry() {
+        assertEquals(true, shouldLeaveAfterAiSave(AiMealPhase.DONE))
+        assertEquals(false, shouldLeaveAfterAiSave(AiMealPhase.PREVIEW_READY))
     }
 }

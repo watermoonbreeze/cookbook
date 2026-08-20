@@ -270,7 +270,6 @@ fun AddDayFoodScreen(
         // [AI修改] 家族化 P3(§9.13/基调§一.1):保存/主 CTA 永远在底部胶囊常驻。
         //   navBarPadding=false——本页是 MainScaffold 无底栏路由,已在 NavHost 层加过 navigationBarsPadding(见 MainScaffold:175),此处不再消费防双下边距。
         bottomBar = {
-            if (!embedded) {
             com.sxdbsm.cookbook.android.ui.component.FormBottomBar(
                 primaryText = if (state.isPlan) "保存计划" else "保存",
                 // [AI修改] D-07(用户2026-07-18二次确认):所有保存餐食(记一餐/实录 与 计划)都先弹预览确认再存。
@@ -278,7 +277,6 @@ fun AddDayFoodScreen(
                 primaryEnabled = state.canSave,
                 navBarPadding = false,
             )
-            }
         },
     ) { padding ->
         Column(

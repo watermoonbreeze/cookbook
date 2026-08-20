@@ -20,6 +20,7 @@ import com.sxdbsm.cookbook.android.ui.ai.AiMealPhase
 import com.sxdbsm.cookbook.android.ui.ai.AiMealBody
 import com.sxdbsm.cookbook.android.ui.ai.InputMode
 import com.sxdbsm.cookbook.android.ui.component.AppTopBar
+import com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar
 import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
 import com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard
 import com.sxdbsm.cookbook.android.ui.nav.Routes
@@ -42,6 +43,7 @@ fun UnifiedAddMealScreen(
     }
     val singleManualVm: AddMealViewModel = koinViewModel(key = "unified-single-manual")
     val aiState by aiVm.state.collectAsStateWithLifecycle()
+    val appSnackbar = LocalAppSnackbar.current
     var pageState by remember { mutableStateOf(UnifiedAddMealUiState()) }
     var pendingChange by remember { mutableStateOf<(() -> Unit)?>(null) }
 
@@ -120,7 +122,16 @@ fun UnifiedAddMealScreen(
 
             when {
                 pageState.range == MealRange.SINGLE_DAY && pageState.method == MealInputMethod.AI ->
-                    AiMealBody(vm = aiVm)
+                    AiMealBody(
+                        vm = aiVm,
+                        onSaved = { savedState ->
+                            if (shouldLeaveAfterAiSave(savedState.phase)) {
+                                appSnackbar?.showMessage("已保存")
+                                aiVm.reset()
+                                nav.popBackStack()
+                            }
+                        },
+                    )
                 pageState.range == MealRange.SINGLE_DAY && pageState.method == MealInputMethod.MANUAL ->
                     AddDayFoodScreen(
                         onBack = { nav.popBackStack() },
@@ -131,7 +142,16 @@ fun UnifiedAddMealScreen(
                         embedded = true,
                     )
                 pageState.range == MealRange.PERIOD && pageState.method == MealInputMethod.AI ->
-                    AiMealBody(vm = aiVm)
+                    AiMealBody(
+                        vm = aiVm,
+                        onSaved = { savedState ->
+                            if (shouldLeaveAfterAiSave(savedState.phase)) {
+                                appSnackbar?.showMessage("已保存")
+                                aiVm.reset()
+                                nav.popBackStack()
+                            }
+                        },
+                    )
                 else ->
                     WeekPlanScreen(
                         onBack = { nav.popBackStack() },

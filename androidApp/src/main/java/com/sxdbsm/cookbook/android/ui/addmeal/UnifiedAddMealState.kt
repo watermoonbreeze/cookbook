@@ -23,3 +23,7 @@ fun UnifiedAddMealUiState.reduce(event: UnifiedAddMealEvent): UnifiedAddMealUiSt
     is UnifiedAddMealEvent.SelectRange -> copy(range = event.range)
     is UnifiedAddMealEvent.SelectMethod -> copy(method = event.method)
 }
+
+/** AI 保存完成后必须离开统一入口，避免 DONE 态被误判为未保存草稿。[AI修复] AF-UEN-02 */
+fun shouldLeaveAfterAiSave(phase: com.sxdbsm.cookbook.android.ui.ai.AiMealPhase): Boolean =
+    phase == com.sxdbsm.cookbook.android.ui.ai.AiMealPhase.DONE
