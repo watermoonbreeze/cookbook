@@ -16,17 +16,17 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | 统一添加餐食入口（+号2×2矩阵：单天/周期×AI快捷/手动选择）+ 底部导航栏改悬浮胶囊+独立悬浮"+"。起源于外部（网页版ChatGPT）产出两份方案文档，本机 ARCH 审核后订正一处实质架构假设错误（AI相关两格本来就共享同一个 `AiMealInputViewModel`，外部方案误判为需各建一份独立Draft状态），整合为项目 L7/48-GC 全量模板蓝图。 |
-| 状态 | **REVIEWING**——CODE 已完成实现与自动化验收；待 ARCH 按蓝图逐文件复核、执行最终质量审查，并保留 E-UEN-01~15 真机待验 |
+| 状态 | **REWORK_REQUIRED**——ARCH 独立复核（diff逐文件+独立实跑三条构建命令+独立复现`SYNC-OK`+测试报告XML核验，未采信`941dd30c`自评）：allowlist/STEP结构性内容/INV-UEN-02~09/15均满足，构建与3/3新测试真实通过，但发现 **2 项阻断 AF-UEN-01/AF-UEN-02**（`SINGLE_DAY+MANUAL`无可见保存按钮完全无法保存；`SINGLE_DAY+AI`/`PERIOD+AI`保存成功后无跳转反馈且触发假性"未保存"提示），详见蓝图 §22.1。**不得转 ACCEPTED** |
 | 规模/颗粒度 | BLUEPRINT-FULL / L7（项目基线，§0.1 勾销表见蓝图文件） |
-| **TURN** | **REVIEW**——`luna` 已完成工作区实现，交回本机 ARCH 复核 |
+| **TURN** | **CODE**——蓝图 §22.1 已给出 AF-UEN-01/02 具体修订方向，交回 `luna` 按此修复，本机 ARCH 再次停手等待 |
 | CODE | `luna`（用户远程主机编码 agent，具体模型身份由用户登记，执行后 ARCH 复核时补 `14_模型执行力评估.md` 台账） |
-| ARCH | 本机 ARCH（Sonnet）审核外部产出+代码级事实核验+起草 L7 全量蓝图；独立挑战=本人换轮次读源码验证外部方案自述（未走独立 agent 二次挑战，见蓝图 §22 说明） |
-| 蓝图文件 | `docs/feature/统一添加入口+悬浮导航栏_实施蓝图.md`（含 §0.1 颗粒度勾销表/§2.1 allowlist固定块/§13 STEP脚本/§17 INV表/§18 测试矩阵） |
+| ARCH | 本机 ARCH（Sonnet）审核外部产出+代码级事实核验+起草 L7 全量蓝图+独立复核交付并抓出2项阻断（详见蓝图 §22.1，未采信 CODE 自评"✅代码完成"/真机清单未覆盖到的盲区） |
+| 蓝图文件 | `docs/feature/统一添加入口+悬浮导航栏_实施蓝图.md`（§22.1 新增复核记录+AF-UEN-01/02+建议追加`INV-UEN-17`） |
 | 外部产出 | `docs/外部方案/Cookbook_统一添加入口与悬浮导航栏_实现规格_20260820.md` + `Cookbook_统一添加入口_页面级交互与状态流转规格_20260820.md`（已审核，蓝图 §5-6 订正其状态管理假设） |
-| 基线 sha | `8b824f0d`（本次拉取后的交付前基线；工作区实现尚未提交） |
-| 交付 commit | `6f2b201c`（代码实现已推送，等待远程 ARCH 复核） |
-| 全景图回写 | `SYNC-OK 6f2b201c`（`feature_sync_check.py --range 8b824f0d..6f2b201c`） |
-| 下一步 | ①ARCH 逐文件核对 allowlist/STEP/INV；②执行 `google_quality_engineer` 质量复审门禁（若环境无该 agent，记录阻塞）；③决定是否提交；④真机验证 `E-UEN-01~15`；⑤通过后回写本表 `ACCEPTED`、交付 commit、全景图回写与 `TURN=USER`。 |
+| 基线 sha | 待第一轮真正 ACCEPT 时回填（本轮 `6f2b201c` 因阻断未收口，不作为最终基线） |
+| 交付 commit | 第一轮：`6f2b201c`（REWORK_REQUIRED，不作为最终交付）+ `941dd30c`（状态回填，同样待二轮修订） |
+| 全景图回写 | 待二轮修复后重新核对（第一轮 `SYNC-OK 6f2b201c` 已独立复现属实，但因阻断存在暂不采信为最终交付状态） |
+| 下一步 | ①`luna` 按蓝图 §22.1 修复 AF-UEN-01（补齐 `SINGLE_DAY+MANUAL` 保存入口）+ AF-UEN-02（`AiMealBody` 保存完成后正确离开+反馈，含 DONE 态清理策略）；②补 `INV-UEN-17` 对应测试；③重跑三条构建命令；④真机验证 `E-UEN-01`（完整单天手动保存）+ 新增 `E-UEN-16`（完整AI保存离开无假性未保存提示）；⑤交回 ARCH 二次复核，通过后才回写 `ACCEPTED`+基线sha+交付commit+全景图回写+`TURN=USER`。 |
 
 ---
 ## 上一批次：AIMEAL-B7F-BUGFIX-TIMEOUT-DIALOG-01（2026-08-20）
