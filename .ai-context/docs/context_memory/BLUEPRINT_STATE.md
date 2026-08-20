@@ -30,6 +30,21 @@
 > - `SYNC-NOOP <F-ID> <head> <理由，≥15字>` —— 本批命中某功能但确无需要回写的实质内容（如纯改名/加注释），理由≥15字，可重复多行（每个受影响功能各一行）。
 >
 > 该字段空白、或内容对不上脚本可复现结果，即视为批次未收口，不得转 TURN。设计与判据见 `projectReview/08` D-25（升级前的 D-20 设计背景仍有效，仅承重方式从"人填三选一"改"脚本判定二选一"，`07`/`DEFER` 相关表述已废止）。
+### MEAL-UX-CONSOLIDATION-01 最终交回 ARCH
+
+| 字段 | 值 |
+|---|---|
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| delivery head | `c7160d31c5534f2d66587bbc17e432022dd84745` |
+| A UEN-FINAL | CODE_COMPLETE / PENDING ARCH REVIEW；AF-UEN-01/02 回归待真机，AF-UEN-03 已实现 |
+| B DATE-CALENDAR-01 | CODE_COMPLETE / PENDING ARCH REVIEW |
+| C HOME-MERGE-01 | CODE_COMPLETE / PENDING ARCH REVIEW |
+| 构建/测试 | `:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均通过 |
+| 真机证据 | E-UEN-17~19、E-DC-01~03、E-HM-01 已登记为待真机确认，未伪造 PASS |
+| feature sync | 已回写 F-MEAL/F-TIMELINE/F-TOOLS Feature 文档与 STATE；脚本原始检查发现三组待同步 |
+| 下一步 | 外部 ARCH 总审核；禁止继续 CODE；禁止写入 ACCEPTED |
+
 ---
 ## 当前批次：AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01（2026-08-20）
 
