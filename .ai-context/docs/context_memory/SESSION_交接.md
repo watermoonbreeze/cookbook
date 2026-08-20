@@ -1,6 +1,6 @@
 # 🔖 SESSION 交接入口
 
-> **UEN CODE 交付更新（2026-08-20）**：远端 `8b824f0d` 将 `TURN` 握手切为 `CODE` 后，luna 已完成统一添加入口/悬浮导航栏工作区实现。`AiMealBody`、`UnifiedAddMealScreen/State`、统一路由、悬浮胶囊导航、嵌入式单天手动/周期手动分支及 `E-UEN-01~15` 真机清单已落地；`:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 和结构体检均通过。当前已回写 `BLUEPRINT_STATE.md` 为 `REVIEWING/TURN=REVIEW`，尚未提交；待 ARCH 逐文件复核、质量复审与真机验证。
+> **UEN CODE 交付更新（2026-08-20）**：远端 `8b824f0d` 将 `TURN` 握手切为 `CODE` 后，luna 已完成统一添加入口/悬浮导航栏工作区实现，并推送提交 `6f2b201c`。`AiMealBody`、`UnifiedAddMealScreen/State`、统一路由、悬浮胶囊导航、嵌入式单天手动/周期手动分支及 `E-UEN-01~15` 真机清单已落地；`:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 和结构体检均通过。当前 `BLUEPRINT_STATE.md` 为 `REVIEWING/TURN=REVIEW`；待远程 ARCH 逐文件复核、质量复审与真机验证。
 
 > 更新时间：**2026-08-20（同日第五次）· 统一添加入口 + 悬浮导航栏蓝图已升级为项目 L7/48-GC 全量合规版，`BLUEPRINT_STATE.md` 已正式握手，TURN=CODE 交给远程主机 luna 落地编码**
 > 当前工作域：延续同日前三次交接（`edbaa711`/`b71bce13`/`9cc864c9`）之后，用户开了新话题——App 里"添加餐食"入口太碎（首页+号只管单天手动、AI快捷记藏在顶栏、周期记和一周计划各自独立）+ 导航栏太高，要求方案讨论。走了"讨论→用户拿去网页版ChatGPT出方案→我审核ChatGPT方案+补代码级事实校正→出实施蓝图"的链路后，**用户当面指出蓝图交接漏了项目"蓝图模式"协议的两处硬要求**：①`BLUEPRINT_STATE.md` 握手状态文件未同步登记本批次、`TURN` 未设为 `CODE`；②蓝图本身未按 `12_多模型协作与实施蓝图规范.md` 的 L7/48-GC 全量模板成文（缺 §0.1 颗粒度勾销表/allowlist固定块/INV表/STEP编号脚本/测试矩阵等）。两处均已按用户选定方案（"补齐全量模板后再交付"）修复。**本 session 本身不写业务代码，只产出规划/蓝图文档**，实际编码交给用户远程主机上的 `luna` 执行。

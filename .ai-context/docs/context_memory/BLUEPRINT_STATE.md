@@ -24,8 +24,8 @@
 | 蓝图文件 | `docs/feature/统一添加入口+悬浮导航栏_实施蓝图.md`（含 §0.1 颗粒度勾销表/§2.1 allowlist固定块/§13 STEP脚本/§17 INV表/§18 测试矩阵） |
 | 外部产出 | `docs/外部方案/Cookbook_统一添加入口与悬浮导航栏_实现规格_20260820.md` + `Cookbook_统一添加入口_页面级交互与状态流转规格_20260820.md`（已审核，蓝图 §5-6 订正其状态管理假设） |
 | 基线 sha | `8b824f0d`（本次拉取后的交付前基线；工作区实现尚未提交） |
-| 交付 commit | 待 ARCH 复核后由用户决定是否提交 |
-| 全景图回写 | 待回填（`BLUEPRINT_READY`状态不要求本字段，仅 `ACCEPTED` 时必填，见文件头说明） |
+| 交付 commit | `6f2b201c`（代码实现已推送，等待远程 ARCH 复核） |
+| 全景图回写 | `SYNC-OK 6f2b201c`（`feature_sync_check.py --range 8b824f0d..6f2b201c`） |
 | 下一步 | ①ARCH 逐文件核对 allowlist/STEP/INV；②执行 `google_quality_engineer` 质量复审门禁（若环境无该 agent，记录阻塞）；③决定是否提交；④真机验证 `E-UEN-01~15`；⑤通过后回写本表 `ACCEPTED`、交付 commit、全景图回写与 `TURN=USER`。 |
 
 ---
