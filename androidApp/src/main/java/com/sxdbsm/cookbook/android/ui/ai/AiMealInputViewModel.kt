@@ -125,6 +125,8 @@ data class AiMealInputUiState(
     // ── B4: 周期记字段 ──
     /** [AI生成] B4: 快速记草稿（切换模式保留）。 */
     val quickDraftText: String = "",
+    /** [AI修改] B6-fix2: 最近一次写入 `quickDraftText` 是否发生了 200 字截断，驱动 UI 内联提示（google_quality_engineer 复审：Sheet 内 Snackbar 大概率被 ModalBottomSheet 浮层窗口遮挡，改用内联反馈+此状态单一真相源，避免 UI 侧重算 appendText 的拼接逻辑）。 */
+    val quickInputTruncated: Boolean = false,
     /** [AI生成] B4: 周期记周锚点（所选周周一）。 */
     val periodWeekMonday: LocalDate? = null,
     /** [AI生成] B4: 周期记选中日期范围（0..6 表示周一至周日），默认全选。[AI修改] B6-fix: 本范围仅控制输入区可见性；submit() 提交的是 periodInputs 中全部非空白天（不受本范围限制），收窄范围不会撤回已输入内容（AF-B456-07·Google质量 B4-S1）。 */
@@ -261,10 +263,9 @@ class AiMealInputViewModel(
         // WEEK 模式：setInputText 是 no-op，文本由 setPeriodInput(dayIndex, text) 管理
     }
 
-    /** [AI生成] B4: 设置快速记草稿（含 200 字截断）。[AI修改] B6-fix: 内部收口调 invalidateGenerationToInput，确保"编辑即新会话"语义（AF-B456-01 W5·GC-27）。 */
+    /** [AI生成] B4: 设置快速记草稿（含 200 字截断，收口进 invalidateGenerationToInput）。[AI修改] B6-fix: 确保"编辑即新会话"语义（AF-B456-01 W5·GC-27）。 */
     fun setQuickDraft(text: String) {
-        val trimmed = text.take(AiMealPrompt.MAX_INPUT_CHARS)
-        invalidateGenerationToInput(trimmed, _state.value.targetDate)
+        invalidateGenerationToInput(text, _state.value.targetDate)
     }
 
     /** [AI生成] B4: 设置周期记某天草稿（含 200 字截断）。 */
@@ -316,8 +317,10 @@ class AiMealInputViewModel(
         }
     }
 
-    /** 原子失效进行中 generation 并回到 INPUT 态。[AI修改] B3.4-R4-06: 改用 .copy() 保留粘性字段。 */
+    /** 原子失效进行中 generation 并回到 INPUT 态。[AI修改] B3.4-R4-06: 改用 .copy() 保留粘性字段。[AI修改] B6-fix2: 统一在此收口截断（AF-B456-04 复检·appendText/onVoiceResult 此前绕过了 setQuickDraft 的截断，粘贴按钮追加超长剪贴板内容后一直显示未截断，直到下次 onValueChange 才补截断）。 */
     private fun invalidateGenerationToInput(nextInput: String, nextDate: LocalDate) {
+        val truncated = nextInput.take(AiMealPrompt.MAX_INPUT_CHARS)
+        val wasTruncated = nextInput.length > AiMealPrompt.MAX_INPUT_CHARS
         generationJob?.cancel()
         generationJob = null
         lastPreviewDays = null
@@ -328,7 +331,8 @@ class AiMealInputViewModel(
         ruleWarnings.clear()
         _state.update { prev ->
             prev.copy(
-                quickDraftText = nextInput,
+                quickDraftText = truncated,
+                quickInputTruncated = wasTruncated,
                 targetDate = nextDate,
                 phase = AiMealPhase.INPUT,
                 generationId = null,

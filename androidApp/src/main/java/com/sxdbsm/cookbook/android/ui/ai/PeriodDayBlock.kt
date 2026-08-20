@@ -43,14 +43,16 @@ fun PeriodDayBlock(
     inputText: String,
     onTextChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    /** [AI生成] B6-fix: 截断回调——截断发生时调一次（AF-B456-04·INV-B4-05/06）。能力显隐由回调传入决定。 */
-    onTruncated: (() -> Unit)? = null,
 ) {
     val maxChars = AiMealPrompt.MAX_INPUT_CHARS
     val charCount = inputText.length
 
-    // [AI生成] B6-fix: 截断提示去重——同一输入框连续超限只提示一次，降到上限以下复位（AF-B456-04·§3.6）。
+    // [AI修改] B6-fix2·google_quality_engineer 复审：截断提示改自包含内联文字，不再经外部 Snackbar
+    // 回调——本组件恒在 ModalBottomSheet（AI 快捷记周期记）内使用，Snackbar 挂在 Activity 主窗口，
+    // 层级被 Sheet 的独立浮层窗口盖住大概率看不见（同 QuickInputSection 的 quickInputTruncated 修复）。
+    // 截断提示去重——同一输入框连续超限只提示一次，降到上限以下复位（AF-B456-04·§3.6）。
     var truncNotified by remember { mutableStateOf(false) }
+    var showTruncHint by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
         // 日期标签行
@@ -76,6 +78,12 @@ fun PeriodDayBlock(
                 )
             }
         }
+        LaunchedEffect(showTruncHint) {
+            if (showTruncHint) {
+                kotlinx.coroutines.delay(2000)
+                showTruncHint = false
+            }
+        }
         Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
             OutlinedTextField(
                 value = textFieldValue,
@@ -86,10 +94,10 @@ fun PeriodDayBlock(
                             text = truncatedText,
                             selection = TextRange(truncatedText.length),
                         )
-                        // [AI生成] B6-fix: 截断发生时弹 Snackbar，同一输入框连续超限只提示一次（AF-B456-04·§3.6·GC-30）。
+                        // [AI修改] B6-fix2：截断发生时显示内联提示，同一输入框连续超限只提示一次（AF-B456-04·§3.6·GC-30）。
                         if (!truncNotified) {
                             truncNotified = true
-                            onTruncated?.invoke()
+                            showTruncHint = true
                         }
                     } else {
                         textFieldValue = newVal
@@ -114,6 +122,18 @@ fun PeriodDayBlock(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(),
             )
+
+            // 截断内联提示（右下角，字符计数上方）[AI修改] B6-fix2
+            if (showTruncHint) {
+                Text(
+                    "已截取前 $maxChars 字",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 12.dp, bottom = 28.dp),
+                )
+            }
 
             // 字符计数（右下角 overlay）[B5] 统一 CharCountLabel 组件
             CharCountLabel(

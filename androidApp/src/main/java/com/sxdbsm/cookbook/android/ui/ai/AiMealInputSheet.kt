@@ -103,6 +103,9 @@ import kotlinx.datetime.LocalDate
  * [AI生成] K1 AI快捷输入记餐：UI 层。
  **/
 
+/** [AI修改] 2026-08-20：语音录入本期先隐藏（用户反馈"语音引擎繁忙"未修复，见待办总览），入口保留代码待后续修复后放开。 */
+private const val VOICE_INPUT_ENABLED = false
+
 /** 引导示例文案。[AI生成] */
 private val EXAMPLE_HINTS = listOf(
     "中午吃了红烧肉、米饭，少放盐",
@@ -334,9 +337,6 @@ private fun QuickInputSection(
     // [AI修改] B5-fix: TextFieldValue 确保 ModalBottomSheet 内文本选择/长按粘贴可用。
     // 在 onValueChange 中立即截断（不依赖 LaunchedEffect 异步回写），防粘贴超长文本绕过截断。
     var textFieldValue by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(state.quickDraftText)) }
-    // [AI生成] B6-fix: 截断提示去重（AF-B456-04·§3.6·GC-30）。
-    var quickTruncNotified by remember { mutableStateOf(false) }
-    val quickSnackbar = LocalAppSnackbar.current
     LaunchedEffect(state.quickDraftText) {
         if (textFieldValue.text != state.quickDraftText) {
             textFieldValue = androidx.compose.ui.text.input.TextFieldValue(
@@ -345,30 +345,36 @@ private fun QuickInputSection(
             )
         }
     }
+    // [AI修改] B6-fix2·google_quality_engineer 复审：截断提示改为 Sheet 内联文字，不再用 Snackbar——
+    // Snackbar 挂在 MainScaffold（Activity 主窗口），而 ModalBottomSheet（含本输入框）是 WindowManager
+    // 加的独立浮层窗口、层级在主窗口之上，Sheet 打开时 Snackbar 大概率被整体遮住看不见（这也是
+    // E-B6-05/E-B6-TRUNC-01 此前从未通过的可能原因之一，不能只归因于粘贴路径绕过截断）。
+    // 单一真相源改为 VM 的 quickInputTruncated（每次写 quickDraftText 时是否发生了截断），
+    // 覆盖 onValueChange/粘贴按钮/语音识别三条入口，UI 不再自己重算是否会超限。
+    var showTruncHint by remember { mutableStateOf(false) }
+    LaunchedEffect(state.quickInputTruncated) {
+        if (state.quickInputTruncated) {
+            showTruncHint = true
+            kotlinx.coroutines.delay(2000)
+            showTruncHint = false
+        }
+    }
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = textFieldValue,
             onValueChange = { newVal ->
                 val max = AiMealPrompt.MAX_INPUT_CHARS
-                val truncatedText = newVal.text.take(max)
-                if (truncatedText.length != newVal.text.length) {
+                // 本地立即截断，保证输入框显示不闪现超限内容；VM 侧 setQuickDraft 收到原始未截断文本
+                // 才能正确判定 quickInputTruncated（截断判定唯一收口在 invalidateGenerationToInput）。
+                if (newVal.text.length > max) {
                     textFieldValue = newVal.copy(
-                        text = truncatedText,
-                        selection = androidx.compose.ui.text.TextRange(truncatedText.length),
+                        text = newVal.text.take(max),
+                        selection = androidx.compose.ui.text.TextRange(max),
                     )
-                    // [AI生成] B6-fix: 快速记截断弹 Snackbar（AF-B456-04·§3.6·GC-30）。
-                    if (!quickTruncNotified) {
-                        quickTruncNotified = true
-                        quickSnackbar?.showMessage("已截取前 ${AiMealPrompt.MAX_INPUT_CHARS} 字")
-                    }
                 } else {
                     textFieldValue = newVal
-                    // [AI生成] B6-fix: 文本降到上限以下，复位截断通知标志。
-                    if (quickTruncNotified && newVal.text.length < max) {
-                        quickTruncNotified = false
-                    }
                 }
-                vm.setInputText(truncatedText)
+                vm.setQuickDraft(newVal.text)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -385,6 +391,18 @@ private fun QuickInputSection(
             colors = OutlinedTextFieldDefaults.colors(),
         )
 
+        // 截断内联提示（右下角，字符计数上方）[AI修改] B6-fix2
+        if (showTruncHint) {
+            Text(
+                "已截取前 ${AiMealPrompt.MAX_INPUT_CHARS} 字",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 12.dp, bottom = 28.dp),
+            )
+        }
+
         // 字符计数（右下角 overlay）[B5] 统一 CharCountLabel 组件。[AI修改] B6-fix: 读 quickDraftText（AF-B456-01 真相源统一）。
         CharCountLabel(
             current = state.quickDraftText.length,
@@ -394,14 +412,14 @@ private fun QuickInputSection(
                 .padding(end = 12.dp, bottom = 8.dp),
         )
 
-        // 粘贴按钮
+        // 粘贴按钮 [AI修改] B6-fix2：不再重算是否超限（截断+提示已收口进 VM），也不再清空系统剪贴板
+        // （google_quality_engineer 复审：清空是越出 App 边界的副作用，用户复制的内容可能还要粘到别处）。
         if (hasClip) {
             TextButton(
                 onClick = {
                     val clipText = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
                     if (clipText.isNotBlank()) {
                         vm.appendText(clipText)
-                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("", ""))
                     }
                 },
                 modifier = Modifier
@@ -415,7 +433,8 @@ private fun QuickInputSection(
 
     Spacer(Modifier.height(16.dp))
 
-    // ── 语音按钮 ──
+    // ── 语音按钮（本期隐藏，见 VOICE_INPUT_ENABLED） ──
+    if (VOICE_INPUT_ENABLED) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -518,6 +537,7 @@ private fun QuickInputSection(
             else -> Text("长按开始说话", style = MaterialTheme.typography.bodySmall)
         }
     }
+    }
 
     Spacer(Modifier.height(12.dp))
 
@@ -556,11 +576,10 @@ private fun QuickInputSection(
     )
 }
 
-/** [AI生成] B4: 周期记输入区——WeekStrip + 每日 PeriodDayBlock。[AI修改] B6-fix: 注入截断 Snackbar 回调（AF-B456-04）。 */
+/** [AI生成] B4: 周期记输入区——WeekStrip + 每日 PeriodDayBlock。[AI修改] B6-fix2: 截断提示已内聚进 PeriodDayBlock 自身，不再需要 Snackbar 回调（AF-B456-04·google_quality_engineer 复审）。 */
 @Composable
 private fun PeriodInputSection(vm: AiMealInputViewModel, state: AiMealInputUiState) {
     val anchor = state.periodWeekMonday ?: return
-    val snackbar = LocalAppSnackbar.current
 
     // [AI修改] B5-fix: 整段统一滚动，防发送按钮被推出屏幕
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -587,7 +606,6 @@ private fun PeriodInputSection(vm: AiMealInputViewModel, state: AiMealInputUiSta
                 dateLabel = label,
                 inputText = text,
                 onTextChange = { vm.setPeriodInput(index, it) },
-                onTruncated = { snackbar?.showMessage("已截取前 ${AiMealPrompt.MAX_INPUT_CHARS} 字") },
             )
 
             if (index < state.periodSelectedRange.last) {
@@ -739,18 +757,22 @@ private fun HelpSheet(onDismiss: () -> Unit) {
             )
             Spacer(Modifier.height(16.dp))
 
-            // 语音输入
-            HelpSection(
-                title = "🎤 语音输入",
-                content = "长按麦克风按钮说话，松手后语音自动转成文字填入输入框。\n" +
-                        "录音仅在本地识别，不上传语音文件。",
-            )
-            Spacer(Modifier.height(16.dp))
+            // 语音输入 [AI修改] B6-fix2·google_quality_engineer 复审：语音入口已隐藏（VOICE_INPUT_ENABLED），
+            // 说明弹窗须同步隐藏，否则用户会照着一个不存在的按钮去操作。
+            if (VOICE_INPUT_ENABLED) {
+                HelpSection(
+                    title = "🎤 语音输入",
+                    content = "长按麦克风按钮说话，松手后语音自动转成文字填入输入框。\n" +
+                            "录音仅在本地识别，不上传语音文件。",
+                )
+                Spacer(Modifier.height(16.dp))
+            }
 
-            // 粘贴
+            // 粘贴 [AI修改] B6-fix2：这个输入框所在的弹层结构上大概率不支持系统长按复制粘贴菜单
+            // （详见 F-AI-MEAL/30_待办.md AIMEAL-UX-REDESIGN），说明只描述确定可用的右上角按钮。
             HelpSection(
                 title = "📋 粘贴",
-                content = "可长按输入框使用系统的复制、粘贴菜单；右上角「粘贴」按钮仍可一键填入剪贴板内容。",
+                content = "点输入框右上角「粘贴」按钮，一键填入剪贴板内容。",
             )
             Spacer(Modifier.height(16.dp))
 
@@ -778,7 +800,7 @@ private fun HelpSheet(onDismiss: () -> Unit) {
                 content = "• 越具体越好，说清菜名和份量\n" +
                         "• 新菜会自动创建，营养来自基础数据估算\n" +
                         "• 发送前可编辑文字，发送后可预览确认再入库\n" +
-                        "• 语音和文字只在记餐时发送，不保存",
+                        "• 文字只在记餐时发送，不保存",
             )
         }
     }

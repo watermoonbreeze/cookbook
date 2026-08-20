@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- [AI生成] AI 快捷输入记餐语音转文字：录音仅本地识别，不上传语音文件 -->
+    <!-- [AI修改] 2026-08-20：语音入口当前由 AiMealInputSheet.kt 的 VOICE_INPUT_ENABLED=false 隐藏，
+         本权限暂无任何界面会触发；语音功能恢复或彻底移除时同步处理本声明，见待办 B7F-VOICE。 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- [AI生成] AI 云端推荐需要联网调用 GLM API -->
     <uses-permission android:name="android.permission.INTERNET" />

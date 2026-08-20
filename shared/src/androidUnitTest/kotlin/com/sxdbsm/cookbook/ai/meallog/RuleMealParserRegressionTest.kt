@@ -172,4 +172,21 @@ class RuleMealParserRegressionTest {
             dishes.first().dish?.ingredients?.mapNotNull { it.food?.name },
         )
     }
+
+    // ═══════════════════════════════════════════════════
+    // 真机反馈 F5-3（2026-08-20 复检）：食用比例误判
+    // ═══════════════════════════════════════════════════
+
+    @Test
+    fun `差不多一碗面不被误判为吃了一半或少量`() {
+        // [AI修改] google_quality_engineer 复审：原断言只排除 0.5/0.75，漏了 EATEN_PATTERNS 的
+        // 第三档 0.25（少量|一点点|...）；eaten_ratio 正确值应为 null（=吃完，AiMealInputSchema.kt
+        // 语义），直接断言 null 更准确，也顺带覆盖任何未来新增的档位。
+        val result = RuleMealParser.parse("差不多一碗面", today = today)
+        val dishes = result.flatMap { it.meals }.flatMap { it.dishes }
+        assertTrue(dishes.isNotEmpty(), "应解析出至少一道菜")
+        dishes.forEach { dish ->
+            assertEquals(null, dish.eaten_ratio, "'差不多'不应被识别为食用比例，实际 eaten_ratio=${dish.eaten_ratio}")
+        }
+    }
 }

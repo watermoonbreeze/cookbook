@@ -651,4 +651,42 @@ class AiMealInputViewModelStreamTest {
         assertEquals(0, port.parseRuleCount)
         assertEquals(AiMealPhase.ERROR, vm.state.value.phase)
     }
+
+    // ═══════════════════════════════════════════════════
+    // B6-fix2（2026-08-20 真机反馈复检）：appendText/onVoiceResult 曾绕过 200 字截断
+    // ═══════════════════════════════════════════════════
+
+    @Test
+    fun `B6-fix2 粘贴按钮追加超长剪贴板内容会被截断到200字并标记quickInputTruncated`() = runVmTest {
+        val vm = createVm(channelRuntime(Channel(Channel.UNLIMITED)), text = "")
+        vm.appendText("x".repeat(400))
+        assertEquals(200, vm.state.value.quickDraftText.length)
+        assertTrue(vm.state.value.quickInputTruncated)
+    }
+
+    @Test
+    fun `B6-fix2 已有190字再粘贴100字追加内容截断到200字且保留原有前缀`() = runVmTest {
+        val vm = createVm(channelRuntime(Channel(Channel.UNLIMITED)), text = "a".repeat(190))
+        vm.appendText("b".repeat(100))
+        val result = vm.state.value.quickDraftText
+        assertEquals(200, result.length)
+        assertTrue("应保留原有 190 字前缀", result.startsWith("a".repeat(190)))
+        assertTrue(vm.state.value.quickInputTruncated)
+    }
+
+    @Test
+    fun `B6-fix2 语音识别结果追加超长文本同样会被截断`() = runVmTest {
+        val vm = createVm(channelRuntime(Channel(Channel.UNLIMITED)), text = "")
+        vm.onVoiceResult("y".repeat(400))
+        assertEquals(200, vm.state.value.quickDraftText.length)
+        assertTrue(vm.state.value.quickInputTruncated)
+    }
+
+    @Test
+    fun `B6-fix2 正常长度粘贴不触发quickInputTruncated`() = runVmTest {
+        val vm = createVm(channelRuntime(Channel(Channel.UNLIMITED)), text = "")
+        vm.appendText("中午吃了红烧肉")
+        assertTrue(vm.state.value.quickDraftText.length < 200)
+        assertTrue(!vm.state.value.quickInputTruncated)
+    }
 }
