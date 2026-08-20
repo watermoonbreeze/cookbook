@@ -1,6 +1,26 @@
 # BLUEPRINT_STATE
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
+---
+## 当前执行聚合：MEAL-UX-CONSOLIDATION-01（R1，P0 已落库）
+
+| 字段 | 值 |
+|---|---|
+| 状态 | **BLUEPRINT_READY / CODE** |
+| TURN | **CODE** |
+| Base | `e9274424b089716cec38c805ee5a140a7066d890` |
+| Children | `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01 / UEN-FINAL`、`DATE-CALENDAR-01`、`HOME-MERGE-01` |
+| Policy | 三项一次执行，一次总 ARCH review；中途不因单项完成切 TURN |
+| Blueprint | `.ai-context/docs/feature/餐食体验三项收口_总执行蓝图.md` |
+| 下一步 | P0 persistence commit 推送后，按 A → B → C → 集成验证执行；最终统一交回 ARCH |
+
+### 本包 P0 状态覆盖
+
+- `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01`：`REWORK_REQUIRED / REPAIR_BLUEPRINT_READY`；`AF-UEN-01/02 = RESOLVED_BY_CODE @ e927442，待总回归`；新增 `AF-UEN-03 = ARCH_SPEC_DEFECT / BP / coder_negative=false`；TURN=`CODE`。
+- `HOME-MERGE-01`：保持 `BLUEPRINT_READY`，TURN=`CODE`；纳入本聚合批次，与 UEN-FINAL/DATE-CALENDAR-01 同轮完成后统一 REVIEW。
+- `DATE-CALENDAR-01`：`BLUEPRINT_READY`，TURN=`CODE`，CODE=`CODER`，ARCH=`ARCH`，基线=`e9274424b089716cec38c805ee5a140a7066d890`；纳入本聚合批次一次执行。
+- 本阶段角色：`ARCH_PERSISTENCE_EXECUTOR`；禁止写入 `ACCEPT`/`ACCEPTED`。
+
 > **回写规则（2026-08-17 新增，2026-08-19 D-25 升级为脚本判定，防全景图漂移主承重）**：任一批次「状态」字段写入 `ACCEPTED`/`ACCEPT` 时，本批表格必须同批填写「基线 sha」+「全景图回写」两个字段，不得留空。
 >
 > **「基线 sha」**：本批第一个 commit 的父 commit 短哈希（脚本 `--range` 的 base）。
