@@ -321,6 +321,6 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | 覆盖 | MDC3 Repository/Revision/Projection/UI；Revision 含 `meal_record_dish`、`dish`、`dish_ingredient` |
 | 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；`adb devices` 无在线设备 |
 | 真机证据 | 待设备连接后导出 debug 日志文件，核验四类 MDC3 事件与三类 Revision 事件 |
-| 基线/交付 commit | `cbeb26d0` / `6bf3eb03` |
+| 基线/交付 commit | `cbeb26d0` / `3e081409` |
 | 全景图回写 | `SYNC-NOOP`：仅日志出口适配，不新增/删除功能节点 |
 | 下一步 | ARCH 复核 diff；连接真机后完成日志文件门禁；不得在无证据时写 ACCEPTED |
