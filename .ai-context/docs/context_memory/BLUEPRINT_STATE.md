@@ -2,11 +2,27 @@
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---
-## 当前执行聚合：MEAL-UX-CONSOLIDATION-01（R2，代码修复完成，待 ARCH 复核）
+## 当前执行聚合：MEAL-DATA-CONSOLIDATION-01（下一蓝图预览）
 
 | 字段 | 值 |
 |---|---|
-| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| 任务/批次 | MEAL-DATA-CONSOLIDATION-01 |
+| 状态 | **PREVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| 颗粒度 | PREVIEW；尚未形成可执行蓝图，不得进入 CODE |
+| 背景 | MEAL-UX 已完成入口、日期、首页展示层收口；下一阶段先统一 Meal 领域数据语义与投影边界 |
+| 预览范围 | `DayMeal`、`MealPlan`、`Timeline`、`Home projection` 领域模型梳理；今日记录、未来计划、历史记录、编辑状态的数据状态统一；Repository 投影边界收口 |
+| 目标 | 减少 Home / Timeline / AddMeal 各自维护数据语义 |
+| 限制 | 不改数据库；不改业务规则；先由 ARCH 形成并审核 Blueprint，再决定是否进入 CODE |
+| 下一步 | ARCH 完成 Preview；未完成 Preview 前禁止切 CODE |
+
+---
+### 历史归档：MEAL-UX-CONSOLIDATION-01（R2，已关闭）
+
+| 字段 | 值 |
+|---|---|
+| 状态 | **ARCH_ACCEPTED / CLOSED** |
 | TURN | **REVIEW** |
 | reviewed state head | `53cf4538d0e2253c524919a5ec9acd33ee8d0276` |
 | reviewed code delivery | `c7160d31c5534f2d66587bbc17e432022dd84745` |
@@ -19,11 +35,15 @@
 | C HOME-MERGE-01 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
 | governance/evidence | **COMPLETE AS BOOKKEEPING；设备项逐项 PENDING_DEVICE_VERIFICATION** |
 | repair delivery head | `c207e1251da66a9ab6eaf2004b74ad217523bd6a` |
+| accepted commit | `f74b05ba11eabdd8deb4f300c5f90fbafa2cb0a3` |
 | automated gates | `:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug`：**BUILD SUCCESSFUL**；T-HM-09/T-HM-10 通过 |
 | evidence registry | 最新清单 `真机待验证清单_202608210918.md`；UEN `01/16/17~21`、DATE `01~08`、HOME `01~08` 已登记，未伪造 PASS |
 | changed set | `DayMealCardView.kt`、`HomeScreen.kt`、`MealRecordRepositoryTest.kt`、真机清单；无额外产品源文件 |
-| 本阶段角色 | `ARCH_PERSISTENCE_EXECUTOR` → `CODER` → `ARCH_HANDOFF_PERSISTENCE_EXECUTOR`；禁止写入 `ACCEPT`/`ACCEPTED` |
-| 下一步 | 外部 ARCH 总审核；不得继续 CODE，不得将设备待验证项改为 PASS |
+| AF 关闭 | `AF-HM-01`、`AF-HM-02`、`AF-HM-03`、`AF-GOV-01`、`AF-EVID-01`：**CLOSED** |
+| 基线 sha | `e9274424b089716cec38c805ee5a140a7066d890` |
+| 全景图回写 | `N/A — 纯状态归档与治理回写，无新增产品代码改动` |
+| 本阶段角色 | `ARCH_PERSISTENCE_EXECUTOR` → `CODER` → `ARCH_HANDOFF_PERSISTENCE_EXECUTOR` |
+| 关闭结论 | ARCH `ACCEPT`；R2 关闭，不得继续 CODE，不得将设备待验证项改为 PASS |
 
 ### R2 执行约束
 
