@@ -33,26 +33,3 @@ data class MealRecord(
     val dishes: List<DishMini> = emptyList(),
 )
 
-/**
- * 一整天的餐食卡片（HomeScreen 计划 / FoodTimelineScreen 列表共用）。[AI修改]
- */
-data class DayMealCardData(
-    val date: LocalDate,
-    val isToday: Boolean,
-    val isPlanState: Boolean,
-    val meals: List<MealSection>,
-)
-
-/**
- * 一天卡片里的一个餐次分组。[AI修改]
- *
- * 例如“早餐 07:30”下面挂若干道菜。
- */
-data class MealSection(
-    val mealTypeId: Long,
-    val mealName: String,
-    val mealTime: LocalTime,
-    val dishes: List<DishMini>,
-    val mealRecordId: Long? = null,
-    val note: String = "", // [AI修改] 编辑餐食时需要回填该餐次备注。
-)

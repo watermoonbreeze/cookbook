@@ -78,6 +78,31 @@ class MealRecordRepositoryTest {
         assertTrue(result.none { it.date == DateTime.plusDays(today, 3) })
     }
 
+    /** T-MDC-05：同一日期超过旧行数上限时，Home 仍返回该日期的完整餐次。 */
+    @Test
+    fun homeDateCompletenessDoesNotDependOnMealRowLimit() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "完整性测试菜", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val today = LocalDate(2026, 6, 5)
+        val meals = List(61) {
+            DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(dishId))
+        }
+        mealRepo.saveDayMeals(today, meals)
+
+        val result = mealRepo.observeTodayPlusFuture(today).first()
+
+        assertEquals(today, result.single().date)
+        assertEquals(61, result.single().meals.size)
+    }
+
     @Test
     fun saveDayMealsWithEmptyListClearsThatDay() = runBlocking {
         val db = RepositoryTestDatabase.create()

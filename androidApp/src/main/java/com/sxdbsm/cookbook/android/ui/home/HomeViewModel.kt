@@ -8,6 +8,7 @@ import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.ThemeMode
+import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.domain.FoodGroup
@@ -207,9 +208,13 @@ class HomeViewModel(
      *
      * `combine` 类似把多个 Observable 合并；任意一路变化都会重新生成 HomeUiState。
      */
+    private val mealReferenceDate = DateTime.today()
+
     val uiState: StateFlow<HomeUiState> =
-        mealRepo.observeTodayPlusFuture(DateTime.today())
-            .map { plans -> HomeUiState(plans = plans) }
+        mealRepo.observeUpcomingMealDayContents(mealReferenceDate)
+            .map { contents ->
+                HomeUiState(plans = contents.map { MealDayCardProjector.project(it, mealReferenceDate) })
+            }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState())
 
     /**
@@ -259,7 +264,7 @@ class HomeViewModel(
     private fun mondayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, -(d.dayOfWeek.isoDayNumber - 1))
     private fun sundayOf(d: LocalDate): LocalDate = DateTime.plusDays(d, 7 - d.dayOfWeek.isoDayNumber)
 
-    private val today = DateTime.today()
+    private val today = mealReferenceDate
     // [AI修改] 色系墙固定为本公历年(1月1日~12月31日)，整周对齐；UI 定位到今天、可左右滑看本年历史/未来。
     private val wallStart = mondayOf(LocalDate(today.year, 1, 1))
     private val wallEnd = sundayOf(LocalDate(today.year, 12, 31))

@@ -87,7 +87,8 @@ import com.sxdbsm.cookbook.android.ui.component.SheetAction
 import com.sxdbsm.cookbook.android.ui.component.FormFieldLabel
 import com.sxdbsm.cookbook.android.ui.component.DayMealCardView // [AI生成] D保存预览:复用首页/食历餐食卡渲染草稿
 import com.sxdbsm.cookbook.android.ui.picker.DishPickerScreen
-import com.sxdbsm.cookbook.domain.model.DayMealCardData // [AI生成] D保存预览
+import com.sxdbsm.cookbook.domain.model.MealDayContent
+import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealSection // [AI生成] D保存预览
@@ -501,11 +502,10 @@ fun AddDayFoodScreen(
         //   否则 mealTime 为 null 的餐次会"预览显示但保存被静默丢弃"。canSave 保证 mealTypeId/mealTime 非空,故映射内用 !! 不再兜底。
         //   B3:派生态 remember 缓存(对齐项目规范,避免 sheet 打开期反复重建)。
         val previewData = remember(state.mealBlocks, state.mealTypes, state.date, state.isPlan) {
-            DayMealCardData(
-                date = state.date,
-                isToday = state.date == com.sxdbsm.cookbook.util.DateTime.today(),
-                isPlanState = state.isPlan,
-                meals = state.mealBlocks
+            MealDayCardProjector.project(
+                MealDayContent(
+                    date = state.date,
+                    meals = state.mealBlocks
                     .filter { it.canSave } // 与 save() 单一真相源一致:mealTypeId!=null && mealTime!=null && dishes 非空
                     .sortedBy { it.mealTime } // [AI生成] 用户反馈:添加时餐次顺序可能乱,预览按正常时间序展示(仅展示序,不影响保存)
                     .map { b ->
@@ -517,6 +517,8 @@ fun AddDayFoodScreen(
                             note = b.note,
                         )
                     },
+                ),
+                com.sxdbsm.cookbook.util.DateTime.today(),
             )
         }
         ModalBottomSheet(

@@ -26,7 +26,7 @@ class DietReportAggregatorTest {
         DishMini(id = id, name = name, mainIngredientNames = mains, eatenRatio = eaten)
 
     private fun card(date: LocalDate, dishes: List<DishMini>) = DayMealCardData(
-        date = date, isToday = false, isPlanState = false,
+        date = date, temporalRole = MealDayTemporalRole.PAST,
         meals = if (dishes.isEmpty()) emptyList() else listOf(
             MealSection(mealTypeId = 1, mealName = "午餐", mealTime = LocalTime(12, 0), dishes = dishes),
         ),

@@ -6,9 +6,11 @@ import app.cash.sqldelight.coroutines.mapToOne
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.model.DishMini
+import com.sxdbsm.cookbook.domain.model.MealDayContent
 import com.sxdbsm.cookbook.domain.model.MealRecord
 import com.sxdbsm.cookbook.domain.model.MealSection
 import com.sxdbsm.cookbook.domain.model.MealType
+import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.pantry.MealDishKey
 import com.sxdbsm.cookbook.pantry.PantryAllocation
 import com.sxdbsm.cookbook.pantry.PantryUsage
@@ -70,33 +72,49 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     fun observeDayMealCard(date: LocalDate): Flow<DayMealCardData> {
         val dateStr = DateTime.formatDate(date)
         return q.selectMealRecordsByDate(dateStr).asFlow().mapToList(ioDispatcher).map { records ->
-            buildDayMealCard(date, records)
+            MealDayCardProjector.project(buildMealDayContent(date, records), DateTime.today())
         }.flowOn(ioDispatcher)
     }
 
-    /** 主页用：今天真实记录（若有）加未来最多两个真实有餐食日期。[AI修改] */
+    /** 主页用：今天真实记录（若有）加未来最多两个真实有餐食日期；按日期键后再取完整行。[AI修改] */
     fun observeTodayPlusFuture(today: LocalDate): Flow<List<DayMealCardData>> {
         val todayStr = DateTime.formatDate(today)
-        // [AI修改] N2：原来 LIMIT=2 是限"行数"，今天有早/中/晚会被截成 2 条(餐食不完整)。
-        // 改为取足够多行，再按日期取"当天+下一日期"共 2 天的**完整**餐食(每天全部餐次)。
-        return q.selectUpcomingMealRecords(todayStr, UPCOMING_ROW_LIMIT)
+        return q.selectUpcomingMealDates(todayStr, 3)
             .asFlow()
             .mapToList(ioDispatcher)
-            .map { records ->
-                val grouped = records.groupBy { it.date }
-                val todayEntry = grouped[todayStr]
-                val futureEntries = grouped.entries
-                    .filter { it.key > todayStr }
-                    .sortedBy { it.key }
-                    .take(2)
-                val todayCards = todayEntry?.let { rows ->
-                    listOf(buildDayMealCard(today, rows, plan = false))
-                } ?: emptyList()
-                val futureCards = futureEntries.map { (dateStr, rows) ->
-                    val date = DateTime.parseDate(dateStr)
-                    buildDayMealCard(date, rows, plan = true)
+            .map { dateKeys ->
+                val futureKeys = dateKeys.filter { it > todayStr }
+                val desiredKeys = if (todayStr in dateKeys) {
+                    listOf(todayStr) + futureKeys.take(2)
+                } else {
+                    futureKeys.take(2)
                 }
-                todayCards + futureCards
+                if (desiredKeys.isEmpty()) return@map emptyList()
+                val records = q.selectMealRecordsByDates(desiredKeys).executeAsList()
+                val contents = buildMealDayContents(desiredKeys.map(DateTime::parseDate), records)
+                contents.map { content -> MealDayCardProjector.project(content, today) }
+            }
+            .flowOn(ioDispatcher)
+    }
+
+    /** Home 的中性日期内容读取 seam；调用方负责显式投影。 */
+    fun observeUpcomingMealDayContents(
+        referenceDate: LocalDate,
+        futureDayLimit: Int = 2,
+    ): Flow<List<MealDayContent>> {
+        val referenceDateString = DateTime.formatDate(referenceDate)
+        return q.selectUpcomingMealDates(referenceDateString, futureDayLimit.toLong() + 1)
+            .asFlow()
+            .mapToList(ioDispatcher)
+            .map { dateKeys ->
+                val futureKeys = dateKeys.filter { it > referenceDateString }
+                val desiredKeys = if (referenceDateString in dateKeys) {
+                    listOf(referenceDateString) + futureKeys.take(futureDayLimit)
+                } else {
+                    futureKeys.take(futureDayLimit)
+                }
+                if (desiredKeys.isEmpty()) emptyList()
+                else buildMealDayContents(desiredKeys.map(DateTime::parseDate), q.selectMealRecordsByDates(desiredKeys).executeAsList())
             }
             .flowOn(ioDispatcher)
     }
@@ -119,7 +137,10 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                 val dishesByRecord = buildDishesByMealRecord(records.map { it.id })
                 val recordsByDate = records.groupBy { it.date }
                 dates.map { dateStr ->
-                    buildDayMealCard(DateTime.parseDate(dateStr), recordsByDate[dateStr].orEmpty(), mealTypes, dishesByRecord)
+                    MealDayCardProjector.project(
+                        buildMealDayContent(DateTime.parseDate(dateStr), recordsByDate[dateStr].orEmpty(), mealTypes, dishesByRecord),
+                        DateTime.today(),
+                    )
                 }
             }
             .flowOn(ioDispatcher)
@@ -142,10 +163,13 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      * ViewModel 负责分页选择日期窗口，Repository 只按这些有记录日期批量读取 meal_record。
      */
     suspend fun loadTimelineCardsByDates(dates: List<LocalDate>): List<DayMealCardData> = withContext(ioDispatcher) {
+        loadMealDayContentsByDates(dates).map { MealDayCardProjector.project(it, DateTime.today()) }
+    }
+
+    suspend fun loadMealDayContentsByDates(dates: List<LocalDate>): List<MealDayContent> = withContext(ioDispatcher) {
         if (dates.isEmpty()) return@withContext emptyList()
-        val dateStrings = dates.map { DateTime.formatDate(it) }
-        val records = q.selectMealRecordsByDates(dateStrings).executeAsList()
-        buildDayMealCardsForExistingDates(dates, records)
+        val dateStrings = dates.map(DateTime::formatDate)
+        buildMealDayContents(dates, q.selectMealRecordsByDates(dateStrings).executeAsList())
     }
 
     /**
@@ -205,7 +229,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      */
     suspend fun loadDayMealCard(date: LocalDate, today: LocalDate): DayMealCardData = withContext(ioDispatcher) {
         val records = q.selectMealRecordsByDate(DateTime.formatDate(date)).executeAsList()
-        buildDayMealCard(date, records, plan = date > today)
+        MealDayCardProjector.project(buildMealDayContent(date, records), today)
     }
 
     /**
@@ -368,14 +392,13 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     /**
      * 将数据库行组装成 UI 可直接渲染的一天餐食卡片。[AI修改]
      */
-    private fun buildDayMealCard(
+    private fun buildMealDayContent(
         date: LocalDate,
         records: List<com.sxdbsm.cookbook.db.Meal_record>,
-        plan: Boolean? = null,
-    ): DayMealCardData {
+    ): MealDayContent {
         val mealTypes = q.selectAllMealTypes().executeAsList().associateBy { it.id }
         val dishesByRecord = buildDishesByMealRecord(records.map { it.id })
-        return buildDayMealCard(date, records, mealTypes, dishesByRecord, plan)
+        return buildMealDayContent(date, records, mealTypes, dishesByRecord)
     }
 
     /**
@@ -393,7 +416,10 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         val recordsByDate = records.groupBy { it.date }
         return buildDateWindow(startDate, endDate).map { date ->
             val dateRecords = recordsByDate[DateTime.formatDate(date)].orEmpty()
-            buildDayMealCard(date, dateRecords, mealTypes, dishesByRecord)
+            MealDayCardProjector.project(
+                buildMealDayContent(date, dateRecords, mealTypes, dishesByRecord),
+                DateTime.today(),
+            )
         }
     }
 
@@ -402,32 +428,28 @@ class MealRecordRepository(private val db: CookbookDatabase) {
      *
      * 与连续自然日窗口不同，这里不会为空日期创建空卡片，保证食历条目数与 meal_record 日期一致。
      */
-    private fun buildDayMealCardsForExistingDates(
+    private fun buildMealDayContents(
         dates: List<LocalDate>,
         records: List<com.sxdbsm.cookbook.db.Meal_record>,
-    ): List<DayMealCardData> {
+    ): List<MealDayContent> {
         val mealTypes = q.selectAllMealTypes().executeAsList().associateBy { it.id }
         val dishesByRecord = buildDishesByMealRecord(records.map { it.id })
         val recordsByDate = records.groupBy { it.date }
         return dates.distinct().sorted().map { date ->
             val dateRecords = recordsByDate[DateTime.formatDate(date)].orEmpty()
-            buildDayMealCard(date, dateRecords, mealTypes, dishesByRecord)
+            buildMealDayContent(date, dateRecords, mealTypes, dishesByRecord)
         }
     }
 
     /**
      * 使用已批量预取的数据组装单日卡片。[AI生成]
      */
-    private fun buildDayMealCard(
+    private fun buildMealDayContent(
         date: LocalDate,
         records: List<com.sxdbsm.cookbook.db.Meal_record>,
         mealTypes: Map<Long, com.sxdbsm.cookbook.db.Meal_type>,
         dishesByRecord: Map<Long, List<DishMini>>,
-        plan: Boolean? = null,
-    ): DayMealCardData {
-        val today = DateTime.today()
-        val isToday = date == today
-        val isPlan = plan ?: (date > today)
+    ): MealDayContent {
         val meals = records.sortedBy { it.meal_time }.mapNotNull { rec ->
             val mealType = mealTypes[rec.meal_type_id] ?: return@mapNotNull null
             MealSection(
@@ -439,7 +461,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                 note = rec.note,
             )
         }
-        return DayMealCardData(date = date, isToday = isToday, isPlanState = isPlan, meals = meals)
+        return MealDayContent(date = date, meals = meals)
     }
 
     /**
@@ -550,29 +572,4 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         return PantryCardFlags(shortage, purchase.mapValues { it.value.distinct() })
     }
 
-    private companion object {
-        // [AI生成] N2：首页"当天+下一日期"取足够多的餐食行(覆盖 2 天全部餐次)，再按日期 take(2)。
-        private const val UPCOMING_ROW_LIMIT = 60L
-    }
 }
-
-/**
- * 待保存的单个餐食模块草稿。[AI修改]
- */
-data class DayMealDraft(
-    val mealTypeId: Long,
-    val mealTime: LocalTime,
-    val note: String,
-    val dishIds: List<Long>,
-)
-
-/**
- * 编辑页回填用的餐食记录数据。[AI修改]
- */
-data class MealRecordEditData(
-    val mealRecordId: Long,
-    val mealTypeId: Long,
-    val mealTime: LocalTime,
-    val note: String,
-    val dishes: List<DishMini>,
-)

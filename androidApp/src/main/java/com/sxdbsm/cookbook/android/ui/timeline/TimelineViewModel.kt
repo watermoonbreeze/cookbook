@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
+import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -208,7 +209,9 @@ class TimelineViewModel(
             } else {
                 emptyList()
             }
-            val cards = repo.loadTimelineCardsByDates(visibleDates)
+            val referenceDate = today
+            val cards = repo.loadMealDayContentsByDates(visibleDates)
+                .map { MealDayCardProjector.project(it, referenceDate) }
             val prependCount = pendingPrependCount
             pendingPrependCount = 0
             // [AI修改] 修#1(v2):粘性 jumpTargetDate 优先(反复尝试),否则一次性 pendingScrollTargetDate(如 loadPrev/Next 的锚点)。

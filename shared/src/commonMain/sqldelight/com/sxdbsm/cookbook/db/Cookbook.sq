@@ -1483,6 +1483,13 @@ WHERE date >= :today AND status = 1
 ORDER BY date ASC, meal_time ASC
 LIMIT ?;
 
+-- [AI修改] Home 先选择日期键，再批量读取完整日期，避免按餐食行数截断某一天。
+selectUpcomingMealDates:
+SELECT DISTINCT date FROM meal_record
+WHERE date >= :today AND status = 1
+ORDER BY date ASC
+LIMIT :limit;
+
 selectDistinctDates:
 SELECT DISTINCT date FROM meal_record
 WHERE status = 1
