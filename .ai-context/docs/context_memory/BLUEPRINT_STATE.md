@@ -2,29 +2,24 @@
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---
-## 当前执行聚合：MEAL-DATA-CONSOLIDATION-01（ARCH_BLUEPRINT_R1）
+## 当前执行聚合：MEAL-DATA-CONSOLIDATION-02（ARCH DISCOVERY R1）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | MEAL-DATA-CONSOLIDATION-01 |
-| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| 任务/批次 | MEAL-DATA-CONSOLIDATION-02 ARCH DISCOVERY R1 |
+| 状态 | **EVIDENCE_READY / PENDING ARCH REVIEW** |
 | TURN | **REVIEW** |
 | Holder | **ARCH** |
-| 颗粒度 | ARCH_BLUEPRINT_R1；以随包 README、04 执行蓝图、06 验收矩阵为准 |
-| 背景 | MEAL-UX 已完成入口、日期、首页展示层收口；下一阶段先统一 Meal 领域数据语义与投影边界 |
-| 蓝图包 | `.ai-context/docs/外部方案/在线审核/CookBook_MEAL_DATA_CONSOLIDATION_01_ARCH_BLUEPRINT_R1.zip` |
-| Discovery commit | `6f25028b1e07fe88e64b6e0406f14c062e13b6ae` |
-| Evidence code base | `7c9a0707ae717b7d5ae3e30221b84e6ea5595bac` |
-| 执行范围 | A Semantic Boundary → B Repository Neutralization → C Home/Timeline/Manual Preview → D Tests/Evidence/Feature Sync |
-| 硬限制 | 不新增 MealPlan 持久化；不做 schema migration；不改业务规则、AI merge/replace/append、existing-meal guard、导航/UI 布局 |
-| 交付 head | `a8bbed32f8faf82b3684378acd9b1ace72633f9e` |
-| 实现提交 | `d086189b93ce067bc02c16455ac3eddf0f9ab071` |
-| 自动化验收 | `:shared:testDebugUnitTest` ✅；`:androidApp:testDebugUnitTest` ✅；`:androidApp:assembleDebug` ✅；Kotlin daemon 失败后 fallback 编译，构建最终成功 |
-| 静态验收 | 生产源码无独立 `isToday`/`isPlanState` 构造赋值；生产 Home 链路无 `UPCOMING_ROW_LIMIT`；无 MealPlan/schema migration |
-| 变更集 | `MealDayModels.kt`、`MealDayCardProjector.kt`、`MealRecordContracts.kt`、`MealRecordRepository.kt`、`Cookbook.sq`、Home/Timeline/AddMeal、测试、F-MEAL/F-NUTRITION/F-TIMELINE 与索引 |
-| Feature sync | `SYNC-OK a8bbed32` |
-| 设备证据 | `E-MDC-01~04` **PENDING_DEVICE_VERIFICATION**：本批无可用真机证据，未伪造 PASS |
-| 下一步 | 外部 ARCH 按蓝图逐项复核；不得由 CODE 自行 ACCEPT |
+| 颗粒度 | ARCH DISCOVERY；以随包 `README_FIRST.md`、02/03/04 文档为准 |
+| 背景 | R1 已关闭；本批只采集 Projection Boundary 事实 |
+| 外部包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_DATA_R1_CLOSE_R2_DISCOVERY.zip` |
+| accepted R1 | `3d42e81c32d54c8db7e0a7d4bcef8422eff3a203`；归档见 `arch_evidence/MEAL-DATA-CONSOLIDATION-01/CLOSE_RECORD.md` |
+| Evidence code base | `3d42e81c32d54c8db7e0a7d4bcef8422eff3a203` |
+| 执行范围 | Home / Timeline / WeekPlan / Search / Nutrition projection dependency facts |
+| 硬限制 | 不改产品代码、模型、测试；不设计最终架构；不拆 Repository；不创建新 Projection；不切 CODE |
+| Evidence path | `.ai-context/docs/arch_evidence/MEAL-DATA-CONSOLIDATION-02/current_state/` |
+| 证据状态 | 7 required documents + 13-file source snapshot ✅ |
+| 下一步 | ARCH review；保持 `TURN=REVIEW`、`Holder=ARCH` |
 
 ---
 ### 历史归档：MEAL-UX-CONSOLIDATION-01（R2，已关闭）

@@ -1,0 +1,162 @@
+package com.sxdbsm.cookbook.android.ui.weekplan
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.DayMealCardView
+import com.sxdbsm.cookbook.util.DateTime
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
+import org.koin.androidx.compose.koinViewModel
+
+/**
+ * @File : WeekPlanScreen
+ * @Time : 2026/07/14
+ * @Author : SXD-AI
+ * @Desc : 一周计划视图（B3）
+ * <p>
+ * 一周(周一~周日)整周概览：周导航 + 7 天卡片(含空日)，每天可编辑/复制/安排，today 高亮。
+ * 面向"周末排下周饭"：切到下一周→逐天安排或从某天复制。
+ * <p>
+ * [AI生成] B3
+ **/
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WeekPlanScreen(
+    onBack: () -> Unit,
+    onEditMealDate: (LocalDate) -> Unit,
+    onCopyMeal: (LocalDate) -> Unit,
+    onOpenDish: (Long) -> Unit = {},
+    initialDate: LocalDate? = null, // [AI生成] 报告空周期跳入时定位到该日期所在周(空=从今天所在周)
+    vm: WeekPlanViewModel = koinViewModel(),
+    embedded: Boolean = false,
+) {
+    val ui by vm.uiState.collectAsStateWithLifecycle()
+    // [AI生成] 带目标日期进入→定位到该周(仅一次·initialDate 变化才重跳)。
+    androidx.compose.runtime.LaunchedEffect(initialDate) { initialDate?.let { vm.jumpToWeekOf(it) } }
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI修改] UX:删除改软删+撤销(§9.12)，替代硬确认弹框
+
+    Scaffold(
+        topBar = {
+            if (!embedded) {
+            // [AI修改] B-8(§9.15)：带返回二级页统一 AppTopBar 收敛。
+            com.sxdbsm.cookbook.android.ui.component.AppTopBar(
+                title = "一周计划",
+                onBack = onBack,
+            )
+            }
+        },
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            // [AI生成] 周导航：上一周 / 周范围 + 本周 / 下一周。
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = vm::prevWeek) { Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "上一周") }
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(weekRangeLabel(ui.weekStart, ui.weekEnd), style = MaterialTheme.typography.titleMedium)
+                    TextButton(onClick = vm::thisWeek, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) { Text("回本周") }
+                }
+                IconButton(onClick = vm::nextWeek) { Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = "下一周") }
+            }
+            Divider()
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                // [AI生成] §营养线:整周膳食搭配概览卡(总卡·在逐日卡之上)。VM 已保证仅有真实主料数据时 nutritionLine 非空(空周/无主料→null 不显·不打扰)。与 AiPlan 同款卡·domain 已算好只呈现。
+                val line = ui.nutritionLine
+                if (line != null) {
+                    item { com.sxdbsm.cookbook.android.ui.component.NutritionLineCard(line, ui.nutritionAdvices) }
+                }
+                items(ui.days, key = { it.date.toString() }) { day ->
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        // 星期几 · 今天 标注
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                weekdayLabel(day.date),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (day.isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            )
+                            if (day.isToday) {
+                                Spacer(Modifier.width(8.dp))
+                                // [AI修改] 苹果风格：今天用 accent 浅底小胶囊标签，去 Material 描边 chip。
+                                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = androidx.compose.foundation.shape.RoundedCornerShape(50)) {
+                                    Text(
+                                        "今天",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    )
+                                }
+                            }
+                        }
+                        if (day.meals.isEmpty()) {
+                            // 空日：一键安排
+                            OutlinedButton(onClick = { onEditMealDate(day.date) }, modifier = Modifier.fillMaxWidth()) {
+                                Text("＋ 安排这天")
+                            }
+                        } else {
+                            DayMealCardView(
+                                data = day,
+                                onDishClick = { dish -> onOpenDish(dish.id) },
+                                onEditClick = { onEditMealDate(day.date) },
+                                onCopyClick = { onCopyMeal(day.date) },
+                                onDeleteClick = { // [AI修改] UX:软删+撤销(§9.12)替代硬确认弹框，与食历/首页一致
+                                    vm.deleteDayUndoable(day.date) { onUndo ->
+                                        appSnackbar?.showUndo("已删除${weekdayLabel(day.date)}的餐食", onUndo = onUndo)
+                                    }
+                                },
+                            )
+                        }
+                    }
+                }
+                item { Spacer(Modifier.height(60.dp)) }
+            }
+        }
+    }
+}
+
+/** 周范围文案，如 "7/14 - 7/20"。[AI生成] */
+private fun weekRangeLabel(start: LocalDate, end: LocalDate): String =
+    "${start.monthNumber}/${start.dayOfMonth} - ${end.monthNumber}/${end.dayOfMonth}"
+
+/** 星期几文案，如 "周一 7/14"。[AI生成] */
+private fun weekdayLabel(date: LocalDate): String {
+    val wd = when (date.dayOfWeek) {
+        DayOfWeek.MONDAY -> "周一"
+        DayOfWeek.TUESDAY -> "周二"
+        DayOfWeek.WEDNESDAY -> "周三"
+        DayOfWeek.THURSDAY -> "周四"
+        DayOfWeek.FRIDAY -> "周五"
+        DayOfWeek.SATURDAY -> "周六"
+        else -> "周日"
+    }
+    return "$wd ${date.monthNumber}/${date.dayOfMonth}"
+}

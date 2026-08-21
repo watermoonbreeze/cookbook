@@ -1,0 +1,26 @@
+{
+  "package": "MEAL-DATA-CONSOLIDATION-02-ARCH-DISCOVERY-R1",
+  "phase": "PROJECTION_BOUNDARY_FACT_COLLECTION",
+  "repository_head": "3d42e81c32d54c8db7e0a7d4bcef8422eff3a203",
+  "working_tree_initial": "existing user changes preserved; evidence directory was new",
+  "blueprint_state": {"turn":"REVIEW","holder":"ARCH"},
+  "product_source_changed": false,
+  "snapshot_files": 13,
+  "accepted_r1": "3d42e81c32d54c8db7e0a7d4bcef8422eff3a203",
+  "files": [
+    {"path":"shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/MealDayModels.kt","bytes":1079,"sha256":"e04d3e28b346d1b09d37c0465f4cf805c7321343020158d291c9aa5eae19423a"},
+    {"path":"shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/projection/MealDayCardProjector.kt","bytes":955,"sha256":"da8761c655301f9d9993c883502ecb2f720fe245a4e6f813916600666f324cf1"},
+    {"path":"shared/src/commonMain/kotlin/com/sxdbsm/cookbook/data/repository/MealRecordRepository.kt","bytes":29425,"sha256":"2c0ae9d8ae69163ccf705aae40d9256fae36828ad886859f07001a7f7cef783b"},
+    {"path":"shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/model/DietReport.kt","bytes":7973,"sha256":"9a0e40e1467f8d3e3b2dfa3bd739a7e80cec730d5e590a18521fe5dea0bc35ae"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/home/HomeViewModel.kt","bytes":28805,"sha256":"ce147663b55dcd2f138497cb2fcb3587c8a6df6ed597adc2446f50b853572d0f"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/home/HomeScreen.kt","bytes":25802,"sha256":"4bc1e935d8d18118d46d6f7d77784e0bac8b3f2ce23c38d306ae58a7f072c082"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/timeline/TimelineViewModel.kt","bytes":11903,"sha256":"697937a2da504b52cbdfb54a4190ab65d5e3d09a5b96b5dd5e97da3ced180d65"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/timeline/FoodTimelineScreen.kt","bytes":9966,"sha256":"d3c5472e2f157f86c22d39cc7295adb93679c599e84fddcf5bc1b7855a30234c"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/weekplan/WeekPlanViewModel.kt","bytes":5336,"sha256":"3fe4cdd35025a548b72a488b1090586460c0786d669d6e8b457afd6672909099"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/weekplan/WeekPlanScreen.kt","bytes":8476,"sha256":"b5b6143c03f8916c72084ec7c2929efc61cba403a8a6d8c95407d8f5576e402c"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/search/SearchViewModel.kt","bytes":4130,"sha256":"49b74fb3e4040bb00463f3bfec4ad6337fcaf8da6126000da4e8be4fd2bd4dce"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/search/SearchScreen.kt","bytes":10631,"sha256":"3bc442ab030c6ddb00fc9ee3be6300f1dbea20bc5152bca82e9c45850f6112b0"},
+    {"path":"androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nutrition/NutritionTableViewModel.kt","bytes":6245,"sha256":"6a842373f90249d391c54e5225e065f37b00816f869cc9efaeaf83a0c4bd7120"
+    }
+  ]
+}
