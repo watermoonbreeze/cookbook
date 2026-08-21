@@ -5,6 +5,7 @@
 - Device: HUAWEI TAS-AN00
 - Android: 12 / API 31
 - Package: `com.sxdbsm.cookbook.android`
+- Commit: `df809853`
 - Build: `scripts\build-cli.bat :shared:testDebugUnitTest :androidApp:assembleDebug`
 - Result: `BUILD SUCCESSFUL`
 - Unit tests: 674 completed, 0 failed

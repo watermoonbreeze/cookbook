@@ -11,6 +11,7 @@
 | Unit/build | `:shared:testDebugUnitTest` and `:androidApp:assembleDebug` PASS; 674 tests |
 | Device | HUAWEI TAS-AN00 / Android 12 API 31; installed and launchable, but locked by Keyguard |
 | Evidence | `.ai-context/docs/arch_evidence/MEAL-DATA-CONSOLIDATION-03/DEVICE_VERIFICATION.md` |
+| Commit | `df809853` |
 | Gate | Device evidence BLOCKED until manual unlock; do not write ACCEPT |
 
 ## CURRENT EXECUTION: MEAL-DATA-CONSOLIDATION-03 ARCH REVIEW R2 REWORK
