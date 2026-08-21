@@ -67,7 +67,10 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         }
 
     /**
-     * 监听某一天的餐食卡片。[AI修改]
+     * Compatibility read API：监听某一天的餐食卡片。
+     *
+     * 新代码优先从 [MealDayContent] 读取，再通过 [MealDayCardProjector] 投影；
+     * 本入口保留给尚未迁移的仓内/仓外消费者。
      */
     fun observeDayMealCard(date: LocalDate): Flow<DayMealCardData> {
         val dateStr = DateTime.formatDate(date)
@@ -76,7 +79,12 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         }.flowOn(ioDispatcher)
     }
 
-    /** 主页用：今天真实记录（若有）加未来最多两个真实有餐食日期；按日期键后再取完整行。[AI修改] */
+    /**
+     * Compatibility read API：主页卡片便捷读取。
+     *
+     * 稳定事实读取由 [observeUpcomingMealDayContents] 承载，时间角色仍统一由
+     * [MealDayCardProjector] 计算。
+     */
     fun observeTodayPlusFuture(today: LocalDate): Flow<List<DayMealCardData>> {
         val todayStr = DateTime.formatDate(today)
         return q.selectUpcomingMealDates(todayStr, 3)
@@ -123,7 +131,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 监听食历列表。[AI修改]
+     * Compatibility read API：监听食历卡片列表。
      *
      * 数据库发生餐食新增/编辑/删除时重新组装卡片，避免食历切回来仍显示旧数据。
      */
@@ -161,7 +169,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             .flowOn(ioDispatcher)
 
     /**
-     * 批量读取指定日期的食历卡片。[AI生成]
+     * Compatibility read API：批量读取指定日期的食历卡片。
+     *
+     * 与 [loadMealDayContentsByDates] 的投影结果必须保持等价；迁移消费者前不得删除。
      *
      * ViewModel 负责分页选择日期窗口，Repository 只按这些有记录日期批量读取 meal_record。
      */
@@ -177,7 +187,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 全局搜索餐食日期。[AI生成]
+     * Compatibility read API：全局搜索餐食日期。
      *
      * 支持按日期文本命中，也支持按餐食关联菜品名称命中；返回整天餐食卡片供搜索页展示。
      */
@@ -191,7 +201,10 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         }
 
     /**
-     * 监听连续自然日窗口内的食历卡片。[AI生成]
+     * Shared read projection API：监听连续自然日窗口内的食历卡片。
+     *
+     * 该 API 仍是共享投影入口；其关联表 revision token 是生命周期契约的一部分，
+     * 修改 meal_record_dish、dish_ingredient 或 dish 后必须重新投影。
      *
      * 与旧的“只返回有记录日期”不同，这里会把窗口内每一天都组装为 DayMealCardData；
      * UI 因此能稳定按日期分页，并在数据库记录变化后自动刷新当前窗口。
@@ -229,7 +242,9 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     }
 
     /**
-     * 读取某天完整卡片。[AI修改]
+     * Compatibility read API：读取某天完整卡片。
+     *
+     * 新消费者应组合稳定内容读取与 [MealDayCardProjector]，本入口暂不删除。
      */
     suspend fun loadDayMealCard(date: LocalDate, today: LocalDate): DayMealCardData = withContext(ioDispatcher) {
         val records = q.selectMealRecordsByDate(DateTime.formatDate(date)).executeAsList()

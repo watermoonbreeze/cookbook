@@ -2,21 +2,21 @@
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---
-## 当前执行聚合：MEAL-DATA-CONSOLIDATION-02（ARCH BLUEPRINT R1 FINAL）
+## 当前执行聚合：MEAL-DATA-CONSOLIDATION-03（ARCH BLUEPRINT R1）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | MEAL-DATA-CONSOLIDATION-02 ARCH BLUEPRINT R1 FINAL |
+| 任务/批次 | MEAL-DATA-CONSOLIDATION-03 ARCH BLUEPRINT R1 |
 | 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
 | TURN | **REVIEW** |
 | Holder | **ARCH** |
-| 颗粒度 | BLUEPRINT-LITE；以随包 `README_FIRST.md`、02~08 文档为准 |
-| 背景 | R1 已完成；本批收口 Projection Boundary，不改变产品行为 |
-| 外部包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_DATA_CONSOLIDATION_02_ARCH_BLUEPRINT_R1_FINAL.zip` |
-| 执行范围 | MealDayContent / MealDayCardProjector / DayMealCardData 边界、测试与 Feature 文档 |
-| 硬限制 | 不改数据库/schema；不新增 MealPlan/领域实体/Projection Service；不拆 Repository；不改用户行为 |
-| 交付证据 | `:shared:testDebugUnitTest` ✅；schema diff 为空；禁止项检索无命中 |
-| 交付 commit | `000a6f30`；ARCH 复核后再决定是否 ACCEPT |
+| 颗粒度 | ARCH BLUEPRINT；以随包 `README_FIRST.md`、01~06 文档为准 |
+| 背景 | 建立 Meal Data Read API 演进治理边界，不改变产品行为 |
+| 外部包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_DATA_CONSOLIDATION_03_ARCH_BLUEPRINT_R1.zip` |
+| 执行范围 | Stable/Compatibility API 标记、等价测试、Flow 生命周期测试、调用关系与 Feature 文档 |
+| 硬限制 | 不删除旧 API；不改数据库/schema；不重构 Repository；不改变用户行为 |
+| 交付证据 | `:shared:testDebugUnitTest` ✅（672 tests）；schema diff 为空；禁止项检索无命中 |
+| 交付 commit | 待本批提交；ARCH 复核后再决定是否 ACCEPT |
 | 下一步 | ARCH review；保持 `TURN=REVIEW`、`Holder=ARCH` |
 
 ---

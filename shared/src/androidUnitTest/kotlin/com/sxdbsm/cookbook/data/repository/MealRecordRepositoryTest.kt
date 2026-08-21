@@ -3,8 +3,14 @@ package com.sxdbsm.cookbook.data.repository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
+import com.sxdbsm.cookbook.domain.model.DayMealCardData
+import kotlinx.coroutines.async
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import com.sxdbsm.cookbook.util.DateTime
@@ -20,6 +26,58 @@ import com.sxdbsm.cookbook.util.DateTime
  * [AI生成] 为添加/编辑餐食流程建立基础回归测试。
  **/
 class MealRecordRepositoryTest {
+
+    @Test
+    fun compatibilityCardLoaderEqualsStableContentProjection() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "等价测试菜", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val date = LocalDate(2026, 6, 5)
+        mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(dishId))))
+
+        val compatibility = mealRepo.loadTimelineCardsByDates(listOf(date))
+        val stableProjection = mealRepo.loadMealDayContentsByDates(listOf(date))
+            .map { com.sxdbsm.cookbook.domain.projection.MealDayCardProjector.project(it, DateTime.today()) }
+
+        assertEquals(stableProjection, compatibility)
+    }
+
+    @Test
+    fun timelineWindowReemitsWhenRelatedRevisionTokenChanges() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "生命周期测试菜", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val date = LocalDate(2026, 6, 5)
+        val recordId = mealRepo.saveDayMeals(
+            date,
+            listOf(DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(dishId))),
+        ).single()
+        val initial = mealRepo.observeTimelineWindow(date, date).first()
+        assertEquals(1.0, initial.single().meals.single().dishes.single().eatenRatio)
+
+        val nextEmission = async<List<DayMealCardData>>(start = CoroutineStart.UNDISPATCHED) {
+            withTimeout(5_000) { mealRepo.observeTimelineWindow(date, date).drop(1).first() }
+        }
+        mealRepo.setEatenRatio(recordId, dishId, 0.5)
+        val updated = nextEmission.await()
+
+        assertNotNull(updated.single().meals.single().dishes.single())
+        assertEquals(0.5, updated.single().meals.single().dishes.single().eatenRatio, 1e-9)
+    }
 
     @Test
     fun todayMissingStillReturnsOnlyTwoFutureDates() = runBlocking {

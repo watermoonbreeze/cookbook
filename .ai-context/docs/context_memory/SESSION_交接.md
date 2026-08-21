@@ -1,5 +1,7 @@
 # 🔖 SESSION 交接入口
 
+> **MEAL-DATA-CONSOLIDATION-03 CODE 交付（2026-08-21）**：按 `COOKBOOK_MEAL_DATA_CONSOLIDATION_03_ARCH_BLUEPRINT_R1.zip` 执行 Read API 演进治理。已补 `MealDayContent` Stable Read Contract、`DayMealCardData` Shared Read Projection 与 Repository Compatibility API KDoc 标记；新增旧/新读取结果等价测试、`observeTimelineWindow` revision token 生命周期测试、调用关系证据与 F-MEAL 决策回写。未删除旧 API、未修改 schema、未重构 Repository、未改变用户行为。`:shared:testDebugUnitTest` 通过（672 tests）。当前 `BLUEPRINT_STATE.md` 为 `CODE_COMPLETE / PENDING ARCH REVIEW`、`TURN=REVIEW`、`Holder=ARCH`，待 ARCH 复核后收口；工作区其他用户改动未纳入本批。
+
 > **MEAL-DATA-CONSOLIDATION-02 CODE 交付（2026-08-21）**：已按外部包 `COOKBOOK_MEAL_DATA_CONSOLIDATION_02_ARCH_BLUEPRINT_R1_FINAL.zip` 执行 Projection Boundary Refinement。`MealDayContent → MealDayCardProjector → DayMealCardData` 已补稳定契约 KDoc、边界测试与 F-MEAL/F-TIMELINE/F-NUTRITION 文档同步；未改 schema、未新增 MealPlan/领域实体/Projection Service、未改变用户行为。`:shared:testDebugUnitTest` 通过。当前 `BLUEPRINT_STATE.md` 为 `CODE_COMPLETE / PENDING ARCH REVIEW`、`TURN=REVIEW`，待 ARCH 复核后收口；工作区另有用户原有的外部方案 zip 删除/新增变更，未纳入本批范围。
 
 > **UEN CODE 交付更新（2026-08-20）**：远端 `8b824f0d` 将 `TURN` 握手切为 `CODE` 后，luna 已完成统一添加入口/悬浮导航栏工作区实现，并推送提交 `6f2b201c`。`AiMealBody`、`UnifiedAddMealScreen/State`、统一路由、悬浮胶囊导航、嵌入式单天手动/周期手动分支及 `E-UEN-01~15` 真机清单已落地；`:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 和结构体检均通过。当前 `BLUEPRINT_STATE.md` 为 `REVIEWING/TURN=REVIEW`；待远程 ARCH 逐文件复核、质量复审与真机验证。
