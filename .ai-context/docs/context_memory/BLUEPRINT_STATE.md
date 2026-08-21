@@ -22,7 +22,7 @@
 | 自动化验收 | `:shared:testDebugUnitTest` ✅；`:androidApp:testDebugUnitTest` ✅；`:androidApp:assembleDebug` ✅；Kotlin daemon 失败后 fallback 编译，构建最终成功 |
 | 静态验收 | 生产源码无独立 `isToday`/`isPlanState` 构造赋值；生产 Home 链路无 `UPCOMING_ROW_LIMIT`；无 MealPlan/schema migration |
 | 变更集 | `MealDayModels.kt`、`MealDayCardProjector.kt`、`MealRecordContracts.kt`、`MealRecordRepository.kt`、`Cookbook.sq`、Home/Timeline/AddMeal、测试、F-MEAL/F-NUTRITION/F-TIMELINE 与索引 |
-| Feature sync | `SYNC-OK a8bbed32f8faf82b3684378acd9b1ace72633f9e` |
+| Feature sync | `SYNC-OK a8bbed32` |
 | 设备证据 | `E-MDC-01~04` **PENDING_DEVICE_VERIFICATION**：本批无可用真机证据，未伪造 PASS |
 | 下一步 | 外部 ARCH 按蓝图逐项复核；不得由 CODE 自行 ACCEPT |
 
