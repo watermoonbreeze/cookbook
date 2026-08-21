@@ -2,7 +2,7 @@ id: F-NUTRITION
 name: 营养评估
 lifecycle: active
 headline: "✅ 营养体系已落地：营养表、菜品营养卡、今日卡（热量+达标+缺口），数据覆盖 440 食材 100%。"
-synced_to: 511fa61c
+synced_to: 0a529c2d4895520b7b5f3920cc5398ef68af64ba
 match:
   - androidApp/**/ui/nutrition/**
   - androidApp/**/ui/report/**

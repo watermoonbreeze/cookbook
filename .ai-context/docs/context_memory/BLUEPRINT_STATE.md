@@ -7,9 +7,9 @@
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | MEAL-DATA-CONSOLIDATION-01 |
-| 状态 | **BLUEPRINT_READY / CODE** |
-| TURN | **CODE** |
-| Holder | **CODER** |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
 | 颗粒度 | ARCH_BLUEPRINT_R1；以随包 README、04 执行蓝图、06 验收矩阵为准 |
 | 背景 | MEAL-UX 已完成入口、日期、首页展示层收口；下一阶段先统一 Meal 领域数据语义与投影边界 |
 | 蓝图包 | `.ai-context/docs/外部方案/在线审核/CookBook_MEAL_DATA_CONSOLIDATION_01_ARCH_BLUEPRINT_R1.zip` |
@@ -17,7 +17,14 @@
 | Evidence code base | `7c9a0707ae717b7d5ae3e30221b84e6ea5595bac` |
 | 执行范围 | A Semantic Boundary → B Repository Neutralization → C Home/Timeline/Manual Preview → D Tests/Evidence/Feature Sync |
 | 硬限制 | 不新增 MealPlan 持久化；不做 schema migration；不改业务规则、AI merge/replace/append、existing-meal guard、导航/UI 布局 |
-| 下一步 | CODE 按 README 一次执行；完成后写证据、置 `CODE_COMPLETE / PENDING ARCH REVIEW`、`TURN=REVIEW`，不得自行 ACCEPT |
+| 交付 head | `0a529c2d4895520b7b5f3920cc5398ef68af64ba` |
+| 实现提交 | `d086189b93ce067bc02c16455ac3eddf0f9ab071` |
+| 自动化验收 | `:shared:testDebugUnitTest` ✅；`:androidApp:testDebugUnitTest` ✅；`:androidApp:assembleDebug` ✅；Kotlin daemon 失败后 fallback 编译，构建最终成功 |
+| 静态验收 | 生产源码无独立 `isToday`/`isPlanState` 构造赋值；生产 Home 链路无 `UPCOMING_ROW_LIMIT`；无 MealPlan/schema migration |
+| 变更集 | `MealDayModels.kt`、`MealDayCardProjector.kt`、`MealRecordContracts.kt`、`MealRecordRepository.kt`、`Cookbook.sq`、Home/Timeline/AddMeal、测试、F-MEAL/F-NUTRITION/F-TIMELINE 与索引 |
+| Feature sync | `SYNC-OK 0a529c2d4895520b7b5f3920cc5398ef68af64ba` |
+| 设备证据 | `E-MDC-01~04` **PENDING_DEVICE_VERIFICATION**：本批无可用真机证据，未伪造 PASS |
+| 下一步 | 外部 ARCH 按蓝图逐项复核；不得由 CODE 自行 ACCEPT |
 
 ---
 ### 历史归档：MEAL-UX-CONSOLIDATION-01（R2，已关闭）
