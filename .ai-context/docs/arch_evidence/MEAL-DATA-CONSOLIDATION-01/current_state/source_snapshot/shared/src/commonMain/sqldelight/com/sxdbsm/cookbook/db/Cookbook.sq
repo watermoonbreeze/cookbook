@@ -1,0 +1,2075 @@
+-- ============================================================
+-- Cookbook 数据库 schema —— 真实版本 = migrations 目录 .sqm 文件数(见 Schema.version)，勿按此处数字判断
+-- [AI修改] 原注释"(v1)"误导排查者：本文件是 CREATE TABLE 基线，版本由 N.sqm 递推
+-- 设计文档参考: .codex/docs/feature/数据库设计方案.md
+-- ============================================================
+
+-- ========== 字典/基础表 ==========
+
+CREATE TABLE cooking_method (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE crowd_type (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE measurement_unit (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1,
+    grams REAL -- [AI生成] 该单位的克当量(重量/体积单位，如 两=50、斤=500、毫升≈1)；计件单位(个/勺/片等)留空，改走食材 ingredient_nutrition.piece_gram。营养估算换算用。
+);
+
+-- ========== 食材体系 ==========
+
+CREATE TABLE ingredient (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    alias TEXT NOT NULL DEFAULT '',
+    pinyin TEXT NOT NULL DEFAULT '',
+    image_path TEXT NOT NULL DEFAULT '',
+    thumbnail_path TEXT NOT NULL DEFAULT '',
+    emoji TEXT NOT NULL DEFAULT '🥗',
+    default_unit_id INTEGER REFERENCES measurement_unit(id),
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL,
+    last_referenced_at INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
+    reason TEXT NOT NULL DEFAULT '', -- [AI生成] 失效原因：status=0 时说明为何失效（后台下架说明 / 用户删除）。
+    food_group TEXT NOT NULL DEFAULT '' -- [AI生成] 营养大类(FoodGroup.Group 名，如 WHITE_MEAT)：供色系/均衡按显式大类判定，名字无关键词也能归类。
+);
+
+CREATE INDEX idx_ingredient_pinyin ON ingredient(pinyin);
+
+CREATE TABLE food_category (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    dimension TEXT NOT NULL DEFAULT 'general',
+    parent_id INTEGER REFERENCES food_category(id),
+    crowd_type_id INTEGER REFERENCES crowd_type(id),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    icon TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'preset',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_food_category_parent ON food_category(parent_id);
+
+CREATE TABLE ingredient_category (
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (ingredient_id, category_id)
+);
+
+-- [AI生成] v24：按分类列食材(PK 前导为 ingredient_id，category_id 需单独索引)。
+CREATE INDEX idx_ingredient_category_category ON ingredient_category(category_id);
+
+-- [AI生成] 食材详情扩展表：承载做法、处理、注意事项、保存和健康说明。
+CREATE TABLE ingredient_detail (
+    ingredient_id INTEGER NOT NULL PRIMARY KEY REFERENCES ingredient(id) ON DELETE CASCADE,
+    common_methods TEXT NOT NULL DEFAULT '',
+    prep_tips TEXT NOT NULL DEFAULT '',
+    eating_notes TEXT NOT NULL DEFAULT '',
+    storage_tips TEXT NOT NULL DEFAULT '',
+    health_note TEXT NOT NULL DEFAULT '',
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+-- [AI生成] 食材营养素(L2 数值层)：每 100g 可食部，国标口径整理。全部可空=未知(UI 显"—")。
+-- 换算依据：菜品营养 = Σ 食材(每100g值 × 折算克数/100)，折算克数由 measurement_unit.grams 或本表 piece_gram 得到。
+-- 健康数据为 AI 参考整理、非权威核对，来源记 ref、待审记 review。
+CREATE TABLE ingredient_nutrition (
+    ingredient_id INTEGER NOT NULL PRIMARY KEY REFERENCES ingredient(id) ON DELETE CASCADE,
+    energy_kcal REAL,   -- 能量(千卡)
+    protein_g REAL,     -- 蛋白质(g)
+    fat_g REAL,         -- 脂肪(g)
+    carb_g REAL,        -- 碳水化合物(g)
+    fiber_g REAL,       -- 膳食纤维(g)
+    sodium_mg REAL,     -- 钠(mg)
+    potassium_mg REAL,  -- 钾(mg)
+    calcium_mg REAL,    -- 钙(mg)
+    gi REAL,            -- 升糖指数(0~100，非每100g量)
+    purine_mg REAL,     -- 嘌呤(mg/100g)
+    piece_gram REAL,    -- 计件单位默认克重(如 1 个鸡蛋≈50)，供无克当量单位换算
+    ref TEXT NOT NULL DEFAULT '',       -- 数据来源标注
+    review INTEGER NOT NULL DEFAULT 0,  -- 1=待人工审核
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
+    -- [AI生成] 高血脂负向维度(25.sqm 迁移加列，列序与 ALTER 一致=追加末尾 status 之后)。
+    saturated_fat_g REAL,   -- 饱和脂肪(g/100g)·高血脂负向，缺=NULL 不触发
+    cholesterol_mg REAL     -- 胆固醇(mg/100g)·高血脂负向，缺=NULL 不触发
+);
+
+CREATE TABLE crowd_ingredient (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    crowd_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    advice_level TEXT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
+    daily_limit REAL,
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX uq_crowd_ingredient ON crowd_ingredient(crowd_id, ingredient_id);
+
+-- [AI生成] 通用调养规则：后续承接病种、人群、身体状态等食材建议，不再局限 crowd_type。
+CREATE TABLE ingredient_care_rule (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    advice_level TEXT NOT NULL,
+    reason TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX uq_ingredient_care_rule ON ingredient_care_rule(ingredient_id, category_id);
+CREATE INDEX idx_ingredient_care_rule_category ON ingredient_care_rule(category_id, advice_level);
+
+-- ========== 菜品体系 ==========
+
+CREATE TABLE dish (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    cooking_method_id INTEGER REFERENCES cooking_method(id),
+    preference INTEGER NOT NULL DEFAULT 0,
+    special_note TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    image_path TEXT NOT NULL DEFAULT '',
+    thumbnail_path TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1,
+    cuisine TEXT NOT NULL DEFAULT '' -- [AI生成] 菜系(家常菜/川菜/粤菜等)，空=未分类；参考中国传统八大菜系整理。
+);
+
+CREATE INDEX idx_dish_preference ON dish(preference DESC);
+CREATE INDEX idx_dish_updated_at ON dish(updated_at DESC);
+CREATE INDEX idx_dish_name ON dish(name COLLATE NOCASE);
+
+-- [AI生成] 菜品可关联多个烹饪方式；保留 dish.cooking_method_id 作为旧数据兼容和首个方式缓存。
+CREATE TABLE dish_cooking_method_rel (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    cooking_method_id INTEGER NOT NULL REFERENCES cooking_method(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (dish_id, cooking_method_id)
+);
+
+-- [AI生成] v24：按烹饪方式反查菜(PK 前导 dish_id)。
+CREATE INDEX idx_dish_cooking_method_rel_method ON dish_cooking_method_rel(cooking_method_id);
+
+CREATE TABLE dish_tag (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE dish_tag_rel (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    tag_id INTEGER NOT NULL REFERENCES dish_tag(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (dish_id, tag_id)
+);
+
+-- [AI生成] v24：按标签反查菜(标签筛选菜品，PK 前导 dish_id)。
+CREATE INDEX idx_dish_tag_rel_tag ON dish_tag_rel(tag_id);
+
+CREATE TABLE dish_ingredient (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id),
+    quantity REAL,
+    unit_id INTEGER REFERENCES measurement_unit(id),
+    is_main INTEGER NOT NULL DEFAULT 1,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX uq_dish_ingredient ON dish_ingredient(dish_id, ingredient_id);
+-- [AI生成] v24：按食材反查/删除关联(uq 前导为 dish_id，ingredient_id 需单独索引)。
+CREATE INDEX idx_dish_ingredient_ingredient ON dish_ingredient(ingredient_id);
+
+-- [AI生成] 菜品操作步骤：每一步保存文字和多图路径，图片路径沿用 `|` 分隔编码。
+CREATE TABLE dish_step (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    text TEXT NOT NULL DEFAULT '',
+    image_path TEXT NOT NULL DEFAULT '',
+    thumbnail_path TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_dish_step_dish_order ON dish_step(dish_id, sort_order, id);
+
+CREATE TABLE dish_crowd (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    crowd_id INTEGER NOT NULL REFERENCES crowd_type(id) ON DELETE CASCADE,
+    suitability TEXT NOT NULL DEFAULT 'suitable',
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (dish_id, crowd_id)
+);
+
+-- ========== 餐序类型 ==========
+
+CREATE TABLE meal_type (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    default_time TEXT NOT NULL,
+    is_fixed INTEGER NOT NULL DEFAULT 1,
+    source TEXT NOT NULL DEFAULT 'preset',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+-- [AI生成] v28：菜品「适合餐次」多对多(菜品↔餐次)。仿 dish_cooking_method_rel；指向 meal_type(含加餐)保 FK。
+-- 一道菜可属多餐次(鸡蛋羹=早餐+加餐)；预设菜由 seeder 按 MealSlotMatcher 推断补齐、自建菜保存时按推断兜底。
+CREATE TABLE dish_meal_slot (
+    dish_id INTEGER NOT NULL REFERENCES dish(id) ON DELETE CASCADE,
+    meal_type_id INTEGER NOT NULL REFERENCES meal_type(id) ON DELETE CASCADE,
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (dish_id, meal_type_id)
+);
+
+-- [AI生成] v28：按餐次反查菜(PK 前导 dish_id，餐次筛选需单独索引)。
+CREATE INDEX idx_dish_meal_slot_meal_type ON dish_meal_slot(meal_type_id);
+
+-- ========== 每餐记录 ==========
+
+CREATE TABLE meal_record (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL,
+    meal_type_id INTEGER NOT NULL REFERENCES meal_type(id),
+    meal_time TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_meal_record_date ON meal_record(date);
+CREATE INDEX idx_meal_record_created_at ON meal_record(created_at DESC);
+
+CREATE TABLE meal_record_dish (
+    meal_record_id INTEGER NOT NULL REFERENCES meal_record(id) ON DELETE CASCADE,
+    dish_id INTEGER NOT NULL REFERENCES dish(id),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
+    -- [AI生成] 食用比例(是否吃完)：这道菜这一餐实际吃掉的比例[0,1]，默认 1.0=吃完。
+    --   与成员饭量系数(family_member.portion_coefficient)正交：eaten_ratio=这盘剩没剩，share=吃掉的部分成员怎么分。
+    --   个人摄入 = 整份 × eaten_ratio × share(见 IntakeCalculator)。老行默认 1.0 与旧口径数学恒等、零回归。列序追加末尾(与 31.sqm 一致)。
+    eaten_ratio REAL NOT NULL DEFAULT 1.0,
+    PRIMARY KEY (meal_record_id, dish_id)
+);
+
+-- [AI生成] v24：按菜反查(最近吃过/做过次数，PK 前导为 meal_record_id，dish_id 需单独索引)。
+CREATE INDEX idx_meal_record_dish_dish ON meal_record_dish(dish_id);
+
+-- 喜爱度自动累加：MVP 在应用层 Repository 里维护（SQLDelight 当前方言不支持触发器 NEW 引用）。
+-- 在 MealRecordRepository.save() 中插入 meal_record_dish 后调用 incrementDishPreference()。
+
+-- ========== 收藏组合 ==========
+
+CREATE TABLE favorite_combo (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE favorite_combo_dish (
+    combo_id INTEGER NOT NULL REFERENCES favorite_combo(id) ON DELETE CASCADE,
+    dish_id INTEGER NOT NULL REFERENCES dish(id),
+    status INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (combo_id, dish_id)
+);
+
+-- [AI生成] v24：按菜删收藏组合关联(deleteFavoriteComboDishesByDish WHERE dish_id=?，PK 前导 combo_id)。
+CREATE INDEX idx_favorite_combo_dish_dish ON favorite_combo_dish(dish_id);
+
+-- [AI生成] 操作步骤模板：把常用做法步骤(文字)存成可复用模板，编辑菜品时"选择步骤"一键套用。
+-- source: preset(内置)/user(自建)；仅文字，图片仍按每道菜单独添加。全新装走 Schema.create 建表，旧库走 15.sqm。
+CREATE TABLE step_template (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE step_template_item (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    template_id INTEGER NOT NULL REFERENCES step_template(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    text TEXT NOT NULL DEFAULT '',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_step_template_item_order ON step_template_item(template_id, sort_order, id);
+
+-- [AI生成] B1：菜品收藏(置顶)。用户主动收藏的"看家菜"在菜品列表置顶；独立表不动 dish 表结构。
+CREATE TABLE dish_favorite (
+    dish_id INTEGER NOT NULL PRIMARY KEY REFERENCES dish(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+);
+
+-- [AI生成] 负反馈"踩"：用户显式标"不再推荐"的菜(仅用户主动标才降权，防"未选=不喜欢"误伤)。
+-- 独立表(仿 dish_favorite)不动 dish 表/不牵连 SELECT * 生成类型。推荐取数按此过滤(沉底/不再出现)，可撤销/在菜品详情恢复。
+CREATE TABLE dish_dislike (
+    dish_id INTEGER NOT NULL PRIMARY KEY REFERENCES dish(id) ON DELETE CASCADE,
+    created_at INTEGER NOT NULL
+);
+
+-- [AI生成] B5：常用配料组(如"基础调料包"=葱姜蒜盐生抽油)，编辑菜品"配料组"一键加入食材清单，降录入成本。
+-- 存食材名(按名解析/兜底建，同步友好)；source=preset/user。
+CREATE TABLE ingredient_group (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'user',
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE ingredient_group_item (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER NOT NULL REFERENCES ingredient_group(id) ON DELETE CASCADE,
+    ingredient_name TEXT NOT NULL,
+    is_main INTEGER NOT NULL DEFAULT 0,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
+    quantity REAL -- [AI生成] 克数(可空)；应用到菜品时带过来，与编辑菜品配料一致
+);
+
+CREATE INDEX idx_ingredient_group_item_order ON ingredient_group_item(group_id, sort_order, id);
+
+-- ========== 用户偏好与档案 ==========
+
+CREATE TABLE user_preferences (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+-- [AI修改] 健康档案统一到调养病种：改为引用 food_category（dimension=crowd 的 care_ 病种），
+-- 与调养 Tab / ingredient_care_rule 同一套病种，不再用旧 crowd_type（仅 4 项）。
+CREATE TABLE user_health_profile (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    care_category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE UNIQUE INDEX uq_user_health_profile ON user_health_profile(care_category_id);
+
+-- ========== 家庭成员档案（多人记菜） ==========
+
+-- [AI生成] 家庭成员：各自身体数据(算各自每日目标)、饭量系数(把全家餐热量按比例分到人)、is_self=默认「我」、is_focus=主要关注成员。
+CREATE TABLE family_member (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    gender TEXT NOT NULL DEFAULT 'MALE',
+    height_cm REAL,
+    weight_kg REAL,
+    age INTEGER,
+    activity TEXT NOT NULL DEFAULT 'MODERATE',
+    portion_coefficient REAL NOT NULL DEFAULT 1.0,
+    is_self INTEGER NOT NULL DEFAULT 0,
+    is_focus INTEGER NOT NULL DEFAULT 0,
+    sort INTEGER NOT NULL DEFAULT 0,
+    status INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+);
+
+-- [AI生成] 成员病种：每成员各自的调养病种(care_category_id 对齐 user_health_profile 口径)。忌口取全家启用成员并集。
+CREATE TABLE member_care (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    care_category_id INTEGER NOT NULL,
+    PRIMARY KEY (member_id, care_category_id)
+);
+
+-- [AI生成] v29：个人忌口(按分类)：每成员声明"不吃的分类"(肉/蔬/菌/豆/奶/口味调味 或 鸡/羊/牛子类)。
+-- 与 member_care 平行、与健康忌口正交取并集；推荐时全家并集展开为食材 id 进 avoid(个人忌口对调料也真避开·含即命中)。
+CREATE TABLE member_avoid_category (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES food_category(id) ON DELETE CASCADE,
+    PRIMARY KEY (member_id, category_id)
+);
+
+-- [AI生成] 阶段4：个人忌口(按**具体食材**)：在分类快捷忌口之外，可搜索添加具体食材(如菠菜/青椒)。
+-- 与 member_avoid_category 并行·加法不破坏；推荐时与分类展开的食材 id 取并集进 personalAvoidIngredientIds(引擎已支持·对调料也真避开)。
+CREATE TABLE member_avoid_ingredient (
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    PRIMARY KEY (member_id, ingredient_id)
+);
+
+-- [AI生成] 缺席微调：某天某成员没在家吃(按天粒度)。个人摄入份额按天排除缺席者，达标更准。
+CREATE TABLE day_absentee (
+    date TEXT NOT NULL,
+    member_id INTEGER NOT NULL REFERENCES family_member(id) ON DELETE CASCADE,
+    PRIMARY KEY (date, member_id)
+);
+
+-- ========== 厨房小助手 ==========
+
+-- [AI生成] 烹饪计时模板只保存用户配置，不保存运行/暂停/响铃等临时状态。
+CREATE TABLE cooking_timer_template (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    duration_seconds INTEGER NOT NULL,
+    note TEXT NOT NULL DEFAULT '',
+    ringtone_uri TEXT NOT NULL DEFAULT '',
+    ringtone_title TEXT NOT NULL DEFAULT '系统默认铃声',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1,
+    -- [AI生成] 连续多段倒计时(26.sqm 加列)：空=单段(用 duration_seconds)；非空=JSON 段列表[{name,seconds}]，一段停止后进下一段。
+    segments_json TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX idx_cooking_timer_template_sort ON cooking_timer_template(sort_order, id);
+
+-- ========== 库存（我家食材） ==========
+
+-- [AI生成] 库存表：从预设/自定义食材加入的家庭在手食材（我家食材）。
+-- 独立表（非 ingredient 加列），以支持数量/入库时间/临期等家庭食材库信息与未来「临期提醒/按量配菜」。
+CREATE TABLE pantry (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    ingredient_id INTEGER NOT NULL REFERENCES ingredient(id) ON DELETE CASCADE,
+    quantity REAL,
+    unit_id INTEGER REFERENCES measurement_unit(id),
+    added_at INTEGER NOT NULL,
+    expire_at INTEGER,
+    note TEXT NOT NULL DEFAULT '',
+    status INTEGER NOT NULL DEFAULT 1, -- 1=在手，0=已移出/用完（保留复购历史）
+    serving_count INTEGER NOT NULL DEFAULT 0 -- [AI生成] 份数=可做几次菜(用户提供总量)；剩余由派生占用算，不落库
+);
+
+CREATE UNIQUE INDEX uq_pantry_ingredient ON pantry(ingredient_id);
+
+-- ============================================================
+-- 查询定义
+-- ============================================================
+
+-- ===== 元数据 / 初始化检查 =====
+
+countCookingMethods:
+SELECT COUNT(*) FROM cooking_method WHERE status = 1;
+
+countMealTypes:
+SELECT COUNT(*) FROM meal_type WHERE status = 1;
+
+countCrowdTypes:
+SELECT COUNT(*) FROM crowd_type WHERE status = 1;
+
+countFoodCategories:
+SELECT COUNT(*) FROM food_category WHERE status = 1;
+
+countDishTags:
+SELECT COUNT(*) FROM dish_tag WHERE status = 1;
+
+countMeasurementUnits:
+SELECT COUNT(*) FROM measurement_unit WHERE status = 1;
+
+countUserPreferences:
+SELECT COUNT(*) FROM user_preferences WHERE status = 1;
+
+-- ===== cooking_timer_template =====
+
+insertCookingTimerTemplate:
+INSERT INTO cooking_timer_template(
+    name,
+    duration_seconds,
+    note,
+    ringtone_uri,
+    ringtone_title,
+    sort_order,
+    created_at,
+    updated_at,
+    status,
+    segments_json
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?);
+
+selectAllCookingTimerTemplates:
+SELECT *
+FROM cooking_timer_template
+WHERE status = 1
+ORDER BY sort_order, id;
+
+updateCookingTimerTemplate:
+UPDATE cooking_timer_template
+SET name = :name,
+    duration_seconds = :duration_seconds,
+    note = :note,
+    ringtone_uri = :ringtone_uri,
+    ringtone_title = :ringtone_title,
+    segments_json = :segments_json,
+    updated_at = :updated_at
+WHERE id = :id AND status = 1;
+
+softDeleteCookingTimerTemplate:
+UPDATE cooking_timer_template
+SET status = 0,
+    updated_at = :updated_at
+WHERE id = :id AND status = 1;
+
+-- ===== cooking_method =====
+
+insertCookingMethod:
+INSERT OR IGNORE INTO cooking_method(name, source, created_at, status) VALUES (?, ?, ?, 1);
+
+selectAllCookingMethods:
+SELECT * FROM cooking_method WHERE status = 1 ORDER BY id;
+
+-- [AI生成] 删除烹饪方式(仅用户自建，预设不可删)。软删=下次不再列出。
+softDeleteUserCookingMethod:
+UPDATE cooking_method SET status = 0 WHERE id = ? AND source = 'user';
+
+-- [AI生成] 按名精确取烹饪方式 id(name UNIQUE)，替代 ensureCookingMethod 的全表拉取反查。
+selectCookingMethodIdByName:
+SELECT id FROM cooking_method WHERE name = ? AND status = 1 LIMIT 1;
+
+selectCookingMethodById:
+SELECT * FROM cooking_method WHERE id = ? AND status = 1;
+
+-- ===== measurement_unit =====
+
+insertMeasurementUnit:
+INSERT OR IGNORE INTO measurement_unit(name, source, grams, status) VALUES (?, ?, ?, 1);
+
+selectAllMeasurementUnits:
+SELECT * FROM measurement_unit WHERE status = 1 ORDER BY id;
+
+-- [AI生成] 补齐旧库单位克当量(新增列，老库为 NULL)：按名幂等更新，供营养估算换算。
+updateMeasurementUnitGrams:
+UPDATE measurement_unit SET grams = :grams WHERE name = :name;
+
+-- [AI生成] 用户自建单位：按名精确取 id(name UNIQUE)，供 ensureMeasurementUnit 落库后回查。
+selectMeasurementUnitIdByName:
+SELECT id FROM measurement_unit WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 软删单位(仅用户自建，预设不可删)。
+softDeleteUserMeasurementUnit:
+UPDATE measurement_unit SET status = 0 WHERE id = ? AND source = 'user';
+
+-- ===== ingredient_nutrition（营养素 L2 数值层）=====
+
+-- [AI生成] 营养素补齐式写入：sqlite_3_18 无 UPSERT，用 INSERT OR REPLACE（PK=ingredient_id，无子表引用，安全）。
+upsertIngredientNutrition:
+INSERT OR REPLACE INTO ingredient_nutrition(
+    ingredient_id, energy_kcal, protein_g, fat_g, carb_g, fiber_g,
+    sodium_mg, potassium_mg, calcium_mg, gi, purine_mg,
+    saturated_fat_g, cholesterol_mg, piece_gram,
+    ref, review, updated_at, status
+) VALUES (
+    :ingredient_id, :energy_kcal, :protein_g, :fat_g, :carb_g, :fiber_g,
+    :sodium_mg, :potassium_mg, :calcium_mg, :gi, :purine_mg,
+    :saturated_fat_g, :cholesterol_mg, :piece_gram,
+    :ref, :review, :updated_at, 1
+);
+
+selectIngredientNutrition:
+SELECT * FROM ingredient_nutrition WHERE ingredient_id = ? AND status = 1;
+
+-- [AI生成] 计算菜品营养的输入：逐条配料的用量/单位克当量/该食材每100g营养与计件克重。
+-- 折算克数在 Kotlin 侧算(quantity × unit_grams，否则 × piece_gram，否则类别兜底)。
+selectNutritionInputsByDishIds:
+SELECT di.dish_id AS dish_id,
+       di.ingredient_id AS ingredient_id,
+       di.quantity AS quantity,
+       di.is_main AS is_main,
+       mu.grams AS unit_grams,
+       n.energy_kcal AS energy_kcal,
+       n.protein_g AS protein_g,
+       n.fat_g AS fat_g,
+       n.carb_g AS carb_g,
+       n.fiber_g AS fiber_g,
+       n.sodium_mg AS sodium_mg,
+       n.potassium_mg AS potassium_mg,
+       n.calcium_mg AS calcium_mg,
+       n.gi AS gi,
+       n.purine_mg AS purine_mg,
+       n.saturated_fat_g AS saturated_fat_g,
+       n.cholesterol_mg AS cholesterol_mg,
+       n.piece_gram AS piece_gram
+FROM dish_ingredient di
+LEFT JOIN measurement_unit mu ON mu.id = di.unit_id
+LEFT JOIN ingredient_nutrition n ON n.ingredient_id = di.ingredient_id AND n.status = 1
+WHERE di.dish_id IN :dishIds AND di.status = 1;
+
+-- ===== crowd_type =====
+
+insertCrowdType:
+INSERT OR IGNORE INTO crowd_type(name, description, source, created_at, status) VALUES (?, ?, ?, ?, 1);
+
+selectAllCrowdTypes:
+SELECT * FROM crowd_type WHERE status = 1 ORDER BY id;
+
+selectCrowdTypeById:
+SELECT * FROM crowd_type WHERE id = ? AND status = 1;
+
+-- ===== meal_type =====
+
+insertMealType:
+INSERT OR IGNORE INTO meal_type(code, name, default_time, is_fixed, source, status) VALUES (?, ?, ?, ?, ?, 1);
+
+selectAllMealTypes:
+SELECT * FROM meal_type WHERE status = 1 ORDER BY default_time;
+
+selectMealTypeById:
+SELECT * FROM meal_type WHERE id = ? AND status = 1;
+
+selectFixedMealTypes:
+SELECT * FROM meal_type WHERE is_fixed = 1 AND status = 1 ORDER BY default_time;
+
+-- [AI修改] v28：按 code 取餐次 id 复用既有 selectMealTypeIdByCode(见下方 meal_record 区)，此处不重复定义(SQLDelight 同 label 冲突)。
+
+-- ===== dish_meal_slot（菜品适合餐次·多对多） =====
+
+-- [AI生成] v28：挂/清菜品餐次(全量替换：先 unlink 再逐个 link)。
+linkDishMealSlot:
+INSERT OR REPLACE INTO dish_meal_slot(dish_id, meal_type_id, status) VALUES (?, ?, 1);
+
+unlinkMealSlotsOfDish:
+UPDATE dish_meal_slot SET status = 0 WHERE dish_id = ?;
+
+-- [AI生成] v28：单菜查关联餐次 code(编辑回显)。
+selectMealSlotCodesByDish:
+SELECT mt.code
+FROM dish_meal_slot dms
+JOIN meal_type mt ON dms.meal_type_id = mt.id
+WHERE dms.dish_id = ? AND dms.status = 1 AND mt.status = 1;
+
+-- [AI生成] v28：批量查多菜的餐次 code(列表 DishMini/推荐/记一餐预筛)。
+selectMealSlotCodesByDishIds:
+SELECT dms.dish_id, mt.code
+FROM dish_meal_slot dms
+JOIN meal_type mt ON dms.meal_type_id = mt.id
+WHERE dms.dish_id IN ? AND dms.status = 1 AND mt.status = 1
+ORDER BY dms.dish_id;
+
+-- [AI生成] v28：已打过餐次标的菜 id 集合(seeder 回填只补空、判老库是否已打标)。
+selectDishIdsWithMealSlot:
+SELECT DISTINCT dish_id FROM dish_meal_slot WHERE status = 1;
+
+-- ===== food_category =====
+
+insertFoodCategory:
+INSERT INTO food_category(name, dimension, parent_id, crowd_type_id, sort_order, icon, source, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectTopLevelCategories:
+SELECT * FROM food_category WHERE parent_id IS NULL AND status = 1 ORDER BY sort_order, id;
+
+selectChildCategories:
+SELECT * FROM food_category WHERE parent_id = ? AND status = 1 ORDER BY sort_order, id;
+
+selectCategoryById:
+SELECT * FROM food_category WHERE id = ? AND status = 1;
+
+countChildren:
+SELECT COUNT(*) FROM food_category WHERE parent_id = ? AND status = 1;
+
+-- [AI生成] 消 N+1:一次取"有子分类的父 id 集"(替代对每个分类逐个 countChildren)。纯新查询、不改表结构、无需迁移。
+selectParentIdsWithChildren:
+SELECT DISTINCT parent_id FROM food_category WHERE parent_id IS NOT NULL AND status = 1;
+
+-- [AI生成] 分类管理使用：读取全部有效分类，避免 UI 只看到已展开的局部分类树。
+selectAllFoodCategories:
+SELECT * FROM food_category
+WHERE status = 1
+ORDER BY parent_id IS NOT NULL, sort_order, id;
+
+-- [AI生成] 仅用户自建的通用分类允许编辑名称/图标，预设分类和慢病分类保持只读。
+updateUserFoodCategory:
+UPDATE food_category
+SET name = :name, icon = :icon
+WHERE id = :id
+  AND source = 'user'
+  AND dimension = 'general'
+  AND crowd_type_id IS NULL
+  AND status = 1;
+
+-- [AI生成] 分类删除采用软删除，保留操作痕迹，符合全库 status 字段约定。
+softDeleteUserFoodCategory:
+UPDATE food_category
+SET status = 0
+WHERE id = :id
+  AND source = 'user'
+  AND dimension = 'general'
+  AND crowd_type_id IS NULL;
+
+-- [AI生成] 用户分类被删除后，只解除分类关系，不删除食材本体。
+unlinkIngredientCategoryByCategory:
+UPDATE ingredient_category
+SET status = 0
+WHERE category_id = ?;
+
+-- ===== ingredient =====
+
+insertIngredient:
+INSERT INTO ingredient(name, alias, pinyin, image_path, thumbnail_path, emoji, default_unit_id, source, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+selectAllIngredients:
+SELECT id,
+       COALESCE(name, '') AS name,
+       COALESCE(alias, '') AS alias,
+       COALESCE(pinyin, '') AS pinyin,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
+       default_unit_id,
+       COALESCE(source, 'preset') AS source,
+       COALESCE(created_at, 0) AS created_at
+FROM ingredient
+WHERE status = 1
+ORDER BY pinyin, name;
+
+selectIngredientById:
+SELECT id,
+       COALESCE(name, '') AS name,
+       COALESCE(alias, '') AS alias,
+       COALESCE(pinyin, '') AS pinyin,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
+       default_unit_id,
+       COALESCE(source, 'preset') AS source,
+       COALESCE(created_at, 0) AS created_at
+FROM ingredient
+WHERE id = ? AND status = 1;
+
+sanitizeLegacyNullTextFields:
+UPDATE ingredient
+SET name = COALESCE(name, ''),
+    alias = COALESCE(alias, ''),
+    pinyin = COALESCE(pinyin, ''),
+    image_path = COALESCE(image_path, ''),
+    thumbnail_path = COALESCE(thumbnail_path, ''),
+    emoji = COALESCE(emoji, '🥗'),
+    source = COALESCE(source, 'preset'),
+    created_at = COALESCE(created_at, 0),
+    last_referenced_at = COALESCE(last_referenced_at, 0),
+    status = COALESCE(status, 1);
+
+sanitizeLegacyDishNullTextFields:
+UPDATE dish
+SET name = COALESCE(name, ''),
+    special_note = COALESCE(special_note, ''),
+    description = COALESCE(description, ''),
+    image_path = COALESCE(image_path, ''),
+    thumbnail_path = COALESCE(thumbnail_path, ''),
+    source = COALESCE(source, 'user'),
+    created_at = COALESCE(created_at, 0),
+    updated_at = COALESCE(updated_at, 0),
+    status = COALESCE(status, 1);
+
+updateUserIngredient:
+UPDATE ingredient
+SET name = ?, alias = ?, image_path = ?, thumbnail_path = ?, default_unit_id = ?
+WHERE id = ? AND status = 1;
+
+updateIngredientEmoji:
+UPDATE ingredient
+SET emoji = ?
+WHERE id = ? AND status = 1;
+
+-- [AI生成] 食材被菜品引用时更新时间戳，用于“最近使用”虚拟分类。
+updateIngredientLastReferencedAt:
+UPDATE ingredient
+SET last_referenced_at = :last_referenced_at
+WHERE id = :id AND status = 1;
+
+-- [AI修改] 软删除自定义食材：置失效并记录失效原因；被菜品引用时仍在菜品里灰显保留。
+deleteUserIngredient:
+UPDATE ingredient
+SET status = 0, reason = :reason
+WHERE id = :id AND source != 'preset';
+
+-- [AI生成] 恢复失效的自定义食材：清空失效原因、置回有效。
+restoreUserIngredient:
+UPDATE ingredient
+SET status = 1, reason = ''
+WHERE id = ? AND source != 'preset';
+
+-- [AI生成] 彻底删除自定义食材（回收站硬删）：仅限用户自建；被引用的 dish_ingredient 关系随外键级联删除。
+hardDeleteUserIngredient:
+DELETE FROM ingredient
+WHERE id = ? AND source != 'preset';
+
+-- [AI生成] 回收站：列出失效的自定义食材，供恢复/彻底删除。
+selectInactiveUserIngredients:
+SELECT id,
+       COALESCE(name, '') AS name,
+       COALESCE(alias, '') AS alias,
+       COALESCE(pinyin, '') AS pinyin,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
+       default_unit_id,
+       COALESCE(source, 'user') AS source,
+       COALESCE(created_at, 0) AS created_at,
+       COALESCE(reason, '') AS reason
+FROM ingredient
+WHERE status = 0 AND source = 'user'
+ORDER BY name COLLATE NOCASE ASC;
+
+-- [AI生成] 预设食材的有效/失效完全跟随后台数据包：seed 导入时同步 status 与失效原因。
+updatePresetIngredientStatus:
+UPDATE ingredient
+SET status = :status, reason = :reason
+WHERE id = :id AND source = 'preset';
+
+searchIngredients:
+SELECT id,
+       COALESCE(name, '') AS name,
+       COALESCE(alias, '') AS alias,
+       COALESCE(pinyin, '') AS pinyin,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(emoji, '🥗') AS emoji,
+       default_unit_id,
+       COALESCE(source, 'preset') AS source,
+       COALESCE(created_at, 0) AS created_at
+FROM ingredient
+WHERE status = 1 AND (name LIKE :kw OR alias LIKE :kw OR pinyin LIKE :kw)
+ORDER BY pinyin, name;
+
+selectIngredientsByCategory:
+SELECT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at
+FROM ingredient i
+JOIN ingredient_category ic ON i.id = ic.ingredient_id
+WHERE ic.category_id = ? AND i.status = 1 AND ic.status = 1
+ORDER BY i.pinyin, i.name;
+
+-- [AI修改] “最近使用”虚拟分类：只要食材被保存进菜品就计入，按最后被菜品引用时间倒序展示。
+selectRecentlyUsedIngredients:
+SELECT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at
+FROM ingredient i
+WHERE i.status = 1
+  AND i.last_referenced_at > 0
+ORDER BY i.last_referenced_at DESC, i.name;
+
+selectIngredientsByCrowd:
+SELECT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at,
+       COALESCE(ci.advice_level, 'neutral') AS advice_level,
+       COALESCE(ci.reason, '') AS reason
+FROM ingredient i
+JOIN crowd_ingredient ci ON i.id = ci.ingredient_id
+WHERE ci.crowd_id = ? AND i.status = 1 AND ci.status = 1
+ORDER BY
+  CASE ci.advice_level WHEN 'recommend' THEN 1 WHEN 'limit' THEN 2 WHEN 'avoid' THEN 3 ELSE 4 END,
+  i.pinyin, i.name;
+
+upsertCrowdIngredient:
+INSERT OR REPLACE INTO crowd_ingredient(crowd_id, ingredient_id, advice_level, reason, daily_limit, source, status)
+VALUES (?, ?, ?, ?, ?, ?, 1);
+
+linkIngredientCategory:
+INSERT OR REPLACE INTO ingredient_category(ingredient_id, category_id, status) VALUES (?, ?, 1);
+
+unlinkIngredientCategoriesByIngredient:
+UPDATE ingredient_category
+SET status = 0
+WHERE ingredient_id = ?;
+
+-- [AI生成] 软删单条食材-分类关联(预设 reseed 对齐 JSON：删 general 维度里 JSON 已无的旧 browse 关联，如可乐 other→beverage 后遗留的 other)。纯新查询无需迁移。
+unlinkIngredientCategory:
+UPDATE ingredient_category
+SET status = 0
+WHERE ingredient_id = ? AND category_id = ?;
+
+selectCategoryIdsByIngredient:
+SELECT category_id
+FROM ingredient_category
+WHERE ingredient_id = ? AND status = 1
+ORDER BY category_id;
+
+selectCategoriesByIngredient:
+SELECT fc.*
+FROM food_category fc
+JOIN ingredient_category ic ON fc.id = ic.category_id
+WHERE ic.ingredient_id = ? AND ic.status = 1 AND fc.status = 1
+ORDER BY fc.dimension, fc.sort_order, fc.id;
+
+selectIngredientsByCategoryIds:
+SELECT DISTINCT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at
+FROM ingredient i
+JOIN ingredient_category ic ON i.id = ic.ingredient_id
+WHERE ic.category_id IN ?
+  AND i.status = 1
+  AND ic.status = 1
+ORDER BY i.pinyin, i.name;
+
+-- [AI生成] 阶段4:按 id 批量取食材(id+name)——个人忌口具体食材编辑回显 chip 名。
+selectIngredientNamesByIds:
+SELECT id, COALESCE(name, '') AS name FROM ingredient WHERE id IN ? AND status = 1;
+
+-- [AI生成] 全部有效食材 id（AI"随机推荐"从整个食材库取，而非仅库存）。
+selectAllIngredientIds:
+SELECT id FROM ingredient WHERE status = 1;
+
+-- [AI生成] 全部有效食材名（供"菜名推食材"按名匹配；纯查询无需迁移）。
+selectAllIngredientNames:
+SELECT name FROM ingredient WHERE status = 1;
+
+-- [AI生成] 各食材的营养维度/应季分类（周期规划做营养均衡与应季优先）。
+selectNutritionSeasonTags:
+SELECT ic.ingredient_id, fc.name AS tag_name, fc.dimension AS dim
+FROM ingredient_category ic
+JOIN food_category fc ON fc.id = ic.category_id
+WHERE ic.status = 1 AND fc.status = 1 AND fc.dimension IN ('nutrition', 'season');
+
+-- [AI生成] 调料/油脂类食材 id（AI 推荐"可做性=非调料齐"用；调料默认常备）。
+-- 按稳定根类名「调味品」「油脂类」及其子类识别，不依赖分类 id。
+selectSeasoningIngredientIds:
+SELECT DISTINCT ic.ingredient_id
+FROM ingredient_category ic
+JOIN food_category fc ON fc.id = ic.category_id
+WHERE ic.status = 1 AND fc.status = 1
+  AND (
+    fc.name IN ('调味品', '油脂类')
+    OR fc.parent_id IN (SELECT id FROM food_category WHERE name IN ('调味品', '油脂类') AND status = 1)
+  );
+
+-- [AI生成] 最近吃过的菜 id（按最近食用日期倒序，去重限量）；AI 推荐去重降权用。
+selectRecentEatenDishIds:
+SELECT mrd.dish_id
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+WHERE mr.status = 1 AND mrd.status = 1
+GROUP BY mrd.dish_id
+ORDER BY MAX(mr.date) DESC
+LIMIT ?;
+
+-- [AI生成] B2：某日期(含)以来吃过的菜 → (dish_id, 最近食用日期)；AI 推荐按"周期窗口"去重排后+标注天数。
+selectEatenDishDatesSince:
+SELECT mrd.dish_id AS dish_id, MAX(mr.date) AS last_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY mrd.dish_id;
+
+-- [AI生成] 算法·时间衰减：指定候选菜"距上次做的最近日期"(不限窗口)；FRESH 风格下让久没做的常做菜"常做"加分随天数衰减。
+--   与 selectEatenDishDatesSince 区别：不设日期下限、只查给定候选 id(候选数≤100)，取全历史最近一次。
+selectLastCookedDatesByDishIds:
+SELECT mrd.dish_id AS dish_id, MAX(mr.date) AS last_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+WHERE mr.status = 1 AND mrd.status = 1 AND mrd.dish_id IN ?
+GROUP BY mrd.dish_id;
+
+-- [AI生成] 算法·口味画像：某日期(含)以来吃过的菜按**菜系**统计次数(空菜系忽略在应用层)。纯本地频次聚合。
+selectCookedCuisineFreqSince:
+SELECT COALESCE(d.cuisine, '') AS cuisine, COUNT(*) AS cnt
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+JOIN dish d ON d.id = mrd.dish_id AND d.status = 1
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY d.cuisine;
+
+-- [AI生成] 算法·口味画像：某日期(含)以来吃过的菜按**做法**统计次数(经 dish_cooking_method_rel 多对多)。
+selectCookedMethodFreqSince:
+SELECT cm.name AS method, COUNT(*) AS cnt
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+JOIN dish_cooking_method_rel r ON r.dish_id = mrd.dish_id AND r.status = 1
+JOIN cooking_method cm ON cm.id = r.cooking_method_id AND cm.status = 1
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY cm.name;
+
+-- [AI生成] 算法·口味画像：某日期(含)以来吃过的菜按**主料名**统计次数(仅 is_main，调料在应用层按 seasoning 集排除)。
+selectCookedMainFreqSince:
+SELECT COALESCE(i.name, '') AS ingredient_name, COUNT(*) AS cnt
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+JOIN dish_ingredient di ON di.dish_id = mrd.dish_id AND di.status = 1 AND di.is_main = 1
+JOIN ingredient i ON i.id = di.ingredient_id AND i.status = 1
+WHERE mr.status = 1 AND mrd.status = 1 AND mr.date >= :sinceDate
+GROUP BY i.name;
+
+-- [AI生成] 调养 tab 按病种分类通过调养规则聚合食材；剂量语义由 advice_level 表达，红绿灯分组在应用层完成。
+selectIngredientsByCareCategories:
+SELECT DISTINCT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at,
+       r.advice_level,
+       COALESCE(r.reason, '') AS reason
+FROM ingredient i
+JOIN ingredient_care_rule r ON r.ingredient_id = i.id
+WHERE r.category_id IN ?
+  AND i.status = 1
+  AND r.status = 1
+ORDER BY CASE r.advice_level WHEN 'recommend' THEN 0 WHEN 'limit' THEN 1 ELSE 2 END, i.pinyin, i.name;
+
+upsertIngredientDetail:
+INSERT OR REPLACE INTO ingredient_detail(
+    ingredient_id,
+    common_methods,
+    prep_tips,
+    eating_notes,
+    storage_tips,
+    health_note,
+    updated_at,
+    status
+) VALUES (?, ?, ?, ?, ?, ?, ?, 1);
+
+selectIngredientDetail:
+SELECT ingredient_id,
+       common_methods,
+       prep_tips,
+       eating_notes,
+       storage_tips,
+       health_note,
+       updated_at
+FROM ingredient_detail
+WHERE ingredient_id = ? AND status = 1;
+
+clearIngredientCareRules:
+UPDATE ingredient_care_rule
+SET status = 0
+WHERE ingredient_id = ?;
+
+upsertIngredientCareRule:
+INSERT OR REPLACE INTO ingredient_care_rule(ingredient_id, category_id, advice_level, reason, source, status)
+VALUES (?, ?, ?, ?, ?, 1);
+
+selectCareRulesByIngredient:
+SELECT cr.id,
+       cr.ingredient_id,
+       cr.category_id,
+       fc.name AS category_name,
+       cr.advice_level,
+       cr.reason,
+       cr.source
+FROM ingredient_care_rule cr
+JOIN food_category fc ON cr.category_id = fc.id
+WHERE cr.ingredient_id = ? AND cr.status = 1 AND fc.status = 1
+ORDER BY fc.sort_order, fc.id;
+
+-- ===== dish =====
+
+insertDish:
+INSERT INTO dish(name, cooking_method_id, preference, special_note, description, image_path, thumbnail_path, source, created_at, updated_at, cuisine)
+VALUES (?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- [AI生成] 预设菜补齐式 seed 用：按名判断预设菜是否已存在，避免重复插入。
+selectPresetDishIdByName:
+SELECT id FROM dish WHERE name = ? AND source = 'preset' AND status = 1 LIMIT 1;
+
+-- [AI生成] 给已存在的预设菜补菜系(幂等，仅当前为空才补)；seedDishes 对已存在菜跳过插入，故单列补齐。
+updatePresetDishCuisineByName:
+UPDATE dish SET cuisine = :cuisine WHERE name = :name AND source = 'preset' AND cuisine = '';
+
+-- [AI生成] 菜系分类:给存量自建菜(cuisine 空)幂等回填默认"家常菜"(只填空、不覆盖已设，解决自建菜在菜系Tab看不到)。纯新查询不改表结构、无需迁移。
+backfillEmptyUserDishCuisine:
+UPDATE dish SET cuisine = :cuisine WHERE source = 'user' AND cuisine = '';
+
+updateDish:
+UPDATE dish
+SET name = ?, cooking_method_id = ?, special_note = ?, description = ?, image_path = ?, thumbnail_path = ?, updated_at = ?, cuisine = ?
+WHERE id = ?;
+
+deleteDish:
+UPDATE dish SET status = 0 WHERE id = ?;
+
+selectAllDishes:
+SELECT * FROM dish WHERE status = 1 ORDER BY updated_at DESC;
+
+-- [AI生成] RANDOM 推荐候选：全库有效菜（都算可做），按偏好+名取上限。
+--   刻意避开 selectDishesByIngredientMatch 的 `IN :ingredientIds`——RANDOM 模式会把整库食材 id
+--   传进去展开成上千个占位符，触发 SQLite 999 变量上限(SQLITE_MAX_VARIABLE_NUMBER)预编译崩溃。
+--   RANDOM 语义=整库都可做，本就无需按食材求交集；按 preference 优先(旧路径按 match_count 即配料数排序=复杂菜优先，是意外副作用)。纯新查询无需迁移。
+selectAllDishesForRandom:
+SELECT * FROM dish WHERE status = 1 ORDER BY preference DESC, name COLLATE NOCASE ASC LIMIT :limit;
+
+selectDishById:
+SELECT * FROM dish WHERE id = ? AND status = 1;
+
+-- [AI生成] 首页"下一餐"推荐卡取真实菜图:按 id 批量取封面/缩略图,让推荐卡显该菜自己的图片(修"推荐图片与菜不符"·分类emoji与具体菜不对应)。纯新查询无需迁移。
+selectDishImagesByIds:
+SELECT id, COALESCE(image_path, '') AS image_path, COALESCE(thumbnail_path, '') AS thumbnail_path
+FROM dish WHERE id IN ?;
+
+-- [AI生成] 编辑/详情页专用安全读取：旧库可能残留 NULL 文本字段，统一兜底为空字符串，避免表单加载被 SQLDelight 非空映射中断。
+selectDishForEditById:
+SELECT id,
+       COALESCE(name, '') AS name,
+       cooking_method_id,
+       COALESCE(preference, 0) AS preference,
+       COALESCE(special_note, '') AS special_note,
+       COALESCE(description, '') AS description,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(source, 'user') AS source,
+       COALESCE(created_at, 0) AS created_at,
+       COALESCE(updated_at, 0) AS updated_at,
+       COALESCE(cuisine, '') AS cuisine
+FROM dish
+WHERE id = ? AND status = 1;
+
+selectDishesByPopularity:
+SELECT * FROM dish WHERE status = 1 ORDER BY preference DESC, name COLLATE NOCASE ASC LIMIT ?;
+
+selectDishesByRecent:
+SELECT DISTINCT d.* FROM dish d
+JOIN meal_record_dish mrd ON d.id = mrd.dish_id
+JOIN meal_record mr ON mrd.meal_record_id = mr.id
+WHERE d.status = 1 AND mrd.status = 1 AND mr.status = 1
+ORDER BY mr.created_at DESC
+LIMIT ?;
+
+selectDishesByPreference:
+SELECT * FROM dish WHERE status = 1 ORDER BY preference DESC, updated_at DESC;
+
+selectDishesByPinyin:
+SELECT * FROM dish WHERE status = 1 ORDER BY name COLLATE NOCASE ASC;
+
+searchDishes:
+SELECT DISTINCT d.* FROM dish d
+LEFT JOIN dish_tag_rel dtr ON d.id = dtr.dish_id
+LEFT JOIN dish_tag dt ON dtr.tag_id = dt.id
+LEFT JOIN dish_ingredient di ON d.id = di.dish_id
+LEFT JOIN ingredient i ON di.ingredient_id = i.id
+WHERE d.status = 1
+  AND (d.name LIKE :kw
+   OR (dtr.status = 1 AND dt.status = 1 AND dt.name LIKE :kw)
+   OR (di.status = 1 AND i.status = 1 AND i.name LIKE :kw)
+   OR (di.status = 1 AND i.status = 1 AND i.alias LIKE :kw))
+ORDER BY d.preference DESC, d.name COLLATE NOCASE ASC;
+
+selectDishesByIngredientMatch:
+SELECT d.id,
+       d.name,
+       d.image_path,
+       d.thumbnail_path,
+       d.preference,
+       d.cooking_method_id,
+       d.source,
+       d.cuisine,
+       COUNT(DISTINCT CASE WHEN di.ingredient_id IN :ingredientIds THEN di.ingredient_id END) AS match_count,
+       COUNT(DISTINCT di.ingredient_id) AS total_count
+FROM dish d
+JOIN dish_ingredient di ON d.id = di.dish_id
+WHERE d.status = 1
+  AND di.status = 1
+GROUP BY d.id
+HAVING match_count > 0
+ORDER BY match_count DESC, total_count ASC, d.preference DESC, d.name COLLATE NOCASE ASC
+LIMIT :limit;
+
+-- ===== dish_tag / dish_tag_rel =====
+
+insertDishTag:
+INSERT OR IGNORE INTO dish_tag(name, source, created_at, status) VALUES (?, ?, ?, 1);
+
+selectAllDishTags:
+SELECT * FROM dish_tag WHERE status = 1 ORDER BY name COLLATE NOCASE ASC;
+
+selectDishTagByName:
+SELECT * FROM dish_tag WHERE name = ? AND status = 1;
+
+-- [AI生成] 删除标签(仅用户自建，预设不可删)。
+softDeleteUserDishTag:
+UPDATE dish_tag SET status = 0 WHERE id = ? AND source = 'user';
+
+selectTagsByDish:
+SELECT dt.* FROM dish_tag dt
+JOIN dish_tag_rel dtr ON dt.id = dtr.tag_id
+WHERE dtr.dish_id = ? AND dtr.status = 1 AND dt.status = 1
+ORDER BY dt.name;
+
+-- [AI修改] 批量读取菜品标签，避免列表和食历组装时对每个菜品单独查询。
+selectTagsByDishIds:
+SELECT dtr.dish_id, dt.name
+FROM dish_tag_rel dtr
+JOIN dish_tag dt ON dtr.tag_id = dt.id
+WHERE dtr.dish_id IN ? AND dtr.status = 1 AND dt.status = 1
+ORDER BY dtr.dish_id, dt.name;
+
+-- [AI生成] 批量读取菜品烹饪方式，支持菜品列表和详情展示多个方式。
+selectCookingMethodsByDishIds:
+SELECT dcmr.dish_id, cm.id, cm.name
+FROM dish_cooking_method_rel dcmr
+JOIN cooking_method cm ON dcmr.cooking_method_id = cm.id
+WHERE dcmr.dish_id IN ? AND dcmr.status = 1 AND cm.status = 1
+ORDER BY dcmr.dish_id, cm.name;
+
+selectCookingMethodsByDish:
+SELECT cm.*
+FROM cooking_method cm
+JOIN dish_cooking_method_rel dcmr ON cm.id = dcmr.cooking_method_id
+WHERE dcmr.dish_id = ? AND dcmr.status = 1 AND cm.status = 1
+ORDER BY cm.name;
+
+linkDishCookingMethod:
+INSERT OR REPLACE INTO dish_cooking_method_rel(dish_id, cooking_method_id, status) VALUES (?, ?, 1);
+
+unlinkCookingMethodsOfDish:
+UPDATE dish_cooking_method_rel SET status = 0 WHERE dish_id = ?;
+
+linkDishTag:
+INSERT OR REPLACE INTO dish_tag_rel(dish_id, tag_id, status) VALUES (?, ?, 1);
+
+unlinkAllTagsOfDish:
+UPDATE dish_tag_rel SET status = 0 WHERE dish_id = ?;
+
+-- ===== dish_ingredient =====
+
+insertDishIngredient:
+INSERT OR REPLACE INTO dish_ingredient(dish_id, ingredient_id, quantity, unit_id, is_main, status)
+VALUES (?, ?, ?, ?, ?, 1);
+
+-- [AI生成] 观察配料变化令牌:任意菜配料(用量/单位/增删)改动都会让此查询重发→驱动今日卡等营养汇总重算(修"改菜克数后今日卡停旧值")。纯新查询无需迁移。
+observeDishIngredientCount:
+SELECT COUNT(*) FROM dish_ingredient;
+
+-- [AI生成] 食用比例变化令牌：meal_record_dish 变化(就地调 eaten_ratio)时重发→今日卡重算。
+--   selectMealRecordsBetween 只读 meal_record 表、不被 meal_record_dish 的 UPDATE 通知(踩坑红线:改B表不触发A表Flow)。
+--   SUM(eaten_ratio) 让令牌值随比例改变而变(非仅表通知)。
+observeMealRecordDishRevision:
+SELECT IFNULL(SUM(eaten_ratio), 0.0) FROM meal_record_dish WHERE status = 1;
+
+-- [AI修改] J1：菜品表变化令牌。dish 表变更(改图片/名称等)时此查询重发→observeTimelineWindow 重跑 buildDayMealCards→首页菜品图即时刷新(修"编辑菜品图后返回图片没变")。纯新查询无需迁移。
+observeDishRevision:
+SELECT COUNT(*) FROM dish WHERE status = 1;
+
+-- [AI修改] 去掉 i.status=1 过滤：菜品要保留对失效食材的引用（灰显 + 失效原因），
+-- 只按 di.status=1 判断该引用本身是否有效。同时读出食材 status/reason 供 UI 判断灰显。
+selectIngredientsOfDish:
+SELECT di.id AS rel_id, di.dish_id, di.ingredient_id, di.quantity, di.unit_id, di.is_main,
+       COALESCE(i.name, '') AS ingredient_name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.status, 1) AS ingredient_status,
+       COALESCE(i.reason, '') AS ingredient_reason,
+       COALESCE(u.name, '') AS unit_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+LEFT JOIN measurement_unit u ON di.unit_id = u.id
+WHERE di.dish_id = ? AND di.status = 1
+ORDER BY di.is_main DESC, di.id ASC;
+
+-- [AI生成] 按一组 dishId 取各菜的主料名(is_main=1)，用于列表/餐食卡 mainIngredientNames：
+-- 支撑食物分类图标(FoodGroup)、营养搭配、主食置顶判定。
+selectMainIngredientNamesByDishIds:
+SELECT di.dish_id AS dish_id, COALESCE(i.name, '') AS ingredient_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id AND i.status = 1
+WHERE di.dish_id IN ? AND di.status = 1 AND di.is_main = 1
+ORDER BY di.id ASC;
+
+-- [AI生成] 周期规划批量取数(消除 gatherForPlan 逐菜 getDishById 的 N+1)：一次查全库有效菜的
+-- 全部配料(id/名/是否主料)。仅取 PlanDish 所需三字段，不带步骤/图片/标签等重字段。
+-- 不过滤 i.status(与 selectIngredientsOfDish 一致，保留对失效食材的引用参与健康/主料判定)。
+selectAllDishIngredientsForPlan:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name, di.is_main AS is_main
+FROM dish_ingredient di
+JOIN dish d ON d.id = di.dish_id AND d.status = 1
+JOIN ingredient i ON di.ingredient_id = i.id
+WHERE di.status = 1
+ORDER BY di.dish_id ASC, di.is_main DESC, di.id ASC;
+
+-- [AI生成] 按一组 dishId 批量取各菜全部配料(id/名/是否主料)，用于下一餐推荐 gather 组装 RuleDish
+-- (消除 candidateDishIds 逐个 getDishById 的 N+1)。不过滤 i.status(与 selectIngredientsOfDish 一致)。
+selectDishIngredientsByDishIds:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name, di.is_main AS is_main
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+WHERE di.dish_id IN ? AND di.status = 1
+ORDER BY di.dish_id ASC, di.is_main DESC, di.id ASC;
+
+-- [AI生成] 按一组 dishId 批量取各菜主料(id+名)，用于周期规划库存标注(消除 annotatePlanWithPantry 逐菜 getDishById)。
+-- 不过滤 i.status(与 getDishById 原路径一致，保留对失效食材引用)；调料排除在 Kotlin 侧按 seasoningIds 做。
+selectMainIngredientsByDishIds:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id, COALESCE(i.name, '') AS ingredient_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+WHERE di.dish_id IN ? AND di.status = 1 AND di.is_main = 1
+ORDER BY di.id ASC;
+
+deleteIngredientsOfDish:
+UPDATE dish_ingredient SET status = 0 WHERE dish_id = ?;
+
+-- [AI生成] 取某菜已关联(有效)配料的食材id，供 seed 对已存在预设菜"补齐缺失配料关联"(食材后于菜入库时会漏关联致0千卡)。
+selectDishIngredientIdsByDishId:
+SELECT ingredient_id FROM dish_ingredient WHERE dish_id = ? AND status = 1;
+
+-- [AI生成] 补齐老库预设菜配料的空用量：早期 seed 未带 quantity/unit_id，已关联行留 NULL 致热量算 0（如排骨海带汤）。
+-- 仅回填 quantity IS NULL 的行，不覆盖已有用量（用户手改/新库不受影响）；零风险幂等，纯新查询无需迁移。
+fillDishIngredientQuantityIfNull:
+UPDATE dish_ingredient SET quantity = ?, unit_id = ?
+WHERE dish_id = ? AND ingredient_id = ? AND status = 1 AND quantity IS NULL;
+
+-- [AI生成] 取**自建菜**里 quantity=NULL 的配料(用户加食材没设量→营养算0)，供 seeder 按食材名分类补智能默认克数。
+-- **仅 source='user'**：预设菜的空用量由 seedDishes 循环用 seed 正确值(如牛肉250g)回填，不能被分类默认抢填覆盖。
+selectUserDishIngredientsWithNullQuantity:
+SELECT di.dish_id AS dish_id, di.ingredient_id AS ingredient_id, COALESCE(i.name, '') AS ingredient_name
+FROM dish_ingredient di
+JOIN ingredient i ON di.ingredient_id = i.id
+JOIN dish d ON d.id = di.dish_id
+WHERE di.status = 1 AND di.quantity IS NULL AND d.source = 'user';
+
+-- [AI生成] 修复历史"默认克数配错单位"数据：早期加食材 bug(gramUnit()未加载返null)使默认 100g
+-- 落到食材计件默认单位(个/只)或 NULL → 详情显"100.0个/100.0(无单位)"、营养按错单位折算。
+-- 只改**签名明确=bug**的行：quantity 恰为默认 100.0 且 单位为空 或 指向计件单位(grams IS NULL)→统一改"克"(:gramUnitId)。
+-- 安全:合法 100g 行单位已是 g(grams=1.0)被排除;真实计件用量(1~几个青椒)不为 100 不受影响;幂等(改完再跑无匹配)。纯 UPDATE 无需迁移。
+-- 极端权衡:若用户**真实录入**"100 个某计件食材"会被一并改成"100 克"——现实极罕见(没人一道菜放100个),属可接受的数据修复取舍。
+repairDishIngredientGramUnitForDefault:
+UPDATE dish_ingredient SET unit_id = ?
+WHERE status = 1 AND quantity = 100.0
+  AND (unit_id IS NULL OR unit_id IN (SELECT id FROM measurement_unit WHERE grams IS NULL));
+
+deleteDishIngredientsByIngredient:
+UPDATE dish_ingredient SET status = 0 WHERE ingredient_id = ?;
+
+-- [AI生成] 彻底删除食材时物理清除其菜品关联行（ingredient_id 无 ON DELETE CASCADE，需显式删除避免外键悬挂）。
+hardDeleteDishIngredientsByIngredient:
+DELETE FROM dish_ingredient WHERE ingredient_id = ?;
+
+-- ===== dish_step =====
+
+insertDishStep:
+INSERT INTO dish_step(dish_id, sort_order, text, image_path, thumbnail_path, created_at, updated_at, status)
+VALUES (?, ?, ?, ?, ?, ?, ?, 1);
+
+selectStepsOfDish:
+SELECT id,
+       dish_id,
+       sort_order,
+       COALESCE(text, '') AS text,
+       COALESCE(image_path, '') AS image_path,
+       COALESCE(thumbnail_path, '') AS thumbnail_path,
+       COALESCE(created_at, 0) AS created_at,
+       COALESCE(updated_at, 0) AS updated_at
+FROM dish_step
+WHERE dish_id = ? AND status = 1
+ORDER BY sort_order ASC, id ASC;
+
+deleteStepsOfDish:
+UPDATE dish_step SET status = 0, updated_at = ? WHERE dish_id = ?;
+
+selectIngredientIdByNameIncludingInactive:
+SELECT id, status
+FROM ingredient
+WHERE name = ?
+LIMIT 1;
+
+restorePresetIngredient:
+UPDATE ingredient
+SET alias = ?, pinyin = ?, emoji = ?, default_unit_id = ?, source = 'preset', status = 1
+WHERE id = ?;
+
+-- ===== meal_record =====
+
+insertMealRecord:
+INSERT INTO meal_record(date, meal_type_id, meal_time, note, created_at)
+VALUES (?, ?, ?, ?, ?);
+
+selectMealRecordsByDate:
+SELECT * FROM meal_record WHERE date = ? AND status = 1 ORDER BY meal_time;
+
+-- [AI修改] 食历只展示真实存在餐食记录的日期，按时间正序分页。
+selectTimelineDatesAsc:
+SELECT DISTINCT date FROM meal_record
+WHERE status = 1
+ORDER BY date ASC;
+
+-- [AI修改] 按一组日期批量读取 meal_record，避免食历分页后逐日查询。
+selectMealRecordsByDates:
+SELECT * FROM meal_record
+WHERE date IN ?
+  AND status = 1
+ORDER BY date ASC, meal_time ASC;
+
+selectMealRecordById:
+SELECT * FROM meal_record WHERE id = ? AND status = 1;
+
+selectMealRecordsByDateRange:
+SELECT * FROM meal_record
+WHERE date BETWEEN :start AND :end AND status = 1
+ORDER BY date DESC, meal_time;
+
+selectMealRecordsBetween:
+SELECT * FROM meal_record
+WHERE date >= :start AND date <= :end AND status = 1
+ORDER BY date DESC, meal_time;
+
+selectFutureMealRecords:
+SELECT * FROM meal_record
+WHERE date > :today AND status = 1
+ORDER BY date ASC, meal_time ASC
+LIMIT ?;
+
+-- [AI生成] 首页计划只展示真实存在且日期不早于今天的 meal_record，不再为空的今天生成占位卡片。
+selectUpcomingMealRecords:
+SELECT * FROM meal_record
+WHERE date >= :today AND status = 1
+ORDER BY date ASC, meal_time ASC
+LIMIT ?;
+
+selectDistinctDates:
+SELECT DISTINCT date FROM meal_record
+WHERE status = 1
+ORDER BY date DESC
+LIMIT :limit OFFSET :offset;
+
+-- [AI修改] 全局搜索餐食：命中日期或关联菜品名后返回对应日期，UI 再按日期组装整天餐食卡片。
+searchMealDates:
+SELECT DISTINCT mr.date
+FROM meal_record mr
+LEFT JOIN meal_record_dish mrd ON mr.id = mrd.meal_record_id
+LEFT JOIN dish d ON mrd.dish_id = d.id
+WHERE mr.status = 1
+  AND (mr.date LIKE :kw OR (mrd.status = 1 AND d.status = 1 AND d.name LIKE :kw))
+ORDER BY mr.date DESC
+LIMIT :limit OFFSET :offset;
+
+selectMinAndMaxDate:
+SELECT MIN(date) AS min_date, MAX(date) AS max_date FROM meal_record WHERE status = 1;
+
+deleteMealRecord:
+UPDATE meal_record SET status = 0 WHERE id = ?;
+
+deleteMealRecordsByDate:
+UPDATE meal_record SET status = 0 WHERE date = ?;
+
+-- ===== meal_record_dish =====
+
+deleteMealRecordDishesByDate:
+UPDATE meal_record_dish
+SET status = 0
+WHERE meal_record_id IN (SELECT id FROM meal_record WHERE date = ?);
+
+insertMealRecordDish:
+INSERT OR REPLACE INTO meal_record_dish(meal_record_id, dish_id, sort_order, status)
+VALUES (?, ?, ?, 1);
+
+incrementDishPreference:
+UPDATE dish
+   SET preference = MIN(preference + 1, 1000),
+       updated_at = ?
+ WHERE id = ?;
+
+-- [AI生成] 某菜品被做过(记入餐食)的次数与最近日期(菜品详情"做过N次")。
+selectDishCookStats:
+SELECT COUNT(*) AS cnt, MAX(mr.date) AS last_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id AND mr.status = 1
+WHERE mrd.dish_id = ? AND mrd.status = 1;
+
+selectDishesOfMealRecord:
+SELECT d.*, mrd.sort_order, mrd.eaten_ratio FROM dish d
+JOIN meal_record_dish mrd ON d.id = mrd.dish_id
+WHERE mrd.meal_record_id = ? AND mrd.status = 1 AND d.status = 1
+ORDER BY mrd.sort_order, d.name;
+
+-- [AI修改] 批量读取多条餐食记录下的菜品，减少首页计划和食历窗口的 N+1 查询。
+-- [AI修改] 去掉 d.status=1：菜品软删后历史餐食仍要显示当时吃的菜(与食材保留引用一致)；
+-- 菜品库列表另用带 status=1 的查询，软删菜不进库、只留在历史。
+selectDishesOfMealRecords:
+SELECT mrd.meal_record_id, d.*, mrd.sort_order, mrd.eaten_ratio FROM dish d
+JOIN meal_record_dish mrd ON d.id = mrd.dish_id
+WHERE mrd.meal_record_id IN ? AND mrd.status = 1
+ORDER BY mrd.meal_record_id, mrd.sort_order, d.name;
+
+-- [AI生成] 就地调整某餐某菜的食用比例(是否吃完)。今日卡"按实际吃了多少调整"入口写此，独立于整餐替换 save 路径。
+--   与 save/saveDayMeals 的 INSERT OR REPLACE 解耦：本 UPDATE 只改 eaten_ratio 不动 sort/status/喜爱度。
+updateMealRecordDishEatenRatio:
+UPDATE meal_record_dish
+   SET eaten_ratio = ?
+ WHERE meal_record_id = ? AND dish_id = ?;
+
+-- [AI生成] 整餐一次设置吃完度：把该餐所有菜的 eaten_ratio 设为同值(今日卡"这一餐整体"档)。
+updateEatenRatioForMeal:
+UPDATE meal_record_dish
+   SET eaten_ratio = ?
+ WHERE meal_record_id = ?;
+
+-- [AI生成] 某日各(餐次类型,菜)的食用比例快照，供 saveDayMeals 整日重插时回填(防编辑当天静默重置用户调好的吃完度)。
+selectEatenRatiosByDate:
+SELECT mr.meal_type_id, mrd.dish_id, mrd.eaten_ratio
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mr.id = mrd.meal_record_id
+WHERE mr.date = ? AND mr.status = 1 AND mrd.status = 1;
+
+selectDishIdsByMealDate:
+SELECT DISTINCT mrd.dish_id
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id
+WHERE mr.date = ? AND mr.status = 1 AND mrd.status = 1;
+
+-- [AI生成] 删除菜品前检查该菜品被哪些日期/餐次引用，用于给用户明确风险提示。
+selectMealReferencesByDish:
+SELECT mr.date,
+       mt.name AS meal_name,
+       mr.meal_time
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id
+JOIN meal_type mt ON mr.meal_type_id = mt.id
+WHERE mrd.dish_id = ? AND mrd.status = 1 AND mr.status = 1 AND mt.status = 1
+ORDER BY mr.date DESC, mr.meal_time ASC;
+
+deleteMealRecordDishes:
+UPDATE meal_record_dish SET status = 0 WHERE meal_record_id = ?;
+
+removeDishFromMealRecord:
+UPDATE meal_record_dish SET status = 0 WHERE meal_record_id = ? AND dish_id = ?;
+
+-- ===== favorite_combo =====
+
+insertFavoriteCombo:
+INSERT INTO favorite_combo(name, source, created_at) VALUES (?, ?, ?);
+
+selectAllCombos:
+SELECT * FROM favorite_combo WHERE status = 1 ORDER BY created_at DESC;
+
+deleteCombo:
+UPDATE favorite_combo SET status = 0 WHERE id = ?;
+
+linkComboDish:
+INSERT OR REPLACE INTO favorite_combo_dish(combo_id, dish_id, status) VALUES (?, ?, 1);
+
+deleteFavoriteComboDishesByDish:
+UPDATE favorite_combo_dish SET status = 0 WHERE dish_id = ?;
+
+selectDishesOfCombo:
+SELECT d.* FROM dish d
+JOIN favorite_combo_dish fcd ON d.id = fcd.dish_id
+WHERE fcd.combo_id = ? AND fcd.status = 1 AND d.status = 1
+ORDER BY d.name;
+
+-- ===== dish_favorite（菜品收藏置顶）B1 =====
+
+insertDishFavorite:
+INSERT OR REPLACE INTO dish_favorite(dish_id, created_at) VALUES (?, ?);
+
+deleteDishFavorite:
+DELETE FROM dish_favorite WHERE dish_id = ?;
+
+selectFavoriteDishIds:
+SELECT dish_id FROM dish_favorite;
+
+-- ===== dish_dislike（负反馈"踩"·不再推荐） =====
+insertDishDislike:
+INSERT OR REPLACE INTO dish_dislike(dish_id, created_at) VALUES (?, ?);
+
+deleteDishDislike:
+DELETE FROM dish_dislike WHERE dish_id = ?;
+
+selectDislikedDishIds:
+SELECT dish_id FROM dish_dislike;
+
+isDishDisliked:
+SELECT COUNT(*) > 0 FROM dish_dislike WHERE dish_id = ?;
+
+-- ===== ingredient_group（常用配料组）B5 =====
+
+insertIngredientGroup:
+INSERT INTO ingredient_group(name, source, created_at, status) VALUES (?, ?, ?, 1);
+
+selectIngredientGroupByName:
+SELECT * FROM ingredient_group WHERE name = ? AND status = 1 LIMIT 1;
+
+selectIngredientGroups:
+SELECT * FROM ingredient_group WHERE status = 1
+ORDER BY CASE source WHEN 'preset' THEN 0 ELSE 1 END, created_at ASC, id ASC;
+
+deleteIngredientGroup:
+UPDATE ingredient_group SET status = 0 WHERE id = ?;
+
+insertIngredientGroupItem:
+INSERT INTO ingredient_group_item(group_id, ingredient_name, is_main, sort_order, quantity, status) VALUES (?, ?, ?, ?, ?, 1);
+
+selectIngredientGroupItems:
+SELECT ingredient_name, is_main, quantity FROM ingredient_group_item WHERE group_id = ? AND status = 1
+ORDER BY sort_order ASC, id ASC;
+
+deleteIngredientGroupItems:
+UPDATE ingredient_group_item SET status = 0 WHERE group_id = ?;
+
+-- ===== step_template（操作步骤模板）=====
+
+insertStepTemplate:
+INSERT INTO step_template(name, source, created_at, status) VALUES (?, ?, ?, 1);
+
+-- [AI生成] 预设模板幂等去重：种子按名判在。
+selectStepTemplateByName:
+SELECT * FROM step_template WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 预设在前(source='preset')、其次按创建时间。
+selectStepTemplates:
+SELECT * FROM step_template WHERE status = 1
+ORDER BY CASE source WHEN 'preset' THEN 0 ELSE 1 END, created_at ASC, id ASC;
+
+deleteStepTemplate:
+UPDATE step_template SET status = 0 WHERE id = ?;
+
+insertStepTemplateItem:
+INSERT INTO step_template_item(template_id, sort_order, text, status) VALUES (?, ?, ?, 1);
+
+selectStepTemplateItems:
+SELECT text FROM step_template_item WHERE template_id = ? AND status = 1
+ORDER BY sort_order ASC, id ASC;
+
+deleteStepTemplateItems:
+UPDATE step_template_item SET status = 0 WHERE template_id = ?;
+
+-- ===== user_preferences =====
+
+upsertPreference:
+INSERT OR REPLACE INTO user_preferences(key, value, updated_at, status) VALUES (?, ?, ?, 1);
+
+selectPreference:
+SELECT * FROM user_preferences WHERE key = ? AND status = 1;
+
+selectAllPreferences:
+SELECT * FROM user_preferences WHERE status = 1;
+
+-- ===== user_health_profile =====
+
+insertHealthProfile:
+INSERT OR REPLACE INTO user_health_profile(care_category_id, enabled, created_at, status) VALUES (?, 1, ?, 1);
+
+updateHealthProfileEnabled:
+UPDATE user_health_profile SET enabled = ?, status = 1 WHERE care_category_id = ?;
+
+-- [AI修改] 健康档案病种改从 food_category（调养病种）JOIN；food_category 无描述，描述列返回空串占位。
+selectEnabledHealthProfiles:
+SELECT hp.*, fc.name AS crowd_name, '' AS crowd_description
+FROM user_health_profile hp
+JOIN food_category fc ON hp.care_category_id = fc.id
+WHERE hp.enabled = 1 AND hp.status = 1 AND fc.status = 1
+ORDER BY fc.sort_order, hp.created_at;
+
+selectAllHealthProfiles:
+SELECT hp.*, fc.name AS crowd_name, '' AS crowd_description
+FROM user_health_profile hp
+JOIN food_category fc ON hp.care_category_id = fc.id
+WHERE hp.status = 1 AND fc.status = 1
+ORDER BY fc.sort_order, hp.created_at;
+
+deleteHealthProfile:
+UPDATE user_health_profile SET status = 0 WHERE care_category_id = ?;
+
+-- [AI生成] 健康档案可选病种 = 调养维度（dimension=crowd）下的具体病种；排除聚合根「人群分类」，
+-- 且排除旧 crowd_type 生成的 crowd_${id} 分类（那些 crowd_type_id 非空）。
+selectCareCategories:
+SELECT id, name, sort_order
+FROM food_category
+WHERE dimension = 'crowd' AND parent_id IS NOT NULL AND crowd_type_id IS NULL AND status = 1
+ORDER BY sort_order, id;
+
+-- ===== pantry 库存（我家食材） =====
+
+-- [AI生成] 加入/更新库存：ingredient_id 唯一，冲突时整行替换（重新加入=刷新为在手）。
+-- 用 INSERT OR REPLACE 而非 ON CONFLICT DO UPDATE，兼容 Android 低版本 SQLite。
+upsertPantryItem:
+INSERT OR REPLACE INTO pantry(ingredient_id, quantity, unit_id, added_at, expire_at, note, status)
+VALUES (:ingredient_id, :quantity, :unit_id, :added_at, :expire_at, :note, 1);
+
+-- [AI生成] 加份数第一步：无则建(份数0, 在手)；有则忽略。SQLite3.18无UPSERT, 故两步(事务内)。
+insertPantryIfAbsent:
+INSERT OR IGNORE INTO pantry(ingredient_id, added_at, status, serving_count)
+VALUES (:ingredient_id, :added_at, 1, 0);
+
+-- [AI生成] 加份数第二步：结算为「当前剩余+新加」的绝对份数, 重置入库时间(窗口), 置在手。
+-- 避免为0后重加把已消耗的重复计入(份数=当前剩余+delta, 而非旧份数累加)。
+activatePantry:
+UPDATE pantry SET serving_count = :serving_count, added_at = :added_at, status = 1
+WHERE ingredient_id = :ingredient_id;
+
+-- [AI生成] 显式设置份数(编辑/减少)。
+setPantryServings:
+UPDATE pantry SET serving_count = :serving_count WHERE ingredient_id = :ingredient_id;
+
+-- [AI生成] 在手食材的份数映射(ingredient_id -> serving_count)，供派生占用与库存展示。
+-- [AI修改] JOIN ingredient 过滤 i.status=1：食材软删后其 pantry 行仍 status=1，不排除会当"幽灵在手"。
+selectPantryServings:
+SELECT p.ingredient_id, p.serving_count FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1;
+
+-- [AI生成] 在手食材份数 + 入库时间(added_at)，供"入库日起窗口"计算(入库日之前的餐不占用)。
+-- [AI修改] 同上：过滤失效食材，避免幽灵库存参与剩余份数计算。
+selectPantryStock:
+SELECT p.ingredient_id, p.serving_count, p.added_at FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1;
+
+-- ========== 选择性同步(P1) ==========
+-- [AI生成] 自建食材(导出用)。
+selectSyncUserIngredients:
+SELECT id, name, alias, emoji, image_path, thumbnail_path FROM ingredient WHERE source = 'user' AND status = 1;
+
+-- [AI生成] 按名取食材基本信息(导出被菜品引用的食材, 可能是预设)。
+selectSyncIngredientByName:
+SELECT id, name, alias, emoji, image_path, thumbnail_path FROM ingredient WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 食材详情(导出用)。
+selectSyncIngredientDetail:
+SELECT common_methods, prep_tips, eating_notes, storage_tips, health_note FROM ingredient_detail WHERE ingredient_id = ? AND status = 1;
+
+-- [AI生成] 按名取在库食材 id(导入时解析食材引用)。
+selectActiveIngredientIdByName:
+SELECT id FROM ingredient WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] H1：在库食材 (id,name) 全集，供新建时按**归一名**在 Kotlin 侧比对防重复。
+-- (sqlite_3_18 方言的 WHERE 不支持 REPLACE/TRIM 等字符串函数，无法在 SQL 内归一，故在 Kotlin 归一比对；
+--  食材总量有界、新建是低频操作，一次全表扫可接受。)
+selectActiveIngredientIdNames:
+SELECT id, name FROM ingredient WHERE status = 1;
+
+-- [AI生成] P2-1 待复核食材：source='auto' 且 nutrition review=0（autogen 自动生成·营养待人工复核）。
+-- 列序与 mapIngredientRow 一致（10 列：id/name/alias/pinyin/image_path/thumbnail_path/emoji/default_unit_id/source/created_at）。
+selectPendingReviewIngredients:
+SELECT i.id, i.name, i.alias, i.pinyin, i.image_path, i.thumbnail_path, i.emoji,
+       i.default_unit_id, i.source, i.created_at
+FROM ingredient i
+JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
+WHERE i.status = 1 AND i.source = 'ai' AND n.review = 0
+ORDER BY i.created_at DESC;
+
+-- [AI生成] 待复核食材数量（badge 用）。
+countPendingReviewIngredients:
+SELECT COUNT(*) FROM ingredient i
+JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
+WHERE i.status = 1 AND i.source = 'ai' AND n.review = 0;
+
+
+-- [AI生成] 标记食材营养为已复核（review=1）。
+markIngredientNutritionReviewed:
+UPDATE ingredient_nutrition SET review = 1, updated_at = :updated_at
+WHERE ingredient_id = :ingredient_id AND status = 1;
+
+-- [AI生成] 撤销已复核标记（review=0）。
+unmarkIngredientNutritionReviewed:
+UPDATE ingredient_nutrition SET review = 0, updated_at = :updated_at
+WHERE ingredient_id = :ingredient_id AND status = 1;
+
+-- [AI生成] 按一组名字取所有在库食材 id(库存推荐按名扩展匹配, 兼容同名不同 id 的历史重复食材)。
+selectIngredientIdsByNames:
+SELECT id FROM ingredient WHERE status = 1 AND name IN ?;
+
+-- [AI生成] 自建菜品 id(导出用)。
+selectSyncUserDishIds:
+SELECT id FROM dish WHERE source = 'user' AND status = 1;
+
+-- [AI生成] 按名取自建菜品 id(导入合并键)。
+selectUserDishIdByName:
+SELECT id FROM dish WHERE name = ? AND source = 'user' AND status = 1 LIMIT 1;
+
+-- [AI生成] 按名取菜品 id(任意来源, 导入时解析收藏/餐食的菜品引用)。
+selectDishIdByNameAny:
+SELECT id FROM dish WHERE name = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 库存(带食材名, 导出用)。
+selectSyncPantry:
+SELECT i.name AS ingredient_name, p.serving_count AS serving_count
+FROM pantry p JOIN ingredient i ON i.id = p.ingredient_id
+WHERE p.status = 1;
+
+-- [AI生成] 餐食记录(带餐次code, 导出用)。
+selectSyncMeals:
+SELECT mr.id AS meal_record_id, mr.date AS date, mt.code AS meal_type_code, mr.meal_time AS meal_time, mr.note AS note
+FROM meal_record mr JOIN meal_type mt ON mt.id = mr.meal_type_id
+WHERE mr.status = 1
+ORDER BY mr.date, mr.meal_time;
+
+-- [AI生成] 某餐记录下的菜品名(导出用)。
+selectSyncMealDishNames:
+SELECT d.name AS name FROM meal_record_dish mrd
+JOIN dish d ON d.id = mrd.dish_id AND d.status = 1
+WHERE mrd.meal_record_id = ? AND mrd.status = 1 ORDER BY mrd.sort_order;
+
+-- [AI生成] 按 code 取餐次 id(导入解析餐食)。[AI修改] v28：加 AND status=1 只解析启用餐次(saveDish 挂餐次也复用此查询，不挂到软删餐次)。
+selectMealTypeIdByCode:
+SELECT id FROM meal_type WHERE code = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 按(日期,餐次)取餐记录 id(导入合并键)。
+selectMealRecordIdByDateType:
+SELECT id FROM meal_record WHERE date = ? AND meal_type_id = ? AND status = 1 LIMIT 1;
+
+-- [AI生成] 硬删餐记录及其菜(导入替换同餐)。
+deleteMealRecordDishesHard:
+DELETE FROM meal_record_dish WHERE meal_record_id = ?;
+
+deleteMealRecordHard:
+DELETE FROM meal_record WHERE id = ?;
+
+-- [AI生成] 派生占用：所有餐食(含计划)里用到「在手食材」的菜，按时间顺序排队，供份数分配判不足。
+selectPantryUsageChrono:
+SELECT di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name,
+       mrd.meal_record_id AS meal_record_id,
+       mrd.dish_id AS dish_id,
+       mr.date AS meal_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id AND mr.status = 1
+JOIN dish_ingredient di ON di.dish_id = mrd.dish_id AND di.status = 1
+JOIN pantry p ON p.ingredient_id = di.ingredient_id AND p.status = 1
+JOIN ingredient i ON i.id = di.ingredient_id
+WHERE mrd.status = 1
+ORDER BY di.ingredient_id, mr.date, mr.meal_time, mr.created_at, mrd.sort_order;
+
+-- [AI生成] 今天及未来餐食里每道菜的主料使用(含食材名)，供餐卡"采购"判定(主料不在库→采购)。
+selectMainIngredientUsageFromDate:
+SELECT mrd.meal_record_id AS meal_record_id,
+       mrd.dish_id AS dish_id,
+       di.ingredient_id AS ingredient_id,
+       COALESCE(i.name, '') AS ingredient_name,
+       mr.date AS meal_date
+FROM meal_record_dish mrd
+JOIN meal_record mr ON mrd.meal_record_id = mr.id AND mr.status = 1
+JOIN dish_ingredient di ON di.dish_id = mrd.dish_id AND di.status = 1 AND di.is_main = 1
+JOIN ingredient i ON i.id = di.ingredient_id
+WHERE mrd.status = 1 AND mr.date >= :today;
+
+
+-- [AI生成] 库存 Tab：JOIN 出在手食材，列与 selectAllIngredients 对齐以复用 mapIngredientRow。
+selectPantryIngredients:
+SELECT i.id,
+       COALESCE(i.name, '') AS name,
+       COALESCE(i.alias, '') AS alias,
+       COALESCE(i.pinyin, '') AS pinyin,
+       COALESCE(i.image_path, '') AS image_path,
+       COALESCE(i.thumbnail_path, '') AS thumbnail_path,
+       COALESCE(i.emoji, '🥗') AS emoji,
+       i.default_unit_id,
+       COALESCE(i.source, 'preset') AS source,
+       COALESCE(i.created_at, 0) AS created_at
+FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1
+ORDER BY p.added_at DESC, i.pinyin;
+
+-- [AI生成] 在手食材 id 集合：用于详情/做法区标记「家里有」。
+-- [AI修改] JOIN ingredient 过滤 i.status=1：食材软删后 pantry 行残留会被误当"家里有"(详情标记/推荐 pantryIds)。
+selectPantryIngredientIds:
+SELECT p.ingredient_id FROM pantry p
+JOIN ingredient i ON p.ingredient_id = i.id
+WHERE p.status = 1 AND i.status = 1;
+
+removeFromPantry:
+UPDATE pantry SET status = 0, serving_count = 0 WHERE ingredient_id = :ingredient_id;
+
+-- [AI生成] 单食材库存快照(份数/入库时刻/是否在库)，供出/入库撤销恢复(§9.12)。纯查询·无需迁移。
+selectPantryItem:
+SELECT serving_count, added_at, status FROM pantry WHERE ingredient_id = :ingredient_id;
+
+countPantry:
+SELECT COUNT(*) FROM pantry WHERE status = 1;
+
+-- ===== family_member（家庭成员档案） =====
+
+insertFamilyMember:
+INSERT INTO family_member(name, gender, height_cm, weight_kg, age, activity, portion_coefficient, is_self, is_focus, sort, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+selectAllFamilyMembers:
+SELECT * FROM family_member WHERE status = 1 ORDER BY is_self DESC, sort, id;
+
+selectFamilyMemberById:
+SELECT * FROM family_member WHERE id = ? AND status = 1;
+
+selectSelfMemberId:
+SELECT id FROM family_member WHERE is_self = 1 AND status = 1 ORDER BY id LIMIT 1;
+
+selectFocusMember:
+SELECT * FROM family_member WHERE is_focus = 1 AND status = 1 ORDER BY id LIMIT 1;
+
+countFamilyMembers:
+SELECT COUNT(*) FROM family_member WHERE status = 1;
+
+updateFamilyMember:
+UPDATE family_member SET name = ?, gender = ?, height_cm = ?, weight_kg = ?, age = ?, activity = ?, portion_coefficient = ? WHERE id = ?;
+
+softDeleteFamilyMember:
+UPDATE family_member SET status = 0 WHERE id = ? AND is_self = 0;
+
+clearAllFocus:
+UPDATE family_member SET is_focus = 0;
+
+setFocusMember:
+UPDATE family_member SET is_focus = 1 WHERE id = ?;
+
+-- [AI生成] 多人关注：单成员 is_focus 翻转(多选·加/移出关注集合·不再 clearAll)。
+updateMemberFocus:
+UPDATE family_member SET is_focus = ? WHERE id = ?;
+
+-- ===== member_care（成员病种，忌口取全家并集） =====
+
+insertMemberCare:
+INSERT OR IGNORE INTO member_care(member_id, care_category_id) VALUES (?, ?);
+
+deleteMemberCare:
+DELETE FROM member_care WHERE member_id = ? AND care_category_id = ?;
+
+deleteAllMemberCare:
+DELETE FROM member_care WHERE member_id = ?;
+
+selectMemberCareIds:
+SELECT care_category_id FROM member_care WHERE member_id = ?;
+
+selectAllEnabledCareIds:
+SELECT DISTINCT mc.care_category_id FROM member_care mc
+JOIN family_member fm ON mc.member_id = fm.id
+WHERE fm.status = 1;
+
+-- ===== member_avoid_category（个人忌口·按分类·全家并集） =====
+
+insertMemberAvoidCategory:
+INSERT OR IGNORE INTO member_avoid_category(member_id, category_id) VALUES (?, ?);
+
+deleteAllMemberAvoidCategories:
+DELETE FROM member_avoid_category WHERE member_id = ?;
+
+-- [AI生成] v29：单成员忌口分类(编辑回显)。
+selectMemberAvoidCategoryIds:
+SELECT category_id FROM member_avoid_category WHERE member_id = ?;
+
+-- [AI生成] v29：全家启用成员的忌口分类并集(推荐展开为食材 id)。
+selectAllPersonalAvoidCategoryIds:
+SELECT DISTINCT mac.category_id FROM member_avoid_category mac
+JOIN family_member fm ON mac.member_id = fm.id
+WHERE fm.status = 1;
+
+-- [AI生成] 按 id 批量取分类名(忌口并集标签用)。
+selectFoodCategoryNamesByIds:
+SELECT name FROM food_category WHERE id IN ? AND status = 1;
+
+-- ===== member_avoid_ingredient（个人忌口·按具体食材·全家并集·阶段4加法） =====
+
+insertMemberAvoidIngredient:
+INSERT OR IGNORE INTO member_avoid_ingredient(member_id, ingredient_id) VALUES (?, ?);
+
+deleteAllMemberAvoidIngredients:
+DELETE FROM member_avoid_ingredient WHERE member_id = ?;
+
+-- [AI生成] 阶段4：单成员忌口的具体食材 id(编辑回显)。
+selectMemberAvoidIngredientIds:
+SELECT ingredient_id FROM member_avoid_ingredient WHERE member_id = ?;
+
+-- [AI生成] 阶段4：全家启用成员忌口的具体食材 id 并集(推荐直接进 avoid·无需再展开)。
+selectAllPersonalAvoidIngredientIds:
+SELECT DISTINCT mai.ingredient_id FROM member_avoid_ingredient mai
+JOIN family_member fm ON mai.member_id = fm.id
+WHERE fm.status = 1;
+
+-- ===== day_absentee（缺席微调，按天） =====
+
+insertAbsentee:
+INSERT OR IGNORE INTO day_absentee(date, member_id) VALUES (?, ?);
+
+deleteAbsentee:
+DELETE FROM day_absentee WHERE date = ? AND member_id = ?;
+
+selectAbsenteesByDate:
+SELECT member_id FROM day_absentee WHERE date = ?;
+
+-- ===== ingredient.food_group（营养大类归类） =====
+
+updateIngredientFoodGroup:
+UPDATE ingredient SET food_group = ? WHERE id = ?;
+
+-- [AI生成] 名→营养大类(只取已设的)，供色系/均衡按显式大类判定(覆盖名字无关键词的自定义食材)。
+selectIngredientFoodGroupNames:
+SELECT name, food_group FROM ingredient WHERE food_group != '' AND status = 1;
+
+-- [AI生成] 预设食材 id/名/现营养大类：预设 food_group 仅来自回填(编辑器对预设不开大类选择)，可随 classify 改进重刷。
+selectPresetIngredientFoodGroups:
+SELECT id, name, food_group FROM ingredient WHERE source = 'preset' AND status = 1;
+
+-- [AI生成] 用户食材中未归类的：只回填空的，不覆盖用户手选。
+selectUserIngredientsWithoutFoodGroup:
+SELECT id, name FROM ingredient WHERE source = 'user' AND food_group = '' AND status = 1;
+
+-- ===== 食材营养表(我的·全量总览) =====
+
+-- [AI生成] 全量食材+营养(左连,无营养的食材也列出),供"食材营养表"页展示/搜索/排序。
+selectAllIngredientNutrition:
+SELECT i.name AS name, i.food_group AS food_group,
+       n.energy_kcal, n.protein_g, n.fat_g, n.carb_g, n.fiber_g,
+       n.sodium_mg, n.potassium_mg, n.calcium_mg, n.gi, n.purine_mg
+FROM ingredient i
+LEFT JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
+WHERE i.status = 1
+ORDER BY i.name;

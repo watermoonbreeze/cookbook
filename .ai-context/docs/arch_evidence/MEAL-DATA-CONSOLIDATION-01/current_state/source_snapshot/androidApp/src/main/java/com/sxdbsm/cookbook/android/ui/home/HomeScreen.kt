@@ -1,0 +1,454 @@
+package com.sxdbsm.cookbook.android.ui.home
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.WbSunny
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sxdbsm.cookbook.android.ui.component.DayMealCardView
+import com.sxdbsm.cookbook.android.ui.component.DayPlaceholderCard
+import com.sxdbsm.cookbook.android.ui.component.EmptyState
+import com.sxdbsm.cookbook.android.ui.component.SectionHeader
+import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
+import kotlinx.datetime.LocalDate
+import org.koin.androidx.compose.koinViewModel
+
+/**
+ * 首页页面。[AI修改]
+ *
+ * `@Composable` 可以理解为 Compose 的“UI 函数”：输入状态和回调，输出界面树。
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(
+    onOpenTimeline: () -> Unit,
+    onOpenDishes: () -> Unit,
+    onOpenSearch: () -> Unit,
+    onOpenDish: (Long) -> Unit,
+    onEditMealDate: (LocalDate) -> Unit,
+    onOpenTimelineAt: (LocalDate) -> Unit = {}, // [AI生成] 营养色系墙点色块→食历定位该日
+    onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] A1：首页计划卡"复制"入口(与食历页一致，家庭高频"照着某天再吃一次")
+    onOpenWeekPlan: () -> Unit = {}, // [AI生成] B3：一周计划入口
+    onOpenAiRecommend: () -> Unit = {},
+    onOpenDietaryReference: () -> Unit = {}, // [AI生成] P3-B:今日卡下"各类每天吃多少"轻入口→膳食参考依据页(权威每日份量)
+    vm: HomeViewModel = koinViewModel(),
+) {
+    // [AI修改] collectAsStateWithLifecycle 会按 Android 生命周期订阅 StateFlow，避免后台页面继续无意义刷新。
+    val ui by vm.uiState.collectAsStateWithLifecycle()
+    val mode by vm.themeMode.collectAsStateWithLifecycle()
+    // [AI生成] 营养色系墙：功能设置开启时展示近 5 周每天营养级别热力图。
+    val prefs = org.koin.compose.koinInject<com.sxdbsm.cookbook.data.repository.PreferenceRepository>()
+    val nutritionColorEnabled by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.NUTRITION_COLOR_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_NUTRITION_COLOR)
+    // [AI生成] 热量数值显示(与营养色系独立)：控制首页「今日营养」卡的数字呈现。
+    val calorieNumberEnabled by remember(prefs) {
+        prefs.observeFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.CALORIE_NUMBER_ENABLED, com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
+    }.collectAsStateWithLifecycle(com.sxdbsm.cookbook.domain.model.PreferenceKeys.DEFAULT_CALORIE_NUMBER)
+    val nutritionWall by vm.nutritionWall.collectAsStateWithLifecycle()
+    val yearAverages by vm.yearAverages.collectAsStateWithLifecycle()
+    val todayNutrition by vm.todayNutrition.collectAsStateWithLifecycle()
+    val focusSwitcher by vm.focusSwitcher.collectAsStateWithLifecycle() // [AI生成] 多人关注:今日卡成员切换器
+    val nextMeal by vm.nextMeal.collectAsStateWithLifecycle() // [AI生成] 阶段2:首页"下一餐"推荐卡
+    // [AI生成] 阶段2:返回首页(ON_RESUME)刷新"下一餐"卡——忌口(健康档案别页可改·红线即时)/钟点/今日缺口实时。纯规则不调云端·无成本,故可 resume 刷新(与 AI 全页"仅手动"不同,那是为省云端调用)。
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) vm.loadNextMeal()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    var themeDialogOpen by remember { mutableStateOf(false) } // [AI生成] 首页主题图标直接控制弹框，不再跳转“我的”页。
+    var wallExpanded by rememberSaveable { mutableStateOf(true) } // [AI生成] 营养色系墙折叠态：默认展开(整墙显示)，收起后标题右侧显示昨/今/明三色块。
+    // [AI生成] 食用比例(是否吃完)："按实际吃了多少调整"弹层开关 + 今日各餐(带 eatenRatio)。仅热量数字开时暴露入口。
+    var showEatenSheet by remember { mutableStateOf(false) }
+    val todayMeals by vm.todayMeals.collectAsStateWithLifecycle()
+    val appSnackbar = com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar.current // [AI生成] B-5：删整天撤销 Snackbar
+    // [AI修改] 苹果风格：首页用大标题(Large Title)，下滑折叠为小标题。
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 页面 Scaffold 不再额外添加系统栏避让，配合透明状态栏形成沉浸式。
+        topBar = {
+            LargeTopAppBar(
+                title = { Text("今天吃什么", fontWeight = FontWeight.Bold) },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                actions = {
+                    IconButton(onClick = onOpenSearch) {
+                        Icon(
+                            Icons.Outlined.Search,
+                            contentDescription = "搜索",
+                            tint = MaterialTheme.colorScheme.primary, // [AI修改] 苹果风格：顶栏图标统一用 accent。
+                        )
+                    }
+                    IconButton(onClick = { themeDialogOpen = true }) {
+                        Icon(
+                            Icons.Outlined.WbSunny,
+                            contentDescription = "主题",
+                            tint = MaterialTheme.colorScheme.primary, // [AI修改] 苹果风格：顶栏图标统一用 accent。
+                        )
+                    }
+                },
+            )
+        },
+    ) { padding ->
+    LazyColumn(
+        modifier = Modifier
+            .padding(padding)
+            .fillMaxSize(),
+    ) {
+        // [AI修改] 首页卡 v2：轻量单菜引流卡——只推一道+一句人话·整卡点击进 AI 全页看整桌搭配(纯规则不调云端·打开即见)。
+        item {
+            NextMealCard(
+                state = nextMeal,
+                onOpenRecommend = onOpenAiRecommend, // 整卡点击→AI 推荐全页(全页按钟点自判餐次+批量记)
+                onShuffle = { vm.shuffleNextMeal() },
+                onAddDishes = onOpenDishes, // 空态"去添加菜品"
+            )
+        }
+
+        // [AI生成] 营养色系墙(功能设置开启营养色系时展示)：整年每天营养级别热力图，可折叠。
+        if (nutritionColorEnabled) {
+            item {
+                // [AI修改] 自定义标题行：展开态只显示标题+收起按钮；折叠态显示"昨天今天明天"三色块+展开按钮。
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "营养色系墙", // [AI修改] 文案:去标题内嵌装饰emoji(苹果式图标与文字分离,右侧已有展开图标)
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    if (!wallExpanded) {
+                        NutritionThreeDay(days = nutritionWall)
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    IconButton(onClick = { wallExpanded = !wallExpanded }, modifier = Modifier.size(32.dp)) {
+                        Icon(
+                            if (wallExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            contentDescription = if (wallExpanded) "收起色系墙" else "展开色系墙",
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
+            }
+            if (wallExpanded) {
+                item {
+                    NutritionWall(
+                        days = nutritionWall,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        onDayClick = onOpenTimelineAt, // [AI修改] 点色块→食历定位该日餐食(不再进编辑页)
+                        yearAverages = yearAverages, // [AI生成] 往年平均色系(有往年数据才显示)
+                    )
+                }
+            }
+            // [AI生成] 3c：今日营养分配卡(有当天营养数据 且 开启"热量数值显示"才显示)。
+            todayNutrition?.takeIf { calorieNumberEnabled }?.let { tn ->
+                item {
+                    NutritionTodayCard(
+                        tn,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        switcher = focusSwitcher, // [AI生成] 多人关注:成员切换器
+                        onSelectViewing = vm::setViewing,
+                    )
+                    // [AI生成] 食用比例(是否吃完)入口：仅热量数字开+今日有可写回餐时露出的折叠文字按钮(记账动线零新增·会商门禁)。
+                    if (todayMeals.isNotEmpty()) {
+                        Text(
+                            "按实际吃了多少调整",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(horizontal = 20.dp, vertical = 2.dp)
+                                .clickable { showEatenSheet = true },
+                        )
+                    }
+                }
+            }
+        }
+
+        // [AI修改] HOME-MERGE-01：今天始终占一个槽位，未来只显示真实存在的最多两天。
+        val todayCard = ui.plans.firstOrNull { it.isToday }
+        val futureCards = ui.plans.filter { !it.isToday }
+        // [AI修改] 一周计划卡前的间距不受营养色系墙开关影响。
+        item { Spacer(Modifier.height(20.dp)) }
+        item {
+            Surface(
+                onClick = onOpenWeekPlan,
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 0.dp,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+            ) {
+                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("🗓", style = MaterialTheme.typography.titleMedium)
+                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+                        Text("一周计划", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("排下周饭：整周概览 + 逐日安排", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                }
+            }
+        }
+        item { SectionHeader(title = "今天和接下来") }
+        if (todayCard == null) {
+            item {
+                DayPlaceholderCard(
+                    dateLabel = com.sxdbsm.cookbook.android.ui.component.formatDateCompact(com.sxdbsm.cookbook.util.DateTime.today()),
+                    badgeText = "今天还没记",
+                    actionLabel = "记一餐",
+                    onAction = { onEditMealDate(com.sxdbsm.cookbook.util.DateTime.today()) },
+                )
+            }
+        } else {
+            item(key = "today-${todayCard.date}") {
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) { // [AI修改] P3-B:Box→Column,今日卡下方挂"各类每天吃多少"轻入口
+                    DayMealCardView(
+                        data = todayCard,
+                        onDishClick = { dish -> onOpenDish(dish.id) },
+                        onEditClick = { onEditMealDate(todayCard.date) },
+                        onCopyClick = { onCopyMeal(todayCard.date) },
+                        onDeleteClick = {
+                            val d = todayCard.date
+                            vm.deleteDayUndoable(d) { onUndo -> appSnackbar?.showUndo("已删除 $d 的餐食", onUndo = onUndo) }
+                        },
+                    )
+                    // [AI生成] P3-B:今日卡份量参考轻入口(复用 AiRecommendScreen.DailyAmountRefLink·internal 跨包复用·文字跳转不喧宾)。
+                    com.sxdbsm.cookbook.android.ui.ai.DailyAmountRefLink(onOpenDietaryReference)
+                }
+            }
+        }
+        item { Spacer(Modifier.height(20.dp)) }
+
+        if (futureCards.isEmpty()) {
+            // [AI修改] 没有未来真实餐食时不伪造计划卡，也不渲染巨大空态。
+        } else {
+            items(futureCards, key = { it.date.toString() }) { card ->
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    DayMealCardView(
+                        data = card,
+                        onDishClick = { dish -> onOpenDish(dish.id) },
+                        onEditClick = { onEditMealDate(card.date) },
+                        onCopyClick = { onCopyMeal(card.date) }, // [AI生成] A1：复制该日为新建草稿(日期源+1可改)。
+                        onDeleteClick = { // [AI修改] B-5/§9.12：可逆删除改软删+撤销 Snackbar，不再硬确认。
+                            val d = card.date
+                            vm.deleteDayUndoable(d) { onUndo -> appSnackbar?.showUndo("已删除 $d 的餐食", onUndo = onUndo) }
+                        },
+                    )
+                }
+            }
+        }
+
+        item {
+            Text("查看全部食历 ›", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.fillMaxWidth().clickable { onOpenTimeline() }.padding(horizontal = 16.dp, vertical = 12.dp))
+        }
+
+        // [AI修改] 用户 2026-07-16：去除首页"🔥热门/⏱最近"发现区——菜品页(最近/喜爱Tab)已有相关推荐，
+        //   首页聚焦"今天吃了啥/该吃啥"(今日卡+计划含今天)，更克制、少重复。
+        item { Spacer(Modifier.height(80.dp)) } // 留底部 FAB 空间。
+    }
+    }
+
+    // [AI生成] 食用比例(是否吃完)调整弹层：热量数字开+有今日餐时才可开；空了自动关(副作用放 LaunchedEffect·不在组合期写状态·Google审⚪-1)。
+    LaunchedEffect(todayMeals.isEmpty()) { if (todayMeals.isEmpty()) showEatenSheet = false }
+    if (showEatenSheet && todayMeals.isNotEmpty()) {
+        EatenAdjustSheet(
+            meals = todayMeals,
+            onSetMeal = vm::setMealEaten,
+            onSetDish = vm::setDishEaten,
+            onDismiss = { showEatenSheet = false },
+        )
+    }
+
+    if (themeDialogOpen) {
+        ThemeModeDialog(
+            current = mode,
+            onSelect = {
+                vm.setThemeMode(it)
+                themeDialogOpen = false
+            },
+            onDismiss = { themeDialogOpen = false },
+        )
+    }
+
+}
+
+/**
+ * 首页"下一餐"引流卡（v2·轻量单菜）。[AI修改]
+ *
+ * 定位=**引流入口**：打开首页即见"给你挑的一道菜 + 一句人话理由"(纯规则·不调云端·快)，**整卡点击进 AI 推荐全页**
+ * (看整桌搭配 + 批量记)。首页不做记/详情(那是全页/详情页的活)，只保留一个本地"换一道"。标题用疑问式("晚餐吃点什么")
+ * 去掉"下一餐·明天·早餐"的排班硬承诺(与已有周期计划歧义)。新用户/无库存标"示例"(诚实告知)。守免责红线、忌口菜不进卡。
+ */
+@Composable
+private fun NextMealCard(
+    state: NextMealUi,
+    onOpenRecommend: () -> Unit, // 整卡点击→AI 推荐全页
+    onShuffle: () -> Unit, // 换一道(本地轮播)
+    onAddDishes: () -> Unit, // 空态"去添加菜品"
+) {
+    // 疑问式标题：示例态"今天可以吃什么"；否则"X吃点什么"(X=早餐/中餐/晚餐/明早)。
+    val title = when {
+        state.isSample -> "今天可以吃什么"
+        state.slotLabel.isBlank() -> "吃点什么"
+        else -> "${state.slotLabel}吃点什么"
+    }
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 0.dp,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        when {
+            // 空态：菜品库没有可推的菜——只给"下一步"，不挂整卡点击(避免点进空全页)。
+            !state.loading && state.dish == null -> EmptyState(
+                text = "先添几道你家常做的菜，我就能帮你挑了",
+                icon = "🍽",
+                actionLabel = "去添加菜品",
+                onAction = onAddDishes,
+            )
+            // 有菜/加载中：整卡可点进全页。
+            else -> Column(
+                modifier = Modifier
+                    .then(if (state.dish != null) Modifier.clickable { onOpenRecommend() } else Modifier)
+                    .padding(vertical = 12.dp),
+            ) {
+                // 卡头：疑问式标题 + (示例) + 换一道
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    if (state.isSample) {
+                        Spacer(Modifier.width(6.dp))
+                        Surface(color = MaterialTheme.colorScheme.tertiaryContainer, shape = MaterialTheme.shapes.small) {
+                            Text(
+                                "示例",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    if (state.canShuffle) {
+                        TextButton(onClick = onShuffle) { Text("换一道") } // 子按钮点击不冒泡到整卡
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                if (state.loading) {
+                    // 加载态：极快(纯规则)，单行轻提示即可，避免骨架闪烁。
+                    Text(
+                        "正在为你挑一道",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    )
+                } else {
+                    val d = state.dish!!
+                    // 单菜主体：该菜真实图(有图优先·修"推荐图片与菜不符") / 无图回退 emoji 锚点框 + 菜名 + 一句人话理由。
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // [AI修改] 修 Bug"首页推荐图片与菜不符":推什么菜显什么菜的图(dish.imagePath),无图才回退分类 emoji。
+                        if (d.imagePath.isNotBlank() || d.thumbnailPath.isNotBlank()) {
+                            com.sxdbsm.cookbook.android.ui.component.StoredImage(
+                                imagePath = d.imagePath,
+                                thumbnailPath = d.thumbnailPath,
+                                fallbackText = d.name,
+                                fallbackEmoji = d.emoji,
+                                seedId = d.id,
+                                size = 48.dp,
+                                corner = 8.dp,
+                                allowPreview = false, // 首页卡整卡可点进推荐页,图不单独抢点击
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(d.emoji, style = MaterialTheme.typography.headlineSmall)
+                            }
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(d.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                            if (d.note.isNotBlank()) {
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    d.note,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Divider(modifier = Modifier.padding(start = 16.dp))
+                    // 下钻 CTA：整卡即入口，此行是明示锚点(利益驱动文案)。
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "AI 帮我搭一桌",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                    // 免责(守健康红线)
+                    Text(
+                        if (state.isSample) "示例推荐 · 仅供参考" else "仅供参考 · 非医嘱",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp),
+                    )
+                }
+            }
+        }
+    }
+}

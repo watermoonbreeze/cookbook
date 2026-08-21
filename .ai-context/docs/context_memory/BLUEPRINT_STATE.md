@@ -271,3 +271,5 @@
 Canonical Owner：`docs/experience/14_模型执行力评估.md`
 
 BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器标识，不在本文件重复具体模型名称或模型能力评价。
+
+ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
