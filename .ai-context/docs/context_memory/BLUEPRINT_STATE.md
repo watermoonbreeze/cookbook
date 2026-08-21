@@ -2,20 +2,22 @@
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---
-## 当前执行聚合：MEAL-DATA-CONSOLIDATION-01（下一蓝图预览）
+## 当前执行聚合：MEAL-DATA-CONSOLIDATION-01（ARCH_BLUEPRINT_R1）
 
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | MEAL-DATA-CONSOLIDATION-01 |
-| 状态 | **PREVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
-| 颗粒度 | PREVIEW；尚未形成可执行蓝图，不得进入 CODE |
+| 状态 | **BLUEPRINT_READY / CODE** |
+| TURN | **CODE** |
+| Holder | **CODER** |
+| 颗粒度 | ARCH_BLUEPRINT_R1；以随包 README、04 执行蓝图、06 验收矩阵为准 |
 | 背景 | MEAL-UX 已完成入口、日期、首页展示层收口；下一阶段先统一 Meal 领域数据语义与投影边界 |
-| 预览范围 | `DayMeal`、`MealPlan`、`Timeline`、`Home projection` 领域模型梳理；今日记录、未来计划、历史记录、编辑状态的数据状态统一；Repository 投影边界收口 |
-| 目标 | 减少 Home / Timeline / AddMeal 各自维护数据语义 |
-| 限制 | 不改数据库；不改业务规则；先由 ARCH 形成并审核 Blueprint，再决定是否进入 CODE |
-| 下一步 | ARCH 完成 Preview；未完成 Preview 前禁止切 CODE |
+| 蓝图包 | `.ai-context/docs/外部方案/在线审核/CookBook_MEAL_DATA_CONSOLIDATION_01_ARCH_BLUEPRINT_R1.zip` |
+| Discovery commit | `6f25028b1e07fe88e64b6e0406f14c062e13b6ae` |
+| Evidence code base | `7c9a0707ae717b7d5ae3e30221b84e6ea5595bac` |
+| 执行范围 | A Semantic Boundary → B Repository Neutralization → C Home/Timeline/Manual Preview → D Tests/Evidence/Feature Sync |
+| 硬限制 | 不新增 MealPlan 持久化；不做 schema migration；不改业务规则、AI merge/replace/append、existing-meal guard、导航/UI 布局 |
+| 下一步 | CODE 按 README 一次执行；完成后写证据、置 `CODE_COMPLETE / PENDING ARCH REVIEW`、`TURN=REVIEW`，不得自行 ACCEPT |
 
 ---
 ### 历史归档：MEAL-UX-CONSOLIDATION-01（R2，已关闭）
