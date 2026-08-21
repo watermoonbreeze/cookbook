@@ -99,17 +99,23 @@ fun DayMealCardView(
         // [AI修改] 苹果风格(按用户方案)：日期与操作同一行——紧凑日期 + 今天/计划/营养角标 + 右侧复制/编辑/删除图标。
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // [AI修改] 今天使用主色强调，未来日期回落到正文色，保持卡片层级。
+                val dateColor = if (data.isToday) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                }
                 Text(
                     text = formatDateCompact(data.date),
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = dateColor,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                 )
                 Spacer(Modifier.width(6.dp))
                 // 今天/计划 角标
                 if (data.isToday) {
-                    Badge("今天", MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
+                    Badge("今天", MaterialTheme.colorScheme.onPrimary, MaterialTheme.colorScheme.primary)
                 } else if (data.isPlanState) {
                     Badge("计划", MaterialTheme.colorScheme.onSurfaceVariant, Color.Transparent)
                 }

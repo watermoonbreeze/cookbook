@@ -197,12 +197,13 @@ fun HomeScreen(
                     }
                 }
             }
-            item { Spacer(Modifier.height(28.dp)) }
         }
 
         // [AI修改] HOME-MERGE-01：今天始终占一个槽位，未来只显示真实存在的最多两天。
         val todayCard = ui.plans.firstOrNull { it.isToday }
         val futureCards = ui.plans.filter { !it.isToday }
+        // [AI修改] 一周计划卡前的间距不受营养色系墙开关影响。
+        item { Spacer(Modifier.height(20.dp)) }
         item {
             Surface(
                 onClick = onOpenWeekPlan,

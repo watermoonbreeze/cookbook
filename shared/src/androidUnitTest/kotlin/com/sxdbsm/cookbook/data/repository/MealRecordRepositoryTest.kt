@@ -46,6 +46,38 @@ class MealRecordRepositoryTest {
         assertEquals(listOf(DateTime.plusDays(today, 2), DateTime.plusDays(today, 3)), result.map { it.date })
     }
 
+    // [AI生成] T-HM-10：今天存在时必须排在首位，未来仍只保留最早两个日期。
+    @Test
+    fun todayPresentReturnsTodayAndFirstTwoFutureDates() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "今天测试菜", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val draft = DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(dishId))
+        val today = DateTime.today()
+        mealRepo.saveDayMeals(today, listOf(draft))
+        mealRepo.saveDayMeals(DateTime.plusDays(today, 1), listOf(draft))
+        mealRepo.saveDayMeals(DateTime.plusDays(today, 2), listOf(draft))
+        mealRepo.saveDayMeals(DateTime.plusDays(today, 3), listOf(draft))
+
+        val result = mealRepo.observeTodayPlusFuture(today).first()
+
+        assertEquals(3, result.size)
+        assertEquals(today, result[0].date)
+        assertTrue(result[0].isToday)
+        assertEquals(
+            listOf(today, DateTime.plusDays(today, 1), DateTime.plusDays(today, 2)),
+            result.map { it.date },
+        )
+        assertTrue(result.none { it.date == DateTime.plusDays(today, 3) })
+    }
+
     @Test
     fun saveDayMealsWithEmptyListClearsThatDay() = runBlocking {
         val db = RepositoryTestDatabase.create()
