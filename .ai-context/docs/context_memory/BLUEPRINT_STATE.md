@@ -16,7 +16,7 @@
 | 执行范围 | Stable/Compatibility API 标记、等价测试、Flow 生命周期测试、调用关系与 Feature 文档 |
 | 硬限制 | 不删除旧 API；不改数据库/schema；不重构 Repository；不改变用户行为 |
 | 交付证据 | `:shared:testDebugUnitTest` ✅（672 tests）；schema diff 为空；禁止项检索无命中 |
-| 交付 commit | 待本批提交；ARCH 复核后再决定是否 ACCEPT |
+| 交付 commit | `2a568322`；ARCH 复核后再决定是否 ACCEPT |
 | 下一步 | ARCH review；保持 `TURN=REVIEW`、`Holder=ARCH` |
 
 ---
