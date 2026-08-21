@@ -11,7 +11,7 @@
 | Reviewed handoff | 80d16df29476a737411511ab56127a27a3306ee0 |
 | Defect | AF-MDC3-01: lifecycle evidence covers only meal_record_dish; dish and dish_ingredient remain unproved |
 | Scope | Add isolated lifecycle tests only; no production, schema, API, Repository, or user behavior changes |
-| Repair commit | Pending final commit |
+| Repair commit | 9e0c9522 |
 | Tests | `:shared:testDebugUnitTest` — BUILD SUCCESSFUL, 674 tests |
 | Changed set | `shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/data/repository/MealRecordRepositoryTest.kt`; this state file |
 | Gates | compatibility equivalence retained; no schema diff; no API deletion; no production Repository change |
