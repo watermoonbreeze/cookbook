@@ -16,7 +16,7 @@
 | 执行范围 | MealDayContent / MealDayCardProjector / DayMealCardData 边界、测试与 Feature 文档 |
 | 硬限制 | 不改数据库/schema；不新增 MealPlan/领域实体/Projection Service；不拆 Repository；不改用户行为 |
 | 交付证据 | `:shared:testDebugUnitTest` ✅；schema diff 为空；禁止项检索无命中 |
-| 交付 commit | 待提交；ARCH 复核后再决定是否 ACCEPT |
+| 交付 commit | `000a6f30`；ARCH 复核后再决定是否 ACCEPT |
 | 下一步 | ARCH review；保持 `TURN=REVIEW`、`Holder=ARCH` |
 
 ---
