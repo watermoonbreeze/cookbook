@@ -5,7 +5,11 @@ import com.sxdbsm.cookbook.domain.model.MealDayContent
 import com.sxdbsm.cookbook.domain.model.MealDayTemporalRole
 import kotlinx.datetime.LocalDate
 
-/** 将中性日内容投影为既有餐卡；显式 referenceDate 保证结果可测试且不依赖系统时钟。[AI修改] */
+/**
+ * MDC2 projection boundary：将稳定的 [MealDayContent] 投影为共享餐卡。
+ *
+ * Feature 不应自行从内容推导时间角色；显式 referenceDate 也保证结果可测试且不依赖系统时钟。
+ */
 object MealDayCardProjector {
     fun temporalRole(date: LocalDate, referenceDate: LocalDate): MealDayTemporalRole = when {
         date < referenceDate -> MealDayTemporalRole.PAST

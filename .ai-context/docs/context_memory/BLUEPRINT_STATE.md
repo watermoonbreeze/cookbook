@@ -2,23 +2,21 @@
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---
-## 当前执行聚合：MEAL-DATA-CONSOLIDATION-02（ARCH DISCOVERY R1）
+## 当前执行聚合：MEAL-DATA-CONSOLIDATION-02（ARCH BLUEPRINT R1 FINAL）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | MEAL-DATA-CONSOLIDATION-02 ARCH DISCOVERY R1 |
-| 状态 | **EVIDENCE_READY / PENDING ARCH REVIEW** |
+| 任务/批次 | MEAL-DATA-CONSOLIDATION-02 ARCH BLUEPRINT R1 FINAL |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
 | TURN | **REVIEW** |
 | Holder | **ARCH** |
-| 颗粒度 | ARCH DISCOVERY；以随包 `README_FIRST.md`、02/03/04 文档为准 |
-| 背景 | R1 已关闭；本批只采集 Projection Boundary 事实 |
-| 外部包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_DATA_R1_CLOSE_R2_DISCOVERY.zip` |
-| accepted R1 | `3d42e81c32d54c8db7e0a7d4bcef8422eff3a203`；归档见 `arch_evidence/MEAL-DATA-CONSOLIDATION-01/CLOSE_RECORD.md` |
-| Evidence code base | `3d42e81c32d54c8db7e0a7d4bcef8422eff3a203` |
-| 执行范围 | Home / Timeline / WeekPlan / Search / Nutrition projection dependency facts |
-| 硬限制 | 不改产品代码、模型、测试；不设计最终架构；不拆 Repository；不创建新 Projection；不切 CODE |
-| Evidence path | `.ai-context/docs/arch_evidence/MEAL-DATA-CONSOLIDATION-02/current_state/` |
-| 证据状态 | 7 required documents + 13-file source snapshot ✅ |
+| 颗粒度 | BLUEPRINT-LITE；以随包 `README_FIRST.md`、02~08 文档为准 |
+| 背景 | R1 已完成；本批收口 Projection Boundary，不改变产品行为 |
+| 外部包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_DATA_CONSOLIDATION_02_ARCH_BLUEPRINT_R1_FINAL.zip` |
+| 执行范围 | MealDayContent / MealDayCardProjector / DayMealCardData 边界、测试与 Feature 文档 |
+| 硬限制 | 不改数据库/schema；不新增 MealPlan/领域实体/Projection Service；不拆 Repository；不改用户行为 |
+| 交付证据 | `:shared:testDebugUnitTest` ✅；schema diff 为空；禁止项检索无命中 |
+| 交付 commit | 待提交；ARCH 复核后再决定是否 ACCEPT |
 | 下一步 | ARCH review；保持 `TURN=REVIEW`、`Holder=ARCH` |
 
 ---

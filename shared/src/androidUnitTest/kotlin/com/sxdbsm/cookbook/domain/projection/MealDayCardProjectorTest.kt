@@ -2,6 +2,7 @@ package com.sxdbsm.cookbook.domain.projection
 
 import com.sxdbsm.cookbook.domain.model.MealDayContent
 import com.sxdbsm.cookbook.domain.model.MealDayTemporalRole
+import com.sxdbsm.cookbook.domain.model.MealSection
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -30,5 +31,24 @@ class MealDayCardProjectorTest {
         assertFalse(today.isPlanState)
         assertFalse(future.isToday)
         assertTrue(future.isPlanState)
+    }
+
+    @Test
+    fun projectionPreservesStableContentAndAddsOnlyTemporalRole() {
+        val meals = listOf(
+            MealSection(
+                mealTypeId = 1L,
+                mealName = "午餐",
+                mealTime = kotlinx.datetime.LocalTime(12, 0),
+                dishes = emptyList(),
+            ),
+        )
+        val content = MealDayContent(referenceDate, meals)
+
+        val card = MealDayCardProjector.project(content, referenceDate)
+
+        assertEquals(content.date, card.date)
+        assertEquals(content.meals, card.meals)
+        assertEquals(MealDayTemporalRole.TODAY, card.temporalRole)
     }
 }

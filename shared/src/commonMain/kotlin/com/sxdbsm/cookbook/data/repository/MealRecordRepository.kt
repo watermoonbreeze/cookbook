@@ -97,7 +97,10 @@ class MealRecordRepository(private val db: CookbookDatabase) {
             .flowOn(ioDispatcher)
     }
 
-    /** Home 的中性日期内容读取 seam；调用方负责显式投影。 */
+    /**
+     * MDC2 stable read seam：Home 的中性日期内容读取；调用方负责通过
+     * [MealDayCardProjector] 显式投影。不得在此 API 中加入 Feature 状态。
+     */
     fun observeUpcomingMealDayContents(
         referenceDate: LocalDate,
         futureDayLimit: Int = 2,
@@ -166,6 +169,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
         loadMealDayContentsByDates(dates).map { MealDayCardProjector.project(it, DateTime.today()) }
     }
 
+    /** MDC2 stable read seam：按日期读取中性内容，不返回 Feature Card。 */
     suspend fun loadMealDayContentsByDates(dates: List<LocalDate>): List<MealDayContent> = withContext(ioDispatcher) {
         if (dates.isEmpty()) return@withContext emptyList()
         val dateStrings = dates.map(DateTime::formatDate)
