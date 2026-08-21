@@ -16,10 +16,12 @@ import com.sxdbsm.cookbook.pantry.PantryAllocation
 import com.sxdbsm.cookbook.pantry.PantryUsage
 import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.ioDispatcher
+import com.sxdbsm.cookbook.platform.MealDataTraceLogger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -212,6 +214,7 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     fun observeTimelineWindow(start: LocalDate, end: LocalDate): Flow<List<DayMealCardData>> {
         val startDate = minOf(start, end)
         val endDate = maxOf(start, end)
+        MealDataTraceLogger.repositoryWindowStarted(startDate, endDate)
         // [AI修改] 并入"食用比例变化"+"菜配料变化"+"菜品变化"令牌：
         //   改 meal_record_dish(就地调 eaten_ratio)或 dish_ingredient(克数/配料)只动 B 表，而 selectMealRecordsBetween 只监听 meal_record(A 表)→卡片停旧值。
         //   改 dish(图片/名称)同理不触发 A 表→J1:菜品编辑图后返回首页图片不变。令牌变化时 combine 重发→重跑 buildDayMealCards 读新值。
@@ -223,13 +226,21 @@ class MealRecordRepository(private val db: CookbookDatabase) {
                 end = DateTime.formatDate(endDate),
             ).asFlow().mapToList(ioDispatcher),
             combine(
-                q.observeMealRecordDishRevision().asFlow().mapToOne(ioDispatcher),
-                q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher),
-                q.observeDishRevision().asFlow().mapToOne(ioDispatcher), // [AI修改] J1:菜品表变更令牌·改图片/名称等即时刷新首页卡
+                q.observeMealRecordDishRevision().asFlow().mapToOne(ioDispatcher)
+                    .onEach { MealDataTraceLogger.revisionChanged("meal_record_dish", it) },
+                q.observeDishIngredientCount().asFlow().mapToOne(ioDispatcher)
+                    .onEach { MealDataTraceLogger.revisionChanged("dish_ingredient", it) },
+                q.observeDishRevision().asFlow().mapToOne(ioDispatcher)
+                    .onEach { MealDataTraceLogger.revisionChanged("dish", it) }, // [AI修改] J1
             ) { _, _, _ -> },
         ) { records, _ -> records }
             .map { records ->
-                buildDayMealCards(startDate, endDate, records)
+                buildDayMealCards(startDate, endDate, records).also { cards ->
+                    MealDataTraceLogger.projectionGenerated(
+                        dateCount = cards.size,
+                        mealCount = cards.sumOf { day -> day.meals.size },
+                    )
+                }
             }
             .flowOn(ioDispatcher)
     }

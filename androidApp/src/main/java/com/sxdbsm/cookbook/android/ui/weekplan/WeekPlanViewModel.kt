@@ -6,12 +6,14 @@ import kotlinx.coroutines.launch
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.util.DateTime
+import com.sxdbsm.cookbook.platform.MealDataTraceLogger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.isoDayNumber
@@ -65,6 +67,12 @@ class WeekPlanViewModel(
             UiState(
                 weekStart = ws, weekEnd = we, today = today, days = cards,
                 nutritionLine = nutritionLine, nutritionAdvices = nutritionAdvices,
+            )
+        }.onEach { state ->
+            MealDataTraceLogger.uiStateUpdated(
+                feature = "weekplan",
+                dates = "${state.weekStart}..${state.weekEnd}",
+                cardCount = state.days.size,
             )
         }
     }.stateIn(

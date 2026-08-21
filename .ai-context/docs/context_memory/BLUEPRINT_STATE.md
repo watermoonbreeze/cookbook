@@ -1,4 +1,18 @@
 # BLUEPRINT_STATE
+## CURRENT EXECUTION: MEAL-DATA-CONSOLIDATION-03 R2 OBSERVABILITY + DEVICE VERIFICATION
+
+| Field | Value |
+|---|---|
+| Batch | MEAL-DATA-CONSOLIDATION-03 R2 OBSERVABILITY + DEVICE VERIFICATION |
+| State | CODE_COMPLETE / PENDING DEVICE EVIDENCE + ARCH REVIEW |
+| TURN | REVIEW |
+| Holder | ARCH |
+| Scope | Debug-only MDC3 trace, device verification record, no Repository behavior/schema/API changes |
+| Unit/build | `:shared:testDebugUnitTest` and `:androidApp:assembleDebug` PASS; 674 tests |
+| Device | HUAWEI TAS-AN00 / Android 12 API 31; installed and launchable, but locked by Keyguard |
+| Evidence | `.ai-context/docs/arch_evidence/MEAL-DATA-CONSOLIDATION-03/DEVICE_VERIFICATION.md` |
+| Gate | Device evidence BLOCKED until manual unlock; do not write ACCEPT |
+
 ## CURRENT EXECUTION: MEAL-DATA-CONSOLIDATION-03 ARCH REVIEW R2 REWORK
 
 | Field | Value |

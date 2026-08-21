@@ -10,6 +10,7 @@ import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.util.DateTime
+import com.sxdbsm.cookbook.platform.MealDataTraceLogger
 import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.domain.FoodGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.isoDayNumber
@@ -328,6 +330,13 @@ class HomeViewModel(
      */
     private val todayCards: StateFlow<List<com.sxdbsm.cookbook.domain.model.DayMealCardData>> =
         mealRepo.observeTimelineWindow(today, today)
+            .onEach { cards ->
+                MealDataTraceLogger.uiStateUpdated(
+                    feature = "home",
+                    dates = cards.joinToString(",") { it.date.toString() },
+                    cardCount = cards.size,
+                )
+            }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     @OptIn(ExperimentalCoroutinesApi::class)
