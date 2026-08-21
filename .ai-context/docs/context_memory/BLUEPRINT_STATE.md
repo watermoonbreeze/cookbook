@@ -1,4 +1,22 @@
 # BLUEPRINT_STATE
+## CURRENT EXECUTION: MEAL-DATA-CONSOLIDATION-03 ARCH REVIEW R2 REWORK
+
+| Field | Value |
+|---|---|
+| Batch | MEAL-DATA-CONSOLIDATION-03 ARCH REVIEW R2 REWORK |
+| State | CODE_COMPLETE / PENDING ARCH REVIEW |
+| TURN | REVIEW |
+| Holder | ARCH |
+| Reviewed code | 2a56832210e481193a587440d18bfe720d788cc2 |
+| Reviewed handoff | 80d16df29476a737411511ab56127a27a3306ee0 |
+| Defect | AF-MDC3-01: lifecycle evidence covers only meal_record_dish; dish and dish_ingredient remain unproved |
+| Scope | Add isolated lifecycle tests only; no production, schema, API, Repository, or user behavior changes |
+| Repair commit | Pending final commit |
+| Tests | `:shared:testDebugUnitTest` — BUILD SUCCESSFUL, 674 tests |
+| Changed set | `shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/data/repository/MealRecordRepositoryTest.kt`; this state file |
+| Gates | compatibility equivalence retained; no schema diff; no API deletion; no production Repository change |
+| Next action | ARCH review; do not write ACCEPT in this handoff |
+
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---

@@ -6,10 +6,12 @@ import kotlin.test.assertTrue
 import kotlin.test.assertNotNull
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import kotlinx.coroutines.async
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -50,7 +52,7 @@ class MealRecordRepositoryTest {
     }
 
     @Test
-    fun timelineWindowReemitsWhenRelatedRevisionTokenChanges() = runBlocking {
+    fun timelineWindowReemitsWhenMealRecordDishRevisionChanges() = runBlocking {
         val db = RepositoryTestDatabase.create()
         val dishRepo = DishRepository(db)
         val mealRepo = MealRecordRepository(db)
@@ -69,14 +71,98 @@ class MealRecordRepositoryTest {
         val initial = mealRepo.observeTimelineWindow(date, date).first()
         assertEquals(1.0, initial.single().meals.single().dishes.single().eatenRatio)
 
+        val collectorReady = CompletableDeferred<Unit>()
         val nextEmission = async<List<DayMealCardData>>(start = CoroutineStart.UNDISPATCHED) {
-            withTimeout(5_000) { mealRepo.observeTimelineWindow(date, date).drop(1).first() }
+            withTimeout(5_000) {
+                mealRepo.observeTimelineWindow(date, date)
+                    .onEach { collectorReady.complete(Unit) }
+                    .drop(1)
+                    .first()
+            }
         }
+        collectorReady.await()
         mealRepo.setEatenRatio(recordId, dishId, 0.5)
         val updated = nextEmission.await()
 
         assertNotNull(updated.single().meals.single().dishes.single())
         assertEquals(0.5, updated.single().meals.single().dishes.single().eatenRatio, 1e-9)
+    }
+
+    @Test
+    fun timelineWindowReemitsWhenDishRevisionChanges() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "旧菜名", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        val date = LocalDate(2026, 6, 5)
+        mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(dishId))))
+        val initial = mealRepo.observeTimelineWindow(date, date).first()
+        assertEquals("旧菜名", initial.single().meals.single().dishes.single().name)
+
+        val collectorReady = CompletableDeferred<Unit>()
+        val nextEmission = async<List<DayMealCardData>>(start = CoroutineStart.UNDISPATCHED) {
+            withTimeout(5_000) {
+                mealRepo.observeTimelineWindow(date, date)
+                    .onEach { collectorReady.complete(Unit) }
+                    .drop(1)
+                    .first()
+            }
+        }
+        collectorReady.await()
+        q.updateDish(
+            name = "新菜名", cooking_method_id = null, special_note = "", description = "",
+            image_path = "", thumbnail_path = "", updated_at = DateTime.nowEpochSeconds(),
+            cuisine = "", id = dishId,
+        )
+        val updated = nextEmission.await()
+
+        assertEquals("新菜名", updated.single().meals.single().dishes.single().name)
+    }
+
+    @Test
+    fun timelineWindowReemitsWhenDishIngredientRevisionChanges() = runBlocking {
+        val db = RepositoryTestDatabase.create()
+        val dishRepo = DishRepository(db)
+        val mealRepo = MealRecordRepository(db)
+        val q = db.cookbookQueries
+        q.insertMealType("LUNCH", "午餐", "12:00", 1, "preset")
+        val mealTypeId = q.lastInsertId().executeAsOne()
+        val dishId = dishRepo.saveDish(
+            id = 0, name = "配料测试菜", cookingMethodId = null, specialNote = "", description = "",
+            imagePath = "", thumbnailPath = "", tagNames = emptyList(), ingredients = emptyList(),
+        )
+        q.insertIngredient("新增主料", "", "xinzhu", "", "", "", null, "user", DateTime.nowEpochSeconds())
+        val ingredientId = q.lastInsertId().executeAsOne()
+        val date = LocalDate(2026, 6, 5)
+        mealRepo.saveDayMeals(date, listOf(DayMealDraft(mealTypeId, LocalTime(12, 0), "", listOf(dishId))))
+        val initial = mealRepo.observeTimelineWindow(date, date).first()
+        assertEquals(emptyList(), initial.single().meals.single().dishes.single().allIngredientNames)
+
+        val collectorReady = CompletableDeferred<Unit>()
+        val nextEmission = async<List<DayMealCardData>>(start = CoroutineStart.UNDISPATCHED) {
+            withTimeout(5_000) {
+                mealRepo.observeTimelineWindow(date, date)
+                    .onEach { collectorReady.complete(Unit) }
+                    .drop(1)
+                    .first()
+            }
+        }
+        collectorReady.await()
+        q.insertDishIngredient(
+            dish_id = dishId, ingredient_id = ingredientId, quantity = null, unit_id = null, is_main = 1,
+        )
+        val updated = nextEmission.await()
+
+        assertEquals(
+            listOf("新增主料"),
+            updated.single().meals.single().dishes.single().allIngredientNames,
+        )
     }
 
     @Test
