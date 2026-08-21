@@ -2,24 +2,29 @@
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---
-## 当前执行聚合：MEAL-UX-CONSOLIDATION-01（R1，P0 已落库）
+## 当前执行聚合：MEAL-UX-CONSOLIDATION-01（R2，ARCH 复核返工）
 
 | 字段 | 值 |
 |---|---|
-| 状态 | **BLUEPRINT_READY / CODE** |
+| 状态 | **REWORK_REQUIRED / REPAIR_BLUEPRINT_READY** |
 | TURN | **CODE** |
-| Base | `e9274424b089716cec38c805ee5a140a7066d890` |
+| reviewed state head | `53cf4538d0e2253c524919a5ec9acd33ee8d0276` |
+| reviewed code delivery | `c7160d31c5534f2d66587bbc17e432022dd84745` |
+| original aggregate base | `e9274424b089716cec38c805ee5a140a7066d890` |
 | Children | `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01 / UEN-FINAL`、`DATE-CALENDAR-01`、`HOME-MERGE-01` |
-| Policy | 三项一次执行，一次总 ARCH review；中途不因单项完成切 TURN |
-| Blueprint | `.ai-context/docs/feature/餐食体验三项收口_总执行蓝图.md` |
-| 下一步 | P0 persistence commit 推送后，按 A → B → C → 集成验证执行；最终统一交回 ARCH |
+| ARCH result | **REWORK_REQUIRED** |
+| repair defects | `AF-HM-01`、`AF-HM-02`、`AF-HM-03`、`AF-GOV-01`、`AF-EVID-01` |
+| A UEN-FINAL | **CODE_REVIEW_PASS / PENDING_DEVICE_EVIDENCE** |
+| B DATE-CALENDAR-01 | **CODE_REVIEW_PASS / PENDING_DEVICE_EVIDENCE** |
+| C HOME-MERGE-01 | **REWORK_REQUIRED** |
+| governance/evidence | **REWORK_REQUIRED** |
+| 本阶段角色 | `ARCH_PERSISTENCE_EXECUTOR` → `CODER` → `ARCH_HANDOFF_PERSISTENCE_EXECUTOR`；禁止写入 `ACCEPT`/`ACCEPTED` |
+| 下一步 | 完成本 R2 修复包全部修复、测试与证据登记，再交回外部 ARCH 总审核 |
 
-### 本包 P0 状态覆盖
+### R2 执行约束
 
-- `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01`：`REWORK_REQUIRED / REPAIR_BLUEPRINT_READY`；`AF-UEN-01/02 = RESOLVED_BY_CODE @ e927442，待总回归`；新增 `AF-UEN-03 = ARCH_SPEC_DEFECT / BP / coder_negative=false`；TURN=`CODE`。
-- `HOME-MERGE-01`：保持 `BLUEPRINT_READY`，TURN=`CODE`；纳入本聚合批次，与 UEN-FINAL/DATE-CALENDAR-01 同轮完成后统一 REVIEW。
-- `DATE-CALENDAR-01`：`BLUEPRINT_READY`，TURN=`CODE`，CODE=`CODER`，ARCH=`ARCH`，基线=`e9274424b089716cec38c805ee5a140a7066d890`；纳入本聚合批次一次执行。
-- 本阶段角色：`ARCH_PERSISTENCE_EXECUTOR`；禁止写入 `ACCEPT`/`ACCEPTED`。
+- UEN-FINAL 与 DATE-CALENDAR-01 源实现冻结；仅允许 HOME 两个视觉/间距修复、HOME 仓储测试、治理状态和真机证据登记。
+- 本状态为 R2 初始持久化；后续最终交接必须回写同一当前区块，不得新增第二个当前聚合区块。
 
 > **回写规则（2026-08-17 新增，2026-08-19 D-25 升级为脚本判定，防全景图漂移主承重）**：任一批次「状态」字段写入 `ACCEPTED`/`ACCEPT` 时，本批表格必须同批填写「基线 sha」+「全景图回写」两个字段，不得留空。
 >
@@ -30,7 +35,7 @@
 > - `SYNC-NOOP <F-ID> <head> <理由，≥15字>` —— 本批命中某功能但确无需要回写的实质内容（如纯改名/加注释），理由≥15字，可重复多行（每个受影响功能各一行）。
 >
 > 该字段空白、或内容对不上脚本可复现结果，即视为批次未收口，不得转 TURN。设计与判据见 `projectReview/08` D-25（升级前的 D-20 设计背景仍有效，仅承重方式从"人填三选一"改"脚本判定二选一"，`07`/`DEFER` 相关表述已废止）。
-### MEAL-UX-CONSOLIDATION-01 最终交回 ARCH
+### 历史快照 / 非当前：MEAL-UX-CONSOLIDATION-01 R1 最终交回 ARCH
 
 | 字段 | 值 |
 |---|---|
