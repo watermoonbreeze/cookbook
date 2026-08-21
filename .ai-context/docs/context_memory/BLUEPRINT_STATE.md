@@ -308,3 +308,19 @@ Canonical Owner：`docs/experience/14_模型执行力评估.md`
 BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器标识，不在本文件重复具体模型名称或模型能力评价。
 
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
+
+---
+## 当前批次：COOKBOOK-MDC3-R3-APPLOGGER-UNIFICATION（2026-08-21）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-MDC3-R3-APPLOGGER-UNIFICATION |
+| 状态 | **CODE_COMPLETE / PENDING DEVICE EVIDENCE + ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | Android `CookbookLog` 通过 AppLogger sink 统一输出；无业务、数据库、Meal Data 架构变更 |
+| 覆盖 | MDC3 Repository/Revision/Projection/UI；Revision 含 `meal_record_dish`、`dish`、`dish_ingredient` |
+| 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；`adb devices` 无在线设备 |
+| 真机证据 | 待设备连接后导出 debug 日志文件，核验四类 MDC3 事件与三类 Revision 事件 |
+| 基线/交付 commit | `cbeb26d0` / `6bf3eb03` |
+| 全景图回写 | `SYNC-NOOP`：仅日志出口适配，不新增/删除功能节点 |
+| 下一步 | ARCH 复核 diff；连接真机后完成日志文件门禁；不得在无证据时写 ACCEPTED |

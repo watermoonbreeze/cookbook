@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.sxdbsm.cookbook.platform.CookbookStorage
+import com.sxdbsm.cookbook.platform.installCookbookLogSink
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -38,6 +39,14 @@ object AppLogger {
      */
     fun init(context: Context) {
         appContext = context.applicationContext
+        installCookbookLogSink { level, tag, message, throwable ->
+            when (level) {
+                "D" -> d(tag, message)
+                "W" -> w(tag, message)
+                "E" -> e(tag, message, throwable)
+                else -> i(tag, message)
+            }
+        }
         d("AppLogger", "file logger initialized: dir=${CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME, context).absolutePath}")
     }
 
