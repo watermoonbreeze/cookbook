@@ -2,29 +2,33 @@
 唯一握手状态文件。State 仅承载抽象角色和生命周期 Truth，禁止具体模型身份。
 
 ---
-## 当前执行聚合：MEAL-UX-CONSOLIDATION-01（R2，ARCH 复核返工）
+## 当前执行聚合：MEAL-UX-CONSOLIDATION-01（R2，代码修复完成，待 ARCH 复核）
 
 | 字段 | 值 |
 |---|---|
-| 状态 | **REWORK_REQUIRED / REPAIR_BLUEPRINT_READY** |
-| TURN | **CODE** |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
 | reviewed state head | `53cf4538d0e2253c524919a5ec9acd33ee8d0276` |
 | reviewed code delivery | `c7160d31c5534f2d66587bbc17e432022dd84745` |
 | original aggregate base | `e9274424b089716cec38c805ee5a140a7066d890` |
 | Children | `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01 / UEN-FINAL`、`DATE-CALENDAR-01`、`HOME-MERGE-01` |
-| ARCH result | **REWORK_REQUIRED** |
-| repair defects | `AF-HM-01`、`AF-HM-02`、`AF-HM-03`、`AF-GOV-01`、`AF-EVID-01` |
+| ARCH result | **REWORK_REQUIRED**；R2 修复已完成，待外部 ARCH 决定 |
+| repair defects | `AF-HM-01/02/03`、`AF-GOV-01`、`AF-EVID-01`：**CODE/TEST/GOVERNANCE COMPLETE，PENDING ARCH REVIEW** |
 | A UEN-FINAL | **CODE_REVIEW_PASS / PENDING_DEVICE_EVIDENCE** |
 | B DATE-CALENDAR-01 | **CODE_REVIEW_PASS / PENDING_DEVICE_EVIDENCE** |
-| C HOME-MERGE-01 | **REWORK_REQUIRED** |
-| governance/evidence | **REWORK_REQUIRED** |
+| C HOME-MERGE-01 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| governance/evidence | **COMPLETE AS BOOKKEEPING；设备项逐项 PENDING_DEVICE_VERIFICATION** |
+| repair delivery head | `c207e1251da66a9ab6eaf2004b74ad217523bd6a` |
+| automated gates | `:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug`：**BUILD SUCCESSFUL**；T-HM-09/T-HM-10 通过 |
+| evidence registry | 最新清单 `真机待验证清单_202608210918.md`；UEN `01/16/17~21`、DATE `01~08`、HOME `01~08` 已登记，未伪造 PASS |
+| changed set | `DayMealCardView.kt`、`HomeScreen.kt`、`MealRecordRepositoryTest.kt`、真机清单；无额外产品源文件 |
 | 本阶段角色 | `ARCH_PERSISTENCE_EXECUTOR` → `CODER` → `ARCH_HANDOFF_PERSISTENCE_EXECUTOR`；禁止写入 `ACCEPT`/`ACCEPTED` |
-| 下一步 | 完成本 R2 修复包全部修复、测试与证据登记，再交回外部 ARCH 总审核 |
+| 下一步 | 外部 ARCH 总审核；不得继续 CODE，不得将设备待验证项改为 PASS |
 
 ### R2 执行约束
 
-- UEN-FINAL 与 DATE-CALENDAR-01 源实现冻结；仅允许 HOME 两个视觉/间距修复、HOME 仓储测试、治理状态和真机证据登记。
-- 本状态为 R2 初始持久化；后续最终交接必须回写同一当前区块，不得新增第二个当前聚合区块。
+- UEN-FINAL 与 DATE-CALENDAR-01 源实现冻结；本轮仅改 HOME 两个视觉/间距契约、HOME 仓储测试、治理状态和真机证据登记。
+- 当前聚合唯一真相已完成最终交接；历史快照只保留在明确的“历史快照 / 非当前”区块。
 
 > **回写规则（2026-08-17 新增，2026-08-19 D-25 升级为脚本判定，防全景图漂移主承重）**：任一批次「状态」字段写入 `ACCEPTED`/`ACCEPT` 时，本批表格必须同批填写「基线 sha」+「全景图回写」两个字段，不得留空。
 >
