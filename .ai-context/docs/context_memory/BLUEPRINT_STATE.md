@@ -17,12 +17,12 @@
 | Evidence code base | `7c9a0707ae717b7d5ae3e30221b84e6ea5595bac` |
 | 执行范围 | A Semantic Boundary → B Repository Neutralization → C Home/Timeline/Manual Preview → D Tests/Evidence/Feature Sync |
 | 硬限制 | 不新增 MealPlan 持久化；不做 schema migration；不改业务规则、AI merge/replace/append、existing-meal guard、导航/UI 布局 |
-| 交付 head | `0a529c2d4895520b7b5f3920cc5398ef68af64ba` |
+| 交付 head | `a8bbed32f8faf82b3684378acd9b1ace72633f9e` |
 | 实现提交 | `d086189b93ce067bc02c16455ac3eddf0f9ab071` |
 | 自动化验收 | `:shared:testDebugUnitTest` ✅；`:androidApp:testDebugUnitTest` ✅；`:androidApp:assembleDebug` ✅；Kotlin daemon 失败后 fallback 编译，构建最终成功 |
 | 静态验收 | 生产源码无独立 `isToday`/`isPlanState` 构造赋值；生产 Home 链路无 `UPCOMING_ROW_LIMIT`；无 MealPlan/schema migration |
 | 变更集 | `MealDayModels.kt`、`MealDayCardProjector.kt`、`MealRecordContracts.kt`、`MealRecordRepository.kt`、`Cookbook.sq`、Home/Timeline/AddMeal、测试、F-MEAL/F-NUTRITION/F-TIMELINE 与索引 |
-| Feature sync | `SYNC-OK 0a529c2d4895520b7b5f3920cc5398ef68af64ba` |
+| Feature sync | `SYNC-OK a8bbed32f8faf82b3684378acd9b1ace72633f9e` |
 | 设备证据 | `E-MDC-01~04` **PENDING_DEVICE_VERIFICATION**：本批无可用真机证据，未伪造 PASS |
 | 下一步 | 外部 ARCH 按蓝图逐项复核；不得由 CODE 自行 ACCEPT |
 
