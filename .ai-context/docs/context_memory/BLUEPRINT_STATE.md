@@ -4,13 +4,14 @@
 | Field | Value |
 |---|---|
 | Batch | COOKBOOK-MDC3-AND-FOUNDATION-OBSERVABILITY-BATCH / FOUNDATION-OBSERVABILITY-01 CODE BLUEPRINT |
-| State | **BLUEPRINT_READY / PENDING CODE** |
-| TURN | **CODE** |
-| Holder | **CODE** |
-| Scope | 将 Logger Core、Trace Model、KMP 边界冻结为下一批可执行编码蓝图；不改业务、数据库、Repository API 或用户行为 |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW**（当前工作树未提交） |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Scope | Logger Core、Trace Model、KMP 边界最小闭环；不改业务、数据库、Repository API 或用户行为 |
 | Blueprint | `.ai-context/docs/feature/FOUNDATION_OBSERVABILITY_01_CODE_BLUEPRINT.md` |
-| Evidence | allowlist、API 表面、Operation 状态机、T-OBS-01~07、E-MDC3-01~03 已列明；E-MDC3-01~03 仍待真机 |
-| Next action | CODE 先读 `FOUNDATION_OBSERVABILITY_01_CODE_BLUEPRINT.md` §0、§2、§3.0/§3.6/§3.7、§4、§8~§10；仅按 allowlist 执行 STEP-OBS-01~07。不得声明 Foundation Observability 或 MDC3 完成 |
+| Evidence | `:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` PASS；E-OBS-01/03 与 E-MDC3-01~03 仍待真机；E-OBS-02 按蓝图 DEFERRED |
+| Delivery | 工作树实现，尚未提交（未获 commit 授权） |
+| Next action | ARCH 按 allowlist、INV/T/E、隐私/并发和当前 diff 复核；通过后再由授权方提交并回写 commit。不得声明 Foundation Observability 或 MDC3 完成 |
 
 ## CURRENT EXECUTION: MEAL-DATA-CONSOLIDATION-03 R2 OBSERVABILITY + DEVICE VERIFICATION
 

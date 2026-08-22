@@ -3,11 +3,11 @@
 > ROLE_CONTRACT：你是 CODE。只可修改 §2 固定 allowlist 中的文件，按 §8 的 STEP 顺序执行；遇到未给唯一答案的点，停止、追加 `Q-OBS-01-NN` 后把 TURN 交回 ARCH。不得新增日志出口、业务埋点、持久化、依赖或测试后门；不得把 MDC3 真机证据标为完成。ARCH 负责冻结/复核；REVIEW 只按 INV/T/E 与 diff 裁决。
 >
 > 规模：BLUEPRINT-FULL；颗粒度：L7（项目基线；§0.1 勾销表）。
-> 基线：`6a9a76c2`；实现：未开始；TURN：ARCH。
+> 基线：`6a9a76c2`；实现：已完成于当前工作树，待 ARCH 复核；TURN：REVIEW。
 
 批次：`COOKBOOK-MDC3-AND-FOUNDATION-OBSERVABILITY-BATCH`
 上游架构蓝图：`FOUNDATION_OBSERVABILITY_01_ARCH_BLUEPRINT.md`
-状态：`DRAFT / REWORK_REQUIRED`（2026-08-22 独立 ARCH 审核：未满足 L7/48-GC 蓝图协议；API、sink 生命周期、release 隐私策略与测试合同未冻结；实现尚未开始）
+状态：`CODE_COMPLETE / PENDING ARCH REVIEW`（2026-08-22：按冻结 allowlist 完成 STEP-OBS-01~07；当前未提交，三条自动门禁已通过；真机项仍待验证）
 
 ## 0. 冻结门禁
 
@@ -240,3 +240,13 @@ scripts\\build-cli.bat :androidApp:assembleDebug
 ## 10. 交接与冻结条件
 
 CODE 开工前必须同时满足：§0.1 全部 GC 为满足/N/A、§0.2 有独立 REVIEW 挑战裁决、§8~§9 无歧义、`BLUEPRINT_STATE` 写入基线/颗粒度/允许文件/测试矩阵并转 `BLUEPRINT_READY / TURN=CODE`。交付必须给「STEP/INV → 文件:行 → T/E → commit」四列映射；ARCH 只按此表、allowlist 差集和当前 commit 证据审查。
+
+## 11. CODE 交付台账（2026-08-22）
+
+| STEP/INV | 文件 | T/E | commit |
+|---|---|---|---|
+| STEP-OBS-01 / INV-OBS-03 | `shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/LogLevel.kt:1`、`TraceModel.kt:1` | T-OBS-04~07；T-OBS-05/06/07 已覆盖 | WORKTREE（待授权提交） |
+| STEP-OBS-02 / INV-OBS-02/04 | `shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/Logger.kt:1` | LoggerTest JSONL/脱敏；shared 全量测试 | WORKTREE（待授权提交） |
+| STEP-OBS-03~04 / INV-OBS-01 | `CookbookLog.kt`、`CookbookLog.android.kt` | LoggerTest 单 sink；Android compile | WORKTREE（待授权提交） |
+| STEP-OBS-05 / INV-OBS-02/04 | `androidApp/src/main/java/com/sxdbsm/cookbook/android/util/AppLogger.kt:1` | AppLoggerTest；Android 单测/assemble | WORKTREE（待授权提交） |
+| STEP-OBS-06~07 / INV-OBS-05 | 三个测试文件、真机清单 `真机待验证清单_202608221700.md`、状态文件 | 三条命令 PASS；E-OBS-01/03、E-MDC3-01~03 待真机 | WORKTREE（待 ARCH 复核） |

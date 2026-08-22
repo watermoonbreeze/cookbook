@@ -2,39 +2,60 @@ package com.sxdbsm.cookbook.platform
 
 import android.util.Log
 
-private typealias CookbookLogSink = (level: String, tag: String, message: String, throwable: Throwable?) -> Unit
-
 @Volatile
 private var appLoggerSink: CookbookLogSink? = null
 
-/** Installs the Android app logger without creating a shared -> androidApp dependency. */
-fun installCookbookLogSink(sink: (String, String, String, Throwable?) -> Unit) {
+fun installCookbookLogSink(sink: CookbookLogSink) {
     appLoggerSink = sink
 }
 
-/**
- * @File : CookbookLog.android
- * @Time : 2026/07/10
- * @Author : SXD-AI
- * @Desc : Android 端 shared 日志实现（android.util.Log）
- * <p>
- * shared/androidMain 不能依赖 androidApp 的 AppLogger（会形成反向依赖）。应用启动后由
- * AppLogger 注册 sink 统一写入 logcat + debug 文件；初始化前保留系统 Log fallback。
- * 统一前缀 "CB/" 便于在未初始化阶段过滤 shared 层日志。
- * <p>
- * [AI生成] P3 KMP 日志：Android actual。
- **/
+/** 兼容旧初始化调用方；结构化事件仍只能走 CookbookLogSink。 */
+fun installCookbookLogSink(sink: (String, String, String, Throwable?) -> Unit) {
+    appLoggerSink = object : CookbookLogSink {
+        override fun emitLegacy(level: LogLevel, tag: String, message: String, throwable: Throwable?) =
+            sink(level.name.take(1), tag, message, throwable)
+        override fun emitStructured(event: StructuredLogEvent) =
+            sink("I", event.category.name, event.event, null)
+    }
+}
+
 actual object CookbookLog {
-    private fun tag(t: String) = "CB/$t"
+    private fun tag(value: String) = "CB/$value"
+
     actual fun d(tag: String, message: String) {
-        appLoggerSink?.invoke("D", tag, message, null) ?: Log.d(tag(tag), message)
+        val sink = appLoggerSink
+        if (sink != null) runCatching { sink.emitLegacy(LogLevel.DEBUG, tag, message, null) }
+            .onFailure { Log.e(tag("Logger"), "legacy sink failure", it) }
+        else Log.d(tag(tag), message)
     }
 
     actual fun w(tag: String, message: String) {
-        appLoggerSink?.invoke("W", tag, message, null) ?: Log.w(tag(tag), message)
+        val sink = appLoggerSink
+        if (sink != null) runCatching { sink.emitLegacy(LogLevel.WARN, tag, message, null) }
+            .onFailure { Log.e(tag("Logger"), "legacy sink failure", it) }
+        else Log.w(tag(tag), message)
     }
 
     actual fun e(tag: String, message: String, throwable: Throwable?) {
-        appLoggerSink?.invoke("E", tag, message, throwable) ?: Log.e(tag(tag), message, throwable)
+        val sink = appLoggerSink
+        if (sink != null) runCatching { sink.emitLegacy(LogLevel.ERROR, tag, message, throwable) }
+            .onFailure { Log.e(tag("Logger"), "legacy sink failure", it) }
+        else Log.e(tag(tag), message, throwable)
+    }
+
+    actual fun emitStructured(event: StructuredLogEvent) {
+        val sink = appLoggerSink
+        if (sink != null) runCatching { sink.emitStructured(event) }
+            .onFailure { Log.e(tag("Logger"), "structured sink failure", it) }
+        else Log.println(event.level.androidPriority, tag("${event.category.name}/${event.event}"), event.traceId?.value.orEmpty())
     }
 }
+
+private val LogLevel.androidPriority: Int
+    get() = when (this) {
+        LogLevel.VERBOSE -> Log.VERBOSE
+        LogLevel.DEBUG -> Log.DEBUG
+        LogLevel.INFO -> Log.INFO
+        LogLevel.WARN -> Log.WARN
+        LogLevel.ERROR -> Log.ERROR
+    }
