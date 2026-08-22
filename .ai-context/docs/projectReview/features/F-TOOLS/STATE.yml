@@ -1,8 +1,8 @@
 id: F-TOOLS
 name: 工具与系统底座
 lifecycle: active
-headline: "✅ **厨房计时**已落地：可靠性改造 + 连续多段·手动接力 + A14 全屏授权引导（真机验：多段 OK，华为全屏待修，见'已知问题'）。"
-synced_to: c7160d31c5534f2d66587bbc17e432022dd84745
+headline: "✅ **厨房计时**已落地；📄 Foundation Observability-01 蓝图已冻结、待 CODE 实施，MDC3 真机证据待补。"
+synced_to: 6a9a76c268298c9dec3719cb3005fce14e8672e0
 match:
   - androidApp/**/ui/cook/**
   - androidApp/**/ui/kitchen/**
