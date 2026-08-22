@@ -40,3 +40,9 @@
 
 - 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
 - 交付：`experience/16_蓝图任务包标准.md`，固化六件套、最小模板、旧包兼容和真机证据门禁。
+
+## 07 Actor Capability Routing
+
+- 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
+- 交付：`experience/17_ACTOR_CAPABILITY_ROUTING.md`；能力维度与历史证据逐行映射。
+- 边界：不替代 `MODEL_ROUTING`，不修改模型配置；小样本只保留观察事实。

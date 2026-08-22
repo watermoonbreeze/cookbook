@@ -324,6 +324,20 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 补充批次 07：COOKBOOK-OVERNIGHT-PHASE2-07 ACTOR CAPABILITY ROUTING（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-PHASE2-07 ACTOR CAPABILITY ROUTING |
+| 状态 | **GOVERNANCE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | 任务族、模型执行事实、能力维度与复核建议；不改模型配置或 `MODEL_ROUTING` |
+| 交付 | `experience/17_ACTOR_CAPABILITY_ROUTING.md` |
+| 证据 | 引用 `experience/14_模型执行力评估.md` 台账、已交付 commit 和夜间执行记录；小样本保留限制 |
+| 真机证据 | 本任务无新增业务真机步骤；沿用前阶段 E-OVN 清单 |
+| 下一步 | ARCH 复核矩阵每行证据与措辞；不得将观察性矩阵当作自动路由配置 |
+
+---
 ## 夜间批次 06：COOKBOOK-OVERNIGHT-06 BLUEPRINT STANDARD（2026-08-22）
 
 | 字段 | 值 |
