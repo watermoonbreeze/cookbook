@@ -52,3 +52,9 @@
 - 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
 - 交付：`experience/18_BLUEPRINT_LEVEL_STANDARD.md`，引用 canonical protocol 并映射 L1→L7。
 - 边界：Level 不是风险/模型等级；不新增 L8、不下调 L7 基线。
+
+## 09 Architecture Quality Governance
+
+- 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
+- 交付：`architecture_quality_check.py` + unittest，检查 KMP 依赖边界和 Trace 契约存在性。
+- 验证：静态检查应在当前项目通过；测试含 Android import 反例。

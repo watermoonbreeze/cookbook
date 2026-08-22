@@ -324,6 +324,20 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 补充批次 09：COOKBOOK-OVERNIGHT-PHASE2-09 ARCHITECTURE QUALITY GOVERNANCE（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-PHASE2-09 ARCHITECTURE QUALITY GOVERNANCE |
+| 状态 | **GOVERNANCE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | 架构边界、Trace 契约存在性、模块依赖边界静态检查；不改业务功能 |
+| 交付 | `.ai-context/tools/architecture_quality_check.py`、`test_architecture_quality_check.py` |
+| 自动验证 | `python .ai-context/tools/architecture_quality_check.py --root .`；`python -m unittest discover -s .ai-context/tools -p 'test_*.py' -v` |
+| 真机证据 | 本任务无新增业务真机步骤；静态检查不能替代已有 E-OVN 真机验证 |
+| 下一步 | ARCH 复核检查范围和误报边界；不得把静态 PASS 写成真机 PASS |
+
+---
 ## 补充批次 08：COOKBOOK-OVERNIGHT-PHASE2-08 BLUEPRINT LEVEL STANDARD（2026-08-22）
 
 | 字段 | 值 |
