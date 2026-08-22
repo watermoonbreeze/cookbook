@@ -357,6 +357,24 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | 全景图回写 | `SYNC-NOOP`：仅日志治理与架构文档，不新增/删除产品功能节点 |
 | 下一步 | ARCH 复核本批文档；设备连接后完成三项 MDC3 日志文件门禁；不得在无证据时写 ACCEPTED/CLOSED |
 ---
+## FOUNDATION-OBSERVABILITY-02-R2 USER INTERACTION OBSERVABILITY COMPLETION（2026-08-22）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | FOUNDATION-OBSERVABILITY-02-R2 USER INTERACTION OBSERVABILITY COMPLETION |
+| 蓝图文件 | `.ai-context/docs/外部方案/在线审核/FOUNDATION_OBSERVABILITY_02_R2_USER_INTERACTION_OBSERVABILITY_COMPLETION.zip`（包内 `README_FIRST.md`、`ARCH_BLUEPRINT.md` 等） |
+| 规模 | L7 Mechanical Execution Contract |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| ARCH | 本机 ARCH |
+| CODE | 本批执行：用户交互层 Observability Trace |
+| 基线 commit | `9720be03`（FOUNDATION-OBSERVABILITY-02-R1） |
+| 交付 commit | 待本批提交后回填 |
+| 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS |
+| Evidence | `E-OBS-UI-01`、`E-OBS-NAV-01`、`E-OBS-SCREEN-01`、`E-OBS-STATE-01`、`E-OBS-AI-01`：代码/自动化证据 PASS；真机链路 **PENDING_DEVICE_VERIFICATION** |
+| 约束核对 | 未修改业务规则、AI Recommend 算法、数据库；未新增 Event；补充 `ui.click`、`ui.action.result`、导航/生命周期/状态 Trace 及两个 AI 入口 |
+| 下一步 | ARCH 按任务包复核 allowlist、事件分类、trace_id 串链、两个 AI 入口差异和真机 Evidence；不得提前标记 ACCEPTED |
+
+---
 ## FOUNDATION-OBSERVABILITY-02-R1 BUSINESS ACTION OBSERVABILITY COMPLETION（2026-08-22）
 | 字段 | 值 |
 |---|---|

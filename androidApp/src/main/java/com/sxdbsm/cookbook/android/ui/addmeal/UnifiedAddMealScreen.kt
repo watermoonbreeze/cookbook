@@ -37,6 +37,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun UnifiedAddMealScreen(
     nav: NavController,
+    onOpenAiForBlock: (String) -> Unit = {},
 ) {
     val aiVm: AiMealInputViewModel = koinViewModel(key = "unified-ai-meal") {
         parametersOf("", DateTime.today())
@@ -107,6 +108,7 @@ fun UnifiedAddMealScreen(
                         onAddNewDish = { nav.navigate(Routes.newDish()) },
                         onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                         onOpenWeekPlan = { date -> nav.navigate(Routes.weekPlanFrom(DateTime.formatDate(date))) },
+                        onOpenAiForBlock = onOpenAiForBlock,
                         vm = singleManualVm,
                         embedded = true,
                     )

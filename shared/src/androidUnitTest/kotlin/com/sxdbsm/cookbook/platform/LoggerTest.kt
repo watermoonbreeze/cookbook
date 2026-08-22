@@ -38,13 +38,16 @@ class LoggerTest {
             override fun emitStructured(event: StructuredLogEvent) { events += event }
         })
         val traceId = BusinessTrace.action("home", "open_ai_recommend", "next_meal")
+        BusinessTrace.actionResult("home", "open_ai_recommend", ActionResultStatus.HANDLED, traceId)
         BusinessTrace.navigationStarted("home", "ai_recommend")
         BusinessTrace.navigationCompleted("home", "ai_recommend")
         BusinessTrace.screenEntered("ai_recommend")
         BusinessTrace.screenLoaded("ai_recommend")
-        assertEquals(5, events.size)
+        assertEquals(6, events.size)
         assertTrue(events.all { it.traceId == traceId })
-        assertEquals("ui.action.clicked", events.first().event)
+        assertEquals("ui.click", events.first().event)
+        assertEquals("ui.action.result", events[1].event)
+        assertEquals(ActionResultStatus.HANDLED, (events[1] as StructuredLogEvent.ActionResult).result)
         assertEquals("screen.loaded", events.last().event)
     }
 }

@@ -20,11 +20,22 @@ sealed interface StructuredLogEvent {
 
     data class Action(
         override val level: LogLevel,
-        override val event: String = "ui.action.clicked",
+        override val event: String = "ui.click",
         override val traceId: TraceId,
         val screen: String,
         val action: String,
         val source: String,
+    ) : StructuredLogEvent {
+        override val category: LogCategory = LogCategory.UI_STATE
+    }
+
+    data class ActionResult(
+        override val level: LogLevel,
+        override val event: String = "ui.action.result",
+        override val traceId: TraceId,
+        val screen: String,
+        val action: String,
+        val result: ActionResultStatus,
     ) : StructuredLogEvent {
         override val category: LogCategory = LogCategory.UI_STATE
     }
@@ -135,6 +146,17 @@ object BusinessTrace {
         return traceId
     }
 
+    fun actionResult(
+        screen: String,
+        action: String,
+        result: ActionResultStatus,
+        traceId: TraceId? = currentTraceId,
+    ) {
+        traceId?.let {
+            Logger.emit(StructuredLogEvent.ActionResult(LogLevel.DEBUG, traceId = it, screen = screen, action = action, result = result))
+        }
+    }
+
     fun navigationStarted(from: String, to: String, traceId: TraceId? = currentTraceId) {
         traceId?.let { Logger.emit(StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.started", it, from, to)) }
     }
@@ -157,6 +179,8 @@ object BusinessTrace {
 
     fun current(): TraceId? = currentTraceId
 }
+
+enum class ActionResultStatus { HANDLED, IGNORED, FAILED }
 
 enum class OperationState { CREATED, RUNNING, SUCCEEDED, FAILED, CANCELLED }
 

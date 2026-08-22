@@ -47,6 +47,11 @@ object StructuredLogJson {
                     put("action", safe(event.action))
                     put("source", safe(event.source))
                 }
+                is StructuredLogEvent.ActionResult -> {
+                    put("screen", safe(event.screen))
+                    put("action", safe(event.action))
+                    put("result", event.result.name.lowercase())
+                }
                 is StructuredLogEvent.Navigation -> {
                     put("from", safe(event.from))
                     put("to", safe(event.to))

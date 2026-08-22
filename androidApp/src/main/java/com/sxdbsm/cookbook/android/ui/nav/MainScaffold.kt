@@ -43,6 +43,7 @@ import com.sxdbsm.cookbook.android.ui.search.SearchScreen
 import com.sxdbsm.cookbook.android.ui.timeline.FoodTimelineScreen
 import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.BusinessTrace
+import com.sxdbsm.cookbook.platform.ActionResultStatus
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.first
 
@@ -192,8 +193,9 @@ fun MainScaffold(
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
                     onOpenWeekPlan = { nav.navigate(Routes.WEEK_PLAN) }, // [AI生成] B3
                     onOpenAiRecommend = {
-                        BusinessTrace.action("home", "open_ai_recommend", "next_meal")
-                        BusinessTrace.navigationStarted("home", "ai_recommend")
+                        val trace = BusinessTrace.action("home", "open_ai_recommend", "next_meal")
+                        BusinessTrace.actionResult("home", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
+                        BusinessTrace.navigationStarted("home", "ai_recommend", trace)
                         nav.navigate(Routes.aiRecommend())
                     },
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] P3-B:今日卡"各类每天吃多少"→膳食参考依据页
@@ -235,8 +237,9 @@ fun MainScaffold(
                     onOpenCookingTimer = { nav.navigate(Routes.COOKING_TIMER) },
                     onOpenAiSettings = { nav.navigate(Routes.AI_SETTINGS) },
                     onOpenAiRecommend = {
-                        BusinessTrace.action("mine", "open_ai_recommend", "mine_ai")
-                        BusinessTrace.navigationStarted("mine", "ai_recommend")
+                        val trace = BusinessTrace.action("mine", "open_ai_recommend", "mine_ai")
+                        BusinessTrace.actionResult("mine", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
+                        BusinessTrace.navigationStarted("mine", "ai_recommend", trace)
                         nav.navigate(Routes.aiRecommend())
                     },
                     onOpenFeatureSettings = { nav.navigate(Routes.FEATURE_SETTINGS) },
@@ -433,7 +436,12 @@ fun MainScaffold(
                     copyFromDate = copyFrom, // [AI生成] F8：复制来源→预填新建草稿
                     editDate = date,
                     presetDishIds = presetDishIds,
-                    onOpenAiForBlock = { slotCode -> nav.navigate(Routes.aiRecommendForMeal(slotCode)) }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。[AI修改] F#7:带该餐次 slot 预选。
+                    onOpenAiForBlock = { slotCode ->
+                        val trace = BusinessTrace.action("add_meal", "open_ai_recommend", "meal_edit")
+                        BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
+                        BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
+                        nav.navigate(Routes.aiRecommendForMeal(slotCode))
+                    }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。[AI修改] F#7:带该餐次 slot 预选。
                     aiPickedDishIds = aiPicked.toList(),
                     onAiPickedConsumed = { it.savedStateHandle[KEY_AI_PICKED_DISHES] = LongArray(0) },
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
@@ -444,7 +452,15 @@ fun MainScaffold(
                 )
             }
             composable(Routes.UNIFIED_ADD_MEAL) {
-                UnifiedAddMealScreen(nav = nav)
+                UnifiedAddMealScreen(
+                    nav = nav,
+                    onOpenAiForBlock = { slotCode ->
+                        val trace = BusinessTrace.action("add_meal", "open_ai_recommend", "record_meal_manual")
+                        BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
+                        BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
+                        nav.navigate(Routes.aiRecommendForMeal(slotCode))
+                    },
+                )
             }
             composable(
                 route = Routes.NEW_DISH,

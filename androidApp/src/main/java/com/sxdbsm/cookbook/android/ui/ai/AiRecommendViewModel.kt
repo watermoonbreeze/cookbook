@@ -71,7 +71,7 @@ class AiRecommendViewModel(
     fun start(initialSlot: com.sxdbsm.cookbook.ai.MealSlot? = null) {
         if (started) return
         started = true
-        BusinessTrace.stateChanged("ai_recommend", null, "started")
+        BusinessTrace.stateChanged("ai_recommend", null, "INITIAL")
         // [AI生成] F#7:餐次块带入预选餐次——**静默**设入 state(不单独触发 recommend·避免双推/在配了模型时误自动调云端)，
         //   让下方规则模式 recommend / 模型模式待手动 都按此餐次。空/全部→不改(默认全部)。
         if (initialSlot != null && initialSlot != com.sxdbsm.cookbook.ai.MealSlot.ALL && initialSlot != state.selectedSlot) {
@@ -205,7 +205,7 @@ class AiRecommendViewModel(
         val medicinal = state.medicinalFilter
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
-            BusinessTrace.stateChanged("ai_recommend", "idle", "loading")
+            BusinessTrace.stateChanged("ai_recommend", "INITIAL", "LOADING")
             runCatching {
                 // [AI生成] 换一换缓存(阶段1)：同(mode/餐次/窗口/风格)时复用上次 gather 的候选(换一换只变 rotation,不改候选),
                 //   省 18-22 SQL;但**忌口/病种约束每次用 gatherConstraints() 重取覆盖**(健康档案别页可改·红线:不能用旧忌口)。
@@ -229,12 +229,12 @@ class AiRecommendViewModel(
                 //   仅 engineLabel 依 result.source 由本处算,单独设。slot/window/style 仍用于上方 gather(GatherKey)。
                 state = mapResult(result, mode, modelReady = state.modelReady, medicinal = medicinal, prev = state)
                     .copy(engineLabel = label)
-                BusinessTrace.stateChanged("ai_recommend", "loading", "loaded", "recommendation_finished")
+                BusinessTrace.stateChanged("ai_recommend", "LOADING", "SUCCESS", "recommendation_finished")
                 trace.succeed()
                 Logger.emit(StructuredLogEvent.Operation(LogLevel.DEBUG, "recommend.finished", trace.traceId, "ai.recommend", OperationState.SUCCEEDED))
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
-                BusinessTrace.stateChanged("ai_recommend", "loading", "error", "recommendation_failed")
+                BusinessTrace.stateChanged("ai_recommend", "LOADING", "FAILED", "recommendation_failed")
                 trace.fail(it.javaClass.simpleName)
                 Logger.emit(StructuredLogEvent.Operation(LogLevel.ERROR, "recommend.finished", trace.traceId, "ai.recommend", OperationState.FAILED, it.javaClass.simpleName))
             }
