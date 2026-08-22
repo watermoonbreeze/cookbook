@@ -15,6 +15,9 @@ object Logger {
 
     fun operation(name: String, timeSource: MonotonicTimeSource = MonotonicTimeSource()): OperationTrace =
         OperationTrace(TraceId.create(), name, ::emit, timeSource)
+
+    fun operation(name: String, traceId: TraceId, timeSource: MonotonicTimeSource = MonotonicTimeSource()): OperationTrace =
+        OperationTrace(traceId, name, ::emit, timeSource)
 }
 
 /** [AI生成] 统一 JSONL 编码；Json 负责转义，字段插入顺序固定为蓝图 envelope 顺序。 */
@@ -39,6 +42,16 @@ object StructuredLogJson {
             put("event", safe(event.event))
             event.traceId?.let { put("trace_id", safe(it.value)) }
             when (event) {
+                is StructuredLogEvent.Action -> {
+                    put("screen", safe(event.screen))
+                    put("action", safe(event.action))
+                    put("source", safe(event.source))
+                }
+                is StructuredLogEvent.Navigation -> {
+                    put("from", safe(event.from))
+                    put("to", safe(event.to))
+                }
+                is StructuredLogEvent.Screen -> put("screen", safe(event.screen))
                 is StructuredLogEvent.Operation -> {
                     put("operation", safe(event.operation))
                     event.state?.let { put("state", it.name) }

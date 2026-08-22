@@ -42,6 +42,7 @@ import com.sxdbsm.cookbook.android.ui.newdish.NewDishScreen
 import com.sxdbsm.cookbook.android.ui.search.SearchScreen
 import com.sxdbsm.cookbook.android.ui.timeline.FoodTimelineScreen
 import com.sxdbsm.cookbook.util.DateTime
+import com.sxdbsm.cookbook.platform.BusinessTrace
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.first
 
@@ -126,6 +127,10 @@ fun MainScaffold(
                     analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.FeatureUsed(feature))
                 }
             }
+            val screen = route.substringBefore('?')
+            BusinessTrace.navigationCompleted("previous", screen)
+            BusinessTrace.screenEntered(screen)
+            BusinessTrace.screenLoaded(screen)
         }
     }
 
@@ -186,7 +191,11 @@ fun MainScaffold(
                     onOpenTimelineAt = { date -> nav.navigate(Routes.timelineAt(DateTime.formatDate(date))) }, // [AI生成] 营养色系墙点色块→食历定位该日
                     onCopyMeal = { date -> nav.navigate(Routes.copyMealFrom(DateTime.formatDate(date))) }, // [AI生成] A1
                     onOpenWeekPlan = { nav.navigate(Routes.WEEK_PLAN) }, // [AI生成] B3
-                    onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) }, // [AI修改] 首页卡 v2：整卡点击进 AI 推荐全页(引流·全页看整桌+批量记)
+                    onOpenAiRecommend = {
+                        BusinessTrace.action("home", "open_ai_recommend", "next_meal")
+                        BusinessTrace.navigationStarted("home", "ai_recommend")
+                        nav.navigate(Routes.aiRecommend())
+                    },
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] P3-B:今日卡"各类每天吃多少"→膳食参考依据页
                 )
             }
@@ -225,7 +234,11 @@ fun MainScaffold(
                 MineScreen(
                     onOpenCookingTimer = { nav.navigate(Routes.COOKING_TIMER) },
                     onOpenAiSettings = { nav.navigate(Routes.AI_SETTINGS) },
-                    onOpenAiRecommend = { nav.navigate(Routes.aiRecommend()) },
+                    onOpenAiRecommend = {
+                        BusinessTrace.action("mine", "open_ai_recommend", "mine_ai")
+                        BusinessTrace.navigationStarted("mine", "ai_recommend")
+                        nav.navigate(Routes.aiRecommend())
+                    },
                     onOpenFeatureSettings = { nav.navigate(Routes.FEATURE_SETTINGS) },
                     onOpenShoppingList = { nav.navigate(Routes.SHOPPING_LIST) },
                     onOpenFreePairing = { nav.navigate(Routes.FREE_PAIRING) },

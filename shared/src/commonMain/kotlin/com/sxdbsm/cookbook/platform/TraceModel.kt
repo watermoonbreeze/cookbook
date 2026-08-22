@@ -18,6 +18,36 @@ sealed interface StructuredLogEvent {
     val event: String
     val traceId: TraceId?
 
+    data class Action(
+        override val level: LogLevel,
+        override val event: String = "ui.action.clicked",
+        override val traceId: TraceId,
+        val screen: String,
+        val action: String,
+        val source: String,
+    ) : StructuredLogEvent {
+        override val category: LogCategory = LogCategory.UI_STATE
+    }
+
+    data class Navigation(
+        override val level: LogLevel,
+        override val event: String,
+        override val traceId: TraceId,
+        val from: String,
+        val to: String,
+    ) : StructuredLogEvent {
+        override val category: LogCategory = LogCategory.UI_STATE
+    }
+
+    data class Screen(
+        override val level: LogLevel,
+        override val event: String,
+        override val traceId: TraceId,
+        val screen: String,
+    ) : StructuredLogEvent {
+        override val category: LogCategory = LogCategory.UI_STATE
+    }
+
     data class Operation(
         override val level: LogLevel,
         override val event: String,
@@ -92,6 +122,40 @@ sealed interface StructuredLogEvent {
         override val category: LogCategory = LogCategory.LEGACY
         override val traceId: TraceId? = null
     }
+}
+
+/** [AI修改] 统一业务动作的 trace 串联；只记录代码标识，不记录用户输入或饮食明细。 */
+object BusinessTrace {
+    private var currentTraceId: TraceId? = null
+
+    fun action(screen: String, action: String, source: String): TraceId {
+        val traceId = TraceId.create()
+        currentTraceId = traceId
+        Logger.emit(StructuredLogEvent.Action(LogLevel.INFO, traceId = traceId, screen = screen, action = action, source = source))
+        return traceId
+    }
+
+    fun navigationStarted(from: String, to: String, traceId: TraceId? = currentTraceId) {
+        traceId?.let { Logger.emit(StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.started", it, from, to)) }
+    }
+
+    fun navigationCompleted(from: String, to: String, traceId: TraceId? = currentTraceId) {
+        traceId?.let { Logger.emit(StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.completed", it, from, to)) }
+    }
+
+    fun screenEntered(screen: String, traceId: TraceId? = currentTraceId) {
+        traceId?.let { Logger.emit(StructuredLogEvent.Screen(LogLevel.DEBUG, "screen.entered", it, screen)) }
+    }
+
+    fun screenLoaded(screen: String, traceId: TraceId? = currentTraceId) {
+        traceId?.let { Logger.emit(StructuredLogEvent.Screen(LogLevel.DEBUG, "screen.loaded", it, screen)) }
+    }
+
+    fun stateChanged(screen: String, previous: String?, state: String, reason: String? = null, traceId: TraceId? = currentTraceId) {
+        traceId?.let { Logger.emit(StructuredLogEvent.UiState(LogLevel.DEBUG, "state.changed", it, screen, previous, state, reason)) }
+    }
+
+    fun current(): TraceId? = currentTraceId
 }
 
 enum class OperationState { CREATED, RUNNING, SUCCEEDED, FAILED, CANCELLED }

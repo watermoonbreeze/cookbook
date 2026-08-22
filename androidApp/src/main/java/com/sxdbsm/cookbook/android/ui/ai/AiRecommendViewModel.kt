@@ -16,6 +16,11 @@ import com.sxdbsm.cookbook.ai.model.DishCandidate
 import com.sxdbsm.cookbook.ai.model.RecommendationResult
 import com.sxdbsm.cookbook.ai.model.RecommendationSource
 import com.sxdbsm.cookbook.ai.model.RecommendMode
+import com.sxdbsm.cookbook.platform.BusinessTrace
+import com.sxdbsm.cookbook.platform.LogLevel
+import com.sxdbsm.cookbook.platform.Logger
+import com.sxdbsm.cookbook.platform.OperationState
+import com.sxdbsm.cookbook.platform.StructuredLogEvent
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -66,6 +71,7 @@ class AiRecommendViewModel(
     fun start(initialSlot: com.sxdbsm.cookbook.ai.MealSlot? = null) {
         if (started) return
         started = true
+        BusinessTrace.stateChanged("ai_recommend", null, "started")
         // [AI生成] F#7:餐次块带入预选餐次——**静默**设入 state(不单独触发 recommend·避免双推/在配了模型时误自动调云端)，
         //   让下方规则模式 recommend / 模型模式待手动 都按此餐次。空/全部→不改(默认全部)。
         if (initialSlot != null && initialSlot != com.sxdbsm.cookbook.ai.MealSlot.ALL && initialSlot != state.selectedSlot) {
@@ -182,6 +188,9 @@ class AiRecommendViewModel(
 
     /** 触发推荐（首次 / 换一换 / 切模式）。[AI生成] */
     fun recommend(mode: RecommendMode = state.mode) {
+        val trace = BusinessTrace.current()?.let { Logger.operation("ai.recommend", it) } ?: Logger.operation("ai.recommend")
+        viewModelScope.launch { trace.start() }
+        Logger.emit(StructuredLogEvent.Operation(LogLevel.DEBUG, "recommend.started", trace.traceId, "ai.recommend", OperationState.RUNNING))
         // [AI生成] 阶段3-b 匿名统计：请求了一次推荐(推荐使用率)。**仅上报来源枚举**·不带任何推荐内容。
         analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.RecommendRequested(
             if (mode == RecommendMode.PANTRY) com.sxdbsm.cookbook.analytics.RecommendSourceTag.PANTRY
@@ -196,6 +205,7 @@ class AiRecommendViewModel(
         val medicinal = state.medicinalFilter
         viewModelScope.launch {
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
+            BusinessTrace.stateChanged("ai_recommend", "idle", "loading")
             runCatching {
                 // [AI生成] 换一换缓存(阶段1)：同(mode/餐次/窗口/风格)时复用上次 gather 的候选(换一换只变 rotation,不改候选),
                 //   省 18-22 SQL;但**忌口/病种约束每次用 gatherConstraints() 重取覆盖**(健康档案别页可改·红线:不能用旧忌口)。
@@ -219,8 +229,14 @@ class AiRecommendViewModel(
                 //   仅 engineLabel 依 result.source 由本处算,单独设。slot/window/style 仍用于上方 gather(GatherKey)。
                 state = mapResult(result, mode, modelReady = state.modelReady, medicinal = medicinal, prev = state)
                     .copy(engineLabel = label)
+                BusinessTrace.stateChanged("ai_recommend", "loading", "loaded", "recommendation_finished")
+                trace.succeed()
+                Logger.emit(StructuredLogEvent.Operation(LogLevel.DEBUG, "recommend.finished", trace.traceId, "ai.recommend", OperationState.SUCCEEDED))
             }.onFailure {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
+                BusinessTrace.stateChanged("ai_recommend", "loading", "error", "recommendation_failed")
+                trace.fail(it.javaClass.simpleName)
+                Logger.emit(StructuredLogEvent.Operation(LogLevel.ERROR, "recommend.finished", trace.traceId, "ai.recommend", OperationState.FAILED, it.javaClass.simpleName))
             }
         }
     }

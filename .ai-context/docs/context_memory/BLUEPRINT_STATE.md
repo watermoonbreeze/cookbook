@@ -335,7 +335,7 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | ARCH | 本机 ARCH |
 | CODE | 本批代码执行：Meal Save Trace instrumentation |
 | 基线 commit | `f92647d` |
-| 交付 commit | 本批最终 commit（以 `git log -1` 为准） |
+| 交付 commit | 以交付时 `git rev-parse HEAD` 为准（commit 自引用不可固化） |
 | 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS |
 | Evidence | `T-OBS-BIZ-01~04` 自动化/静态证据已完成；`E-OBS-BIZ-01` 真机 Meal Save Trace **PENDING_DEVICE_VERIFICATION** |
 | 下一步 | ARCH 按任务包复核 allowlist、TraceId 串链、隐私字段和真机证据；不得提前标记 ACCEPTED |
@@ -356,3 +356,19 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | 基线/交付 commit | `4cc19cf2` / 待提交 |
 | 全景图回写 | `SYNC-NOOP`：仅日志治理与架构文档，不新增/删除产品功能节点 |
 | 下一步 | ARCH 复核本批文档；设备连接后完成三项 MDC3 日志文件门禁；不得在无证据时写 ACCEPTED/CLOSED |
+---
+## FOUNDATION-OBSERVABILITY-02-R1 BUSINESS ACTION OBSERVABILITY COMPLETION（2026-08-22）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | FOUNDATION-OBSERVABILITY-02-R1 BUSINESS ACTION OBSERVABILITY COMPLETION |
+| 蓝图文件 | `.ai-context/docs/外部方案/在线审核/FOUNDATION_OBSERVABILITY_02_R1_BUSINESS_ACTION_OBSERVABILITY_COMPLETION.zip`（包内 `README_FIRST.md`、`ARCH_BLUEPRINT.md` 等） |
+| 规模 | L7 Mechanical Execution Contract |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| ARCH | 本机 ARCH |
+| CODE | 本批实际执行模型：`GPT-5（Codex）`；任务级别：`标准级`；执行模式：`常规五阶段执行` |
+| 基线 commit | `a7759cb` |
+| 交付 commit | 本批最终 commit（以 `git log -1` 为准） |
+| 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS |
+| Evidence | `E-OBS-ACTION-01`、`E-OBS-NAV-01`、`E-OBS-STATE-01`、`E-OBS-AI-01`：自动化/静态证据 PASS；真机链路仍 **PENDING_DEVICE_VERIFICATION** |
+| 下一步 | ARCH 按任务包复核 allowlist、trace_id 串链、隐私字段与真机证据；不得提前标记 ACCEPTED |
