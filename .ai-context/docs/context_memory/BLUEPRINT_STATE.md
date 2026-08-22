@@ -335,7 +335,7 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | ARCH | 本机 ARCH |
 | CODE | 本批代码执行：Meal Save Trace instrumentation |
 | 基线 commit | `f92647d` |
-| 交付 commit | `5f80d797` |
+| 交付 commit | 本批最终 commit（以 `git log -1` 为准） |
 | 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS |
 | Evidence | `T-OBS-BIZ-01~04` 自动化/静态证据已完成；`E-OBS-BIZ-01` 真机 Meal Save Trace **PENDING_DEVICE_VERIFICATION** |
 | 下一步 | ARCH 按任务包复核 allowlist、TraceId 串链、隐私字段和真机证据；不得提前标记 ACCEPTED |
