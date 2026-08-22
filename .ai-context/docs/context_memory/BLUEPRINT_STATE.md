@@ -368,7 +368,7 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | ARCH | 本机 ARCH |
 | CODE | 本批执行：用户交互层 Observability Trace |
 | 基线 commit | `9720be03`（FOUNDATION-OBSERVABILITY-02-R1） |
-| 交付 commit | 待本批提交后回填 |
+| 交付 commit | `2cddb5bd2572f65025e385ea71597bf1d9c7aa61` |
 | 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS |
 | Evidence | `E-OBS-UI-01`、`E-OBS-NAV-01`、`E-OBS-SCREEN-01`、`E-OBS-STATE-01`、`E-OBS-AI-01`：代码/自动化证据 PASS；真机链路 **PENDING_DEVICE_VERIFICATION** |
 | 约束核对 | 未修改业务规则、AI Recommend 算法、数据库；未新增 Event；补充 `ui.click`、`ui.action.result`、导航/生命周期/状态 Trace 及两个 AI 入口 |
