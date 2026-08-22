@@ -23,3 +23,9 @@
 - 改动：新增 `TraceEventContract` 稳定事件名清单，覆盖 UI、导航、操作、耗时、错误、系统与兼容事件；新增未知事件探针测试。
 - 自动证据：`TraceEventContractTest`、既有 TraceModelTest/LoggerTest 通过。
 - 真机：E-OVN-06 已登记，未执行。
+
+## 04 UBF Experience Governance
+
+- 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
+- 事实：记录本次 `GPT-5 / Codex / 标准级 / 常规五阶段执行`；推理等级未由系统提供。
+- 评价边界：仅记录事实，不依据单批结果形成能力结论。

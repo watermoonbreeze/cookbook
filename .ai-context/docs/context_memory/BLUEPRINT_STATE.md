@@ -324,6 +324,20 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 夜间批次 04：COOKBOOK-OVERNIGHT-04 UBF EXPERIENCE GOVERNANCE（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-04 UBF EXPERIENCE GOVERNANCE |
+| 状态 | **GOVERNANCE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | 模型事实记录、能力评估边界、Blueprint 执行经验；不改产品行为 |
+| 事实记录 | `experience/14_模型执行力评估.md` 已记录 GPT-5/Codex、标准级、常规五阶段；推理等级未提供 |
+| 评价边界 | 不以单批事实推导模型能力结论，事实与评价分离 |
+| 真机证据 | 本任务无新增业务真机步骤；沿用 01~03 的 E-OVN 待验证项 |
+| 下一步 | ARCH 检查事实字段来源与评价措辞；不得补写未提供的模型元数据 |
+
+---
 ## 夜间批次 03：COOKBOOK-OVERNIGHT-03 TRACE TESTING（2026-08-22）
 
 | 字段 | 值 |
