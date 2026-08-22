@@ -10,7 +10,12 @@ import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealType
+import com.sxdbsm.cookbook.platform.LogLevel
+import com.sxdbsm.cookbook.platform.Logger
+import com.sxdbsm.cookbook.platform.OperationState
+import com.sxdbsm.cookbook.platform.StructuredLogEvent
 import com.sxdbsm.cookbook.util.DateTime
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -407,14 +412,18 @@ class AddMealViewModel(
                 )
             }
         if (drafts.isEmpty()) return
+        val trace = Logger.operation("meal.save")
+        emitMealSaveTrace(trace, "meal.save.clicked", OperationState.CREATED)
         AppLogger.d(TAG, "save meals begin: date=${s.date} drafts=${drafts.map { it.mealTypeId to it.dishIds }}") // [AI生成] 记录保存前的餐食草稿摘要。
         viewModelScope.launch {
             // [AI修改] viewModelScope 会随 ViewModel 销毁自动取消，避免页面关闭后继续持有 UI。
             // [AI修改] D10：saving 标志用最新 _state.value 写回(不用启动前捕获的 s 快照)，避免理论上冲掉并发字段。
             _state.value = _state.value.copy(saving = true)
-            runCatching {
+            trace.start()
+            try {
                 // [AI修改] 抬喜爱度基线=loadedFromDate：编辑同日=本日、移动=来源日、新增=null(视目标日)。
                 // 修"移动到空日期时把来源日已计过的菜再+1"的 bug。
+                emitMealSaveTrace(trace, "repository.operation", OperationState.RUNNING)
                 mealRepo.saveDayMeals(date = s.date, meals = drafts, incrementBaselineDate = loadedFromDate)
                 // [AI生成] F7：若本次是编辑已有某天并把日期改到了新日期(移动)，保存到新日期后删除旧日期，避免重复。
                 val from = loadedFromDate
@@ -422,7 +431,7 @@ class AddMealViewModel(
                     AppLogger.d(TAG, "move meals: delete old date=$from after saving to ${s.date}")
                     mealRepo.deleteDayMeals(from)
                 }
-            }.onSuccess {
+                emitMealSaveTrace(trace, "repository.operation", OperationState.SUCCEEDED)
                 AppLogger.d(TAG, "save meals success: date=${s.date} drafts=${drafts.size}") // [AI生成] 记录保存成功。
                 AppLogger.event(
                     "meal_save",
@@ -442,8 +451,17 @@ class AddMealViewModel(
                     runCatching { hintUseCase.evaluate(drafts.flatMap { it.dishIds }.distinct(), s.date) }.getOrNull()
                 else null
                 _state.value = _state.value.copy(saving = false, done = true, careHint = hint, errorMessage = null)
-            }.onFailure {
-                AppLogger.e(TAG, "save meals failed: date=${s.date}", it) // [AI生成] 记录保存失败异常。
+                trace.succeed()
+                emitMealSaveTrace(trace, "operation.finished", OperationState.SUCCEEDED)
+            } catch (e: CancellationException) {
+                trace.cancel()
+                emitMealSaveTrace(trace, "operation.finished", OperationState.CANCELLED)
+                throw e
+            } catch (e: Throwable) {
+                emitMealSaveTrace(trace, "repository.operation", OperationState.FAILED, e)
+                trace.fail(e.javaClass.simpleName)
+                emitMealSaveTrace(trace, "operation.finished", OperationState.FAILED, e)
+                AppLogger.e(TAG, "save meals failed: date=${s.date}", e) // [AI生成] 记录保存失败异常。
                 AppLogger.event(
                     "meal_save",
                     mapOf(
@@ -451,7 +469,7 @@ class AddMealViewModel(
                         "blockCount" to drafts.size,
                         "dishCount" to drafts.sumOf { draft -> draft.dishIds.size },
                         "success" to false,
-                        "errorType" to it.javaClass.simpleName,
+                        "errorType" to e.javaClass.simpleName,
                     ),
                 ) // [AI生成] 内测埋点：记录餐食保存失败摘要。
                 _state.value = _state.value.copy(
@@ -460,6 +478,24 @@ class AddMealViewModel(
                 )
             } // [AI生成] 保存失败时保持页面可操作并给出错误提示，避免崩溃或卡在保存中。
         }
+    }
+
+    private fun emitMealSaveTrace(
+        trace: com.sxdbsm.cookbook.platform.OperationTrace,
+        event: String,
+        state: OperationState,
+        error: Throwable? = null,
+    ) {
+        Logger.emit(
+            StructuredLogEvent.Operation(
+                level = if (state == OperationState.FAILED) LogLevel.ERROR else LogLevel.DEBUG,
+                event = event,
+                traceId = trace.traceId,
+                operation = "meal.save",
+                state = state,
+                errorType = error?.javaClass?.simpleName,
+            ),
+        )
     }
 
     private fun newBlock(defaultType: MealType?): MealBlockUiState {

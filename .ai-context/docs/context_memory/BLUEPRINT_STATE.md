@@ -324,6 +324,23 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## FOUNDATION-OBSERVABILITY-02 BUSINESS TRACE INSTRUMENTATION（2026-08-22）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | FOUNDATION-OBSERVABILITY-02 BUSINESS TRACE INSTRUMENTATION |
+| 蓝图文件 | `.ai-context/docs/外部方案/在线审核/FOUNDATION_OBSERVABILITY_02_BUSINESS_TRACE_INSTRUMENTATION_PACKAGE.zip`（包内 `FOUNDATION_OBSERVABILITY_02_ARCH_BLUEPRINT.md`） |
+| 规模 | L7 Mechanical Execution Contract |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| ARCH | 本机 ARCH |
+| CODE | 本批代码执行：Meal Save Trace instrumentation |
+| 基线 commit | `f92647d` |
+| 交付 commit | `5f80d797` |
+| 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS |
+| Evidence | `T-OBS-BIZ-01~04` 自动化/静态证据已完成；`E-OBS-BIZ-01` 真机 Meal Save Trace **PENDING_DEVICE_VERIFICATION** |
+| 下一步 | ARCH 按任务包复核 allowlist、TraceId 串链、隐私字段和真机证据；不得提前标记 ACCEPTED |
+
+---
 ## 当前批次：COOKBOOK-MDC3-AND-FOUNDATION-OBSERVABILITY-BATCH（2026-08-22）
 
 | 字段 | 值 |
