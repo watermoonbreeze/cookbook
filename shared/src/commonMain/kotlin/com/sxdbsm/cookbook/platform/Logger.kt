@@ -77,6 +77,10 @@ object StructuredLogJson {
                     put("operation", safe(event.operation))
                     put("duration_ms", event.durationMs)
                 }
+                is StructuredLogEvent.Error -> {
+                    put("operation", safe(event.operation))
+                    put("error_type", safe(event.errorType))
+                }
                 is StructuredLogEvent.Crash -> {
                     put("error_type", safe(event.errorType.substringAfterLast('.')))
                     put("thread", safe(event.thread))

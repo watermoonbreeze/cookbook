@@ -50,4 +50,21 @@ class LoggerTest {
         assertEquals(ActionResultStatus.HANDLED, (events[1] as StructuredLogEvent.ActionResult).result)
         assertEquals("screen.loaded", events.last().event)
     }
+
+    @Test
+    fun errorJsonContainsTypeButNotExceptionMessage() {
+        val line = StructuredLogJson.encode(
+            StructuredLogEvent.Error(
+                traceId = TraceId.fromTestValue("trace-1"),
+                operation = "recommend.load",
+                errorType = "IOException",
+            ),
+            timestampEpochMs = 10,
+            sessionId = "session-1",
+            sequence = 4,
+        )
+        assertTrue(line.contains("operation.error"))
+        assertTrue(line.contains("IOException"))
+        assertTrue(!line.contains("message"))
+    }
 }

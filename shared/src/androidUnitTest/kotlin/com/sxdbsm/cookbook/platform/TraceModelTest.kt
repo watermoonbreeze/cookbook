@@ -25,6 +25,21 @@ class TraceModelTest {
     }
 
     @Test
+    fun failedOperationEmitsSafeErrorAndPerformanceWithSameTraceId() = runBlocking {
+        var now = 10L
+        val events = mutableListOf<StructuredLogEvent>()
+        val traceId = TraceId.fromTestValue("trace-error-1")
+        val trace = OperationTrace(traceId, "load", { events += it }, MonotonicTimeSource { now })
+        assertTrue(trace.start())
+        now = 42L
+        assertTrue(trace.fail("java.io.IOException"))
+        val error = events.filterIsInstance<StructuredLogEvent.Error>().single()
+        assertEquals(traceId, error.traceId)
+        assertEquals("IOException", error.errorType)
+        assertEquals(32L, events.filterIsInstance<StructuredLogEvent.Performance>().single().durationMs)
+    }
+
+    @Test
     fun terminalRaceIsFirstWinsAndCancelIsNotFailure() = runBlocking {
         val events = mutableListOf<StructuredLogEvent>()
         val trace = OperationTrace(TraceId.fromTestValue("test-trace"), "sync", { events += it }, MonotonicTimeSource { 1L })

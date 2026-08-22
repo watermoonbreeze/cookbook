@@ -324,6 +324,21 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 夜间批次 01：COOKBOOK-OVERNIGHT-01 OBSERVABILITY COMPLETION（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-01 OBSERVABILITY COMPLETION |
+| 状态 | **CODE_COMPLETE / PENDING DEVICE EVIDENCE + ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | Error Trace、Performance Trace、Trace 字段脱敏契约；不改业务、AI 推荐规则或数据库 |
+| 改动 | `StructuredLogEvent.Error`、失败操作自动错误事件、`BusinessTrace.error()` 与 shared 单测 |
+| 自动验证 | `:shared:testDebugUnitTest` 指定 TraceModelTest/LoggerTest：BUILD SUCCESSFUL |
+| 真机证据 | `E-OVN-01~03` 已写入 `真机待验证清单_202608222350.md`，均待真机；不得以静态证据代替 |
+| 交付 | 本条与实现、测试、经验文档同批提交；commit 见本条后续回写 |
+| 下一步 | ARCH 复核事件分类、trace_id 串联、脱敏字段和 diff；通过后再决定是否收口 |
+
+---
 ## FOUNDATION-OBSERVABILITY-02 BUSINESS TRACE INSTRUMENTATION（2026-08-22）
 | 字段 | 值 |
 |---|---|

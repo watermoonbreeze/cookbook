@@ -103,6 +103,17 @@ sealed interface StructuredLogEvent {
         override val category: LogCategory = LogCategory.PERFORMANCE
     }
 
+    /** 统一错误事件：只携带可审计的类型/阶段标识，不携带异常消息或业务输入。 */
+    data class Error(
+        override val level: LogLevel = LogLevel.ERROR,
+        override val event: String = "operation.error",
+        override val traceId: TraceId? = null,
+        val operation: String,
+        val errorType: String,
+    ) : StructuredLogEvent {
+        override val category: LogCategory = LogCategory.OPERATION
+    }
+
     data class Crash(
         override val event: String = "system.crash",
         val errorType: String,
@@ -177,6 +188,12 @@ object BusinessTrace {
         traceId?.let { Logger.emit(StructuredLogEvent.UiState(LogLevel.DEBUG, "state.changed", it, screen, previous, state, reason)) }
     }
 
+    fun error(operation: String, errorType: String, traceId: TraceId? = currentTraceId) {
+        traceId?.let {
+            Logger.emit(StructuredLogEvent.Error(traceId = it, operation = operation, errorType = errorType.substringAfterLast('.')))
+        }
+    }
+
     fun current(): TraceId? = currentTraceId
 }
 
@@ -225,6 +242,9 @@ class OperationTrace internal constructor(
         }
         state = target
         emit(StructuredLogEvent.Operation(LogLevel.INFO, "operation.${target.name.lowercase()}", traceId, operation, target, errorType))
+        if (target == OperationState.FAILED && errorType != null) {
+            emit(StructuredLogEvent.Error(traceId = traceId, operation = operation, errorType = errorType.substringAfterLast('.')))
+        }
         startedAt?.let { emit(StructuredLogEvent.Performance(LogLevel.DEBUG, "operation.duration", traceId, operation, timeSource.nowMs() - it)) }
         true
     }
