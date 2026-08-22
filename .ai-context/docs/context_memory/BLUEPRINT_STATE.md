@@ -324,6 +324,20 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 夜间批次 05：COOKBOOK-OVERNIGHT-05 TRACE DIAGNOSTIC（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-05 TRACE DIAGNOSTIC |
+| 状态 | **DOCUMENTATION_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | Trace 分析模板、失败节点分类、问题定位辅助；不自动修改业务代码 |
+| 交付 | `experience/15_Trace诊断模板.md` |
+| 验证 | 模板覆盖 trace/session、seq 时间线、标准阶段、8 类失败节点、证据与结论格式 |
+| 真机证据 | 本任务无新增真机业务步骤；使用模板分析时仍须引用既有真机清单项 |
+| 下一步 | ARCH 复核模板字段是否可由 JSONL 实际导出提供；不得把模板填写当作真机 PASS |
+
+---
 ## 夜间批次 04：COOKBOOK-OVERNIGHT-04 UBF EXPERIENCE GOVERNANCE（2026-08-22）
 
 | 字段 | 值 |
