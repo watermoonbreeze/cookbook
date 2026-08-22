@@ -46,3 +46,9 @@
 - 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
 - 交付：`experience/17_ACTOR_CAPABILITY_ROUTING.md`；能力维度与历史证据逐行映射。
 - 边界：不替代 `MODEL_ROUTING`，不修改模型配置；小样本只保留观察事实。
+
+## 08 Blueprint Level Standard
+
+- 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
+- 交付：`experience/18_BLUEPRINT_LEVEL_STANDARD.md`，引用 canonical protocol 并映射 L1→L7。
+- 边界：Level 不是风险/模型等级；不新增 L8、不下调 L7 基线。

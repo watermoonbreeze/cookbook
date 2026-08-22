@@ -324,6 +324,20 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 补充批次 08：COOKBOOK-OVERNIGHT-PHASE2-08 BLUEPRINT LEVEL STANDARD（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-PHASE2-08 BLUEPRINT LEVEL STANDARD |
+| 状态 | **GOVERNANCE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | 固化 L1→L7 颗粒度定义、任务映射与升级边界；不新增 L8 |
+| 交付 | `experience/18_BLUEPRINT_LEVEL_STANDARD.md` |
+| 依据 | canonical protocol §2.1/§2.2、项目 experience/12 §12、既有夜间批次事实 |
+| 真机证据 | 本任务无新增业务真机步骤；未来真机证据仍按唯一清单登记 |
+| 下一步 | ARCH 复核级别定义未与风险/模型路由混淆；不得下调项目 L7 基线 |
+
+---
 ## 补充批次 07：COOKBOOK-OVERNIGHT-PHASE2-07 ACTOR CAPABILITY ROUTING（2026-08-22）
 
 | 字段 | 值 |
