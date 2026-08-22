@@ -1,4 +1,17 @@
 # BLUEPRINT_STATE
+## CURRENT EXECUTION: FOUNDATION-OBSERVABILITY-01 CODE BLUEPRINT
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK-MDC3-AND-FOUNDATION-OBSERVABILITY-BATCH / FOUNDATION-OBSERVABILITY-01 CODE BLUEPRINT |
+| State | **BLUEPRINT_READY / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Scope | 将 Logger Core、Trace Model、KMP 边界冻结为下一批可执行编码蓝图；不改业务、数据库、Repository API 或用户行为 |
+| Blueprint | `.ai-context/docs/feature/FOUNDATION_OBSERVABILITY_01_CODE_BLUEPRINT.md` |
+| Evidence | allowlist、API 表面、Operation 状态机、T-OBS-01~07、E-MDC3-01~03 已列明；E-MDC3-01~03 仍待真机 |
+| Next action | ARCH 复核编码蓝图；通过后再转 CODE；不得声明 Foundation Observability 或 MDC3 完成 |
+
 ## CURRENT EXECUTION: MEAL-DATA-CONSOLIDATION-03 R2 OBSERVABILITY + DEVICE VERIFICATION
 
 | Field | Value |
