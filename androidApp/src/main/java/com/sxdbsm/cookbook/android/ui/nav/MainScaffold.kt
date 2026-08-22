@@ -440,6 +440,7 @@ fun MainScaffold(
                         val trace = BusinessTrace.action("add_meal", "open_ai_recommend", "meal_edit")
                         BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
+                        BusinessTrace.recommendRoute("ai_recommend", "meal_edit", trace)
                         nav.navigate(Routes.aiRecommendForMeal(slotCode))
                     }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。[AI修改] F#7:带该餐次 slot 预选。
                     aiPickedDishIds = aiPicked.toList(),
@@ -458,6 +459,7 @@ fun MainScaffold(
                         val trace = BusinessTrace.action("add_meal", "open_ai_recommend", "record_meal_manual")
                         BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
+                        BusinessTrace.recommendRoute("ai_recommend", "record_meal_manual", trace)
                         nav.navigate(Routes.aiRecommendForMeal(slotCode))
                     },
                 )

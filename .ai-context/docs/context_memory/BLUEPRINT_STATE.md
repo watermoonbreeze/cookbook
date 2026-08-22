@@ -324,6 +324,21 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 夜间批次 02：COOKBOOK-OVERNIGHT-02 AI RECOMMEND DIAGNOSTIC（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-02 AI RECOMMEND DIAGNOSTIC |
+| 状态 | **CODE_COMPLETE / PENDING DEVICE EVIDENCE + ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | 两个 AI Recommend 入口、参数/路由诊断；不修推荐算法或业务逻辑 |
+| 入口 | `meal_edit`；`record_meal_manual` |
+| 改动 | 导航发射受控 `recommend.route` DataFlow，复用 Action `trace_id` |
+| 自动验证 | LoggerTest 覆盖入口区分与路由字段；与 01 shared 测试一并复跑 |
+| 真机证据 | `E-OVN-04~05` 已写入 `真机待验证清单_202608222350.md`，均待真机 |
+| 下一步 | ARCH 复核两个入口调用点、trace_id 复用和隐私字段；不得将真机项标 PASS |
+
+---
 ## 夜间批次 01：COOKBOOK-OVERNIGHT-01 OBSERVABILITY COMPLETION（2026-08-22）
 
 | 字段 | 值 |

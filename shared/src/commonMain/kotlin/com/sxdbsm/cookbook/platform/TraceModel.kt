@@ -194,6 +194,13 @@ object BusinessTrace {
         }
     }
 
+    /** AI Recommend 入口诊断：仅记录固定路由/入口代码，不记录页面输入或餐食内容。 */
+    fun recommendRoute(route: String, entryPoint: String, traceId: TraceId? = currentTraceId) {
+        traceId?.let {
+            Logger.emit(StructuredLogEvent.DataFlow(LogLevel.DEBUG, "recommend.route", it, route, result = entryPoint))
+        }
+    }
+
     fun current(): TraceId? = currentTraceId
 }
 

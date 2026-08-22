@@ -67,4 +67,20 @@ class LoggerTest {
         assertTrue(line.contains("IOException"))
         assertTrue(!line.contains("message"))
     }
+
+    @Test
+    fun recommendRouteDiagnosticsKeepTheTwoMealEntryPointsDistinct() {
+        val events = mutableListOf<StructuredLogEvent>()
+        installCookbookLogSink(object : CookbookLogSink {
+            override fun emitLegacy(level: LogLevel, tag: String, message: String, throwable: Throwable?) = Unit
+            override fun emitStructured(event: StructuredLogEvent) { events += event }
+        })
+        val mealEdit = BusinessTrace.action("add_meal", "open_ai_recommend", "meal_edit")
+        BusinessTrace.recommendRoute("ai_recommend", "meal_edit", mealEdit)
+        val recordMeal = BusinessTrace.action("add_meal", "open_ai_recommend", "record_meal_manual")
+        BusinessTrace.recommendRoute("ai_recommend", "record_meal_manual", recordMeal)
+        val routes = events.filterIsInstance<StructuredLogEvent.DataFlow>().map { it.result }
+        assertEquals(listOf("meal_edit", "record_meal_manual"), routes)
+        assertTrue(events.filterIsInstance<StructuredLogEvent.DataFlow>().all { it.stage == "ai_recommend" })
+    }
 }
