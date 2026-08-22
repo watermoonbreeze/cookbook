@@ -16,3 +16,10 @@
 - 改动：入口导航发射 `recommend.route` DataFlow，沿用入口 Action 的 `trace_id`；不记录输入、菜名或推荐结果内容。
 - 自动证据：LoggerTest 覆盖两个入口代码可区分且路由值受控。
 - 真机：E-OVN-04~05 已登记，未执行。
+
+## 03 Trace Testing
+
+- 状态：CODE_COMPLETE / PENDING_DEVICE_VERIFICATION。
+- 改动：新增 `TraceEventContract` 稳定事件名清单，覆盖 UI、导航、操作、耗时、错误、系统与兼容事件；新增未知事件探针测试。
+- 自动证据：`TraceEventContractTest`、既有 TraceModelTest/LoggerTest 通过。
+- 真机：E-OVN-06 已登记，未执行。

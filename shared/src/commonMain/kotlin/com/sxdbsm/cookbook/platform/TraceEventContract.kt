@@ -1,0 +1,13 @@
+package com.sxdbsm.cookbook.platform
+
+/** Stable event-name registry for structured Trace analysis. */
+object TraceEventContract {
+    val knownEvents: Set<String> = setOf(
+        "ui.click", "ui.action.result", "navigation.started", "navigation.completed",
+        "screen.entered", "screen.loaded", "state.changed", "recommend.route",
+        "operation.started", "operation.dropped", "operation.succeeded", "operation.failed",
+        "operation.cancelled", "operation.duration", "operation.error", "system.crash", "legacy.log",
+    )
+
+    fun isKnown(event: String): Boolean = event in knownEvents
+}
