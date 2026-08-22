@@ -310,17 +310,18 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
-## 当前批次：COOKBOOK-MDC3-R3-APPLOGGER-UNIFICATION（2026-08-21）
+## 当前批次：COOKBOOK-MDC3-AND-FOUNDATION-OBSERVABILITY-BATCH（2026-08-22）
 
 | 字段 | 值 |
 |---|---|
-| 任务/批次 | COOKBOOK-MDC3-R3-APPLOGGER-UNIFICATION |
-| 状态 | **CODE_COMPLETE / PENDING DEVICE EVIDENCE + ARCH REVIEW** |
+| 任务/批次 | COOKBOOK-MDC3-AND-FOUNDATION-OBSERVABILITY-BATCH |
+| 状态 | **BLUEPRINT_READY / PENDING DEVICE EVIDENCE + ARCH REVIEW** |
 | TURN | **REVIEW** |
-| Scope | Android `CookbookLog` 通过 AppLogger sink 统一输出；无业务、数据库、Meal Data 架构变更 |
-| 覆盖 | MDC3 Repository/Revision/Projection/UI；Revision 含 `meal_record_dish`、`dish`、`dish_ingredient` |
-| 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；`adb devices` 无在线设备 |
-| 真机证据 | 待设备连接后导出 debug 日志文件，核验四类 MDC3 事件与三类 Revision 事件 |
-| 基线/交付 commit | `cbeb26d0` / `3e081409` |
-| 全景图回写 | `SYNC-NOOP`：仅日志出口适配，不新增/删除功能节点 |
-| 下一步 | ARCH 复核 diff；连接真机后完成日志文件门禁；不得在无证据时写 ACCEPTED |
+| Scope | MDC3 Close Preparation + Foundation Observability-01 架构蓝图；无业务、数据库、Meal Data 架构变更 |
+| 覆盖 | AppLogger 统一出口、MDC3 Repository/Revision/Projection/UI、TraceId 与 KMP 日志边界设计 |
+| 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；静态日志出口核验 PASS |
+| 真机证据 | `E-MDC3-01~03` 延后统一验证；普通 AppLogger 日志不能替代 MDC3 运行时证据 |
+| 交付文档 | `docs/arch_evidence/MEAL-DATA-CONSOLIDATION-03/MDC3_CLOSE_PREPARATION.md`；`docs/feature/FOUNDATION_OBSERVABILITY_01_ARCH_BLUEPRINT.md` |
+| 基线/交付 commit | `4cc19cf2` / 待提交 |
+| 全景图回写 | `SYNC-NOOP`：仅日志治理与架构文档，不新增/删除产品功能节点 |
+| 下一步 | ARCH 复核本批文档；设备连接后完成三项 MDC3 日志文件门禁；不得在无证据时写 ACCEPTED/CLOSED |
