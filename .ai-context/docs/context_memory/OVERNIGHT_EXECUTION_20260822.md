@@ -35,3 +35,8 @@
 - 状态：DOCUMENTATION_COMPLETE / PENDING ARCH REVIEW。
 - 交付：`experience/15_Trace诊断模板.md`，包含阶段时间线、失败节点分类、证据与结论格式。
 - 边界：只做诊断辅助，不自动修改业务代码；模板要求脱敏。
+
+## 06 Blueprint Standard
+
+- 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
+- 交付：`experience/16_蓝图任务包标准.md`，固化六件套、最小模板、旧包兼容和真机证据门禁。

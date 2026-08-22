@@ -324,6 +324,20 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 夜间批次 06：COOKBOOK-OVERNIGHT-06 BLUEPRINT STANDARD（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-06 BLUEPRINT STANDARD |
+| 状态 | **GOVERNANCE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | 任务包模板、六件套结构、兼容和证据门禁；不改产品行为 |
+| 交付 | `experience/16_蓝图任务包标准.md` |
+| 验证 | 已明确 README_FIRST、EXECUTION_CHECKLIST、ARCH_BLUEPRINT、CODE_EXECUTION_PACKAGE、EVIDENCE_CONTRACT、BLUEPRINT_STATE_UPDATE 的必填职责 |
+| 真机证据 | 无新增业务真机步骤；标准要求所有未来真机步骤进入唯一最新清单 |
+| 下一步 | ARCH 复核标准与项目现有状态门禁兼容；批次 01~06 均待 ARCH review，不宣称 ACCEPTED |
+
+---
 ## 夜间批次 05：COOKBOOK-OVERNIGHT-05 TRACE DIAGNOSTIC（2026-08-22）
 
 | 字段 | 值 |
