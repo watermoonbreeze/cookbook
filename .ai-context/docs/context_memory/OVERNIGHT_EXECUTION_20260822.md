@@ -58,3 +58,9 @@
 - 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
 - 交付：`architecture_quality_check.py` + unittest，检查 KMP 依赖边界和 Trace 契约存在性。
 - 验证：静态检查应在当前项目通过；测试含 Android import 反例。
+
+## 10 Architecture Knowledge Base
+
+- 状态：GOVERNANCE_COMPLETE / PENDING ARCH REVIEW。
+- 交付：`docs/architecture/README.md`、ADR 模板及 3 项已有架构决策。
+- 关联：每项 ADR 均指向既有规则/experience/Blueprint/commit；不替代 `projectReview/08` 或 `BLUEPRINT_STATE`。

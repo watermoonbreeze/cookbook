@@ -324,6 +324,20 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## 补充批次 10：COOKBOOK-OVERNIGHT-PHASE2-10 ARCHITECTURE KNOWLEDGE BASE（2026-08-22）
+
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK-OVERNIGHT-PHASE2-10 ARCHITECTURE KNOWLEDGE BASE |
+| 状态 | **GOVERNANCE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Scope | ADR 模板、架构决策索引、Observability/KMP/Blueprint 既有决策沉淀；不改产品行为 |
+| 交付 | `.ai-context/docs/architecture/README.md`、`ADR_TEMPLATE.md`、ADR-0001~0003 |
+| 证据 | ADR 分别关联 experience、projectReview、Blueprint、commit 和 E-OVN 状态；未复制替代既有真相源 |
+| 真机证据 | 本任务无新增真机业务步骤；ADR-0002 明确 E-OVN-01~06 仍待真机 |
+| 下一步 | ARCH 复核 ADR 状态与来源链接；Phase2 07~10 均待 ARCH review，不宣称 ACCEPTED |
+
+---
 ## 补充批次 09：COOKBOOK-OVERNIGHT-PHASE2-09 ARCHITECTURE QUALITY GOVERNANCE（2026-08-22）
 
 | 字段 | 值 |
