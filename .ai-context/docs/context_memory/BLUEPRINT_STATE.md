@@ -14,7 +14,7 @@
 | Authorization | 任务包一次性授权：CODE -> REVIEW；已执行 `git pull --ff-only`，远程无新提交 |
 | Evidence | `TraceDiagnosticTest`、`MealFlowStateContractTest`、Architecture Quality Python 4 tests；`:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；真机未执行，静态证据不能替代设备验证 |
 | implementation_commit | `d54d214b10c0` |
-| state_update_commit | `d54d214b10c0`（同批原子交付记录） |
+| state_update_commit | `ad0df8b0ecc9` |
 | Next action | ARCH 复核治理 diff、诊断缺失节点语义、五流程合同和静态证据；通过后再决定是否 ACCEPTED |
 
 ## CURRENT EXECUTION: COOKBOOK-STATE-LIFECYCLE-OBSERVABILITY-PHASE-R2
