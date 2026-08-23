@@ -442,6 +442,7 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | Implementation | `shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/mealplanning/`, `mealrecording/`, `foodknowledge/`, `legacy/`; boundary tests under `shared/src/androidUnitTest/.../mealarchitecture/` |
 | Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_REDESIGN_EXECUTION/EVIDENCE.md`; shared/android tests, assembleDebug and architecture quality PASS; schema diff empty |
 | Compatibility | Existing `meal_record` storage and `domain.model.MealRecord` remain in place; adapter maps legacy records to recording Domain without changing identity |
+| Implementation commit | `f107fc812e7a6b7f00e4dfb41b6be7b8a059a97f` |
 | Blueprint conflict | None found; Reality confirms `meal_record` remains the current shared storage for future/current/history semantics |
 | Next action | ARCH review against Reality Alignment, Boundary, Compatibility, Scope, AI and Migration gates |
 
