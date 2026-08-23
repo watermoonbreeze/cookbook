@@ -1,5 +1,21 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Blueprint | `COOKBOOK_MEAL_DOMAIN_ARCHITECTURE_BLUEPRINT`（ARCH 已冻结；本执行包提供执行约束） |
+| Scope | Canonical Meal Domain Model、Meal Lifecycle Contract、Projection/AI/Legacy Adapter Boundary、Contract Tests；不改 schema、旧模型、Repository、推荐算法或用户流程 |
+| Evidence | `arch_evidence/COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION/EVIDENCE.md`；MealDomainContractTest PASS；`:shared:testDebugUnitTest` PASS；architecture quality PASS；schema diff 为空 |
+| Implementation commit | `3ba8ea45` |
+| State update commit | 待本批状态提交后回填 |
+| Open issues | 无；Blueprint 正文未随 Execution Package 提供，未据此新增未冻结语义 |
+| Next action | ARCH 按 Acceptance Gate 复核 Identity、Lifecycle、Boundary、Projection、AI、Scope 与 Evidence；通过后再决定 ACCEPTED |
+
 ## CURRENT EXECUTION: COOKBOOK-MEAL-DOMAIN-GOVERNANCE-AI-CAPABILITY-PREPARATION-PHASE
 
 | Field | Value |

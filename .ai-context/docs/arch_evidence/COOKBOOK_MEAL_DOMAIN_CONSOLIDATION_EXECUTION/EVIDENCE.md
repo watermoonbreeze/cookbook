@@ -5,6 +5,7 @@
 - Execution Package：`COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION_PACKAGE.zip`
 - Role：CODER / IMPLEMENTER
 - Previous accepted commit：`f3a6fec9d8e67d0cf66351b1ba1949c0bcb0bf67`
+- Implementation commit：`3ba8ea45`
 - Contract：Meal 为 Aggregate Root；MealId 为唯一 Identity；Occurrence 分离；Lifecycle 属于 Domain；Projection 非事实源；AI 仅 Suggestion/Context；Migration 使用 Adapter。
 
 ## Code Evidence
@@ -35,4 +36,3 @@
 - 状态：`CODE_COMPLETE`
 - TURN：`REVIEW`
 - ARCH 复核前不进入下一 Phase。
-
