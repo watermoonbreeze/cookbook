@@ -634,6 +634,8 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | 基线 commit | `8354773c` |
 | Authorization | 任务包一次性授权：CODE -> REVIEW；当前不执行真机验证，只生成验证资产 |
 | implementation_commit | `f3d0a4dfab6e50dc151c140c0b2442c37679cbb8` |
+| state_update_commit | `f3a6fec9d8e67d0cf66351b1ba1949c0bcb0bf67` |
+| remote_commit_hash | `f3a6fec9d8e67d0cf66351b1ba1949c0bcb0bf67`（已推送；本次状态登记提交） |
 | Evidence | 架构质量脚本 PASS；`:shared:testDebugUnitTest` 696 tests PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；Device Checklist/Test Matrix/Evidence Template 已生成，E-AEP-01~05 保持 PENDING_DEVICE_VERIFICATION |
 | Experience | `experience/22_架构演进批量治理经验.md`，并更新 `experience/INDEX.md` |
 | Next action | ARCH 复核 Phase 顺序、契约边界、诊断分类、AI 元数据非算法约束和静态/设备证据分离；通过后再决定是否 ACCEPTED |
