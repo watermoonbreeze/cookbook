@@ -690,7 +690,7 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3/EVIDENCE.md`；`MealProjectionRepositoryTest`；`MealDayCardProjectorTest`；shared test 与 Android assemble 结果 |
 | Schema diff | 空 |
 | Implementation commit | `456fe130` |
-| State update commit | 待本批次提交 |
+| State update commit | `5053229d` |
 | Open issues | 无已发现架构冲突；未迁移的其他 legacy read 属于本阶段外消费者，保留兼容 |
 | Next action | ARCH 复核 Projection Boundary、迁移调用点、兼容性、Evidence 与范围；通过后决定 ACCEPTED |
 
