@@ -1,5 +1,8 @@
 package com.sxdbsm.cookbook.android.ui.addmeal
 
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+
 /** 统一添加餐食页面的范围维度。[AI生成] UEN */
 enum class MealRange { SINGLE_DAY, PERIOD }
 
@@ -10,6 +13,24 @@ enum class MealInputMethod { AI, MANUAL }
 data class UnifiedAddMealUiState(
     val range: MealRange = MealRange.SINGLE_DAY,
     val method: MealInputMethod = MealInputMethod.AI,
+)
+
+/**
+ * 统一入口离开到子流程时保存的最小页面快照。[AI修改]
+ *
+ * 草稿内容仍由 AddMealViewModel/AiMealInputViewModel 持有；这里专门冻结入口选择器，
+ * 避免子页面返回后重新创建组合导致 manual/AI 或单天/周期回到默认值。
+ */
+val UnifiedAddMealUiStateSaver: Saver<UnifiedAddMealUiState, Any> = listSaver<UnifiedAddMealUiState, String>(
+    save = { state -> listOf(state.range.name, state.method.name) },
+    restore = { saved ->
+        UnifiedAddMealUiState(
+            range = saved.getOrNull(0)?.let { runCatching { MealRange.valueOf(it) }.getOrNull() }
+                ?: MealRange.SINGLE_DAY,
+            method = saved.getOrNull(1)?.let { runCatching { MealInputMethod.valueOf(it) }.getOrNull() }
+                ?: MealInputMethod.AI,
+        )
+    },
 )
 
 /** 页面选择器事件；仅修改对应维度，供 UI 与单测共享。[AI生成] UEN */

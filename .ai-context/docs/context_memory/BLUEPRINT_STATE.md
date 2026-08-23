@@ -1,5 +1,21 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: COOKBOOK-AI-RECOMMEND-FIX-AND-TURN-HANDOFF
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK-AI-RECOMMEND-FIX-AND-TURN-HANDOFF |
+| State | **IMPLEMENTING** |
+| TURN | **CODE** |
+| Holder | **CODE** |
+| Scope | `record_meal_manual -> ai_recommend -> back -> unified_add_meal`；修复返回状态恢复与 TURN handoff；不改 AI 推荐算法/策略、数据库结构 |
+| Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_AI_RECOMMEND_FIX_AND_TURN_HANDOFF.zip`（`ARCH_BLUEPRINT.md`） |
+| Base | `9e0bbc4` |
+| ARCH | 本机 ARCH；基于任务包完成一次性 `ARCH -> CODE` 授权 |
+| CODE | 本机 Codex；仅执行任务包 allowlist |
+| Authorization | 原状态为 `TURN=REVIEW` 且 Holder=ARCH；本任务包明确要求进入 CODE，已在执行前完成状态切换 |
+| Next action | 按任务包执行代码定位、最小修复、测试、经验与状态回写；完成后恢复 `TURN=REVIEW` 等待 ARCH 审核 |
+
 ## CURRENT EXECUTION: COOKBOOK-NEXT-TASK-TRACE-GOVERNANCE-CLOSURE
 
 | Field | Value |

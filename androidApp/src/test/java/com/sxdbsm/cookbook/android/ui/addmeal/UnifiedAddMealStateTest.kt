@@ -33,6 +33,23 @@ class UnifiedAddMealStateTest {
     }
 
     @Test
+    fun manualReturnKeepsManualMethodForAiRecommendResult() {
+        val state = UnifiedAddMealUiState(MealRange.SINGLE_DAY, MealInputMethod.MANUAL)
+
+        assertEquals(MealInputMethod.MANUAL, state.method)
+        assertEquals(MealRange.SINGLE_DAY, state.range)
+    }
+
+    @Test
+    fun savedStateRestoresManualTabAndPeriodSelection() {
+        val restored = UnifiedAddMealUiStateSaver.restore(
+            listOf(MealRange.PERIOD.name, MealInputMethod.MANUAL.name),
+        )
+
+        assertEquals(UnifiedAddMealUiState(MealRange.PERIOD, MealInputMethod.MANUAL), restored)
+    }
+
+    @Test
     fun aiDoneRequiresLeavingUnifiedEntry() {
         assertEquals(true, shouldLeaveAfterAiSave(AiMealPhase.DONE))
         assertEquals(false, shouldLeaveAfterAiSave(AiMealPhase.PREVIEW_READY))

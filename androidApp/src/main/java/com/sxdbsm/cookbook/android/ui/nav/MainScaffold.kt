@@ -452,9 +452,25 @@ fun MainScaffold(
                     },
                 )
             }
-            composable(Routes.UNIFIED_ADD_MEAL) {
+            composable(Routes.UNIFIED_ADD_MEAL) { entry ->
+                val aiPicked by entry.savedStateHandle
+                    .getStateFlow(KEY_AI_PICKED_DISHES, LongArray(0))
+                    .collectAsStateWithLifecycle()
+                val createdDishId by entry.savedStateHandle
+                    .getStateFlow(KEY_CREATED_DISH_ID, -1L)
+                    .collectAsStateWithLifecycle()
                 UnifiedAddMealScreen(
                     nav = nav,
+                    aiPickedDishIds = aiPicked.toList(),
+                    onAiPickedConsumed = {
+                        AppLogger.d("MealFlow", "consume unified AI recommend result: dishIds=${aiPicked.toList()}") // [AI修改] 统一入口消费 AI 推荐回传，避免返回后结果丢失或重复注入。
+                        entry.savedStateHandle[KEY_AI_PICKED_DISHES] = LongArray(0)
+                    },
+                    createdDishId = createdDishId.takeIf { it > 0 },
+                    onCreatedDishConsumed = {
+                        AppLogger.d("MealFlow", "consume unified child result: createdDishId=$createdDishId") // [AI修改] 统一入口消费新建菜品结果，返回后合并到原餐次草稿。
+                        entry.savedStateHandle[KEY_CREATED_DISH_ID] = -1L
+                    },
                     onOpenAiForBlock = { slotCode ->
                         val trace = BusinessTrace.action("add_meal", "open_ai_recommend", "record_meal_manual")
                         BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)

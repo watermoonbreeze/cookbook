@@ -9,7 +9,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -38,6 +38,10 @@ import org.koin.core.parameter.parametersOf
 fun UnifiedAddMealScreen(
     nav: NavController,
     onOpenAiForBlock: (String) -> Unit = {},
+    aiPickedDishIds: List<Long> = emptyList(),
+    onAiPickedConsumed: () -> Unit = {},
+    createdDishId: Long? = null,
+    onCreatedDishConsumed: () -> Unit = {},
 ) {
     val aiVm: AiMealInputViewModel = koinViewModel(key = "unified-ai-meal") {
         parametersOf("", DateTime.today())
@@ -45,7 +49,9 @@ fun UnifiedAddMealScreen(
     val singleManualVm: AddMealViewModel = koinViewModel(key = "unified-single-manual")
     val aiState by aiVm.state.collectAsStateWithLifecycle()
     val appSnackbar = LocalAppSnackbar.current
-    var pageState by remember { mutableStateOf(UnifiedAddMealUiState()) }
+    var pageState by rememberSaveable(stateSaver = UnifiedAddMealUiStateSaver) {
+        mutableStateOf(UnifiedAddMealUiState())
+    }
 
     val aiDirty = aiState.phase != AiMealPhase.INPUT ||
         aiState.quickDraftText.isNotBlank() ||
@@ -109,6 +115,10 @@ fun UnifiedAddMealScreen(
                         onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                         onOpenWeekPlan = { date -> nav.navigate(Routes.weekPlanFrom(DateTime.formatDate(date))) },
                         onOpenAiForBlock = onOpenAiForBlock,
+                        aiPickedDishIds = aiPickedDishIds,
+                        onAiPickedConsumed = onAiPickedConsumed,
+                        createdDishId = createdDishId,
+                        onCreatedDishConsumed = onCreatedDishConsumed,
                         vm = singleManualVm,
                         embedded = true,
                     )
