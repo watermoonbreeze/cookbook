@@ -687,7 +687,7 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | 蓝图包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_BATCH_PACKAGE.zip` |
 | Phase | Phase 2 — UseCase Migration；仅 create/save/query |
 | 基线 | 当前工作树既有 Phase 1 Domain Boundary Foundation；外部包声明的旧基线与当前代码不一致，未据此回退代码 |
-| implementation_commit | 待本批实现提交后回填 |
+| implementation_commit | `de1b5d14` |
 | Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2/EVIDENCE.md`；MealRecordUseCaseTest PASS；shared/android 单测与 assembleDebug PASS；无 schema diff |
 | Blueprint conflict | 未发现 Phase 2 范围冲突；Phase 3 Projection、Phase 4 AI、Repository 大重构均未执行 |
 | Next action | ARCH 按 Reality、Boundary、Compatibility、Scope 与 Evidence 复核；通过后再决定是否 ACCEPTED |

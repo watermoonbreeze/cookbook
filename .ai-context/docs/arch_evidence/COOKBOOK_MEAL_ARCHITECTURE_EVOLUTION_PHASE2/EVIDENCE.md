@@ -2,6 +2,7 @@
 
 ## Scope
 
+- Implementation commit: `de1b5d14`
 - Current phase: Phase 2 — UseCase Migration
 - Authorized flows: create, save, query
 - Phase 3 Projection Migration: not executed
