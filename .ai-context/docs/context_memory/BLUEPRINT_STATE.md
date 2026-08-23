@@ -14,7 +14,7 @@
 | Authorization | 任务包一次性授权：CODE -> REVIEW；已执行 `git pull --ff-only`；本阶段不执行真机验证 |
 | Evidence | `MealFlowStateContractTest`、`TraceDiagnosticTest`、`RecommendationCapabilityTest`、Architecture Quality Python tests；真机项沿用最新清单，不因静态证据变更 |
 | implementation_commit | `fe7dae08def64402f1e465dd7c7c2cb8d770c054` |
-| state_update_commit | 待本次状态回写提交 |
+| state_update_commit | `9dc926bbeeccc59c11e6322c7223e1c92f2572c9` |
 | Next action | ARCH 复核五流程顺序合同、诊断分类、AI 准备模型和静态门禁；通过后再决定是否 ACCEPTED |
 
 ## CURRENT EXECUTION: COOKBOOK-OBSERVABILITY-AND-MEAL-FLOW-GOVERNANCE-PHASE
