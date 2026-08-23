@@ -1082,7 +1082,10 @@ class IngredientPickerViewModel(
         viewModelScope.launch {
             trace.start()
             val snap = runCatching { pantryRepo.snapshotItem(ingredient.id) }.getOrNull()
-            if (snap == null || !snap.wasActive) return@launch
+            if (snap == null || !snap.wasActive) {
+                trace.cancel()
+                return@launch
+            }
             runCatching { pantryRepo.removeFromPantry(ingredient.id) }
                 .onSuccess {
                     refreshPantryState()
@@ -1103,27 +1106,39 @@ class IngredientPickerViewModel(
      * 先快照入库前态，入库成功后经 [showUndo] 弹撤销；点撤销恢复到入库前(曾不在库→移出，曾有份数→还原)。
      */
     fun addToPantryUndoable(ingredient: Ingredient, showUndo: (onUndo: () -> Unit) -> Unit) {
+        val trace = Logger.operation("inventory.add_undoable")
         viewModelScope.launch {
+            trace.start()
             val snap = runCatching { pantryRepo.snapshotItem(ingredient.id) }.getOrNull()
             runCatching { pantryRepo.addServings(ingredient.id, 1) }
                 .onSuccess {
                     refreshPantryState()
+                    trace.succeed()
                     if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
                     if (snap != null) showUndo { restorePantry(snap) }
                 }
-                .onFailure { _state.value = _state.value.copy(operationError = "加入库存失败，请稍后重试") }
+                .onFailure {
+                    trace.fail(it.javaClass.simpleName)
+                    _state.value = _state.value.copy(operationError = "加入库存失败，请稍后重试")
+                }
         }
     }
 
     /** 撤销出/入库：把库存恢复到快照态。[AI生成] UX深挖#2/#13 */
     private fun restorePantry(snap: com.sxdbsm.cookbook.data.repository.PantrySnapshot) {
+        val trace = Logger.operation("inventory.restore")
         viewModelScope.launch {
+            trace.start()
             runCatching { pantryRepo.restoreItem(snap) }
                 .onSuccess {
                     refreshPantryState()
+                    trace.succeed()
                     if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
                 }
-                .onFailure { _state.value = _state.value.copy(operationError = "撤销失败，请稍后重试") }
+                .onFailure {
+                    trace.fail(it.javaClass.simpleName)
+                    _state.value = _state.value.copy(operationError = "撤销失败，请稍后重试")
+                }
         }
     }
 

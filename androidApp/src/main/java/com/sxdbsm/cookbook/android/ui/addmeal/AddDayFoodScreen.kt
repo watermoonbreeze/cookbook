@@ -217,12 +217,16 @@ fun AddDayFoodScreen(
             restoredFields = "ai_picked_dishes_active_block",
             traceId = lifecycleTraceId?.let(TraceId::fromValue),
         )
-        if (target != null) vm.addDishesByIds(target, aiPickedDishIds) {
-            // [AI生成] 只有父 ViewModel 实际完成草稿合并后才记 merge 成功。
-            BusinessTrace.stateMergeResult("add_meal", "editing", "ai_picked_dishes", "editing_dishes", lifecycleTraceId?.let(TraceId::fromValue))
+        if (target != null) {
+            vm.addDishesByIds(target, aiPickedDishIds) { merged ->
+                // [AI生成] 只有父 ViewModel 实际完成草稿合并后才记 merge 终态。
+                BusinessTrace.stateMergeResult("add_meal", "editing", "ai_picked_dishes", if (merged) "editing_dishes" else "merge_failed", lifecycleTraceId?.let(TraceId::fromValue))
+                onAiPickedConsumed()
+            }
+        } else {
+            onAiPickedConsumed()
         }
         aiTargetBlockId = null
-        onAiPickedConsumed()
     }
 
     LaunchedEffect(Unit) {
@@ -251,12 +255,12 @@ fun AddDayFoodScreen(
         val traceId = lifecycleTraceId?.let(TraceId::fromValue)
         BusinessTrace.stateRestore("new_dish", "success", "created_dish_active_block", traceId)
         AppLogger.d("MealFlow", "created dish consumed: dishId=$dishId targetBlock=${pickingBlockId ?: state.activeBlockId} pickerOpenBefore=$pickerOpen") // [AI生成] 记录新建菜品回传后加入哪个餐食模块。
-        vm.addCreatedDish(dishId, pickingBlockId ?: state.activeBlockId) {
+        vm.addCreatedDish(dishId, pickingBlockId ?: state.activeBlockId) { merged ->
             // [AI生成] 只有菜品读取并加入父草稿后才记 merge 成功。
-            BusinessTrace.stateMergeResult("add_meal", "editing", "created_dish", "editing_dishes", traceId)
+            BusinessTrace.stateMergeResult("add_meal", "editing", "created_dish", if (merged) "editing_dishes" else "merge_failed", traceId)
+            onCreatedDishConsumed()
         }
         pickerOpen = true // [AI修改] 返回后继续停留在菜品选择流程，并由 DishPicker 重新读取最新菜品列表。
-        onCreatedDishConsumed()
     }
 
     Scaffold(

@@ -5,15 +5,16 @@
 | Field | Value |
 |---|---|
 | Batch | COOKBOOK-STATE-LIFECYCLE-OBSERVABILITY-PHASE-R2 |
-| State | **IMPLEMENTING** |
-| TURN | **CODE** |
-| Holder | **CODE** |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
 | Scope | State Lifecycle Observability、Navigation State Contract、Result Merge Contract；覆盖 AI Recommend、Food Search、Inventory Select、新增菜品及其他记录饮食子流程；不改 AI 推荐算法/策略、数据库结构或无关流程 |
 | Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_STATE_LIFECYCLE_OBSERVABILITY_PHASE_R2.zip`（包内 `02_ARCH_BLUEPRINT.md`） |
 | Base | `0c053f7d` |
 | Authorization | R2 任务包一次性授权：REVIEW -> CODE -> REVIEW；已核验任务包与目标一致 |
-| Evidence | 待补：snapshot / restore / merge 自动化证据；真机证据不以静态验证替代 |
-| Next action | 按 R2 包执行最小代码闭环；完成后回写证据、implementation commit、remote hash，并将 TURN 改为 REVIEW 等待 ARCH |
+| implementation_commit | `f4b61419` |
+| Evidence | `StateLifecycleObservabilityTest`：三事件顺序/trace_id/JSON受控字段 PASS；`:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；真机链路未执行，不能替代设备证据 |
+| Next action | ARCH 复核 R2 diff、trace_id 结果契约、异步 merge 终态和静态证据；通过后再决定是否 ACCEPTED |
 
 ## CURRENT EXECUTION: COOKBOOK-AI-RECOMMEND-FIX-AND-TURN-HANDOFF
 

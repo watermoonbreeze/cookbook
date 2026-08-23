@@ -332,14 +332,20 @@ class AddMealViewModel(
     /**
      * 新建菜品返回后，按 id 拉取轻量菜品并加入当前餐食模块。[AI生成]
      */
-    fun addCreatedDish(dishId: Long, blockId: Long? = _state.value.activeBlockId, onMerged: () -> Unit = {}) {
-        if (dishId <= 0 || blockId == null) return
+    fun addCreatedDish(dishId: Long, blockId: Long? = _state.value.activeBlockId, onMerged: (Boolean) -> Unit = {}) {
+        if (dishId <= 0 || blockId == null) {
+            onMerged(false)
+            return
+        }
         AppLogger.d(TAG, "add created dish begin: dishId=$dishId blockId=$blockId") // [AI生成] 记录新建菜品回填开始。
         viewModelScope.launch {
-            dishRepo.getDishMiniById(dishId)?.let { dish ->
+            val dish = dishRepo.getDishMiniById(dishId)
+            if (dish != null) {
                 AppLogger.d(TAG, "add created dish loaded: dishId=$dishId name=${dish.name} blockId=$blockId") // [AI生成] 记录新建菜品轻量信息读取成功。
                 addDishes(blockId, listOf(dish))
-                onMerged()
+                onMerged(true)
+            } else {
+                onMerged(false)
             }
         }
     }
@@ -355,13 +361,18 @@ class AddMealViewModel(
     }
 
     /** [AI生成] AI 推荐"选它"从餐次进入时，把菜品直接加入该餐次块。 */
-    fun addDishesByIds(blockId: Long, ids: List<Long>, onMerged: () -> Unit = {}) {
-        if (ids.isEmpty()) return
+    fun addDishesByIds(blockId: Long, ids: List<Long>, onMerged: (Boolean) -> Unit = {}) {
+        if (ids.isEmpty()) {
+            onMerged(false)
+            return
+        }
         viewModelScope.launch {
             val dishes = ids.mapNotNull { dishRepo.getDishMiniById(it) }
             if (dishes.isNotEmpty()) {
                 addDishes(blockId, dishes)
-                onMerged()
+                onMerged(true)
+            } else {
+                onMerged(false)
             }
         }
     }

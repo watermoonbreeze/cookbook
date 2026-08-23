@@ -383,7 +383,8 @@ fun MainScaffold(
                         if (returnResult) {
                             // [AI生成] 从餐次块进入：把菜品回传给上一页(加餐页)对应餐次，不新开页面。
                             nav.previousBackStackEntry?.savedStateHandle?.set(KEY_AI_PICKED_DISHES, dishIds.toLongArray())
-                            nav.previousBackStackEntry?.savedStateHandle?.set(KEY_LIFECYCLE_TRACE_ID, BusinessTrace.current()?.value.orEmpty())
+                            val parentTrace = nav.previousBackStackEntry?.savedStateHandle?.get<String>(KEY_LIFECYCLE_TRACE_ID).orEmpty()
+                            nav.previousBackStackEntry?.savedStateHandle?.set(KEY_LIFECYCLE_TRACE_ID, parentTrace)
                             nav.popBackStack()
                         } else {
                             nav.navigate(Routes.addMealWithDishes(dishIds))
@@ -413,6 +414,7 @@ fun MainScaffold(
                     onNewDish = {
                         val trace = BusinessTrace.action("food_search", "open_new_dish", "search")
                         BusinessTrace.stateSnapshotBeforeNavigation("food_search", "search", "searching_or_idle", trace)
+                        it.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = trace.value
                         nav.navigate(Routes.newDish())
                     }, // [AI生成] 全无结果新建菜品(预填名走总线)
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
@@ -446,6 +448,7 @@ fun MainScaffold(
                         AppLogger.d("MealFlow", "nav from addmeal to newdish") // [AI生成] 记录从添加餐食进入新建菜品。
                         val trace = BusinessTrace.action("add_meal", "open_new_dish", "manual")
                         BusinessTrace.stateSnapshotBeforeNavigation("add_meal", "manual", "editing", trace)
+                        it.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = trace.value
                         nav.navigate(Routes.newDish())
                     },
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) }, // [AI生成] F1：餐次里点菜进详情
@@ -461,6 +464,7 @@ fun MainScaffold(
                     onOpenAiForBlock = { slotCode ->
                         val trace = BusinessTrace.action("add_meal", "open_ai_recommend", "meal_edit")
                         BusinessTrace.stateSnapshotBeforeNavigation("add_meal", "manual", "editing", trace)
+                        it.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = trace.value
                         BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
                         BusinessTrace.recommendRoute("ai_recommend", "meal_edit", trace)
@@ -508,6 +512,7 @@ fun MainScaffold(
                     onOpenAiForBlock = { slotCode ->
                         val trace = BusinessTrace.action("add_meal", "open_ai_recommend", "record_meal_manual")
                         BusinessTrace.stateSnapshotBeforeNavigation("unified_add_meal", "manual", "editing", trace)
+                        entry.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = trace.value
                         BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
                         BusinessTrace.recommendRoute("ai_recommend", "record_meal_manual", trace)
@@ -540,7 +545,9 @@ fun MainScaffold(
                             previousRoute?.startsWith("addmeal?") == true
                         if (acceptsDishResult) {
                             previous?.savedStateHandle?.set(KEY_CREATED_DISH_ID, savedDishId)
-                            previous?.savedStateHandle?.set(KEY_LIFECYCLE_TRACE_ID, BusinessTrace.current()?.value.orEmpty())
+                            previous?.savedStateHandle?.get<String>(KEY_LIFECYCLE_TRACE_ID)?.let { traceId ->
+                                previous.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = traceId
+                            }
                         } else {
                             AppLogger.d("NewDishEdit", "ignore dish result for non-contract parent route=$previousRoute")
                         }

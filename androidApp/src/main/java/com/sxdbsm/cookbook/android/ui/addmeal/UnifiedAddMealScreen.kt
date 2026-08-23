@@ -117,6 +117,7 @@ fun UnifiedAddMealScreen(
                             // [AI生成] SAVE：离开统一入口前冻结页面选择器/手动草稿的代码摘要。
                             val trace = BusinessTrace.action("unified_add_meal", "open_new_dish", "manual")
                             BusinessTrace.stateSnapshotBeforeNavigation("unified_add_meal", "manual", "editing", trace)
+                            nav.currentBackStackEntry?.savedStateHandle?.set("stateLifecycleTraceId", trace.value)
                             nav.navigate(Routes.newDish())
                         },
                         onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },

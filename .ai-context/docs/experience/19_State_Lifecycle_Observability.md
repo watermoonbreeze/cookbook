@@ -18,7 +18,7 @@
 
 - Unified Add Meal 的 AI Recommend、新建菜品：结果通过 `SavedStateHandle` 回传，`AddDayFoodScreen` 消费后记录 restore/merge。
 - Food Search：保存新建菜品 ID，返回后按 ViewModel 当前关键词重查，避免复制结果列表。
-- Inventory：库存写入成功后刷新库存 ID/剩余份数/份数，再记录 restore/merge；失败分支不写成功事件。
+- Inventory：库存是同页持久化变更而非导航结果回传，沿用 `Logger.operation()` 记录写入、刷新和撤销终态；不伪造 navigation snapshot/restore/merge。
 - 统一事件模型和 JSON 字段位于 `shared/.../platform/TraceModel.kt`、`Logger.kt`，事件名由 `TraceEventContract` 管理。
 
 ## 验证要求
