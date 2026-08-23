@@ -25,6 +25,14 @@ class ArchitectureQualityCheckTest(unittest.TestCase):
             (common / "TraceModel.kt").write_text("import android.util.Log\n", encoding="utf-8")
             (common / "TraceEventContract.kt").write_text("", encoding="utf-8")
             (common / "Logger.kt").write_text("", encoding="utf-8")
+            (common / "MealFlowStateContract.kt").write_text(
+                "SAVE_STATE RESTORE_STATE MERGE_RESULT ai_recommend food_search inventory_select new_dish edit_meal",
+                encoding="utf-8",
+            )
+            (common / "TraceDiagnostic.kt").write_text(
+                "diagnose FLOW_COMPLETE FLOW_INCOMPLETE",
+                encoding="utf-8",
+            )
             errors = MODULE.check_root(root)
             self.assertTrue(any("shared platform boundary" in error for error in errors))
 
@@ -41,9 +49,21 @@ class ArchitectureQualityCheckTest(unittest.TestCase):
                 "recommendRoute traceId recommend.route meal_edit record_meal_manual", encoding="utf-8"
             )
             (common / "TraceEventContract.kt").write_text("recommend.route", encoding="utf-8")
+            (common / "MealFlowStateContract.kt").write_text(
+                "SAVE_STATE RESTORE_STATE MERGE_RESULT ai_recommend food_search inventory_select new_dish edit_meal",
+                encoding="utf-8",
+            )
+            (common / "TraceDiagnostic.kt").write_text(
+                "diagnose FLOW_COMPLETE FLOW_INCOMPLETE",
+                encoding="utf-8",
+            )
             (common / "Logger.kt").write_text("", encoding="utf-8")
             (tests / "LoggerTest.kt").write_text("meal_edit record_meal_manual", encoding="utf-8")
             (nav / "MainScaffold.kt").write_text("meal_edit record_meal_manual", encoding="utf-8")
+            (nav / "MealFlow.kt").write_text(
+                "stateSnapshotBeforeNavigation stateRestore stateMergeResult",
+                encoding="utf-8",
+            )
             (device / "真机待验证清单_202608230000.md").write_text(
                 "E-OVN-04 meal_edit PENDING_DEVICE_VERIFICATION\n"
                 "E-OVN-05 record_meal_manual PENDING_DEVICE_VERIFICATION\n", encoding="utf-8"

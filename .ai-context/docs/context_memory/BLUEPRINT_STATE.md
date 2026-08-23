@@ -1,5 +1,22 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: COOKBOOK-OBSERVABILITY-AND-MEAL-FLOW-GOVERNANCE-PHASE
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK-OBSERVABILITY-AND-MEAL-FLOW-GOVERNANCE-PHASE |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Scope | Trace Diagnostic、Architecture Quality、Meal Flow State Contract；覆盖 AI Recommend、Food Search、Inventory Select、New Dish、Edit Meal；统一 SAVE STATE / RESTORE STATE / MERGE RESULT；不改推荐算法、数据库或无关业务逻辑 |
+| Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_OBSERVABILITY_AND_MEAL_FLOW_GOVERNANCE_PHASE.zip`（00~06） |
+| Base | `e2de9312` |
+| Authorization | 任务包一次性授权：CODE -> REVIEW；已执行 `git pull --ff-only`，远程无新提交 |
+| Evidence | `TraceDiagnosticTest`、`MealFlowStateContractTest`、Architecture Quality Python 4 tests；`:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；真机未执行，静态证据不能替代设备验证 |
+| implementation_commit | `PENDING_FINAL_COMMIT` |
+| state_update_commit | `PENDING_FINAL_COMMIT` |
+| Next action | ARCH 复核治理 diff、诊断缺失节点语义、五流程合同和静态证据；通过后再决定是否 ACCEPTED |
+
 ## CURRENT EXECUTION: COOKBOOK-STATE-LIFECYCLE-OBSERVABILITY-PHASE-R2
 
 | Field | Value |

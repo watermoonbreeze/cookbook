@@ -11,6 +11,14 @@ REQUIRED_RECOMMEND_ENTRY_MARKERS = {
     "record_meal_manual": "Record Meal manual AI Recommend entry marker",
 }
 
+REQUIRED_MEAL_FLOW_CODES = (
+    "ai_recommend",
+    "food_search",
+    "inventory_select",
+    "new_dish",
+    "edit_meal",
+)
+
 
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8") if path.exists() else ""
@@ -55,6 +63,34 @@ def check_trace_governance(root: Path) -> list[str]:
     return errors
 
 
+def check_meal_flow_contract(root: Path) -> list[str]:
+    """Require one shared SAVE/RESTORE/MERGE contract for all meal subflows."""
+    errors: list[str] = []
+    contract = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/MealFlowStateContract.kt"
+    diagnostic = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/TraceDiagnostic.kt"
+    contract_text = _read_text(contract)
+    diagnostic_text = _read_text(diagnostic)
+    for marker in ("SAVE_STATE", "RESTORE_STATE", "MERGE_RESULT"):
+        if marker not in contract_text:
+            errors.append(f"meal flow contract missing {marker}")
+    for flow in REQUIRED_MEAL_FLOW_CODES:
+        if flow not in contract_text:
+            errors.append(f"meal flow contract missing flow {flow}")
+    for marker in ("diagnose", "FLOW_COMPLETE", "FLOW_INCOMPLETE"):
+        if marker not in diagnostic_text:
+            errors.append(f"trace diagnostic missing {marker}")
+
+    app_sources = root / "androidApp/src/main/java"
+    app_text = "\n".join(path.read_text(encoding="utf-8") for path in app_sources.rglob("*.kt")) if app_sources.exists() else ""
+    if "stateSnapshotBeforeNavigation" not in app_text:
+        errors.append("navigation contract has no SAVE_STATE wiring")
+    if "stateRestore" not in app_text:
+        errors.append("navigation contract has no RESTORE_STATE wiring")
+    if "stateMergeResult" not in app_text:
+        errors.append("navigation contract has no MERGE_RESULT wiring")
+    return errors
+
+
 def check_root(root: Path) -> list[str]:
     errors: list[str] = []
     shared = root / "shared" / "src" / "commonMain"
@@ -81,6 +117,7 @@ def check_root(root: Path) -> list[str]:
         if gradle.exists() and 'project(":androidApp")' in gradle.read_text(encoding="utf-8"):
             errors.append(f"forbidden reverse module dependency: {gradle.relative_to(root)}")
     errors.extend(check_trace_governance(root))
+    errors.extend(check_meal_flow_contract(root))
     return errors
 
 
