@@ -620,3 +620,20 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | 自动验证 | `:shared:testDebugUnitTest` PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS |
 | Evidence | `E-OBS-ACTION-01`、`E-OBS-NAV-01`、`E-OBS-STATE-01`、`E-OBS-AI-01`：自动化/静态证据 PASS；真机链路仍 **PENDING_DEVICE_VERIFICATION** |
 | 下一步 | ARCH 按任务包复核 allowlist、trace_id 串链、隐私字段与真机证据；不得提前标记 ACCEPTED |
+
+---
+## COOKBOOK_ARCHITECTURE_EVOLUTION_PHASE_BATCH（2026-08-23）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK_ARCHITECTURE_EVOLUTION_PHASE_BATCH |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| 范围 | Foundation/State/Navigation/Meal Flow/Trace Diagnostic/AI Capability/Quality 治理；不改推荐算法、数据库核心结构、Repository 核心行为或用户流程 |
+| 任务包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_ARCHITECTURE_EVOLUTION_PHASE_BATCH.zip` |
+| 基线 commit | `8354773c` |
+| Authorization | 任务包一次性授权：CODE -> REVIEW；当前不执行真机验证，只生成验证资产 |
+| implementation_commit | `f3d0a4dfab6e50dc151c140c0b2442c37679cbb8` |
+| Evidence | 架构质量脚本 PASS；`:shared:testDebugUnitTest` 696 tests PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；Device Checklist/Test Matrix/Evidence Template 已生成，E-AEP-01~05 保持 PENDING_DEVICE_VERIFICATION |
+| Experience | `experience/22_架构演进批量治理经验.md`，并更新 `experience/INDEX.md` |
+| Next action | ARCH 复核 Phase 顺序、契约边界、诊断分类、AI 元数据非算法约束和静态/设备证据分离；通过后再决定是否 ACCEPTED |
