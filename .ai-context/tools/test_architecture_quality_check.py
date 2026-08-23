@@ -28,6 +28,45 @@ class ArchitectureQualityCheckTest(unittest.TestCase):
             errors = MODULE.check_root(root)
             self.assertTrue(any("shared platform boundary" in error for error in errors))
 
+    def test_trace_governance_requires_both_recommend_entries_and_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            common = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform"
+            tests = root / "shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/platform"
+            nav = root / "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nav"
+            device = root / ".ai-context/docs/真机验证"
+            for path in (common, tests, nav, device):
+                path.mkdir(parents=True)
+            (common / "TraceModel.kt").write_text(
+                "recommendRoute traceId recommend.route meal_edit record_meal_manual", encoding="utf-8"
+            )
+            (common / "TraceEventContract.kt").write_text("recommend.route", encoding="utf-8")
+            (common / "Logger.kt").write_text("", encoding="utf-8")
+            (tests / "LoggerTest.kt").write_text("meal_edit record_meal_manual", encoding="utf-8")
+            (nav / "MainScaffold.kt").write_text("meal_edit record_meal_manual", encoding="utf-8")
+            (device / "真机待验证清单_202608230000.md").write_text(
+                "E-OVN-04 meal_edit PENDING_DEVICE_VERIFICATION\n"
+                "E-OVN-05 record_meal_manual PENDING_DEVICE_VERIFICATION\n", encoding="utf-8"
+            )
+            self.assertEqual([], MODULE.check_trace_governance(root))
+
+    def test_trace_governance_rejects_missing_second_entry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            common = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform"
+            tests = root / "shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/platform"
+            nav = root / "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nav"
+            device = root / ".ai-context/docs/真机验证"
+            for path in (common, tests, nav, device):
+                path.mkdir(parents=True)
+            (common / "TraceModel.kt").write_text("recommendRoute traceId recommend.route meal_edit", encoding="utf-8")
+            (common / "TraceEventContract.kt").write_text("recommend.route", encoding="utf-8")
+            (tests / "LoggerTest.kt").write_text("meal_edit", encoding="utf-8")
+            (nav / "MainScaffold.kt").write_text("meal_edit", encoding="utf-8")
+            (device / "真机待验证清单_202608230000.md").write_text("E-OVN-04 meal_edit", encoding="utf-8")
+            errors = MODULE.check_trace_governance(root)
+            self.assertTrue(any("record_meal_manual" in error for error in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

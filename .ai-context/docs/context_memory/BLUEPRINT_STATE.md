@@ -1,4 +1,22 @@
 # BLUEPRINT_STATE
+
+## CURRENT EXECUTION: COOKBOOK-NEXT-TASK-TRACE-GOVERNANCE-CLOSURE
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK-NEXT-TASK-TRACE-GOVERNANCE-CLOSURE |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Scope | Observability / Trace Governance、AI Recommend 双入口 Evidence 准备、Architecture Quality 检查、Experience 沉淀；不改 AI Recommend 业务逻辑/算法、数据库、Repository 行为或用户流程 |
+| Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_NEXT_TASK_TRACE_GOVERNANCE_CLOSURE.zip`（ARCH_BLUEPRINT.md） |
+| Evidence | `E-STATE-01`、`E-AI-01`、`E-QUALITY-01`、`E-EXPERIENCE-01`；`E-OVN-04/05` 仍为 `PENDING_DEVICE_VERIFICATION` |
+| Quality | `architecture_quality_check.py` 增加双入口源码/测试/契约/真机清单静态门禁；unittest 覆盖通过 |
+| Delivery | 本批提交后回填 commit hash；不将静态 PASS 写成真机 PASS |
+| Next action | ARCH 审核当前 diff、Evidence 合同、检查范围与禁区核对；通过后再决定是否 ACCEPTED |
+
+> 当前真相仅以本节为准；下方既有批次均为历史快照，不得覆盖本节的 State/TURN。项目全景继续由 `projectReview/00_导读与索引.md` 承载。
+
 ## CURRENT EXECUTION: FOUNDATION-OBSERVABILITY-01 CODE BLUEPRINT
 
 | Field | Value |
