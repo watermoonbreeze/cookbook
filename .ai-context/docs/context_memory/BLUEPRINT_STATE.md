@@ -428,6 +428,24 @@ BLUEPRINT_STATE 仅维护 ARCH / CODE / REVIEW / TURN 的抽象角色 + 机器�
 ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 
 ---
+## CURRENT EXECUTION: COOKBOOK_MEAL_ARCHITECTURE_REDESIGN_EXECUTION (2026-08-23)
+
+| Field | Value |
+|---|---|
+| Task / Batch | COOKBOOK_MEAL_ARCHITECTURE_REDESIGN_EXECUTION |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_ARCHITECTURE_REDESIGN_EXECUTION_PACKAGE.zip` (`EXECUTION_BLUEPRINT.md` inside package) |
+| Baseline | `41eb1a390138ef6a48c4c74ed80288728415249a` |
+| Scope | Phase 1 domain boundary foundation: MealPlan, MealRecord, FoodKnowledge and Legacy Adapter; no schema/repository/algorithm/user-flow changes |
+| Implementation | `shared/src/commonMain/kotlin/com/sxdbsm/cookbook/domain/mealplanning/`, `mealrecording/`, `foodknowledge/`, `legacy/`; boundary tests under `shared/src/androidUnitTest/.../mealarchitecture/` |
+| Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_REDESIGN_EXECUTION/EVIDENCE.md`; shared/android tests, assembleDebug and architecture quality PASS; schema diff empty |
+| Compatibility | Existing `meal_record` storage and `domain.model.MealRecord` remain in place; adapter maps legacy records to recording Domain without changing identity |
+| Blueprint conflict | None found; Reality confirms `meal_record` remains the current shared storage for future/current/history semantics |
+| Next action | ARCH review against Reality Alignment, Boundary, Compatibility, Scope, AI and Migration gates |
+
+---
 ## 补充批次 10：COOKBOOK-OVERNIGHT-PHASE2-10 ARCHITECTURE KNOWLEDGE BASE（2026-08-22）
 
 | 字段 | 值 |
