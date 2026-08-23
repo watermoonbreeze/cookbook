@@ -5,16 +5,20 @@
 | Field | Value |
 |---|---|
 | Batch | COOKBOOK-AI-RECOMMEND-FIX-AND-TURN-HANDOFF |
-| State | **IMPLEMENTING** |
-| TURN | **CODE** |
-| Holder | **CODE** |
-| Scope | `record_meal_manual -> ai_recommend -> back -> unified_add_meal`；修复返回状态恢复与 TURN handoff；不改 AI 推荐算法/策略、数据库结构 |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Scope | `record_meal_manual -> ai_recommend -> back -> unified_add_meal`；统一子流程 SAVE/RESTORE/MERGE（AI 推荐、新建菜品、同页搜索/库存选择）；不改 AI 推荐算法/策略、业务规则、数据库结构 |
 | Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_AI_RECOMMEND_FIX_AND_TURN_HANDOFF.zip`（`ARCH_BLUEPRINT.md`） |
 | Base | `9e0bbc4` |
 | ARCH | 本机 ARCH；基于任务包完成一次性 `ARCH -> CODE` 授权 |
 | CODE | 本机 Codex；仅执行任务包 allowlist |
 | Authorization | 原状态为 `TURN=REVIEW` 且 Holder=ARCH；本任务包明确要求进入 CODE，已在执行前完成状态切换 |
-| Next action | 按任务包执行代码定位、最小修复、测试、经验与状态回写；完成后恢复 `TURN=REVIEW` 等待 ARCH 审核 |
+| Evidence | `E-STATE-01`：统一入口选择器使用 `rememberSaveable`；`E-RESTORE-01`：状态 Saver 回归测试 PASS；`E-MERGE-01`：AI 推荐与新建菜品 SavedStateHandle 结果合并并消费；`E-OTHER-01`：搜索/库存为同页 picker，由同一 AddMealViewModel 保持状态 |
+| Tests | `:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；专项 `UnifiedAddMealStateTest` PASS |
+| implementation_commit | `cd782504` |
+| state_update_commit | 待本次状态回写提交 |
+| Next action | ARCH 审核当前 diff、状态恢复机制与 Evidence；通过后再决定是否 ACCEPTED |
 
 ## CURRENT EXECUTION: COOKBOOK-NEXT-TASK-TRACE-GOVERNANCE-CLOSURE
 
