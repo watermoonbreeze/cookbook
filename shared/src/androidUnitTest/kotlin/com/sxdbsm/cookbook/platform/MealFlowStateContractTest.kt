@@ -32,5 +32,20 @@ class MealFlowStateContractTest {
             ),
         )
         assertTrue(result.complete)
+        assertTrue(result.ordered)
+    }
+
+    @Test
+    fun outOfOrderLifecycleIsNotComplete() {
+        val result = MealFlowStateContract.validate(
+            MealFlow.NEW_DISH,
+            listOf(
+                StructuredLogEvent.StateLifecycle(LogLevel.DEBUG, "state.restore"),
+                StructuredLogEvent.StateLifecycle(LogLevel.DEBUG, "state.snapshot.before_navigation"),
+                StructuredLogEvent.StateLifecycle(LogLevel.DEBUG, "state.merge.result"),
+            ),
+        )
+        assertTrue(!result.complete)
+        assertTrue(!result.ordered)
     }
 }

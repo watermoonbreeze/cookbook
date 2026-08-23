@@ -1,5 +1,22 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: COOKBOOK-MEAL-DOMAIN-GOVERNANCE-AI-CAPABILITY-PREPARATION-PHASE
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK-MEAL-DOMAIN-GOVERNANCE-AI-CAPABILITY-PREPARATION-PHASE |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| Scope | Meal Flow Contract、Trace Diagnostic 分类、Architecture Quality 门禁、AI Capability Preparation；不改推荐算法、数据库核心结构或无关业务 |
+| Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_DOMAIN_GOVERNANCE_AI_CAPABILITY_PREPARATION_PHASE.zip`（00~06） |
+| Base | `fc1e067b` |
+| Authorization | 任务包一次性授权：CODE -> REVIEW；已执行 `git pull --ff-only`；本阶段不执行真机验证 |
+| Evidence | `MealFlowStateContractTest`、`TraceDiagnosticTest`、`RecommendationCapabilityTest`、Architecture Quality Python tests；真机项沿用最新清单，不因静态证据变更 |
+| implementation_commit | 待提交（以交付时 `git rev-parse HEAD` 为准） |
+| state_update_commit | 待提交（与实现同一提交） |
+| Next action | ARCH 复核五流程顺序合同、诊断分类、AI 准备模型和静态门禁；通过后再决定是否 ACCEPTED |
+
 ## CURRENT EXECUTION: COOKBOOK-OBSERVABILITY-AND-MEAL-FLOW-GOVERNANCE-PHASE
 
 | Field | Value |

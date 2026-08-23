@@ -7,11 +7,19 @@ package com.sxdbsm.cookbook.platform
 object TraceDiagnostic {
     enum class Status { COMPLETE, INCOMPLETE, EMPTY }
 
+    enum class Finding {
+        FLOW_PASS,
+        FLOW_INCOMPLETE,
+        STATE_RESTORE_FAILURE,
+        MERGE_FAILURE,
+    }
+
     enum class Node { ACTION, NAVIGATION, OPERATION, SAVE_STATE, RESTORE_STATE, MERGE_RESULT }
 
     data class Result(
         val traceId: TraceId?,
         val status: Status,
+        val finding: Finding,
         val observed: Set<Node>,
         val missing: Set<Node>,
     ) {
@@ -34,7 +42,7 @@ object TraceDiagnostic {
     )
 
     fun diagnose(events: List<StructuredLogEvent>): Result {
-        if (events.isEmpty()) return Result(null, Status.EMPTY, emptySet(), requiredNodes)
+        if (events.isEmpty()) return Result(null, Status.EMPTY, Finding.FLOW_INCOMPLETE, emptySet(), requiredNodes)
         val traceId = events.mapNotNull { it.traceId }.distinct().singleOrNull()
         val observed = buildSet {
             events.forEach { event ->
@@ -52,9 +60,16 @@ object TraceDiagnostic {
             }
         }
         val missing = requiredNodes - observed
+        val finding = when {
+            missing.isEmpty() -> Finding.FLOW_PASS
+            Node.RESTORE_STATE in missing -> Finding.STATE_RESTORE_FAILURE
+            Node.MERGE_RESULT in missing -> Finding.MERGE_FAILURE
+            else -> Finding.FLOW_INCOMPLETE
+        }
         return Result(
             traceId = traceId,
             status = if (missing.isEmpty()) Status.COMPLETE else Status.INCOMPLETE,
+            finding = finding,
             observed = observed,
             missing = missing,
         )

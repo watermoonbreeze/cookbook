@@ -87,6 +87,23 @@ class ArchitectureQualityCheckTest(unittest.TestCase):
             errors = MODULE.check_trace_governance(root)
             self.assertTrue(any("record_meal_manual" in error for error in errors))
 
+    def test_ai_capability_preparation_is_required(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            common = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform"
+            common.mkdir(parents=True)
+            (root / "androidApp/src/main/java").mkdir(parents=True)
+            for name, content in {
+                "TraceModel.kt": "recommendRoute traceId recommend.route meal_edit record_meal_manual",
+                "TraceEventContract.kt": "recommend.route",
+                "Logger.kt": "",
+                "MealFlowStateContract.kt": "SAVE_STATE RESTORE_STATE MERGE_RESULT ai_recommend food_search inventory_select new_dish edit_meal",
+                "TraceDiagnostic.kt": "diagnose FLOW_COMPLETE FLOW_INCOMPLETE STATE_RESTORE_FAILURE MERGE_FAILURE",
+            }.items():
+                (common / name).write_text(content, encoding="utf-8")
+            errors = MODULE.check_root(root)
+            self.assertTrue(any("AI capability preparation" in error for error in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

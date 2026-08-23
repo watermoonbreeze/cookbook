@@ -18,10 +18,11 @@ enum class MealFlowContractEvent {
 data class MealFlowContractResult(
     val flow: MealFlow,
     val observed: Set<MealFlowContractEvent>,
+    val ordered: Boolean = false,
 ) {
     val missing: Set<MealFlowContractEvent> =
         MealFlowContractEvent.entries.toSet() - observed
-    val complete: Boolean get() = missing.isEmpty()
+    val complete: Boolean get() = missing.isEmpty() && ordered
 }
 
 /**
@@ -30,8 +31,14 @@ data class MealFlowContractResult(
 object MealFlowStateContract {
     val flows: Set<MealFlow> = MealFlow.entries.toSet()
 
+    private val requiredOrder = listOf(
+        MealFlowContractEvent.SAVE_STATE,
+        MealFlowContractEvent.RESTORE_STATE,
+        MealFlowContractEvent.MERGE_RESULT,
+    )
+
     fun validate(flow: MealFlow, events: List<StructuredLogEvent>): MealFlowContractResult {
-        val observed = events.mapNotNull { event ->
+        val observedSequence = events.mapNotNull { event ->
             when (event) {
                 is StructuredLogEvent.StateLifecycle -> when (event.event) {
                     "state.snapshot.before_navigation" -> MealFlowContractEvent.SAVE_STATE
@@ -41,7 +48,11 @@ object MealFlowStateContract {
                 }
                 else -> null
             }
-        }.toSet()
-        return MealFlowContractResult(flow, observed)
+        }
+        val observed = observedSequence.toSet()
+        val ordered = observedSequence
+            .filter { it in requiredOrder }
+            .take(3) == requiredOrder
+        return MealFlowContractResult(flow, observed, ordered)
     }
 }

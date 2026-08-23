@@ -61,3 +61,4 @@
 | [14_模型执行力评估.md](14_模型执行力评估.md) | 不同具体模型担任 CODE 角色的实证评估台账：哪个模型在什么复杂度任务下表现如何、执行力边界在哪，积累证据后反哺 `MODEL_ROUTING.md`。 |
 | [19_State_Lifecycle_Observability.md](19_State_Lifecycle_Observability.md) | State Lifecycle Observability：snapshot/restore/merge 与“Navigation success != State success”经验。 |
 | [20_Trace_Diagnostic_and_Meal_Flow_State_Contract.md](20_Trace_Diagnostic_and_Meal_Flow_State_Contract.md) | Trace Diagnostic 缺失节点诊断、五类 Meal Flow 的 SAVE/RESTORE/MERGE 合同与验证红线。 |
+| [21_Meal_Domain_Governance_AI_Capability_Preparation.md](21_Meal_Domain_Governance_AI_Capability_Preparation.md) | Meal Flow 合同收口、诊断分类、架构门禁与 AI 推荐能力准备模型。 |

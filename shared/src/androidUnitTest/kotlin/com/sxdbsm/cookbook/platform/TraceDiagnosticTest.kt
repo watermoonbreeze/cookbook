@@ -18,6 +18,7 @@ class TraceDiagnosticTest {
         )
         val result = TraceDiagnostic.diagnose(events)
         assertEquals(TraceDiagnostic.Status.COMPLETE, result.status)
+        assertEquals(TraceDiagnostic.Finding.FLOW_PASS, result.finding)
         assertTrue(result.missing.isEmpty())
     }
 
@@ -36,5 +37,6 @@ class TraceDiagnosticTest {
         assertEquals(TraceDiagnostic.Status.INCOMPLETE, result.status)
         assertTrue(TraceDiagnostic.Node.RESTORE_STATE in result.missing)
         assertTrue(result.summary.contains("RESTORE_STATE"))
+        assertEquals(TraceDiagnostic.Finding.STATE_RESTORE_FAILURE, result.finding)
     }
 }
