@@ -674,3 +674,20 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | Evidence | 架构质量脚本 PASS；`:shared:testDebugUnitTest` 696 tests PASS；`:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；Device Checklist/Test Matrix/Evidence Template 已生成，E-AEP-01~05 保持 PENDING_DEVICE_VERIFICATION |
 | Experience | `experience/22_架构演进批量治理经验.md`，并更新 `experience/INDEX.md` |
 | Next action | ARCH 复核 Phase 顺序、契约边界、诊断分类、AI 元数据非算法约束和静态/设备证据分离；通过后再决定是否 ACCEPTED |
+
+---
+## COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2_USECASE_MIGRATION（2026-08-23）
+| 字段 | 值 |
+|---|---|
+| 任务/批次 | COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2_USECASE_MIGRATION |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| 角色 | CODER / IMPLEMENTER |
+| 蓝图包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_BATCH_PACKAGE.zip` |
+| Phase | Phase 2 — UseCase Migration；仅 create/save/query |
+| 基线 | 当前工作树既有 Phase 1 Domain Boundary Foundation；外部包声明的旧基线与当前代码不一致，未据此回退代码 |
+| implementation_commit | 待本批实现提交后回填 |
+| Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2/EVIDENCE.md`；MealRecordUseCaseTest PASS；shared/android 单测与 assembleDebug PASS；无 schema diff |
+| Blueprint conflict | 未发现 Phase 2 范围冲突；Phase 3 Projection、Phase 4 AI、Repository 大重构均未执行 |
+| Next action | ARCH 按 Reality、Boundary、Compatibility、Scope 与 Evidence 复核；通过后再决定是否 ACCEPTED |

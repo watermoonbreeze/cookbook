@@ -4,12 +4,13 @@ import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
-import com.sxdbsm.cookbook.data.repository.DayMealDraft
 import com.sxdbsm.cookbook.data.repository.FavoriteComboRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealType
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordDraft
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
 import com.sxdbsm.cookbook.platform.LogLevel
 import com.sxdbsm.cookbook.platform.Logger
 import com.sxdbsm.cookbook.platform.OperationState
@@ -85,6 +86,7 @@ class AddMealViewModel(
     private val comboRepo: FavoriteComboRepository,
     private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：记一餐埋点(meal_logged·仅餐次枚举)
     private val hintUseCase: com.sxdbsm.cookbook.ai.MealHealthHintUseCase, // [AI生成] 运营#177 ③ 记菜命中慢病轻提示判定(纯读·薄 VM 只编排)
+    private val mealRecordUseCase: MealRecordUseCase,
 ) : ViewModel() {
     companion object {
         private const val TAG = "MealFlow" // [AI生成] 添加/编辑餐食链路统一日志 Tag。
@@ -224,7 +226,7 @@ class AddMealViewModel(
             return
         }
         viewModelScope.launch {
-            val occupied = mealRepo.loadDayMealsForEdit(date).isNotEmpty()
+            val occupied = mealRecordUseCase.queryDayForEdit(date).isNotEmpty()
             if (occupied) {
                 // [AI修改] 冲突时日期不变，也不置 userPickedDate(避免污染后续 configure 重载判断)。
                 AppLogger.d(TAG, "setDate conflict: date=$date already has meals")
@@ -419,7 +421,8 @@ class AddMealViewModel(
             .filter { it.canSave }
             .map { block ->
                 // canSave 已保证 mealTypeId/mealTime 非空，用 !! 明确不变量(原 `?: return` 在 filter 后不可达且误导)。
-                DayMealDraft(
+                MealRecordDraft(
+                    date = s.date,
                     mealTypeId = block.mealTypeId!!,
                     mealTime = block.mealTime!!,
                     note = block.note,
@@ -439,12 +442,12 @@ class AddMealViewModel(
                 // [AI修改] 抬喜爱度基线=loadedFromDate：编辑同日=本日、移动=来源日、新增=null(视目标日)。
                 // 修"移动到空日期时把来源日已计过的菜再+1"的 bug。
                 emitMealSaveTrace(trace, "repository.operation", OperationState.RUNNING)
-                mealRepo.saveDayMeals(date = s.date, meals = drafts, incrementBaselineDate = loadedFromDate)
+                mealRecordUseCase.saveDay(date = s.date, drafts = drafts, incrementBaselineDate = loadedFromDate)
                 // [AI生成] F7：若本次是编辑已有某天并把日期改到了新日期(移动)，保存到新日期后删除旧日期，避免重复。
                 val from = loadedFromDate
                 if (from != null && from != s.date) {
                     AppLogger.d(TAG, "move meals: delete old date=$from after saving to ${s.date}")
-                    mealRepo.deleteDayMeals(from)
+                    mealRecordUseCase.deleteDay(from)
                 }
                 emitMealSaveTrace(trace, "repository.operation", OperationState.SUCCEEDED)
                 AppLogger.d(TAG, "save meals success: date=${s.date} drafts=${drafts.size}") // [AI生成] 记录保存成功。
@@ -560,9 +563,9 @@ class AddMealViewModel(
         // [AI修改] #2：复制的目标日期 = 当前**最新餐食日期 + 1**(接在整个食历之后)，而非源日期+1；
         // 无餐食时退回源+1。[AI修改] J18:minSelectableDate=today(允许复制到今天及以后·不再被未来计划餐锁死)。
         val today = DateTime.today()
-        val latest = mealRepo.dateRange().second
+        val latest = mealRecordUseCase.dateRange().second
         val target = if (latest != null) maxOf(DateTime.plusDays(latest, 1), today) else DateTime.plusDays(sourceDate, 1)
-        val src = mealRepo.loadDayMealsForEdit(sourceDate)
+        val src = mealRecordUseCase.queryDayForEdit(sourceDate)
         val blocks = src.map { meal ->
             MealBlockUiState(id = nextBlockId++, mealTypeId = meal.mealTypeId, mealTime = meal.mealTime, dishes = meal.dishes, note = meal.note)
         }
@@ -591,7 +594,7 @@ class AddMealViewModel(
      */
     private suspend fun resolveNewMealDate(): LocalDate {
         val today = DateTime.today()
-        val latest = runCatching { mealRepo.dateRange().second }.getOrNull()
+        val latest = runCatching { mealRecordUseCase.dateRange().second }.getOrNull()
         if (latest != null && latest >= today) {
             return DateTime.plusDays(latest, 1) // 接在最后餐食之后
         }
@@ -615,14 +618,14 @@ class AddMealViewModel(
         val result = mutableSetOf<LocalDate>()
         for (i in 0..6) {
             val d = DateTime.plusDays(weekMonday, i)
-            if (mealRepo.loadDayMealsForEdit(d).isNotEmpty()) result.add(d)
+            if (mealRecordUseCase.queryDayForEdit(d).isNotEmpty()) result.add(d)
         }
         return result
     }
 
     private suspend fun loadMealsForDateInternal(date: LocalDate) {
         AppLogger.d(TAG, "load meals begin: date=$date") // [AI生成] 记录数据库加载日期，排查未保存编辑被覆盖。
-        val existingMeals = mealRepo.loadDayMealsForEdit(date)
+        val existingMeals = mealRecordUseCase.queryDayForEdit(date)
         // [AI生成] F7：记录本次是否加载自"已有餐食的日期"，供保存时"改日期=移动"删旧。
         loadedFromDate = if (existingMeals.isNotEmpty()) date else null
         AppLogger.d(TAG, "load meals db result: date=$date existing=${existingMeals.map { it.mealTypeId to it.dishes.map { dish -> dish.id } }}") // [AI生成] 记录数据库返回的餐食摘要。
