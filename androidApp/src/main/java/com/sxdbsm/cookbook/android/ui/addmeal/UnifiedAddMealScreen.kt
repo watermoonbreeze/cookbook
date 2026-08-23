@@ -25,6 +25,7 @@ import com.sxdbsm.cookbook.android.ui.component.SegmentedControl
 import com.sxdbsm.cookbook.android.ui.component.rememberUnsavedGuard
 import com.sxdbsm.cookbook.android.ui.nav.Routes
 import com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanScreen
+import com.sxdbsm.cookbook.platform.BusinessTrace
 import com.sxdbsm.cookbook.util.DateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -41,6 +42,7 @@ fun UnifiedAddMealScreen(
     aiPickedDishIds: List<Long> = emptyList(),
     onAiPickedConsumed: () -> Unit = {},
     createdDishId: Long? = null,
+    lifecycleTraceId: String? = null,
     onCreatedDishConsumed: () -> Unit = {},
 ) {
     val aiVm: AiMealInputViewModel = koinViewModel(key = "unified-ai-meal") {
@@ -111,13 +113,19 @@ fun UnifiedAddMealScreen(
                 pageState.range == MealRange.SINGLE_DAY && pageState.method == MealInputMethod.MANUAL ->
                     AddDayFoodScreen(
                         onBack = { nav.popBackStack() },
-                        onAddNewDish = { nav.navigate(Routes.newDish()) },
+                        onAddNewDish = {
+                            // [AI生成] SAVE：离开统一入口前冻结页面选择器/手动草稿的代码摘要。
+                            val trace = BusinessTrace.action("unified_add_meal", "open_new_dish", "manual")
+                            BusinessTrace.stateSnapshotBeforeNavigation("unified_add_meal", "manual", "editing", trace)
+                            nav.navigate(Routes.newDish())
+                        },
                         onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                         onOpenWeekPlan = { date -> nav.navigate(Routes.weekPlanFrom(DateTime.formatDate(date))) },
                         onOpenAiForBlock = onOpenAiForBlock,
                         aiPickedDishIds = aiPickedDishIds,
                         onAiPickedConsumed = onAiPickedConsumed,
                         createdDishId = createdDishId,
+                        lifecycleTraceId = lifecycleTraceId,
                         onCreatedDishConsumed = onCreatedDishConsumed,
                         vm = singleManualVm,
                         embedded = true,

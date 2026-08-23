@@ -92,6 +92,8 @@ import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealSection // [AI生成] D保存预览
+import com.sxdbsm.cookbook.platform.BusinessTrace
+import com.sxdbsm.cookbook.platform.TraceId
 import com.sxdbsm.cookbook.domain.model.MealType
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -156,6 +158,7 @@ fun AddDayFoodScreen(
     onCreatedDishConsumed: () -> Unit = {},
     onOpenAiForBlock: (String) -> Unit = {}, // [AI生成] 从某餐次块进入 AI 推荐。[AI修改] F#7:带该块餐次的 ai.MealSlot.code(空=全部)。
     aiPickedDishIds: List<Long> = emptyList(), // [AI生成] AI 推荐回传给餐次块的菜品 id。
+    lifecycleTraceId: String? = null,
     onAiPickedConsumed: () -> Unit = {},
     vm: AddMealViewModel = koinViewModel(),
     embedded: Boolean = false,
@@ -207,7 +210,17 @@ fun AddDayFoodScreen(
     LaunchedEffect(aiPickedDishIds) {
         if (aiPickedDishIds.isEmpty()) return@LaunchedEffect
         val target = aiTargetBlockId ?: state.activeBlockId
-        if (target != null) vm.addDishesByIds(target, aiPickedDishIds)
+        // [AI生成] RESTORE：SavedStateHandle 已恢复子页面结果；Navigation 成功不等于状态恢复成功。
+        BusinessTrace.stateRestore(
+            restoreSource = "ai_recommend",
+            restoreResult = if (target != null) "success" else "missing_target",
+            restoredFields = "ai_picked_dishes_active_block",
+            traceId = lifecycleTraceId?.let(TraceId::fromValue),
+        )
+        if (target != null) vm.addDishesByIds(target, aiPickedDishIds) {
+            // [AI生成] 只有父 ViewModel 实际完成草稿合并后才记 merge 成功。
+            BusinessTrace.stateMergeResult("add_meal", "editing", "ai_picked_dishes", "editing_dishes", lifecycleTraceId?.let(TraceId::fromValue))
+        }
         aiTargetBlockId = null
         onAiPickedConsumed()
     }
@@ -234,8 +247,14 @@ fun AddDayFoodScreen(
     }
     LaunchedEffect(createdDishId) {
         val dishId = createdDishId?.takeIf { it > 0 } ?: return@LaunchedEffect
+        // [AI生成] RESTORE：新建菜品结果已从子页面回到当前餐食流程。
+        val traceId = lifecycleTraceId?.let(TraceId::fromValue)
+        BusinessTrace.stateRestore("new_dish", "success", "created_dish_active_block", traceId)
         AppLogger.d("MealFlow", "created dish consumed: dishId=$dishId targetBlock=${pickingBlockId ?: state.activeBlockId} pickerOpenBefore=$pickerOpen") // [AI生成] 记录新建菜品回传后加入哪个餐食模块。
-        vm.addCreatedDish(dishId, pickingBlockId ?: state.activeBlockId)
+        vm.addCreatedDish(dishId, pickingBlockId ?: state.activeBlockId) {
+            // [AI生成] 只有菜品读取并加入父草稿后才记 merge 成功。
+            BusinessTrace.stateMergeResult("add_meal", "editing", "created_dish", "editing_dishes", traceId)
+        }
         pickerOpen = true // [AI修改] 返回后继续停留在菜品选择流程，并由 DishPicker 重新读取最新菜品列表。
         onCreatedDishConsumed()
     }

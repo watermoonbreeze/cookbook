@@ -68,6 +68,17 @@ object StructuredLogJson {
                     event.state?.let { put("state", safe(it)) }
                     event.reason?.let { put("reason", safe(it)) }
                 }
+                is StructuredLogEvent.StateLifecycle -> {
+                    event.sourceScreen?.let { put("source_screen", safe(it)) }
+                    event.currentTab?.let { put("current_tab", safe(it)) }
+                    event.businessState?.let { put("business_state", safe(it)) }
+                    event.restoreSource?.let { put("restore_source", safe(it)) }
+                    event.restoreResult?.let { put("restore_result", safe(it)) }
+                    event.restoredFields?.let { put("restored_fields", safe(it)) }
+                    event.previousState?.let { put("previous_state", safe(it)) }
+                    event.childResult?.let { put("child_result", safe(it)) }
+                    event.mergedState?.let { put("merged_state", safe(it)) }
+                }
                 is StructuredLogEvent.DataFlow -> {
                     put("stage", safe(event.stage))
                     event.count?.let { put("count", it) }

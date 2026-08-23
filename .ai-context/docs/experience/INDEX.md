@@ -59,3 +59,4 @@
 | [12_多模型协作与实施蓝图规范.md](12_多模型协作与实施蓝图规范.md) | 架构模型与任意编码模型的长期协作合同：决策冻结、蓝图包、状态机/数据流/测试硬门禁、AF 反哺机制。 |
 | [13_单模型独立任务流程规范.md](13_单模型独立任务流程规范.md) | 项目指针 → 真相源在 `~/.ai-context/WORKFLOW_SINGLE_MODEL.md`（双模型共享）：单模型角色分化+交叉验证流程。 |
 | [14_模型执行力评估.md](14_模型执行力评估.md) | 不同具体模型担任 CODE 角色的实证评估台账：哪个模型在什么复杂度任务下表现如何、执行力边界在哪，积累证据后反哺 `MODEL_ROUTING.md`。 |
+| [19_State_Lifecycle_Observability.md](19_State_Lifecycle_Observability.md) | State Lifecycle Observability：snapshot/restore/merge 与“Navigation success != State success”经验。 |

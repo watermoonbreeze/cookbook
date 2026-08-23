@@ -10,7 +10,8 @@ class TraceEventContractTest {
     fun allProducedEventNamesAreRegistered() {
         val events = listOf(
             "ui.click", "ui.action.result", "navigation.started", "navigation.completed",
-            "screen.entered", "screen.loaded", "state.changed", "recommend.route",
+            "screen.entered", "screen.loaded", "state.changed",
+            "state.snapshot.before_navigation", "state.restore", "state.merge.result", "recommend.route",
             "operation.started", "operation.dropped", "operation.succeeded", "operation.failed",
             "operation.cancelled", "operation.duration", "operation.error", "system.crash", "legacy.log",
         )

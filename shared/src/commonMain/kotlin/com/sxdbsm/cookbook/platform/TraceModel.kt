@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.withLock
 value class TraceId private constructor(val value: String) {
     companion object {
         fun create(): TraceId = TraceId(randomUuid())
+        fun fromValue(value: String): TraceId = TraceId(value)
         fun fromTestValue(value: String): TraceId = TraceId(value)
     }
     override fun toString(): String = value
@@ -78,6 +79,24 @@ sealed interface StructuredLogEvent {
         val previousState: String? = null,
         val state: String? = null,
         val reason: String? = null,
+    ) : StructuredLogEvent {
+        override val category: LogCategory = LogCategory.UI_STATE
+    }
+
+    /** [AI生成] 状态跨导航生命周期事件；只记录代码标识和字段摘要，不记录饮食内容。 */
+    data class StateLifecycle(
+        override val level: LogLevel,
+        override val event: String,
+        override val traceId: TraceId? = null,
+        val sourceScreen: String? = null,
+        val currentTab: String? = null,
+        val businessState: String? = null,
+        val restoreSource: String? = null,
+        val restoreResult: String? = null,
+        val restoredFields: String? = null,
+        val previousState: String? = null,
+        val childResult: String? = null,
+        val mergedState: String? = null,
     ) : StructuredLogEvent {
         override val category: LogCategory = LogCategory.UI_STATE
     }
@@ -186,6 +205,65 @@ object BusinessTrace {
 
     fun stateChanged(screen: String, previous: String?, state: String, reason: String? = null, traceId: TraceId? = currentTraceId) {
         traceId?.let { Logger.emit(StructuredLogEvent.UiState(LogLevel.DEBUG, "state.changed", it, screen, previous, state, reason)) }
+    }
+
+    /** [AI生成] 统一记录进入子流程前的状态快照。 */
+    fun stateSnapshotBeforeNavigation(
+        sourceScreen: String,
+        currentTab: String,
+        businessState: String,
+        traceId: TraceId? = currentTraceId,
+    ) {
+        Logger.emit(
+            StructuredLogEvent.StateLifecycle(
+                level = LogLevel.DEBUG,
+                event = "state.snapshot.before_navigation",
+                traceId = traceId,
+                sourceScreen = sourceScreen,
+                currentTab = currentTab,
+                businessState = businessState,
+            ),
+        )
+    }
+
+    /** [AI生成] 统一记录子流程返回后的状态恢复结果。 */
+    fun stateRestore(
+        restoreSource: String,
+        restoreResult: String,
+        restoredFields: String,
+        traceId: TraceId? = currentTraceId,
+    ) {
+        Logger.emit(
+            StructuredLogEvent.StateLifecycle(
+                level = LogLevel.DEBUG,
+                event = "state.restore",
+                traceId = traceId,
+                restoreSource = restoreSource,
+                restoreResult = restoreResult,
+                restoredFields = restoredFields,
+            ),
+        )
+    }
+
+    /** [AI生成] 统一记录子流程结果与父页面状态合并。 */
+    fun stateMergeResult(
+        sourceScreen: String,
+        previousState: String,
+        childResult: String,
+        mergedState: String,
+        traceId: TraceId? = currentTraceId,
+    ) {
+        Logger.emit(
+            StructuredLogEvent.StateLifecycle(
+                level = LogLevel.DEBUG,
+                event = "state.merge.result",
+                traceId = traceId,
+                sourceScreen = sourceScreen,
+                previousState = previousState,
+                childResult = childResult,
+                mergedState = mergedState,
+            ),
+        )
     }
 
     fun error(operation: String, errorType: String, traceId: TraceId? = currentTraceId) {

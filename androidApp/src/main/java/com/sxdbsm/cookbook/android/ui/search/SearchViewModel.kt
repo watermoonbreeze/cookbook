@@ -84,6 +84,15 @@ class SearchViewModel(
         }
     }
 
+    /** [AI生成] 子页面返回后按已保存关键词重查，恢复结果列表而不是把完整列表塞入导航状态。 */
+    fun refresh(onComplete: () -> Unit = {}) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            search(_state.value.keyword)
+            onComplete()
+        }
+    }
+
     private suspend fun search(keyword: String) {
         val trimmed = keyword.trim()
         if (trimmed.isBlank()) {

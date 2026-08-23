@@ -45,6 +45,8 @@ import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.EmptyLineText
 import com.sxdbsm.cookbook.android.ui.component.IngredientCard
 import com.sxdbsm.cookbook.android.ui.component.SectionHeader
+import com.sxdbsm.cookbook.platform.BusinessTrace
+import com.sxdbsm.cookbook.platform.TraceId
 import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.koinViewModel
 
@@ -61,6 +63,9 @@ fun SearchScreen(
     onEditMealDate: (LocalDate) -> Unit,
     onOpenIngredient: (com.sxdbsm.cookbook.domain.model.Ingredient) -> Unit = {}, // [AI修改] 点食材结果跳到该食材并高亮。
     onNewDish: () -> Unit = {}, // [AI生成] 全无结果"新建菜品"→导航新建菜品页(预填菜名走总线)
+    createdDishId: Long? = null,
+    lifecycleTraceId: String? = null,
+    onCreatedDishConsumed: () -> Unit = {},
     onNewIngredient: () -> Unit = {}, // [AI生成] 全无结果"新建食材"→导航食材页(按名开编辑器走总线)
     vm: SearchViewModel = koinViewModel(),
 ) {
@@ -68,6 +73,18 @@ fun SearchScreen(
     val createBus = org.koin.compose.koinInject<com.sxdbsm.cookbook.android.ui.ingredients.IngredientCreateBus>()
     val ui by vm.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+
+    LaunchedEffect(createdDishId) {
+        if (createdDishId?.takeIf { it > 0 } == null) return@LaunchedEffect
+        // [AI生成] RESTORE：新建菜品返回的标量结果已恢复，关键词仍由 ViewModel 保持。
+        val traceId = lifecycleTraceId?.let(TraceId::fromValue)
+        BusinessTrace.stateRestore("new_dish", "success", "created_dish_search_keyword", traceId)
+        // [AI生成] MERGE：仅在关键词重查完成后记录合并成功，不复制结果列表到导航参数。
+        vm.refresh {
+            BusinessTrace.stateMergeResult("food_search", "searching", "created_dish", "results_refreshed", traceId)
+            onCreatedDishConsumed()
+        }
+    }
 
     LaunchedEffect(listState, ui.meals.size, ui.canLoadMoreMeals, ui.loadingMoreMeals) {
         snapshotFlow {

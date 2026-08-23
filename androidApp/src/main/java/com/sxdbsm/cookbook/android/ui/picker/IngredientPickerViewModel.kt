@@ -1,6 +1,7 @@
 package com.sxdbsm.cookbook.android.ui.picker
 
 import androidx.lifecycle.ViewModel
+import com.sxdbsm.cookbook.platform.Logger
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
@@ -1015,13 +1016,19 @@ class IngredientPickerViewModel(
      */
     fun addServings(ingredientId: Long, count: Int) {
         if (count <= 0) return
+        val trace = Logger.operation("inventory.add")
         viewModelScope.launch {
+            trace.start()
             runCatching { pantryRepo.addServings(ingredientId, count) }
                 .onSuccess {
                     refreshPantryState()
+                    trace.succeed()
                     if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
                 }
-                .onFailure { _state.value = _state.value.copy(operationError = "加入库存失败，请稍后重试") }
+                .onFailure {
+                    trace.fail(it.javaClass.simpleName)
+                    _state.value = _state.value.copy(operationError = "加入库存失败，请稍后重试")
+                }
         }
     }
 
@@ -1029,10 +1036,18 @@ class IngredientPickerViewModel(
      * 设置份数（用于库存 Tab 减少份数）。[AI生成]
      */
     fun setServings(ingredientId: Long, count: Int) {
+        val trace = Logger.operation("inventory.set")
         viewModelScope.launch {
+            trace.start()
             runCatching { pantryRepo.setServings(ingredientId, count) }
-                .onSuccess { refreshPantryState() }
-                .onFailure { _state.value = _state.value.copy(operationError = "更新份数失败，请稍后重试") }
+                .onSuccess {
+                    refreshPantryState()
+                    trace.succeed()
+                }
+                .onFailure {
+                    trace.fail(it.javaClass.simpleName)
+                    _state.value = _state.value.copy(operationError = "更新份数失败，请稍后重试")
+                }
         }
     }
 
@@ -1040,13 +1055,19 @@ class IngredientPickerViewModel(
      * 移出库存（软失效，保留复购历史；份数清零）。[AI修改]
      */
     fun removeFromPantry(ingredient: Ingredient) {
+        val trace = Logger.operation("inventory.remove")
         viewModelScope.launch {
+            trace.start()
             runCatching { pantryRepo.removeFromPantry(ingredient.id) }
                 .onSuccess {
                     refreshPantryState()
+                    trace.succeed()
                     if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
                 }
-                .onFailure { _state.value = _state.value.copy(operationError = "移出库存失败，请稍后重试") }
+                .onFailure {
+                    trace.fail(it.javaClass.simpleName)
+                    _state.value = _state.value.copy(operationError = "移出库存失败，请稍后重试")
+                }
         }
     }
 
@@ -1057,16 +1078,22 @@ class IngredientPickerViewModel(
      * 不在库存(无可撤销)→静默返回不弹。
      */
     fun removeFromPantryUndoable(ingredient: Ingredient, showUndo: (onUndo: () -> Unit) -> Unit) {
+        val trace = Logger.operation("inventory.remove_undoable")
         viewModelScope.launch {
+            trace.start()
             val snap = runCatching { pantryRepo.snapshotItem(ingredient.id) }.getOrNull()
             if (snap == null || !snap.wasActive) return@launch
             runCatching { pantryRepo.removeFromPantry(ingredient.id) }
                 .onSuccess {
                     refreshPantryState()
+                    trace.succeed()
                     if (_state.value.mainTab == IngredientMainTab.PANTRY) reloadCurrentList()
                     showUndo { restorePantry(snap) }
                 }
-                .onFailure { _state.value = _state.value.copy(operationError = "移出库存失败，请稍后重试") }
+                .onFailure {
+                    trace.fail(it.javaClass.simpleName)
+                    _state.value = _state.value.copy(operationError = "移出库存失败，请稍后重试")
+                }
         }
     }
 
