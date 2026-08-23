@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -78,6 +79,7 @@ data class NextDishUi(
 class HomeViewModel(
     private val dishRepo: DishRepository,
     private val mealRepo: MealRecordRepository,
+    private val mealProjectionRepo: MealProjectionRepository,
     private val prefs: PreferenceRepository,
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 2c：色系墙评级结合当天热量达标度
     private val family: com.sxdbsm.cookbook.data.repository.FamilyRepository, // [AI生成] 达标/摄入按主要关注成员(身体数据+饭量系数份额)。
@@ -213,7 +215,7 @@ class HomeViewModel(
     private val mealReferenceDate = DateTime.today()
 
     val uiState: StateFlow<HomeUiState> =
-        mealRepo.observeUpcomingMealDayContents(mealReferenceDate)
+        mealProjectionRepo.observeUpcomingMealDayContents(mealReferenceDate)
             .map { contents ->
                 HomeUiState(plans = contents.map { MealDayCardProjector.project(it, mealReferenceDate) })
             }
@@ -282,7 +284,7 @@ class HomeViewModel(
      * 固定 1~12 月；UI 默认定位今天所在周、可左右滑。仅功能设置开启营养色系时渲染。
      */
     val nutritionWall: StateFlow<List<DayNutrition>> =
-        combine(mealRepo.observeTimelineWindow(wallStart, wallEnd), explicitGroups) { cards, explicit ->
+        combine(mealProjectionRepo.observeTimelineWindow(wallStart, wallEnd), explicitGroups) { cards, explicit ->
                 // [AI修改] 色系墙=全家膳食结构均衡度(蛋白+主食+蔬果齐不齐)，与成员/热量无关；食材显式大类优先于关键词。
                 // [AI修改] J15：营养大类判定用"主料优先·空则回退全食材"(修 is_main 全0/缺标的问题菜漏判主食)。
                 cards.map { card ->
@@ -329,7 +331,7 @@ class HomeViewModel(
      * 此处不再重复并令牌(避免双重订阅)——observeTimelineWindow 自身已在 eaten_ratio/dish_ingredient 变化时重发新卡片。
      */
     private val todayCards: StateFlow<List<com.sxdbsm.cookbook.domain.model.DayMealCardData>> =
-        mealRepo.observeTimelineWindow(today, today)
+        mealProjectionRepo.observeTimelineWindow(today, today)
             .onEach { cards ->
                 MealDataTraceLogger.uiStateUpdated(
                     feature = "home",
@@ -425,14 +427,14 @@ class HomeViewModel(
      * 显示在色系墙标题下方(块内为年份后两位)；无往年数据则空。随营养色系开关一起显示。
      */
     val yearAverages: StateFlow<List<YearNutrition>> = flow {
-        val (min, _) = runCatching { mealRepo.dateRange() }.getOrDefault(null to null)
+        val (min, _) = runCatching { mealProjectionRepo.dateRange() }.getOrDefault(null to null)
         if (min == null || min.year >= today.year) {
             emit(emptyList())
             return@flow
         }
         val explicit = FoodGroup.explicitFrom(ingredientRepo.foodGroupByName()) // [AI生成] A1：显式大类覆盖
         emitAll(
-            mealRepo.observeTimelineWindow(LocalDate(min.year, 1, 1), LocalDate(today.year - 1, 12, 31)).map { cards ->
+            mealProjectionRepo.observeTimelineWindow(LocalDate(min.year, 1, 1), LocalDate(today.year - 1, 12, 31)).map { cards ->
                 cards.filter { it.meals.isNotEmpty() }
                     .mapNotNull { card ->
                         val mains = card.meals.flatMap { it.dishes }.flatMap { it.mainIngredientNames }

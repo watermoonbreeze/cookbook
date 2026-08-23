@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
-import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.Ingredient
@@ -39,7 +39,7 @@ data class SearchUiState(
 class SearchViewModel(
     private val dishRepo: DishRepository,
     private val ingredientRepo: IngredientRepository,
-    private val mealRepo: MealRecordRepository,
+    private val mealProjectionRepo: MealProjectionRepository,
 ) : ViewModel() {
 
     private companion object {
@@ -71,7 +71,7 @@ class SearchViewModel(
         if (current.keyword.isBlank() || current.loading || current.loadingMoreMeals || !current.canLoadMoreMeals) return
         viewModelScope.launch {
             _state.value = _state.value.copy(loadingMoreMeals = true)
-            val more = mealRepo.searchMealCards(current.keyword, limit = MEAL_PAGE_SIZE, offset = mealOffset)
+            val more = mealProjectionRepo.searchMealCards(current.keyword, limit = MEAL_PAGE_SIZE, offset = mealOffset)
             mealOffset += more.size
             // [AI修改] D：追加读最新 it.meals(非启动前捕获的 current.meals)，用 update{} 避免挂起期并发写被冲掉。
             _state.update {
@@ -103,7 +103,7 @@ class SearchViewModel(
         _state.value = _state.value.copy(loading = true)
         val dishes = dishRepo.searchDishes(trimmed).take(20)
         val ingredients = ingredientRepo.search(trimmed).take(20)
-        val meals = mealRepo.searchMealCards(trimmed, limit = MEAL_PAGE_SIZE, offset = 0)
+        val meals = mealProjectionRepo.searchMealCards(trimmed, limit = MEAL_PAGE_SIZE, offset = 0)
         mealOffset = meals.size.toLong()
         _state.value = _state.value.copy(
             dishes = dishes,

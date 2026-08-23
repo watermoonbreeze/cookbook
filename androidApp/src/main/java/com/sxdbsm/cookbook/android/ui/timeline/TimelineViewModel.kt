@@ -3,6 +3,7 @@ package com.sxdbsm.cookbook.android.ui.timeline
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.util.DateTime
@@ -39,6 +40,7 @@ data class TimelineUiState(
  */
 class TimelineViewModel(
     private val repo: MealRecordRepository,
+    private val projectionRepo: MealProjectionRepository,
 ) : ViewModel() {
 
     private companion object {
@@ -174,7 +176,7 @@ class TimelineViewModel(
     private fun observeTimelineDates() {
         observeJob?.cancel()
         observeJob = viewModelScope.launch {
-            repo.observeTimelineDates().collect { dates ->
+            projectionRepo.observeTimelineDates().collect { dates ->
                 allDates = dates.sorted()
                 if (allDates.isEmpty()) {
                     initialized = false
@@ -210,7 +212,7 @@ class TimelineViewModel(
                 emptyList()
             }
             val referenceDate = today
-            val cards = repo.loadMealDayContentsByDates(visibleDates)
+            val cards = projectionRepo.loadMealDayContentsByDates(visibleDates)
                 .map { MealDayCardProjector.project(it, referenceDate) }
             val prependCount = pendingPrependCount
             pendingPrependCount = 0

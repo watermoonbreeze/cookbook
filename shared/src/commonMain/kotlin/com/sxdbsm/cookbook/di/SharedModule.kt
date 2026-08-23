@@ -11,6 +11,7 @@ import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
 import com.sxdbsm.cookbook.data.repository.HealthProfileRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
@@ -41,6 +42,7 @@ val sharedModule: Module = module {
     single { PantryRepository(get()) }
     single { FoodCategoryRepository(get()) }
     single { MealRecordRepository(get()) }
+    single { MealProjectionRepository(get()) }
     single { MealRecordUseCase(get()) }
     single { ShoppingListRepository(get()) } // [AI生成] 采购清单聚合(今天及未来餐食的采购/缺料汇总)。
     single { PreferenceRepository(get()) }

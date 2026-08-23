@@ -55,13 +55,13 @@ val androidModule = module {
         )
     }
 
-    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 HealthProfileRepository(A-1) + RecommendationDataSource(阶段2 首页下一餐推荐卡)。
+    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] Phase 3 注入只读 MealProjectionRepository；写入仍走 MealRecordRepository。
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
     viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)+MemberDishHealthUseCase(成员化红绿灯)+FamilyRepository(Phase 2 全家并集补个人忌口)
     viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get(), get(), get(), get()) } // [AI修改] MealRecord create/save/query 经 UseCase 门面；其余依赖保持不变。
-    viewModel { TimelineViewModel(get()) }
+    viewModel { TimelineViewModel(get(), get()) }
     viewModel { MineViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 FamilyRepository + 阶段3-c Analytics(匿名统计开关)。
     viewModel { com.sxdbsm.cookbook.android.ui.report.DietReportViewModel(get(), get(), get()) } // [AI生成] 报告模块:MealRecord+Nutrition+Family
     viewModel { com.sxdbsm.cookbook.android.ui.family.FamilyViewModel(get(), get(), get(), get()) } // [AI修改] 家庭成员管理 + 阶段3-b Analytics + D1-2 IngredientRepository(忌口查名收进VM)

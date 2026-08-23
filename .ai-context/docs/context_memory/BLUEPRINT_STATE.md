@@ -676,6 +676,25 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | Next action | ARCH 复核 Phase 顺序、契约边界、诊断分类、AI 元数据非算法约束和静态/设备证据分离；通过后再决定是否 ACCEPTED |
 
 ---
+---
+## COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3_PROJECTION_MIGRATION（2026-08-23）
+|---|---|
+| 任务/批次 | COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3_PROJECTION_MIGRATION |
+| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| 角色 | CODER / IMPLEMENTER |
+| Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3_EXECUTION_PACKAGE.zip` |
+| 基线 commit | `54db71b9d92e4490cf1e79ca9ba95bc320381f9e` |
+| Scope | 新增只读 MealProjectionRepository；迁移 Home、Timeline、Search 餐食读取；保留 legacy read/write API；不改 schema、Domain、AI 或 Recipe/Nutrition |
+| Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3/EVIDENCE.md`；`MealProjectionRepositoryTest`；`MealDayCardProjectorTest`；shared test 与 Android assemble 结果 |
+| Schema diff | 空 |
+| Implementation commit | 待本批次提交 |
+| State update commit | 待本批次提交 |
+| Open issues | 无已发现架构冲突；未迁移的其他 legacy read 属于本阶段外消费者，保留兼容 |
+| Next action | ARCH 复核 Projection Boundary、迁移调用点、兼容性、Evidence 与范围；通过后决定 ACCEPTED |
+
+---
 ## COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2_USECASE_MIGRATION（2026-08-23）
 | 字段 | 值 |
 |---|---|
