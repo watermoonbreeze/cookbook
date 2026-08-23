@@ -689,7 +689,7 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | Scope | 新增只读 MealProjectionRepository；迁移 Home、Timeline、Search 餐食读取；保留 legacy read/write API；不改 schema、Domain、AI 或 Recipe/Nutrition |
 | Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3/EVIDENCE.md`；`MealProjectionRepositoryTest`；`MealDayCardProjectorTest`；shared test 与 Android assemble 结果 |
 | Schema diff | 空 |
-| Implementation commit | 待本批次提交 |
+| Implementation commit | `456fe130` |
 | State update commit | 待本批次提交 |
 | Open issues | 无已发现架构冲突；未迁移的其他 legacy read 属于本阶段外消费者，保留兼容 |
 | Next action | ARCH 复核 Projection Boundary、迁移调用点、兼容性、Evidence 与范围；通过后决定 ACCEPTED |
