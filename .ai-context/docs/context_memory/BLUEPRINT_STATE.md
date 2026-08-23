@@ -17,7 +17,7 @@
 | Evidence | `E-STATE-01`：统一入口选择器使用 `rememberSaveable`；`E-RESTORE-01`：状态 Saver 回归测试 PASS；`E-MERGE-01`：AI 推荐与新建菜品 SavedStateHandle 结果合并并消费；`E-OTHER-01`：搜索/库存为同页 picker，由同一 AddMealViewModel 保持状态 |
 | Tests | `:androidApp:testDebugUnitTest` PASS；`:androidApp:assembleDebug` PASS；专项 `UnifiedAddMealStateTest` PASS |
 | implementation_commit | `cd782504` |
-| state_update_commit | 待本次状态回写提交 |
+| state_update_commit | `03673e06` |
 | Next action | ARCH 审核当前 diff、状态恢复机制与 Evidence；通过后再决定是否 ACCEPTED |
 
 ## CURRENT EXECUTION: COOKBOOK-NEXT-TASK-TRACE-GOVERNANCE-CLOSURE
