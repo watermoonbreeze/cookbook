@@ -69,21 +69,26 @@ def check_meal_flow_contract(root: Path) -> list[str]:
     contract = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/MealFlowStateContract.kt"
     diagnostic = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/TraceDiagnostic.kt"
     capability = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/RecommendationCapability.kt"
+    governance = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/ArchitectureGovernance.kt"
     contract_text = _read_text(contract)
     diagnostic_text = _read_text(diagnostic)
     capability_text = _read_text(capability)
+    governance_text = _read_text(governance)
     for marker in ("SAVE_STATE", "RESTORE_STATE", "MERGE_RESULT"):
         if marker not in contract_text:
             errors.append(f"meal flow contract missing {marker}")
     for flow in REQUIRED_MEAL_FLOW_CODES:
         if flow not in contract_text:
             errors.append(f"meal flow contract missing flow {flow}")
-    for marker in ("diagnose", "FLOW_COMPLETE", "FLOW_INCOMPLETE", "STATE_RESTORE_FAILURE", "MERGE_FAILURE"):
+    for marker in ("diagnose", "FLOW_COMPLETE", "FLOW_INCOMPLETE", "NAVIGATION_FAILURE", "STATE_RESTORE_FAILURE", "STATE_MERGE_FAILURE", "OPERATION_FAILURE"):
         if marker not in diagnostic_text:
             errors.append(f"trace diagnostic missing {marker}")
     for marker in ("RecommendationTrace", "RecommendationReason", "RecommendationFeedback"):
-        if marker not in capability_text:
+        if marker not in capability_text + governance_text:
             errors.append(f"AI capability preparation missing {marker}")
+    for marker in ("DomainState", "PageState", "NavigationState", "NavigationContract", "ResultContract", "RecommendationContext", "FeedbackModel"):
+        if marker not in governance_text:
+            errors.append(f"architecture governance missing {marker}")
 
     app_sources = root / "androidApp/src/main/java"
     app_text = "\n".join(path.read_text(encoding="utf-8") for path in app_sources.rglob("*.kt")) if app_sources.exists() else ""

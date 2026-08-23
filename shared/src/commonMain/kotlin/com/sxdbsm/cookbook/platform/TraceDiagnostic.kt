@@ -10,7 +10,10 @@ object TraceDiagnostic {
     enum class Finding {
         FLOW_PASS,
         FLOW_INCOMPLETE,
+        NAVIGATION_FAILURE,
         STATE_RESTORE_FAILURE,
+        STATE_MERGE_FAILURE,
+        OPERATION_FAILURE,
         MERGE_FAILURE,
     }
 
@@ -62,8 +65,10 @@ object TraceDiagnostic {
         val missing = requiredNodes - observed
         val finding = when {
             missing.isEmpty() -> Finding.FLOW_PASS
+            events.none { it is StructuredLogEvent.Navigation } -> Finding.NAVIGATION_FAILURE
+            events.filterIsInstance<StructuredLogEvent.Operation>().any { it.state == OperationState.FAILED } -> Finding.OPERATION_FAILURE
             Node.RESTORE_STATE in missing -> Finding.STATE_RESTORE_FAILURE
-            Node.MERGE_RESULT in missing -> Finding.MERGE_FAILURE
+            Node.MERGE_RESULT in missing -> Finding.STATE_MERGE_FAILURE
             else -> Finding.FLOW_INCOMPLETE
         }
         return Result(

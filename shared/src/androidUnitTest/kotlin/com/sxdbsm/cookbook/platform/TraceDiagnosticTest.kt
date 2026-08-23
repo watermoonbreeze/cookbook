@@ -39,4 +39,18 @@ class TraceDiagnosticTest {
         assertTrue(result.summary.contains("RESTORE_STATE"))
         assertEquals(TraceDiagnostic.Finding.STATE_RESTORE_FAILURE, result.finding)
     }
+
+    @Test
+    fun diagnosticClassifiesNavigationMergeAndOperationFailures() {
+        val trace = TraceId.fromTestValue("diagnostic-3")
+        val base = listOf<StructuredLogEvent>(
+            StructuredLogEvent.Action(LogLevel.INFO, traceId = trace, screen = "add_meal", action = "open_child", source = "manual"),
+            StructuredLogEvent.StateLifecycle(LogLevel.DEBUG, "state.snapshot.before_navigation", traceId = trace),
+        )
+        assertEquals(TraceDiagnostic.Finding.NAVIGATION_FAILURE, TraceDiagnostic.diagnose(base).finding)
+        val navigated = base + StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.started", trace, "add_meal", "new_dish") + StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.completed", trace, "add_meal", "new_dish") + StructuredLogEvent.StateLifecycle(LogLevel.DEBUG, "state.restore", traceId = trace)
+        assertEquals(TraceDiagnostic.Finding.STATE_MERGE_FAILURE, TraceDiagnostic.diagnose(navigated).finding)
+        val failed = navigated + StructuredLogEvent.Operation(LogLevel.ERROR, "operation.failed", trace, "new_dish.save", OperationState.FAILED)
+        assertEquals(TraceDiagnostic.Finding.OPERATION_FAILURE, TraceDiagnostic.diagnose(failed).finding)
+    }
 }

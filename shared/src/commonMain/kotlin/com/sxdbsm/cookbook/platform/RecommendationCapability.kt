@@ -10,11 +10,6 @@ data class RecommendationTrace(
     val reasonModelVersion: String? = null,
 )
 
-data class RecommendationReason(
-    val code: String,
-    val modelVersion: String? = null,
-)
-
 enum class RecommendationFeedbackAction { ACCEPTED, DISMISSED, EDITED }
 
 data class RecommendationFeedback(
