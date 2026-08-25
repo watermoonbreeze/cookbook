@@ -3,10 +3,8 @@ package com.sxdbsm.cookbook.usecase.mealrecording
 import com.sxdbsm.cookbook.data.repository.DayMealDraft
 import com.sxdbsm.cookbook.data.repository.MealRecordEditData
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.domain.legacy.LegacyMealRecordAdapter
 import com.sxdbsm.cookbook.domain.mealrecording.MealRecord
-import com.sxdbsm.cookbook.domain.mealrecording.MealRecordId
-import com.sxdbsm.cookbook.domain.mealrecording.MealRecordLifecycle
-import com.sxdbsm.cookbook.domain.mealrecording.MealRecordLifecycleContract
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 
@@ -35,7 +33,7 @@ class MealRecordUseCase(private val mealRepository: MealRecordRepository) {
             note = draft.note,
             dishIds = draft.dishIds,
         )
-        return recorded(draft, id)
+        return recorded(id)
     }
 
     suspend fun saveDay(
@@ -51,7 +49,7 @@ class MealRecordUseCase(private val mealRepository: MealRecordRepository) {
             incrementBaselineDate = incrementBaselineDate,
             bumpPreference = bumpPreference,
         )
-        return drafts.zip(ids).map { (draft, id) -> recorded(draft, id) }
+        return ids.map { id -> recorded(id) }
     }
 
     suspend fun queryDayForEdit(date: LocalDate): List<MealRecordEditData> =
@@ -61,19 +59,9 @@ class MealRecordUseCase(private val mealRepository: MealRecordRepository) {
 
     suspend fun deleteDay(date: LocalDate) = mealRepository.deleteDayMeals(date)
 
-    private fun recorded(draft: MealRecordDraft, id: Long): MealRecord {
-        val created = MealRecord(
-            id = MealRecordId(id.toString()),
-            date = draft.date,
-            mealTypeId = draft.mealTypeId,
-            mealName = draft.note,
-            mealTime = draft.mealTime,
-            note = draft.note,
-            dishIds = draft.dishIds,
-            lifecycle = MealRecordLifecycle.CREATED,
-        )
-        return MealRecordLifecycleContract.transition(created, MealRecordLifecycle.RECORDED)
-    }
+    private suspend fun recorded(id: Long): MealRecord =
+        mealRepository.loadMealRecord(id)?.let(LegacyMealRecordAdapter::toDomain)
+            ?: error("Saved meal record $id could not be read back")
 
     private fun MealRecordDraft.toLegacyDraft() = DayMealDraft(
         mealTypeId = mealTypeId,

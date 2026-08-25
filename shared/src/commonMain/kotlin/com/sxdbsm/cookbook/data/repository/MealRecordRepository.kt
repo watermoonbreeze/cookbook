@@ -273,6 +273,27 @@ class MealRecordRepository(private val db: CookbookDatabase) {
     }
 
     /**
+     * Compatibility read API：按 id 回读刚写入的完整餐食事实。
+     *
+     * UseCase 需要由持久化结果构造 Domain 对象，不能用写入草稿猜测餐次名或创建时间。
+     */
+    suspend fun loadMealRecord(id: Long): MealRecord? = withContext(ioDispatcher) {
+        val record = q.selectMealRecordById(id).executeAsOneOrNull() ?: return@withContext null
+        val mealType = q.selectMealTypeById(record.meal_type_id).executeAsOneOrNull()
+            ?: return@withContext null
+        MealRecord(
+            id = record.id,
+            date = DateTime.parseDate(record.date),
+            mealTypeId = record.meal_type_id,
+            mealName = mealType.name,
+            mealTime = DateTime.parseTime(record.meal_time),
+            note = record.note,
+            createdAt = record.created_at,
+            dishes = buildDishesByMealRecord(listOf(record.id))[record.id].orEmpty(),
+        )
+    }
+
+    /**
      * 写入一条 meal_record + 关联菜品。返回新生成的 meal_record id。[AI修改]
      */
     suspend fun save(

@@ -44,6 +44,7 @@ class MealProjectionRepositoryTest {
         val contents = projectionRepository.loadMealDayContentsByDates(listOf(date))
         val dates = projectionRepository.observeTimelineDates().first()
 
+        assertEquals(mealRepository.observeTimelineDates().first(), dates)
         assertEquals(date, contents.single().date)
         assertEquals(1, contents.single().meals.size)
         assertEquals("Projection Test Dish", contents.single().meals.single().dishes.single().name)

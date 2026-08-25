@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FavoriteComboRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.FavoriteCombo
 import com.sxdbsm.cookbook.domain.model.MealType
@@ -82,6 +83,7 @@ data class AddMealUiState(
  */
 class AddMealViewModel(
     private val mealRepo: MealRecordRepository,
+    private val mealProjectionRepository: MealProjectionRepository,
     private val dishRepo: DishRepository,
     private val comboRepo: FavoriteComboRepository,
     private val analytics: com.sxdbsm.cookbook.analytics.Analytics, // [AI生成] 阶段3-b：记一餐埋点(meal_logged·仅餐次枚举)
@@ -112,7 +114,7 @@ class AddMealViewModel(
 
     /** [AI修改] 日期月历直接复用食历同一数据真相源，不逐日查询。 */
     val mealDates: StateFlow<Set<LocalDate>> =
-        mealRepo.observeTimelineDates()
+        mealProjectionRepository.observeTimelineDates()
             .map { it.toSet() }
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
