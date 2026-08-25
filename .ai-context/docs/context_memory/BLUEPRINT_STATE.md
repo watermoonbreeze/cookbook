@@ -680,9 +680,9 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 ## COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3_PROJECTION_MIGRATION（2026-08-23）
 |---|---|
 | 任务/批次 | COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3_PROJECTION_MIGRATION |
-| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
+| 状态 | **ARCH_ACCEPTED** |
+| TURN | **NONE** |
+| Holder | **NONE** |
 | 角色 | CODER / IMPLEMENTER |
 | Blueprint | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE3_EXECUTION_PACKAGE.zip` |
 | 基线 commit | `54db71b9d92e4490cf1e79ca9ba95bc320381f9e` |
@@ -691,23 +691,25 @@ ARCH CURRENT-STATE EVIDENCE READY / TURN=REVIEW
 | Schema diff | 空 |
 | Implementation commit | `456fe130` |
 | State update commit | `5053229d` |
-| Open issues | 无已发现架构冲突；未迁移的其他 legacy read 属于本阶段外消费者，保留兼容 |
-| Next action | ARCH 复核 Projection Boundary、迁移调用点、兼容性、Evidence 与范围；通过后决定 ACCEPTED |
+| Open issues | 无；未迁移的其他 legacy read 属于本阶段外消费者，保留兼容 |
+| Review basis | `456fe130`、`93acdcdf`、`b94ec622` 定向回归；Projection Gate 通过，父阶段 B2 阻断已关闭 |
+| Next action | B1~B3 已收口；Phase 4 仅可按冻结合同进入 Reality/Blueprint，实施需独立批次授权 |
 
 ---
 ## COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2_USECASE_MIGRATION（2026-08-23）
 | 字段 | 值 |
 |---|---|
 | 任务/批次 | COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2_USECASE_MIGRATION |
-| 状态 | **CODE_COMPLETE / PENDING ARCH REVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
+| 状态 | **ARCH_ACCEPTED** |
+| TURN | **NONE** |
+| Holder | **NONE** |
 | 角色 | CODER / IMPLEMENTER |
 | 蓝图包 | `.ai-context/docs/外部方案/在线审核/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_BATCH_PACKAGE.zip` |
 | Phase | Phase 2 — UseCase Migration；仅 create/save/query |
 | 基线 | 当前工作树既有 Phase 1 Domain Boundary Foundation；外部包声明的旧基线与当前代码不一致，未据此回退代码 |
-| implementation_commit | `de1b5d14` |
-| state_update_commit | `552ae80b` |
-| Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2/EVIDENCE.md`；MealRecordUseCaseTest PASS；shared/android 单测与 assembleDebug PASS；无 schema diff |
-| Blueprint conflict | 未发现 Phase 2 范围冲突；Phase 3 Projection、Phase 4 AI、Repository 大重构均未执行 |
-| Next action | ARCH 按 Reality、Boundary、Compatibility、Scope 与 Evidence 复核；通过后再决定是否 ACCEPTED |
+| implementation_commit | `de1b5d14`；定向修复 `b94ec622`（AF-B2-01/02） |
+| state_update_commit | 待本批状态提交后回填 |
+| Evidence | `.ai-context/docs/arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2/EVIDENCE.md`；MealRecordUseCaseTest 3/3、MealProjectionRepositoryTest 1/1、shared 编译、Android assembleDebug 均通过；无 schema diff |
+| Closed AF | AF-B2-01、AF-B2-02 CLOSED@`b94ec622` |
+| Review basis | Sol 定向复审：持久化回读 canonical MealRecord 与 AddMeal Projection 读取边界均通过 |
+| Next action | B2 已收口；进入 Phase 4 前保持既有兼容 API，不提前做 Repository 清理 |

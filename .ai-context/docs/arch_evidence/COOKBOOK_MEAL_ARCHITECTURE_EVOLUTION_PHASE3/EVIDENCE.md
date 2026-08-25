@@ -25,8 +25,9 @@ Phase 3 Projection Migration only. No schema, Legacy Model deletion, Domain rede
 
 - `MealDayCardProjectorTest`: existing projection invariants retained.
 - `MealProjectionRepositoryTest`: verifies projection content and timeline dates preserve stored meal facts.
-- `:androidApp:assembleDebug`: PASS (final run, 2026-08-24).
-- `:shared:testDebugUnitTest`: first cached/full execution returned exit code 0; a subsequent clean test-source recompilation is BLOCKED by pre-existing missing symbols in unrelated tests (`cookingHeaviness`, `isWesternCuisine`, `parseDecimalInput`, `toProjection`, `installCookbookLogSink`). The new production/shared main sources compile successfully as part of Android assemble.
+- `:shared:testDebugUnitTest --rerun-tasks`: 定向 B2/B3 回归 PASS（MealRecordUseCaseTest 3/3、MealProjectionRepositoryTest 1/1）。
+- `:shared:compileDebugKotlinAndroid --rerun-tasks`: PASS；此前 `ioDispatcher` 解析失败经 clean 后重建消除，未归因给 B3。
+- `:androidApp:assembleDebug --rerun-tasks`: PASS（2026-08-25）。
 
 ## Acceptance notes
 
@@ -34,3 +35,4 @@ Phase 3 Projection Migration only. No schema, Legacy Model deletion, Domain rede
 - UI does not receive Storage entities.
 - `MealPlan != MealRecord` and `AI Suggestion != Domain Truth` are unchanged.
 - Device verification is not claimed by this static/unit evidence.
+- Sol 收口复审：B2 父阶段 AF 已关闭，B3 Projection Gate 可随链 `ARCH_ACCEPTED`；本批不包含 Phase 4 AI 代码。
