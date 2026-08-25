@@ -4,6 +4,8 @@ import com.sxdbsm.cookbook.data.repository.DayMealDraft
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.MealType
 import com.sxdbsm.cookbook.platform.ioDispatcher
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordDraft
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -29,6 +31,7 @@ import kotlinx.datetime.plus
 class DayAutoGenerator(
     private val dishGen: DishAutoGenerator,
     private val mealRepo: MealRecordRepository,
+    private val mealRecordUseCase: MealRecordUseCase = MealRecordUseCase(mealRepo),
 ) {
     /**
      * 批量天预览：逐天逐餐逐菜 preview。只读·零写库。[AI生成]
@@ -192,12 +195,14 @@ class DayAutoGenerator(
             }
 
             // 保存
-            val recordIds = mealRepo.saveDayMeals(
+            val records = mealRecordUseCase.saveDay(
                 date = day.date,
-                meals = mergedDrafts,
+                drafts = mergedDrafts.map {
+                    MealRecordDraft(it.mealTypeId, day.date, it.mealTime, it.note, it.dishIds)
+                },
                 bumpPreference = true,
             )
-            if (recordIds.isNotEmpty()) {
+            if (records.isNotEmpty()) {
                 daysSaved++
                 mealsSaved += mergedDrafts.size
             }

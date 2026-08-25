@@ -15,9 +15,12 @@ import com.sxdbsm.cookbook.android.ui.component.DishNutritionUi
 import com.sxdbsm.cookbook.android.ui.component.MacroSummaryUi
 import com.sxdbsm.cookbook.android.ui.component.summarizeMacros
 import com.sxdbsm.cookbook.android.ui.component.toDishNutritionUi
-import com.sxdbsm.cookbook.data.repository.DayMealDraft
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.MealType
+import com.sxdbsm.cookbook.usecase.mealplanning.MealPlanDayDraft
+import com.sxdbsm.cookbook.usecase.mealplanning.MealPlanMealDraft
+import com.sxdbsm.cookbook.usecase.mealplanning.MealPlanSaveResult
+import com.sxdbsm.cookbook.usecase.mealplanning.MealPlanSaveUseCase
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -38,10 +41,11 @@ class AiPlanViewModel(
     private val aiConfig: AiRuntimeConfig,
     private val prefs: com.sxdbsm.cookbook.data.repository.PreferenceRepository, // [AI生成] 读写推荐风格(与AI推荐共用)
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] §9.36:逐日卡每菜营养(整份热量+宏量·与AI推荐同款 DishNutritionLine)
+    private val mealPlanSaveUseCase: MealPlanSaveUseCase,
 ) : ViewModel() {
 
     var state by mutableStateOf(AiPlanUiState())
-        private set
+        internal set
 
     private val orchestrator = PlanOrchestrator(aiRuntime)
     private var mealTypes: List<MealType> = emptyList()
@@ -129,29 +133,53 @@ class AiPlanViewModel(
 
     /** 保存为未来 N 天计划（整日替换）。[AI生成] */
     fun save() {
+        if (state.saving) return
         val plan = state.plan ?: return
+        savePlan(plan, confirmedConflicts = null)
+    }
+
+    fun confirmOverwrite() {
+        if (state.saving) return
+        val conflicts = state.pendingConflictDates
+        if (conflicts.isNotEmpty()) savePlan(state.plan ?: return, conflicts)
+    }
+
+    fun dismissOverwrite() {
+        state = state.copy(pendingConflictDates = emptySet())
+    }
+
+    private fun savePlan(plan: PeriodPlan, confirmedConflicts: Set<LocalDate>?) {
+        val start = state.planStartDate ?: DateTime.today()
+        val days = plan.days.map { day ->
+            val date = DateTime.plusDays(start, day.dayIndex)
+            MealPlanDayDraft(
+                date = date,
+                meals = day.meals.mapNotNull { meal ->
+                    val mealType = mealTypes.firstOrNull { it.name == meal.mealName } ?: return@mapNotNull null
+                    MealPlanMealDraft(mealType.id, meal.mealName, mealType.defaultTime, dishIds = meal.dishes.map { it.id })
+                },
+            )
+        }
+        state = state.copy(saving = true, error = null)
         viewModelScope.launch {
-            state = state.copy(saving = true)
-            runCatching {
-                // [AI修改] 用生成时确定的起始日(食历最晚日期次日)，而非今天，保证接在现有餐食之后。
-                val start = state.planStartDate ?: DateTime.today()
-                plan.days.forEach { day ->
-                    val date = DateTime.plusDays(start, day.dayIndex)
-                    val drafts = day.meals.mapNotNull { meal ->
-                        val mt = mealTypes.firstOrNull { it.name == meal.mealName } ?: return@mapNotNull null
-                        DayMealDraft(mealTypeId = mt.id, mealTime = mt.defaultTime, note = "", dishIds = meal.dishes.map { it.id })
+            runCatching { mealPlanSaveUseCase.save(days, confirmedConflicts) }
+                .onSuccess { result ->
+                    when (result) {
+                        is MealPlanSaveResult.Conflict -> state = state.copy(
+                            saving = false,
+                            pendingConflictDates = result.dates,
+                        )
+                        is MealPlanSaveResult.Saved -> state = state.copy(
+                            saving = false,
+                            saved = true,
+                            pendingConflictDates = emptySet(),
+                        )
                     }
-                    if (drafts.isNotEmpty()) mealRepo.saveDayMeals(date, drafts)
                 }
-            }.onSuccess {
-                state = state.copy(saving = false, saved = true)
-            }.onFailure {
-                state = state.copy(saving = false, error = "保存失败，请稍后再试")
-            }
+                .onFailure { state = state.copy(saving = false, error = "保存失败，请稍后再试") }
         }
     }
 
-    /** generate 一次产出的聚合结果（比 Triple 清晰·含营养线）。[AI生成] */
     private data class PlanGenResult(
         val plan: PeriodPlan,
         val season: String,
@@ -190,4 +218,5 @@ data class AiPlanUiState(
     val dailyMacro: Map<Int, MacroSummaryUi> = emptyMap(), // [AI生成] §9.37:每日宏量小计(按 dayIndex·hasData=false 则逐日卡不显)
     val weekMacro: MacroSummaryUi? = null, // [AI生成] §9.37:整周宏量合计(概览卡"一周合计"区·null/hasData=false 则不显)
     val error: String? = null,
+    val pendingConflictDates: Set<LocalDate> = emptySet(),
 )

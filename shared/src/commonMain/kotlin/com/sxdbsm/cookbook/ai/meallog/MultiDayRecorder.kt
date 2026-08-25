@@ -19,6 +19,7 @@ import com.sxdbsm.cookbook.domain.autogen.SemanticDish
 import com.sxdbsm.cookbook.domain.autogen.SemanticIngredient
 import com.sxdbsm.cookbook.domain.autogen.SemanticMeal
 import com.sxdbsm.cookbook.platform.ioDispatcher
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 
@@ -64,6 +65,7 @@ class MultiDayRecorder(
     private val nutritionRepo: NutritionRepository,
     private val aliasResolver: IngredientAliasResolver,
     private val db: CookbookDatabase, // [AI修改] 每次新鲜 load AutoGenContext，避免 suspend 进 Koin + 确保字典反映最新 DB 状态
+    private val mealRecordUseCase: MealRecordUseCase = MealRecordUseCase(mealRepo),
 ) {
 
     /** DayMealJson → SemanticDay 映射（供 recordAll / previewAll 共用）。[AI修改] */
@@ -106,7 +108,7 @@ class MultiDayRecorder(
     private fun buildDayGen(): DayAutoGenerator {
         val ingredientGen = IngredientAutoGenerator(ingredientRepo, nutritionRepo)
         val dishGen = DishAutoGenerator(dishRepo, ingredientGen)
-        return DayAutoGenerator(dishGen, mealRepo)
+        return DayAutoGenerator(dishGen, mealRepo, mealRecordUseCase)
     }
 
     /**

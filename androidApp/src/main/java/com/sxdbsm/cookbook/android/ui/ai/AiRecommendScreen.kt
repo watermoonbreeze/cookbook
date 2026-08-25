@@ -158,6 +158,18 @@ fun AiRecommendScreen(
         if (planState.saved) snackbar.showSnackbar("已保存到未来 ${planState.plan?.days?.size ?: 0} 天计划")
     }
 
+    if (planState.pendingConflictDates.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = planVm::dismissOverwrite,
+            title = { Text("计划与已有餐食冲突") },
+            text = {
+                Text("以下日期已有餐食记录：${planState.pendingConflictDates.sorted().joinToString()}。确认后会按整日替换这些日期的餐食。")
+            },
+            dismissButton = { TextButton(onClick = planVm::dismissOverwrite) { Text("取消") } },
+            confirmButton = { TextButton(onClick = planVm::confirmOverwrite) { Text("覆盖") } },
+        )
+    }
+
     Scaffold(
         topBar = {
             // [AI修改] B-8(§9.15)：AppTopBar 收敛；副标题标注当前推荐来源(云端/本地/离线规则)。

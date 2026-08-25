@@ -13,6 +13,7 @@ import com.sxdbsm.cookbook.data.repository.IngredientRepository
 import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
+import com.sxdbsm.cookbook.usecase.mealplanning.MealPlanSaveUseCase
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.data.repository.ShoppingListRepository
@@ -44,6 +45,7 @@ val sharedModule: Module = module {
     single { MealRecordRepository(get()) }
     single { MealProjectionRepository(get()) }
     single { MealRecordUseCase(get()) }
+    single { MealPlanSaveUseCase(get()) }
     single { ShoppingListRepository(get()) } // [AI生成] 采购清单聚合(今天及未来餐食的采购/缺料汇总)。
     single { PreferenceRepository(get()) }
     single { HealthProfileRepository(get()) }
@@ -61,7 +63,7 @@ val sharedModule: Module = module {
     // [AI生成] K1f 别名归一·从 seed JSON 构建·静态不变·可单测
     single { IngredientAliasResolver.fromJson(SeedResourceLoader.readText("seed/ingredient_aliases.json") ?: "{}") }
     // [AI生成] 自动化基础能力层 Phase 1-4 入库适配器；AutoGenContext 在 recordAll 内按需 load（保持字典新鲜）
-    single { com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder(get(), get(), get(), get(), get(), get()) }
+    single { com.sxdbsm.cookbook.ai.meallog.MultiDayRecorder(get(), get(), get(), get(), get(), get(), get()) }
     // [AI生成] 选择性同步：导出/合并导入 菜品/食材/库存/健康/收藏/餐食。
     single { com.sxdbsm.cookbook.sync.SyncRepository(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     // [AI生成] 阶段3 匿名统计埋点抽象层：Analytics=同意闸门(默认关·App 启动读偏好 setEnabled、设置开关驱动)。
