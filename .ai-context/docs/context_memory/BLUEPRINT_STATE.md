@@ -11,21 +11,21 @@
 | 禁止结论 | 不得写 `ARCH_ACCEPTED`、`ACCEPTED`、`CLOSED` |
 | 证据 | `architecture/ADR-0002-observability-trace.md`；`arch_evidence/MEAL-DATA-CONSOLIDATION-03/MDC3_CLOSE_PREPARATION.md` |
 
-## CURRENT EXECUTION: COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION
+## SUPERSEDED: COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION
 
 | Field | Value |
 |---|---|
 | Batch | COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION |
-| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
-| Blueprint | `COOKBOOK_MEAL_DOMAIN_ARCHITECTURE_BLUEPRINT`（ARCH 已冻结；本执行包提供执行约束） |
-| Scope | Canonical Meal Domain Model、Meal Lifecycle Contract、Projection/AI/Legacy Adapter Boundary、Contract Tests；不改 schema、旧模型、Repository、推荐算法或用户流程 |
-| Evidence | `arch_evidence/COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION/EVIDENCE.md`；MealDomainContractTest PASS；`:shared:testDebugUnitTest` PASS；architecture quality PASS；schema diff 为空 |
+| State | **ARCH_REJECTED / SUPERSEDED** |
+| TURN | **NONE** |
+| Holder | **—** |
+| Blueprint | 旧 `COOKBOOK_MEAL_DOMAIN_ARCHITECTURE_BLUEPRINT`；已被 Reality Verification `8dc15767` 及 MealPlanning/MealRecording 双边界实现取代 |
+| Scope | 不再实施单一 Meal Aggregate；旧 `domain.meal` 仅兼容保留，等待 Phase 6 Legacy Retirement Evaluation，不在本批删除或接入生产 |
+| Evidence | Sol 复核 AF-MDC-01~04：旧蓝图与现行双边界冲突、生命周期/Identity 合同不完整、Evidence 不能证明生产边界 |
 | Implementation commit | `3ba8ea45` |
-| State update commit | 待本批状态提交后回填 |
-| Open issues | 无；Blueprint 正文未随 Execution Package 提供，未据此新增未冻结语义 |
-| Next action | ARCH 按 Acceptance Gate 复核 Identity、Lifecycle、Boundary、Projection、AI、Scope 与 Evidence；通过后再决定 ACCEPTED |
+| State update commit | 待本次治理提交回填 |
+| Open issues | AF-MDC-01~04 CLOSED AS SUPERSEDED（非代码修复）；不得把旧模型接入生产 |
+| Next action | 确认 Phase 4 已正式落账后，为 Phase 5 Repository Boundary Cleanup 开启独立 Reality Verification 与新蓝图 |
 
 ## CURRENT EXECUTION: COOKBOOK-MEAL-DOMAIN-GOVERNANCE-AI-CAPABILITY-PREPARATION-PHASE
 

@@ -1,5 +1,7 @@
 # COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION Evidence
 
+> 2026-08-26 Sol 架构裁决：`ARCH_REJECTED / SUPERSEDED`。本 Evidence 仅保留历史可追溯性；不得据此将旧单一 `Meal` 模型接入生产。现行真相为 MealPlanning / MealRecording / FoodKnowledge 双边界，旧包留待 Phase 6 Legacy Retirement Evaluation。
+
 ## Scope
 
 - Execution Package：`COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION_PACKAGE.zip`
