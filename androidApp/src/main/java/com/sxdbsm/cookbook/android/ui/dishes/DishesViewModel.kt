@@ -281,11 +281,11 @@ class DishesViewModel(
      */
     fun requestDeleteDish(dish: DishMini) {
         viewModelScope.launch {
-            AppLogger.d(TAG, "request delete dish: id=${dish.id} name=${dish.name}")
+            AppLogger.d(TAG, "dish_delete_requested")
             _deleteState.value = DishDeleteState(checking = true)
             runCatching { dishRepo.listMealReferencesByDish(dish.id) }
                 .onSuccess { references ->
-                    AppLogger.d(TAG, "delete reference check: id=${dish.id} refs=${references.size}")
+                    AppLogger.d(TAG, "dish_delete_reference_checked reference_count=${references.size}")
                     _deleteState.value = if (references.isNotEmpty()) {
                         DishDeleteState(warningDish = dish, warningReferences = references)
                     } else {
@@ -293,7 +293,7 @@ class DishesViewModel(
                     }
                 }
                 .onFailure { error ->
-                    AppLogger.e(TAG, "delete reference check failed: id=${dish.id}", error)
+                    AppLogger.e(TAG, "dish_delete_reference_check_failed error_type=${error.javaClass.simpleName}")
                     _deleteState.value = DishDeleteState(errorMessage = "检查菜品引用失败，请稍后重试")
                 }
         }
@@ -305,16 +305,16 @@ class DishesViewModel(
     fun confirmDeleteDish() {
         val dish = _deleteState.value.pendingDish ?: return
         viewModelScope.launch {
-            AppLogger.d(TAG, "confirm delete dish: id=${dish.id} name=${dish.name}")
+            AppLogger.d(TAG, "dish_delete_confirmed")
             _deleteState.value = _deleteState.value.copy(checking = true)
             runCatching { dishRepo.deleteDish(dish.id) }
                 .onSuccess {
-                    AppLogger.d(TAG, "delete dish success: id=${dish.id}")
+                    AppLogger.d(TAG, "dish_delete_succeeded")
                     _deleteState.value = DishDeleteState()
                     refresh()
                 }
                 .onFailure { error ->
-                    AppLogger.e(TAG, "delete dish failed: id=${dish.id}", error)
+                    AppLogger.e(TAG, "dish_delete_failed error_type=${error.javaClass.simpleName}")
                     _deleteState.value = DishDeleteState(errorMessage = "删除菜品失败，请稍后重试")
                 }
         }

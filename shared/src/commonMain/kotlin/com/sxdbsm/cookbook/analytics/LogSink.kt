@@ -15,6 +15,6 @@ import com.sxdbsm.cookbook.platform.CookbookLog
  **/
 class LogSink : AnalyticsSink {
     override fun emit(event: AnalyticsEvent) {
-        CookbookLog.d(ANALYTICS_LOG_TAG, "event=${event.name} params=${event.params}")
+        CookbookLog.d(ANALYTICS_LOG_TAG, "analytics.emit event=${event.name} param_count=${event.params.size}")
     }
 }

@@ -1,5 +1,12 @@
 # 🔖 SESSION 交接入口
 
+## OBS-NEXT C批收口
+
+- 已确认：`OBS-NEXT-A/B=AUTOMATED_GATES_PASS`。
+- 未确认：`Runtime=PENDING_DEVICE_VERIFICATION`；不能声称真机 PASS、`ARCH_ACCEPTED`、`ACCEPTED` 或 `CLOSED`。
+- 用户决定：真机验证末期统一执行；该待验证项不阻断当前代码。
+- 引用：`architecture/ADR-0002-observability-trace.md`、`arch_evidence/MEAL-DATA-CONSOLIDATION-03/MDC3_CLOSE_PREPARATION.md`。
+
 > **COOKBOOK Meal Architecture Evolution Phase 2 CODE 交付（2026-08-23）**：已读取 `COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_BATCH_PACKAGE.zip`，仅执行 UseCase Migration。新增 `MealRecordUseCase`/`MealRecordDraft`，AddMeal 的 create/save/query 相关入口经 UseCase 编排，保留 `MealRecordRepository`、旧模型、`meal_record` storage 和 Legacy Adapter；未执行 Projection/AI/Repository/Schema 变更。专项 UseCase 测试、`:shared:testDebugUnitTest`（117 tests）、`:androidApp:testDebugUnitTest`（15 tests）、`:androidApp:assembleDebug` 均通过。Evidence 已写入 `arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE2/EVIDENCE.md`，BLUEPRINT_STATE 已转 `CODE_COMPLETE / PENDING ARCH REVIEW`、`TURN=REVIEW`；待提交 hash 回填后由 ARCH 复核。
 
 > **COOKBOOK-OBSERVABILITY-AND-MEAL-FLOW-GOVERNANCE-PHASE CODE 交付（2026-08-23）**：已按任务包 `COOKBOOK_OBSERVABILITY_AND_MEAL_FLOW_GOVERNANCE_PHASE.zip` 完成 Trace Diagnostic、Architecture Quality 门禁增强、五类 Meal Flow State Contract（AI Recommend/Food Search/Inventory Select/New Dish/Edit Meal）及经验沉淀。统一语义为 SAVE STATE → RESTORE STATE → MERGE RESULT；库存明确为同页 operation-backed，不伪造导航回传。静态门禁与 Python 4 tests、`:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均通过；真机尚未执行，保持待验证。当前 `BLUEPRINT_STATE.md` 已转 `CODE_COMPLETE / PENDING ARCH REVIEW`、`TURN=REVIEW`。实现/状态原子交付记录为 `d54d214b10c0`，等待 ARCH 复核。

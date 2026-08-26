@@ -94,7 +94,7 @@ fun NewDishScreen(
      * 页面入口统一交给 ViewModel 处理，避免编辑、新建、导入在同一实例中串状态。[AI修改]
      */
     LaunchedEffect(editingDishId, importDishId) {
-        AppLogger.d("NewDishEdit", "screen start effect: editingDishId=$editingDishId importDishId=$importDishId") // [AI生成] 记录页面收到的导航参数。
+        AppLogger.d("NewDishEdit", "screen_start")
         vm.start(editingDishId, importDishId)
         // [AI生成] 消费预填(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)——仅纯新建(无编辑/导入)时。
         if (editingDishId == null && importDishId == null) {
@@ -120,7 +120,7 @@ fun NewDishScreen(
     LaunchedEffect(state.editingId, state.loading, state.name, state.tags.size, state.ingredients.size, state.errorMessage) {
         AppLogger.d(
             "NewDishEdit",
-            "ui state snapshot: editingId=${state.editingId} loading=${state.loading} name=${state.name} tags=${state.tags.size} ingredients=${state.ingredients.size} error=${state.errorMessage}",
+            "ui_state loading=${state.loading} tag_count=${state.tags.size} ingredient_count=${state.ingredients.size} has_error=${state.errorMessage != null}",
         ) // [AI生成] 记录 Compose 实际收到的表单状态，排查“Toast 成功但界面空白”是否为状态覆盖或渲染问题。
     }
 

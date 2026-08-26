@@ -26,6 +26,7 @@ class CookbookApplication : Application() {
         // [AI生成] 仅可调试(debug)包开启 shared 诊断日志(如库存推荐 PantryRec)；release 包默认关闭，避免生产开销与信息泄露。
         CookbookDiag.enabled = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         CookbookStorage.init(this) // [AI生成] P0：尽早存下 app Context，存储目录改用 app 专属目录、无需权限门禁。
+        com.sxdbsm.cookbook.android.util.MainProcessLoggingPolicy.install(this)
         startKoin {
             androidLogger(Level.INFO)
             androidContext(this@CookbookApplication)

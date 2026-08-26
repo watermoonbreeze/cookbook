@@ -6,6 +6,8 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.SoupKitchen
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.sxdbsm.cookbook.platform.TraceId
+import java.util.UUID
 
 /**
  * 应用内路由常量与构造方法。[AI修改]
@@ -26,10 +28,10 @@ object Routes {
     const val MINE = "mine"
     const val COOKING_TIMER = "cooking_timer"
     // [AI修改] F#7:加可选 slot 参数(ai.MealSlot.code)——从餐次块进入时带该餐次预选推荐；空/缺省=全部(默认值,不改原行为)。
-    const val AI_RECOMMEND = "ai_recommend?returnResult={returnResult}&slot={slot}" // [AI生成] AI 推荐下一餐
-    fun aiRecommend() = "ai_recommend?returnResult=false" // 从首页/我的进入：选它开新加餐页(不带 slot→默认全部)
+    const val AI_RECOMMEND = "ai_recommend?returnResult={returnResult}&slot={slot}&traceId={traceId}"
+    fun aiRecommend(traceId: String) = "ai_recommend?returnResult=false&slot=&traceId=$traceId"
     // [AI修改] F#7:从餐次块进入带该餐次 slot(code)预选；slot 为空则同原行为(全部)。
-    fun aiRecommendForMeal(slot: String = "") = "ai_recommend?returnResult=true&slot=$slot" // 从餐次块进入：选它回传该餐次
+    fun aiRecommendForMeal(slot: String = "", traceId: String) = "ai_recommend?returnResult=true&slot=$slot&traceId=$traceId"
     const val AI_SETTINGS = "ai_settings" // [AI生成] AI 设置(Key/运行时)
     const val FAMILY = "family"
     const val FAMILY_STATS = "family_stats" // [AI生成] 膳食统计 // [AI生成] 家庭成员管理
@@ -71,6 +73,12 @@ object Routes {
 
     const val COOK_MODE = "cook/{dishId}" // [AI生成] 分步烹饪全屏
     fun cookMode(dishId: Long) = "cook/$dishId"
+}
+
+/** Reject malformed deep-link arguments before they can start an AI recommendation flow. */
+internal fun requireAiRecommendRouteTrace(value: String): TraceId {
+    require(runCatching { UUID.fromString(value) }.isSuccess) { "Invalid recommendation route trace ID" }
+    return TraceId.fromValue(value)
 }
 
 /**

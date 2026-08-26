@@ -9,7 +9,6 @@ import com.sxdbsm.cookbook.platform.LogLevel
 import com.sxdbsm.cookbook.platform.StructuredLogEvent
 import com.sxdbsm.cookbook.platform.StructuredLogJson
 import com.sxdbsm.cookbook.platform.installCookbookLogSink
-import java.io.File
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -23,10 +22,8 @@ object AppLogger {
     private val executor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "cookbook-file-logger").apply { isDaemon = true }
     }
-    private val dayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
     private val appSessionId = java.util.UUID.randomUUID().toString()
     private val sequence = AtomicLong(0)
-    private val writeLock = Any()
     @Volatile private var appContext: Context? = null
     @Volatile private var crashHandlerInstalled = false
     @Volatile private var sessionStarted = false
@@ -125,16 +122,8 @@ object AppLogger {
     }
 
     private fun appendEvent(context: Context, event: StructuredLogEvent) {
-        synchronized(writeLock) {
-            val line = StructuredLogJson.encode(event, System.currentTimeMillis(), appSessionId, sequence.incrementAndGet())
-            appendLine(context, line)
-        }
-    }
-
-    private fun appendLine(context: Context, line: String) {
-        val dir = CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME, context)
-        val file = File(dir, "${dayFormat.format(Date())}.log")
-        file.appendText(line + "\n")
+        val line = StructuredLogJson.encode(event, System.currentTimeMillis(), appSessionId, sequence.incrementAndGet())
+        JsonlLogWriter.append(context, line)
     }
 
     private fun logcat(priority: Int, tag: String, message: String, throwable: Throwable?) {

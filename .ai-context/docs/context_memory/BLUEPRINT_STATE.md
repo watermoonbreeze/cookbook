@@ -1,5 +1,16 @@
 # BLUEPRINT_STATE
 
+## OBS-NEXT C批文档收口（2026-08-26）
+
+| 字段 | 值 |
+|---|---|
+| 批次 | `OBS-NEXT-A/B` |
+| 自动化门禁 | `AUTOMATED_GATES_PASS` |
+| Runtime | `PENDING_DEVICE_VERIFICATION` |
+| 真机安排 | 用户决定末期统一执行；当前不阻断代码 |
+| 禁止结论 | 不得写 `ARCH_ACCEPTED`、`ACCEPTED`、`CLOSED` |
+| 证据 | `architecture/ADR-0002-observability-trace.md`；`arch_evidence/MEAL-DATA-CONSOLIDATION-03/MDC3_CLOSE_PREPARATION.md` |
+
 ## CURRENT EXECUTION: COOKBOOK_MEAL_DOMAIN_CONSOLIDATION_EXECUTION
 
 | Field | Value |

@@ -195,10 +195,10 @@ class AddMealViewModel(
             return // [AI修改] F7：用户手动改过日期后，返回重组不再重载，避免丢失"改到新日期+当前内容"。
         }
         if (configured && pendingEditDate == editDate && _state.value.mealBlocks.isNotEmpty()) {
-            AppLogger.d(TAG, "configure skip reload: editDate=$editDate currentDate=${_state.value.date} blocks=${_state.value.mealBlocks.size}") // [AI生成] 排查返回新建菜品后是否误触发重载。
+            AppLogger.d(TAG, "configure_reload_skipped")
             return // [AI修改] 页面从新建菜品返回时可能重新组合，入口日期相同则保留当前未保存表单，避免旧餐食覆盖用户编辑。
         }
-        AppLogger.d(TAG, "configure load: editDate=$editDate mealTypes=${_state.value.mealTypes.size} configured=$configured") // [AI生成] 记录入口配置触发加载的参数。
+        AppLogger.d(TAG, "configure_load_started")
         configured = true
         pendingEditDate = editDate
         if (_state.value.mealTypes.isNotEmpty()) {
@@ -231,10 +231,10 @@ class AddMealViewModel(
             val occupied = mealRecordUseCase.queryDayForEdit(date).isNotEmpty()
             if (occupied) {
                 // [AI修改] 冲突时日期不变，也不置 userPickedDate(避免污染后续 configure 重载判断)。
-                AppLogger.d(TAG, "setDate conflict: date=$date already has meals")
+                AppLogger.d(TAG, "date_change_conflict existing_meals=true")
                 _state.value = _state.value.copy(dateWarning = "$date 已经有餐食了，请到食历里编辑那天，或选一个空日期")
             } else {
-                AppLogger.d(TAG, "setDate move: date=$date previous=${_state.value.date} (保留当前餐次)")
+                AppLogger.d(TAG, "date_change_applied")
                 userPickedDate = true // 仅成功改到空日期时才标记"用户改过日期"
                 pendingEditDate = date
                 _state.value = _state.value.copy(date = date, isPlan = date > DateTime.today(), dateWarning = null)
@@ -267,7 +267,7 @@ class AddMealViewModel(
             mealBlocks = _state.value.mealBlocks + block,
             activeBlockId = block.id,
         )
-        AppLogger.d(TAG, "add meal block: blockId=${block.id} mealTypeId=${block.mealTypeId} time=${block.mealTime}") // [AI生成] 记录新增餐食模块默认餐次和时间。
+        AppLogger.d(TAG, "meal_block_added")
     }
 
     /**
@@ -281,7 +281,7 @@ class AddMealViewModel(
             mealBlocks = blocks,
             activeBlockId = blocks.firstOrNull()?.id,
         )
-        AppLogger.d(TAG, "remove meal block: blockId=$blockId remaining=${blocks.map { it.id }}") // [AI生成] 记录删除餐食模块后的剩余模块。
+        AppLogger.d(TAG, "meal_block_removed remaining_count=${blocks.size}")
     }
 
     /**
@@ -319,18 +319,18 @@ class AddMealViewModel(
      */
     fun setActiveBlock(blockId: Long) {
         _state.value = _state.value.copy(activeBlockId = blockId)
-        AppLogger.d(TAG, "set active block: blockId=$blockId") // [AI生成] 记录当前菜品选择目标餐食模块。
+        AppLogger.d(TAG, "active_block_changed")
     }
 
     /**
      * 向指定餐食模块添加菜品。[AI修改]
      */
     fun addDishes(blockId: Long, dishes: List<DishMini>) {
-        AppLogger.d(TAG, "add dishes request: blockId=$blockId dishIds=${dishes.map { it.id }} current=${_state.value.mealBlocks.firstOrNull { it.id == blockId }?.dishes?.map { it.id }}") // [AI生成] 记录加入菜品前后的关键输入。
+        AppLogger.d(TAG, "dishes_add_requested count=${dishes.size}")
         updateBlock(blockId) { block ->
             block.copy(dishes = (block.dishes + dishes).distinctBy { it.id })
         }
-        AppLogger.d(TAG, "add dishes result: blockId=$blockId result=${_state.value.mealBlocks.firstOrNull { it.id == blockId }?.dishes?.map { it.id }}") // [AI生成] 记录去重合并后的菜品列表。
+        AppLogger.d(TAG, "dishes_add_applied")
     }
 
     /**
@@ -341,11 +341,11 @@ class AddMealViewModel(
             onMerged(false)
             return
         }
-        AppLogger.d(TAG, "add created dish begin: dishId=$dishId blockId=$blockId") // [AI生成] 记录新建菜品回填开始。
+        AppLogger.d(TAG, "created_dish_add_started")
         viewModelScope.launch {
             val dish = dishRepo.getDishMiniById(dishId)
             if (dish != null) {
-                AppLogger.d(TAG, "add created dish loaded: dishId=$dishId name=${dish.name} blockId=$blockId") // [AI生成] 记录新建菜品轻量信息读取成功。
+                AppLogger.d(TAG, "created_dish_loaded")
                 addDishes(blockId, listOf(dish))
                 onMerged(true)
             } else {
@@ -394,11 +394,11 @@ class AddMealViewModel(
      * 从指定餐食模块移除菜品。[AI修改]
      */
     fun removeDish(blockId: Long, dishId: Long) {
-        AppLogger.d(TAG, "remove dish request: blockId=$blockId dishId=$dishId before=${_state.value.mealBlocks.firstOrNull { it.id == blockId }?.dishes?.map { it.id }}") // [AI生成] 记录删除菜品前列表，排查编辑回退。
+        AppLogger.d(TAG, "dish_remove_requested")
         updateBlock(blockId) { block ->
             block.copy(dishes = block.dishes.filterNot { it.id == dishId })
         }
-        AppLogger.d(TAG, "remove dish result: blockId=$blockId after=${_state.value.mealBlocks.firstOrNull { it.id == blockId }?.dishes?.map { it.id }}") // [AI生成] 记录删除后列表。
+        AppLogger.d(TAG, "dish_remove_applied")
     }
 
     /**
@@ -433,8 +433,7 @@ class AddMealViewModel(
             }
         if (drafts.isEmpty()) return
         val trace = Logger.operation("meal.save")
-        emitMealSaveTrace(trace, "meal.save.clicked", OperationState.CREATED)
-        AppLogger.d(TAG, "save meals begin: date=${s.date} drafts=${drafts.map { it.mealTypeId to it.dishIds }}") // [AI生成] 记录保存前的餐食草稿摘要。
+        AppLogger.d(TAG, "meal_save_started block_count=${drafts.size} dish_count=${drafts.sumOf { it.dishIds.size }}")
         viewModelScope.launch {
             // [AI修改] viewModelScope 会随 ViewModel 销毁自动取消，避免页面关闭后继续持有 UI。
             // [AI修改] D10：saving 标志用最新 _state.value 写回(不用启动前捕获的 s 快照)，避免理论上冲掉并发字段。
@@ -443,20 +442,17 @@ class AddMealViewModel(
             try {
                 // [AI修改] 抬喜爱度基线=loadedFromDate：编辑同日=本日、移动=来源日、新增=null(视目标日)。
                 // 修"移动到空日期时把来源日已计过的菜再+1"的 bug。
-                emitMealSaveTrace(trace, "repository.operation", OperationState.RUNNING)
                 mealRecordUseCase.saveDay(date = s.date, drafts = drafts, incrementBaselineDate = loadedFromDate)
                 // [AI生成] F7：若本次是编辑已有某天并把日期改到了新日期(移动)，保存到新日期后删除旧日期，避免重复。
                 val from = loadedFromDate
                 if (from != null && from != s.date) {
-                    AppLogger.d(TAG, "move meals: delete old date=$from after saving to ${s.date}")
+                    AppLogger.d(TAG, "meal_move_delete_source")
                     mealRecordUseCase.deleteDay(from)
                 }
-                emitMealSaveTrace(trace, "repository.operation", OperationState.SUCCEEDED)
-                AppLogger.d(TAG, "save meals success: date=${s.date} drafts=${drafts.size}") // [AI生成] 记录保存成功。
+                AppLogger.d(TAG, "meal_save_succeeded block_count=${drafts.size}")
                 AppLogger.event(
                     "meal_save",
                     mapOf(
-                        "date" to s.date,
                         "blockCount" to drafts.size,
                         "dishCount" to drafts.sumOf { it.dishIds.size },
                         "success" to true,
@@ -472,20 +468,15 @@ class AddMealViewModel(
                 else null
                 _state.value = _state.value.copy(saving = false, done = true, careHint = hint, errorMessage = null)
                 trace.succeed()
-                emitMealSaveTrace(trace, "operation.finished", OperationState.SUCCEEDED)
             } catch (e: CancellationException) {
                 trace.cancel()
-                emitMealSaveTrace(trace, "operation.finished", OperationState.CANCELLED)
                 throw e
             } catch (e: Throwable) {
-                emitMealSaveTrace(trace, "repository.operation", OperationState.FAILED, e)
                 trace.fail(e.javaClass.simpleName)
-                emitMealSaveTrace(trace, "operation.finished", OperationState.FAILED, e)
-                AppLogger.e(TAG, "save meals failed: date=${s.date}", e) // [AI生成] 记录保存失败异常。
+                AppLogger.e(TAG, "meal_save_failed error_type=${e.javaClass.simpleName}")
                 AppLogger.event(
                     "meal_save",
                     mapOf(
-                        "date" to s.date,
                         "blockCount" to drafts.size,
                         "dishCount" to drafts.sumOf { draft -> draft.dishIds.size },
                         "success" to false,
@@ -498,24 +489,6 @@ class AddMealViewModel(
                 )
             } // [AI生成] 保存失败时保持页面可操作并给出错误提示，避免崩溃或卡在保存中。
         }
-    }
-
-    private fun emitMealSaveTrace(
-        trace: com.sxdbsm.cookbook.platform.OperationTrace,
-        event: String,
-        state: OperationState,
-        error: Throwable? = null,
-    ) {
-        Logger.emit(
-            StructuredLogEvent.Operation(
-                level = if (state == OperationState.FAILED) LogLevel.ERROR else LogLevel.DEBUG,
-                event = event,
-                traceId = trace.traceId,
-                operation = "meal.save",
-                state = state,
-                errorType = error?.javaClass?.simpleName,
-            ),
-        )
     }
 
     private fun newBlock(defaultType: MealType?): MealBlockUiState {
@@ -584,7 +557,7 @@ class AddMealViewModel(
             minSelectableDate = today, // [AI修改] J18:放低到today——复制不锁死在"末次餐食之后"，允许用户复制到今天/明天/任意未来日
         )
         markBaseline() // [AI生成] 复制加载完成记基线
-        AppLogger.d(TAG, "load copy-from: source=$sourceDate latest=$latest target=$target blocks=${finalBlocks.size}")
+        AppLogger.d(TAG, "copy_load_applied block_count=${finalBlocks.size}")
     }
 
     /**
@@ -626,11 +599,11 @@ class AddMealViewModel(
     }
 
     private suspend fun loadMealsForDateInternal(date: LocalDate) {
-        AppLogger.d(TAG, "load meals begin: date=$date") // [AI生成] 记录数据库加载日期，排查未保存编辑被覆盖。
+        AppLogger.d(TAG, "meal_load_started")
         val existingMeals = mealRecordUseCase.queryDayForEdit(date)
         // [AI生成] F7：记录本次是否加载自"已有餐食的日期"，供保存时"改日期=移动"删旧。
         loadedFromDate = if (existingMeals.isNotEmpty()) date else null
-        AppLogger.d(TAG, "load meals db result: date=$date existing=${existingMeals.map { it.mealTypeId to it.dishes.map { dish -> dish.id } }}") // [AI生成] 记录数据库返回的餐食摘要。
+        AppLogger.d(TAG, "meal_load_read block_count=${existingMeals.size}")
         val blocks = if (existingMeals.isEmpty()) {
             // [AI修改] 新建空块默认餐次按当前时段智能推断(晚上→晚餐,不再恒早餐)；未来计划日从早餐排起。
             val defaultType = pickDefaultMealType(
@@ -673,7 +646,7 @@ class AddMealViewModel(
             isEditingExisting = existingMeals.isNotEmpty(),
         )
         markBaseline() // [AI生成] 加载完成记基线，供未保存返回守卫
-        AppLogger.d(TAG, "load meals applied: date=$date blocks=${finalBlocks.map { it.id to it.dishes.map { dish -> dish.id } }}") // [AI生成] 记录加载应用到 UI 状态后的摘要。
+        AppLogger.d(TAG, "meal_load_applied block_count=${finalBlocks.size}")
     }
 
     private fun updateBlock(blockId: Long, transform: (MealBlockUiState) -> MealBlockUiState) {

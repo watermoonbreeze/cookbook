@@ -1,6 +1,6 @@
 # ADR-0002：结构化 Trace 统一契约与脱敏边界
 
-- 状态：`IMPLEMENTED / PENDING ARCH REVIEW + DEVICE EVIDENCE`
+- 状态：`AUTOMATED_GATES_PASS / PENDING_DEVICE_VERIFICATION`
 - 日期：2026-08-22
 - 范围：`shared/.../platform/TraceModel.kt`、`Logger.kt`、Android sink
 - 关联：`experience/15_Trace诊断模板.md`、真机清单 E-OVN-01~06、`fc842a41`、`4c0bdd48`、`606ac9c5`
@@ -12,6 +12,11 @@
 ## 证据
 
 shared TraceModelTest、LoggerTest、TraceEventContractTest 已通过；E-OVN-01~06 的运行时链路仍待真机，不以静态/自动证据替代。
+
+## 当前收口口径
+
+- `OBS-NEXT-A/B`：`AUTOMATED_GATES_PASS`；自动化测试/构建与静态契约证据已具备。
+- `Runtime`：`PENDING_DEVICE_VERIFICATION`；真机验证按用户决定在末期统一执行，不阻断当前代码批次。
 
 ## 不决策
 

@@ -1,7 +1,7 @@
 id: F-TOOLS
 name: 工具与系统底座
 lifecycle: active
-headline: "✅ **厨房计时**已落地；📄 Foundation Observability-01 蓝图已冻结、待 CODE 实施，MDC3 真机证据待补。"
+headline: "✅ 厨房计时已落地；✅ OBS-NEXT 日志/Trace 自动化门通过，运行时真机证据待最终统一执行。"
 synced_to: 6a9a76c268298c9dec3719cb3005fce14e8672e0
 match:
   - androidApp/**/ui/cook/**

@@ -143,7 +143,7 @@ class NewDishViewModel(
             // [AI生成] 单位一到手先缓存"克"并放行 unitsReady，让等待中的自动加食材拿到正确单位(空字典则 null，下游走 UI 显示瑕疵而非永挂)。
             cachedGramUnit = units.firstOrNull { it.name == "g" || it.name == "克" }
             _state.update { current ->
-                AppLogger.d(TAG, "init dictionaries merged: currentEditId=${current.editingId} currentName=${current.name} units=${units.size} methods=${cookingMethods.size}")
+                AppLogger.d(TAG, "dictionaries_initialized unit_count=${units.size} method_count=${cookingMethods.size}")
                 current.copy(
                     availableUnits = units,
                     availableCookingMethods = cookingMethods,
@@ -166,10 +166,10 @@ class NewDishViewModel(
         val current = _state.value
         val startKey = "edit=${editId ?: -1L};import=${sourceId ?: -1L}"
         if (activeStartKey == startKey) {
-            AppLogger.d(TAG, "skip duplicate start: key=$startKey loading=${current.loading} name=${current.name} error=${current.errorMessage}")
+            AppLogger.d(TAG, "start_ignored reason=duplicate loading=${current.loading} has_error=${current.errorMessage != null}")
             return
         } // [AI修改] 同一路由参数重复进入时绝不重置表单，避免加载成功后被空状态覆盖。
-        AppLogger.d(TAG, "start: key=$startKey currentName=${current.name} currentEditId=${current.editingId}")
+        AppLogger.d(TAG, "start_requested")
         activeStartKey = startKey
         _state.value = NewDishUiState(
             editingId = editId,
@@ -191,7 +191,7 @@ class NewDishViewModel(
      */
     fun loadForEdit(dishId: Long) {
         viewModelScope.launch {
-            AppLogger.d(TAG, "loadForEdit begin: dishId=$dishId")
+            AppLogger.d(TAG, "edit_load_started")
             _state.value = _state.value.copy(
                 editingId = dishId,
                 loading = true,
@@ -202,7 +202,7 @@ class NewDishViewModel(
             runCatching { dishRepo.getDishById(dishId) }
                 .onSuccess { d ->
                     if (d == null) {
-                        AppLogger.w(TAG, "loadForEdit empty: dishId=$dishId")
+                        AppLogger.w(TAG, "edit_load_empty")
                         _state.value = _state.value.copy(
                             loading = false,
                             saving = false,
@@ -211,7 +211,7 @@ class NewDishViewModel(
                             editProbeToastSerial = _state.value.editProbeToastSerial + 1,
                         ) // [AI生成] 避免编辑页标题正确但表单空白时没有任何提示。
                     } else {
-                        AppLogger.d(TAG, "loadForEdit success: dishId=$dishId loadedId=${d.id} name=${d.name} tags=${d.tags.size} ingredients=${d.ingredients.size}")
+                        AppLogger.d(TAG, "edit_load_succeeded tag_count=${d.tags.size} ingredient_count=${d.ingredients.size}")
                         _state.value = _state.value.copy(
                             editingId = d.id,
                             name = d.name,
@@ -242,7 +242,7 @@ class NewDishViewModel(
                     }
                 }
                 .onFailure { error ->
-                    AppLogger.e(TAG, "loadForEdit failed: dishId=$dishId", error)
+                    AppLogger.e(TAG, "edit_load_failed error_type=${error.javaClass.simpleName}")
                     _state.value = _state.value.copy(
                         loading = false,
                         saving = false,
@@ -542,7 +542,7 @@ class NewDishViewModel(
         viewModelScope.launch {
             runCatching { ingredientGroupRepo.listGroups() }
                 .onSuccess { _state.value = _state.value.copy(ingredientGroups = it) }
-                .onFailure { AppLogger.d(TAG, "load ingredient groups failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "ingredient_groups_load_failed error_type=${it.javaClass.simpleName}") }
         }
     }
 
@@ -563,7 +563,7 @@ class NewDishViewModel(
         viewModelScope.launch {
             runCatching { ingredientGroupRepo.createGroup(name, clean) }
                 .onSuccess { loadIngredientGroups() }
-                .onFailure { AppLogger.d(TAG, "create ingredient group failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "ingredient_group_create_failed error_type=${it.javaClass.simpleName}") }
         }
     }
 
@@ -572,7 +572,7 @@ class NewDishViewModel(
         viewModelScope.launch {
             runCatching { ingredientGroupRepo.deleteGroup(id) }
                 .onSuccess { loadIngredientGroups() }
-                .onFailure { AppLogger.d(TAG, "delete ingredient group failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "ingredient_group_delete_failed error_type=${it.javaClass.simpleName}") }
         }
     }
 
@@ -687,7 +687,7 @@ class NewDishViewModel(
         viewModelScope.launch {
             runCatching { stepTemplateRepo.listTemplates() }
                 .onSuccess { _state.value = _state.value.copy(stepTemplates = it) }
-                .onFailure { AppLogger.d(TAG, "load step templates failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "step_templates_load_failed error_type=${it.javaClass.simpleName}") }
         }
     }
 
@@ -733,7 +733,7 @@ class NewDishViewModel(
         viewModelScope.launch {
             runCatching { stepTemplateRepo.createTemplate(name, clean) }
                 .onSuccess { loadStepTemplates() }
-                .onFailure { AppLogger.d(TAG, "create step template failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "step_template_create_failed error_type=${it.javaClass.simpleName}") }
         }
     }
 
@@ -743,7 +743,7 @@ class NewDishViewModel(
         viewModelScope.launch {
             runCatching { stepTemplateRepo.deleteTemplate(id) }
                 .onSuccess { loadStepTemplates() }
-                .onFailure { AppLogger.d(TAG, "delete step template failed: ${it.message}") }
+                .onFailure { AppLogger.d(TAG, "step_template_delete_failed error_type=${it.javaClass.simpleName}") }
         }
     }
 
@@ -821,7 +821,7 @@ class NewDishViewModel(
                     availableCookingMethods = dishRepo.listCookingMethods(),
                 )
             }.onFailure { error ->
-                AppLogger.e(TAG, "save dish failed: editingId=${s.editingId}", error) // [AI生成] 保存失败时写入本地日志。
+                AppLogger.e(TAG, "dish_save_failed error_type=${error.javaClass.simpleName}")
                 AppLogger.event(
                     "new_dish_save",
                     mapOf(

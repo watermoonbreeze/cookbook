@@ -120,7 +120,7 @@ fun MainScaffold(
     var lastFeature by remember { mutableStateOf<com.sxdbsm.cookbook.analytics.FeatureTag?>(null) }
     LaunchedEffect(currentRoute) {
         currentRoute?.let { route ->
-            AppLogger.event("screen_enter", mapOf("route" to route, "showBottomBar" to showBottomBar)) // [AI生成] 内测埋点：记录页面流转，便于分析异常跳转和常用路径。
+            AppLogger.event("screen_enter", mapOf("has_route" to true, "showBottomBar" to showBottomBar)) // [AI修改] 路由原文可能携带参数，日志只保留安全摘要。
             // [AI生成] 阶段3-b 匿名统计：用了某功能区(功能频次/发现漏斗)。**只上报白名单枚举**·未知路由不上报(fromRoute→null)、绝不回传原始路由串。
             com.sxdbsm.cookbook.analytics.FeatureTag.fromRoute(route)?.let { feature ->
                 if (feature != lastFeature) {
@@ -128,10 +128,6 @@ fun MainScaffold(
                     analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.FeatureUsed(feature))
                 }
             }
-            val screen = route.substringBefore('?')
-            BusinessTrace.navigationCompleted("previous", screen)
-            BusinessTrace.screenEntered(screen)
-            BusinessTrace.screenLoaded(screen)
         }
     }
 
@@ -196,7 +192,7 @@ fun MainScaffold(
                         val trace = BusinessTrace.action("home", "open_ai_recommend", "next_meal")
                         BusinessTrace.actionResult("home", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("home", "ai_recommend", trace)
-                        nav.navigate(Routes.aiRecommend())
+                        nav.navigate(Routes.aiRecommend(trace.value))
                     },
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] P3-B:今日卡"各类每天吃多少"→膳食参考依据页
                 )
@@ -240,7 +236,7 @@ fun MainScaffold(
                         val trace = BusinessTrace.action("mine", "open_ai_recommend", "mine_ai")
                         BusinessTrace.actionResult("mine", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("mine", "ai_recommend", trace)
-                        nav.navigate(Routes.aiRecommend())
+                        nav.navigate(Routes.aiRecommend(trace.value))
                     },
                     onOpenFeatureSettings = { nav.navigate(Routes.FEATURE_SETTINGS) },
                     onOpenShoppingList = { nav.navigate(Routes.SHOPPING_LIST) },
@@ -373,10 +369,19 @@ fun MainScaffold(
                 arguments = listOf(
                     navArgument("returnResult") { type = NavType.BoolType; defaultValue = false },
                     navArgument("slot") { type = NavType.StringType; defaultValue = "" }, // [AI生成] F#7:餐次块带入的 ai.MealSlot.code(空=全部)
+                    navArgument("traceId") { type = NavType.StringType },
                 ),
             ) { entry ->
                 val returnResult = entry.arguments?.getBoolean("returnResult") ?: false
+                val initialTraceId = entry.arguments?.getString("traceId").orEmpty()
+                val routeTrace = requireAiRecommendRouteTrace(initialTraceId)
+                LaunchedEffect(initialTraceId) {
+                    BusinessTrace.navigationCompleted("previous", "ai_recommend", routeTrace)
+                    BusinessTrace.screenEntered("ai_recommend", routeTrace)
+                    BusinessTrace.screenLoaded("ai_recommend", routeTrace)
+                }
                 AiRecommendScreen(
+                    initialTraceId = initialTraceId,
                     initialSlotCode = entry.arguments?.getString("slot").orEmpty(), // [AI生成] F#7:预选该餐次
                     onBack = { nav.popBackStack() },
                     onPickMeal = { dishIds ->
@@ -441,7 +446,7 @@ fun MainScaffold(
                 val lifecycleTraceId by it.savedStateHandle
                     .getStateFlow(KEY_LIFECYCLE_TRACE_ID, "")
                     .collectAsStateWithLifecycle()
-                AppLogger.d("MealFlow", "nav addmeal args: route=${it.destination.route} date=$date preset=$presetDishIds createdDishId=$createdDishId aiPicked=${aiPicked.toList()}") // [AI生成] 记录添加/编辑餐食路由参数和回传 id。
+                AppLogger.d("MealFlow", "addmeal_navigation args_received=true")
                 AddDayFoodScreen(
                     onBack = { nav.popBackStack() },
                     onAddNewDish = {
@@ -468,7 +473,7 @@ fun MainScaffold(
                         BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
                         BusinessTrace.recommendRoute("ai_recommend", "meal_edit", trace)
-                        nav.navigate(Routes.aiRecommendForMeal(slotCode))
+                        nav.navigate(Routes.aiRecommendForMeal(slotCode, trace.value))
                     }, // [AI修改] 餐次块进入 AI 推荐(返回本页对应餐次)。[AI修改] F#7:带该餐次 slot 预选。
                     aiPickedDishIds = aiPicked.toList(),
                     lifecycleTraceId = lifecycleTraceId.takeIf { value -> value.isNotBlank() },
@@ -478,7 +483,7 @@ fun MainScaffold(
                     },
                     createdDishId = createdDishId.takeIf { id -> id > 0 },
                     onCreatedDishConsumed = {
-                        AppLogger.d("MealFlow", "consume createdDishId: value=$createdDishId") // [AI生成] 记录导航结果消费，避免重复回填。
+                        AppLogger.d("MealFlow", "created_dish_result_consumed")
                         it.savedStateHandle[KEY_CREATED_DISH_ID] = -1L
                         it.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = ""
                     },
@@ -499,13 +504,13 @@ fun MainScaffold(
                     aiPickedDishIds = aiPicked.toList(),
                     lifecycleTraceId = lifecycleTraceId.takeIf { value -> value.isNotBlank() },
                     onAiPickedConsumed = {
-                        AppLogger.d("MealFlow", "consume unified AI recommend result: dishIds=${aiPicked.toList()}") // [AI修改] 统一入口消费 AI 推荐回传，避免返回后结果丢失或重复注入。
+                        AppLogger.d("MealFlow", "ai_recommend_result_consumed")
                         entry.savedStateHandle[KEY_AI_PICKED_DISHES] = LongArray(0)
                         entry.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = ""
                     },
                     createdDishId = createdDishId.takeIf { it > 0 },
                     onCreatedDishConsumed = {
-                        AppLogger.d("MealFlow", "consume unified child result: createdDishId=$createdDishId") // [AI修改] 统一入口消费新建菜品结果，返回后合并到原餐次草稿。
+                        AppLogger.d("MealFlow", "child_result_consumed")
                         entry.savedStateHandle[KEY_CREATED_DISH_ID] = -1L
                         entry.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = ""
                     },
@@ -516,7 +521,7 @@ fun MainScaffold(
                         BusinessTrace.actionResult("add_meal", "open_ai_recommend", ActionResultStatus.HANDLED, trace)
                         BusinessTrace.navigationStarted("add_meal", "ai_recommend", trace)
                         BusinessTrace.recommendRoute("ai_recommend", "record_meal_manual", trace)
-                        nav.navigate(Routes.aiRecommendForMeal(slotCode))
+                        nav.navigate(Routes.aiRecommendForMeal(slotCode, trace.value))
                     },
                 )
             }
@@ -530,13 +535,13 @@ fun MainScaffold(
                 // [AI修改] 使用路径参数承载编辑/导入 id，避免 query 参数在部分 Navigation 版本下丢失导致误进新建模式。
                 val dishId = entry.arguments?.getLong("dishId")?.takeIf { it > 0 }
                 val importDishId = entry.arguments?.getLong("importDishId")?.takeIf { it > 0 }
-                AppLogger.d("NewDishEdit", "nav newdish args: route=${entry.destination.route} dishId=$dishId importDishId=$importDishId") // [AI生成] 记录导航层解析出的编辑/导入参数，便于排查空白表单。
+                AppLogger.d("NewDishEdit", "new_dish_navigation args_received=true")
                 NewDishScreen(
                     editingDishId = dishId,
                     importDishId = importDishId,
                     onBack = { nav.popBackStack() },
                     onSavedDish = { savedDishId ->
-                        AppLogger.d("NewDishEdit", "saved dish return result: savedDishId=$savedDishId previousRoute=${nav.previousBackStackEntry?.destination?.route}") // [AI生成] 记录新建/编辑菜品保存后向上一页回传的 id。
+                        AppLogger.d("NewDishEdit", "saved_dish_result_received")
                         val previous = nav.previousBackStackEntry
                         val previousRoute = previous?.destination?.route
                         val acceptsDishResult = previousRoute == Routes.SEARCH ||
@@ -549,7 +554,7 @@ fun MainScaffold(
                                 previous.savedStateHandle[KEY_LIFECYCLE_TRACE_ID] = traceId
                             }
                         } else {
-                            AppLogger.d("NewDishEdit", "ignore dish result for non-contract parent route=$previousRoute")
+                            AppLogger.d("NewDishEdit", "saved_dish_result_ignored reason=unsupported_parent")
                         }
                     },
                 )

@@ -167,11 +167,8 @@ sealed interface StructuredLogEvent {
 
 /** [AI修改] 统一业务动作的 trace 串联；只记录代码标识，不记录用户输入或饮食明细。 */
 object BusinessTrace {
-    private var currentTraceId: TraceId? = null
-
     fun action(screen: String, action: String, source: String): TraceId {
         val traceId = TraceId.create()
-        currentTraceId = traceId
         Logger.emit(StructuredLogEvent.Action(LogLevel.INFO, traceId = traceId, screen = screen, action = action, source = source))
         return traceId
     }
@@ -180,31 +177,29 @@ object BusinessTrace {
         screen: String,
         action: String,
         result: ActionResultStatus,
-        traceId: TraceId? = currentTraceId,
+        traceId: TraceId,
     ) {
-        traceId?.let {
-            Logger.emit(StructuredLogEvent.ActionResult(LogLevel.DEBUG, traceId = it, screen = screen, action = action, result = result))
-        }
+        Logger.emit(StructuredLogEvent.ActionResult(LogLevel.DEBUG, traceId = traceId, screen = screen, action = action, result = result))
     }
 
-    fun navigationStarted(from: String, to: String, traceId: TraceId? = currentTraceId) {
-        traceId?.let { Logger.emit(StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.started", it, from, to)) }
+    fun navigationStarted(from: String, to: String, traceId: TraceId) {
+        Logger.emit(StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.started", traceId, from, to))
     }
 
-    fun navigationCompleted(from: String, to: String, traceId: TraceId? = currentTraceId) {
-        traceId?.let { Logger.emit(StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.completed", it, from, to)) }
+    fun navigationCompleted(from: String, to: String, traceId: TraceId) {
+        Logger.emit(StructuredLogEvent.Navigation(LogLevel.DEBUG, "navigation.completed", traceId, from, to))
     }
 
-    fun screenEntered(screen: String, traceId: TraceId? = currentTraceId) {
-        traceId?.let { Logger.emit(StructuredLogEvent.Screen(LogLevel.DEBUG, "screen.entered", it, screen)) }
+    fun screenEntered(screen: String, traceId: TraceId) {
+        Logger.emit(StructuredLogEvent.Screen(LogLevel.DEBUG, "screen.entered", traceId, screen))
     }
 
-    fun screenLoaded(screen: String, traceId: TraceId? = currentTraceId) {
-        traceId?.let { Logger.emit(StructuredLogEvent.Screen(LogLevel.DEBUG, "screen.loaded", it, screen)) }
+    fun screenLoaded(screen: String, traceId: TraceId) {
+        Logger.emit(StructuredLogEvent.Screen(LogLevel.DEBUG, "screen.loaded", traceId, screen))
     }
 
-    fun stateChanged(screen: String, previous: String?, state: String, reason: String? = null, traceId: TraceId? = currentTraceId) {
-        traceId?.let { Logger.emit(StructuredLogEvent.UiState(LogLevel.DEBUG, "state.changed", it, screen, previous, state, reason)) }
+    fun stateChanged(screen: String, previous: String?, state: String, reason: String? = null, traceId: TraceId) {
+        Logger.emit(StructuredLogEvent.UiState(LogLevel.DEBUG, "state.changed", traceId, screen, previous, state, reason))
     }
 
     /** [AI生成] 统一记录进入子流程前的状态快照。 */
@@ -212,7 +207,7 @@ object BusinessTrace {
         sourceScreen: String,
         currentTab: String,
         businessState: String,
-        traceId: TraceId? = currentTraceId,
+        traceId: TraceId,
     ) {
         Logger.emit(
             StructuredLogEvent.StateLifecycle(
@@ -231,7 +226,7 @@ object BusinessTrace {
         restoreSource: String,
         restoreResult: String,
         restoredFields: String,
-        traceId: TraceId? = currentTraceId,
+        traceId: TraceId,
     ) {
         Logger.emit(
             StructuredLogEvent.StateLifecycle(
@@ -251,7 +246,7 @@ object BusinessTrace {
         previousState: String,
         childResult: String,
         mergedState: String,
-        traceId: TraceId? = currentTraceId,
+        traceId: TraceId,
     ) {
         Logger.emit(
             StructuredLogEvent.StateLifecycle(
@@ -266,20 +261,15 @@ object BusinessTrace {
         )
     }
 
-    fun error(operation: String, errorType: String, traceId: TraceId? = currentTraceId) {
-        traceId?.let {
-            Logger.emit(StructuredLogEvent.Error(traceId = it, operation = operation, errorType = errorType.substringAfterLast('.')))
-        }
+    fun error(operation: String, errorType: String, traceId: TraceId) {
+        Logger.emit(StructuredLogEvent.Error(traceId = traceId, operation = operation, errorType = errorType.substringAfterLast('.')))
     }
 
     /** AI Recommend 入口诊断：仅记录固定路由/入口代码，不记录页面输入或餐食内容。 */
-    fun recommendRoute(route: String, entryPoint: String, traceId: TraceId? = currentTraceId) {
-        traceId?.let {
-            Logger.emit(StructuredLogEvent.DataFlow(LogLevel.DEBUG, "recommend.route", it, route, result = entryPoint))
-        }
+    fun recommendRoute(route: String, entryPoint: String, traceId: TraceId) {
+        Logger.emit(StructuredLogEvent.DataFlow(LogLevel.DEBUG, "recommend.route", traceId, route, result = entryPoint))
     }
 
-    fun current(): TraceId? = currentTraceId
 }
 
 enum class ActionResultStatus { HANDLED, IGNORED, FAILED }

@@ -17,10 +17,10 @@ import com.sxdbsm.cookbook.ai.model.RecommendationResult
 import com.sxdbsm.cookbook.ai.model.RecommendationSource
 import com.sxdbsm.cookbook.ai.model.RecommendMode
 import com.sxdbsm.cookbook.platform.BusinessTrace
-import com.sxdbsm.cookbook.platform.LogLevel
 import com.sxdbsm.cookbook.platform.Logger
-import com.sxdbsm.cookbook.platform.OperationState
-import com.sxdbsm.cookbook.platform.StructuredLogEvent
+import com.sxdbsm.cookbook.platform.OperationTrace
+import com.sxdbsm.cookbook.platform.TraceId
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -33,6 +33,26 @@ import kotlin.random.Random
  * <p>
  * [AI修改] 库存/随机推荐改为扁平列表：每道菜带说明(用到库存/利于调养/做法/限量)可勾选，确定回传所选 id。
  **/
+internal fun consumeInitialTraceId(value: String): TraceId {
+    require(runCatching { java.util.UUID.fromString(value) }.isSuccess) { "Invalid recommendation trace ID" }
+    return TraceId.fromValue(value)
+}
+
+internal fun nextRecommendTrace(): OperationTrace =
+    Logger.operation("ai.recommend")
+
+/** Keeps the route trace for exactly the initial recommendation; later user actions start a new trace. */
+internal class RecommendTraceSession(private val entryTraceId: TraceId) {
+    private var initialOperationPending = true
+
+    fun nextOperation(): OperationTrace = if (initialOperationPending) {
+        initialOperationPending = false
+        Logger.operation("ai.recommend", entryTraceId)
+    } else {
+        nextRecommendTrace()
+    }
+}
+
 class AiRecommendViewModel(
     private val dataSource: RecommendationDataSource,
     private val orchestrator: RecommendationOrchestrator,
@@ -47,6 +67,7 @@ class AiRecommendViewModel(
 
     private var rotation = 0 // [AI生成] 库存模式换一换轮次。
     private var started = false // [AI生成] 进页面只判定一次，避免重复。
+    private var traceSession: RecommendTraceSession? = null
     // [AI生成] R6第一批:缓存上次推荐结果——药膳过滤只是本地重排(mapResult),不该全量 gather+云端。踩菜时失效(见 setDisliked)。
     private var cachedResult: RecommendationResult? = null
     // [AI生成] 换一换缓存(阶段1):缓存上次 gather 的候选输入。同(mode/餐次/窗口/风格)时换一换复用(省18-22 SQL),
@@ -68,10 +89,12 @@ class AiRecommendViewModel(
      * 配置了 AI 模型 → 库存推荐会走云端，不自动触发，展示「开始推荐」等用户点击；
      * 纯规则（未配置模型）→ 本地即时，自动推荐。
      */
-    fun start(initialSlot: com.sxdbsm.cookbook.ai.MealSlot? = null) {
+    fun start(initialSlot: com.sxdbsm.cookbook.ai.MealSlot? = null, initialTraceId: String) {
+        val entryTraceId = consumeInitialTraceId(initialTraceId)
         if (started) return
         started = true
-        BusinessTrace.stateChanged("ai_recommend", null, "INITIAL")
+        traceSession = RecommendTraceSession(entryTraceId)
+        BusinessTrace.stateChanged("ai_recommend", null, "INITIAL", traceId = entryTraceId)
         // [AI生成] F#7:餐次块带入预选餐次——**静默**设入 state(不单独触发 recommend·避免双推/在配了模型时误自动调云端)，
         //   让下方规则模式 recommend / 模型模式待手动 都按此餐次。空/全部→不改(默认全部)。
         if (initialSlot != null && initialSlot != com.sxdbsm.cookbook.ai.MealSlot.ALL && initialSlot != state.selectedSlot) {
@@ -188,9 +211,7 @@ class AiRecommendViewModel(
 
     /** 触发推荐（首次 / 换一换 / 切模式）。[AI生成] */
     fun recommend(mode: RecommendMode = state.mode) {
-        val trace = BusinessTrace.current()?.let { Logger.operation("ai.recommend", it) } ?: Logger.operation("ai.recommend")
-        viewModelScope.launch { trace.start() }
-        Logger.emit(StructuredLogEvent.Operation(LogLevel.DEBUG, "recommend.started", trace.traceId, "ai.recommend", OperationState.RUNNING))
+        val trace = requireNotNull(traceSession) { "Recommendation must start from a traced route entry" }.nextOperation()
         // [AI生成] 阶段3-b 匿名统计：请求了一次推荐(推荐使用率)。**仅上报来源枚举**·不带任何推荐内容。
         analytics.track(com.sxdbsm.cookbook.analytics.AnalyticsEvent.RecommendRequested(
             if (mode == RecommendMode.PANTRY) com.sxdbsm.cookbook.analytics.RecommendSourceTag.PANTRY
@@ -204,9 +225,10 @@ class AiRecommendViewModel(
         val style = state.recommendStyle
         val medicinal = state.medicinalFilter
         viewModelScope.launch {
+            trace.start()
             state = state.copy(loading = true, error = null, mode = mode, selectedIds = emptySet(), pendingManual = false)
-            BusinessTrace.stateChanged("ai_recommend", "INITIAL", "LOADING")
-            runCatching {
+            BusinessTrace.stateChanged("ai_recommend", "INITIAL", "LOADING", traceId = trace.traceId)
+            try {
                 // [AI生成] 换一换缓存(阶段1)：同(mode/餐次/窗口/风格)时复用上次 gather 的候选(换一换只变 rotation,不改候选),
                 //   省 18-22 SQL;但**忌口/病种约束每次用 gatherConstraints() 重取覆盖**(健康档案别页可改·红线:不能用旧忌口)。
                 //   key 不同(切餐次/窗口/风格/mode)或踩菜(cachedInput 置空)则重新全量 gather。
@@ -221,22 +243,22 @@ class AiRecommendViewModel(
                         cachedInputKey = key
                     }
                 }
-                orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
-            }.onSuccess { result ->
+                val result = orchestrator.recommend(input, mealCount = MEAL_COUNT, rotation = rot)
                 cachedResult = result // [AI生成] R6:缓存供药膳本地重排复用(免全量 gather+云端)
                 val label = engineLabelOf(aiConfig.activeType(), state.modelReady, result.source)
                 // [AI修改] F1:粘性字段(selectedSlot/window/风格/showNutritionHint/selectedIds 等)由 mapResult 的 prev.copy 源头保留;
                 //   仅 engineLabel 依 result.source 由本处算,单独设。slot/window/style 仍用于上方 gather(GatherKey)。
                 state = mapResult(result, mode, modelReady = state.modelReady, medicinal = medicinal, prev = state)
                     .copy(engineLabel = label)
-                BusinessTrace.stateChanged("ai_recommend", "LOADING", "SUCCESS", "recommendation_finished")
+                BusinessTrace.stateChanged("ai_recommend", "LOADING", "SUCCESS", "recommendation_finished", trace.traceId)
                 trace.succeed()
-                Logger.emit(StructuredLogEvent.Operation(LogLevel.DEBUG, "recommend.finished", trace.traceId, "ai.recommend", OperationState.SUCCEEDED))
-            }.onFailure {
+            } catch (error: CancellationException) {
+                trace.cancel()
+                throw error
+            } catch (error: Throwable) {
                 state = state.copy(loading = false, error = "推荐失败，请稍后再试")
-                BusinessTrace.stateChanged("ai_recommend", "LOADING", "FAILED", "recommendation_failed")
-                trace.fail(it.javaClass.simpleName)
-                Logger.emit(StructuredLogEvent.Operation(LogLevel.ERROR, "recommend.finished", trace.traceId, "ai.recommend", OperationState.FAILED, it.javaClass.simpleName))
+                BusinessTrace.stateChanged("ai_recommend", "LOADING", "FAILED", "recommendation_failed", trace.traceId)
+                trace.fail(error.javaClass.simpleName)
             }
         }
     }

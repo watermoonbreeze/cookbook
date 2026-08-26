@@ -32,13 +32,13 @@ class UmengAnalyticsSink(private val context: Context) : AnalyticsSink {
         // preInit 不采集个人信息、可在用户同意前调用（合规），为后续正式 init 做准备。
         if (appKey.isNotBlank()) {
             runCatching { UMConfigure.preInit(context, appKey, channel) }
-                .onFailure { CookbookLog.w(ANALYTICS_LOG_TAG, "[umeng] preInit 失败: ${it.message}") }
+                .onFailure { CookbookLog.w(ANALYTICS_LOG_TAG, "umeng.pre_init_failed error_type=${it.javaClass.simpleName}") }
         }
     }
 
     override fun emit(event: AnalyticsEvent) {
         if (appKey.isBlank()) {
-            CookbookLog.d(ANALYTICS_LOG_TAG, "[umeng] AppKey 未配置(local.properties)，跳过: ${event.name}")
+            CookbookLog.d(ANALYTICS_LOG_TAG, "umeng.emit_skipped reason=app_key_missing")
             return
         }
         // 能进 emit 说明同意闸门已放行(DefaultAnalytics 仅 enabled 时 emit)→ 此时首次 init 才合规。
@@ -47,9 +47,9 @@ class UmengAnalyticsSink(private val context: Context) : AnalyticsSink {
                 UMConfigure.init(context, appKey, channel, UMConfigure.DEVICE_TYPE_PHONE, null)
                 UMConfigure.setLogEnabled(false)
             }.onSuccess { inited = true }
-                .onFailure { CookbookLog.w(ANALYTICS_LOG_TAG, "[umeng] init 失败: ${it.message}") }
+                .onFailure { CookbookLog.w(ANALYTICS_LOG_TAG, "umeng.init_failed error_type=${it.javaClass.simpleName}") }
         }
         runCatching { MobclickAgent.onEventObject(context, event.name, event.params) }
-            .onFailure { CookbookLog.w(ANALYTICS_LOG_TAG, "[umeng] onEvent 失败(${event.name}): ${it.message}") }
+            .onFailure { CookbookLog.w(ANALYTICS_LOG_TAG, "umeng.emit_failed error_type=${it.javaClass.simpleName}") }
     }
 }

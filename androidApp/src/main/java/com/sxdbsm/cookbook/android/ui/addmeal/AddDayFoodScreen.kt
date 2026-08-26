@@ -211,16 +211,19 @@ fun AddDayFoodScreen(
         if (aiPickedDishIds.isEmpty()) return@LaunchedEffect
         val target = aiTargetBlockId ?: state.activeBlockId
         // [AI生成] RESTORE：SavedStateHandle 已恢复子页面结果；Navigation 成功不等于状态恢复成功。
-        BusinessTrace.stateRestore(
-            restoreSource = "ai_recommend",
-            restoreResult = if (target != null) "success" else "missing_target",
-            restoredFields = "ai_picked_dishes_active_block",
-            traceId = lifecycleTraceId?.let(TraceId::fromValue),
-        )
+        val traceId = lifecycleTraceId?.let(TraceId::fromValue)
+        traceId?.let {
+            BusinessTrace.stateRestore(
+                restoreSource = "ai_recommend",
+                restoreResult = if (target != null) "success" else "missing_target",
+                restoredFields = "ai_picked_dishes_active_block",
+                traceId = it,
+            )
+        }
         if (target != null) {
             vm.addDishesByIds(target, aiPickedDishIds) { merged ->
                 // [AI生成] 只有父 ViewModel 实际完成草稿合并后才记 merge 终态。
-                BusinessTrace.stateMergeResult("add_meal", "editing", "ai_picked_dishes", if (merged) "editing_dishes" else "merge_failed", lifecycleTraceId?.let(TraceId::fromValue))
+                traceId?.let { BusinessTrace.stateMergeResult("add_meal", "editing", "ai_picked_dishes", if (merged) "editing_dishes" else "merge_failed", it) }
                 onAiPickedConsumed()
             }
         } else {
@@ -230,11 +233,11 @@ fun AddDayFoodScreen(
     }
 
     LaunchedEffect(Unit) {
-        AppLogger.d("MealFlow", "AddDayFoodScreen enter: editDate=$editDate createdDishId=$createdDishId") // [AI生成] 记录添加/编辑餐食页入口参数，便于排查路由与状态是否匹配。
+        AppLogger.d("MealFlow", "add_meal_screen_entered")
     }
     LaunchedEffect(state.done) {
         if (state.done) {
-            AppLogger.d("MealFlow", "AddDayFoodScreen done: date=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 保存完成后记录返回前状态摘要。
+            AppLogger.d("MealFlow", "add_meal_completed block_count=${state.mealBlocks.size}")
             // [AI修改] 运营#177 ③：保存反馈与慢病轻提示合并成一条(有命中→"已保存 · {定性句}")。全局宿主·返回后目标页可见·弹完即走天然一次性。
             appSnackbar?.showMessage(saveResultSnackbarText(state.careHint))
             vm.consumeCareHint() // 消费一次性提示，避免重组重复。
@@ -242,7 +245,7 @@ fun AddDayFoodScreen(
         }
     }
     LaunchedEffect(editDate, presetDishIds, copyFromDate) {
-        AppLogger.d("MealFlow", "configure by editDate effect: editDate=$editDate preset=$presetDishIds copyFrom=$copyFromDate currentDate=${state.date} blocks=${state.mealBlocks.size}") // [AI生成] 记录入口日期配置，排查返回后是否误重载旧餐食。
+        AppLogger.d("MealFlow", "add_meal_configure_requested preset_count=${presetDishIds.size}")
         if (copyFromDate != null) {
             vm.configureCopy(copyFromDate) // [AI生成] F8：食历复制→按来源日预填成新建草稿
         } else {
@@ -253,11 +256,11 @@ fun AddDayFoodScreen(
         val dishId = createdDishId?.takeIf { it > 0 } ?: return@LaunchedEffect
         // [AI生成] RESTORE：新建菜品结果已从子页面回到当前餐食流程。
         val traceId = lifecycleTraceId?.let(TraceId::fromValue)
-        BusinessTrace.stateRestore("new_dish", "success", "created_dish_active_block", traceId)
-        AppLogger.d("MealFlow", "created dish consumed: dishId=$dishId targetBlock=${pickingBlockId ?: state.activeBlockId} pickerOpenBefore=$pickerOpen") // [AI生成] 记录新建菜品回传后加入哪个餐食模块。
+        traceId?.let { BusinessTrace.stateRestore("new_dish", "success", "created_dish_active_block", it) }
+        AppLogger.d("MealFlow", "created_dish_consumed")
         vm.addCreatedDish(dishId, pickingBlockId ?: state.activeBlockId) { merged ->
             // [AI生成] 只有菜品读取并加入父草稿后才记 merge 成功。
-            BusinessTrace.stateMergeResult("add_meal", "editing", "created_dish", if (merged) "editing_dishes" else "merge_failed", traceId)
+            traceId?.let { BusinessTrace.stateMergeResult("add_meal", "editing", "created_dish", if (merged) "editing_dishes" else "merge_failed", it) }
             onCreatedDishConsumed()
         }
         pickerOpen = true // [AI修改] 返回后继续停留在菜品选择流程，并由 DishPicker 重新读取最新菜品列表。
@@ -382,7 +385,7 @@ fun AddDayFoodScreen(
                     onAddDish = {
                         vm.setActiveBlock(block.id)
                         pickingBlockId = block.id
-                        AppLogger.d("MealFlow", "open dish picker: blockId=${block.id} date=${state.date} mealTypeId=${block.mealTypeId} existingDishes=${block.dishes.map { it.id }}") // [AI生成] 记录打开菜品选择器时的餐次和已有菜品。
+                        AppLogger.d("MealFlow", "dish_picker_opened selected_count=${block.dishes.size}")
                         pickerOpen = true
                     },
                     onRemoveDish = { dishId ->
@@ -469,7 +472,7 @@ fun AddDayFoodScreen(
         // [AI生成] v28:按当前餐次预筛选菜(默认只看适合该餐次,可切全部)。加餐(SNACK)/未知→ALL→不预筛。
         val pickerMealSlot = mealType?.code?.let { com.sxdbsm.cookbook.ai.MealSlot.fromCode(it) }
             ?.takeIf { it != com.sxdbsm.cookbook.ai.MealSlot.ALL }
-        AppLogger.d("MealFlow", "compose dish picker: blockId=$blockId mealName=$mealName selected=${block?.dishes?.map { it.id }} pickerOpen=$pickerOpen") // [AI生成] 记录弹框组合时传入的已选菜品，排查勾选状态。
+        AppLogger.d("MealFlow", "dish_picker_composed selected_count=${block?.dishes?.size ?: 0} open=$pickerOpen")
         DishPickerScreen(
             title = if (mealName.isBlank()) "添加菜品" else "添加到$mealName",
             multiSelect = true,
@@ -482,13 +485,13 @@ fun AddDayFoodScreen(
             onAddNewDish = { currentSelected ->
                 // [AI修改] #51：去新建自定义菜品前，先把当前已勾选的菜提交到该餐次(合并)，
                 // 这样返回重开选择器时(initialSelected=block.dishes)原选择保留，新建的也一并加入并选中。
-                AppLogger.d("MealFlow", "navigate add new dish from picker: blockId=$blockId keepSelected=${currentSelected.map { it.id }}")
+                AppLogger.d("MealFlow", "dish_picker_new_dish_navigation selected_count=${currentSelected.size}")
                 if (blockId != null) vm.addDishes(blockId, currentSelected)
                 pickerOpen = false // 跳转新建菜品前先关闭当前弹框；保存返回后重新打开并刷新菜品库。
                 onAddNewDish()
             },
             onConfirm = { selected ->
-                AppLogger.d("MealFlow", "dish picker confirm: blockId=$blockId selected=${selected.map { it.id }}") // [AI生成] 记录菜品选择确认结果。
+                AppLogger.d("MealFlow", "dish_picker_confirmed selected_count=${selected.size}")
                 if (blockId != null) vm.addDishes(blockId, selected)
             },
         )
@@ -619,7 +622,7 @@ fun AddDayFoodScreen(
             },
             onSaved = { savedState ->
                 val savedDays = savedState.autoGenPreview?.days.orEmpty()
-                AppLogger.d("MealFlow", "AI meal saved: ${savedState.autoGenResult?.mealsSaved} meals, days=${savedDays.map { it.date }}")
+                AppLogger.d("MealFlow", "ai_meal_saved meal_count=${savedState.autoGenResult?.mealsSaved ?: 0} day_count=${savedDays.size}")
                 aiSheetResetAfterClose = true
                 if (savedDays.size > 1) onOpenWeekPlan(savedDays.minOf { it.date })
                 else pendingReloadDate = savedDays.firstOrNull()?.date ?: savedState.targetDate

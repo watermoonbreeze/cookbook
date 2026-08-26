@@ -1,6 +1,11 @@
 package com.sxdbsm.cookbook.platform
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -49,5 +54,62 @@ class TraceModelTest {
         assertEquals(OperationState.CANCELLED, trace.state)
         assertEquals(1, events.filterIsInstance<StructuredLogEvent.Operation>().count { it.event == "operation.cancelled" })
         assertEquals(0, events.filterIsInstance<StructuredLogEvent.Operation>().count { it.state == OperationState.FAILED })
+    }
+
+    @Test
+    fun concurrentSucceedFailAndCancelHaveExactlyOneTerminalWinner() = runBlocking {
+        val events = mutableListOf<StructuredLogEvent>()
+        val trace = OperationTrace(
+            TraceId.fromTestValue("concurrent-trace"),
+            "sync",
+            { event -> synchronized(events) { events += event } },
+            MonotonicTimeSource { 1L },
+        )
+        assertTrue(trace.start())
+        val release = CompletableDeferred<Unit>()
+        val ready = List(3) { CompletableDeferred<Unit>() }
+
+        val outcomes = coroutineScope {
+            listOf(
+                async(Dispatchers.Default) { ready[0].complete(Unit); release.await(); trace.succeed() },
+                async(Dispatchers.Default) { ready[1].complete(Unit); release.await(); trace.fail("IOException") },
+                async(Dispatchers.Default) { ready[2].complete(Unit); release.await(); trace.cancel() },
+            ).also {
+                ready.forEach { it.await() }
+                release.complete(Unit)
+            }.awaitAll()
+        }
+
+        assertEquals(1, outcomes.count { it })
+        assertEquals(1, events.filterIsInstance<StructuredLogEvent.Operation>().count {
+            it.event in setOf("operation.succeeded", "operation.failed", "operation.cancelled")
+        })
+        assertEquals(1, events.filterIsInstance<StructuredLogEvent.Performance>().count { it.event == "operation.duration" })
+        if (trace.state == OperationState.CANCELLED) {
+            assertEquals(0, events.filterIsInstance<StructuredLogEvent.Error>().size)
+        }
+    }
+
+    @Test
+    fun independentOperationsNeverShareTraceOrTerminalState() = runBlocking {
+        val events = mutableListOf<StructuredLogEvent>()
+        val first = OperationTrace(TraceId.fromTestValue("trace-a"), "a", { events += it }, MonotonicTimeSource { 1 })
+        val second = OperationTrace(TraceId.fromTestValue("trace-b"), "b", { events += it }, MonotonicTimeSource { 1 })
+        assertTrue(first.start())
+        assertTrue(second.start())
+        assertTrue(first.succeed())
+        assertTrue(second.fail("IOException"))
+        assertEquals(1, events.filterIsInstance<StructuredLogEvent.Operation>().count { it.traceId == first.traceId && it.event == "operation.succeeded" })
+        assertEquals(1, events.filterIsInstance<StructuredLogEvent.Operation>().count { it.traceId == second.traceId && it.event == "operation.failed" })
+    }
+
+    @Test
+    fun operationFirstTerminalWins() = runBlocking {
+        val events = mutableListOf<StructuredLogEvent>()
+        val trace = OperationTrace(TraceId.fromTestValue("save-trace"), "meal.save", { events += it }, MonotonicTimeSource { 1 })
+        assertTrue(trace.start())
+        assertTrue(trace.succeed())
+        assertFalse(trace.fail("IOException"))
+        assertEquals(1, events.filterIsInstance<StructuredLogEvent.Operation>().count { it.event == "operation.succeeded" || it.event == "operation.failed" || it.event == "operation.cancelled" })
     }
 }

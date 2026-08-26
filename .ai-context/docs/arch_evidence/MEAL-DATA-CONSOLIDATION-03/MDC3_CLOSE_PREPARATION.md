@@ -2,7 +2,7 @@
 
 批次：`COOKBOOK-MDC3-AND-FOUNDATION-OBSERVABILITY-BATCH`
 
-状态：`CODE_COMPLETE / PENDING DEVICE EVIDENCE`
+状态：`AUTOMATED_GATES_PASS / PENDING_DEVICE_VERIFICATION`
 
 本文件只记录自动证据与收口条件，不写入 `ACCEPTED`/`CLOSED`。
 
@@ -37,5 +37,4 @@ scripts\build-cli.bat :shared:testDebugUnitTest :androidApp:assembleDebug
 3. 修改 `dish_ingredient` 食材信息：`[MDC3][Revision] dish_ingredient`。
 4. 三项操作均出现 `[MDC3][Projection]` 和 `[MDC3][UI]`，且日志来自 AppLogger 文件链路。
 
-当前结论：自动门禁通过；真机证据待补；不得写 `ACCEPTED`/`CLOSED`。
-
+当前结论：`OBS-NEXT-A/B=AUTOMATED_GATES_PASS`；`Runtime=PENDING_DEVICE_VERIFICATION`。真机证据按用户决定在末期统一执行，不阻断当前代码；不得写 `ARCH_ACCEPTED`/`ACCEPTED`/`CLOSED`。

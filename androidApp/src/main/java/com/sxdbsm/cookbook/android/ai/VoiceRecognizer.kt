@@ -98,14 +98,14 @@ class VoiceRecognizer(private val context: Context) {
                         SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "没有检测到说话"
                         else -> "语音识别失败 ($error)"
                     }
-                    AppLogger.w("VoiceRec", "onError: $msg")
+                    AppLogger.w("VoiceRec", "recognition_error code=$error")
                     callback?.onError(msg)
                 }
 
                 override fun onResults(results: Bundle?) {
                     val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     val text = matches?.firstOrNull()?.trim().orEmpty()
-                    AppLogger.d("VoiceRec", "onResults: $text")
+                    AppLogger.d("VoiceRec", "final_result has_text=${text.isNotEmpty()}")
                     if (text.isNotEmpty()) {
                         callback?.onFinalResult(text)
                     } else {
@@ -117,7 +117,7 @@ class VoiceRecognizer(private val context: Context) {
                     val matches = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     val text = matches?.firstOrNull()?.trim().orEmpty()
                     if (text.isNotEmpty()) {
-                        AppLogger.d("VoiceRec", "onPartialResults: $text")
+                        AppLogger.d("VoiceRec", "partial_result has_text=true")
                         callback?.onPartialResult(text)
                     }
                 }

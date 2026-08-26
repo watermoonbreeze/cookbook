@@ -2,8 +2,6 @@ package com.sxdbsm.cookbook.android.util
 
 import android.content.Context
 import android.os.Build
-import com.sxdbsm.cookbook.platform.CookbookStorage
-import java.io.File
 
 /**
  * @File : CrashReporter
@@ -58,10 +56,6 @@ interface CrashReporter {
 object LocalCrashReporter : CrashReporter {
     override fun report(context: Context, info: CrashInfo, onDone: (Boolean) -> Unit) {
         // [AI生成] 抽象占位：本地留痕，标记已请求上报。TODO 接入后台/友盟 SDK 后在此改为真实上传 info.toReportText()。
-        runCatching {
-            val dir = CookbookStorage.requireSubDir(CookbookStorage.LOG_DIR_NAME, context)
-            File(dir, "crash_reported.log").appendText("[requested] ${info.time} ${info.exceptionType}: ${info.message}\n")
-        }
         onDone(true)
     }
 }

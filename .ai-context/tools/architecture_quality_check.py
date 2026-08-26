@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 
@@ -31,11 +32,32 @@ def check_trace_governance(root: Path) -> list[str]:
     trace_contract = root / "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/platform/TraceEventContract.kt"
     logger_test = root / "shared/src/androidUnitTest/kotlin/com/sxdbsm/cookbook/platform/LoggerTest.kt"
     nav_source = root / "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nav/MainScaffold.kt"
+    routes_source = root / "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nav/Destinations.kt"
+    recommend_source = root / "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiRecommendViewModel.kt"
+    add_meal_source = root / "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddMealViewModel.kt"
 
     model_text = _read_text(trace_model)
     contract_text = _read_text(trace_contract)
     test_text = _read_text(logger_test)
     nav_text = _read_text(nav_source)
+    routes_text = _read_text(routes_source)
+    recommend_text = _read_text(recommend_source)
+    add_meal_text = _read_text(add_meal_source)
+
+    if "traceId={traceId}" not in routes_text:
+        errors.append("AI Recommend route must require traceId")
+    if "aiRecommend()" in nav_text or "aiRecommendForMeal(slotCode)" in nav_text:
+        errors.append("AI Recommend navigation must pass traceId")
+    if "BusinessTrace.current" in model_text:
+        errors.append("TraceModel must not use a global current trace")
+    if "emitMealSaveTrace" in add_meal_text or '"recommend.started"' in recommend_text or '"recommend.finished"' in recommend_text:
+        errors.append("operation lifecycle must be emitted only by OperationTrace")
+    if re.search(r"fun\s+\w+\([^)]*traceId:\s*TraceId\?\s*=\s*null", model_text, re.DOTALL):
+        errors.append("Trace helpers must require an explicit traceId")
+    if "?: nextRecommendTrace()" in recommend_text:
+        errors.append("AI recommendation must not drop its entry trace")
+    if '"recommend.started"' in contract_text or '"recommend.finished"' in contract_text:
+        errors.append("TraceEventContract must not register deprecated manual recommendation events")
 
     for marker, description in REQUIRED_RECOMMEND_ENTRY_MARKERS.items():
         for label, text in (("navigation source", nav_text), ("LoggerTest", test_text)):
@@ -101,6 +123,39 @@ def check_meal_flow_contract(root: Path) -> list[str]:
     return errors
 
 
+def check_privacy_log_boundary(root: Path) -> list[str]:
+    """Reject known raw-content logging regressions in the B privacy allowlist."""
+    errors: list[str] = []
+    sources = (
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ai/VoiceRecognizer.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/analytics/UmengAnalyticsSink.kt",
+        "shared/src/commonMain/kotlin/com/sxdbsm/cookbook/analytics/LogSink.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddMealViewModel.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/addmeal/AddDayFoodScreen.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/nav/MainScaffold.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/dishes/DishesViewModel.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/dishes/DishesScreen.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/newdish/NewDishViewModel.kt",
+        "androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/newdish/NewDishScreen.kt",
+    )
+    forbidden = (
+        "${it.message}", "throwable.message", "throwable.stackTrace", "params=${event.params}",
+        "onResults: $text", "onPartialResults: $text", "currentName=${current.name}",
+        "route=${", "date=${", "name=${", "dishIds=${", "dishes.map { it.id }", "error=${state.errorMessage}",
+    )
+    for relative in sources:
+        text = _read_text(root / relative)
+        lines = text.splitlines()
+        log_context = "\n".join(
+            "\n".join(lines[index:index + 6])
+            for index, line in enumerate(lines)
+            if "AppLogger." in line or "CookbookLog." in line
+        )
+        if any(marker in log_context for marker in forbidden):
+            errors.append(f"privacy log boundary violated: {relative}")
+    return errors
+
+
 def check_root(root: Path) -> list[str]:
     errors: list[str] = []
     shared = root / "shared" / "src" / "commonMain"
@@ -128,6 +183,7 @@ def check_root(root: Path) -> list[str]:
             errors.append(f"forbidden reverse module dependency: {gradle.relative_to(root)}")
     errors.extend(check_trace_governance(root))
     errors.extend(check_meal_flow_contract(root))
+    errors.extend(check_privacy_log_boundary(root))
     return errors
 
 
