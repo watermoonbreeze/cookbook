@@ -1,8 +1,8 @@
 # Phase 5 Repository Boundary Cleanup — Reality Verification + BLUEPRINT-LITE
 
-状态：**BLUEPRINT_READY / TURN=CODE**  
-冻结日期：2026-08-26  
-事实基线：`852a4f3b`  
+状态：**BLUEPRINT_READY / TURN=CODE**
+冻结日期：2026-08-26
+事实基线：`852a4f3b`
 前置验收：Phase 4 `6a538de3` = **ARCH_ACCEPTED**；真机仍为 `PENDING_DEVICE_VERIFICATION`，不阻断本批代码与单测。
 
 ## 1. Reality Verification
