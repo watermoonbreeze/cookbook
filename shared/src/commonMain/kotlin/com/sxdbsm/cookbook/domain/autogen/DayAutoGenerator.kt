@@ -1,7 +1,6 @@
 package com.sxdbsm.cookbook.domain.autogen
 
 import com.sxdbsm.cookbook.data.repository.DayMealDraft
-import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.domain.model.MealType
 import com.sxdbsm.cookbook.platform.ioDispatcher
 import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordDraft
@@ -30,8 +29,7 @@ import kotlinx.datetime.plus
  **/
 class DayAutoGenerator(
     private val dishGen: DishAutoGenerator,
-    private val mealRepo: MealRecordRepository,
-    private val mealRecordUseCase: MealRecordUseCase = MealRecordUseCase(mealRepo),
+    private val mealRecordUseCase: MealRecordUseCase,
 ) {
     /**
      * 批量天预览：逐天逐餐逐菜 preview。只读·零写库。[AI生成]
@@ -53,7 +51,7 @@ class DayAutoGenerator(
             val targetDate = resolveDate(today, day.date, day.dateOffset)
 
             // 检查是否已有餐食（供上层"是否覆盖"提示）
-            val hasExisting = mealRepo.loadDayMealsForEdit(targetDate).isNotEmpty()
+            val hasExisting = mealRecordUseCase.queryDayForEdit(targetDate).isNotEmpty()
 
             val mealPreviews = mutableListOf<MealPreview>()
             for (meal in day.meals) {
@@ -209,12 +207,12 @@ class DayAutoGenerator(
 
             // A1 修复：回填 eaten_ratio（参照 AiMealRecorder.backfillEatenRatios 实现）
             if (eatenRatioMap.isNotEmpty()) {
-                val savedMeals = mealRepo.loadDayMealsForEdit(day.date)
+                val savedMeals = mealRecordUseCase.queryDayForEdit(day.date)
                 for (savedMeal in savedMeals) {
                     for (savedDish in savedMeal.dishes) {
                         val ratio = eatenRatioMap[savedMeal.mealTypeId to savedDish.name]
                         if (ratio != null) {
-                            mealRepo.setEatenRatio(savedMeal.mealRecordId, savedDish.id, ratio)
+                            mealRecordUseCase.updateDishEatenRatio(savedMeal.mealRecordId, savedDish.id, ratio)
                         }
                     }
                 }
@@ -290,7 +288,7 @@ class DayAutoGenerator(
         date: LocalDate,
         newDrafts: List<DayMealDraft>,
     ): List<DayMealDraft> {
-        val existingMeals = mealRepo.loadDayMealsForEdit(date)
+        val existingMeals = mealRecordUseCase.queryDayForEdit(date)
         if (existingMeals.isEmpty()) return newDrafts
 
         val merged = existingMeals.map { rec ->

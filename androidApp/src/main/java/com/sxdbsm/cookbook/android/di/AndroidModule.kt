@@ -55,9 +55,9 @@ val androidModule = module {
         )
     }
 
-    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] Phase 3 注入只读 MealProjectionRepository；写入仍走 MealRecordRepository。
+    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
-    viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get()) } // [AI生成] B3 一周计划
+    viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get(), get()) }
     viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)+MemberDishHealthUseCase(成员化红绿灯)+FamilyRepository(Phase 2 全家并集补个人忌口)
     viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { AddMealViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 餐食事实读取经 Projection 边界，写入/编辑兼容 API 仍由 UseCase 编排。

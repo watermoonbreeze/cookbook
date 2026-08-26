@@ -2,9 +2,11 @@ package com.sxdbsm.cookbook.android.ui.timeline
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
+import com.sxdbsm.cookbook.android.ui.meal.MealDayMutationPort
+import com.sxdbsm.cookbook.android.ui.meal.asMealDayMutationPort
 import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.util.DateTime
 import kotlinx.coroutines.Job
@@ -38,9 +40,10 @@ data class TimelineUiState(
  *
  * 通过 Flow 监听数据库变化，添加/编辑餐食后食历会自动刷新。
  */
-class TimelineViewModel(
-    private val repo: MealRecordRepository,
+class TimelineViewModel internal constructor(
+    private val mealRecordUseCase: com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase,
     private val projectionRepo: MealProjectionRepository,
+    private val mutationPort: MealDayMutationPort = mealRecordUseCase.asMealDayMutationPort(),
 ) : ViewModel() {
 
     private companion object {
@@ -136,7 +139,7 @@ class TimelineViewModel(
     /** 删除指定日期的全部餐食（食历 Flow 会自动刷新）。[AI生成] */
     fun deleteDay(date: LocalDate) {
         viewModelScope.launch {
-            runCatching { repo.deleteDayMeals(date) }
+            runCatching { mutationPort.deleteDay(date) }
                 .onSuccess { _state.value = _state.value.copy(copyMessage = "已删除 ${DateTime.formatDate(date)} 的餐食", copyError = null) }
                 .onFailure { e -> _state.value = _state.value.copy(copyMessage = null, copyError = e.message ?: "删除失败，请稍后重试") }
         }
@@ -146,22 +149,18 @@ class TimelineViewModel(
     fun deleteDayUndoable(date: LocalDate, showUndo: (onUndo: () -> Unit) -> Unit) {
         viewModelScope.launch {
             // [AI修改] 代码审查#3：快照读失败/为空不该照删致无法撤销。
-            val snapshot = runCatching { repo.snapshotDay(date) }.getOrNull()
-            if (snapshot.isNullOrEmpty()) {
+            val token = runCatching { mutationPort.deleteDayWithUndo(date) }.getOrNull()
+            if (token == null) {
                 _state.value = _state.value.copy(copyMessage = null, copyError = "删除失败，请稍后重试")
                 return@launch
             }
-            runCatching { repo.deleteDayMeals(date) }
-                .onSuccess {
-                    showUndo {
+            showUndo {
                         viewModelScope.launch {
                             // [AI修改] 代码审查#1：撤销不抬喜爱度(bumpPreference=false)；#2：还原失败落提示。
-                            runCatching { repo.saveDayMeals(date, snapshot, bumpPreference = false) }
+                            runCatching { mutationPort.restoreDeletedDay(token) }
                                 .onFailure { e -> _state.value = _state.value.copy(copyMessage = null, copyError = e.message ?: "撤销失败，请稍后重试") }
                         }
-                    }
-                }
-                .onFailure { e -> _state.value = _state.value.copy(copyMessage = null, copyError = e.message ?: "删除失败，请稍后重试") }
+            }
         }
     }
 

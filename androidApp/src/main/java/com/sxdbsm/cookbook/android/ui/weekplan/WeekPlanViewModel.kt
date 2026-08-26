@@ -3,7 +3,10 @@ package com.sxdbsm.cookbook.android.ui.weekplan
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import com.sxdbsm.cookbook.data.repository.MealRecordRepository
+import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
+import com.sxdbsm.cookbook.android.ui.meal.MealDayMutationPort
+import com.sxdbsm.cookbook.android.ui.meal.asMealDayMutationPort
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.MealDataTraceLogger
@@ -29,8 +32,10 @@ import kotlinx.datetime.isoDayNumber
  * <p>
  * [AI生成] B3：家庭"排下周饭"强场景的一周网格视图。
  **/
-class WeekPlanViewModel(
-    private val mealRepo: MealRecordRepository,
+class WeekPlanViewModel internal constructor(
+    private val projectionRepo: MealProjectionRepository,
+    private val mealRecordUseCase: MealRecordUseCase,
+    private val mutationPort: MealDayMutationPort = mealRecordUseCase.asMealDayMutationPort(),
 ) : ViewModel() {
 
     private val today: LocalDate = DateTime.today()
@@ -53,7 +58,7 @@ class WeekPlanViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<UiState> = _weekStart.flatMapLatest { ws ->
         val we = DateTime.plusDays(ws, 6)
-        mealRepo.observeTimelineWindow(ws, we).map { cards ->
+        projectionRepo.observeTimelineWindow(ws, we).map { cards ->
             // [AI生成] §营养线:从已排卡片反查每日每菜主料名(DishMini.mainIngredientNames·MealRecordRepository 已批量填)聚合整周营养线。
             //   与 AiPlanViewModel 走同一 aggregate/advise 口径(单一真相源·防漂移)。
             //   [AI修改] Google审🔴:dayCount=列表长度(observeTimelineWindow 恒返窗口每天含空天)≠有排菜天数→不能靠 dayCount>0 挡空态;
@@ -90,7 +95,7 @@ class WeekPlanViewModel(
 
     /** 删除某天全部餐食。[AI生成] */
     fun deleteDay(date: LocalDate) {
-        viewModelScope.launch { runCatching { mealRepo.deleteDayMeals(date) } }
+        viewModelScope.launch { runCatching { mutationPort.deleteDay(date) } }
     }
 
     /**
@@ -99,13 +104,11 @@ class WeekPlanViewModel(
      */
     fun deleteDayUndoable(date: LocalDate, showUndo: (onUndo: () -> Unit) -> Unit) {
         viewModelScope.launch {
-            val snapshot = runCatching { mealRepo.snapshotDay(date) }.getOrNull()
-            if (snapshot.isNullOrEmpty()) return@launch
-            runCatching { mealRepo.deleteDayMeals(date) }.onSuccess {
-                showUndo {
+            val token = runCatching { mutationPort.deleteDayWithUndo(date) }.getOrNull()
+            if (token == null) return@launch
+            showUndo {
                     // 撤销还原不抬喜爱度(bumpPreference=false，非新记一餐)。
-                    viewModelScope.launch { runCatching { mealRepo.saveDayMeals(date, snapshot, bumpPreference = false) } }
-                }
+                    viewModelScope.launch { runCatching { mutationPort.restoreDeletedDay(token) } }
             }
         }
     }

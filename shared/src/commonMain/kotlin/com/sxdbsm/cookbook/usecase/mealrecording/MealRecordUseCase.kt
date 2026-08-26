@@ -25,6 +25,12 @@ data class MealRecordDraft(
  */
 class MealRecordUseCase(private val mealRepository: MealRecordRepository) {
 
+    /** Opaque restore payload; callers can only hand it back to this use case. */
+    class DeletedDayToken internal constructor(
+        internal val date: LocalDate,
+        internal val drafts: List<DayMealDraft>,
+    )
+
     suspend fun create(draft: MealRecordDraft): MealRecord {
         val id = mealRepository.save(
             date = draft.date,
@@ -58,6 +64,27 @@ class MealRecordUseCase(private val mealRepository: MealRecordRepository) {
     suspend fun dateRange(): Pair<LocalDate?, LocalDate?> = mealRepository.dateRange()
 
     suspend fun deleteDay(date: LocalDate) = mealRepository.deleteDayMeals(date)
+
+    suspend fun deleteDayWithUndo(date: LocalDate): DeletedDayToken? {
+        val snapshot = mealRepository.snapshotDay(date)
+        if (snapshot.isEmpty()) return null
+        mealRepository.deleteDayMeals(date)
+        return DeletedDayToken(date, snapshot)
+    }
+
+    suspend fun restoreDeletedDay(token: DeletedDayToken): List<MealRecord> = saveDay(
+        date = token.date,
+        drafts = token.drafts.map { draft ->
+            MealRecordDraft(draft.mealTypeId, token.date, draft.mealTime, draft.note, draft.dishIds)
+        },
+        bumpPreference = false,
+    )
+
+    suspend fun updateDishEatenRatio(mealRecordId: Long, dishId: Long, ratio: Double) =
+        mealRepository.setEatenRatio(mealRecordId, dishId, ratio)
+
+    suspend fun updateMealEatenRatio(mealRecordId: Long, ratio: Double) =
+        mealRepository.setEatenRatioForMeal(mealRecordId, ratio)
 
     private suspend fun recorded(id: Long): MealRecord =
         mealRepository.loadMealRecord(id)?.let(LegacyMealRecordAdapter::toDomain)

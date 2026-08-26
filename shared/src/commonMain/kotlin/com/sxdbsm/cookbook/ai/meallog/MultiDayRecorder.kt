@@ -108,7 +108,7 @@ class MultiDayRecorder(
     private fun buildDayGen(): DayAutoGenerator {
         val ingredientGen = IngredientAutoGenerator(ingredientRepo, nutritionRepo)
         val dishGen = DishAutoGenerator(dishRepo, ingredientGen)
-        return DayAutoGenerator(dishGen, mealRepo, mealRecordUseCase)
+        return DayAutoGenerator(dishGen, mealRecordUseCase)
     }
 
     /**

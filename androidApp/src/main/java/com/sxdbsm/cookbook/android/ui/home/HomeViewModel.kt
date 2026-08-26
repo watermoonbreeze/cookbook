@@ -3,10 +3,12 @@ package com.sxdbsm.cookbook.android.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
-import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
+import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
+import com.sxdbsm.cookbook.android.ui.meal.MealDayMutationPort
+import com.sxdbsm.cookbook.android.ui.meal.asMealDayMutationPort
 import com.sxdbsm.cookbook.domain.model.DishMini
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
@@ -76,9 +78,9 @@ data class NextDishUi(
  *
  * 负责把热门菜品、最近菜品、今天/未来计划三路数据合并成一个 StateFlow。
  */
-class HomeViewModel(
+class HomeViewModel internal constructor(
     private val dishRepo: DishRepository,
-    private val mealRepo: MealRecordRepository,
+    private val mealRecordUseCase: com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase,
     private val mealProjectionRepo: MealProjectionRepository,
     private val prefs: PreferenceRepository,
     private val nutritionRepo: com.sxdbsm.cookbook.data.repository.NutritionRepository, // [AI生成] 2c：色系墙评级结合当天热量达标度
@@ -86,6 +88,7 @@ class HomeViewModel(
     private val ingredientRepo: com.sxdbsm.cookbook.data.repository.IngredientRepository, // [AI生成] A1：食材显式营养大类(food_group)覆盖色系/均衡判定。
     private val health: com.sxdbsm.cookbook.data.repository.HealthProfileRepository, // [AI生成] A-1：解析关注成员病种→慢病提示(今日卡"偏咸·高血压留意")。
     private val recoDataSource: com.sxdbsm.cookbook.ai.RecommendationDataSource, // [AI生成] 阶段2：首页"下一餐"推荐卡(纯规则·不调云端·打开即见)。
+    private val mutationPort: MealDayMutationPort = mealRecordUseCase.asMealDayMutationPort(),
 ) : ViewModel() {
 
     // ============ 首页"下一餐"推荐卡(阶段2·纯规则不调云端·复用推荐引擎 ruleCandidatesFor) ============
@@ -237,7 +240,7 @@ class HomeViewModel(
     fun deleteDay(date: LocalDate) {
         // [AI修改] 删除失败不再全静默(架构评审)：至少落日志，破坏性操作失败可排查。
         viewModelScope.launch {
-            runCatching { mealRepo.deleteDayMeals(date) }
+            runCatching { mutationPort.deleteDay(date) }
                 .onFailure { com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "deleteDay 失败: date=$date", it) }
         }
     }
@@ -246,22 +249,18 @@ class HomeViewModel(
     fun deleteDayUndoable(date: LocalDate, showUndo: (onUndo: () -> Unit) -> Unit) {
         viewModelScope.launch {
             // [AI修改] 代码审查#3：快照读失败/为空(异常吞成空)不该照删致无法撤销——先确保拿到快照再删。
-            val snapshot = runCatching { mealRepo.snapshotDay(date) }.getOrNull()
-            if (snapshot.isNullOrEmpty()) {
+            val token = runCatching { mutationPort.deleteDayWithUndo(date) }.getOrNull()
+            if (token == null) {
                 com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "deleteDay 取消: 快照为空/读失败 date=$date")
                 return@launch
             }
-            runCatching { mealRepo.deleteDayMeals(date) }
-                .onSuccess {
-                    showUndo {
+            showUndo {
                         viewModelScope.launch {
                             // [AI修改] 代码审查#1：撤销=原样还原,不抬喜爱度(bumpPreference=false)避免污染排序。
-                            runCatching { mealRepo.saveDayMeals(date, snapshot, bumpPreference = false) }
+                            runCatching { mutationPort.restoreDeletedDay(token) }
                                 .onFailure { com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "restoreDay 失败: date=$date", it) }
                         }
-                    }
-                }
-                .onFailure { com.sxdbsm.cookbook.android.util.AppLogger.e("HomeVM", "deleteDay 失败: date=$date", it) }
+            }
         }
     }
 
@@ -413,12 +412,12 @@ class HomeViewModel(
 
     /** 就地设某餐某菜的食用比例(分菜调)。[AI生成] */
     fun setDishEaten(mealRecordId: Long, dishId: Long, ratio: Double) {
-        viewModelScope.launch { mealRepo.setEatenRatio(mealRecordId, dishId, ratio) }
+        viewModelScope.launch { mealRecordUseCase.updateDishEatenRatio(mealRecordId, dishId, ratio) }
     }
 
     /** 整餐一次设为同一食用比例(这一餐整体)。[AI生成] */
     fun setMealEaten(mealRecordId: Long, ratio: Double) {
-        viewModelScope.launch { mealRepo.setEatenRatioForMeal(mealRecordId, ratio) }
+        viewModelScope.launch { mealRecordUseCase.updateMealEatenRatio(mealRecordId, ratio) }
     }
 
     /**

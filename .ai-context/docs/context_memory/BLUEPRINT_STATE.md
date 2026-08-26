@@ -1,5 +1,38 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: COOKBOOK_MEAL_ARCHITECTURE_PHASE5_REPOSITORY_BOUNDARY_CLEANUP（2026-08-26）
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK_MEAL_ARCHITECTURE_PHASE5_REPOSITORY_BOUNDARY_CLEANUP / P5-A Mutation Boundary |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
+| Preconditions | Phase 4 `6a538de3` 已由 Sol 判定 `ARCH_ACCEPTED`；Runtime 真机仍 `PENDING_DEVICE_VERIFICATION`，不阻断本批代码与单测 |
+| Reality | Repository 混合 storage transaction、兼容 projection 与 preference/ratio policy；三处 UI 重复 delete/undo mutation，`DayAutoGenerator` 仍直接 query/回填 ratio |
+| Blueprint | `.ai-context/docs/feature/COOKBOOK_MEAL_ARCHITECTURE_PHASE5_REPOSITORY_BOUNDARY_CLEANUP_BLUEPRINT_LITE.md` |
+| Scope | P5-A 只收敛 Home/Timeline/WeekPlan 与 DayAutoGenerator 的 MealRecord mutation 到 `MealRecordUseCase`；保持 Repository/schema/业务行为兼容 |
+| Authorization | 用户已授权验收通过后无人值守直接编码；CODER 完成后只能写 `CODE_COMPLETE / TURN=REVIEW` |
+| Open issues | 无启动阻断；Repository 内 preference/ratio policy 搬迁、兼容 API 清理由后续 P5-B/Phase 6 单独 Reality Review |
+| Evidence | `arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE5/EVIDENCE.md`; Sol final ARCH acceptance: forced shared/Android tests, shared compile, debug and release assemble gates passed (release fresh rerun: 7m53s, 83 tasks); earlier release timeout retained as environment history; quality passed; device entries DEV-P5-01~05 remain pending |
+| Runtime | **PENDING_DEVICE_VERIFICATION** (`DEV-P5-01`~`DEV-P5-05`) |
+| Next action | P5-A closed. P5-B requires a new Reality Verification for compatibility read/projection and Repository-internal preference/ratio policy; Phase 6 remains prohibited until separately authorized. |
+
+## COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE4_AI_FLOW_ALIGNMENT（2026-08-26）
+
+| Field | Value |
+|---|---|
+| Batch | COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE4_AI_FLOW_ALIGNMENT |
+| State | **ARCH_ACCEPTED** |
+| TURN | **NONE** |
+| Holder | **—** |
+| Implementation commit | `6a538de3561f984b0169b97096578200d3ad6118` |
+| Acceptance facts | AI 周期计划保存经 `MealPlanSaveUseCase` 做精确冲突重检、确认前零写并产出 `PLANNED`；快捷/周期记餐主保存经 `MealRecordUseCase` canonical 回读；VM 保存/确认有同步连点 guard；无 schema/AI 算法/prompt 变更 |
+| Evidence | `MealPlanSaveUseCaseTest`（含 D1→新增 D2 旧确认失效且两日零写）、`AiPlanViewModelSaveBoundaryTest`、`DayAutoGeneratorMealBoundaryTest`；shared/Android unit、shared compile、assembleDebug 与 quality 门禁已有成功凭证 |
+| Runtime | **PENDING_DEVICE_VERIFICATION**；按项目级决定统一末期执行，不把未做真机写成 PASS |
+| Residual observation | `DayAutoGenerator` ratio 回填与三处 UI delete/undo 仍直接使用 Repository；已转入 Phase 5 Reality，不反向阻断 Phase 4 |
+| Next action | Phase 5 P5-A 已冻结并转 `TURN=CODE`；Phase 6 仍禁止启动 |
+
 ## OBS-NEXT C批文档收口（2026-08-26）
 
 | 字段 | 值 |
