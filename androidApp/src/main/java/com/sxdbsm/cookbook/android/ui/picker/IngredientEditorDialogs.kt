@@ -53,6 +53,13 @@ import com.sxdbsm.cookbook.domain.model.MeasurementUnit
 //   与 shared PresetDataSeeder.PRESET_MEASUREMENT_UNITS 中 grams != null 的一致。
 private val WEIGHT_VOLUME_UNIT_NAMES = setOf("g", "kg", "两", "斤", "ml", "L", "勺")
 
+// [AI修改] Bug-5305：自动候选只在用户尚未手选营养大类时生效；保留手选意图跨名称和分类选项变化。
+internal fun resolveIngredientEditorFoodGroup(
+    automaticCandidate: com.sxdbsm.cookbook.domain.FoodGroup.Group?,
+    selectedGroup: com.sxdbsm.cookbook.domain.FoodGroup.Group?,
+    groupTouched: Boolean,
+): com.sxdbsm.cookbook.domain.FoodGroup.Group? = if (groupTouched) selectedGroup else automaticCandidate
+
 private val StringListSaver = Saver<List<String>, String>(
     save = { encodeImagePaths(it) },
     restore = { decodeImagePaths(it) },
@@ -304,12 +311,12 @@ internal fun IngredientEditorDialog(
     // 预选：编辑现有食材优先用其已挂的顶层大类；名称变更后以 classify(name) 为主（K10修复）。
     LaunchedEffect(name, ui.editorCategoryIds, groupOptions, ui.editorLoading) {
         if (ingredient != null && ui.editorLoading) return@LaunchedEffect
-        if (groupTouched) return@LaunchedEffect
         val fromName = com.sxdbsm.cookbook.domain.FoodGroup.classify(name)
         val existing = groupOptions.firstOrNull { (_, _, catId) -> catId in ui.editorCategoryIds }?.first
         // [AI修改] K10:名称变更后以 classify(name) 为主跟随新名；未变时保留旧 DB 分类优先。
         val nameChanged = ingredient != null && name.trim() != ingredient.name.trim()
-        selectedGroup = if (nameChanged) (fromName ?: existing) else (existing ?: fromName)
+        val automaticCandidate = if (nameChanged) (fromName ?: existing) else (existing ?: fromName)
+        selectedGroup = resolveIngredientEditorFoodGroup(automaticCandidate, selectedGroup, groupTouched)
     }
     // [AI生成] 新建食材时按营养大类预选一个合理默认单位(蛋/水果→个、奶→ml、其余→g)，减少"每次记用量都要选单位"；用户可改。
     LaunchedEffect(selectedGroup, ui.availableUnits) {

@@ -1,11 +1,17 @@
 # 🔖 SESSION 交接入口
 
+## Bug-5305 手动食材分类优先收口（2026-08-27）
+
+- 结论：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS**，无 AF；`BLUEPRINT_STATE.md` 已转 `TURN=NONE`。
+- 范围：仅把既有 `groupTouched` guard 固化为可测试策略并新增 Android 回归；未改 `FoodGroup.classify`、Repository、schema/seed、DI 或 UI。
+- Runtime：`DEV-5305-01` 仍在 `真机验证/真机待验证清单_202608270943.md`，为 `PENDING_DEVICE_VERIFICATION`；未作真机 PASS 声明。
+
 ## P5-A Repository Mutation Boundary 收口（2026-08-26）
 
 - 结论：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS**；`BLUEPRINT_STATE.md` 已转 `TURN=NONE`。
 - 范围：Home/Timeline/WeekPlan 与 `DayAutoGenerator` 的 MealRecord mutation 已收敛到 `MealRecordUseCase`；未改 schema、Repository 兼容 read、AI 算法/prompt 或 UI 视觉。
 - 自动化：强制 shared/Android tests、shared compile、debug/release assemble 均有成功终态；release rerun 最终 `BUILD SUCCESSFUL in 7m53s`（83 tasks）。质量脚本通过。证据见 `arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE5/EVIDENCE.md`。
-- Runtime：`DEV-P5-01~05` 仍在 `真机验证/真机待验证清单_202608262214.md`，状态 `PENDING_DEVICE_VERIFICATION`；不得写真机 PASS。
+- Runtime：`DEV-P5-01~05` 仍在 `真机验证/真机待验证清单_202608270943.md`，状态 `PENDING_DEVICE_VERIFICATION`；不得写真机 PASS。
 - 后续：P5-B 必须先重新 Reality Verification（compatibility read/projection、Repository 内 preference/ratio policy）；**Phase 6 未授权**，不得清理兼容 API/Repository 行为。
 
 ## OBS-NEXT C批收口

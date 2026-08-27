@@ -1,5 +1,20 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: Bug-5305 手动食材分类优先（2026-08-27）
+
+| Field | Value |
+|---|---|
+| Batch | Bug-5305 / Ingredient Editor manual food-group priority |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
+| Base | `e575bce9cae4adb44b070d2ae6e7e6b877eebf87` |
+| Blueprint | `.ai-context/docs/feature/Bug-5305_手动食材分类优先_实施蓝图_LITE.md` |
+| Scope | 仅将既有 `groupTouched` guard 收敛为编辑器可测纯策略并新增 Android 回归测试；未改分类算法、Repository、schema/seed、DI 或 UI。 |
+| Evidence | `T-5305-01~04` PASS；`:androidApp:testDebugUnitTest --rerun-tasks` BUILD SUCCESSFUL（4m13s）；`:androidApp:assembleDebug --rerun-tasks` BUILD SUCCESSFUL（4m）；quality unittest 8/8 与 check PASS。 |
+| Runtime | `DEV-5305-01` in `真机待验证清单_202608270943.md`: **PENDING_DEVICE_VERIFICATION** |
+| Next action | ARCH accepted Bug-5305 with no AF. Runtime device verification remains pending; no commit yet. |
+
 ## CURRENT EXECUTION: COOKBOOK_MEAL_ARCHITECTURE_PHASE5_REPOSITORY_BOUNDARY_CLEANUP（2026-08-26）
 
 | Field | Value |
