@@ -5,16 +5,18 @@
 | Field | Value |
 |---|---|
 | Batch | Bug-2119 / absent member stats share |
-| State | **CODE_COMPLETE / PENDING REVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
 | 颗粒度 | **L7** |
 | Base | `ea4b5132` |
 | Blueprint | `.ai-context/docs/feature/Bug-2119_缺席成员统计联动_实施蓝图.md` |
 | Scope | Family statistics member-tab share only; no absence persistence, Home, schema, DI or UI layout changes. |
 | Authorization | 用户已授权全程无人值守；CODE 完成后仅可写 `CODE_COMPLETE / TURN=REVIEW`。 |
 | Evidence | RV-2119-01；`FamilyStatsViewModelTest` 定向 BUILD SUCCESSFUL（真实 SQLite/VM）；`:androidApp:testDebugUnitTest` 与 `:androidApp:assembleDebug` BUILD SUCCESSFUL。 |
-| Next action | ARCH 独立复核 allowlist、成员分支份额、真实回归及 DEV-2119-01；不得写 ACCEPTED 或 runtime PASS。 |
+| Delivery | `c8d40556`（初始修复）→`76a6fa41`（AF-2119-01/02 返修）；最终提交的 Android 全量单测、Debug 构建与 allowlist checker 均 PASS。 |
+| Review | 独立终审 PASS：AF-2119-01/02 已关闭；定向非缓存、最终 Android 全量单测、Debug 构建和 allowlist 均通过。 |
+| Next action | Bug-2119 自动化收口；`DEV-2119-01` 必须保持 PENDING_DEVICE_VERIFICATION，不得写 runtime PASS。 |
 
 ## Previous execution: Bug-5305 手动食材分类优先（2026-08-27）
 
