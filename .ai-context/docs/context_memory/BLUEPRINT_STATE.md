@@ -14,7 +14,7 @@
 | Scope | 仅参考页透明说明、已有 category-id→member_care→规则消费者的回归测试与必要事实回写。 |
 | Authorization | 用户已授权无人值守完成：握手、测试、独立审核与提交；真机验证仍统一后置。 |
 | Runtime | `DEV-L2-01~04` 已登记唯一真机清单，均为 `PENDING_DEVICE_VERIFICATION`；未执行或声明设备通过。 |
-| Evidence | T-L2-01~05 通过；`:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均 `BUILD SUCCESSFUL`；独立架构复审 PASS，AF-L2-01~03 已关闭。 |
+| Evidence | T-L2-01~05 通过；`:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均 `BUILD SUCCESSFUL`；独立架构复审 PASS，AF-L2-01~03 已关闭；`feature_sync_check.py --range de9f50b0..c8a60ac7`=`SYNC-OK c8a60ac7`。 |
 | Review | 仅改参考页透明文案和测试；未新增 `HealthCondition`、未改 seed/schema/算法或 Family UI。 |
 | Next action | 自动化收口；按用户统一后置策略执行 `DEV-L2-01~04` 真机验证。 |
 

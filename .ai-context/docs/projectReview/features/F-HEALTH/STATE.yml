@@ -1,8 +1,8 @@
 id: F-HEALTH
 name: 健康判定与忌口引擎
 lifecycle: active
-headline: "✅ 慢病深挖：高血压（钠罚 + 钾正向）、糖尿病（GI 罚 + 纤维正向）已落地。"
-synced_to: 511fa61c
+headline: "✅ 慢病深挖已落地；脂肪肝只复用既有食材级 care 参考，不新增诊断或数值算法。"
+synced_to: c8a60ac7
 match:
   - shared/**/ai/HealthRuleEngine*
   - shared/**/ai/MemberDishHealthUseCase*

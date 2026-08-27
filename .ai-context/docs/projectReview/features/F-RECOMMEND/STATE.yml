@@ -2,7 +2,7 @@ id: F-RECOMMEND
 name: AI推荐
 lifecycle: active
 headline: "✅ 已落地：规则引擎 + 云端 GLM + 成长画像 + MMR 多样性 + 逐菜理由 + 推荐风格；餐次查关联表 + 口味汇总喂 prompt + 药膳本地重"
-synced_to: 29af225b
+synced_to: c8a60ac7
 match:
   - androidApp/**/ui/ai/AiRecommend*
   - androidApp/**/ui/pairing/**
