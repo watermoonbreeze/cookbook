@@ -72,7 +72,7 @@ class FamilyStatsViewModel(
                 val member = sel?.let { id -> ms.firstOrNull { it.id == id } }
                 // [AI修改] 选中成员被删除→id 悬空，归一回全家，避免该成员恢复时突然跳回。
                 if (sel != null && member == null) _selected.value = null
-                val share = when {
+                val allMemberShare = when {
                     member == null -> 1.0 // 家庭视图=全家总量
                     else -> {
                         // [AI修改] Bug-2119：成员统计与全家 breakdown 同用当天在场集合；
@@ -81,6 +81,7 @@ class FamilyStatsViewModel(
                         if (member.id in excluded) 0.0 else if (presentSum > 0.0) member.portionCoefficient / presentSum else 0.0
                     }
                 }
+                val todayMemberShare = allMemberShare
                 val target = member?.let { CalorieTarget.dailyTarget(it.toBodyMetrics()) }
 
                 val allIds = cards.flatMap { it.meals }.flatMap { m -> m.dishes }.map { it.id }.distinct()
@@ -91,6 +92,13 @@ class FamilyStatsViewModel(
                 cards.forEach { c ->
                     val ids = c.meals.flatMap { it.dishes }.map { it.id }.distinct()
                     val dayTotals = ids.mapNotNull { perDish[it]?.totals }
+                    val share = if (DateTime.formatDate(c.date) == todayStr) todayMemberShare else when {
+                        member == null -> 1.0
+                        else -> {
+                            val allSum = ms.sumOf { it.portionCoefficient }
+                            if (allSum > 0.0) member.portionCoefficient / allSum else 1.0
+                        }
+                    }
                     val kcal = dayTotals.sumOf { it.energyKcal } * share
                     dailyKcal += kcal.roundToInt()
                     if (DateTime.formatDate(c.date) == todayStr) {

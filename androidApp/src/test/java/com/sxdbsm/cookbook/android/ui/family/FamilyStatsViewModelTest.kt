@@ -37,7 +37,7 @@ class FamilyStatsViewModelTest {
             val mealRepo = MealRecordRepository(db)
             family.ensureInitialized()
             val me = family.listMembers().single()
-            val dadId = family.createMember(FamilyMember(id = 0, name = "Dad"))
+            val dadId = family.createMember(FamilyMember(id = 0, name = "Dad", portionCoefficient = me.portionCoefficient))
 
             q.insertMeasurementUnit("g", "preset", 1.0)
             val gram = q.lastInsertId().executeAsOne()
@@ -51,19 +51,35 @@ class FamilyStatsViewModelTest {
             val lunchId = q.lastInsertId().executeAsOne()
             val today = DateTime.today()
             mealRepo.saveDayMeals(today, listOf(DayMealDraft(lunchId, LocalTime(12, 0), "", listOf(dishId))))
-            family.setAbsent(DateTime.formatDate(today), me.id, true)
-
+            mealRepo.saveDayMeals(DateTime.plusDays(today, -1), listOf(DayMealDraft(lunchId, LocalTime(12, 0), "", listOf(dishId))))
             val vm = FamilyStatsViewModel(family, mealRepo, NutritionRepository(db))
             vm.select(me.id)
+            val bothPresentStats = withTimeout(5_000) { vm.stats.first { !it.isFamily && it.memberName == me.name && it.todayKcal > 0 } }
+            assertEquals(175, bothPresentStats.todayKcal)
+
+            family.setAbsent(DateTime.formatDate(today), me.id, true)
             val absentStats = withTimeout(5_000) { vm.stats.first { !it.isFamily && it.memberName == me.name } }
             assertEquals(0, absentStats.todayKcal)
             assertEquals(0, absentStats.proteinG)
             assertEquals(0, absentStats.fatG)
             assertEquals(0, absentStats.carbG)
+            assertTrue(absentStats.dailyKcal.contains(175))
 
             vm.select(dadId)
             val presentStats = withTimeout(5_000) { vm.stats.first { !it.isFamily && it.memberName == "Dad" && it.todayKcal > 0 } }
-            assertTrue(presentStats.todayKcal > 0)
+            assertEquals(350, presentStats.todayKcal)
+            assertEquals(7, presentStats.proteinG)
+            assertEquals(1, presentStats.fatG)
+            assertEquals(78, presentStats.carbG)
+            assertTrue(presentStats.dailyKcal.contains(175))
+
+            vm.select(null)
+            val familyStats = withTimeout(5_000) { vm.stats.first { it.isFamily && it.breakdown.size == 2 } }
+            assertEquals(350, familyStats.todayKcal)
+            assertEquals(0, familyStats.breakdown.first { it.id == me.id }.kcal)
+            assertEquals(false, familyStats.breakdown.first { it.id == me.id }.present)
+            assertEquals(350, familyStats.breakdown.first { it.id == dadId }.kcal)
+            assertEquals(true, familyStats.breakdown.first { it.id == dadId }.present)
         } finally {
             Dispatchers.resetMain()
             driver.close()
