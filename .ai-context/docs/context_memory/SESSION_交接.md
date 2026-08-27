@@ -2,10 +2,10 @@
 
 ## 下一会话启动卡（2026-08-27）
 
-- Bug-3393 已由 CODE 交付本地提交 `2d946237`：当天在场关注成员投影同步驱动首页营养卡 Tab、查看成员、份额与健康提示；Shared 定向 7/7、Shared/Android 全量单测和 assembleDebug 通过，`DEV-3393-01` 位于 `真机待验证清单_202608271041.md` 且保持 PENDING。当前 `BLUEPRINT_STATE.md` 为 `CODE_COMPLETE / TURN=REVIEW`，必须先做独立 ARCH 复核，不能自写 ACCEPTED 或进入 Bug-2119。
-- 当前工作树：Bug-3393 已提交；当前正按 Sol REVIEW 的 AF 返修，未开始下一业务任务。
+- Bug-3393 已完成独立终审并为 `ARCH_ACCEPTED / AUTOMATED_GATES_PASS`：交付链 `2d946237`→`3de38f30`，治理收口 `b1b9c05e`→`8f4831ba`；定向 Shared XML 7/7、真实 Home VM+SQLite XML 2/2，allowlist checker 通过。`DEV-3393-01` 位于 `真机待验证清单_202608271041.md` 且保持 PENDING。
+- 当前工作树：Bug-3393 自动化收口，开始下一业务任务 Bug-2119 的 Reality Verification；不得将未执行的真机验证写成 PASS。
 - 当前已接受：P4、P5-A、Bug-5305；`OBS-NEXT-A/B` 自动化门通过。所有真机项仍统一后置，最新唯一清单为 `真机待验证清单_202608271041.md`。
-- 下一项候选：Bug-3393 的 Sol REVIEW AF 返修与二审完成后，继续 `Bug修复-2119`。
+- 当前项：`Bug修复-2119`（缺席状态未同步成员页）。
 - 新强制约定：每个待办/缺陷或新增功能，先查统一日志覆盖；缺少可诊断的 UI 状态、操作生命周期或数据阶段事件时，先在同一蓝图中补最小安全埋点，再写业务实现。详见 `projectReview/06_约定与红线.md`「待办/缺陷的日志先行」。
 - 启动顺序：`AGENTS.md` → `.ai-context/PROJECT.md` → 本文件 → `BLUEPRINT_STATE.md` → 目标 Feature 的待办/缺陷 → 日志覆盖审计 → Sol 蓝图 → Terra 编码/单测 → Sol 收口。真机验证不阻断上述代码路径。
 
