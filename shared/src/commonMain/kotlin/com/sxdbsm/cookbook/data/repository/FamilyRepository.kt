@@ -17,6 +17,18 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /**
+ * 某日首页营养卡可查看成员的投影。[AI生成]
+ *
+ * [AI生成] 只把当天在场的关注成员暴露给首页；缺席记录不删除成员、不改变关注关系。
+ */
+data class PresentFocusSelection(
+    val members: List<FamilyMember>,
+    val viewing: FamilyMember?,
+    val share: Double,
+    val requiresViewingFallback: Boolean,
+)
+
+/**
  * @File : FamilyRepository
  * @Time : 2026/07/15
  * @Author : SXD-AI
@@ -115,6 +127,34 @@ class FamilyRepository(
         combine(observeMembers(), prefs.observeFocusViewingMemberId()) { ms, vid -> resolveViewing(ms, vid) }
 
     // ===== 缺席微调（按天持久化） =====
+
+    /**
+     * 监听某日首页营养卡的在场关注成员与有效查看人。[AI生成]
+     *
+     * [AI生成] 当前查看人缺席时只在此日期投影中回退到既有排序下首位在场关注人；
+     * 不改全局关注集合，也不改变 `observeFocusShareForDate` 的“查看人缺席=0”合同。
+     */
+    fun observePresentFocusSelectionForDate(date: String): Flow<PresentFocusSelection> =
+        combine(observeMembers(), observeAbsenteeIds(date), prefs.observeFocusViewingMemberId()) { members, absentIds, viewingId ->
+            val focusMembers = members.filter { it.isFocus }
+            val presentFocusMembers = focusMembers.filter { it.id !in absentIds }
+            val currentViewing = resolveViewing(members, viewingId)
+            val effectiveViewing = when {
+                presentFocusMembers.isEmpty() -> null
+                currentViewing?.id in presentFocusMembers.map { it.id }.toSet() -> currentViewing
+                else -> presentFocusMembers.first()
+            }
+            val share = effectiveViewing?.let { viewing ->
+                val presentSum = members.filter { it.id !in absentIds }.sumOf { it.portionCoefficient }
+                if (presentSum > 0.0) viewing.portionCoefficient / presentSum else 0.0
+            } ?: 0.0
+            PresentFocusSelection(
+                members = presentFocusMembers,
+                viewing = effectiveViewing,
+                share = share,
+                requiresViewingFallback = currentViewing != null && effectiveViewing != null && currentViewing.id != effectiveViewing.id,
+            )
+        }
 
     /** 监听某天缺席成员 id。[AI生成] */
     fun observeAbsenteeIds(date: String): Flow<Set<Long>> =

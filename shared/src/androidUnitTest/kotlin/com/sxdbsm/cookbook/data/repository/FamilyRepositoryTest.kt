@@ -7,7 +7,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -126,6 +128,34 @@ class FamilyRepositoryTest {
 
         fam.setAbsent(date, dadId, false) // 取消爸的缺席
         assertTrue(dadId !in fam.observeAbsenteeIds(date).first(), "取消缺席应生效")
+    }
+
+    @Test
+    fun `今日营养卡投影_缺席查看成员回退到在场关注成员`() = runBlocking {
+        val (fam, _, prefs) = setup()
+        fam.ensureInitialized()
+        val me = fam.listMembers().first { it.isSelf }
+        val dadId = fam.createMember(FamilyMember(id = 0, name = "爸"))
+        assertTrue(fam.toggleFocus(dadId))
+        prefs.setFocusViewingMemberId(me.id)
+        val date = "2026-08-27"
+
+        val allPresent = fam.observePresentFocusSelectionForDate(date).first()
+        assertEquals(listOf(me.id, dadId), allPresent.members.map { it.id })
+        assertEquals(me.id, allPresent.viewing?.id)
+        assertFalse(allPresent.requiresViewingFallback)
+
+        fam.setAbsent(date, me.id, true)
+        val fallback = fam.observePresentFocusSelectionForDate(date).first()
+        assertEquals(listOf(dadId), fallback.members.map { it.id })
+        assertEquals(dadId, fallback.viewing?.id)
+        assertTrue(fallback.requiresViewingFallback)
+
+        fam.setAbsent(date, dadId, true)
+        val nobodyPresent = fam.observePresentFocusSelectionForDate(date).first()
+        assertTrue(nobodyPresent.members.isEmpty())
+        assertNull(nobodyPresent.viewing)
+        assertEquals(0.0, nobodyPresent.share, 0.0)
     }
 
     @Test

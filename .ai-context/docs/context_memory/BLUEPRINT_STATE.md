@@ -1,6 +1,22 @@
 # BLUEPRINT_STATE
 
-## CURRENT EXECUTION: Bug-5305 手动食材分类优先（2026-08-27）
+## CURRENT EXECUTION: Bug-3393 缺席成员今日营养卡（2026-08-27）
+
+| Field | Value |
+|---|---|
+| Batch | Bug-3393 / absent member nutrition-card fallback |
+| State | **CODE_COMPLETE / PENDING REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
+| 颗粒度 | **L7 / 48-GC** |
+| Base | `HEAD` at CODE start; no implementation exists at freeze |
+| Blueprint | `.ai-context/docs/feature/Bug-3393_缺席成员今日营养卡_实施蓝图.md` |
+| Scope | Date-aware present focus projection for Home nutrition card only, minimal anonymous trace, targeted shared/Android tests; Bug-2119 excluded. |
+| Authorization | 用户已授权全程无人值守；CODE 完成后只能写 `CODE_COMPLETE / TURN=REVIEW`。 |
+| Evidence | `FamilyRepositoryTest` 7/7 incl. new date-aware projection; `HomeFocusSwitcherTest`; `:shared:testDebugUnitTest` BUILD SUCCESSFUL; `:androidApp:testDebugUnitTest` BUILD SUCCESSFUL; `:androidApp:assembleDebug` BUILD SUCCESSFUL. `DEV-3393-01` in `真机待验证清单_202608271041.md` remains pending. |
+| Next action | ARCH must independently diff-review STEP-3393-01~05, rerun gates and check INV-3393-01~05; no ACCEPTED or runtime PASS before that review. |
+
+## Previous execution: Bug-5305 手动食材分类优先（2026-08-27）
 
 | Field | Value |
 |---|---|

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.MealProjectionRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
+import com.sxdbsm.cookbook.data.repository.PresentFocusSelection
 import com.sxdbsm.cookbook.domain.model.DayMealCardData
 import com.sxdbsm.cookbook.usecase.mealrecording.MealRecordUseCase
 import com.sxdbsm.cookbook.android.ui.meal.MealDayMutationPort
@@ -14,6 +15,7 @@ import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.domain.projection.MealDayCardProjector
 import com.sxdbsm.cookbook.util.DateTime
 import com.sxdbsm.cookbook.platform.MealDataTraceLogger
+import com.sxdbsm.cookbook.platform.BusinessTrace
 import kotlinx.datetime.LocalDate
 import com.sxdbsm.cookbook.domain.FoodGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,6 +53,12 @@ data class FocusChip(val id: Long, val name: String)
 data class FocusSwitcher(
     val members: List<FocusChip> = emptyList(),
     val viewingId: Long? = null,
+)
+
+/** [AI生成] 将 Shared 的当日在场投影收敛为首页 Tab 状态，避免 UI 重建时重新选择成员。 */
+internal fun PresentFocusSelection.toFocusSwitcher(): FocusSwitcher = FocusSwitcher(
+    members = members.map { FocusChip(it.id, it.name) },
+    viewingId = viewing?.id,
 )
 
 /** 首页"下一餐"推荐卡状态。[AI修改] v2：轻量单菜引流(单菜 dish?·非列表) */
@@ -298,12 +306,24 @@ class HomeViewModel internal constructor(
      *
      * 供首页"今日营养分配"卡；当天无餐食/无营养数据则 null(不显示)。仅营养色系开启时消费。
      */
+    // [AI生成] Bug-3393：今日卡的成员选择、份额和健康提示共用同一“当天在场关注成员”投影，防止缺席查看人把整卡隐藏。
+    private val todayFocusSelection = family.observePresentFocusSelectionForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today))
+        .onEach { selection ->
+            val fallback = selection.viewing ?: return@onEach
+            if (selection.requiresViewingFallback) {
+                val trace = BusinessTrace.action("home", "nutrition_member_switcher", "absent_viewer_fallback")
+                family.setViewingMember(fallback.id)
+                BusinessTrace.stateChanged("home", "nutrition_member_switcher", "effective_viewer", "absent_viewer_fallback", trace)
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.sxdbsm.cookbook.data.repository.PresentFocusSelection(emptyList(), null, 0.0, false))
+
     // [AI生成] A-1：关注成员的慢病(病种名→HealthCondition)，供今日卡慢病提示(如"偏咸·高血压留意")。
     private val focusConditions: StateFlow<Set<com.sxdbsm.cookbook.domain.HealthCondition>> =
-        combine(family.observeViewingMember(), kotlinx.coroutines.flow.flow { emit(health.listAllCrowdTypes()) }) { viewing, crowds ->
+        combine(todayFocusSelection, kotlinx.coroutines.flow.flow { emit(health.listAllCrowdTypes()) }) { selection, crowds ->
             // [AI修改] 多人关注:今日卡慢病提示按"当前查看成员"(指针·非本地firstOrNull),与今日卡数据同一人。
             val nameById = crowds.associate { it.id to it.name }
-            viewing?.careCategoryIds.orEmpty()
+            selection.viewing?.careCategoryIds.orEmpty()
                 .mapNotNull { nameById[it] }
                 .flatMap { com.sxdbsm.cookbook.domain.HealthCondition.fromCareName(it) }
                 .toSet()
@@ -311,11 +331,8 @@ class HomeViewModel internal constructor(
 
     // [AI生成] 多人关注:今日卡顶部成员切换 chip(≥2 关注人才显·1人零变化)。viewingId=当前查看人。
     val focusSwitcher: StateFlow<FocusSwitcher> =
-        combine(family.observeMembers(), family.observeViewingMember()) { ms, viewing ->
-            FocusSwitcher(
-                members = ms.filter { it.isFocus }.map { FocusChip(it.id, it.name) },
-                viewingId = viewing?.id,
-            )
+        todayFocusSelection.map { selection ->
+            selection.toFocusSwitcher()
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FocusSwitcher())
 
     /** 切"当前查看"成员(今日卡切换 chip·与报告共用指针)。[AI生成] 多人关注 */
@@ -344,11 +361,13 @@ class HomeViewModel internal constructor(
     val todayNutrition: StateFlow<TodayNutrition?> =
         combine(
             todayCards,
-            family.observeFocusBody(),
-            family.observeFocusShareForDate(com.sxdbsm.cookbook.util.DateTime.formatDate(today)),
+            todayFocusSelection,
             explicitGroups,
             focusConditions,
-        ) { cards, body, share, explicit, conditions ->
+        ) { cards, selection, explicit, conditions ->
+                val viewing = selection.viewing ?: return@combine null
+                val body = viewing.toBodyMetrics()
+                val share = selection.share
                 if (share <= 0.0) return@combine null // [AI修改] 关注成员今天未在家吃→不显今日营养卡
                 // [AI修改] 食用比例(是否吃完)：按**每道菜实例**(带 eatenRatio)折算个人摄入=Σ(整份×eatenRatio)×share(IntakeCalculator 单一真相源)。
                 //   用实例列表(非 distinct id)——同菜在不同餐次可各自吃了多少不同；营养按 distinct id 批量查一次再按实例映射。
