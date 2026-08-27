@@ -13,7 +13,7 @@
 | Blueprint | `.ai-context/docs/feature/Bug-3393_缺席成员今日营养卡_实施蓝图.md` |
 | Scope | Date-aware present focus projection for Home nutrition card only, minimal anonymous trace, targeted shared/Android tests; Bug-2119 excluded. |
 | Authorization | 用户已授权全程无人值守；CODE 完成后只能写 `CODE_COMPLETE / TURN=REVIEW`。 |
-| Delivery | `2d946237`（实现）→`a59dcb0a`（交接）→`3de38f30`（AF-3393-01~03 返修）；本次治理回填待提交。 |
+| Delivery | `2d946237`（实现）→`a59dcb0a`（交接）→`3de38f30`（AF-3393-01~03 返修）→`b1b9c05e`（审核台账与治理回填）。 |
 | Evidence | `FamilyRepositoryTest` XML 7/7；`HomeFocusSwitcherTest` XML 2/2（2026-08-27 14:59:11，真实 VM+SQLite 回退链）；此前 `:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` BUILD SUCCESSFUL。`DEV-3393-01` in `真机待验证清单_202608271041.md` remains pending. |
 | Review | 独立终审已关闭 AF-3393-01~05；`core.quotePath=false` 下 `blueprint_check --range 0e5422c6..HEAD` exit 0。 |
 | Next action | Bug-3393 自动化收口；`DEV-3393-01` 仍为 **PENDING_DEVICE_VERIFICATION**，不得写 runtime PASS。后续可按新批次启动 Bug-2119。 |
