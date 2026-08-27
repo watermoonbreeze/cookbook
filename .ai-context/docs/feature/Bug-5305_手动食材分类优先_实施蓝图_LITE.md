@@ -1,8 +1,8 @@
 # Bug-5305 · 手动食材分类优先 — BLUEPRINT-LITE
 
-状态：**BLUEPRINT_READY / TURN=CODE**  
-冻结日期：2026-08-27  
-事实基线：当前 `HEAD`（开工前 CODE 须重新记录精确 SHA）  
+状态：**BLUEPRINT_READY / TURN=CODE**
+冻结日期：2026-08-27
+事实基线：当前 `HEAD`（开工前 CODE 须重新记录精确 SHA）
 功能：F-INGREDIENT；范围：Android 食材编辑器的“营养大类”预选/手选优先级。
 
 ## ROLE_CONTRACT
