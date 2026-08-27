@@ -3,9 +3,9 @@
 ## 下一会话启动卡（2026-08-27）
 
 - Bug-3393 已完成独立终审并为 `ARCH_ACCEPTED / AUTOMATED_GATES_PASS`：交付链 `2d946237`→`3de38f30`，治理收口 `b1b9c05e`→`8f4831ba`；定向 Shared XML 7/7、真实 Home VM+SQLite XML 2/2，allowlist checker 通过。`DEV-3393-01` 位于 `真机待验证清单_202608271041.md` 且保持 PENDING。
-- 当前工作树：Bug-3393 自动化收口，开始下一业务任务 Bug-2119 的 Reality Verification；不得将未执行的真机验证写成 PASS。
+- 已完成：Bug-3393 与 Bug-2119 均为 `ARCH_ACCEPTED / AUTOMATED_GATES_PASS`；交付链分别为 `2d946237..ea4b5132` 与 `c8d40556..89bc16c3`。工作树在本次交接提交后应干净；不得将未执行的真机验证写成 PASS。
 - 当前已接受：P4、P5-A、Bug-5305；`OBS-NEXT-A/B` 自动化门通过。所有真机项仍统一后置，最新唯一清单为 `真机待验证清单_202608271041.md`。
-- 当前项：`Bug修复-2119`（缺席状态未同步成员页）。
+- 下一会话优先级：① 按 `真机待验证清单_202608271041.md` 统一执行 `DEV-3393-01`、`DEV-2119-01` 及既有 PENDING 项；② 独立文档治理批：处理 projectReview 横轴 STALE（01/03/04/20/21）与 `07_项目现状.md`、功能路径索引的 CONFIG-ERROR；③ 用 `feature_sync_check.py --backlog` 逐项清理 F-FAMILY 等功能回写欠账。上述均需各自新建任务卡/蓝图，勿混入已验收 Bug 批次。
 - 新强制约定：每个待办/缺陷或新增功能，先查统一日志覆盖；缺少可诊断的 UI 状态、操作生命周期或数据阶段事件时，先在同一蓝图中补最小安全埋点，再写业务实现。详见 `projectReview/06_约定与红线.md`「待办/缺陷的日志先行」。
 - 启动顺序：`AGENTS.md` → `.ai-context/PROJECT.md` → 本文件 → `BLUEPRINT_STATE.md` → 目标 Feature 的待办/缺陷 → 日志覆盖审计 → Sol 蓝图 → Terra 编码/单测 → Sol 收口。真机验证不阻断上述代码路径。
 
@@ -13,7 +13,12 @@
 
 - 已运行 `feature_sync_check.py --struct`（通过）与 `--emit-index --write`：`07_项目现状.md`、`features/_INDEX.md`、`功能路径索引.md` 已刷新至 `729e92a3` 的生成视图。
 - 横轴新鲜度为软信号：01/03/04/20/21 分别 `STALE(16/12/8/9/48)`；07 与功能路径索引存在页脚 `CONFIG-ERROR`，不把这些历史文档问题伪装成已解决，后续单列文档治理批处理。
-- 代码先行的下一 P0 候选为 `Bug修复-2119`（缺席状态未同步成员页）；前置为 Bug-3393 Sol REVIEW 通过。真机/OEM 依赖项继续后置，不阻断代码批次。
+- 代码类下一候选尚未冻结；先完成真机验证或文档治理任务卡，再依据当时 backlog 决定新批次。真机/OEM 依赖项继续后置，不得阻断已验收代码批次。
+
+## 本次交接自检（2026-08-27）
+
+- projectReview 横轴 freshness：01/03/04/20/21 分别 `STALE(16/12/9/9/48)`；07 与功能路径索引为 `CONFIG-ERROR`。这是软信号/文档治理待办，未伪造为已修复。
+- feature_sync：`--struct` 通过；`--backlog` 报 F-AI-MEAL、F-DISH、F-FAMILY、F-INGREDIENT、F-MEAL、F-RECOMMEND、F-TIMELINE、F-TOOLS、F-WEEKPLAN 存在历史回写欠账。
 
 ## Bug-5305 手动食材分类优先收口（2026-08-27）
 
