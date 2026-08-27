@@ -78,6 +78,34 @@ class FamilyRepositoryTest {
     }
 
     @Test
+    fun `脂肪肝care_成员创建更新回读与清空不影响其他成员和旧档案并集`() = runBlocking {
+        // [AI生成] L2：验证动态 crowd 分类经 member_care 汇入既有全家并集，不触碰 Family UI 合并规则。
+        val (fam, health, _) = setup()
+        fam.ensureInitialized()
+        val careTypes = health.listAllCrowdTypes()
+        val fattyLiver = careTypes.single { it.name == "非酒精性脂肪肝" }
+        val otherMemberCare = careTypes.first { it.id != fattyLiver.id }
+        val legacyCare = careTypes.first { it.id != fattyLiver.id && it.id != otherMemberCare.id }
+        health.add(legacyCare.id)
+
+        val self = fam.listMembers().single { it.isSelf }
+        fam.updateMember(self.copy(careCategoryIds = listOf(fattyLiver.id)))
+        val updatedSelf = fam.listMembers().single { it.isSelf }
+        assertEquals(listOf(fattyLiver.id), updatedSelf.careCategoryIds, "更新后应回读脂肪肝 care id")
+        assertTrue(fattyLiver.id in fam.allEnabledCareIds(), "脂肪肝 care id 应进入全家并集")
+
+        val dadId = fam.createMember(FamilyMember(id = 0, name = "爸", careCategoryIds = listOf(otherMemberCare.id)))
+        val createdDad = fam.listMembers().single { it.id == dadId }
+        assertEquals(listOf(otherMemberCare.id), createdDad.careCategoryIds, "新成员应回读自己的 care id")
+
+        fam.updateMember(updatedSelf.copy(careCategoryIds = emptyList()))
+        val union = fam.allEnabledCareIds().toSet()
+        assertTrue(fattyLiver.id !in union, "清空该成员后应移除其脂肪肝 care id")
+        assertTrue(otherMemberCare.id in union, "清空该成员 care 不应移除其他成员并集")
+        assertTrue(legacyCare.id in union, "清空该成员 care 不应移除旧健康档案并集")
+    }
+
+    @Test
     fun `个人忌口具体食材_读写回显与全家并集与全量替换`() = runBlocking {
         val db = RepositoryTestDatabase.create()
         PresetDataSeeder(db).seedIfNeeded()

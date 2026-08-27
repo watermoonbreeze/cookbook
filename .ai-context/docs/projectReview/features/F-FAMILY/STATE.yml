@@ -1,8 +1,8 @@
 id: F-FAMILY
 name: 家庭与健康档案
 lifecycle: active
-headline: "✅ 健康档案（家庭成员/慢病忌口/达标切换）已落地。"
-synced_to: 29af225b
+headline: "✅ 健康档案已落地；脂肪肝复用既有食材级 care 规则接入，无新诊断或算法。"
+synced_to: de9f50b0
 match:
   - androidApp/**/ui/family/**
   - shared/**/data/repository/FamilyRepository*

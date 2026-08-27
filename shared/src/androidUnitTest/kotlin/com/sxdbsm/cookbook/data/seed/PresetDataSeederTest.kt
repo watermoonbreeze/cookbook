@@ -131,6 +131,45 @@ class PresetDataSeederTest {
     }
 
     @Test
+    fun `脂肪肝care分类与食材规则_seed后完整且唯一`() = runBlocking {
+        // [AI生成] L2：守护既有 category-id seed 链路，不引入 HealthCondition 或专属算法。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val fattyLiver = db.cookbookQueries.selectAllFoodCategories().executeAsList()
+            .filter { it.name == "非酒精性脂肪肝" && it.dimension == "crowd" }
+        assertEquals(1, fattyLiver.size, "应存在唯一的 crowd 分类：非酒精性脂肪肝")
+
+        val careRules = IngredientRepository(db).listByCareCategories(listOf(fattyLiver.single().id))
+        assertEquals(18, careRules.size, "脂肪肝应写入既有的 18 条食材级规则")
+        val rules = careRules.associate { it.name to it.adviceLevel }
+        assertEquals(AdviceLevel.RECOMMEND, rules["燕麦"], "燕麦应为推荐")
+        assertEquals(AdviceLevel.LIMIT, rules["大米"], "大米应为限量")
+        assertEquals(AdviceLevel.AVOID, rules["白糖"], "白糖应为避免")
+        assertEquals(AdviceLevel.AVOID, rules["啤酒"], "啤酒应为避免")
+    }
+
+    @Test
+    fun `脂肪肝care规则_重复seed不重复写入`() = runBlocking {
+        // [AI生成] L2：同一数据库重跑 seed 必须保持 category-id 和规则集合幂等。
+        val db = RepositoryTestDatabase.create()
+        val seeder = PresetDataSeeder(db)
+        seeder.seedIfNeeded()
+        val category = db.cookbookQueries.selectAllFoodCategories().executeAsList()
+            .single { it.name == "非酒精性脂肪肝" && it.dimension == "crowd" }
+        val rulesBefore = IngredientRepository(db).listByCareCategories(listOf(category.id)).size
+        assertEquals(18, rulesBefore, "首次 seed 应有 18 条脂肪肝食材级规则")
+
+        seeder.seedIfNeeded()
+
+        val categoriesAfter = db.cookbookQueries.selectAllFoodCategories().executeAsList()
+            .filter { it.name == "非酒精性脂肪肝" && it.dimension == "crowd" }
+        val rulesAfter = IngredientRepository(db).listByCareCategories(listOf(categoriesAfter.single().id)).size
+        assertEquals(1, categoriesAfter.size, "重复 seed 后脂肪肝分类不应重复")
+        assertEquals(18, rulesAfter, "重复 seed 后脂肪肝规则仍应完整")
+        assertEquals(rulesBefore, rulesAfter, "重复 seed 后脂肪肝规则不应重复")
+    }
+
+    @Test
     fun seedJsonRequiresEmojiForEveryIngredient() {
         val db = RepositoryTestDatabase.create()
         val jsonIngredients = PresetDataSeeder(db).loadIngredientsForTest()

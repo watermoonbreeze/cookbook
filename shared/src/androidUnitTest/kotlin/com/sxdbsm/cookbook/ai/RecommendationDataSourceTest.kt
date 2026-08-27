@@ -290,4 +290,30 @@ class RecommendationDataSourceTest {
         )
         Unit
     }
+
+    @Test
+    fun `脂肪肝care经真实gatherConstraints消费既有三档食材规则`() = runBlocking {
+        // [AI生成] L2：从全家 member_care 的真实 category-id 输入验证 gatherConstraints 三档消费；不新增 HealthCondition。
+        val db = RepositoryTestDatabase.create()
+        PresetDataSeeder(db).seedIfNeeded()
+        val family = com.sxdbsm.cookbook.data.repository.FamilyRepository(
+            db, com.sxdbsm.cookbook.data.repository.PreferenceRepository(db),
+        )
+        family.ensureInitialized()
+        val fattyLiver = HealthProfileRepository(db).listAllCrowdTypes().single { it.name == "非酒精性脂肪肝" }
+        val self = family.listMembers().single { it.isSelf }
+        family.updateMember(self.copy(careCategoryIds = listOf(fattyLiver.id)))
+        val ingredientRepo = IngredientRepository(db)
+        val dataSource = RecommendationDataSource(
+            db, PantryRepository(db), DishRepository(db), family, ingredientRepo,
+            com.sxdbsm.cookbook.data.repository.NutritionRepository(db),
+        )
+
+        val constraints = dataSource.gatherConstraints().constraints
+        suspend fun ingredientId(name: String) = ingredientRepo.search(name).single { it.name == name }.id
+        assertTrue(ingredientId("燕麦") in constraints.recommendIngredientIds, "燕麦应消费为推荐")
+        assertTrue(ingredientId("大米") in constraints.limitIngredientIds, "大米应消费为限量")
+        assertTrue(ingredientId("白糖") in constraints.avoidIngredientIds, "白糖应消费为避免")
+        assertTrue(ingredientId("啤酒") in constraints.avoidIngredientIds, "啤酒应消费为避免")
+    }
 }

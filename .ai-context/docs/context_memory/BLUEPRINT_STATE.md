@@ -1,5 +1,23 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: L2 非酒精性脂肪肝 App 入口（2026-08-27）
+
+| Field | Value |
+|---|---|
+| Batch | L2 / fatty liver App entry |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
+| 颗粒度 | **L7**（健康状态入口与已有规则消费链路，零 schema/seed/算法迁移） |
+| Base | `de9f50b0` |
+| Blueprint | `.ai-context/docs/feature/L2_脂肪肝App入口_实施蓝图.md` |
+| Scope | 仅参考页透明说明、已有 category-id→member_care→规则消费者的回归测试与必要事实回写。 |
+| Authorization | 用户已授权无人值守完成：握手、测试、独立审核与提交；真机验证仍统一后置。 |
+| Runtime | `DEV-L2-01~04` 已登记唯一真机清单，均为 `PENDING_DEVICE_VERIFICATION`；未执行或声明设备通过。 |
+| Evidence | T-L2-01~05 通过；`:shared:testDebugUnitTest`、`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均 `BUILD SUCCESSFUL`；独立架构复审 PASS，AF-L2-01~03 已关闭。 |
+| Review | 仅改参考页透明文案和测试；未新增 `HealthCondition`、未改 seed/schema/算法或 Family UI。 |
+| Next action | 自动化收口；按用户统一后置策略执行 `DEV-L2-01~04` 真机验证。 |
+
 ## CURRENT EXECUTION: DOC-GOV-20260827 项目地图与待办治理（2026-08-27）
 
 | Field | Value |
