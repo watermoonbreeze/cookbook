@@ -1,5 +1,22 @@
 # BLUEPRINT_STATE
 
+## CURRENT EXECUTION: DOC-GOV-20260827 项目地图与待办治理（2026-08-27）
+
+| Field | Value |
+|---|---|
+| Batch | DOC-GOV-20260827 / project-map and backlog governance |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
+| 颗粒度 | **L3**（纯文档/生成视图；无产品代码、运行时或数据变更） |
+| Base | `HEAD` at blueprint freeze |
+| Blueprint | `.ai-context/docs/feature/DOC-GOV-20260827_项目地图待办治理_实施蓝图_LITE.md` |
+| Scope | 横轴事实锚、生成视图配置与 Feature 历史回写欠账；不改产品代码、schema、真机项或协议。 |
+| Authorization | 用户已要求按大类依序完成全部待办，真机统一最后执行。 |
+| Evidence | 历史事实审计范围 `511fa61c..29af225b`=`SYNC-OK 29af225b`；逐功能 `20_实现.md` 已回填实现 SHA 或 SYNC-NOOP 理由；`--verify-state --head 29af225b`、`--backlog`、`--struct`、`--emit-index --write` 与 freshness 均通过。 |
+| Review | 独立终审通过：allowlist、非空历史范围、逐功能 SHA/SYNC-NOOP、状态验收、生成视图、结构与 freshness 全部通过；未执行或声明真机 PASS。 |
+| Next action | A 类文档治理已收口；按分类为 B 类已有方案功能新建独立蓝图。真机项保持最后统一执行。 |
+
 ## CURRENT EXECUTION: Bug-2119 缺席成员统计联动（2026-08-27）
 
 | Field | Value |

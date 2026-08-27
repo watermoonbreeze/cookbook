@@ -2,7 +2,7 @@ id: F-DISH
 name: 菜品库
 lifecycle: active
 headline: "✅ 菜品库 + 收藏组合已落地。"
-synced_to: 511fa61c
+synced_to: 29af225b
 match:
   - androidApp/**/ui/dishes/**
   - androidApp/**/ui/dishdetail/**

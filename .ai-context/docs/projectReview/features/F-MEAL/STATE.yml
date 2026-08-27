@@ -2,10 +2,12 @@ id: F-MEAL
 name: 记一餐/食历
 lifecycle: active
 headline: "✅ **已落地**，早期即完成，长期稳定运行，无未决问题。"
-synced_to: a8bbed32f8faf82b3684378acd9b1ace72633f9e
+synced_to: 29af225b
 match:
   - androidApp/**/addmeal/**
   - androidApp/**/ui/home/**
+  - androidApp/**/ui/meal/**
   - shared/**/data/repository/MealRecordRepository*
   - shared/**/domain/model/MealRecord*
+  - shared/**/usecase/mealrecording/**
 notes: ""

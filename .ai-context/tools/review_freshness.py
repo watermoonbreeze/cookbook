@@ -105,6 +105,17 @@ FACT_ANCHORS = {
     "screens": _anchor_screens,
 }
 
+# [AI修改] D-25 已明确将 07 与功能路径索引交给 feature_sync 的生成/C6 门禁；
+# 它们不是带页脚的横轴 Tier B 册，不能因没有页脚被误判为配置错误。
+TIER_B_VOLUMES = {
+    "01_架构与技术底座",
+    "03_界面与交互",
+    "04_数据层",
+    "20_健康与算法逻辑（专属）",
+    "21_AI与网络请求策略（专属）",
+    "22_预设与参考资料治理（专属）",
+}
+
 
 def parse_footer(md_text: str) -> dict | None:
     footer_line = None
@@ -211,7 +222,11 @@ def main() -> int:
         print(f"找不到 {review_dir}", file=sys.stderr)
         return 1
 
-    rows = [check_volume(p, repo_root) for p in sorted(review_dir.glob("*.md"))]
+    rows = [
+        check_volume(p, repo_root)
+        for p in sorted(review_dir.glob("*.md"))
+        if p.stem in TIER_B_VOLUMES
+    ]
 
     if args.md:
         print("| 册 | 页脚 sha | 之后提交数 | 判定 | 处置 |")

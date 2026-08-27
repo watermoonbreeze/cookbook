@@ -2,7 +2,7 @@ id: F-WEEKPLAN
 name: 周计划
 lifecycle: active
 headline: "✅ 周期计划已落地，部分子项真机待验。"
-synced_to: 6f2b201c
+synced_to: 29af225b
 match:
   - androidApp/**/ui/weekplan/**
   - androidApp/**/ui/ai/AiPlan*
@@ -13,4 +13,5 @@ match:
   - androidApp/**/ui/ai/SegmentProgressBar*
   - shared/**/ai/PlanOrchestrator*
   - shared/**/ai/PeriodPlanner*
+  - shared/**/usecase/mealplanning/**
 notes: ""

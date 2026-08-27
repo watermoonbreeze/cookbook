@@ -409,6 +409,16 @@ def build_generated_index_section(ai_context: Path) -> str:
 
 
 def _check_index_stale(repo_root: Path, ai_context: Path) -> tuple[int, str]:
+    # [AI修改] D-25 的三个生成视图必须共同从 Feature Truth 推导；只校验路径索引会漏掉 07/_INDEX 漂移。
+    features_dir = ai_context / FEATURES_DIR
+    expected_07, expected_features_index = _build_generated_views(repo_root, ai_context)
+    checks = [
+        (ai_context / "docs/projectReview/07_项目现状.md", expected_07),
+        (features_dir / "_INDEX.md", expected_features_index),
+    ]
+    for path, expected in checks:
+        if not path.exists() or path.read_text(encoding="utf-8") != expected:
+            return 1, f"{path.name} 与当前 Feature Truth 的现算生成结果不一致"
     idx_path = ai_context / FUNC_INDEX_PATH
     if not idx_path.exists():
         return 0, ""
@@ -425,6 +435,31 @@ def _check_index_stale(repo_root: Path, ai_context: Path) -> tuple[int, str]:
 # ---- --emit-index：生成 07 / _INDEX / 功能路径索引生成段 -------------------------------------
 
 def emit_index(repo_root: Path, ai_context: Path, write: bool) -> int:
+    content_07, content_index = _build_generated_views(repo_root, ai_context)
+    generated_section = build_generated_index_section(ai_context)
+
+    if write:
+        (ai_context / "docs/projectReview/07_项目现状.md").write_text(content_07, encoding="utf-8")
+        (ai_context / FEATURES_DIR / "_INDEX.md").write_text(content_index, encoding="utf-8")
+        idx_path = ai_context / FUNC_INDEX_PATH
+        if idx_path.exists():
+            text = idx_path.read_text(encoding="utf-8")
+            if GENERATED_BEGIN in text and GENERATED_END in text:
+                pre = text.split(GENERATED_BEGIN, 1)[0]
+                post = text.split(GENERATED_END, 1)[1]
+                idx_path.write_text(pre + GENERATED_BEGIN + "\n" + generated_section + GENERATED_END + post, encoding="utf-8")
+        print("[OK] 已写入 07_项目现状.md / features/_INDEX.md / 功能路径索引.md 生成段")
+    else:
+        print(content_07)
+        print("---")
+        print(content_index)
+        print("---")
+        print(generated_section)
+        print("[提示] 未加 --write，以上仅预览，不落盘")
+    return 0
+
+
+def _build_generated_views(repo_root: Path, ai_context: Path) -> tuple[str, str]:
     features_dir = ai_context / FEATURES_DIR
     head = run_git(["rev-parse", "--short", "HEAD"], repo_root).strip()
 
@@ -488,27 +523,7 @@ def emit_index(repo_root: Path, ai_context: Path, write: bool) -> int:
         idx_features.append(f"| [{fid}](./{fid}/) | {state.get('lifecycle','')} | {synced_to} |")
     content_index = "\n".join(idx_features) + "\n"
 
-    generated_section = build_generated_index_section(ai_context)
-
-    if write:
-        (ai_context / "docs/projectReview/07_项目现状.md").write_text(content_07, encoding="utf-8")
-        (features_dir / "_INDEX.md").write_text(content_index, encoding="utf-8")
-        idx_path = ai_context / FUNC_INDEX_PATH
-        if idx_path.exists():
-            text = idx_path.read_text(encoding="utf-8")
-            if GENERATED_BEGIN in text and GENERATED_END in text:
-                pre = text.split(GENERATED_BEGIN, 1)[0]
-                post = text.split(GENERATED_END, 1)[1]
-                idx_path.write_text(pre + GENERATED_BEGIN + "\n" + generated_section + GENERATED_END + post, encoding="utf-8")
-        print("[OK] 已写入 07_项目现状.md / features/_INDEX.md / 功能路径索引.md 生成段")
-    else:
-        print(content_07)
-        print("---")
-        print(content_index)
-        print("---")
-        print(generated_section)
-        print("[提示] 未加 --write，以上仅预览，不落盘")
-    return 0
+    return content_07, content_index
 
 
 def _count_table_rows(md: Path) -> int:

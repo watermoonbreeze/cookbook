@@ -1,5 +1,14 @@
 # 🔖 SESSION 交接入口
 
+## 下一会话启动卡（2026-08-27 · 待办分类续作）
+
+- 用户授权：将未完成待办按大类依序处理；**所有真机验证统一留在最后**。当前为标准任务、BLUEPRINT 模式；不提交、不推送，除非用户另行授权。
+- 当前批次：`DOC-GOV-20260827`，蓝图为 `feature/DOC-GOV-20260827_项目地图待办治理_实施蓝图_LITE.md`，握手状态见 `BLUEPRINT_STATE.md` 顶部。已完成 Feature 历史回写清账、生成视图重建、C6 共同一致性校验，以及横轴 `03/04/20/21` 的代码事实复核。
+- 已验收命令：`feature_sync_check.py --range 511fa61c..29af225b` = `SYNC-OK 29af225b`；`--verify-state --head 29af225b`、`--backlog`、`--struct`、`--emit-index --write` 均通过；`review_freshness.py --md` 六册全为 FRESH。
+- 工作树**有未提交文档/工具改动**，均属本批 allowlist：`BLUEPRINT_STATE`、`SESSION_交接`、待办分类快照/蓝图、横轴册、9 个 Feature `20_实现.md`+`STATE.yml`、生成视图、`feature_sync_check.py`、`review_freshness.py`。接手时不得清理、覆盖或混入产品代码。
+- 独立终审已通过：逐功能回写均带提交 SHA 或 SYNC-NOOP 理由，且 allowlist、状态验收、生成视图、结构与 freshness 已闭合；所有真机项继续 `PENDING_DEVICE_VERIFICATION`。
+- 分类状态：A 文档治理已收口；B 已有方案功能待逐批新建蓝图；C 产品/UX/健康口径待决，不擅自实现；D 真机/OEM 验证最后统一执行。
+
 ## 下一会话启动卡（2026-08-27）
 
 - Bug-3393 已完成独立终审并为 `ARCH_ACCEPTED / AUTOMATED_GATES_PASS`：交付链 `2d946237`→`3de38f30`，治理收口 `b1b9c05e`→`8f4831ba`；定向 Shared XML 7/7、真实 Home VM+SQLite XML 2/2，allowlist checker 通过。`DEV-3393-01` 位于 `真机待验证清单_202608271041.md` 且保持 PENDING。
