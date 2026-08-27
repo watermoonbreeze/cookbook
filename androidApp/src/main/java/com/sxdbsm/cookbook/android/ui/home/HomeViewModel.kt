@@ -313,7 +313,7 @@ class HomeViewModel internal constructor(
             if (selection.requiresViewingFallback) {
                 val trace = BusinessTrace.action("home", "nutrition_member_switcher", "absent_viewer_fallback")
                 family.setViewingMember(fallback.id)
-                BusinessTrace.stateChanged("home", "nutrition_member_switcher", "effective_viewer", "absent_viewer_fallback", trace)
+                BusinessTrace.stateChanged("home", "effective_viewer", "nutrition_member_switcher", "absent_viewer_fallback", trace)
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.sxdbsm.cookbook.data.repository.PresentFocusSelection(emptyList(), null, 0.0, false))

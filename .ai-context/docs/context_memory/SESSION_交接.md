@@ -3,9 +3,9 @@
 ## 下一会话启动卡（2026-08-27）
 
 - Bug-3393 已由 CODE 交付本地提交 `2d946237`：当天在场关注成员投影同步驱动首页营养卡 Tab、查看成员、份额与健康提示；Shared 定向 7/7、Shared/Android 全量单测和 assembleDebug 通过，`DEV-3393-01` 位于 `真机待验证清单_202608271041.md` 且保持 PENDING。当前 `BLUEPRINT_STATE.md` 为 `CODE_COMPLETE / TURN=REVIEW`，必须先做独立 ARCH 复核，不能自写 ACCEPTED 或进入 Bug-2119。
-- 当前工作树：仅包含本次 Bug-3393 交接文档更新，尚未提交；无业务代码任务在运行。
-- 当前已接受：P4、P5-A、Bug-5305；`OBS-NEXT-A/B` 自动化门通过。所有真机项仍统一后置，最新唯一清单为 `真机待验证清单_202608270943.md`。
-- 下一项候选：先由 Sol 对 `Bug修复-3393`（不在场成员导致营养卡成员 Tab 全消失）做 Reality Verification 和冻结蓝图；用户若调整优先级，以用户决定为准。其后是 `Bug修复-2119`。
+- 当前工作树：Bug-3393 已提交；当前正按 Sol REVIEW 的 AF 返修，未开始下一业务任务。
+- 当前已接受：P4、P5-A、Bug-5305；`OBS-NEXT-A/B` 自动化门通过。所有真机项仍统一后置，最新唯一清单为 `真机待验证清单_202608271041.md`。
+- 下一项候选：Bug-3393 的 Sol REVIEW AF 返修与二审完成后，继续 `Bug修复-2119`。
 - 新强制约定：每个待办/缺陷或新增功能，先查统一日志覆盖；缺少可诊断的 UI 状态、操作生命周期或数据阶段事件时，先在同一蓝图中补最小安全埋点，再写业务实现。详见 `projectReview/06_约定与红线.md`「待办/缺陷的日志先行」。
 - 启动顺序：`AGENTS.md` → `.ai-context/PROJECT.md` → 本文件 → `BLUEPRINT_STATE.md` → 目标 Feature 的待办/缺陷 → 日志覆盖审计 → Sol 蓝图 → Terra 编码/单测 → Sol 收口。真机验证不阻断上述代码路径。
 
@@ -13,20 +13,20 @@
 
 - 已运行 `feature_sync_check.py --struct`（通过）与 `--emit-index --write`：`07_项目现状.md`、`features/_INDEX.md`、`功能路径索引.md` 已刷新至 `729e92a3` 的生成视图。
 - 横轴新鲜度为软信号：01/03/04/20/21 分别 `STALE(16/12/8/9/48)`；07 与功能路径索引存在页脚 `CONFIG-ERROR`，不把这些历史文档问题伪装成已解决，后续单列文档治理批处理。
-- 代码先行的下一 P0 候选依次为 `Bug修复-3393`（不在场成员导致营养卡成员 Tab 全消失）与 `Bug修复-2119`（缺席状态未同步成员页）；两者尚未启动、未写蓝图。真机/OEM 依赖项继续后置，不阻断代码批次。
+- 代码先行的下一 P0 候选为 `Bug修复-2119`（缺席状态未同步成员页）；前置为 Bug-3393 Sol REVIEW 通过。真机/OEM 依赖项继续后置，不阻断代码批次。
 
 ## Bug-5305 手动食材分类优先收口（2026-08-27）
 
 - 结论：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS**，无 AF；`BLUEPRINT_STATE.md` 已转 `TURN=NONE`。
 - 范围：仅把既有 `groupTouched` guard 固化为可测试策略并新增 Android 回归；未改 `FoodGroup.classify`、Repository、schema/seed、DI 或 UI。
-- Runtime：`DEV-5305-01` 仍在 `真机验证/真机待验证清单_202608270943.md`，为 `PENDING_DEVICE_VERIFICATION`；未作真机 PASS 声明。
+- Runtime：`DEV-5305-01` 仍在 `真机验证/真机待验证清单_202608271041.md`，为 `PENDING_DEVICE_VERIFICATION`；未作真机 PASS 声明。
 
 ## P5-A Repository Mutation Boundary 收口（2026-08-26）
 
 - 结论：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS**；`BLUEPRINT_STATE.md` 已转 `TURN=NONE`。
 - 范围：Home/Timeline/WeekPlan 与 `DayAutoGenerator` 的 MealRecord mutation 已收敛到 `MealRecordUseCase`；未改 schema、Repository 兼容 read、AI 算法/prompt 或 UI 视觉。
 - 自动化：强制 shared/Android tests、shared compile、debug/release assemble 均有成功终态；release rerun 最终 `BUILD SUCCESSFUL in 7m53s`（83 tasks）。质量脚本通过。证据见 `arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE5/EVIDENCE.md`。
-- Runtime：`DEV-P5-01~05` 仍在 `真机验证/真机待验证清单_202608270943.md`，状态 `PENDING_DEVICE_VERIFICATION`；不得写真机 PASS。
+- Runtime：`DEV-P5-01~05` 仍在 `真机验证/真机待验证清单_202608271041.md`，状态 `PENDING_DEVICE_VERIFICATION`；不得写真机 PASS。
 - 后续：P5-B 必须先重新 Reality Verification（compatibility read/projection、Repository 内 preference/ratio policy）；**Phase 6 未授权**，不得清理兼容 API/Repository 行为。
 
 ## OBS-NEXT C批收口
