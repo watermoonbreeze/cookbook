@@ -75,8 +75,10 @@ class FamilyStatsViewModel(
                 val share = when {
                     member == null -> 1.0 // 家庭视图=全家总量
                     else -> {
-                        val sum = ms.sumOf { it.portionCoefficient }
-                        if (sum > 0.0) member.portionCoefficient / sum else 1.0
+                        // [AI修改] Bug-2119：成员统计与全家 breakdown 同用当天在场集合；
+                        // 缺席成员当天不参与分摊，个人摄入必须为 0。
+                        val presentSum = ms.filter { it.id !in excluded }.sumOf { it.portionCoefficient }
+                        if (member.id in excluded) 0.0 else if (presentSum > 0.0) member.portionCoefficient / presentSum else 0.0
                     }
                 }
                 val target = member?.let { CalorieTarget.dailyTarget(it.toBodyMetrics()) }
