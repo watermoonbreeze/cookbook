@@ -1,5 +1,11 @@
 # 🔖 SESSION 交接入口
 
+## 功能完成交接（2026-08-29 · UEN）
+
+- `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01` 已由事实复核转为 **ARCH_ACCEPTED / AUTOMATED_GATES_PASS / PENDING_DEVICE_VERIFICATION**；详情见 `2026-08-29_UEN_功能完成交接.md`。
+- 当前树已通过 UEN 状态单测（9 项）、餐食仓库回归和 Android Debug 构建。AF-UEN-01/02 均已由历史修复关闭。
+- 下一会话不得重复开发 UEN；仅在统一 R10 真机回归中执行 `E-UEN-01~21`，尤其不可凭自动化删除自制粘贴按钮。
+
 ## 当前会话补充（2026-08-28 · 全量后续执行路线图）
 
 - 用户要求将全项目遗留待办、缺陷、已决/未决方案统一分类到全景图，并先形成可交给 luna 的执行顺序与验证蓝图目录。
