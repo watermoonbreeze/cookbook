@@ -4,7 +4,9 @@
 
 - 用户要求将全项目遗留待办、缺陷、已决/未决方案统一分类到全景图，并先形成可交给 luna 的执行顺序与验证蓝图目录。
 - 已新增 `projectReview/10_后续执行路线图与蓝图库.md`：以 `R0→R10` 将全部现行条目归为 READY / RESEARCH / DECIDE / PARKED / CLOSED-PENDING-DEVICE，写明依赖、冻结前讨论结论、L7 蓝图模板和旗舰复核/统一真机闸门；00、09 已只加链接，不产生第二套待办真相源。
-- R0 `MAP-CLOSE-01` 已完成并经旗舰审查接受：F-FAMILY 同步锚已定位到 `c8a60ac7`，Bug-2119 已从活跃缺陷表移入归档，设备项仍为 `PENDING_DEVICE_VERIFICATION`；`--struct`、`--backlog`、allowlist、freshness 与 diff 检查均通过。下一步是 R1 `MEAL-UX-CONSOLIDATION-01` 的 Reality Verification。
+- R0 `MAP-CLOSE-01` 已完成并经旗舰审查接受：F-FAMILY 同步锚已定位到 `c8a60ac7`，Bug-2119 已从活跃缺陷表移入归档，设备项仍为 `PENDING_DEVICE_VERIFICATION`；`--struct`、`--backlog`、allowlist、freshness 与 diff 检查均通过。R1 `MEAL-UX-CONSOLIDATION-01` 经 Reality 复查发现已有历史终审 `ARCH_ACCEPTED / CLOSED`（最终 `f74b05ba`），不得重复编码；后续转入 R2 AI 可靠性研究。
+- R2 Reality 已将历史项拆为“已关闭”（总超时、规则兜底、weekday、模糊量词）与四个待冻结子批（health advice 代际、parser 语料、voice 生命周期、diagnostic 文案），权威研究文件为 `feature/AIMEAL-RELIABILITY-01_研究与冻结前蓝图.md`。
+- R2-A `AIMEAL-ADVICE-GENERATION-01` 已完成 L7 冻结：独立 job 但复用 generation+preview identity、失效时五字段原子清理、6 个确定性测试和 R10 真机矩阵均已写入实施蓝图；尚未开始 CODE。
 
 
 ## 下一会话启动卡（2026-08-27 · L2 脂肪肝 App 入口）
