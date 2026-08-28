@@ -38,6 +38,12 @@ R2-B 在语料冻结前仍为 **RESEARCH**。最低语料合同：括号菜不�
 
 R2-D 的冻结前问题：①原始响应是否根本不进入 UI；②若保留，哪些字段必须结构化脱敏、最大长度是多少；③`DiagnosticCode.OTHER` 与未分类 transport message 的人话映射由哪个层拥有；④诊断对象是否可能跨配置变更/进程重建泄漏。未回答前只允许补测试和事实文档，不改显示逻辑。
 
+### R2-C Reality：语音入口继续关闭
+
+`VOICE_INPUT_ENABLED=false` 仍是唯一用户入口闸门，Manifest 虽声明 `RECORD_AUDIO`，但不会触发。现有 `VoiceRecognizer` 的创建、权限 launcher、start/stop/release 与 Compose `DisposableEffect` 都在 `AiMealInputSheet`；ViewModel 仅承载展示状态。真机曾复现“语音引擎繁忙”，而现有 Android 单测没有系统识别服务 fake 或 owner 生命周期断言。
+
+因此 R2-C 尚不能冻结实现蓝图。先决产物应为：一个由 UI 单一拥有的可替换 recognizer port、权限结果到 start 的显式状态转换、每次离页/重复按压/系统 busy 的 stop+release 合同，以及 API 21/真实识别服务真机矩阵。满足前 `VOICE_INPUT_ENABLED`、Manifest 声明和帮助文案均不得改动。
+
 ## 3. 不变量（后续每个子批继承）
 
 | ID | 必须 | 禁止 |

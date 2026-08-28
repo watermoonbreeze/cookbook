@@ -9,6 +9,7 @@
 - R2-A `AIMEAL-ADVICE-GENERATION-01` 已完成 L7 冻结：独立 job 但复用 generation+preview identity、失效时五字段原子清理、6 个确定性测试和 R10 真机矩阵均已写入实施蓝图；尚未开始 CODE。
 - R2-B Reality：仅语法规范化可进入后续 parser 蓝图；I3/I4 的菜名→食材/主食补全与“不得静默补未知食材”冲突，必须先有权威知识来源与用户确认设计。I7 当前自动 fallback 与历史“用户确认切换”需求冲突，已单列 R2-E 决策门。
 - R2-D Reality：`AiMealInputSheet` 的解析详情可显示 `AiMealAttemptDiagnostic.rawResponse`，与协议/隐私脱敏方向未形成一致合同；未决前不作表面文案修复。
+- R2-C Reality：语音入口仍关闭；系统识别器创建、权限、释放耦合在 Compose UI，未有可替换 port 和生命周期自动化证据。先做生命周期合同与真机矩阵，不得直接开启开关。
 
 
 ## 下一会话启动卡（2026-08-27 · L2 脂肪肝 App 入口）
