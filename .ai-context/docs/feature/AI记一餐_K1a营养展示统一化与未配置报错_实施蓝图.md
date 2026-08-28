@@ -12,9 +12,9 @@
 > - 涉及文件：`androidApp/.../ui/ai/AiMealInputViewModel.kt`、`AiMealInputSheet.kt`、`shared/.../ai/meallog/StreamingMealSession.kt`（新增 `daysForSegment`/`isStreaming`）、对应测试 `AiMealInputViewModelStreamTest.kt`（新增/重写 T-CFG-01~06、T-B3-05/05b/07、T-B3-02）。
 > - 验证：`:androidApp:testDebugUnitTest`（含本文件全部新/改测试）、`:shared:testDebugUnitTest`、`:androidApp:assembleDebug` 均 0 failures / BUILD SUCCESSFUL。
 >
-> K1a 营养展示统一化部分（§1.3 In Scope 第 1-3 条）**仍未实施**，蓝图设计不变，`BLUEPRINT_STATE.md` 的 `TURN=CODE` 仍指向这部分。
+> Reality Verification（2026-08-29）：K1a 营养展示统一化已经完整落地——`DishAutoGenerator` 使用 `NutritionCalculator`、`MultiDayRecorder.previewAll()` 批量回填 REUSE 菜营养、`AiMealInputSheet` 复用 `DishNutritionLine`，并存在 `MultiDayRecorderK1aTest` 的 `T-K1A-02/03`。本次复跑两组 shared 定向测试与 `:androidApp:assembleDebug` 均通过；不再派发重复 CODE，运行时证据仍统一进入 R10。
 
-> 状态：`ACCEPTED`（GC-37 独立挑战已完成，13 项中 6 项 CONFIRMED-ISSUE 已就地修订，详见 §10；**注：本轮挑战针对的是已被否决的原 CFG 设计，不代表实际实施方案已过挑战**——实际实施方案经过了两轮独立 Google 质量审查，见上方追记）
+> 状态：`ARCH_ACCEPTED / AUTOMATED_GATES_PASS`（历史实现经 2026-08-29 Reality Verification 复验；真机待 R10）
 > **颗粒度：L7**（项目基线；GC 条款清单见 `experience/12_多模型协作与实施蓝图规范.md` §12）。**§0.1 是入口——先读它，逐行对照落点章节。**
 > 起草日期：2026-08-07（AI记一餐 B4+B5+B6 批次 ACCEPTED 后，用户装机真机验证期间由 ARCH@主力机 起草）；同日经独立 opus 挑战 agent（GC-37）攻击后修订定稿。
 > 前置：`AI快捷记一餐_进阶_架构方案.md`（K1a 的原始产品设计，2026-08-01，📄待拍板未编码；本蓝图是其 P2-1 子集的可执行细化，K1b/K1c 处置见 §1.3）
