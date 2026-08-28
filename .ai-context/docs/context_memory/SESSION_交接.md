@@ -10,6 +10,7 @@
 - R2-B Reality：仅语法规范化可进入后续 parser 蓝图；I3/I4 的菜名→食材/主食补全与“不得静默补未知食材”冲突，必须先有权威知识来源与用户确认设计。I7 当前自动 fallback 与历史“用户确认切换”需求冲突，已单列 R2-E 决策门。
 - R2-D Reality：`AiMealInputSheet` 的解析详情可显示 `AiMealAttemptDiagnostic.rawResponse`，与协议/隐私脱敏方向未形成一致合同；未决前不作表面文案修复。
 - R2-C Reality：语音入口仍关闭；系统识别器创建、权限、释放耦合在 Compose UI，未有可替换 port 和生命周期自动化证据。先做生命周期合同与真机矩阵，不得直接开启开关。
+- R3 Reality 已完成分流：`DATA-SCALE-FOUNDATION-01_研究与冻结前蓝图.md` 固定 R3-A 分页基线→R3-B 维生素只读贯通→R3-C 来源/差异报告→R3-D 人工审阅扩量；“青菜”泛称另为 R3-E ADR。现有生产线保持只诊断/提案，未改 seed。
 
 
 ## 下一会话启动卡（2026-08-27 · L2 脂肪肝 App 入口）
