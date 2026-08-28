@@ -1,6 +1,6 @@
 # Bug-5305 · 手动食材分类优先 — BLUEPRINT-LITE
 
-状态：**BLUEPRINT_READY / TURN=CODE**
+状态：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS / PENDING_DEVICE_VERIFICATION**（2026-08-29 事实复核收口）
 冻结日期：2026-08-27
 事实基线：当前 `HEAD`（开工前 CODE 须重新记录精确 SHA）
 功能：F-INGREDIENT；范围：Android 食材编辑器的“营养大类”预选/手选优先级。
@@ -103,3 +103,4 @@ CODE 交付必须：
 | Gate | G-5305-01 | 定向 Android 测试 PASS；`:androidApp:testDebugUnitTest --rerun-tasks` BUILD SUCCESSFUL（4m13s）；`:androidApp:assembleDebug --rerun-tasks` BUILD SUCCESSFUL（4m）；architecture quality unittest 8/8 与 check PASS。 | PASS |
 | Runtime | DEV-5305-01 | 已登记唯一清单 `真机待验证清单_202608270943.md`；未执行真机。 | PENDING_DEVICE_VERIFICATION |
 | Review | R-5305-01 | Sol 最终复核：guard 等价、allowlist 与自动化门禁均通过；无 AF。 | ARCH_ACCEPTED / AUTOMATED_GATES_PASS |
+| Handoff | H-5305-01 | 2026-08-29 当前树重跑 `IngredientEditorFoodGroupPolicyTest` 与 Android Debug 构建通过；实现提交为 `02ce37f5`。唯一未完成的是 `DEV-5305-01` 真机验证。 | PENDING_DEVICE_VERIFICATION |

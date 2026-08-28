@@ -1,6 +1,6 @@
 # Phase 5 Repository Boundary Cleanup — Reality Verification + BLUEPRINT-LITE
 
-状态：**BLUEPRINT_READY / TURN=CODE**
+状态：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS / PENDING_DEVICE_VERIFICATION**（2026-08-29 事实复核收口）
 冻结日期：2026-08-26
 事实基线：`852a4f3b`
 前置验收：Phase 4 `6a538de3` = **ARCH_ACCEPTED**；真机仍为 `PENDING_DEVICE_VERIFICATION`，不阻断本批代码与单测。
@@ -153,3 +153,9 @@ MealRecordRepository|mealRepo = 0
 - `Q-P5-A-xx | 缺失事实 | 影响 | 只读核验方式 | 是否申请扩 allowlist`
 - Terra 可直接实施本冻结批；仅纯机械的构造参数/测试夹具可委派 Luna，UseCase API、undo token 与 invariant 相关代码必须由 Terra 决策并自验。
 - P5-A 验收后才允许为 P5-B（兼容 read/projection 与 Repository 内 preference/ratio policy 分类提取）重新 Reality Verification；不得顺带进入 Phase 6。
+
+### 9.1 完成事实与会话交接（2026-08-29）
+
+- 实现提交 `292106ad`；全景图的 P5-A 事实锚在 `F-MEAL/20_实现.md`，详细构建/质量证据在 `arch_evidence/COOKBOOK_MEAL_ARCHITECTURE_EVOLUTION_PHASE5/EVIDENCE.md`。
+- 本次当前树复验通过 `MealRecordUseCaseTest`、`DayAutoGeneratorMealBoundaryTest`、`HomeMealMutationBoundaryTest`、`TimelineMealMutationBoundaryTest`、`WeekPlanMealMutationBoundaryTest` 和 `:androidApp:assembleDebug`。
+- 运行时仍只有 `DEV-P5-01~05`；下一模型不得重做 P5-A、不得进入 P5-B 或 Phase 6。若真机失败，按对应不变量建立最小修复批。
