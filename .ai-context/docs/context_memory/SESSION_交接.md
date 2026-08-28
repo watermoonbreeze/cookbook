@@ -7,6 +7,8 @@
 - R0 `MAP-CLOSE-01` 已完成并经旗舰审查接受：F-FAMILY 同步锚已定位到 `c8a60ac7`，Bug-2119 已从活跃缺陷表移入归档，设备项仍为 `PENDING_DEVICE_VERIFICATION`；`--struct`、`--backlog`、allowlist、freshness 与 diff 检查均通过。R1 `MEAL-UX-CONSOLIDATION-01` 经 Reality 复查发现已有历史终审 `ARCH_ACCEPTED / CLOSED`（最终 `f74b05ba`），不得重复编码；后续转入 R2 AI 可靠性研究。
 - R2 Reality 已将历史项拆为“已关闭”（总超时、规则兜底、weekday、模糊量词）与四个待冻结子批（health advice 代际、parser 语料、voice 生命周期、diagnostic 文案），权威研究文件为 `feature/AIMEAL-RELIABILITY-01_研究与冻结前蓝图.md`。
 - R2-A `AIMEAL-ADVICE-GENERATION-01` 已完成 L7 冻结：独立 job 但复用 generation+preview identity、失效时五字段原子清理、6 个确定性测试和 R10 真机矩阵均已写入实施蓝图；尚未开始 CODE。
+- R2-B Reality：仅语法规范化可进入后续 parser 蓝图；I3/I4 的菜名→食材/主食补全与“不得静默补未知食材”冲突，必须先有权威知识来源与用户确认设计。I7 当前自动 fallback 与历史“用户确认切换”需求冲突，已单列 R2-E 决策门。
+- R2-D Reality：`AiMealInputSheet` 的解析详情可显示 `AiMealAttemptDiagnostic.rawResponse`，与协议/隐私脱敏方向未形成一致合同；未决前不作表面文案修复。
 
 
 ## 下一会话启动卡（2026-08-27 · L2 脂肪肝 App 入口）

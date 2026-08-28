@@ -7,7 +7,7 @@
 | 原项 | 事实 | 处置 |
 |---|---|---|
 | B7F-03 / I6 的无限期流式卡死 | `StreamTransport.kt` 已有 watchdog、强制 disconnect 与 `STREAM_TIMEOUT_ERROR`；`StreamTransportTimeoutTest` 覆盖心跳阻塞。 | 不重复实施；保留真机回归。 |
-| I7 AI 失败兜底 | `AiMealInputViewModel.attemptRuleFallback()` 已是生成链的既有分支。 | 不另造第二 fallback；后续只审用户可见说明。 |
+| I7 AI 失败兜底 | `AiMealInputViewModel.attemptRuleFallback()` 已是生成链的既有分支。 | **不可直接关闭**：当前为自动切换，而历史需求要求“保留原文、由用户确认是否转规则模板”；归入 R2-E 决策，不得借修复顺带改行为。 |
 | K1c weekday 偏移 | `RuleMealParserWeekdayTest` 已覆盖。 | 从 R2 移出，归 R8 已实现能力。 |
 | 模糊量词“差不多一碗面” | `RuleMealParserRegressionTest` 已锁定“不当作食用比例”。 | 仅作为 I3~I5 语料扩展的基线。 |
 
@@ -19,6 +19,24 @@
 | R2-B `AIMEAL-PARSER-QUALITY-01` | I3/I4/I5、AIMEAL-RULE-TEMPLATE | 先用语料确认规则解析与 AI fallback 的分工；规则只做可确定的文本规范化，不能静默补未知食材。模板不再让用户输入日期。 | 复合菜、括号菜、连接词、模糊量词、空输入、日期被拒绝六类精确断言。 |
 | R2-C `AIMEAL-VOICE-LIFECYCLE-01` | B7F-VOICE / Bug-1763 | 保持入口隐藏；先证明系统权限→单实例→start/stop/release 的唯一 owner，成功后才可打开开关。 | denied/granted、busy、onDispose、重复点击、旋转/离页、离线失败。 |
 | R2-D `AIMEAL-DIAGNOSTIC-COPY-01` | HTTP 内部代号、diagnostic 桶 | 文案只暴露用户可行动信息；诊断最多三条+余数，不原文透传协议字段；`when` 必须覆盖 `DiagnosticCode`。 | HTTP/timeout/schema error 的人话文案、未知 code、超过三条。 |
+| R2-E `AIMEAL-FALLBACK-CONSENT-01` | I7 | 先由产品/架构明确“自动兜底+告知”还是“保留原文、用户确认”；两者改变失败时的可恢复性和确认页语义，未决前不改。 | AI 失败、规则成功/失败、用户拒绝切换、编辑重试四态矩阵。 |
+
+### R2-B Reality：可冻结范围与决策门
+
+`RuleMealParser` 已能保护括号深度、识别部分连接词，并已有“凉皮（黄瓜丝+绿豆芽）”“差不多一碗面”的基础回归；但现有模糊量词测试只断言 `eaten_ratio`，没有证明份量或菜名被规范化。缺陷 I3/I4/I5 中的两类诉求必须分开：
+
+| 类别 | 例子 | 结论 |
+|---|---|---|
+| 可确定语法规范化 | 顶层“还有”、括号内 `+`、日期/时间残留、模糊前缀导致的份量锚点失效 | 可作为 `AIMEAL-PARSER-QUALITY-01` 的后续 L7 范围；先建精确输入→输出语料，不能只测“不崩溃”。 |
+| 菜名语义拆解/补全 | “薄皮椒炒肉丝”拆食材与做法、“炒饭/大排饭”自动补米饭 | 与双阶段方案“规则模式才生成候选”、R2 继承不变量“不得静默补未知食材”冲突；须有菜品知识来源、置信/来源标记和用户可见确认，转 R3/R4 数据与产品决策，R2-B 不实施。 |
+
+R2-B 在语料冻结前仍为 **RESEARCH**。最低语料合同：括号菜不拆错、顶层连接词不残留、模糊量词不作为 eaten ratio 且若声称识别份量须精确断言、空输入零菜、文本日期不改变当前会话日期。任何“自动补食材”用例必须先有独立 ADR。
+
+### R2-D Reality：诊断展示先过隐私决策
+
+现有确认页的 `AiMealInputSheet` 可从 `AiMealAttemptDiagnostic.rawResponse` 展示“查看原始返回”；而项目既有方案同时要求用户可见错误不透传协议字段、原始响应不进入日志/备份/同步。是否允许仅在内存中由用户二次点击查看原始模型响应，仍缺少数据分级、长度上限、敏感字段脱敏和截图/无障碍可见性规则，不能仅改 `summarizeDiagnostics()` 后宣称隐私关闭。
+
+R2-D 的冻结前问题：①原始响应是否根本不进入 UI；②若保留，哪些字段必须结构化脱敏、最大长度是多少；③`DiagnosticCode.OTHER` 与未分类 transport message 的人话映射由哪个层拥有；④诊断对象是否可能跨配置变更/进程重建泄漏。未回答前只允许补测试和事实文档，不改显示逻辑。
 
 ## 3. 不变量（后续每个子批继承）
 
