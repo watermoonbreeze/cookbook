@@ -1,8 +1,8 @@
 # AIMEAL-ADVICE-GENERATION-01：健康建议与餐食生成代际一致性
 
-> 状态：**BLUEPRINT_READY**（只冻结实现合同，尚未授权 CODE 执行）  
+> 状态：**BLUEPRINT_READY / TURN=CODE**（用户已授权无人值守执行；CODE 只能按本文件 allowlist 实现）  
 > 颗粒度：**L7**；理由：异步任务、UI 可见状态、健康建议的匿名数据边界与现有 generation 状态机相交。  
-> 基线：`0f14a471`（冻结时 HEAD）  
+> 基线：`59d73112`（R8–R10 文档治理提交后，CODE 启动时 HEAD）  
 > 前置：`AIMEAL-RELIABILITY-01_研究与冻结前蓝图.md` §2 R2-A；不得与 R2-B/C/D 合并交付。
 
 ## 0. 目标与非目标

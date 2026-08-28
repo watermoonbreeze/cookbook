@@ -1,6 +1,23 @@
 # BLUEPRINT_STATE
 
-## CURRENT EXECUTION: MAP-CLOSE-01 F-FAMILY 全景图回写（2026-08-28）
+## CURRENT EXECUTION: AIMEAL-ADVICE-GENERATION-01（2026-08-28）
+
+| Field | Value |
+|---|---|
+| Batch | `AIMEAL-ADVICE-GENERATION-01` / R2-A I8 health-advice generation ownership |
+| State | **BLUEPRINT_READY** |
+| TURN | **CODE** |
+| Holder | **CODE** |
+| 颗粒度 | **L7** |
+| Base | `59d73112` |
+| Blueprint | `.ai-context/docs/feature/AIMEAL-ADVICE-GENERATION-01_实施蓝图.md` |
+| Scope | 仅 `AiMealInputViewModel` 的健康建议异步身份/取消收口及 `AiMealInputViewModelStreamTest` 的 T-ADV 竞态回归；不改 UI、shared、协议、schema、prompt 或语音。 |
+| Authorization | 用户已要求无人值守持续完成可实施功能；CODE 必须严格遵守本批 allowlist，未决问题追加 Q 后交回 ARCH。 |
+| Next action | CODE 按 STEP-ADV-1~4 实施并运行 T-ADV、同意门禁、Android 全量单测、assemble 与 allowlist 检查；随后写 `CODE_COMPLETE / TURN=REVIEW`，不得自验收。 |
+
+---
+
+## Previous execution: MAP-CLOSE-01 F-FAMILY 全景图回写（2026-08-28）
 
 | Field | Value |
 |---|---|
