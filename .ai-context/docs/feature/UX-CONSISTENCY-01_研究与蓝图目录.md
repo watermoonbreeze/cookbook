@@ -1,6 +1,6 @@
 # UX-CONSISTENCY-01：交互一致性、可访问性与 UI 迁移目录
 
-> 状态：**RESEARCH**；所有 UI 实施批均须先产出 Apple-UX 可落地规范，本文不授权界面改动。  
+> 状态：**DECIDED / RESEARCH**；SOL 裁决见 `SOL-DECISIONS-20260829.md` §七。所有 UI 实施批均须先产出 Apple-UX 可落地规范，本文不授权界面改动。
 > 覆盖：J21、J4/J5、J16、I-Mine/I-About、U3、1626、8559、J11/K14、J6、3099、K2/U2、NAV-COMPACT、MATERIAL3-UPGRADE。
 
 ## 1. 已知交叉事实

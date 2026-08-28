@@ -1,6 +1,6 @@
 # HEALTH-NUTRITION-CONTRACT-01：健康与营养口径研究、ADR 与冻结门
 
-> 状态：**DECIDE / RESEARCH**；不得据此改阈值、seed、用户可见健康评级或历史数据。  
+> 状态：**DECIDED**；SOL 裁决见 `SOL-DECISIONS-20260829.md` §四，不得据此直接改阈值、seed、用户可见健康评级或历史数据。
 > 覆盖：数据健康-905、J20、J9、J10、战略会商-429、2335、1248、6319、J3。
 
 ## 1. 现实基线

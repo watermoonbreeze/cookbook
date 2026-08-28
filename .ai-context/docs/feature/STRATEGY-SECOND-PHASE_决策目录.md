@@ -1,6 +1,6 @@
 # STRATEGY-SECOND-PHASE：二期战略决策目录
 
-> 状态：**PARKED / DECIDE**。本目录只建立决策包和重新进入条件；其中没有可直接实施的代码任务。
+> 状态：**PARKED / DECIDED**。SOL 裁决见 `SOL-DECISIONS-20260829.md` §七；本目录只保留重新进入条件，其中没有可直接实施的代码任务。
 
 ## 1. 战略项分类
 

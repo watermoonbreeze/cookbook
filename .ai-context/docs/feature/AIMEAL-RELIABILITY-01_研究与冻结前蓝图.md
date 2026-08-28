@@ -1,6 +1,6 @@
 # AIMEAL-RELIABILITY-01 · Reality 与冻结前蓝图
 
-> 状态：RESEARCH。不是 CODE 合同；任何子批在独立 L7 蓝图冻结前不得实施。
+> 状态：DECIDED。SOL 裁决见 `SOL-DECISIONS-20260829.md` §二；不是 CODE 合同，任何子批在独立 L7 蓝图冻结前不得实施。
 
 ## 1. 已由代码事实关闭的历史项
 
