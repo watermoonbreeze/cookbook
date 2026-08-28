@@ -1,5 +1,11 @@
 # 🔖 SESSION 交接入口
 
+## 当前交接（2026-08-29 · 全景执行 → SOL 方案裁决）
+
+- 最新完整交接：`2026-08-29_全景执行与方案裁决_会话交接.md`。
+- 已无可直接编码的 `BLUEPRINT_READY/REWORK_REQUIRED` 历史批次；UEN、HOME-MERGE、Bug-5305、P5-A 已各自自动化验收并交接，真机统一留 R10。
+- 用户已授权 SOL 将所有剩余待定方案定为实施、延后或不做；裁决结果必须落到新的总决策册并回写各源蓝图，不能只留会话文字。
+
 ## 功能完成交接（2026-08-29 · UEN）
 
 - `AIMEAL-UNIFIED-ENTRY-NAVCOMPACT-01` 已由事实复核转为 **ARCH_ACCEPTED / AUTOMATED_GATES_PASS / PENDING_DEVICE_VERIFICATION**；详情见 `2026-08-29_UEN_功能完成交接.md`。
