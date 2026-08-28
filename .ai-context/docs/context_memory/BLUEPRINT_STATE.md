@@ -5,9 +5,9 @@
 | Field | Value |
 |---|---|
 | Batch | MAP-CLOSE-01 / F-FAMILY project-map closure |
-| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
 | 颗粒度 | **L3**（纯文档状态锚/归档；L4~L7 N/A，理由见蓝图 §0.1） |
 | Base | `712a51b1` |
 | Blueprint | `.ai-context/docs/feature/MAP-CLOSE-01_家庭全景图回写_实施蓝图_LITE.md` |
@@ -15,7 +15,8 @@
 | Reality | `feature_sync_check --backlog --since 712a51b1` 唯一命中 F-FAMILY；最后命中产品提交为 `c8a60ac7`。 |
 | Evidence | T-MAP-01~05 已通过；T-MAP-06 以 `--allowlist <蓝图> --range 712a51b1..e2157cc1` 复核通过；产品代码、测试、真机清单及 `F-FAMILY/30_待办.md` 未改。 |
 | Delivery | `STATE.yml`、`20_实现.md`、`40_缺陷.md` 与归档文件已按 allowlist 回写；设备项保持 `PENDING_DEVICE_VERIFICATION`；实现 commit `93e2e636`，状态/证据 commit `e2157cc1`。 |
-| Next action | 旗舰 ARCH 按 INV、allowlist 与 T-MAP-01~06 审查；不得写 `ACCEPTED`。 |
+| Review | R1 旗舰审查通过；AF-MAP-01-01（蓝图未随初始交付提交）已由本次审查提交闭合。未执行或声明真机通过。 |
+| Next action | R0 已收口；按路线图进入 R1 `MEAL-UX-CONSOLIDATION-01` 的 Reality Verification。 |
 
 ## CURRENT EXECUTION: L2 非酒精性脂肪肝 App 入口（2026-08-27）
 

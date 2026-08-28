@@ -4,8 +4,7 @@
 
 - 用户要求将全项目遗留待办、缺陷、已决/未决方案统一分类到全景图，并先形成可交给 luna 的执行顺序与验证蓝图目录。
 - 已新增 `projectReview/10_后续执行路线图与蓝图库.md`：以 `R0→R10` 将全部现行条目归为 READY / RESEARCH / DECIDE / PARKED / CLOSED-PENDING-DEVICE，写明依赖、冻结前讨论结论、L7 蓝图模板和旗舰复核/统一真机闸门；00、09 已只加链接，不产生第二套待办真相源。
-- 当前 `BLUEPRINT_STATE.md` 各最新条目均为 `TURN=NONE`，本轮没有创建或抢占代码批次。启动任何 `READY` 批次时必须由 sol 先完成 Reality + 独立挑战，再将**该批独立 L7 蓝图**置 `BLUEPRINT_READY / TURN=CODE` 后才交 luna。
-- 工具实跑：横轴 freshness 全 `FRESH`，`feature_sync_check --struct` 通过；但 `--backlog --since 712a51b1` 发现 `F-FAMILY` 落后一个命中提交，已列为 R0 的首个机械回写闸门。
+- R0 `MAP-CLOSE-01` 已完成并经旗舰审查接受：F-FAMILY 同步锚已定位到 `c8a60ac7`，Bug-2119 已从活跃缺陷表移入归档，设备项仍为 `PENDING_DEVICE_VERIFICATION`；`--struct`、`--backlog`、allowlist、freshness 与 diff 检查均通过。下一步是 R1 `MEAL-UX-CONSOLIDATION-01` 的 Reality Verification。
 
 
 ## 下一会话启动卡（2026-08-27 · L2 脂肪肝 App 入口）
