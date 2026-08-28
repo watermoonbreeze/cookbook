@@ -915,7 +915,8 @@ class AiMealInputViewModel(
     }
 
     fun requestHealthAdvice() {
-        if (_state.value.autoGenPreview == null || _state.value.healthAdviceLoading) return
+        val current = _state.value
+        if (!isPreviewPhase(current.phase) || current.autoGenPreview == null || current.healthAdviceLoading) return
         _state.update { it.copy(healthAdviceConsentPending = true, healthAdviceError = null) }
     }
 
