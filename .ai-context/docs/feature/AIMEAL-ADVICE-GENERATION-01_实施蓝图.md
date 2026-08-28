@@ -49,6 +49,11 @@ androidApp/src/test/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputViewModelS
 .ai-context/docs/projectReview/10_后续执行路线图与蓝图库.md | 仅将 R2-A 状态回写为 CODE_COMPLETE/ARCH_ACCEPTED（实际发生后）
 .ai-context/docs/context_memory/BLUEPRINT_STATE.md | 按握手协议登记/推进本批状态
 .ai-context/docs/context_memory/SESSION_交接.md | 仅更新本批交接摘要
+.ai-context/docs/projectReview/features/F-AI-MEAL/STATE.yml | 将纵轴同步锚推进至本批交付 SHA
+.ai-context/docs/projectReview/features/F-AI-MEAL/20_实现.md | 回写 I8 健康建议代际隔离的实现与验证事实
+.ai-context/docs/projectReview/07_项目现状.md | 仅由 feature_sync_check 重新生成的现状索引段
+.ai-context/docs/projectReview/features/_INDEX.md | 仅由 feature_sync_check 重新生成的功能索引段
+.ai-context/docs/功能路径索引.md | 仅由 feature_sync_check 重新生成的功能索引段
 forbidden:
 androidApp/src/main/java/com/sxdbsm/cookbook/android/ui/ai/AiMealInputSheet.kt | 不改 UI、文案、同意弹窗或语音开关
 shared/ | 不改 prompt、runtime、协议、数据模型、schema 或 seed
