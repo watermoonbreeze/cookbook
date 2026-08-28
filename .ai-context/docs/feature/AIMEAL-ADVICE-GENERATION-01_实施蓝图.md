@@ -1,6 +1,6 @@
 # AIMEAL-ADVICE-GENERATION-01：健康建议与餐食生成代际一致性
 
-> 状态：**CODE_COMPLETE / TURN=REVIEW**（CODE 已交付，等待旗舰逐项复核）
+> 状态：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS**（旗舰复核通过；设备证据待 R10）
 > 颗粒度：**L7**；理由：异步任务、UI 可见状态、健康建议的匿名数据边界与现有 generation 状态机相交。  
 > 基线：`59d73112`（R8–R10 文档治理提交后，CODE 启动时 HEAD）
 > 前置：`AIMEAL-RELIABILITY-01_研究与冻结前蓝图.md` §2 R2-A；不得与 R2-B/C/D 合并交付。
@@ -138,4 +138,4 @@ CODE 完成不等于验收。只有 allowlist、五个新增竞态测试、两�
 - T-ADV 定向：`scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest"` 通过。
 - 同意门禁：`scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealConsentGateIntegrationTest"` 通过。
 - 全量与构建：`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均通过。构建输出含既有第三方 `common-9.9.9-runtime.jar` D8 stack-map 警告，未造成失败。
-- CODE 提交：`abbccd00`；旗舰审查补强提交：`5731d3ac`（申请建议同样要求预览阶段）。尚待最终 allowlist、`feature_sync_check --range` 与旗舰结论；设备项仍归 R10，未创建或关闭真机结论。
+- CODE 提交：`abbccd00`；旗舰审查补强提交：`5731d3ac`（申请建议同样要求预览阶段）。旗舰逐 INV/diff/allowlist 复核通过；`blueprint_check`、`feature_sync --range`、结构体检与欠账检查均通过。设备项 `DEV-ADV-01~02` 已登记在唯一清单，仍归 R10，未关闭真机结论。

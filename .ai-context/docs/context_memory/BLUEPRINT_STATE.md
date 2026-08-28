@@ -5,16 +5,18 @@
 | Field | Value |
 |---|---|
 | Batch | `AIMEAL-ADVICE-GENERATION-01` / R2-A I8 health-advice generation ownership |
-| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
 | 颗粒度 | **L7** |
 | Base | `59d73112` |
 | Blueprint | `.ai-context/docs/feature/AIMEAL-ADVICE-GENERATION-01_实施蓝图.md` |
 | Scope | 仅 `AiMealInputViewModel` 的健康建议异步身份/取消收口及 `AiMealInputViewModelStreamTest` 的 T-ADV 竞态回归；不改 UI、shared、协议、schema、prompt 或语音。 |
 | Authorization | 用户已要求无人值守持续完成可实施功能；CODE 必须严格遵守本批 allowlist，未决问题追加 Q 后交回 ARCH。 |
 | Evidence | `abbccd00`（主修复）与 `5731d3ac`（旗舰审查补强）；T-ADV-01~05、既有同意门禁、Android 全量单测和 Debug 构建均通过。最终 allowlist 与 feature-sync 范围核验待本次同步提交后回写。 |
-| Next action | ARCH 逐 INV、allowlist、测试矩阵和真实 diff 复核；通过后才可写 `ARCH_ACCEPTED`，设备项仍统一进入 R10。 |
+| Review | 旗舰复核通过：范围、三重身份谓词、失效入口、同意门禁、测试与同步证据均无阻断。 |
+| Runtime | `DEV-ADV-01~02` 已登记唯一真机清单，均为 `PENDING_DEVICE_VERIFICATION`。 |
+| Next action | R2-A 自动化收口；继续 R2-B~E 的研究/决策门禁或路线中其他独立 READY 批次，所有真机项统一进入 R10。 |
 
 ---
 
