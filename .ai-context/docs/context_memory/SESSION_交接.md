@@ -1,5 +1,13 @@
 # 🔖 SESSION 交接入口
 
+## 当前会话补充（2026-08-28 · 全量后续执行路线图）
+
+- 用户要求将全项目遗留待办、缺陷、已决/未决方案统一分类到全景图，并先形成可交给 luna 的执行顺序与验证蓝图目录。
+- 已新增 `projectReview/10_后续执行路线图与蓝图库.md`：以 `R0→R10` 将全部现行条目归为 READY / RESEARCH / DECIDE / PARKED / CLOSED-PENDING-DEVICE，写明依赖、冻结前讨论结论、L7 蓝图模板和旗舰复核/统一真机闸门；00、09 已只加链接，不产生第二套待办真相源。
+- 当前 `BLUEPRINT_STATE.md` 各最新条目均为 `TURN=NONE`，本轮没有创建或抢占代码批次。启动任何 `READY` 批次时必须由 sol 先完成 Reality + 独立挑战，再将**该批独立 L7 蓝图**置 `BLUEPRINT_READY / TURN=CODE` 后才交 luna。
+- 工具实跑：横轴 freshness 全 `FRESH`，`feature_sync_check --struct` 通过；但 `--backlog --since 712a51b1` 发现 `F-FAMILY` 落后一个命中提交，已列为 R0 的首个机械回写闸门。
+
+
 ## 下一会话启动卡（2026-08-27 · L2 脂肪肝 App 入口）
 
 - L2 已完成独立蓝图握手、自动化验证与独立架构复审，状态为 `ARCH_ACCEPTED / AUTOMATED_GATES_PASS`、`TURN=NONE`。
@@ -185,3 +193,14 @@
 - `--emit-index --write`：本次未执行——未新增/改动任何 Screen/VM/Repo 等代码落点，只是规划文档，功能路径索引不受影响。
 
 止损条件见 `08` D-20（横轴）与 D-25（纵轴）。下次交接重跑本命令覆盖本表。
+## MAP-CLOSE-01 CODE 交付（2026-08-28）
+
+- 按蓝图执行 STEP-MAP-01~05：F-FAMILY `STATE.yml` 同步锚回写为 `c8a60ac7`；`20_实现.md` 补齐 L2/Bug-2119 证据与设备待验事实；Bug-2119 从活跃缺陷表移入 `_archive/缺陷_已解决_20260828.md`。
+- T-MAP-01：`STATE.yml` 中 `synced_to: c8a60ac7` 唯一匹配（1）。
+- T-MAP-02：`20_实现.md` 含 `c8a60ac7`、`76a6fa41`、`PENDING_DEVICE_VERIFICATION`。
+- T-MAP-03：活跃 `40_缺陷.md` 中 Bug-2119 零匹配，归档文件恰 1 匹配。
+- T-MAP-04：`python .ai-context/tools/feature_sync_check.py --struct` → `[OK] 结构体检通过`。
+- T-MAP-05：`python .ai-context/tools/feature_sync_check.py --backlog` → `[OK] 无历史欠账`，无 `[BACKLOG] F-FAMILY`。
+- T-MAP-06：`git diff --check` 无格式错误；`blueprint_check.py --allowlist <MAP-CLOSE-01蓝图> --range 712a51b1..最终提交` 在提交后复核通过。
+- 交付边界：未修改产品代码、测试、真机清单或 `F-FAMILY/30_待办.md`；设备项保持 `PENDING_DEVICE_VERIFICATION`。
+- 下一步：交旗舰 REVIEW；不得将本批写为 `ACCEPTED`。
