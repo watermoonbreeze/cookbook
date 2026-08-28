@@ -14,7 +14,7 @@
 | Scope | 仅 F-FAMILY 同步锚、实现事实、已解决缺陷归档、握手/交接；不改产品代码、测试、真机清单或未完成待办。 |
 | Reality | `feature_sync_check --backlog --since 712a51b1` 唯一命中 F-FAMILY；最后命中产品提交为 `c8a60ac7`。 |
 | Evidence | T-MAP-01~05 已通过；T-MAP-06 在最终提交后以 `--allowlist <蓝图> --range 712a51b1..最终提交` 复核；产品代码、测试、真机清单及 `F-FAMILY/30_待办.md` 未改。 |
-| Delivery | `STATE.yml`、`20_实现.md`、`40_缺陷.md` 与归档文件已按 allowlist 回写；设备项保持 `PENDING_DEVICE_VERIFICATION`；交付 commit 待回填。 |
+| Delivery | `STATE.yml`、`20_实现.md`、`40_缺陷.md` 与归档文件已按 allowlist 回写；设备项保持 `PENDING_DEVICE_VERIFICATION`；交付 commit `93e2e636`（最终 amend 后以实际 hash 为准）。 |
 | Next action | 旗舰 ARCH 按 INV、allowlist 与 T-MAP-01~06 审查；不得写 `ACCEPTED`。 |
 
 ## CURRENT EXECUTION: L2 非酒精性脂肪肝 App 入口（2026-08-27）

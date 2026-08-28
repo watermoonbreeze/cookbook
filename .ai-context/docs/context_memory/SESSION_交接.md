@@ -201,6 +201,6 @@
 - T-MAP-03：活跃 `40_缺陷.md` 中 Bug-2119 零匹配，归档文件恰 1 匹配。
 - T-MAP-04：`python .ai-context/tools/feature_sync_check.py --struct` → `[OK] 结构体检通过`。
 - T-MAP-05：`python .ai-context/tools/feature_sync_check.py --backlog` → `[OK] 无历史欠账`，无 `[BACKLOG] F-FAMILY`。
-- T-MAP-06：`git diff --check` 无格式错误；`blueprint_check.py --allowlist <MAP-CLOSE-01蓝图> --range 712a51b1..最终提交` 在提交后复核通过。
+- T-MAP-06：`git diff --check` 无格式错误；`blueprint_check.py --allowlist <MAP-CLOSE-01蓝图> --range 712a51b1..93e2e636` 通过（全部改动文件匹配 allowlist）。
 - 交付边界：未修改产品代码、测试、真机清单或 `F-FAMILY/30_待办.md`；设备项保持 `PENDING_DEVICE_VERIFICATION`。
 - 下一步：交旗舰 REVIEW；不得将本批写为 `ACCEPTED`。
