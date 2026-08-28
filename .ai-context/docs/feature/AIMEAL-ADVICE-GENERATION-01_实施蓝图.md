@@ -1,8 +1,8 @@
 # AIMEAL-ADVICE-GENERATION-01：健康建议与餐食生成代际一致性
 
-> 状态：**BLUEPRINT_READY / TURN=CODE**（用户已授权无人值守执行；CODE 只能按本文件 allowlist 实现）  
+> 状态：**CODE_COMPLETE / TURN=REVIEW**（CODE 已交付，等待旗舰逐项复核）
 > 颗粒度：**L7**；理由：异步任务、UI 可见状态、健康建议的匿名数据边界与现有 generation 状态机相交。  
-> 基线：`59d73112`（R8–R10 文档治理提交后，CODE 启动时 HEAD）  
+> 基线：`59d73112`（R8–R10 文档治理提交后，CODE 启动时 HEAD）
 > 前置：`AIMEAL-RELIABILITY-01_研究与冻结前蓝图.md` §2 R2-A；不得与 R2-B/C/D 合并交付。
 
 ## 0. 目标与非目标
@@ -125,3 +125,12 @@ git diff --check
 CODE 完成不等于验收。只有 allowlist、五个新增竞态测试、两组回归、Android 全量单测、Debug 构建和 diff 检查均通过，且旗舰审查确认所有 INV 后，ARCH 才可把本批改为 `ARCH_ACCEPTED`。真机项始终后置到 R10。
 
 最后更新：2026-08-28。
+
+## 8. CODE 交付证据（待旗舰 REVIEW）
+
+- STEP-ADV-1~2：`AiMealInputViewModel` 新增独立 `healthAdviceJob`；输入/日期/reset/保存/关闭均取消并清除建议状态；回写同时校验 generation、preview 对象身份和预览阶段。
+- STEP-ADV-3：新增 `T-ADV-01~05`，用 `CompletableDeferred` 与 `NonCancellable` 受控模拟迟到回包；未使用 sleep、真实网络或轮询。
+- T-ADV 定向：`scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest"` 通过。
+- 同意门禁：`scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealConsentGateIntegrationTest"` 通过。
+- 全量与构建：`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均通过。构建输出含既有第三方 `common-9.9.9-runtime.jar` D8 stack-map 警告，未造成失败。
+- 尚待：以实际提交 SHA 运行 allowlist 检查、`feature_sync_check --range` 与旗舰 REVIEW；设备项仍归 R10，未创建或关闭真机结论。

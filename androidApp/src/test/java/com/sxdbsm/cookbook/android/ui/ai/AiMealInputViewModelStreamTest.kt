@@ -176,6 +176,26 @@ class AiMealInputViewModelStreamTest {
         override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = channel.receiveAsFlow()
     }
 
+    private inner class GatedAdviceRuntime(
+        private val adviceResult: Result<String> = Result.success("建议少盐少油"),
+    ) : AiRuntime {
+        val adviceEntered = CompletableDeferred<Unit>()
+        val adviceRelease = CompletableDeferred<Unit>()
+        var completeCount = 0
+
+        override suspend fun complete(request: LlmRequest): Result<String> {
+            completeCount++
+            adviceEntered.complete(Unit)
+            withContext(kotlinx.coroutines.NonCancellable) { adviceRelease.await() }
+            return adviceResult
+        }
+
+        override fun stream(request: LlmRequest): Flow<LlmStreamEvent> = flow {
+            emit(LlmStreamEvent.Delta("$mealJson\n$dishJson\n"))
+            emit(LlmStreamEvent.Completed("stop", 0))
+        }
+    }
+
     private fun inMemoryDb(): CookbookDatabase {
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
         CookbookDatabase.Schema.create(driver)
@@ -196,6 +216,109 @@ class AiMealInputViewModelStreamTest {
             ingredientRepo = ingredientRepo,
             healthRepo = HealthProfileRepository(db), familyRepo = FamilyRepository(db, prefs),
         )
+    }
+
+    private suspend fun awaitPreview(vm: AiMealInputViewModel) {
+        vm.submit()
+        vm.state.first { it.phase == AiMealPhase.PREVIEW_READY || it.phase == AiMealPhase.ERROR }
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+    }
+
+    @Test
+    fun `T-ADV-01 有效健康建议只回写当前预览`() = runVmTest {
+        val runtime = GatedAdviceRuntime()
+        val vm = createVm(runtime)
+        awaitPreview(vm)
+
+        vm.requestHealthAdvice()
+        vm.confirmHealthAdvice()
+        runtime.adviceEntered.await()
+        assertTrue(vm.state.value.healthAdviceLoading)
+
+        runtime.adviceRelease.complete(Unit)
+        vm.state.first { !it.healthAdviceLoading }
+        assertEquals("建议少盐少油", vm.state.value.healthAdvice)
+        assertNull(vm.state.value.healthAdviceError)
+        assertEquals(1, runtime.completeCount)
+    }
+
+    @Test
+    fun `T-ADV-02 编辑后迟到建议不得污染输入态`() = runVmTest {
+        val runtime = GatedAdviceRuntime()
+        val vm = createVm(runtime)
+        awaitPreview(vm)
+
+        vm.requestHealthAdvice()
+        vm.confirmHealthAdvice()
+        runtime.adviceEntered.await()
+        vm.setInputText("改成晚餐吃面")
+        runtime.adviceRelease.complete(Unit)
+
+        vm.state.first { it.phase == AiMealPhase.INPUT }
+        assertNull(vm.state.value.autoGenPreview)
+        assertNull(vm.state.value.healthAdvice)
+        assertNull(vm.state.value.healthAdviceError)
+        assertTrue(!vm.state.value.healthAdviceLoading)
+    }
+
+    @Test
+    fun `T-ADV-03 改日期与重置均清除建议状态`() = runVmTest {
+        val byDateRuntime = GatedAdviceRuntime()
+        val byDateVm = createVm(byDateRuntime)
+        awaitPreview(byDateVm)
+        byDateVm.requestHealthAdvice()
+        byDateVm.confirmHealthAdvice()
+        byDateRuntime.adviceEntered.await()
+        byDateVm.setTargetDate(LocalDate(2026, 8, 6))
+        byDateRuntime.adviceRelease.complete(Unit)
+        assertTrue(!byDateVm.state.value.healthAdviceLoading)
+        assertNull(byDateVm.state.value.healthAdvice)
+
+        val resetRuntime = GatedAdviceRuntime()
+        val resetVm = createVm(resetRuntime)
+        awaitPreview(resetVm)
+        resetVm.requestHealthAdvice()
+        resetVm.confirmHealthAdvice()
+        resetRuntime.adviceEntered.await()
+        resetVm.reset()
+        resetRuntime.adviceRelease.complete(Unit)
+        assertTrue(!resetVm.state.value.healthAdviceLoading)
+        assertNull(resetVm.state.value.healthAdviceError)
+    }
+
+    @Test
+    fun `T-ADV-04 A建议失败不能写入B预览`() = runVmTest {
+        val runtime = GatedAdviceRuntime(Result.failure(IllegalStateException("旧请求失败")))
+        val vm = createVm(runtime)
+        awaitPreview(vm)
+        vm.requestHealthAdvice()
+        vm.confirmHealthAdvice()
+        runtime.adviceEntered.await()
+
+        vm.setInputText("改成新的一餐")
+        awaitPreview(vm)
+        val bGenerationId = vm.state.value.generationId
+        runtime.adviceRelease.complete(Unit)
+        vm.state.first { it.generationId == bGenerationId && it.phase == AiMealPhase.PREVIEW_READY }
+        assertNull(vm.state.value.healthAdviceError)
+        assertNull(vm.state.value.healthAdvice)
+    }
+
+    @Test
+    fun `T-ADV-05 当前建议失败显示短错误且保留预览`() = runVmTest {
+        val runtime = GatedAdviceRuntime(Result.failure(IllegalStateException("服务暂不可用")))
+        val vm = createVm(runtime)
+        awaitPreview(vm)
+        val preview = vm.state.value.autoGenPreview
+        vm.requestHealthAdvice()
+        vm.confirmHealthAdvice()
+        runtime.adviceEntered.await()
+        runtime.adviceRelease.complete(Unit)
+        vm.state.first { !it.healthAdviceLoading }
+
+        assertEquals(AiMealPhase.PREVIEW_READY, vm.state.value.phase)
+        assertTrue(vm.state.value.autoGenPreview === preview)
+        assertEquals("服务暂不可用", vm.state.value.healthAdviceError)
     }
 
     @Test

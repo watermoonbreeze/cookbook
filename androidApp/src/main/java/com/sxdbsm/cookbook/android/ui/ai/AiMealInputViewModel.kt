@@ -176,6 +176,8 @@ class AiMealInputViewModel(
 
     // [AI修改] B3: 当前 generation 的流收集 Job；新 generation 前 cancel 旧 Job。
     private var generationJob: Job? = null
+    // 健康建议属于确认页的独立异步工作；复用 generation 身份，但绝不能占用主生成 Job。
+    private var healthAdviceJob: Job? = null
     // [AI修改] B3: generation 单调递增序号。
     private var generationCounter = 0
     // [AI修改] B3: 最近一次 preview 的 days，避免相同内容重复调用 previewAll。
@@ -323,6 +325,7 @@ class AiMealInputViewModel(
         val wasTruncated = nextInput.length > AiMealPrompt.MAX_INPUT_CHARS
         generationJob?.cancel()
         generationJob = null
+        clearHealthAdviceForInvalidatedSession()
         lastPreviewDays = null
         lastPreviewTerminalCount = -1
         ruleFallbackDays.clear()
@@ -919,22 +922,65 @@ class AiMealInputViewModel(
     fun declineHealthAdvice() = _state.update { it.copy(healthAdviceConsentPending = false) }
 
     fun confirmHealthAdvice() {
-        val preview = _state.value.autoGenPreview ?: return
+        val current = _state.value
+        val preview = current.autoGenPreview ?: return
+        val generationId = current.generationId ?: return
+        if (!isPreviewPhase(current.phase)) return
         _state.update { it.copy(healthAdviceConsentPending = false, healthAdviceLoading = true, healthAdviceError = null) }
-        viewModelScope.launch {
-            val healthSummary = healthSummaryLabels().ifEmpty { listOf("未设置具体健康档案") }.joinToString("、")
-            val mealSummary = preview.days.flatMap { it.meals }.flatMap { it.dishes }
-                .joinToString("、") { it.inputName }.take(500)
-            val result = aiRuntime.complete(AiMealHealthAdvice.request(healthSummary, mealSummary))
-            _state.update {
-                it.copy(
-                    healthAdviceLoading = false,
-                    healthAdvice = result.getOrNull()?.trim()?.takeIf(String::isNotBlank),
-                    healthAdviceError = result.exceptionOrNull()?.message?.take(120)
-                        ?: if (result.getOrNull().isNullOrBlank()) "暂时无法生成建议" else null,
-                )
+        healthAdviceJob?.cancel()
+        healthAdviceJob = viewModelScope.launch {
+            try {
+                val healthSummary = healthSummaryLabels().ifEmpty { listOf("未设置具体健康档案") }.joinToString("、")
+                val mealSummary = preview.days.flatMap { it.meals }.flatMap { it.dishes }
+                    .joinToString("、") { it.inputName }.take(500)
+                val result = aiRuntime.complete(AiMealHealthAdvice.request(healthSummary, mealSummary))
+                if (!isCurrentHealthAdviceRequest(generationId, preview)) return@launch
+                _state.update {
+                    it.copy(
+                        healthAdviceLoading = false,
+                        healthAdvice = result.getOrNull()?.trim()?.takeIf(String::isNotBlank),
+                        healthAdviceError = result.exceptionOrNull()?.message?.take(120)
+                            ?: if (result.getOrNull().isNullOrBlank()) "暂时无法生成建议" else null,
+                    )
+                }
+                healthAdviceJob = null
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (!isCurrentHealthAdviceRequest(generationId, preview)) return@launch
+                _state.update {
+                    it.copy(
+                        healthAdviceLoading = false,
+                        healthAdvice = null,
+                        healthAdviceError = e.message?.take(120) ?: "暂时无法生成建议",
+                    )
+                }
+                healthAdviceJob = null
             }
         }
+    }
+
+    private fun clearHealthAdviceForInvalidatedSession() {
+        healthAdviceJob?.cancel()
+        healthAdviceJob = null
+        _state.update {
+            it.copy(
+                healthAdviceConsentPending = false,
+                healthAdviceLoading = false,
+                healthAdvice = null,
+                healthAdviceError = null,
+            )
+        }
+    }
+
+    private fun isPreviewPhase(phase: AiMealPhase): Boolean =
+        phase == AiMealPhase.PARTIAL_READY || phase == AiMealPhase.PREVIEW_READY
+
+    private fun isCurrentHealthAdviceRequest(generationId: String, preview: AutoGenPreview): Boolean {
+        val current = _state.value
+        return current.generationId == generationId &&
+            current.autoGenPreview === preview &&
+            isPreviewPhase(current.phase)
     }
 
     /** 仅输出匿名成员序号与病种/生命阶段标签；绝不发送姓名或 ID。 [AI修改] */
@@ -968,6 +1014,7 @@ class AiMealInputViewModel(
         // 局部不可变 preview；先冻结，再取消 generation 并原子清会话状态。
         val frozenPreview = preview
         generationJob?.cancel()
+        clearHealthAdviceForInvalidatedSession()
         _state.update {
             it.copy(
                 phase = AiMealPhase.SAVING,
@@ -1014,6 +1061,7 @@ class AiMealInputViewModel(
     fun cancelGeneration() {
         generationJob?.cancel()
         generationJob = null
+        clearHealthAdviceForInvalidatedSession()
         lastPreviewDays = null
         lastPreviewTerminalCount = -1  // [AI修改] B5-review: 补齐配对重置
         ruleFallbackDays.clear()
