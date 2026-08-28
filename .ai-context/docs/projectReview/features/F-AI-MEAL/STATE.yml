@@ -2,7 +2,7 @@ id: F-AI-MEAL
 name: AI快捷记一餐
 lifecycle: active
 headline: "✅ **AI 记餐长输入改造（NDJSON 流式）已实现，K1g 真机验证中**：快速记 ≤200 字；周期记按周/日期分段；云端 max token 按场景放"
-synced_to: abbccd00
+synced_to: 5731d3ac
 match:
   - shared/**/ai/meallog/**
   - shared/**/domain/autogen/**

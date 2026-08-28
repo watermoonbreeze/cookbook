@@ -1,10 +1,10 @@
 # features/_INDEX.md（生成视图）
 
-生成于 HEAD=abbccd00
+生成于 HEAD=5731d3ac
 
 | Feature | lifecycle | 已跟到 |
 |---|---|---|
-| [F-AI-MEAL](./F-AI-MEAL/) | active | abbccd00 |
+| [F-AI-MEAL](./F-AI-MEAL/) | active | 5731d3ac |
 | [F-DISH](./F-DISH/) | active | 29af225b |
 | [F-FAMILY](./F-FAMILY/) | active | c8a60ac7 |
 | [F-HEALTH](./F-HEALTH/) | active | c8a60ac7 |

@@ -13,7 +13,7 @@
 | Blueprint | `.ai-context/docs/feature/AIMEAL-ADVICE-GENERATION-01_实施蓝图.md` |
 | Scope | 仅 `AiMealInputViewModel` 的健康建议异步身份/取消收口及 `AiMealInputViewModelStreamTest` 的 T-ADV 竞态回归；不改 UI、shared、协议、schema、prompt 或语音。 |
 | Authorization | 用户已要求无人值守持续完成可实施功能；CODE 必须严格遵守本批 allowlist，未决问题追加 Q 后交回 ARCH。 |
-| Evidence | T-ADV-01~05、既有同意门禁、Android 全量单测和 Debug 构建均通过；提交 SHA、allowlist 与 feature-sync 范围核验待本次交付提交后回写。 |
+| Evidence | `abbccd00`（主修复）与 `5731d3ac`（旗舰审查补强）；T-ADV-01~05、既有同意门禁、Android 全量单测和 Debug 构建均通过。最终 allowlist 与 feature-sync 范围核验待本次同步提交后回写。 |
 | Next action | ARCH 逐 INV、allowlist、测试矩阵和真实 diff 复核；通过后才可写 `ARCH_ACCEPTED`，设备项仍统一进入 R10。 |
 
 ---

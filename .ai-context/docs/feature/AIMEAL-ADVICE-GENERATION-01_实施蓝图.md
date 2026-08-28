@@ -138,4 +138,4 @@ CODE 完成不等于验收。只有 allowlist、五个新增竞态测试、两�
 - T-ADV 定向：`scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModelStreamTest"` 通过。
 - 同意门禁：`scripts\build-cli.bat :androidApp:testDebugUnitTest --tests "com.sxdbsm.cookbook.android.ui.ai.AiMealConsentGateIntegrationTest"` 通过。
 - 全量与构建：`:androidApp:testDebugUnitTest`、`:androidApp:assembleDebug` 均通过。构建输出含既有第三方 `common-9.9.9-runtime.jar` D8 stack-map 警告，未造成失败。
-- 尚待：以实际提交 SHA 运行 allowlist 检查、`feature_sync_check --range` 与旗舰 REVIEW；设备项仍归 R10，未创建或关闭真机结论。
+- CODE 提交：`abbccd00`；旗舰审查补强提交：`5731d3ac`（申请建议同样要求预览阶段）。尚待最终 allowlist、`feature_sync_check --range` 与旗舰结论；设备项仍归 R10，未创建或关闭真机结论。
