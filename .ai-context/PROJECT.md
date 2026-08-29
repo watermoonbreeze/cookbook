@@ -33,7 +33,7 @@ Truth Hierarchy（2026-08-19 修订，D-25）：Runtime Truth（Code / DB / sche
 - 当前批次 / TURN / 当前执行状态：唯一读取 `docs/context_memory/BLUEPRINT_STATE.md`。
 - 任何编码模型实施前必须读 `docs/experience/12_多模型协作与实施蓝图规范.md`（蓝图协议 + GC 条款）。
 - 规则与反查：`docs/projectReview/21_AI与网络请求策略（专属）.md`、`08_决策记录.md` D-15/D-16、`05_诊断地图.md`。
-- 真机验证只认 `docs/真机验证/真机待验证清单_<yyyyMMddHHmm>.md` 中时间最新的一份。
+- 真机验证两文件（2026-08-29）：`docs/真机验证/真机验证清单-待验证_<yyyyMMddHHmm>.md`（唯一活跃待验证，只含尚未验证项）+ `真机验证清单-通过归档.md`（累计，按日期分类）。只认时间最新的待验证文件；验证结果填"通过"的项迁移至归档并从待验证移除。
 
 ## 文档分层
 
@@ -42,7 +42,7 @@ Truth Hierarchy（2026-08-19 修订，D-25）：Runtime Truth（Code / DB / sche
 | `docs/projectReview/` | 架构、流程、UI、数据、决策、诊断等横轴视图 + `features/<F-ID>/` 纵轴功能文件夹；**Project Truth 权威载体**（见 D-25）。 |
 | `docs/context_memory/SESSION_交接.md` | 唯一当前会话接续入口；其他日期文件均为历史快照。 |
 | `docs/feature/` | 功能实施方案/蓝图文档（不含待办/状态，已迁 `projectReview/features/`）。 |
-| `docs/真机验证/真机待验证清单_<yyyyMMddHHmm>.md` | 唯一真机清单，内部按功能分节；各功能文件夹 `60_方案与决策.md` 只放链接不重复摘抄。 |
+| `docs/真机验证/真机验证清单-待验证_<yyyyMMddHHmm>.md` + `真机验证清单-通过归档.md` | 待验证（唯一活跃，只含未验项）+ 通过归档（累计，按日期分类）；各功能文件夹 `60_方案与决策.md` 只放链接不重复摘抄。 |
 | `docs/experience/` | 可复用工程经验与踩坑；由 `INDEX.md` 导航。 |
 | `docs/feature/_archive/` | 历史资料，只用于追溯，不能覆盖当前方案或状态。 |
 

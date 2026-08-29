@@ -93,6 +93,10 @@ object PreferenceKeys {
     // [AI生成] 首次启动引导：已看过功能介绍则不再自动弹(仍可从"我的"入口手动看)。
     const val HAS_SEEN_GUIDE = "has_seen_guide_v1"
 
+    // [AI生成] 输入格式统一：首次进入"记录饮食"AI 快捷分支自动弹输入说明，看过/关过不再自动弹
+    //   (统一入口顶栏 ⓘ 随时可手动看)。v1 后缀：将来格式规则大改可升 v2 再教一次。
+    const val HAS_SEEN_MEAL_INPUT_HELP = "has_seen_meal_input_help_v1"
+
     // [AI生成] 库存挂钩开关：开=App 记住家里有哪些食材并提示"现在可做/需采购/缺料"；关=纯菜谱/记菜,全 App 不再出现
     //   库存与采购标注(去噪)。**默认开**(既有行为的可选关闭,老用户升级不丢功能)——与营养色系/热量(新增可选,默认关)相反。
     const val PANTRY_HOOK_ENABLED = "pantry_hook_enabled"

@@ -340,7 +340,16 @@ object RuleMealParser {
             for (splitter in MEAL_SPLITTERS) {
                 for (kw in splitter.keywords) {
                     if (t.startsWith(kw)) {
-                        t = t.removePrefix(kw).trimStart(' ', ':', '：', '-', '—', '~')
+                        val raw = t.removePrefix(kw)
+                        val candidate = raw.trimStart(' ', ':', '：', '-', '—', '~')
+                        // [AI修改] 输入格式统一：守卫"二次剥前缀"把菜名剥残——"午餐: 午餐肉"第二轮
+                        // 会把"午餐肉"剥成"肉"（1 字）。仅当餐次词与残料之间**没有分隔符**且残料非空
+                        // 不足 2 字时，才视为剥掉的是菜名一部分而拒绝（"早餐饼"保住）；kw 后有分隔符
+                        // （冒号/空格等，raw 与 candidate 等长说明没剥掉分隔符）即真前缀，照剥（"早餐 粥"→"粥"）；
+                        // 剥后为空（纯餐次词输入，如"午饭"）也允许。复审：单字菜名（粥/汤/面）靠分隔符分支放行。
+                        val hasSeparator = raw.length != candidate.length
+                        if (!hasSeparator && candidate.isNotEmpty() && candidate.length < 2) break
+                        t = candidate
                         removed = true
                         break
                     }
@@ -441,9 +450,13 @@ object RuleMealParser {
         val parenIngredients = mutableListOf<IngredientNameExtractor.ExtractedIngredient>()
         PAREN_NOTE.find(t)?.let { match ->
             val parenText = match.groupValues[1].trim()
-            // 括号内是食材说明（含+或、或纯中文≥2字）→拆为食材
-            if (parenText.any { it in setOf('+', '、', '，', ' ') } || parenText.length >= 2) {
-                val segments = parenText.split(Regex("""[+、， ]+""")).map { it.trim() }.filter { it.isNotBlank() }
+            // 括号内是食材说明（含+或、或,或纯中文≥2字）→拆为食材
+            // [AI修改] 输入格式统一：TextNormalizer 已把全角，/、归一为半角逗号，此处判断集与
+            // split 正则必须包含半角","，否则"菜（食材1，食材2）"会合并成一个名字带逗号的单一食材。
+            if (parenText.any { it in setOf('+', '、', '，', ',', ' ') } || parenText.length >= 2) {
+                // [AI修改] 复审：过滤 <2 字段——"（少 盐）"这类按空格拆出的单字段会以 FoodJson(source="ai")
+                // 落库污染食材字典（与 couldBeDish 的 ≥2 字口径一致）。
+                val segments = parenText.split(Regex("""[+、，, ]+""")).map { it.trim() }.filter { it.length >= 2 }
                 parenIngredients.addAll(segments.map { IngredientNameExtractor.ExtractedIngredient(it, inLibrary = false) })
             } else {
                 note = parenText  // 纯备注（如"加热""少盐"）
@@ -476,12 +489,19 @@ object RuleMealParser {
         // 5. 烹饪方式提取（从菜名中识别做法关键词）
         val cookingMethods = extractCookingMethods(name)
 
-        // 6. 食材推演（IngredientNameExtractor + 括号食材合并）[AI修改]
-        val extracted = IngredientNameExtractor.extract(name, libraryNames).toMutableList()
-        // 合并括号内食材（去重·同名不重复）
-        for (pi in parenIngredients) {
-            if (extracted.none { it.name == pi.name }) extracted.add(pi)
-        }
+        // 6. 食材推演。[AI修改] E-IFMT-05 真机反馈修复（用户 2026-08-29 口径：菜品本身不能算食材，只有（）内的才算）：
+        //   ① 有括号食材时括号是权威声明，跳过菜名推演——"百页烧肉（百叶结，五花肉）"食材=百叶结+五花肉，
+        //      不再混入菜名推演结果（旧逻辑把整名"百页烧肉"也当食材）；
+        //   ② 无括号时推演结果剔除"整名==菜名"项——extractor 对拆不动的菜名会把整段当库外候选
+        //      （"凉皮"整名进食材），按新口径菜名不是食材。
+        val extracted: MutableList<IngredientNameExtractor.ExtractedIngredient> =
+            if (parenIngredients.isNotEmpty()) {
+                parenIngredients.toMutableList()
+            } else {
+                IngredientNameExtractor.extract(name, libraryNames)
+                    .filterNot { it.name == name }
+                    .toMutableList()
+            }
         val dishJson = if (extracted.isNotEmpty()) {
             DishJson(
                 name = name,

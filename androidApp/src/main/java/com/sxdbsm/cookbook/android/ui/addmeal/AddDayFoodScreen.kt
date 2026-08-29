@@ -101,7 +101,6 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 /**
  * 添加餐食页面。[AI修改]
@@ -176,10 +175,8 @@ fun AddDayFoodScreen(
     var comboNameDraft by rememberSaveable { mutableStateOf("") }
     var aiTargetBlockId by rememberSaveable { mutableStateOf<Long?>(null) } // [AI生成] 记录哪个餐次块发起了 AI 推荐。
     var previewOpen by rememberSaveable { mutableStateOf(false) } // [AI生成] D保存预览:点"保存计划"先弹预览sheet,确认再存(仅计划态,实录高频不加确认=守少操作)
-    var aiSheetOpen by rememberSaveable { mutableStateOf(false) } // [AI生成] K1 AI快捷输入记餐 Sheet 开关
-    var aiSheetOpenNonce by rememberSaveable { mutableStateOf(0) } // [AI修改] AI Sheet 日期切换/保存完成才换 key；同日误关重开保留输入。
-    var aiSheetDateKey by rememberSaveable { mutableStateOf<String?>(null) } // [AI修改] 用字符串保存最近打开日期，避免 LocalDate Saver 兼容问题。
-    var aiSheetResetAfterClose by rememberSaveable { mutableStateOf(false) } // [AI修改] 保存成功后等 Sheet 真关闭再换 key，避免取消 DONE 阶段 dismiss。
+    // [AI修改] 输入入口统一（用户2026-08-29）：AI 快捷记已收口到首页"+"统一入口，编辑/复制进入的
+    //   添加餐食页不再提供 AI 快捷记（aiSheetOpen 等四态与顶栏入口随 AiMealInputSheet 调用一并移除）。
     val snackbar = remember { SnackbarHostState() } // [AI生成] A6：移除菜品撤销提示
     val scope = rememberCoroutineScope()
     // [AI生成] part1/审查建议1(§9.12 红线)：撤销 Snackbar **单 job 串行化**——连点多 chip/连续操作时，
@@ -275,25 +272,8 @@ fun AddDayFoodScreen(
             com.sxdbsm.cookbook.android.ui.component.AppTopBar(
                 title = "添加餐食",
                 onBack = requestBack, // [AI修改] §9.17：走未保存守卫
-                actions = {
-                    // [AI生成] K1 AI快捷输入记餐入口：✨ 按钮 + 文字，始终可见
-                    TextButton(onClick = {
-                        val currentDateKey = state.date.toString()
-                        if (aiSheetDateKey != currentDateKey) {
-                            aiSheetDateKey = currentDateKey
-                            aiSheetOpenNonce += 1
-                        }
-                        aiSheetOpen = true
-                    }) {
-                        Icon(
-                            imageVector = Icons.Outlined.AutoAwesome,
-                            contentDescription = "AI快捷记",
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text("AI快捷记", style = MaterialTheme.typography.labelMedium)
-                    }
-                },
+                // [AI修改] 输入入口统一（用户2026-08-29）：删除顶栏"AI快捷记"入口——AI 快捷记已
+                //   统一到首页"+"（记录饮食统一入口），编辑/复制场景只需调整菜品。
             )
             }
         },
@@ -593,42 +573,8 @@ fun AddDayFoodScreen(
         }
     }
 
-    // [AI生成] K1 AI快捷输入记餐 Sheet：始终可见，ViewModel 参数化传入空初始文本
-    if (!embedded && aiSheetOpen) {
-        val aiVm: com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel = koinViewModel(
-            key = "ai-meal-${state.date}-$aiSheetOpenNonce", // [AI修改] 日期切换后重新打开必须重新注入 targetDate。
-        ) { parametersOf("", state.date) }
-
-        // [AI生成] B6: 查询本周哪些天已有餐食，供周期记灰显 + "已有餐食"标记。
-        LaunchedEffect(state.date) {
-            val monday = com.sxdbsm.cookbook.ai.meallog.InputSegmentFactory.mondayOfWeek(state.date)
-            aiVm.setExistingMealDates(vm.datesWithMealsInWeek(monday))
-        }
-
-        // [AI修改] B6-fix: 单天保存后推迟 reload 到 onDismiss，避免与 ModalBottomSheet 关闭动画竞态致 UI 冻结。
-        var pendingReloadDate by remember { mutableStateOf<LocalDate?>(null) }
-
-        com.sxdbsm.cookbook.android.ui.ai.AiMealInputSheet(
-            vm = aiVm,
-            onDismiss = {
-                aiSheetOpen = false
-                if (aiSheetResetAfterClose) {
-                    aiSheetResetAfterClose = false
-                    aiSheetOpenNonce += 1
-                    // [AI修改] B6-fix: Sheet 完全关闭后再 reload，避免竞态
-                    pendingReloadDate?.let { vm.reloadAfterAiSave(it) }
-                    pendingReloadDate = null
-                }
-            },
-            onSaved = { savedState ->
-                val savedDays = savedState.autoGenPreview?.days.orEmpty()
-                AppLogger.d("MealFlow", "ai_meal_saved meal_count=${savedState.autoGenResult?.mealsSaved ?: 0} day_count=${savedDays.size}")
-                aiSheetResetAfterClose = true
-                if (savedDays.size > 1) onOpenWeekPlan(savedDays.minOf { it.date })
-                else pendingReloadDate = savedDays.firstOrNull()?.date ?: savedState.targetDate
-            },
-        )
-    }
+    // [AI修改] 输入入口统一（用户2026-08-29）：AI 快捷记 Sheet 打开块整体移除——AI 快捷记
+    //   已统一到首页"+"（UnifiedAddMealScreen），编辑/复制进入的本页不再内嵌 AI 输入。
 }
 
 /**

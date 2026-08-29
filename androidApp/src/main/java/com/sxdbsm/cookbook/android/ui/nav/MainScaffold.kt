@@ -1,6 +1,10 @@
 package com.sxdbsm.cookbook.android.ui.nav
 
 import android.app.Activity
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
 import com.sxdbsm.cookbook.android.util.AppLogger
 import android.widget.Toast
 import kotlinx.coroutines.launch
@@ -17,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -113,7 +118,9 @@ fun MainScaffold(
         )
     }
 
-    val showBottomBar = currentRoute in bottomTabs.map { it.route } // [AI修改] 详情/编辑页隐藏底部栏。
+    // [AI修改] NAV-FIX 复审：路由集合只算一次，避免每次重组重 map。
+    val bottomTabRoutes = remember { bottomTabs.map { it.route }.toSet() }
+    val showBottomBar = currentRoute in bottomTabRoutes // [AI修改] 详情/编辑页隐藏底部栏。
 
     // [AI生成] 阶段3-b：feature_used 去抖到"功能区切换"粒度——记上次上报的功能区,只有换了功能区才报(审查建议2)。
     //   否则 A→详情→返回A 会让 A 重复计数、漏斗失真;二级页(fromRoute→null)不改变 lastFeature、返回后同功能区不重报。
@@ -173,7 +180,8 @@ fun MainScaffold(
             navController = nav,
             startDestination = Routes.HOME,
             // [AI修改] 沉浸式布局下，全屏页面(无底部导航栏)内容会伸到系统导航栏下被遮挡——
-            // 统一给无底部栏路由补系统导航栏 inset 底padding；Tab 页由 NavigationBar 自身避让。
+            // 统一给无底部栏路由补系统导航栏 inset 底padding；Tab 页由悬浮胶囊导航栏自身避让
+            //   （NAV-FIX 后为自绘 Tab 行，Row 上的 navigationBarsPadding 继续承担避让）。
             modifier = Modifier
                 .padding(padding)
                 .then(if (showBottomBar) Modifier else Modifier.navigationBarsPadding()),
@@ -590,6 +598,10 @@ private const val KEY_LIFECYCLE_TRACE_ID = "stateLifecycleTraceId" // [AI生成]
 
 /**
  * 底部导航栏。[AI修改]
+ * [AI修改] NAV-FIX：内部 Tab 项由 M3 NavigationBarItem 换成自绘——NavigationBarItem 按标准 80dp
+ * 导航栏设计（指示器+图标+文字固定布局），塞进 58dp 悬浮胶囊会把图标和文字垂直挤压、文字被裁切看不见。
+ * 自绘 = Column(图标 22dp + 2dp 间距 + labelSmall) 垂直居中，总高 40dp 在 58dp 内留足余量；
+ * 选中态走"纯 tint 切换"（primary + Filled 图标，无背景指示块，设计方案 §五.3 已确立的范式）。
  */
 @Composable
 private fun BottomBar(nav: NavController, currentRoute: String?, onAddMeal: () -> Unit) {
@@ -609,19 +621,39 @@ private fun BottomBar(nav: NavController, currentRoute: String?, onAddMeal: () -
         ) {
             Row(modifier = Modifier.fillMaxSize()) {
                 bottomTabs.forEach { tab ->
-                    NavigationBarItem(
-                        modifier = Modifier.weight(1f),
-                        selected = currentRoute == tab.route,
-                        onClick = { nav.navigateRootTab(tab.route) },
-                        icon = { Icon(tab.icon, contentDescription = tab.label, modifier = Modifier.size(22.dp)) },
-                        label = { Text(tab.label, style = MaterialTheme.typography.labelSmall) },
-                        alwaysShowLabel = true,
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                        ),
+                    val selected = currentRoute == tab.route
+                    // [AI修改] NAV-FIX：图标+文字同一 tint 一起过渡，150ms 克制时长。
+                    val tint by animateColorAsState(
+                        targetValue = if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        animationSpec = tween(durationMillis = 150),
+                        label = "navTabTint",
                     )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            // [AI修改] NAV-FIX：Role.Tab 语义由文字 label 承载，图标 contentDescription=null 避免 TalkBack 读两遍。
+                            .selectable(selected = selected, role = Role.Tab, onClick = { nav.navigateRootTab(tab.route) }),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Icon(
+                            imageVector = if (selected) tab.selectedIcon else tab.icon,
+                            contentDescription = null,
+                            tint = tint,
+                            modifier = Modifier.size(22.dp),
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = tab.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = tint,
+                            maxLines = 1,
+                            // [AI修改] NAV-FIX 复审：超大字号(fontScale≥1.8)下 2 字标签可能超宽，省略号优于默认 Clip 裁边。
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         }

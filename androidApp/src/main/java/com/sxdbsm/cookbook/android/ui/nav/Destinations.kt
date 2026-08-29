@@ -1,6 +1,10 @@
 package com.sxdbsm.cookbook.android.ui.nav
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.SoupKitchen
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Restaurant
@@ -83,19 +87,21 @@ internal fun requireAiRecommendRouteTrace(value: String): TraceId {
 
 /**
  * 底部 Tab 的展示配置。[AI修改]
+ * [AI修改] NAV-FIX：加 selectedIcon（Filled 变体）——自绘 Tab 项选中态切实心图标（纯 tint 切换、无背景指示块）。
  */
 data class TabItem(
     val route: String,
     val label: String,
     val icon: ImageVector,
+    val selectedIcon: ImageVector,
 )
 
 /**
  * 底部导航栏固定的四个入口。[AI修改]
  */
 val bottomTabs = listOf(
-    TabItem(Routes.HOME, "首页", Icons.Outlined.Home),
-    TabItem(Routes.DISHES, "菜品", Icons.Outlined.Restaurant),
-    TabItem(Routes.INGREDIENTS, "食材", Icons.Outlined.SoupKitchen),
-    TabItem(Routes.MINE, "我的", Icons.Outlined.Person),
+    TabItem(Routes.HOME, "首页", Icons.Outlined.Home, Icons.Filled.Home),
+    TabItem(Routes.DISHES, "菜品", Icons.Outlined.Restaurant, Icons.Filled.Restaurant),
+    TabItem(Routes.INGREDIENTS, "食材", Icons.Outlined.SoupKitchen, Icons.Filled.SoupKitchen),
+    TabItem(Routes.MINE, "我的", Icons.Outlined.Person, Icons.Filled.Person),
 )

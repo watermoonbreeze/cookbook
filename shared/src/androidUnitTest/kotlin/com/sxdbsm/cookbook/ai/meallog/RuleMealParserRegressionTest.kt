@@ -167,8 +167,10 @@ class RuleMealParserRegressionTest {
         val dishes = result.single().meals.single().dishes
 
         assertEquals(listOf("凉皮", "番茄炒蛋"), dishes.map { it.name })
+        // [AI修改] E-IFMT-05 口径变更（用户 2026-08-29：菜品本身不能算食材，只有（）内的才算）：
+        //   原断言含菜名"凉皮"整名进食材，现括号食材是权威声明、不再混入菜名推演。
         assertEquals(
-            listOf("凉皮", "黄瓜丝", "绿豆芽"),
+            listOf("黄瓜丝", "绿豆芽"),
             dishes.first().dish?.ingredients?.mapNotNull { it.food?.name },
         )
     }

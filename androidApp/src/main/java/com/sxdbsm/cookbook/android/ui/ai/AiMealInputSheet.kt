@@ -1,8 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.ai
 
 import android.Manifest
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -101,6 +99,9 @@ import kotlinx.datetime.LocalDate
  * 遵循透明准则 T2（始终预览），复用既有组件（SegmentedControl）。
  * <p>
  * [AI生成] K1 AI快捷输入记餐：UI 层。
+ * [AI修改] 输入入口统一（2026-08-29）：AI 快捷记已收口到首页"+"统一入口（UnifiedAddMealScreen 内嵌
+ * AiMealBody），本 Sheet 包装函数**当前无调用方**——保留作语音回迁载体（语音逻辑在包装层），
+ * 非活跃路径，勿在其上叠加新功能；清理归后续死代码批次。
  **/
 
 /** [AI修改] 2026-08-20：语音录入本期先隐藏（用户反馈"语音引擎繁忙"未修复，见待办总览），入口保留代码待后续修复后放开。 */
@@ -234,17 +235,6 @@ private fun InputPhase(
 ) {
     val context = LocalContext.current
 
-    // 剪贴板状态（仅快速记模式使用）
-    val clipboard = remember { context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager }
-    var hasClip by remember { mutableStateOf(clipboard.hasPrimaryClip() && clipboard.primaryClip?.getItemAt(0)?.text?.isNotBlank() == true) }
-    DisposableEffect(clipboard) {
-        val listener = android.content.ClipboardManager.OnPrimaryClipChangedListener {
-            hasClip = clipboard.hasPrimaryClip() && clipboard.primaryClip?.getItemAt(0)?.text?.isNotBlank() == true
-        }
-        clipboard.addPrimaryClipChangedListener(listener)
-        onDispose { clipboard.removePrimaryClipChangedListener(listener) }
-    }
-
     // 语音权限（仅快速记模式使用）
     var hasAudioPermission by remember {
         mutableStateOf(
@@ -264,8 +254,13 @@ private fun InputPhase(
     val activeRecognizer = remember { mutableStateOf<VoiceRecognizer?>(null) }
     DisposableEffect(Unit) { onDispose { activeRecognizer.value?.destroy() } }
 
+    // [AI修改] 输入入口统一·复审后（用户 2026-08-29 真机确认）：统一入口是全屏页（非
+    //   ModalBottomSheet），输入框长按系统复制/粘贴菜单已可用——自制"📋粘贴"按钮与其
+    //   clipboard/hasClip 监听链路整体移除（原 E-B4-03/B5-10 的 Sheet 结构性限制随全屏化自然解除）。
+
     var showHelp by remember { mutableStateOf(false) }
-    if (showHelp) HelpSheet(onDismiss = { showHelp = false })
+    // [AI修改] 输入格式统一：说明弹窗切到共享 MealInputHelpSheet（新格式文案，与统一入口同源）。
+    if (showHelp) MealInputHelpSheet(onDismiss = { showHelp = false })
 
     LaunchedEffect(state.voiceError) {
         state.voiceError?.let { error ->
@@ -342,7 +337,7 @@ private fun InputPhase(
 
         // ── [B4] 按模式分叉输入区 ──
         when (state.inputMode) {
-            InputMode.QUICK -> QuickInputSection(vm, state, context, clipboard, hasClip,
+            InputMode.QUICK -> QuickInputSection(vm, state, context,
                 hasAudioPermission, audioPermissionLauncher, activeRecognizer)
             InputMode.WEEK -> PeriodInputSection(vm, state)
         }
@@ -356,8 +351,6 @@ private fun QuickInputSection(
     vm: AiMealInputViewModel,
     state: AiMealInputUiState,
     context: Context,
-    clipboard: android.content.ClipboardManager,
-    hasClip: Boolean,
     hasAudioPermission: Boolean,
     audioPermissionLauncher: androidx.activity.result.ActivityResultLauncher<String>,
     activeRecognizer: androidx.compose.runtime.MutableState<VoiceRecognizer?>,
@@ -440,24 +433,6 @@ private fun QuickInputSection(
                 .align(Alignment.BottomEnd)
                 .padding(end = 12.dp, bottom = 8.dp),
         )
-
-        // 粘贴按钮 [AI修改] B6-fix2：不再重算是否超限（截断+提示已收口进 VM），也不再清空系统剪贴板
-        // （google_quality_engineer 复审：清空是越出 App 边界的副作用，用户复制的内容可能还要粘到别处）。
-        if (hasClip) {
-            TextButton(
-                onClick = {
-                    val clipText = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
-                    if (clipText.isNotBlank()) {
-                        vm.appendText(clipText)
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 8.dp, end = 12.dp),
-            ) {
-                Text("📋 粘贴", style = MaterialTheme.typography.labelMedium)
-            }
-        }
     }
 
     Spacer(Modifier.height(16.dp))
@@ -746,116 +721,6 @@ private fun VoiceWaveformBars(rmsdB: Float) {
                     .padding(horizontal = 2.dp)
                     .clip(RoundedCornerShape(2.dp))
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)),
-            )
-        }
-    }
-}
-
-/** [AI修改] K2 操作说明弹窗 */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HelpSheet(onDismiss: () -> Unit) {
-    val helpSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = helpSheetState,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            // 标题
-            Text(
-                text = "怎么用 AI 快捷记一餐",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(Modifier.height(20.dp))
-
-            // 文字输入
-            HelpSection(
-                title = "📝 文字输入",
-                content = "直接在输入框里描述你吃了什么，AI 会自动识别：\n" +
-                        "✅「中午吃了红烧肉和米饭，少放盐」\n" +
-                        "✅「早餐：两个鸡蛋、一碗小米粥」\n" +
-                        "✅「昨天晚饭：清蒸鲈鱼、炒青菜」\n" +
-                        "✅「加餐：一个苹果、一小把坚果」",
-            )
-            Spacer(Modifier.height(16.dp))
-
-            // 语音输入 [AI修改] B6-fix2·google_quality_engineer 复审：语音入口已隐藏（VOICE_INPUT_ENABLED），
-            // 说明弹窗须同步隐藏，否则用户会照着一个不存在的按钮去操作。
-            if (VOICE_INPUT_ENABLED) {
-                HelpSection(
-                    title = "🎤 语音输入",
-                    content = "长按麦克风按钮说话，松手后语音自动转成文字填入输入框。\n" +
-                            "录音仅在本地识别，不上传语音文件。",
-                )
-                Spacer(Modifier.height(16.dp))
-            }
-
-            // 粘贴 [AI修改] B6-fix2：这个输入框所在的弹层结构上大概率不支持系统长按复制粘贴菜单
-            // （详见 F-AI-MEAL/30_待办.md AIMEAL-UX-REDESIGN），说明只描述确定可用的右上角按钮。
-            HelpSection(
-                title = "📋 粘贴",
-                content = "点输入框右上角「粘贴」按钮，一键填入剪贴板内容。",
-            )
-            Spacer(Modifier.height(16.dp))
-
-            HelpSection(
-                title = "🗓️ 多天菜单模板",
-                content = "日期/周/天\n餐次（早、中、晚、加餐）：菜品（食材, 食材），菜品\n\n菜品与菜品之间只用逗号分隔；同一道菜的食材写在（）内，食材可用逗号、+ 或 、分隔。\n\n示例：\n周一\n晚饭：乌冬面（番茄炒蛋），清蒸桂鱼（桂鱼），清炒生菜（生菜）\n\n模板能提高规则解析准确率；发送后仍请在预览确认。",
-            )
-            Spacer(Modifier.height(16.dp))
-
-            // AI 能识别什么
-            HelpSection(
-                title = "💬 AI 能识别什么",
-                content = "• 餐次：早餐/午餐/晚餐/加餐/宵夜\n" +
-                        "• 日期：今天/昨天/前天/明天\n" +
-                        "• 菜品：从菜名自动拆食材（如\"番茄炒蛋\"=>番茄+鸡蛋）\n" +
-                        "• 份量：一碗/两盘/三个/半份\n" +
-                        "• 吃多少：吃完/吃了一半/吃了少量\n" +
-                        "• 备注：少盐/少油/不要辣",
-            )
-            Spacer(Modifier.height(16.dp))
-
-            // 注意
-            HelpSection(
-                title = "⚠️ 注意",
-                content = "• 越具体越好，说清菜名和份量\n" +
-                        "• 新菜会自动创建，营养来自基础数据估算\n" +
-                        "• 发送前可编辑文字，发送后可预览确认再入库\n" +
-                        "• 文字只在记餐时发送，不保存",
-            )
-        }
-    }
-}
-
-@Composable
-private fun HelpSection(title: String, content: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        ),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = content,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 22.sp,
             )
         }
     }
