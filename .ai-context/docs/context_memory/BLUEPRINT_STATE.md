@@ -16,7 +16,7 @@
 | Evidence | T-RR-01~05 固定 fixture 通过；专项 `RecommendationOrchestratorTest`/`RecommendationDataSourceTest`、`:shared:testDebugUnitTest`、`:androidApp:assembleDebug` 均 BUILD SUCCESSFUL；T-RR-06 N/A；未新增真机项。 |
 | Review | 旗舰复核通过：范围、三重身份谓词、失效入口、同意门禁、测试与同步证据均无阻断。 |
 | Runtime | `DEV-ADV-01~02` 已登记唯一真机清单，均为 `PENDING_DEVICE_VERIFICATION`。 |
-| Delivery | 最小 tie-break 与测试/Feature 台账已按 allowlist 完成；交付 commit 待提交后回填。 |
+| Delivery | 最小 tie-break 与测试/Feature 台账已按 allowlist 完成；交付 commit `6282d1c8`。 |
 | Next action | ARCH 按 allowlist、排序不变量与 T-RR-01~05 复核；不得写 `ARCH_ACCEPTED`。 |
 
 ---
