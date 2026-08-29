@@ -1,5 +1,12 @@
 # 🔖 SESSION 交接入口
 
+## 功能完成交接（2026-08-29 · R5-A 推荐可复现性）
+
+- `RECOMMEND-REPRODUCIBILITY-01` 已成为 **ARCH_ACCEPTED / AUTOMATED_GATES_PASS**；完整交接见 `2026-08-29_R5-A_推荐可复现性_功能完成交接.md`。
+- 生产实现仅为同层同分的 `dish.id` 升序 tie-break，固定夹具锁定候选、轮转、style 与 avoid/recent 分层；未改权重、DataSource、云端、schema 或 UI。
+- 四条自动化命令已由 ARCH 复跑成功。本批没有设备交互或 UI 改动，未新增真机项，不能由 JVM 结果推断设备通过。
+- 后续不得重复开发 R5-A；下一可实施项为 R2-B parser 规范化语料蓝图，统一设备回归仍在 R10。
+
 ## RECOMMEND-REPRODUCIBILITY-01 CODE 交付（2026-08-29）
 
 - 按蓝图完成 T-RR-01~05：新增固定 8/25 菜、四 style、avoid/recent 分层与轮转 fixture；T-RR-06 不需要。

@@ -5,19 +5,19 @@
 | Field | Value |
 |---|---|
 | Batch | `RECOMMEND-REPRODUCIBILITY-01` / R5-A deterministic rule recommendation contract |
-| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
-| TURN | **REVIEW** |
-| Holder | **ARCH** |
+| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
+| TURN | **NONE** |
+| Holder | **—** |
 | 颗粒度 | **L7** |
 | Base | `d8244693` |
 | Blueprint | `.ai-context/docs/feature/RECOMMEND-REPRODUCIBILITY-01_实施蓝图.md` |
 | Scope | 固定 fixture、排序/轮转/理由可复现性与同分 id tie-break；不改权重、云端、DataSource、schema 或 UI。 |
 | Authorization | 用户已要求无人值守持续完成可实施功能；CODE 必须严格遵守本批 allowlist，未决问题追加 Q 后交回 ARCH。 |
 | Evidence | T-RR-01~05 固定 fixture 通过；专项 `RecommendationOrchestratorTest`/`RecommendationDataSourceTest`、`:shared:testDebugUnitTest`、`:androidApp:assembleDebug` 均 BUILD SUCCESSFUL；T-RR-06 N/A；未新增真机项。 |
-| Review | 旗舰复核通过：范围、三重身份谓词、失效入口、同意门禁、测试与同步证据均无阻断。 |
-| Runtime | `DEV-ADV-01~02` 已登记唯一真机清单，均为 `PENDING_DEVICE_VERIFICATION`。 |
+| Review | ARCH 独立复核通过：`HealthRuleEngine` 仅在原有 avoid/recent/-score 键后追加 `dish.id`；T-RR-01~05 覆盖排序、轮转、四 style 与分层，未发现超出 allowlist 或不变量的改动。 |
+| Runtime | 本批纯本地规则确定性与 JVM 回归，无新增真机验证项；不得据此推断任何设备运行时结论。 |
 | Delivery | 最小 tie-break 与测试/Feature 台账已按 allowlist 完成；交付 commit `6282d1c8`。 |
-| Next action | ARCH 按 allowlist、排序不变量与 T-RR-01~05 复核；不得写 `ARCH_ACCEPTED`。 |
+| Next action | R5-A 已自动化收口并单独交接；按路线图进入 R2-B parser 规范化语料蓝图，真机统一留待 R10。 |
 
 ---
 

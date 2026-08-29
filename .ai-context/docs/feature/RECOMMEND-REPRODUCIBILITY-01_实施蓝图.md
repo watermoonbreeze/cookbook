@@ -1,6 +1,6 @@
 # RECOMMEND-REPRODUCIBILITY-01 · 实施蓝图
 
-> 状态：**BLUEPRINT_READY**；R5-A；基线：`d8244693`。ARCH/SOL 冻结与复核；CODE/Luna 只按本文件实施。
+> 状态：**ARCH_ACCEPTED / AUTOMATED_GATES_PASS**；R5-A；基线：`d8244693`，代码交付：`6282d1c8`。ARCH/SOL 冻结、CODE 实施与独立复核均已完成。
 
 ## 目标与范围
 
@@ -45,3 +45,14 @@
 | T-RR-01~05 | 固定 8/25 菜、四 style、avoid/recent 分层 fixture 已加入 `RecommendationOrchestratorTest` 并通过。 | CODE_PASS |
 | T-RR-06 | 未新增；T-RR-02 已由编排器测试直接证明分层内 id tie-break。 | N/A |
 | G-RR-01 | `:shared:testDebugUnitTest` 与 `:androidApp:assembleDebug` 均 BUILD SUCCESSFUL；无真机项。 | CODE_PASS |
+
+## 独立复核与交接（2026-08-29）
+
+| ID | 复核事实 | 结论 |
+|---|---|---|
+| R-RR-01 | 对比 `d8244693..6282d1c8`：生产改动仅为 `HealthRuleEngine` 原 comparator 末尾追加 `dish.id`。 | PASS |
+| R-RR-02 | 复跑 `RecommendationOrchestratorTest`、`RecommendationDataSourceTest`、`:shared:testDebugUnitTest`、`:androidApp:assembleDebug`，全部 `BUILD SUCCESSFUL`。 | PASS |
+| R-RR-03 | `git diff --check` 无输出；结构体检通过。`--backlog` 的 F-RECOMMEND 提示是历史同步锚落后，不作为本批代码越界或验证失败的结论。 | PASS / 后续治理项 |
+| R-RR-04 | 本批未触及 UI、设备能力或用户操作链路，故不新增真机项，也不把 JVM 测试写作真机通过。 | PASS |
+
+详细交接见 `.ai-context/docs/context_memory/2026-08-29_R5-A_推荐可复现性_功能完成交接.md`。
