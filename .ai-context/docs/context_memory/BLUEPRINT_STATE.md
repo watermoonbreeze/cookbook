@@ -1,22 +1,22 @@
 # BLUEPRINT_STATE
 
-## CURRENT EXECUTION: AIMEAL-ADVICE-GENERATION-01（2026-08-28）
+## CURRENT EXECUTION: RECOMMEND-REPRODUCIBILITY-01（2026-08-29）
 
 | Field | Value |
 |---|---|
-| Batch | `AIMEAL-ADVICE-GENERATION-01` / R2-A I8 health-advice generation ownership |
-| State | **ARCH_ACCEPTED / AUTOMATED_GATES_PASS** |
-| TURN | **NONE** |
-| Holder | **—** |
+| Batch | `RECOMMEND-REPRODUCIBILITY-01` / R5-A deterministic rule recommendation contract |
+| State | **BLUEPRINT_READY** |
+| TURN | **CODE** |
+| Holder | **Luna** |
 | 颗粒度 | **L7** |
-| Base | `59d73112` |
-| Blueprint | `.ai-context/docs/feature/AIMEAL-ADVICE-GENERATION-01_实施蓝图.md` |
-| Scope | 仅 `AiMealInputViewModel` 的健康建议异步身份/取消收口及 `AiMealInputViewModelStreamTest` 的 T-ADV 竞态回归；不改 UI、shared、协议、schema、prompt 或语音。 |
+| Base | `d8244693` |
+| Blueprint | `.ai-context/docs/feature/RECOMMEND-REPRODUCIBILITY-01_实施蓝图.md` |
+| Scope | 固定 fixture、排序/轮转/理由可复现性与同分 id tie-break；不改权重、云端、DataSource、schema 或 UI。 |
 | Authorization | 用户已要求无人值守持续完成可实施功能；CODE 必须严格遵守本批 allowlist，未决问题追加 Q 后交回 ARCH。 |
 | Evidence | `abbccd00`（主修复）与 `5731d3ac`（旗舰审查补强）；T-ADV-01~05、既有同意门禁、Android 全量单测和 Debug 构建均通过。最终 allowlist 与 feature-sync 范围核验待本次同步提交后回写。 |
 | Review | 旗舰复核通过：范围、三重身份谓词、失效入口、同意门禁、测试与同步证据均无阻断。 |
 | Runtime | `DEV-ADV-01~02` 已登记唯一真机清单，均为 `PENDING_DEVICE_VERIFICATION`。 |
-| Next action | R2-A 自动化收口；继续 R2-B~E 的研究/决策门禁或路线中其他独立 READY 批次，所有真机项统一进入 R10。 |
+| Next action | Luna 按本蓝图实施；若遇 Q-RR-01，转回 ARCH。 |
 
 ---
 
