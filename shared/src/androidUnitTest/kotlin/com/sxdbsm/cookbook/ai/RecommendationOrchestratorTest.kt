@@ -23,6 +23,13 @@ class RecommendationOrchestratorTest {
 
     private fun main(id: Long, name: String) = RuleDishIngredient(id, name, IngredientRole.MAIN)
 
+    private fun reproducibilityInput(count: Int = 8) = RecommendationInput(
+        dishes = (1L..count.toLong()).map { RuleDish(it, "固定菜$it", listOf(main(1000 + it, "固定料$it"))) },
+        pantryIngredientIds = (1001L..1000 + count).toSet(),
+        constraints = HealthConstraints(),
+        recentDishIds = emptySet(),
+    )
+
     // 两个都可做的合成菜
     private val input = RecommendationInput(
         dishes = listOf(
@@ -445,5 +452,65 @@ class RecommendationOrchestratorTest {
         val a = orch.recommend(input, mealCount = 1, rotation = 0).candidates.map { it.id }
         val b = orch.recommend(input, mealCount = 1, rotation = 1).candidates.map { it.id }
         assertEquals(a, b, "≤1批时换一换回同批")
+    }
+
+    @Test
+    fun `T-RR-01_固定八菜重复二十次候选与首条建议稳定`() = runBlocking {
+        val fixture = reproducibilityInput()
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val first = orch.recommend(fixture, mealCount = 1)
+        repeat(19) {
+            val next = orch.recommend(fixture, mealCount = 1)
+            assertEquals(first.candidates.map { it.id }, next.candidates.map { it.id })
+            assertEquals(first.suggestions.firstOrNull()?.dishIds, next.suggestions.firstOrNull()?.dishIds)
+        }
+    }
+
+    @Test
+    fun `T-RR-02_同层同分乱序输入按id升序且不跨层`() {
+        val dishes = listOf(
+            RuleDish(3, "忌口", listOf(main(1003, "忌料"))),
+            RuleDish(2, "最近", listOf(main(1002, "近期料"))),
+            RuleDish(4, "正常4", listOf(main(1004, "料4"))),
+            RuleDish(1, "正常1", listOf(main(1001, "料1"))),
+        )
+        val result = HealthRuleEngine().evaluate(
+            dishes, setOf(1001L, 1002, 1003, 1004), HealthConstraints(avoidIngredientIds = setOf(1003)), setOf(2L),
+        )
+        assertEquals(listOf(1L, 4L, 2L, 3L), result.map { it.id })
+    }
+
+    @Test
+    fun `T-RR-03_二十五菜四轮批次稳定且循环`() = runBlocking {
+        val fixture = reproducibilityInput(25)
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val expected = listOf((1L..10L).toList(), (11L..20L).toList(), (21L..25L).toList(), (1L..10L).toList())
+        expected.forEachIndexed { rotation, ids ->
+            repeat(5) { assertEquals(ids, orch.recommend(fixture, mealCount = 1, rotation = rotation).candidates.map { it.id }) }
+        }
+    }
+
+    @Test
+    fun `T-RR-04_四种style各自重复稳定`() = runBlocking {
+        val fixture = reproducibilityInput()
+        RecommendationStyle.entries.forEach { style ->
+            val input = fixture.copy(style = style)
+            val orch = RecommendationOrchestrator(MockAiRuntime())
+            val first = orch.recommend(input, mealCount = 1)
+            repeat(4) { assertEquals(first.candidates.map { it.id }, orch.recommend(input, mealCount = 1).candidates.map { it.id }) }
+        }
+    }
+
+    @Test
+    fun `T-RR-05_正常最近忌口分层顺序重复稳定`() = runBlocking {
+        val fixture = reproducibilityInput(8).copy(
+            constraints = HealthConstraints(avoidIngredientIds = setOf(1008L)),
+            recentDishIds = setOf(7L),
+        )
+        val orch = RecommendationOrchestrator(MockAiRuntime())
+        val expected = orch.recommend(fixture, mealCount = 1).candidates.map { it.id }
+        repeat(4) { assertEquals(expected, orch.recommend(fixture, mealCount = 1).candidates.map { it.id }) }
+        assertTrue(expected.indexOf(6L) < expected.indexOf(7L))
+        assertTrue(expected.indexOf(7L) < expected.indexOf(8L))
     }
 }

@@ -185,7 +185,7 @@ class HealthRuleEngine {
         // [AI修改] B2：分层排序保证"最近吃过的排到最后(但在忌口之前)、忌口最末"，不依赖罚分量级、稳健：
         //   非忌口非最近(正常) → 非忌口最近 → 忌口。层内按 score 降序。
         //   即：先看是否忌口(false 在前)，再看是否最近(false 在前)，最后 score 高者靠前。
-        .sortedWith(compareBy({ it.avoidNames.isNotEmpty() }, { it.isRecent }, { -it.score }))
+        .sortedWith(compareBy({ it.avoidNames.isNotEmpty() }, { it.isRecent }, { -it.score }, { it.id }))
 
     /** 调料忌口/限量 → 做法提示。[AI生成] 盐→少盐、白糖→少糖、生抽/老抽/豉油→少酱油、各种油→少油、各种酱→少酱。 */
     private fun seasoningCaution(name: String): String = "少" + when {

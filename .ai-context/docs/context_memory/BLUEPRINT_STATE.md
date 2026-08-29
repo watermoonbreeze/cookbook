@@ -5,18 +5,19 @@
 | Field | Value |
 |---|---|
 | Batch | `RECOMMEND-REPRODUCIBILITY-01` / R5-A deterministic rule recommendation contract |
-| State | **BLUEPRINT_READY** |
-| TURN | **CODE** |
-| Holder | **Luna** |
+| State | **CODE_COMPLETE / PENDING ARCH REVIEW** |
+| TURN | **REVIEW** |
+| Holder | **ARCH** |
 | 颗粒度 | **L7** |
 | Base | `d8244693` |
 | Blueprint | `.ai-context/docs/feature/RECOMMEND-REPRODUCIBILITY-01_实施蓝图.md` |
 | Scope | 固定 fixture、排序/轮转/理由可复现性与同分 id tie-break；不改权重、云端、DataSource、schema 或 UI。 |
 | Authorization | 用户已要求无人值守持续完成可实施功能；CODE 必须严格遵守本批 allowlist，未决问题追加 Q 后交回 ARCH。 |
-| Evidence | `abbccd00`（主修复）与 `5731d3ac`（旗舰审查补强）；T-ADV-01~05、既有同意门禁、Android 全量单测和 Debug 构建均通过。最终 allowlist 与 feature-sync 范围核验待本次同步提交后回写。 |
+| Evidence | T-RR-01~05 固定 fixture 通过；专项 `RecommendationOrchestratorTest`/`RecommendationDataSourceTest`、`:shared:testDebugUnitTest`、`:androidApp:assembleDebug` 均 BUILD SUCCESSFUL；T-RR-06 N/A；未新增真机项。 |
 | Review | 旗舰复核通过：范围、三重身份谓词、失效入口、同意门禁、测试与同步证据均无阻断。 |
 | Runtime | `DEV-ADV-01~02` 已登记唯一真机清单，均为 `PENDING_DEVICE_VERIFICATION`。 |
-| Next action | Luna 按本蓝图实施；若遇 Q-RR-01，转回 ARCH。 |
+| Delivery | 最小 tie-break 与测试/Feature 台账已按 allowlist 完成；交付 commit 待提交后回填。 |
+| Next action | ARCH 按 allowlist、排序不变量与 T-RR-01~05 复核；不得写 `ARCH_ACCEPTED`。 |
 
 ---
 

@@ -42,3 +42,6 @@
 |---|---|---|
 | RV-RR-01 | `HealthRuleEngine` 当前 comparator 只有 avoid/recent/-score，没有显式同分 id key。 | ARCH_CONFIRMED |
 | C-RR-01 | 零权重/云端/schema/UI 改动，只补确定性证据和必要 tie-break。 | FROZEN |
+| T-RR-01~05 | 固定 8/25 菜、四 style、avoid/recent 分层 fixture 已加入 `RecommendationOrchestratorTest` 并通过。 | CODE_PASS |
+| T-RR-06 | 未新增；T-RR-02 已由编排器测试直接证明分层内 id tie-break。 | N/A |
+| G-RR-01 | `:shared:testDebugUnitTest` 与 `:androidApp:assembleDebug` 均 BUILD SUCCESSFUL；无真机项。 | CODE_PASS |

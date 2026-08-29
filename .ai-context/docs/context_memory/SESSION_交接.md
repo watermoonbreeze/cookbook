@@ -1,5 +1,12 @@
 # 🔖 SESSION 交接入口
 
+## RECOMMEND-REPRODUCIBILITY-01 CODE 交付（2026-08-29）
+
+- 按蓝图完成 T-RR-01~05：新增固定 8/25 菜、四 style、avoid/recent 分层与轮转 fixture；T-RR-06 不需要。
+- 最小实现：`HealthRuleEngine.sortedWith` 保留前三个排序键，仅追加 `dish.id` 升序 tie-break；未改权重、DataSource、云端、schema、UI。
+- 验证：专项 `RecommendationOrchestratorTest` + `RecommendationDataSourceTest`、`:shared:testDebugUnitTest`、`:androidApp:assembleDebug` 均 BUILD SUCCESSFUL；无新增真机项，未修改真机清单。
+- 下一步：ARCH 按 allowlist/不变量/证据复核；状态转 `CODE_COMPLETE / TURN=REVIEW`，不得写 `ARCH_ACCEPTED`。
+
 ## 当前交接（2026-08-29 · 全景执行 → SOL 方案裁决）
 
 - 最新完整交接：`2026-08-29_全景执行与方案裁决_会话交接.md`。
