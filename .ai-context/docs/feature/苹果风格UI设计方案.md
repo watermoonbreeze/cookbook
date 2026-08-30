@@ -546,3 +546,11 @@ fun PrimaryTabRow(
 - **边界情况（零特例的一条规则）**：今天没记且未来也空→只显 `DayPlaceholderCard`+入口行，不再额外弹"接下来还没安排"（一周计划卡已置顶常驻，是天然引导，重复即噪声）；未来只有1天→只显1天，不补占位（占位卡只对"日期确定但内容缺失"成立，未来第2个有安排的日子日期不确定，补假占位无意义）；"查看全部食历"入口行默认常驻（食历含过去，未来空≠食历空），仅整库零餐食记录时隐藏（需 VM 新增 `hasAnyMealRecord`，或退路：始终显示，`FoodTimelineScreen` 自带空态兜底，多一跳但非死胡同）。
 - **数据层**：`MealRecordRepository.observeTodayPlusFuture` 的 `.take(2)` 语义要改成"今天(0~1)+未来.take(2)"分别取，不能直接改 `take(3)`（今天没记录时会把未来第3天错顶进来，今天位置被挤没）。
 - **反过度设计**：不做骨架屏（本地 DB 够快，首帧按占位卡渲染再替换，无闪烁）；入口行不加动态计数（"还有N天有安排"）；三天视图不承诺完整性，完整性由入口行兜底。
+
+### 9.44 底部导航真悬浮：Box 叠加 + 列表 contentPadding 统一避让
+> [AI生成 2026-08-30] 底部胶囊导航栏（含「+」）从 `Scaffold.bottomBar` 槽改为 **Box 叠加层真悬浮**（`MainScaffold` content 内 `Box(align(BottomCenter))` 画在 NavHost 之上）——槽会把底栏整体高压进 content padding，布局上等价 marginBottom：内容永远滑不进导航栏下方、底部留一条死背景区。真悬浮后 Tab 页（首页/菜品/食材/我的）内容铺满全屏、滚动时从胶囊下方穿过，可视内容更多。
+- **停泊避让 = padding 语义**：页面滚动容器底部一律 `contentPadding.bottom = LocalBottomNavReserved.current`（`Column+verticalScroll` 无 contentPadding 的用尾部 Spacer 等效），**不是** modifier padding（那会把视口裁短、失去穿透效果），更不是恢复底部占位 item。contentPadding 不占 item index——字母跳转等按 index 的偏移不受影响（禁用"尾部加 item"实现避让）。
+- **单一真相源**：`ui/nav/BottomBarOverlay.kt`——`CapsuleHeight(58)/RowHorizontal(16)/RowVertical(12)` 常量（底栏自身几何也引用它，防漂移）；`BodyHeight = 58+12×2 = 82`（胶囊行在系统栏 inset 之上的包络高）；`reservedTotal() = BodyHeight + navigationBars inset`（滚动容器口径，运行时读、三键/手势自适应）；`LocalBottomNavReserved` 由 MainScaffold 按"是否 Tab 落地路由"供值，**二级页/弹窗恒 0**。停泊间隙 12dp 由 RowVertical 天然产生，不另造呼吸值。
+- **双口径防双份 inset**：自带 `navigationBarsPadding` 的底栏式组件（如 `SelectionSummaryBar`"组成菜品"态）抬升用 `BodyHeight`（82）而非总口径——组件内部自己会加系统栏 inset，用总口径会双份。
+- **配套**：①全局 SnackbarHost 加 `padding(bottom = overlayReserved)`（否则撤销按钮被胶囊盖住；二级页=0 行为不变）；②胶囊 `tonalElevation/shadowElevation = 6dp`（M3 悬浮层锚点，与旁 FAB 同层，本页唯一允许真实投影的 chrome 层）；③Dialog 等独立 window 内容**显式** `LocalBottomNavReserved provides 0.dp`（继承宿主的 local 不可依赖，机制化收口）；④不做 hide-on-scroll（iOS Tab Bar 从不因滚动隐藏，家庭高频切 Tab + 适老要常驻可达）；⑤键盘自然盖住胶囊（系统标准行为，不加 imePadding）。
+- **否决过的方案**：bottomBar 槽+负 offset/零高包装（依赖 Scaffold 内部实现、越界部分不参与命中测试）；各 Tab 页自绘底栏（四份状态漂移）。
