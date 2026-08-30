@@ -164,18 +164,27 @@ fun MainScaffold(
     val snackScope = androidx.compose.runtime.rememberCoroutineScope()
     val appSnackbar = remember { com.sxdbsm.cookbook.android.ui.component.AppSnackbarController(snackbarHostState, snackScope) }
 
+    // [AI修改] §9.44 底部导航真悬浮：预留口径按路由感知供值——Tab 页=胶囊包络+系统栏inset，二级页=0。
+    val overlayReserved = if (showBottomBar) BottomBarOverlay.reservedTotal() else 0.dp
+
+    // [AI修改] §9.44 真悬浮：弃用 Scaffold 的 bottomBar 槽（槽会把底栏整体高压进 content padding，
+    // 布局上等价 marginBottom——内容永远滑不进导航栏下方，底部留死背景区）。改 Box 叠加层：
+    // NavHost 铺满全屏、内容从胶囊下方穿过；Tab 页停泊避让由各滚动容器
+    // contentPadding.bottom = LocalBottomNavReserved 承担（padding 语义，视口不被裁短）。
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 根 Scaffold 不再自动避让系统栏，由透明系统栏和页面背景承接沉浸式效果。
-        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            if (showBottomBar) BottomBar(
-                nav = nav,
-                currentRoute = currentRoute,
-                onAddMeal = { nav.navigate(Routes.UNIFIED_ADD_MEAL) },
+        snackbarHost = {
+            // [AI修改] §9.44：底栏悬浮后 Snackbar 须避让胶囊（否则撤销按钮被盖住）；二级页 overlayReserved=0 行为不变。
+            androidx.compose.material3.SnackbarHost(
+                snackbarHostState,
+                modifier = Modifier.padding(bottom = overlayReserved),
             )
         },
     ) { padding ->
       androidx.compose.runtime.CompositionLocalProvider(com.sxdbsm.cookbook.android.ui.component.LocalAppSnackbar provides appSnackbar) {
+        Box(Modifier.fillMaxSize()) {
+            // [AI修改] §9.44：路由感知供值——Tab 落地页读到真避让值，二级页/其内弹窗恒 0。
+            CompositionLocalProvider(LocalBottomNavReserved provides overlayReserved) {
         NavHost(
             navController = nav,
             startDestination = Routes.HOME,
@@ -588,6 +597,19 @@ fun MainScaffold(
                 )
             }
         }
+            } // [AI修改] §9.44：CompositionLocalProvider(LocalBottomNavReserved) 收尾
+            // [AI修改] §9.44：底栏作为叠加层画在 NavHost 之上（Box 内后声明=上层；命中测试只在自己
+            //   bounds 内消费，胶囊区域外的触摸正常落到底下内容）。自身实现(BottomBar)不变，仅换挂载位置。
+            if (showBottomBar) {
+                Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                    BottomBar(
+                        nav = nav,
+                        currentRoute = currentRoute,
+                        onAddMeal = { nav.navigate(Routes.UNIFIED_ADD_MEAL) },
+                    )
+                }
+            }
+        } // [AI修改] §9.44：Box(真悬浮叠加容器) 收尾
       } // CompositionLocalProvider(LocalAppSnackbar)
     }
 }
@@ -609,15 +631,19 @@ private fun BottomBar(nav: NavController, currentRoute: String?, onAddMeal: () -
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            // [AI修改] §9.44(google审查🟡-2)：底栏自身几何改引用单一真相源常量，防 BodyHeight 与实体尺寸静默错位漂移。
+            .padding(horizontal = BottomBarOverlay.RowHorizontal, vertical = BottomBarOverlay.RowVertical),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Surface(
-            modifier = Modifier.weight(1f).height(58.dp),
-            shape = RoundedCornerShape(29.dp),
+            modifier = Modifier.weight(1f).height(BottomBarOverlay.CapsuleHeight),
+            shape = RoundedCornerShape(BottomBarOverlay.CapsuleHeight / 2),
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 4.dp,
+            // [AI修改] §9.44：真悬浮后内容从胶囊下方穿过——升到 M3 悬浮层锚点(与旁边 FAB 同层 elevation 6)
+            //   保证穿行内容不与 Tab 文字糊在一起；本层是全页唯一允许真实投影的 chrome 层。
+            tonalElevation = 6.dp,
+            shadowElevation = 6.dp,
         ) {
             Row(modifier = Modifier.fillMaxSize()) {
                 bottomTabs.forEach { tab ->

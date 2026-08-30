@@ -30,7 +30,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.sxdbsm.cookbook.android.ui.nav.BottomBarOverlay
+import com.sxdbsm.cookbook.android.ui.nav.LocalBottomNavReserved
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -304,6 +307,8 @@ fun IngredientPickerScreen(
                                 .fillMaxHeight()
                                 // [AI修改] 用户要求:食材二级分类(左栏)背景/样式与菜品菜系栏(CuisineRail)统一——改用同款柔和 surfaceVariant.copy(0.35)(非白),明暗都成立。
                                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)),
+                            // [AI修改] §9.44 底部导航真悬浮：分类树长时可滚——停泊避让同口径 contentPadding。
+                            contentPadding = PaddingValues(bottom = LocalBottomNavReserved.current),
                         ) {
                             item {
                                 CategoryItem(
@@ -410,8 +415,11 @@ fun IngredientPickerScreen(
                         columns = GridCells.Fixed(3),
                         state = gridState,
                         // [AI修改] 库存 Tab 右侧留出字母条空间；其余 Tab 正常内边距。
+                        // [AI修改] §9.44 底部导航真悬浮：Tab 落地态 bottom=统一避让口径(内含 12 停泊间隙)；
+                        //   弹窗/二级页宿主 local=0 → coerceAtLeast 保底原有 12dp 呼吸不贴底。
                         contentPadding = PaddingValues(
-                            start = 12.dp, top = 12.dp, bottom = 12.dp,
+                            start = 12.dp, top = 12.dp,
+                            bottom = LocalBottomNavReserved.current.coerceAtLeast(12.dp),
                             end = if (ui.mainTab == IngredientMainTab.PANTRY) 24.dp else 12.dp,
                         ),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -524,6 +532,10 @@ fun IngredientPickerScreen(
                 // [AI修改] 家族化 P3:"组成菜品"态复用同一栏——参数区分(次操作"取消"+主"组成菜品")，非组件内 mode。空态仍显(可取消)。
                 if (composeMode && onComposeDish != null) {
                     SelectionSummaryBar(
+                        // [AI修改] §9.44：组成菜品态仅 Tab 落地页出现(弹窗宿主 onComposeDish=null 无此态)——
+                        //   抬到悬浮胶囊上方。用 BodyHeight(82)而非总口径：组件内 navBarPadding 自带系统栏 inset，
+                        //   用总口径会双份。落点后选择条底边=胶囊顶+12dp，不重叠可点。
+                        modifier = Modifier.padding(bottom = BottomBarOverlay.BodyHeight),
                         items = ui.selectedIngredients.map { it.toSelectionItem() },
                         primaryText = "组成菜品",
                         onPrimary = {
@@ -581,6 +593,7 @@ fun IngredientPickerScreen(
                                     pantryIds = ui.pantryIngredientIds,
                                     categoryName = ui.searchCategoryName, // [AI生成] 2026-07-19:搜"蔬菜类"→按类目筛模式头部+不显新建行
                                     fillHeight = true, // [AI生成] #4:全屏覆盖层铺满,不用 320dp 限高
+                                    bottomContentPadding = LocalBottomNavReserved.current, // [AI修改] §9.44：覆盖层盖不住悬浮胶囊——末行停泊避让同口径(弹窗内联调用默认 0 不变)
                                     onPick = { searchOpen = false; vm.setKeyword(""); selectedIngredient = it },
                                     onToggleSelect = { vm.toggleSelection(it) },
                                     // [AI生成] 有结果末尾也常驻"新建食材「x」"行(与0结果同一视觉)。
@@ -652,7 +665,11 @@ fun IngredientPickerScreen(
             onDismissRequest = onDismiss,
             properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = false),
         ) {
-            content()
+            // [AI修改] §9.44(google审查🟡-3)：Dialog 内容会继承宿主 CompositionLocal——当前宿主恰都是二级路由(local=0)
+            //   才碰巧正确；显式归零把"调用点纪律"升为机制保证：无论未来从哪个页面开此弹窗，都不会吃到悬浮底栏避让。
+            androidx.compose.runtime.CompositionLocalProvider(LocalBottomNavReserved provides 0.dp) {
+                content()
+            }
         }
     } else {
         content()
@@ -954,13 +971,18 @@ private fun SearchResultsPanel(
     onCreateNew: (() -> Unit)? = null, // [AI生成] 传入即在列表末尾显示"新建食材「x」"行(能力由回调是否传入决定，非 mode 布尔)。
     createKeyword: String = "", // [AI生成] 新建行展示/回填的关键词(需 onCreateNew!=null 且非空白才渲染)。
     categoryName: String? = null, // [AI生成] 2026-07-19:非空=按类目筛模式(搜"蔬菜类")，顶部提示"「X」的食材 · N 种"、不显新建行。
+    bottomContentPadding: Dp = 0.dp, // [AI修改] §9.44：底部停泊避让(悬浮胶囊)——全屏覆盖层传值；弹窗内联下拉默认 0 不变。
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 4.dp,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        LazyColumn(modifier = if (fillHeight) Modifier.fillMaxSize() else Modifier.heightIn(max = 320.dp)) {
+        LazyColumn(
+            // [AI修改] §9.44：contentPadding 语义——视口铺满、末行滚到胶囊下方穿过、停泊时露出胶囊上方。
+            contentPadding = PaddingValues(bottom = bottomContentPadding),
+            modifier = if (fillHeight) Modifier.fillMaxSize() else Modifier.heightIn(max = 320.dp),
+        ) {
             // [AI生成] 2026-07-19:按类目筛模式头部——淡主色条+"「蔬菜类」的食材 · N 种"，一眼区别普通名搜。
             if (categoryName != null) {
                 item(key = "cat-header") {

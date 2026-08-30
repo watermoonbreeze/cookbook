@@ -32,6 +32,7 @@ import com.sxdbsm.cookbook.domain.model.CrowdType
 import com.sxdbsm.cookbook.domain.model.AppPalette
 import com.sxdbsm.cookbook.domain.model.ThemeMode
 import com.sxdbsm.cookbook.android.ui.theme.paletteColorsOf
+import com.sxdbsm.cookbook.android.ui.nav.LocalBottomNavReserved
 import androidx.compose.ui.draw.clip
 import com.sxdbsm.cookbook.platform.BackupInfo
 import com.sxdbsm.cookbook.android.util.LogFileInfo
@@ -384,7 +385,9 @@ fun MineScreen(
             SettingRow(icon = Icons.Outlined.Info, title = "关于 Cookbook", subtitle = "v0.1.0", trailing = "▸") { aboutDialogOpen = true }
         }
 
-        Spacer(Modifier.height(80.dp))
+        // [AI修改] §9.44 底部导航真悬浮：底部停泊避让改统一口径(Column+verticalScroll 无 contentPadding，尾 Spacer 等效；
+        //   不用 modifier padding——那会把整页视口裁短，失去内容从胶囊下方穿过的效果)。
+        Spacer(Modifier.height(LocalBottomNavReserved.current))
     }
     } // [AI修改] Scaffold 内容 lambda 结束
 

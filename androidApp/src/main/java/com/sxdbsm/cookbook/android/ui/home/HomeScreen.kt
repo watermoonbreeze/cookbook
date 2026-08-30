@@ -33,6 +33,7 @@ import com.sxdbsm.cookbook.android.ui.component.DayPlaceholderCard
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SectionHeader
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
+import com.sxdbsm.cookbook.android.ui.nav.LocalBottomNavReserved
 import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.koinViewModel
 
@@ -124,8 +125,11 @@ fun HomeScreen(
     ) { padding ->
     LazyColumn(
         modifier = Modifier
-            .padding(padding)
+            // [AI修改] §9.44 底部导航真悬浮：只避让顶栏（大标题折叠），底部铺满全屏——内容滚动时从悬浮胶囊下方穿过。
+            .padding(top = padding.calculateTopPadding())
             .fillMaxSize(),
+        // [AI修改] §9.44：底部停泊避让走 contentPadding（padding 语义·非 margin），值来自统一口径。
+        contentPadding = PaddingValues(bottom = LocalBottomNavReserved.current),
     ) {
         // [AI修改] 首页卡 v2：轻量单菜引流卡——只推一道+一句人话·整卡点击进 AI 全页看整桌搭配(纯规则不调云端·打开即见)。
         item {
@@ -278,7 +282,7 @@ fun HomeScreen(
 
         // [AI修改] 用户 2026-07-16：去除首页"🔥热门/⏱最近"发现区——菜品页(最近/喜爱Tab)已有相关推荐，
         //   首页聚焦"今天吃了啥/该吃啥"(今日卡+计划含今天)，更克制、少重复。
-        item { Spacer(Modifier.height(80.dp)) } // 留底部 FAB 空间。
+        // [AI修改] §9.44：原尾部 Spacer(80dp) 底部避让已由 contentPadding 承担，删除（避免叠加出双倍死滚动区）。
     }
     }
 

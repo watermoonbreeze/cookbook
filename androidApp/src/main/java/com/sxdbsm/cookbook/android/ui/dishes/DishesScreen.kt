@@ -73,6 +73,7 @@ import com.sxdbsm.cookbook.android.ui.component.LetterIndexBar
 import com.sxdbsm.cookbook.android.ui.component.PrimaryTabRow
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SourceBadge
+import com.sxdbsm.cookbook.android.ui.nav.LocalBottomNavReserved
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Divider
 import com.sxdbsm.cookbook.domain.model.DishMini
@@ -245,7 +246,12 @@ fun DishesScreen(
                             )
                         }
                         Box(Modifier.weight(1f).fillMaxSize()) {
-                            LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                            LazyColumn(
+                                state = listState,
+                                // [AI修改] §9.44 底部导航真悬浮：停泊避让走 contentPadding（三处列表同口径；字母跳转不受影响——contentPadding 不占 item index）。
+                                contentPadding = PaddingValues(bottom = LocalBottomNavReserved.current),
+                                modifier = Modifier.fillMaxSize(),
+                            ) {
                                 dishHeaderItems(ui, vm, tabCount)
                                 // 无条件加 filters item(即使 DishFilterChips 空返回也占一个 0 高度槽位)——letterHeaderCount=2 的前提,勿改条件加,否则字母跳转偏位。
                                 item(key = "dish-filters") { DishFilterChips(ui, vm) }
@@ -267,7 +273,7 @@ fun DishesScreen(
                                             DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, showSourceBadge = ui.sortTab != DishesSortTab.ALL && ui.sortTab != DishesSortTab.HOME, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
                                         }
                                     }
-                                    item { Spacer(Modifier.height(80.dp)) }
+                                    // [AI修改] §9.44：原 Spacer(80dp) 底部避让已由 contentPadding 承担，删除（防双倍死滚动区）。
                                 }
                             }
                             if (sections.isNotEmpty()) {
@@ -287,7 +293,12 @@ fun DishesScreen(
                     //   结构刻意与菜系/餐次档**完全一致**(dishHeaderItems + 无条件 dish-filters + sections)→直接复用同一个
                     //   letterIndexMap(offset=letterHeaderCount=2)——偏移由结构一致性保证正确,规避"手工偏移易错"红线。
                     Box(Modifier.fillMaxSize()) {
-                        LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            state = listState,
+                            // [AI修改] §9.44 底部导航真悬浮：停泊避让走 contentPadding（同口径）。
+                            contentPadding = PaddingValues(bottom = LocalBottomNavReserved.current),
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
                             dishHeaderItems(ui, vm, tabCount)
                             // 无条件加 filters item(即使 DishFilterChips 空返回也占 0 高度槽位)——letterHeaderCount=2 的前提,勿改条件加,否则字母跳转偏位。
                             item(key = "dish-filters") { DishFilterChips(ui, vm) }
@@ -309,7 +320,7 @@ fun DishesScreen(
                                         DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, showSourceBadge = false, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
                                     }
                                 }
-                                item { Spacer(Modifier.height(80.dp)) }
+                                // [AI修改] §9.44：原 Spacer(80dp) 底部避让已由 contentPadding 承担，删除（防双倍死滚动区）。
                             }
                         }
                         if (sections.isNotEmpty()) {
@@ -324,7 +335,12 @@ fun DishesScreen(
                     }
                 } else {
                     // 最近/喜爱：无二级左栏,搜索/计数/筛选在列表头随内容滚(驱动折叠),其后纯列表(保时间/评分序·不加字母条)。
-                    LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        state = listState,
+                        // [AI修改] §9.44 底部导航真悬浮：停泊避让走 contentPadding（同口径）。
+                        contentPadding = PaddingValues(bottom = LocalBottomNavReserved.current),
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
                         dishHeaderItems(ui, vm, tabCount)
                         if (hasFilterRow) item(key = "dish-filters") { DishFilterChips(ui, vm) }
                         if (ui.all.isEmpty()) {
@@ -333,7 +349,7 @@ fun DishesScreen(
                             itemsIndexed(ui.all, key = { _, dish -> dish.id }) { _, dish ->
                                 DishRow(dish = dish, preferenceRank = hotRankById[dish.id], favorite = dish.id in ui.favoriteIds, showSourceBadge = ui.sortTab != DishesSortTab.ALL && ui.sortTab != DishesSortTab.HOME, onClick = { onOpenDish(dish.id) }, onLongClick = { dropdownDish = dish })
                             }
-                            item { Spacer(Modifier.height(80.dp)) }
+                            // [AI修改] §9.44：原 Spacer(80dp) 底部避让已由 contentPadding 承担，删除（防双倍死滚动区）。
                         }
                     }
                 }
@@ -581,7 +597,12 @@ private fun DishSearchOverlay(
                     }
                 }
                 else -> {
-                    LazyColumn(Modifier.fillMaxSize()) {
+                    // [AI修改] §9.44：覆盖层盖页面但盖不住悬浮胶囊（胶囊在 NavHost 之上）——结果列表
+                    //   停泊避让同口径 contentPadding（删原 search-bottom-spacer item）。
+                    LazyColumn(
+                        contentPadding = PaddingValues(bottom = LocalBottomNavReserved.current),
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
                         items(results, key = { it.id }) { dish -> DishSearchRow(dish = dish, onClick = { onOpen(dish) }) }
                         // [AI修改] v28→2026-07-19：有结果末尾常驻"新建菜品「x」"行。分类筛模式(餐次/菜系)不显(§9.19 显隐由回调决定)。
                         if (classifyTitle == null) {
@@ -593,7 +614,6 @@ private fun DishSearchOverlay(
                                 )
                             }
                         }
-                        item(key = "search-bottom-spacer") { Spacer(Modifier.height(80.dp)) }
                     }
                 }
             }
@@ -694,5 +714,7 @@ private fun CuisineRail(cuisines: List<String>, selected: String?, onSelect: (St
                 )
             }
         }
+        // [AI修改] §9.44：菜系多时左栏自身可滚——尾部预留悬浮胶囊高度，最后一个菜系完整露出胶囊上方。
+        Spacer(Modifier.height(LocalBottomNavReserved.current))
     }
 }
