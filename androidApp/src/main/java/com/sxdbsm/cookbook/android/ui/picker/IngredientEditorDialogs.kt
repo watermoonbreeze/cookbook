@@ -214,18 +214,21 @@ internal fun IngredientEditorDialog(
         if ("purine" !in editedN) v.purineMg?.let { nPurine = fmtNum(it) }
         expandNutrition = true // 让用户看见被预填的数字(营养数值在折叠区)
     }
-    /** 清空预填：只清未被用户改过的预填字段(可逆·不弹确认，§9.9)，保留用户已改。 */
+    /** 清空预填：只清未被用户改过的预填字段(可逆·不弹确认，§9.9)，保留用户已改。
+     *  [AI修改] 2026-08-30 编辑态恢复打开时的 DB 原值(被切大类重推覆盖后可完整退回)——直接现取 VM 的 editorNutrition
+     *  (编辑会话内不刷新·跨旋转/进程恢复仍有效，比瞬态快照可靠·审查建议1)；新建态无编辑数据源，维持清空(fmtNum(null)="")。 */
     fun clearGuessed() {
-        if ("kcal" !in editedN) nKcal = ""
-        if ("protein" !in editedN) nProtein = ""
-        if ("fat" !in editedN) nFat = ""
-        if ("carb" !in editedN) nCarb = ""
-        if ("fiber" !in editedN) nFiber = ""
-        if ("sodium" !in editedN) nSodium = ""
-        if ("potassium" !in editedN) nPotassium = ""
-        if ("calcium" !in editedN) nCalcium = ""
-        if ("gi" !in editedN) nGi = ""
-        if ("purine" !in editedN) nPurine = ""
+        val nu = if (ingredient != null && ui.editorIngredientId == ingredient.id) ui.editorNutrition else null
+        if ("kcal" !in editedN) nKcal = fmtNum(nu?.energyKcal)
+        if ("protein" !in editedN) nProtein = fmtNum(nu?.proteinG)
+        if ("fat" !in editedN) nFat = fmtNum(nu?.fatG)
+        if ("carb" !in editedN) nCarb = fmtNum(nu?.carbG)
+        if ("fiber" !in editedN) nFiber = fmtNum(nu?.fiberG)
+        if ("sodium" !in editedN) nSodium = fmtNum(nu?.sodiumMg)
+        if ("potassium" !in editedN) nPotassium = fmtNum(nu?.potassiumMg)
+        if ("calcium" !in editedN) nCalcium = fmtNum(nu?.calciumMg)
+        if ("gi" !in editedN) nGi = fmtNum(nu?.gi)
+        if ("purine" !in editedN) nPurine = fmtNum(nu?.purineMg)
         guessSource = null
     }
     // [AI生成] L3 食材属性：selectedAttrs=当前勾选(FoodAttribute.name·submit 单一真相)；attrsTouched=用户手动改过(改过后推断不再覆盖)；
@@ -266,9 +269,12 @@ internal fun IngredientEditorDialog(
         onGuessNutrition(n) { g -> if (name.trim() == n) applyGuess(g) }
         onGuessAttributes(n) { attrs -> if (name.trim() == n) applyGuessAttrs(attrs) }
     }
-    // [AI生成] K7：营养大类切换时跟随重推(仅新建+自动预估开+用户手动选过大类·非初次自动预选)。
-    LaunchedEffect(selectedGroup, autoGuessNutrition) {
-        if (ingredient != null || !hydrated || !autoGuessNutrition || !groupTouched) return@LaunchedEffect
+    // [AI生成] K7：营养大类切换时跟随重推(自动预估开+用户手动选过大类·非初次自动预选)。
+    // [AI修改] 2026-08-30 Bug修复：编辑态同样跟随(用户要求与新建一致)——去掉 ingredient!=null 限制；
+    //   groupTouched 守卫已挡住打开页面时的自动预选，只有用户手动切大类才触发，不会误覆盖 DB 既有值。
+    //   key 含 hydrated(审查可选3)：编辑态 DB 加载未完成时点大类，水合完成即补跑判定，该次手动切换不丢重推。
+    LaunchedEffect(selectedGroup, autoGuessNutrition, hydrated) {
+        if (!hydrated || !autoGuessNutrition || !groupTouched) return@LaunchedEffect
         val n = name.trim()
         if (n.isBlank()) return@LaunchedEffect
         val g = selectedGroup?.name ?: return@LaunchedEffect
@@ -1110,7 +1116,7 @@ private fun NutritionGuessBanner(source: com.sxdbsm.cookbook.domain.NutritionGue
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
             Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
-                Text("已按名字帮你预填，请核对", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                Text("已帮你预填营养，请核对", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 Text(sub, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             TextButton(onClick = onClear) { Text("清空预填") }

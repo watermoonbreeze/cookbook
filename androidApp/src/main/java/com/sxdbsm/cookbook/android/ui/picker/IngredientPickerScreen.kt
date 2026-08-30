@@ -792,6 +792,8 @@ fun IngredientPickerScreen(
             },
             onAddUnit = vm::addUnit,
             onSave = vm::saveIngredientEditor,
+            // [AI修改] 2026-08-30 Bug修复：编辑态切营养大类跟随重推营养数值(与新建一致)；按名推演/属性推断仍仅新建(编辑改名不自动覆盖既有数据)。
+            onGuessNutritionByGroup = { n, g, cb -> vm.guessNutritionByGroup(n, g, cb) },
         )
     }
 
