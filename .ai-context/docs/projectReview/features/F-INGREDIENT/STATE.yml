@@ -2,7 +2,7 @@ id: F-INGREDIENT
 name: 食材体系
 lifecycle: active
 headline: "✅ 食材库 + 分类 + 属性标签体系已落地。"
-synced_to: 29af225b
+synced_to: 8de5f7ac
 match:
   - androidApp/**/ui/ingredients/**
   - androidApp/**/ui/picker/Ingredient*

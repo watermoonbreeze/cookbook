@@ -195,6 +195,8 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - 删"死导入"易翻车：`perl` 用 `$` 锚行尾在 **CRLF** 文件匹配不到；肉眼判"没用"可能删掉**仍被引用**的 import → 编译红。删 import 用 `Edit` 逐个删、删前 `Grep` 确认无引用；死导入只是 warning，拿不准就留。
 - 可复用组件的"能力显隐"由**回调是否传入**决定（如 `IngredientDetailSheet` 编辑区），别在组件内用 `!selectionMode` 等 mode 布尔硬编码，否则换场景要复用时被挡。
 - 多入口共享一个 ViewModel（新增/编辑/复制）：每个入口用**独立一次性守卫**（如 `copyConfigured`），别共用一个 `configured`，否则被 `init` 默认 configure 抢跑 `if(configured)return` 吞掉；"改日期=移动删旧"只在真编辑既有日期(loadedFromDate!=null)时触发。
+- **多入口共享同一组件（如 `IngredientEditorDialog` 新建/编辑两调用点）改联动/行为：全仓 grep 组件全部调用点、逐点核对可选回调是否传齐**——回调默认 no-op 时只改组件守卫不改调用点传参=第二入口静默不生效（编辑食材切营养大类不跟随的双根因之一·E-IGE）；UI 承诺到哪个态（Checkbox 两态都显示）行为就要兑现到哪个态。
+- **Compose 表单"恢复基线/撤销预填"优先现取 VM 数据源，禁用裸 `remember` 做快照**：瞬态快照不跨配置变更（旋转即丢）而 `hydrated` 等守卫是 rememberSaveable 恢复 true 跳过重灌→基线没了承诺失效；VM UiState 跨旋转存活且编辑会话内不刷新（如 `editorNutrition`），现取即天然真相源（配 `editorIngredientId==id` 守卫防串）。同理 `LaunchedEffect` 守卫里"等待翻转才放行"的状态（hydrated 等）必须进 key，否则等待期间的用户操作在翻转后静默丢触发。
 - **"还原/撤销"走 save 路径别重复抬统计**：`saveDayMeals` 按"该日旧菜集"判"新出现的菜"抬喜爱度，删整天撤销时该日刚删空→旧集空→所有恢复菜误 +1 污染排序。凡还原/撤销/纯搬运走保存路径都自问"这是新记一餐吗？"不是就传 `bumpPreference=false`(或等价基线)不抬。同类："移动日期重复抬喜爱度"。
 - **可逆破坏操作=软删+撤销**(§9.12)，别用"不可撤销"硬确认弹框：`snapshotDay` 快照→删→`showUndo` 撤销 `saveDayMeals(bumpPreference=false)` 还原；**快照读失败/为空(异常吞成空)不该照删**(`getOrNull()+isNullOrEmpty` 守卫)；撤销 Snackbar 用 `Long`；统一宿主 show* **单 job 串行化**防未点撤销被挤丢。未保存守卫用 `rememberUnsavedGuard`(§9.17,非包裹式)。
 - VM 里"跳转视图/改选中项"后，凡该视图的**查询依赖某派生态**（如按分类查食材是从左侧展开树 `tree` 找节点），必须**同步重建那个派生态**，否则查不到静默空列表——`IngredientPicker` 曾因保存后跳到新分类却没重建 `tree`，`reloadCurrentList` 在陈旧树里找不到新分类节点返回空（自建分类挂食材"看不到"）。稳妥做法：让查询直接依赖**源数据**（`allCategories`）而非展开态，减少这类隐性耦合。
