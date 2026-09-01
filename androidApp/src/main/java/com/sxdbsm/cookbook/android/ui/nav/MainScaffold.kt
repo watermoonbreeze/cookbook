@@ -9,17 +9,18 @@ import com.sxdbsm.cookbook.android.util.AppLogger
 import android.widget.Toast
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -655,12 +656,21 @@ private fun BottomBar(nav: NavController, currentRoute: String?, onAddMeal: () -
                         animationSpec = tween(durationMillis = 150),
                         label = "navTabTint",
                     )
+                    val tabInteraction = remember { MutableInteractionSource() }
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
                             // [AI修改] NAV-FIX：Role.Tab 语义由文字 label 承载，图标 contentDescription=null 避免 TalkBack 读两遍。
-                            .selectable(selected = selected, role = Role.Tab, onClick = { nav.navigateRootTab(tab.route) }),
+                            // [AI修改] 用户 2026-09-01：Tab 点击去水波——选中反馈已由 tint 切换承担（§五.3 苹果式克制），
+                            //   显式 indication=null 与 PrimaryTabRow/SegmentedControl 先例一致（LocalIndication 非空类型不可 provides null）。
+                            .selectable(
+                                selected = selected,
+                                role = Role.Tab,
+                                interactionSource = tabInteraction,
+                                indication = null,
+                                onClick = { nav.navigateRootTab(tab.route) },
+                            ),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -708,18 +718,29 @@ private fun NavController.navigateRootTab(route: String) {
  */
 @Composable
 private fun CenterPlusFab(onClick: () -> Unit) {
-    SmallFloatingActionButton(
-        onClick = onClick,
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
+    // [AI修改] 用户 2026-09-01：弃 SmallFloatingActionButton 改与胶囊同范式自绘 Surface——
+    //   ①补阴影与胶囊同层（§9.44 shadowElevation 6；原 FAB 的 modifier 链 clip+background+padding
+    //     会在其外罩一个无影同色圆、把 FAB 自身阴影视觉吃掉 =「位置悬浮但没阴影」根因）；
+    //   ②去水波：FAB 内置 clickable 的 indication 不可注入，自绘 clickable(indication=null) 与
+    //     Tab 项/PrimaryTabRow 先例一致。
+    val interaction = remember { MutableInteractionSource() }
+    Surface(
         shape = CircleShape,
+        color = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        shadowElevation = 6.dp,
         modifier = Modifier
             .size(56.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)  // [AI修改] 中间添加按钮按暖杏规范使用主色。
-            .padding(2.dp)
-            .clip(CircleShape),
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClick = onClick,
+            ),
     ) {
-        Icon(Icons.Filled.Add, contentDescription = "添加餐食", modifier = Modifier.size(28.dp))
+        // [AI修改] 用户 2026-09-01 真机反馈"+缩到 16dp 仍显大"+Apple UX 裁决：病根是 Filled.Add 粗笔画方头
+        //   （缩尺寸减不掉粗壮感，24→16dp 用户无感）——换 Outlined.Add（2dp 圆头细线=§五.3 SF 风图标语言，
+        //   亦是全 App "添加X"通用图标语言），跨度 18dp；读屏文案按"同物同词"统一为落地页标题"记录饮食"。
+        Icon(Icons.Outlined.Add, contentDescription = "记录饮食", modifier = Modifier.size(18.dp))
     }
 }
