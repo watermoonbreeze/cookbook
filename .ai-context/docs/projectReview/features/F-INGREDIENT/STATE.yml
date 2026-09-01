@@ -1,8 +1,8 @@
-id: F-INGREDIENT
-name: 食材体系
+﻿id: F-INGREDIENT
+name: 椋熸潗浣撶郴
 lifecycle: active
-headline: "✅ 食材库 + 分类 + 属性标签体系已落地。"
-synced_to: 8de5f7ac
+headline: "鉁?椋熸潗搴?+ 鍒嗙被 + 灞炴€ф爣绛句綋绯诲凡钀藉湴銆?
+synced_to: 3130fdca
 match:
   - androidApp/**/ui/ingredients/**
   - androidApp/**/ui/picker/Ingredient*

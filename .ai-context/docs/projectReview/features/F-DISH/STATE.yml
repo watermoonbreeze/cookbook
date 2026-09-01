@@ -1,8 +1,8 @@
-id: F-DISH
-name: 菜品库
+﻿id: F-DISH
+name: 鑿滃搧搴?
 lifecycle: active
-headline: "✅ 菜品库 + 收藏组合已落地。"
-synced_to: 29af225b
+headline: "鉁?鑿滃搧搴?+ 鏀惰棌缁勫悎宸茶惤鍦般€?
+synced_to: 3130fdca
 match:
   - androidApp/**/ui/dishes/**
   - androidApp/**/ui/dishdetail/**
