@@ -236,6 +236,7 @@ MVP 三大核心功能（快速记录每餐、查看历史菜单、复用菜单�
 - **`git mv`/`git rm` 等"顺手自动 stage"的命令用过之后，任何一次不带路径参数的 `git commit` 前必须 `git status --short` 看一遍暂存区完整内容，不能只确认"我刚 add 的文件在里面"**：一次重构先 `git mv` 大批文件（自动暂存），随后想单独提交另一批不相关改动，`git add <具体几个文件>` 后 `git commit` 却提交了整个暂存区（含 mv 的内容），两批不相关改动混进同一个 commit。想分开提交，正确顺序是"先 commit 掉所有自动 stage 的操作，再开始下一批 add"，不要让两批同时悬在暂存区。已提交未 push 时 `git reset --soft HEAD~1` 可安全退回重来（不丢改动）。
 - **脚本按行号批量删除文本行必须"一次性行号集合过滤"**（先把全部删除区间与散行并进一个 `removed` 集合，再一次 `[lines[i] for i in ... if i not in removed]` 重建）：真机清单迁移脚本"逐段 del 后再按原行号置 None"——del 后索引位移，后续原行号全部错位，同一天既**漏删** 10 行（归档重复）又**误删** 10 行（含 5 个验证项定义丢失，靠 git 历史恢复）。对带索引结构的批量编辑，任何中间变异都会让后续索引失效。
 - **bash 内联 `python -c "..."` 的字符串含反引号会被 bash 当命令替换静默吞掉**（写归档注释变 `///` 碎片）：含 markdown 反引号/引号/emoji 的脚本一律 `Write` 成 .py 文件再执行——与"新文件用 Write 写"红线同源，内联变体同样适用。
+- **Windows PowerShell 5.1 改文件内容禁止 `Get-Content`+`Set-Content` 组合**（含中文的 UTF-8 文件会被按 ANSI/GBK 误读再写出，中文全成乱码且可能带 git 提交入库——2026-09-01 无人值守曾把 F-DISH/F-INGREDIENT 的 STATE.yml 写坏入库，次日才发现修复）：**改文件内容一律用 Edit 工具**（不经编码转换）；确需批量脚本时用 python（明确 `encoding='utf-8'`），PowerShell 需 `[IO.File]::ReadAllText/WriteAllText` 显式 UTF-8 且逐文件人工核验。
 
 ## 技术栈
 
