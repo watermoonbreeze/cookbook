@@ -558,7 +558,8 @@ fun IngredientPickerScreen(
                 LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, tonalElevation = 2.dp) {
                     // [AI修改] #15 修bug:全屏覆盖层从 y=0 起绘,顶部搜索行须避让状态栏(否则钻到状态栏下显示半个);statusBarsPadding 只让内容下移、Surface 底色仍铺满状态栏区。
-                    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+                    // [AI修改] 2026-09-02 打磨:补 imePadding——键盘弹出不再盖住底部结果/新建行(与菜品页 DishSearchOverlay 同步)。
+                    Column(Modifier.fillMaxSize().statusBarsPadding().imePadding()) {
                         Row(
                             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,

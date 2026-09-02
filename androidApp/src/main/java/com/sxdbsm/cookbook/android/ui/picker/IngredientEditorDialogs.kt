@@ -107,6 +107,25 @@ private val CareRulesSaver = Saver<List<IngredientCareRule>, String>(
 )
 
 /**
+ * 营养字段编辑键（editedN 标记集 / guessedField 弱化判断 / UI NutrientField 行 三处共用）。[AI修改] 2026-09-02 审查建议2：
+ * 加第 11 个营养字段必改三处——①`writeNutritionFields` 加一行 put ②声明状态 var ③NutrientField UI 行(键引此常量)——漏一处=预填/清空/弱化视觉静默不同步。
+ */
+internal object NutrientKey {
+    const val KCAL = "kcal"
+    const val PROTEIN = "protein"
+    const val FAT = "fat"
+    const val CARB = "carb"
+    const val FIBER = "fiber"
+    const val SODIUM = "sodium"
+    const val POTASSIUM = "potassium"
+    const val CALCIUM = "calcium"
+    const val GI = "gi"
+    const val PURINE = "purine"
+    /** 键全集（守卫：与 writeNutritionFields 的 put 行数、UI NutrientField 行数一致，加字段同步 +1）。 */
+    val ALL: Set<String> = setOf(KCAL, PROTEIN, FAT, CARB, FIBER, SODIUM, POTASSIUM, CALCIUM, GI, PURINE)
+}
+
+/**
  * 完整食材新增/编辑弹层。[AI生成]
  *
  * 阶段 B 先以全屏 Dialog 承载完整表单，后续可平滑迁移为独立页面。
@@ -197,38 +216,49 @@ internal fun IngredientEditorDialog(
     fun markEdited(key: String) { editedN = editedN + key }
     /** 该字段是否"当前显示的是系统预填值"(未被用户改过且有值且本次有预填)——用于弱化视觉。 */
     fun guessedField(key: String, v: String): Boolean = guessSource != null && key !in editedN && v.isNotBlank()
-    /** 应用一次推演结果：只写未被用户改过的字段，缺字段留空不填 0(免责红线)。 */
+    /** 营养字段回写单点(applyGuess 预填 / clearGuessed 还原共用)。[AI修改] 2026-09-02 审查建议2：
+     *  原两函数逐字段重复 20 行(键名+取值+回写)，加第 11 个营养字段漏一处=预填/清空静默不同步——收口单点。
+     *  clearWhenNull=false=推演缺该字段保留现值(不抹用户输入·免责红线)；true=还原/清空(null 写空串)。
+     *  加第 11 个营养字段：本函数加一行 put + NutrientKey 加常量 + 声明状态 var + UI 行(见 NutrientKey KDoc)。 */
+    fun writeNutritionFields(source: com.sxdbsm.cookbook.domain.NutritionGuessValues?, clearWhenNull: Boolean) {
+        fun put(key: String, value: Double?, set: (String) -> Unit) {
+            if (key !in editedN && (value != null || clearWhenNull)) set(fmtNum(value))
+        }
+        put(NutrientKey.KCAL, source?.energyKcal) { nKcal = it }
+        put(NutrientKey.PROTEIN, source?.proteinG) { nProtein = it }
+        put(NutrientKey.FAT, source?.fatG) { nFat = it }
+        put(NutrientKey.CARB, source?.carbG) { nCarb = it }
+        put(NutrientKey.FIBER, source?.fiberG) { nFiber = it }
+        put(NutrientKey.SODIUM, source?.sodiumMg) { nSodium = it }
+        put(NutrientKey.POTASSIUM, source?.potassiumMg) { nPotassium = it }
+        put(NutrientKey.CALCIUM, source?.calciumMg) { nCalcium = it }
+        put(NutrientKey.GI, source?.gi) { nGi = it }
+        put(NutrientKey.PURINE, source?.purineMg) { nPurine = it }
+    }
+    /** 应用一次推演结果：只写未被用户改过的字段，缺字段留空不填 0(免责红线)。
+     *  [AI修改] 2026-09-02 审查建议2：字段回写收口 writeNutritionFields 单点(原 applyGuess/clearGuessed 逐字段重复 20 行)。 */
     fun applyGuess(g: com.sxdbsm.cookbook.domain.NutritionGuess) {
         val v = g.values
         if (g.source is com.sxdbsm.cookbook.domain.NutritionGuessSource.None || v == null) { guessSource = null; return }
         guessSource = g.source
-        if ("kcal" !in editedN) v.energyKcal?.let { nKcal = fmtNum(it) }
-        if ("protein" !in editedN) v.proteinG?.let { nProtein = fmtNum(it) }
-        if ("fat" !in editedN) v.fatG?.let { nFat = fmtNum(it) }
-        if ("carb" !in editedN) v.carbG?.let { nCarb = fmtNum(it) }
-        if ("fiber" !in editedN) v.fiberG?.let { nFiber = fmtNum(it) }
-        if ("sodium" !in editedN) v.sodiumMg?.let { nSodium = fmtNum(it) }
-        if ("potassium" !in editedN) v.potassiumMg?.let { nPotassium = fmtNum(it) }
-        if ("calcium" !in editedN) v.calciumMg?.let { nCalcium = fmtNum(it) }
-        if ("gi" !in editedN) v.gi?.let { nGi = fmtNum(it) }
-        if ("purine" !in editedN) v.purineMg?.let { nPurine = fmtNum(it) }
+        writeNutritionFields(v, clearWhenNull = false)
         expandNutrition = true // 让用户看见被预填的数字(营养数值在折叠区)
     }
     /** 清空预填：只清未被用户改过的预填字段(可逆·不弹确认，§9.9)，保留用户已改。
      *  [AI修改] 2026-08-30 编辑态恢复打开时的 DB 原值(被切大类重推覆盖后可完整退回)——直接现取 VM 的 editorNutrition
      *  (编辑会话内不刷新·跨旋转/进程恢复仍有效，比瞬态快照可靠·审查建议1)；新建态无编辑数据源，维持清空(fmtNum(null)="")。 */
     fun clearGuessed() {
+        // [AI修改] 2026-09-02：editorNutrition 是 IngredientNutrition(DB 模型)，与推演的 NutritionGuessValues 字段同名异型——
+        //   就地映射成统一值类型走 writeNutritionFields 单点（字段同名，加营养字段时此映射同步加一行）。
         val nu = if (ingredient != null && ui.editorIngredientId == ingredient.id) ui.editorNutrition else null
-        if ("kcal" !in editedN) nKcal = fmtNum(nu?.energyKcal)
-        if ("protein" !in editedN) nProtein = fmtNum(nu?.proteinG)
-        if ("fat" !in editedN) nFat = fmtNum(nu?.fatG)
-        if ("carb" !in editedN) nCarb = fmtNum(nu?.carbG)
-        if ("fiber" !in editedN) nFiber = fmtNum(nu?.fiberG)
-        if ("sodium" !in editedN) nSodium = fmtNum(nu?.sodiumMg)
-        if ("potassium" !in editedN) nPotassium = fmtNum(nu?.potassiumMg)
-        if ("calcium" !in editedN) nCalcium = fmtNum(nu?.calciumMg)
-        if ("gi" !in editedN) nGi = fmtNum(nu?.gi)
-        if ("purine" !in editedN) nPurine = fmtNum(nu?.purineMg)
+        val values = nu?.let {
+            com.sxdbsm.cookbook.domain.NutritionGuessValues(
+                energyKcal = it.energyKcal, proteinG = it.proteinG, fatG = it.fatG, carbG = it.carbG,
+                fiberG = it.fiberG, sodiumMg = it.sodiumMg, potassiumMg = it.potassiumMg,
+                calciumMg = it.calciumMg, gi = it.gi, purineMg = it.purineMg,
+            )
+        }
+        writeNutritionFields(values, clearWhenNull = true)
         guessSource = null
     }
     // [AI生成] L3 食材属性：selectedAttrs=当前勾选(FoodAttribute.name·submit 单一真相)；attrsTouched=用户手动改过(改过后推断不再覆盖)；
@@ -629,22 +659,22 @@ internal fun IngredientEditorDialog(
                                 }
                                 // [AI修改] 智能推演：预填未改的字段弱化显示(guessed)，onValueChange 打脏标记(改过=用户值，推演不再覆盖)。单件克重已上移基础区。
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    NutrientField("热量kcal", nKcal, Modifier.weight(1f), guessed = guessedField("kcal", nKcal)) { markEdited("kcal"); nKcal = it }
-                                    NutrientField("蛋白g", nProtein, Modifier.weight(1f), guessed = guessedField("protein", nProtein)) { markEdited("protein"); nProtein = it }
-                                    NutrientField("脂肪g", nFat, Modifier.weight(1f), guessed = guessedField("fat", nFat)) { markEdited("fat"); nFat = it }
+                                    NutrientField("热量kcal", nKcal, Modifier.weight(1f), guessed = guessedField(NutrientKey.KCAL, nKcal)) { markEdited(NutrientKey.KCAL); nKcal = it }
+                                    NutrientField("蛋白g", nProtein, Modifier.weight(1f), guessed = guessedField(NutrientKey.PROTEIN, nProtein)) { markEdited(NutrientKey.PROTEIN); nProtein = it }
+                                    NutrientField("脂肪g", nFat, Modifier.weight(1f), guessed = guessedField(NutrientKey.FAT, nFat)) { markEdited(NutrientKey.FAT); nFat = it }
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    NutrientField("碳水g", nCarb, Modifier.weight(1f), guessed = guessedField("carb", nCarb)) { markEdited("carb"); nCarb = it }
-                                    NutrientField("纤维g", nFiber, Modifier.weight(1f), guessed = guessedField("fiber", nFiber)) { markEdited("fiber"); nFiber = it }
-                                    NutrientField("钠mg", nSodium, Modifier.weight(1f), guessed = guessedField("sodium", nSodium)) { markEdited("sodium"); nSodium = it }
+                                    NutrientField("碳水g", nCarb, Modifier.weight(1f), guessed = guessedField(NutrientKey.CARB, nCarb)) { markEdited(NutrientKey.CARB); nCarb = it }
+                                    NutrientField("纤维g", nFiber, Modifier.weight(1f), guessed = guessedField(NutrientKey.FIBER, nFiber)) { markEdited(NutrientKey.FIBER); nFiber = it }
+                                    NutrientField("钠mg", nSodium, Modifier.weight(1f), guessed = guessedField(NutrientKey.SODIUM, nSodium)) { markEdited(NutrientKey.SODIUM); nSodium = it }
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    NutrientField("钾mg", nPotassium, Modifier.weight(1f), guessed = guessedField("potassium", nPotassium)) { markEdited("potassium"); nPotassium = it }
-                                    NutrientField("钙mg", nCalcium, Modifier.weight(1f), guessed = guessedField("calcium", nCalcium)) { markEdited("calcium"); nCalcium = it }
-                                    NutrientField("GI", nGi, Modifier.weight(1f), guessed = guessedField("gi", nGi)) { markEdited("gi"); nGi = it }
+                                    NutrientField("钾mg", nPotassium, Modifier.weight(1f), guessed = guessedField(NutrientKey.POTASSIUM, nPotassium)) { markEdited(NutrientKey.POTASSIUM); nPotassium = it }
+                                    NutrientField("钙mg", nCalcium, Modifier.weight(1f), guessed = guessedField(NutrientKey.CALCIUM, nCalcium)) { markEdited(NutrientKey.CALCIUM); nCalcium = it }
+                                    NutrientField("GI", nGi, Modifier.weight(1f), guessed = guessedField(NutrientKey.GI, nGi)) { markEdited(NutrientKey.GI); nGi = it }
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    NutrientField("嘌呤mg", nPurine, Modifier.weight(1f), guessed = guessedField("purine", nPurine)) { markEdited("purine"); nPurine = it }
+                                    NutrientField("嘌呤mg", nPurine, Modifier.weight(1f), guessed = guessedField(NutrientKey.PURINE, nPurine)) { markEdited(NutrientKey.PURINE); nPurine = it }
                                     Spacer(Modifier.weight(1f))
                                     Spacer(Modifier.weight(1f))
                                 }

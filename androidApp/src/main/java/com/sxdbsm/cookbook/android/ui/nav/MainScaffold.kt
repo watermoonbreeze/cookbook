@@ -175,10 +175,14 @@ fun MainScaffold(
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0), // [AI修改] 根 Scaffold 不再自动避让系统栏，由透明系统栏和页面背景承接沉浸式效果。
         snackbarHost = {
-            // [AI修改] §9.44：底栏悬浮后 Snackbar 须避让胶囊（否则撤销按钮被盖住）；二级页 overlayReserved=0 行为不变。
+            // [AI修改] §9.44：底栏悬浮后 Snackbar 须避让胶囊（否则撤销按钮被盖住）。
+            // [AI修改] 2026-09-02 打磨：二级页 overlayReserved=0 时补系统栏 inset——原会贴到系统导航栏下（bottomBar 槽时代同样贴底，非回归，顺手补齐）。
             androidx.compose.material3.SnackbarHost(
                 snackbarHostState,
-                modifier = Modifier.padding(bottom = overlayReserved),
+                modifier = Modifier.padding(
+                    bottom = if (showBottomBar) overlayReserved
+                    else WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+                ),
             )
         },
     ) { padding ->

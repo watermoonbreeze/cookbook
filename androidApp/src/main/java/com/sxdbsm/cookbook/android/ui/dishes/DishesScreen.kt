@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -494,7 +495,8 @@ private fun DishSearchOverlay(
 ) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, tonalElevation = 2.dp) {
         // [AI修改] 修#2:覆盖层现覆盖整屏(含顶栏),内容加 statusBarsPadding 让搜索框避让状态栏、置顶(对齐食材页)。
-        Column(Modifier.fillMaxSize().statusBarsPadding()) {
+        // [AI修改] 2026-09-02 打磨:补 imePadding——edge-to-edge 下键盘弹出不再盖住底部结果/新建行(覆盖层根承接)。
+        Column(Modifier.fillMaxSize().statusBarsPadding().imePadding()) {
             // [AI生成] B-7：搜索行下沉进列表后会被本覆盖层盖住——覆盖层自带搜索框(进入即聚焦)让搜索时仍可改词，iOS Mail 式。
             val searchFocus = remember { FocusRequester() }
             LaunchedEffect(Unit) { runCatching { searchFocus.requestFocus() } }
