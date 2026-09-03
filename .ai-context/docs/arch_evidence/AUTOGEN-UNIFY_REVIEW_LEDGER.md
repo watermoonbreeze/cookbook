@@ -95,3 +95,17 @@
 ### 2026-09-03 · v1.2 修订落地记录（ARCH）
 
 四审全部合入，蓝图现状态 DRAFT v1.2：8 阻断全消（①ensureCreated source 参数+两调用点传 "user" ②STEP 3.1/allowlist 改仅主料分支 ③AndroidModule+三参数冻结入 STEP 5.1/8.1 ④STEP 3.3/3.4 flat+合成行 ⑤§4 四入口 touched+整组替换 ⑥§8 判别性硬约束+真库口径 ⑦入口防陈旧+CREATE 仅空列守卫双保险+T-AU-14 ⑧E-AU-01 判据改待复核 Tab+局限注记）；建议/可选项全部吸收（REUSE 注记/失败日志/计算属性 groupLabel/真相源补录/FUNGI+溯源风险/T-AU-15/E-AU-05/基线删幻影/STEP-AU-10 决策点3 顺手修）。**剩余唯一步骤：用户拍板决策点 1/2/3 → BLUEPRINT_READY**（可选：AF-04/AF-01 修订处抽查复验）。
+
+### 2026-09-03 · 用户拍板 + 编码交付（ARCH/CODE 同会话）
+
+- **用户拍板**：决策点 1=A（AI 优先+合法性校验）、2=A（本批只留管线位）、3=A（门控缺口顺手修）→ 蓝图 **BLUEPRINT_READY** 冻结。
+- **编码完成**：STEP-AU-1~10 全落地（勾销表见蓝图 §9）；三命令 BUILD SUCCESSFUL；新测试 15 用例（AutoGenUnifyTest 9 + NdjsonFoodGroupMapTest 6）全过；真机清单 `202609031105` 登记 E-AU-01~05。
+- **编码期就地修订两处**（台账登记）：①STEP-AU-2.4 入口精确查库简化为 commit 内双守卫（createUserIngredient 内部去重已覆盖，避免向 forbidden 的 IngredientRepository 加查询）；②STEP-AU-5.5 增加"预选到做法时自动展开更多信息折叠段"（NewDishScreen·LaunchedEffect——否则预选藏在折叠区不可见）。
+- **终审**：google_quality_engineer 编码后终审——**1 阻断（AF-1）+5 建议+4 可选**：
+  - 🔴 AF-1：T-AU-04 缩链（直接构造 DayMealJson 跳过 mapper 段→主路断链修复本体 `MealStreamDraftMapper.kt:104` 零测试覆盖）。**已修复**：补 T-AU-04a 用例（MealStreamDraft+segments → MealStreamDraftMapper.toDayMealJson → 断言主料 FoodJson.food_group=="dairy" 且调料分支 null）。
+  - 🟡 S-1（ensureCreated 漂移）/S-2（cookingHintKey 替代）：蓝图修订记录 v1.3 正式登记采纳。
+  - 🟡 S-3（applyPrefill 漏做法预选）：**已修**（markBaseline 前补 updateCookingMethodPreselect）。S-4（字典未就绪漏预选）：**已修**（availableCookingMethods.isEmpty() 显式 return+防抖自然补偿）。
+  - 🟡 S-5（T-AU-09 回填写入断言）：延后下批（private 函数+公开入口过重·理由入蓝图 v1.3）。
+  - ⚪ O-1~4（全表单值取用可接受/LaunchedEffect 必要配套/合成行无 T-ID 属蓝图缺口/预选进 contentSig 无伤害）：登记不阻断。
+  - 终审确认：生产代码正确性/并发/边界/资源**零阻断**；21 标记文件全在 allowlist 零越界；forbidden 冻结点实读未动。
+- **修复后复验**：AF-1/S-3/S-4 修复后重跑 `:shared:testDebugUnitTest` + `:androidApp:testDebugUnitTest` + `:androidApp:assembleDebug` → **BUILD SUCCESSFUL**；NdjsonFoodGroupMapTest tests=7 failures=0（T-AU-04a 已入）——**阻断清零，终审通过，批次可交付**。

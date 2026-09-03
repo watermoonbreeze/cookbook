@@ -99,13 +99,17 @@ internal object MealStreamDraftMapper {
         val main = dish.ingredients.map { ing ->
             DishIngredientJson(
                 ref = null,
-                food = FoodJson(name = ing.name),
+                // [AI生成] AUTOGEN-UNIFY：透传 AI 判定的 food_group（此前断链丢弃）——下游 MultiDayRecorder
+                //   经 NdjsonFoodGroupMap 映射为 groupHint，字段级「AI 优先、本地兜底」。
+                food = FoodJson(name = ing.name, food_group = ing.foodGroup),
                 quantity = ing.quantity ?: DEFAULT_GRAM,
                 unit = ing.unit ?: DEFAULT_UNIT,
                 is_main = ing.isMain ?: true,
             )
         }
         // B3: seasonings 作为 is_main=false 的食材追加，不丢失、不作主料。
+        // [AI生成] AUTOGEN-UNIFY：seasonings 分支不填 food_group——DraftSeasoning 无该字段、
+        //   协议 seasoning 事件亦无（调料大类留空走本地兜底）。
         val seasonings = dish.seasonings.map { s ->
             DishIngredientJson(
                 ref = null,

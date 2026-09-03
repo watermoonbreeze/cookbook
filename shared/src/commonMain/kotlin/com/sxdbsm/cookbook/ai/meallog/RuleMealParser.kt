@@ -530,10 +530,9 @@ object RuleMealParser {
     }
 
     /** 从菜名中识别烹饪方式关键词。[AI生成] */
-    private fun extractCookingMethods(dishName: String): List<String> {
-        val methods = listOf("炒", "煮", "蒸", "炸", "煎", "烤", "炖", "拌", "烧", "焖", "卤", "熘", "焗", "烩", "涮", "煲", "炝", "熬")
-        return methods.filter { dishName.contains(it) }
-    }
+    // [AI生成] AUTOGEN-UNIFY STEP-AU-6.2：改委托共享 CookingMethodInferrer（字表/行为逐字一致·消双份逻辑）。
+    private fun extractCookingMethods(dishName: String): List<String> =
+        com.sxdbsm.cookbook.domain.CookingMethodInferrer.inferFromName(dishName)
 
     /** 中文数字→Double。[AI生成] */
     private fun chineseNumToDouble(s: String): Double {

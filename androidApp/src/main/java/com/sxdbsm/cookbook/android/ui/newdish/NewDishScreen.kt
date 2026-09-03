@@ -396,6 +396,20 @@ fun NewDishScreen(
             com.sxdbsm.cookbook.android.ui.component.InsetGroup {
                 com.sxdbsm.cookbook.android.ui.component.FoldSection("更多信息（烹饪方式 / 标签 / 说明）", expandMore, { expandMore = !expandMore }) {
                 FormFieldLabel("烹饪方式")
+                // [AI生成] AUTOGEN-UNIFY STEP-AU-5.5c：菜名预选做法的内联提示行(v28 餐次预选同款范式·持久非一次性)。
+                //   用户手动碰过做法(touched)即不再显示；预选自动展开折叠区见下方 LaunchedEffect。
+                if (state.cookingMethodPrefilled && !state.cookingMethodTouched) {
+                    Text(
+                        "已按菜名预选，可改",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 6.dp),
+                    )
+                }
+                // [AI生成] AUTOGEN-UNIFY：菜名预选到做法时自动展开"更多信息"折叠段(否则预选藏在折叠区里用户看不见)。
+                LaunchedEffect(state.cookingMethodPrefilled) {
+                    if (state.cookingMethodPrefilled && state.editingId == null) expandMore = true
+                }
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),

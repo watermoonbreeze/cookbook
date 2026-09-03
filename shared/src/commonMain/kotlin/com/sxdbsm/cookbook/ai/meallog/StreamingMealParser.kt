@@ -639,7 +639,10 @@ class StreamingMealParser(
                 processLine("""{"type":"dish","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(dishName)}"}""")
                 for (ing in dishRef.dish?.ingredients ?: emptyList()) {
                     val ingName = ing.ref ?: ing.food?.name ?: ""
-                    processLine("""{"type":"ingredient","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(ingName)}","quantity":${ing.quantity}}""")
+                    // [AI生成] AUTOGEN-UNIFY：合成行携带 food_group——整体 JSON 回退解析出的 AI 大类
+                    //   经此透传回主链，与 NDJSON 主路同口径（丢了则回退场景静默退化为纯本地）。
+                    val foodGroupField = ing.food?.food_group?.let { """"food_group":"${escapeJson(it)}",""" } ?: ""
+                    processLine("""{"type":"ingredient","segment_id":"$segId","meal_id":"$mealId","dish_id":"$dishId","name":"${escapeJson(ingName)}",$foodGroupField"quantity":${ing.quantity}}""")
                 }
             }
         }

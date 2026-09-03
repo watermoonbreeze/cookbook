@@ -89,6 +89,10 @@ class MultiDayRecorder(
                                 quantity = diJson.quantity,
                                 unit = diJson.unit,
                                 isMain = diJson.is_main,
+                                // [AI生成] AUTOGEN-UNIFY：透传 AI 判定的大类（NDJSON 主路与 FLAT 回退路
+                                //   的 FoodJson.food_group 汇聚于此）——词表→枚举映射唯一发生地，
+                                //   规则路径(RuleMealParser 不产 food_group)恒 null 走本地 classify 兜底。
+                                groupHint = NdjsonFoodGroupMap.map(diJson.food?.food_group),
                             )
                         } ?: emptyList(),
                         cookingMethods = dishJson?.cooking_methods ?: emptyList(),

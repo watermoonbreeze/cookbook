@@ -34,6 +34,8 @@ sealed interface NutritionGuessSource {
     data class Match(val refName: String) : NutritionGuessSource
     /** 无同名→按营养大类粗略估算（措辞更保守）。 */
     data class Group(val groupLabel: String) : NutritionGuessSource
+    /** [AI生成] AUTOGEN-UNIFY：AI 通道给出的估值（每 100g）·必须标估算·本批预留管线位（无生产写入者，下一批 AI 营养补全接入）。 */
+    data object AI : NutritionGuessSource
     /** 都不确定，不预填。 */
     data object None : NutritionGuessSource
 }

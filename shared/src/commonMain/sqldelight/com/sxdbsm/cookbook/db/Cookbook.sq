@@ -837,7 +837,8 @@ SELECT id,
        COALESCE(created_at, 0) AS created_at,
        COALESCE(reason, '') AS reason
 FROM ingredient
-WHERE status = 0 AND source = 'user'
+-- [AI修改] AUTOGEN-UNIFY 决策点3a：回收站放宽到非预设——AI 记一餐建的('ai')食材删除后同样可恢复(此前删了就不可逆)。
+WHERE status = 0 AND source != 'preset'
 ORDER BY name COLLATE NOCASE ASC;
 
 -- [AI生成] 预设食材的有效/失效完全跟随后台数据包：seed 导入时同步 status 与失效原因。
@@ -2065,9 +2066,11 @@ SELECT name, food_group FROM ingredient WHERE food_group != '' AND status = 1;
 selectPresetIngredientFoodGroups:
 SELECT id, name, food_group FROM ingredient WHERE source = 'preset' AND status = 1;
 
--- [AI生成] 用户食材中未归类的：只回填空的，不覆盖用户手选。
-selectUserIngredientsWithoutFoodGroup:
-SELECT id, name FROM ingredient WHERE source = 'user' AND food_group = '' AND status = 1;
+-- [AI生成] 自动入库食材(user/ai/link)中未归类的：只回填空的，不覆盖用户手选。
+--   [AI修改] AUTOGEN-UNIFY：source 从仅 'user' 扩到含 'ai'/'link'——AI 记一餐/分享链接导入建的食材同样需要
+--   food_group 回填兜底(历史存量 ai 食材该列恒空·色系/均衡只能靠实时 classify 兜)。
+selectAutoIngredientsWithoutFoodGroup:
+SELECT id, name FROM ingredient WHERE source IN ('user','ai','link') AND food_group = '' AND status = 1;
 
 -- ===== 食材营养表(我的·全量总览) =====
 

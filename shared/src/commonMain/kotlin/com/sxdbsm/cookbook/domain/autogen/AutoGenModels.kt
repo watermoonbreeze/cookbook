@@ -1,6 +1,8 @@
 package com.sxdbsm.cookbook.domain.autogen
 
+import com.sxdbsm.cookbook.domain.FoodGroup
 import com.sxdbsm.cookbook.domain.NutritionGuess
+import com.sxdbsm.cookbook.domain.NutritionGuessValues
 import com.sxdbsm.cookbook.domain.model.DishNutrition
 import kotlinx.datetime.LocalDate
 
@@ -26,6 +28,13 @@ data class SemanticIngredient(
     val quantity: Double? = null,   // null/0 → commit 时用 SeasoningDefaults 兜默认克数
     val unit: String? = null,       // 单位名(如"g""个")·null → 解析默认
     val isMain: Boolean = false,
+    // [AI生成] AUTOGEN-UNIFY：解析层(AI/规则)给出的字段提示·null=未给出由管线本地兜底。
+    //   唯一生产写入者=MultiDayRecorder(NDJSON 主路+FLAT 回退路·经 NdjsonFoodGroupMap 映射)；规则路径/菜名推演恒 null。
+    //   preview 判定:group = groupHint ?: FoodGroup.classify(name)——字段级「AI 优先、本地兜底」。
+    val groupHint: FoodGroup.Group? = null,
+    // [AI生成] AUTOGEN-UNIFY：AI 营养估值提示·本批预留管线位(无生产写入者·决策点2A)，下一批「AI 营养补全」接入；
+    //   接入前 preview 必须先加区间/合理性校验门槛(审核台账 O-05 准入条件)。
+    val nutritionHint: NutritionGuessValues? = null,
 )
 
 /** 中立菜品语义输入。[AI生成] */
@@ -77,13 +86,18 @@ data class IngredientPreview(
     val normalizedName: String,     // 别名归一后
     val resolution: ResolveKind,
     val existingId: Long?,          // REUSE 时非空
-    val groupLabel: String?,        // classify 大类名·可空
+    // [AI生成] AUTOGEN-UNIFY：最终判定的营养大类(groupHint ?: classify)·commit 写 food_group 列用它。
+    //   REUSE 路径为展示/估算口径(不读不写库内列·"预览落库同源"仅承诺 CREATE)。
+    val group: FoodGroup.Group? = null,
     val categoryId: Long?,          // commit 用
-    val nutrition: NutritionGuess,  // 复用现有类型·含 source(Match/Group/None)
+    val nutrition: NutritionGuess,  // 复用现有类型·含 source(Match/Group/AI/None)
     val quantity: Double,           // 已兜默认克数
     val unitId: Long?,              // 已解析(null→saveDish 回填 gramUnit)
     val careFlag: CareFlag,
-)
+) {
+    // [AI生成] AUTOGEN-UNIFY：大类名改为 group 的派生计算属性(生产 UI 零读取·仅测试断言·根除双真相源)。
+    val groupLabel: String? get() = group?.label
+}
 
 /** 菜品预览。[AI生成] */
 data class DishPreview(

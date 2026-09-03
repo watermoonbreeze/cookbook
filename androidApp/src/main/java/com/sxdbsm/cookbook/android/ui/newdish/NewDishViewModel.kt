@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock // [AI生成] AUTOGEN-UNIFY：AutoGenContext 懒加载单飞
 
 /**
  * 新建/编辑菜品页 UI 状态。[AI修改]
@@ -44,6 +45,10 @@ data class NewDishUiState(
     val mealSlots: List<MealSlot> = emptyList(), // [AI生成] v28：适合餐次(多选)，新建按菜名智能预选、编辑回显存储值
     val mealSlotTouched: Boolean = false, // [AI生成] v28：用户是否手动碰过餐次chip(碰过则不再自动预选覆盖)
     val mealSlotPrefilled: Boolean = false, // [AI生成] v28：当前餐次是否为Matcher智能预选(用于显"已按菜名智能预选"提示行)
+    // [AI生成] AUTOGEN-UNIFY STEP-AU-5.5：菜名自动预选烹饪方式(同构 v28 餐次预选范式)。
+    //   touched=用户手动碰过任一烹饪方式入口(碰过则锁定不再自动预选)；prefilled=当前做法为智能预选(显"已按菜名预选，可改"内联提示行)。
+    val cookingMethodTouched: Boolean = false,
+    val cookingMethodPrefilled: Boolean = false,
     val imagePath: String = "",
     val thumbnailPath: String = "",
     val loading: Boolean = false,
@@ -74,10 +79,28 @@ class NewDishViewModel(
     @Suppress("unused") private val pref: com.sxdbsm.cookbook.data.repository.PreferenceRepository,
     private val stepTemplateRepo: com.sxdbsm.cookbook.data.repository.StepTemplateRepository, // [AI生成] #2 步骤模板
     private val ingredientGroupRepo: com.sxdbsm.cookbook.data.repository.IngredientGroupRepository, // [AI生成] B5 配料组
+    // [AI生成] AUTOGEN-UNIFY STEP-AU-5.1：统一自动入库管线三件套(快速自建食材走 ensureCreated 归类+营养一次做齐)。
+    private val autoGen: com.sxdbsm.cookbook.domain.autogen.IngredientAutoGenerator,
+    private val db: com.sxdbsm.cookbook.db.CookbookDatabase,
+    private val aliasResolver: com.sxdbsm.cookbook.domain.autogen.IngredientAliasResolver,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
     val state: StateFlow<NewDishUiState> = _state.asStateFlow() // [AI修改] UI 只能观察，不能直接改。
+
+    // [AI生成] AUTOGEN-UNIFY：AutoGenContext 懒加载(Mutex 单飞防 save/applyGroup 并发首调双 load)·
+    //   会话内复用(防 N+1)；陈旧误判 CREATE 由 commit 内"createUserIngredient 双层去重+仅空列守卫"兜住(审核 A1)。
+    private val autoGenCtxMutex = kotlinx.coroutines.sync.Mutex()
+    private var autoGenCtx: com.sxdbsm.cookbook.domain.autogen.AutoGenContext? = null
+
+    private suspend fun autoGenCtx(): com.sxdbsm.cookbook.domain.autogen.AutoGenContext {
+        autoGenCtx?.let { return it }
+        return autoGenCtxMutex.withLock {
+            autoGenCtx ?: com.sxdbsm.cookbook.domain.autogen.AutoGenContext
+                .load(db, aliasResolver)
+                .also { autoGenCtx = it }
+        }
+    }
     private var activeStartKey: String? = null // [AI生成] 记录当前路由参数，避免同一编辑页重复触发 start 清空表单。
     private var baselineSig: String? = null // [AI生成] 加载/新建时的表单内容签名，用于返回前判断是否有未保存改动。
 
@@ -108,7 +131,7 @@ class NewDishViewModel(
     @Volatile
     private var cachedIngredientNames: List<String> = emptyList()
 
-    // [AI生成] 待自建食材的占位临时负 id(递减唯一)；保存时按名 createUserIngredient 换真 id。
+    // [AI生成] 待自建食材的占位临时负 id(递减唯一)；保存时经统一自动入库管线(ensureCreated)换真 id。
     private var pendingIdSeq = -1L
 
     // [AI生成] 菜名自动加食材的防抖 job：用户停顿后再推演，避免逐字命中弹多次。
@@ -320,6 +343,7 @@ class NewDishViewModel(
             kotlinx.coroutines.delay(350) // 防抖：等停顿再推演，避免逐字命中弹多次
             // [AI修改] 餐次预选只依赖菜名、不需单位，先做——避免被 autoAddFromName 内的 unitsReady.await() 顺延(慢机字典慢时观感卡半拍)。
             updateMealSlotPreselect() // [AI生成] v28：菜名稳定后按名智能预选餐次(未手动碰过才覆盖)
+            updateCookingMethodPreselect() // [AI生成] AUTOGEN-UNIFY STEP-AU-5.5：菜名稳定后按名预选烹饪方式(未手动碰过才覆盖·同构 v28)
             autoAddFromName()
         }
     }
@@ -338,6 +362,40 @@ class NewDishViewModel(
         _state.update {
             val next = if (slot in it.mealSlots) it.mealSlots - slot else it.mealSlots + slot
             it.copy(mealSlots = next, mealSlotTouched = true, mealSlotPrefilled = false)
+        }
+    }
+
+    /**
+     * 新建模式下按菜名智能预选烹饪方式(未手动碰过才覆盖)。[AI生成] AUTOGEN-UNIFY STEP-AU-5.5b
+     *
+     * 只预选**烹饪方式字典实际存在**的项(推断结果与 availableCookingMethods 名交集——18 个推断字中
+     * 仅 9 字在预设字典，「拌」不在〔字典名是"凉拌"〕、烧/熘/焗/烩/涮/煲/炝/熬 不在)，无交集不预选不提示；
+     * **整组替换**(对齐 updateMealSlotPreselect 范式·禁止追加——连续改菜名会累积[蒸,烧])，替换自身不置 touched。
+     */
+    private fun updateCookingMethodPreselect() {
+        if (_state.value.editingId != null) return // 编辑既有菜不自动改
+        if (_state.value.cookingMethodTouched) return // 用户手动碰过则锁定
+        // [AI生成] 终审 S-4：烹饪方式字典未就绪(慢机)时显式跳过——下一次菜名变化防抖会重推(自然补偿)，
+        //   不在空字典上做无效推断。
+        if (_state.value.availableCookingMethods.isEmpty()) return
+        val name = _state.value.name
+        val dictNames = _state.value.availableCookingMethods.map { it.name }.toSet()
+        val slots = if (name.isBlank()) emptyList()
+        else com.sxdbsm.cookbook.domain.CookingMethodInferrer.inferFromName(name).filter { it in dictNames }
+        // [AI生成] 推断结果与当前已选完全一致时不重复写(去重·防无谓重组)，且提示行状态跟随实际预选
+        if (slots == _state.value.cookingMethodNames) {
+            if (_state.value.cookingMethodPrefilled != slots.isNotEmpty()) {
+                _state.update { it.copy(cookingMethodPrefilled = slots.isNotEmpty()) }
+            }
+            return
+        }
+        _state.update {
+            it.copy(
+                cookingMethodNames = slots,
+                cookingMethodName = slots.firstOrNull(),
+                cookingMethodId = null,
+                cookingMethodPrefilled = slots.isNotEmpty(),
+            )
         }
     }
 
@@ -369,7 +427,7 @@ class NewDishViewModel(
                     .firstOrNull { it.name.replace(" ", "").trim() == c.name } ?: continue
                 toAdd += buildAutoDishIngredient(ing, gram, guessedNames)
             } else {
-                // 库外候选：占位负 id + 标记待自建；保存时按名 createUserIngredient 换真 id。
+                // 库外候选：占位负 id + 标记待自建；保存时经统一自动入库管线(ensureCreated)换真 id。
                 val placeholder = Ingredient(id = pendingIdSeq--, name = c.name)
                 toAdd += buildAutoDishIngredient(placeholder, gram, guessedNames)
                 pendingNames += c.name
@@ -420,17 +478,24 @@ class NewDishViewModel(
     }
     fun clearCookingMethod() {
         // [AI修改] 兼容旧调用：清空全部烹饪方式。
-        _state.value = _state.value.copy(cookingMethodId = null, cookingMethodName = null, cookingMethodInput = "", cookingMethodNames = emptyList())
+        // [AI生成] AUTOGEN-UNIFY STEP-AU-5.5a：手动触碰任一烹饪方式入口→锁定，不再自动预选(同构 mealSlotTouched)。
+        _state.value = _state.value.copy(
+            cookingMethodId = null, cookingMethodName = null, cookingMethodInput = "", cookingMethodNames = emptyList(),
+            cookingMethodTouched = true, cookingMethodPrefilled = false,
+        )
     }
     fun addCookingMethod(name: String) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
         val next = (_state.value.cookingMethodNames + trimmed).distinct()
+        // [AI生成] AUTOGEN-UNIFY STEP-AU-5.5a：手动加做法→锁定(自动预选整组替换不走此入口·不置 touched)。
         _state.value = _state.value.copy(
             cookingMethodNames = next,
             cookingMethodName = next.firstOrNull(),
             cookingMethodInput = "",
             cookingMethodId = null,
+            cookingMethodTouched = true,
+            cookingMethodPrefilled = false,
         ) // [AI生成] 支持多烹饪方式；保存时统一按名称创建/复用字典并写关联表。
     }
     fun removeCookingMethod(name: String) {
@@ -440,6 +505,8 @@ class NewDishViewModel(
             cookingMethodName = next.firstOrNull(),
             cookingMethodInput = "",
             cookingMethodId = null,
+            cookingMethodTouched = true,
+            cookingMethodPrefilled = false,
         )
     }
     fun setCuisine(v: String) { _state.value = _state.value.copy(cuisine = v) } // [AI生成] 菜系选择(再选同一个可清空)
@@ -532,6 +599,9 @@ class NewDishViewModel(
         // [AI生成] 自由搭配"存为菜品"：预填做法(空则不填)。放 markBaseline 前，让预填态成为基线(不误判未保存)。
         if (cookingMethodName.isNotBlank()) addCookingMethod(cookingMethodName)
         updateMealSlotPreselect() // [AI生成] v28：预填菜名后按名预选餐次
+        // [AI生成] AUTOGEN-UNIFY 终审 S-3：预填菜名入口同样预选做法(与餐次预选同页同构·补一致性)；
+        //   须在 markBaseline() 之前——contentSig 含 cookingMethodNames，放基线前避免预选被误判 dirty。
+        updateCookingMethodPreselect()
         markBaseline()
     }
 
@@ -550,7 +620,12 @@ class NewDishViewModel(
     fun applyIngredientGroup(group: com.sxdbsm.cookbook.domain.model.IngredientGroup, asMain: Boolean = false) {
         viewModelScope.launch {
             group.items.forEach { item ->
-                val id = runCatching { ingredientRepo.createUserIngredient(item.name) }.getOrNull() ?: return@forEach
+                // [AI生成] AUTOGEN-UNIFY STEP-AU-5.2：改走统一自动入库管线(归一/分类/营养预估/food_group 一次做齐)·
+                //   source="user" 保住删除/回收站/备份导出三处门控(架构审 AF-AU-01)；ctx() 在 runCatching 内层
+                //   (防字典加载失败崩整次套用·对齐原裸调静默跳过语义)+失败留痕一行。
+                val id = runCatching { autoGen.ensureCreated(item.name, autoGenCtx(), source = "user") }
+                    .onFailure { AppLogger.d(TAG, "apply_group_ensure_failed error_type=${it.javaClass.simpleName}") }
+                    .getOrNull() ?: return@forEach
                 addIngredient(Ingredient(id = id, name = item.name), quantity = item.quantity, isMain = asMain) // [AI修改] 主料分级：按入口(主料组/其他食材组)决定
             }
         }
@@ -763,7 +838,8 @@ class NewDishViewModel(
             // [AI修改] D10：saving 标志用最新 _state.value 写回，不用启动前捕获的 s 快照。
             _state.value = _state.value.copy(saving = true)
             runCatching {
-                // [AI生成] 待自建食材(占位负 id)：保存前按名 createUserIngredient 换真 id(自动按名关联分类+营养)；创建失败丢弃(不写坏 FK)不阻断。
+                // [AI生成] 待自建食材(占位负 id)：保存前经统一自动入库管线换真 id(归一/分类/营养预估/food_group 一次做齐·source=user
+                //   保住删除/回收站/备份导出门控)；创建失败丢弃(不写坏 FK)不阻断。AUTOGEN-UNIFY STEP-AU-5.3/5.4。
                 //   [AI修改] 同 id 去重优先保留"非占位"(用户手动加/已调克数)那条：占位按名解析可能撞上清单已有真实食材，
                 //   若不去重，saveDish 的 INSERT OR REPLACE(uq_dish_ingredient)会用占位默认克数覆盖用户已调用量。
                 val byId = LinkedHashMap<Long, DishIngredient>()
@@ -773,7 +849,9 @@ class NewDishViewModel(
                     val resolved = if (!wasPlaceholder) {
                         di
                     } else {
-                        val realId = runCatching { ingredientRepo.createUserIngredient(di.ingredient.name.trim()) }.getOrNull() ?: return@forEach
+                        val realId = runCatching { autoGen.ensureCreated(di.ingredient.name.trim(), autoGenCtx(), source = "user") }
+                            .onFailure { AppLogger.d(TAG, "save_ensure_failed error_type=${it.javaClass.simpleName}") }
+                            .getOrNull() ?: return@forEach
                         di.copy(ingredient = di.ingredient.copy(id = realId))
                     }
                     val rid = resolved.ingredient.id

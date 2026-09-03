@@ -679,9 +679,10 @@ fun IngredientPickerScreen(
     val scope = rememberCoroutineScope() // [AI生成] P2-1 compose 协程作用域
     selectedIngredient?.let { ingredient ->
         // [AI生成] P2-1：source="auto" 且 nutrition review=0 → 待复核
+        //   [AI修改] AUTOGEN-UNIFY 决策点3b：判定兼容 'ai'——管线写入的 source 是 "ai" 而非 "auto"(原判定失配致横幅永不显示·潜伏 bug)。
         var isPendingReview by remember { mutableStateOf(false) }
         LaunchedEffect(ingredient.id) {
-            isPendingReview = ingredient.source == "auto" && vm.isPendingReview(ingredient.id)
+            isPendingReview = (ingredient.source == "auto" || ingredient.source == "ai") && vm.isPendingReview(ingredient.id)
         }
         IngredientDetailSheet(
             ingredient = ingredient,

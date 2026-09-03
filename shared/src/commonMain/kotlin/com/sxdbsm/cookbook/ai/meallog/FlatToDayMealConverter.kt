@@ -103,7 +103,15 @@ object FlatToDayMealConverter {
             tags = item.dish_tags,
             cuisine = item.dish_cuisine,
             ingredients = item.ingredients.map { ing ->
-                DishIngredientJson(ref = ing.name, quantity = ing.quantity, unit = ing.unit, is_main = ing.is_main)
+                // [AI生成] AUTOGEN-UNIFY：FLAT 回退路同享 food_group 透传（此前连 FoodJson 都不建、
+                //   AI 输出的大类被整体丢弃）——ref 保留不动，与 NDJSON 主路同口径。
+                DishIngredientJson(
+                    ref = ing.name,
+                    food = FoodJson(name = ing.name, food_group = ing.food_group),
+                    quantity = ing.quantity,
+                    unit = ing.unit,
+                    is_main = ing.is_main,
+                )
             },
             source = "ai",
         ),

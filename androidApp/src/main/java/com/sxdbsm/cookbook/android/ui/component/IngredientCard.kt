@@ -72,7 +72,8 @@ fun IngredientCard(
     footer: (@Composable () -> Unit)? = null, // [AI生成] 卡底可选槽(如库存Tab就地加减份数的 MiniStepper)，不传则无
 ) {
     var menuOpen by remember { mutableStateOf(false) }
-    val canDelete = ingredient.source == "user" && onDelete != null
+    // [AI修改] AUTOGEN-UNIFY 决策点3a：删除入口放宽到非预设——AI 建的食材同样可删(与软删/回收站门禁对齐)。
+    val canDelete = ingredient.source != "preset" && onDelete != null
     val canEdit = onEdit != null || canDelete
     val bg = when {
         selected -> MaterialTheme.colorScheme.primaryContainer

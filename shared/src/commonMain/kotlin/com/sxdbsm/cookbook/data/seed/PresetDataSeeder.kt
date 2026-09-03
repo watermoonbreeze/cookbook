@@ -92,7 +92,8 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
      * 按名回填营养大类(food_group)。[AI修改]
      *
      * 预设食材：按名**重新分类覆盖**(预设 food_group 仅来自回填、无用户手选，可随 classify 关键词改进重刷，修正历史归错)；
-     * 用户食材：**只回填空的**(不覆盖用户手选)。classify 命中才写。
+     * 自动入库食材(user/ai/link)：**只回填空的**(不覆盖用户手选)。classify 命中才写。
+     * [AI修改] AUTOGEN-UNIFY：范围从仅 'user' 扩到含 'ai'/'link'——历史存量 AI 食材该列恒空，同样需要兜底。
      */
     private fun backfillFoodGroups() {
         val q = db.cookbookQueries
@@ -101,7 +102,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
                 val g = com.sxdbsm.cookbook.domain.FoodGroup.classify(row.name)?.name
                 if (g != null && g != row.food_group) q.updateIngredientFoodGroup(g, row.id)
             }
-            q.selectUserIngredientsWithoutFoodGroup().executeAsList().forEach { row ->
+            q.selectAutoIngredientsWithoutFoodGroup().executeAsList().forEach { row ->
                 val g = com.sxdbsm.cookbook.domain.FoodGroup.classify(row.name)?.name
                 if (g != null) q.updateIngredientFoodGroup(g, row.id)
             }

@@ -1136,6 +1136,9 @@ private fun NutritionGuessBanner(source: com.sxdbsm.cookbook.domain.NutritionGue
     val sub = when (source) {
         is com.sxdbsm.cookbook.domain.NutritionGuessSource.Match -> "营养参考自「${source.refName}」· 估算值，可直接改"
         is com.sxdbsm.cookbook.domain.NutritionGuessSource.Group -> "暂无同名食材，按「${source.groupLabel}」粗略估算，务必核对"
+        // [AI生成] AUTOGEN-UNIFY：AI 通道估值的 provenance 措辞（「常识估算」降权威感·行为审原则：AI 不比同名参考更有依据）。
+        //   本批无生产写入者（管线位·决策点2A），下一批「AI 营养补全」接入后可达。
+        com.sxdbsm.cookbook.domain.NutritionGuessSource.AI -> "已按 AI 估算预填（按常识估算·务必核对），可直接改"
         com.sxdbsm.cookbook.domain.NutritionGuessSource.None -> return
     }
     Surface(
