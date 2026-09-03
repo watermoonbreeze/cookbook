@@ -47,7 +47,7 @@ fun ParseSheet(
 | 元素 | 规格 |
 |---|---|
 | 容器 | `Column` 居中，`padding(horizontal 20dp, vertical 28dp)`，**wrapContentHeight**（约 0.4 屏） |
-| spinner | `CircularProgressIndicator(24dp, color = primary)`；慢机型文案切换 `正在加载网页…` → `正在提取菜谱…` |
+| spinner | `CircularProgressIndicator(24dp, color = primary)`；文案固定 `正在加载网页…`（**v1.1 单文案**——正则解析毫秒级，「正在提取菜谱…」第二段无实际可感阶段·架构审 S-11 调和） |
 | URL | `labelSmall` + `colorScheme.outline`，居中，只显示 host+path（工程层去 query 参数，防 utm 长串） |
 | 退出 | `TextButton("仅保存链接")`（回调传入才渲染），上方 `Spacer(16dp)` |
 
@@ -205,11 +205,12 @@ fun ParseSheet(
 | 状态标签 | 第二行行尾：**6dp 语义色圆点 + `labelMedium` 文字**双编码：待解析 = 琥珀（`ExtendedColors.warning`）+「待解析」；解析失败 = 红（`error`）+「解析失败」；已存为菜品 = 绿（`ExtendedColors.success`）+「已存为菜品」 |
 | 行间距 | 组内 `Spacer(2dp)`；分组已由 SectionHeader 承担，组内不加分隔线 |
 
-### D.3 分组排序的视觉表达
+### D.3 分组排序的视觉表达（v1.1 修订：四组·state=1 悬空态消解——行为审 B-01/架构审 ARCH-03/GC-37#4 三方收敛）
 
-- 三组各一枚 SectionHeader：`"待解析 · 2"` / `"解析失败"` / `"已存为菜品"`（`· N` 内联计数；0 项的组整组不渲染含 header）。
-- 组序 = 待解析 → 解析失败 → 已存为菜品，组内 `created_at` 倒序——**不用分割卡/底色区分组**。
-- 点击行为按状态分派：待解析 → 先过 F 节 T2 弹窗再进 ParseSheet；解析失败 → 直接进 ParseSheet 并**自动开始重试**（少一步）；已存为菜品 → 跳该 `dish_id` 菜品详情（用户心智是「看这道菜」）。
+- **四组**各一枚 SectionHeader：`"待解析 · 2"` / `"已解析"` / `"解析失败"` / `"已存为菜品"`（`· N` 内联计数；0 项的组整组不渲染含 header）。
+- 组序 = 待解析(0) → **已解析未存(1)** → 解析失败(2) → 已存为菜品(3)，组内 `created_at` 倒序——**不用分割卡/底色区分组**。
+- state=1 状态点=**中性色**（`onSurfaceVariant`）+文字「已解析」（区别于待解析琥珀/失败红/已存绿——四色四义不借位）。
+- 点击行为按状态分派（**v1.1：0/1/2 统一转发 ShareReceiverActivity 透明宿主**〔EXTRA_LINK_ID〕，ParseSheet 宿主唯一化）：待解析(0) → 宿主内先过 T2 再进 Sheet；**已解析(1) → 宿主内本地重建开 Sheet（不 T2 不联网——当初已同意过；飞行模式也能打开）**；解析失败(2) → 直接进 Sheet 并自动重试（少一步·当初已同意不再问 T2）；已存为菜品(3) → **查菜品活性后**跳该 `dish_id` 菜品详情（**软删失活 → 按 1 态处理本地重建可重存·Y-02 兜底**）。
 
 ### D.4 删除交互——MVP 用长按 ActionSheet
 
@@ -265,7 +266,7 @@ EmptyState(
 | 槽 | 内容 |
 |---|---|
 | title | 「打开下厨房的网页？」（问句给选择权；来源名动态替换） |
-| text | `Column` 两行 `bodyMedium` `onSurfaceVariant`，行距 6dp：①「打开时，下厨房的服务器会看到这次访问。」②「打开后会自动提取菜名、食材和步骤，由你确认后才保存。」（四要素：做什么/谁会看到/提取什么/谁决定） |
+| text | `Column` 两行 `bodyMedium` `onSurfaceVariant`，行距 6dp：①「打开时，下厨房的服务器会看到这次访问。」②「打开后会自动提取菜名、食材、步骤**和图片**，由你确认后才保存。」（四要素：做什么/谁会看到/提取什么/谁决定；**v1.1 补「和图片」——预下载对 CDN 发起 1+N 张请求属流量维度副作用·行为审 Y-03**） |
 | confirmButton | `TextButton("同意并打开")`（动词+对象，比「同意并继续」具体） |
 | dismissButton | `TextButton("仅保存链接")` |
 | onDismissRequest | 等价「仅保存链接」（点外部 = 用户收回同意，链接保留） |
