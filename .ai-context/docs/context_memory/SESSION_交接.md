@@ -1,91 +1,67 @@
 # 🔖 SESSION 交接入口
 
-> 覆盖式更新（2026-09-03 · 拍板专场 8 项全过 + AUTOGEN-UNIFY 蓝图四审冻结并编码交付）。本轮流水见 `07_操作记录.md` 2026-09-03 节；上一轮见 2026-09-02 节。
+> 覆盖式更新（2026-09-03 · L4 方案定稿→蓝图四审冻结→编码中间态暂停交接）。本轮流水见 `07_操作记录.md` 2026-09-03 节；上一轮见同日 AUTOGEN-UNIFY 节。
 
 ## ⏭ 下一步（新 session 直接从这里开始）
 
-主线已完成 **AUTOGEN-UNIFY 编码交付**（`42b95b7a`·24 文件·三命令全绿·终审 1 阻断已修复复验·新测试 16 用例 0 失败）。排队顺序：
+**主线 = 恢复 L4-P1 编码**（蓝图 `docs/feature/分享链接解析_实施蓝图.md` **BLUEPRINT_READY**·已冻结于 `0d3dee0e`；编码中间态 WIP 提交 `a3dda27b`）。编码模式（用户 2026-09-03 指示）：**开子智能体用轻量模型（haiku）编码、主会话审核**（编译+蓝图 grep 判据+红线抽查+Q 报告裁决）。
 
-1. **装最新包验真机**：E-AU-01~05（新·清单 `202609031105`）+ E-NAV-09~12 + E-IGE-01~03 + E-HM-04~08 + DEV-L2-04 一包全验（25 项+1 DEFERRED）。
-2. **L4 方案刷新**：`feature/分享链接解析_方案设计.md` 按 F-DISH/30_待办 L4 条目更新（复用清单引用本批 ensureCreated 管线+烹饪方式推断；解析配置补烹饪方式提取+steps 预填）→ Apple-UX 交互规范确认 → L4 Phase1 编码。
-3. **J3 四合一研究批**（NUTRITION-SNAPSHOT-ADR-01 扩容：快照 schema+餐状态机+营养线分治口径+算法会诊·纯盘点不改码；用户终态约束=食历快照展示双线分离/编辑拿最新+提示）。
-4. 小尾巴：L1《用户协议》开头总免责引言（纯文案）；S-5 回填写入断言（下批顺手）；合成行透传测试（蓝图 O-3 登记）。
+批次恢复顺序（详见下「当前状态」半成品明细）：
+1. **批C 续**（先读 `NewDishPrefillBus.kt`+`FreePairingViewModel.kt` 审核已有改动→补 `NewDishViewModel` STEP 5.1~5.10/`NewDishScreen` 5.11/`AndroidModule` 注册行；**实况修正：生产点还有 `IngredientsScreen.kt:64`（蓝图漏列·编译红），FreePairing 适配在 ViewModel 非 Screen**——两处都要适配）。
+2. **批A 重跑**（零产出无损失）：shared 解析引擎 9 文件（STEP-L4-2/3·prompt 已验证可用，含基准样本数据/双层解码冻结实现/纯 INSERT OR IGNORE 红线）。
+3. **批B**（批A 过审后）：shared 测试 T-L4-01~09/12/14~18（夹具经 `SeedResourceLoader.readText` 生产同路径·禁手搓 config）。
+4. **批E**：界面层（ShareReceiverActivity 双入口/ParseViewModel+ParseSheet/LinkList 四组/LinkBadge/Banner/入口接线/横幅/isLinkNutritionPending）——STEP-L4-8~13。
+5. **批F**：STEP-L4-14 三命令+真机清单登记 E-L4-01~11+交付台账+终审（google_quality_engineer 编码后终审·阻断修复后复验）。
+6. 纵轴 backlog 顺手回写（F-DISH/F-RECOMMEND 各落后 1 提交·20_实现/30_待办 synced_to 更新）。
 
-## 一、先读清单（按序）
-
-1. **本文件**。
-2. `docs/feature/自动入库统一管线_实施蓝图.md`（§9 交付台账+勾销表）+ `docs/arch_evidence/AUTOGEN-UNIFY_REVIEW_LEDGER.md`（四审+终审全过程）。
-3. `CLAUDE.md`「踩坑红线」。
-4. 最新待验证清单 `docs/真机验证/真机验证清单-待验证_202609031105.md`（25 项+1 DEFERRED）。
-
-## 二、工作规则（当前任务域）
-
-- 审核台账**边收边写**（用户 2026-09-03 要求，防中断重头来）。
-- 真机清单：迁移规则/中文文案规则见 CLAUDE.md；批量迁移用 `temp/claude/migrate_batch.py`。
-- Git：用户明确要求才 push；提交前 `git status --short` 全查；多行提交信息用 `-F 文件`。
-
-## 三、当前状态
-
-- **分支**：master，最新 `42b95b7a`（AUTOGEN-UNIFY 代码）+ `41f036f2`（拍板专场 docs）；未 push（更早 3 笔亦未 push）。
-- **方案拍板专场**（2026-09-03·8 项全过，结论表已回写 09 册/各 30_待办）：J3 前置研究批（含用户快照双线主张）/L1 收尾/餐状态机并入 J3/L4 先收口再启/J17 并入 J3/L3 拆散关闭/AIMEAL 关闭（尾巴并入 RULE-TEMPLATE）/M3 NOT_DOING 挂起。
-- **AUTOGEN-UNIFY 交付**：四审（架构/质量/行为透明/GC-37 挑战）8 独立阻断消解→决策点 1/2/3 用户拍板全 A→编码 STEP-AU-1~10 全落地→终审 1 阻断（T-AU-04 缩链）+5 建议全处置→复验全绿。核心：统一入库管线（source="user" 保三处门控）/AI 大类三路透传（NDJSON+FLAT+合成行）/仅空列守卫防陈旧覆盖/菜名预选做法/AI 食材恢复删除+回收站。
-- **真机验证**：待验证 25 项+1 DEFERRED（`202609031105`）：E-AU-01~05 + E-NAV-09~12 + E-IGE-01~03 + E-HM-04~08 + DEV-L2-04 + OBS/OVN 8 项 + E-B7F-05。
-
-## 方案拍板专场结论（2026-09-03 · 8 项全过·已回写各文档）
-
-| # | 项 | 拍板 | 回写处 |
-|---|---|---|---|
-| 1 | J3 快照 vs 实时 | 启动前置研究批 NUTRITION-SNAPSHOT-ADR-01（不改表不改码）；终态约束=**食历展示走快照不与当前库交叉（双线分离）、点编辑拿当前最新数据带入+提示**（用户原话主张） | 09 册 J3 |
-| 2 | L1 合规 | 云端 AI 同意链路已落地+E-L1-01~12 真机全过；残余=《用户协议》开头补总免责引言（纯文案）后关闭 | 09 册 L1 |
-| 3 | 餐状态机 | 并入 J3 研究批（快照列+状态列一次迁移、依赖图一张；SOL 六态冻结不变） | 09 册 战略会商-6729 |
-| 4 | L4 导入 | **先基础收口批（→本蓝图 AUTOGEN-UNIFY）再刷新 L4 方案再编码**；前置盘点结论见 F-DISH/30_待办 L4 条目 | F-DISH/30_待办 |
-| 5 | J17 营养线 | 并入 J3 研究批（四合一：快照+状态机+分治口径+算法会诊；「共享聚合器」实况已达成——AiPlan/WeekPlan 同用 WeeklyNutritionLineAggregator） | 09 册 J17 |
-| 6 | L3 AI 自动化 | 伞条目关闭拆散：AI 营养补全→F-INGREDIENT、菜名推食材接 AI→F-DISH、推演类 AI 增强→升格为收口批标准级架构（统一入口+AI 配置分流+自动降级） | 09 册 L3 |
-| 7 | AIMEAL-UX-REDESIGN | 关闭（主体已随 UEN+NAV 交付：入口统一全屏/长按解除/粘贴按钮已删/模板新格式）；尾巴③模糊量词并入 AIMEAL-RULE-TEMPLATE | F-AI-MEAL/30_待办 |
-| 8 | MATERIAL3 | 维持 NOT_DOING 挂起（与 SOL R7 对齐）；触发条件+分支实测三未闭环项已写清 | F-TOOLS/30_待办 |
-
-**关键核实修正**（拍板依据）：L4 方案 P0 原文是「Phase 2 AI 解析上线前」前置、与 Phase1 无关；自动入库现状=解析层双路降级健壮（AiMealInputViewModel 五触发点+幂等守卫）但**入库层纯本地单路**（AI 判的 foodGroup 在 MealStreamDraftMapper:98-118 断链丢弃、NDJSON 协议无营养数值字段、createUserIngredient 零归类零营养且 NewDishViewModel:553/:776 裸调现网存在）——即用户「一条链路」标准未达成，本蓝图收口。
+**平行待办（非编码）**：①装最新包验真机（待验证 25 项+1 DEFERRED·清单 `202609031105`）；②J3 四合一研究批；③小尾巴（L1 总免责引言/S-5 回填断言/合成行透传测试）。
 
 ## 一、先读清单（按序）
 
 1. **本文件**。
-2. `docs/feature/自动入库统一管线_实施蓝图.md` + `docs/arch_evidence/AUTOGEN-UNIFY_REVIEW_LEDGER.md`。
+2. `docs/feature/分享链接解析_实施蓝图.md`（**BLUEPRINT_READY·编码合同**：§3 决策点 DP-P1-1~13/§4 类型表面/§7 STEP-L4-1~14/§8 测试矩阵/§10 allowlist）+ `arch_evidence/L4-P1_REVIEW_LEDGER.md`（四审+复核全过程·16 阻断消解记录）。
 3. `CLAUDE.md`「踩坑红线」。
-4. 最新待验证清单 `docs/真机验证/真机验证清单-待验证_202609021623.md`（20 项+1 DEFERRED）。
+4. 上游：`docs/feature/分享链接解析_方案设计.md`（v1.1.3 用户拍板通过）+ `分享链接解析_交互规范_AppleUX.md`（定稿 v1.1·UI 照它做）。
 
 ## 二、工作规则（当前任务域）
 
-- 审核台账**边收边写**（用户 2026-09-03 要求，防中断重头来）。
-- 真机清单：迁移规则/中文文案规则见 CLAUDE.md；批量迁移用 `temp/claude/migrate_batch.py`。
+- **编码=子智能体（haiku 轻量模型）+主会话审核**（用户 2026-09-03 指示）：每批给蓝图对应 STEP 精确合同（冻结值/红线/「不确定就报告不许猜」）；回来后主会话审核=编译+grep 判据+红线抽查（fromJson 双层解码/单位映射/imported 锁）+Q 报告逐条裁决。
+- 审核台账**边收边写**（L4-P1_REVIEW_LEDGER.md 追加式）。
 - Git：用户明确要求才 push；提交前 `git status --short` 全查；多行提交信息用 `-F 文件`。
-- ADI 分库边界：纯 Kotlin→`Android/18-Kotlin语言与协程/`；多平台→`10-客户端/KMP跨平台/`；Compose/Android UI→`07-UI控件`。
+- 真机清单：迁移规则/中文文案规则见 CLAUDE.md；批量迁移用 `temp/claude/migrate_batch.py`。
 
 ## 三、当前状态
 
-- **分支**：master，最新 `5f2c46f7`（代码）+ 本轮 docs 改动未提交（09 册/三份 30_待办/蓝图/台账/本文件——建议审核收口后一并 `docs:` 提交）。
-- **本轮交付**：①方案拍板专场 8 项全过（上表）；②两侧前置盘点（食材/菜品自动入库，双 Explore agent，结论入蓝图 §2 事实地图）；③AUTOGEN-UNIFY 蓝图起草（DRAFT·L7·48 GC 勾销表齐）；④4 个审核 agent 已派出（架构/质量/行为透明/独立挑战）。
-- **真机验证**：待验证 20 项+1 DEFERRED（`202609021623`）不变。
-
+- **分支**：master。关键提交链：`42b95b7a`(AUTOGEN-UNIFY)→`d23d0a1c`(方案 v1.1.3 定稿)→`0d3dee0e`(蓝图 BLUEPRINT_READY+台账)→`a3dda27b`(**L4-P1 编码 WIP**)。未 push（更早 3 笔亦未 push）。
+- **蓝图**：L4-P1 BLUEPRINT_READY——四审（架构 7/质量 6/行为 2/GC-37 8 ISSUE·去重 16 独立阻断）全消解+修订后复核（R-1 跨模块依赖/R-2 title 矛盾+Y-1~10）全消解+DP-P1-9 用户拍板 A（dish.source 维持 "user"+share_link.dish_id 回指+标签 UI 延后 Phase2）+Y-9 门控盘点通过。
+- **编码进度**（WIP `a3dda27b`）：
+  - ✅ **STEP-L4-1 完整且编译通过**（主会话编）：Cookbook.sq 两表+13 查询+33.sqm+ShareLinkRepository（mapper 函数惯例·`app.cash.sqldelight.coroutines` 包名·`applyParseResult` 单事务组合）。
+  - ✅ **批D 完整**（haiku 编）：RemoteImageSaver（connectionFactory/dirProvider 注入+缩略 12KB 循环降质+UA）+ WebViewTextExtractor（once CAS 单发+三路 destroy+isForMainFrame 判定防子资源误杀）。**RemoteImageSaver 已审读通过；WebViewTextExtractor 未审读**。
+  - 🔶 **批C 半成品（约 40%）**：`NewDishPrefillBus.kt`（扩字段+ingredients→List<DishIngredient>·4.1 已落）+`FreePairingViewModel.kt`（4.2 已适配·实况发现生产点在 ViewModel）；**未动**：NewDishViewModel（5.1~5.10）/NewDishScreen（5.11）/AndroidModule。**编译红×2**：IngredientsScreen:64（蓝图漏列的第 4 个生产点）+NewDishScreen:102（消费点未适配）。
+  - ❌ **批A 零产出**（被停时未写文件·整批重跑）。
+- **全景图**：04_数据层锚已当场修（tables=41/migrations=33/sqm_max=33·页脚 a3dda27b·置信度🟡编码中）；纵轴 backlog 两处黄（F-DISH/F-RECOMMEND 各落后 1 提交·恢复时顺手回写）。
+- **方案拍板**（2026-09-03 三项）：方案整体通过按方案实施/DP-L4-1=A 横幅扩 link/步骤图纳入 Phase1（`#steps>[id^='step-cover-N']>img` DOM 定死+encodeImagePaths 编码预填）；追加：基准样本锚点机制（方案 §3.5·迭代兼容）。
+- **真机验证**：待验证 25 项+1 DEFERRED（`202609031105`）不变。
 
 ## 六、全景图新鲜度（每次交接必填）
 
-**执行时间**：2026-09-03（AUTOGEN-UNIFY 交付后全景图更新完毕实跑）。
+**执行时间**：2026-09-03（L4-P1 编码中间态交接时实跑）。
 
 ### 横轴（`review_freshness.py --md`）
 
 | 册 | 页脚 sha | 之后提交数 | 判定 | 处置 |
 |---|---|---|---|---|
-| 01_架构与技术底座 | 42b95b7a | 0 | FRESH | —（新增「统一自动入库管线」关键位置条目） |
-| 03_界面与交互 | 42b95b7a | 0 | FRESH | —（AUTOGEN-UNIFY 批交互回写：菜名预选做法/门控放宽） |
-| 04_数据层 | 42b95b7a | 0 | FRESH | —（food_group 写入者全景+回填扩源） |
-| 20_健康与算法逻辑（专属） | 42b95b7a | 0 | FRESH | —（核心实体能力层 4 行状态升级+AI 优先落地记录） |
-| 21_AI与网络请求策略（专属） | 42b95b7a | 0 | FRESH | —（food_group 三路透传+词表映射） |
+| 01_架构与技术底座 | 42b95b7a | 0 | FRESH | — |
+| 03_界面与交互 | 42b95b7a | 0 | FRESH | —（L4 UI 批落地后回写） |
+| 04_数据层 | 42b95b7a | 0 | ANCHOR-MISMATCH（两表+33.sqm） | **当场已修**（tables=41/migrations=33/sqm_max=33·页脚 a3dda27b·置信度🟡） |
+| 20_健康与算法逻辑（专属） | 42b95b7a | 0 | FRESH | — |
+| 21_AI与网络请求策略（专属） | 42b95b7a | 0 | FRESH | — |
 | 22_预设与参考资料治理（专属） | 742611ce | 0 | FRESH | — |
 
 ### 纵轴（`feature_sync_check.py`）
 
 - `--struct`：**[OK] 结构体检通过**。
-- `--backlog`：**[OK] 无历史欠账**（F-DISH/F-INGREDIENT/F-AI-MEAL/F-HEALTH/F-NUTRITION/F-TOOLS 六文件夹 synced_to=`42b95b7a`，20_实现 均已回写 AUTOGEN-UNIFY 条目）。
-- `--emit-index --write`：已重生成，新组件（`NdjsonFoodGroupMap`/`CookingMethodInferrer`/`ensureCreated`/门控落点）全收录。
+- `--backlog`：**两处黄**——F-DISH 落后 1 提交（`0d3dee0e` 碰其路径·30_待办 L4 条目已回写但 synced_to 未更新）；F-RECOMMEND 落后 1 提交（`57cfbb87` 起·既有）。**处置：L4-P1 收口批顺手回写两文件夹 synced_to+20_实现**。
+- `--emit-index --write`：本交接未重跑（无新组件落地——解析引擎/UI 组件在批A/E 后才有新符号；届时随收口批重生成）。
 
 **止损条件见 `08_决策记录.md` D-20（横轴）/D-25（纵轴）。下次交接重跑本命令覆盖本表。**
