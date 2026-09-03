@@ -469,6 +469,36 @@ CREATE TABLE pantry (
 
 CREATE UNIQUE INDEX uq_pantry_ingredient ON pantry(ingredient_id);
 
+-- [AI生成] L4 解析字典：支持的分享来源域名 → 解析配置文件名路由表（Phase1 seed-only，Phase2 接 AI 解析/多来源路由）。
+CREATE TABLE parse_dictionary (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL UNIQUE,             -- 域名标识（xiachufang）
+    parse_fun TEXT NOT NULL DEFAULT '',      -- 预设解析方法文件名（xiachufang.json）
+    ai_parse_fun TEXT NOT NULL DEFAULT '',   -- AI解析方法文件名（Phase2）
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+-- [AI生成] L4 分享链接：外部菜谱链接的采集与解析状态。clear_text/step_images/title/image_url 四列
+-- = 解析结果的持久化投影（state=1 本地重建的全量真相源·蓝图 DP-P1-7）；link 无唯一约束（重复分享经
+-- findActiveByLink 应用层去重复用活跃行·DP-P1-8）。
+CREATE TABLE share_link (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL DEFAULT '',
+    link TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
+    clear_text TEXT NOT NULL DEFAULT '',
+    step_images TEXT NOT NULL DEFAULT '', -- [AI生成] 步骤图 URL 列表，'|' 连接（与 dish_step.image_path 编码风格一致）
+    image_url TEXT NOT NULL DEFAULT '',
+    parse_state INTEGER NOT NULL DEFAULT 0,  -- 0未解析 1已解析未存 2失败 3已存为菜品（只前进：0→1→3 / 0→2→1→3）
+    dish_id INTEGER REFERENCES dish(id) ON DELETE SET NULL,
+    status INTEGER NOT NULL DEFAULT 1,       -- 1=有效 0=软删（回收站式，可恢复）
+    created_at INTEGER NOT NULL,
+    parsed_at INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX idx_share_link_state_time ON share_link(parse_state, created_at DESC);
+CREATE INDEX idx_share_link_dish ON share_link(dish_id);
+
 -- ============================================================
 -- 查询定义
 -- ============================================================
@@ -2083,3 +2113,56 @@ FROM ingredient i
 LEFT JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
 WHERE i.status = 1
 ORDER BY i.name;
+
+-- ===== share_link 分享链接解析（L4-P1） =====
+
+-- [AI生成] 插入分享链接（重复分享去重由 Repo 层 findActiveByLink 先查复用·DP-P1-8）。
+insertShareLink:
+INSERT INTO share_link(source, link, title, created_at)
+VALUES (:source, :link, :title, :created_at);
+
+-- [AI生成] 按链接精确匹配活跃行（重复分享去重查）。
+selectActiveShareLinkByLink:
+SELECT * FROM share_link WHERE link = :link AND status = 1 LIMIT 1;
+
+-- [AI生成] 解析成功落库：四列持久化投影 + parse_state→1 + parsed_at，一条 UPDATE 原子写（蓝图 Y-8·applyParseResult）。
+applyParseResultToShareLink:
+UPDATE share_link
+SET title = :title, image_url = :image_url, clear_text = :clear_text,
+    step_images = :step_images, parse_state = 1, parsed_at = :parsed_at
+WHERE id = :id;
+
+-- [AI生成] 解析失败（只前进 0/2→2；不写空 clear_text 清旧值）。
+markShareLinkFailed:
+UPDATE share_link SET parse_state = 2, parsed_at = :parsed_at WHERE id = :id;
+
+-- [AI生成] 存为菜品回写（幂等：首写生效，重复保存不覆盖首个 dish）。
+markShareLinkSaved:
+UPDATE share_link SET parse_state = 3, dish_id = :dish_id
+WHERE id = :id AND dish_id IS NULL;
+
+-- [AI生成] 列表全量（分组排序由 Repo 层 Kotlin 完成；四组 0/1/2/3·组内 created_at 倒序）。
+selectActiveShareLinks:
+SELECT * FROM share_link WHERE status = 1
+ORDER BY parse_state ASC, created_at DESC;
+
+-- [AI生成] 待解析计数（红点/横幅；只数 parse_state=0）。
+selectPendingShareLinkCount:
+SELECT COUNT(*) FROM share_link WHERE parse_state = 0 AND status = 1;
+
+selectShareLinkById:
+SELECT * FROM share_link WHERE id = :id LIMIT 1;
+
+-- [AI生成] EXTRA_SUBJECT 标题补写（分享文本带标题时）。
+updateShareLinkTitle:
+UPDATE share_link SET title = :title WHERE id = :id;
+
+-- [AI生成] 软删（回收站式可恢复）。
+softDeleteShareLink:
+UPDATE share_link SET status = 0 WHERE id = :id;
+
+restoreShareLink:
+UPDATE share_link SET status = 1 WHERE id = :id;
+
+hardDeleteShareLink:
+DELETE FROM share_link WHERE id = :id;

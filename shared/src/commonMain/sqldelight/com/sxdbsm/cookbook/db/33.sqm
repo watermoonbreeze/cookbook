@@ -1,0 +1,26 @@
+-- [AI生成] v32 -> v33：分享链接解析两表（L4-P1）——parse_dictionary 解析字典路由 + share_link 分享链接采集与状态。
+CREATE TABLE parse_dictionary (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL UNIQUE,
+    parse_fun TEXT NOT NULL DEFAULT '',
+    ai_parse_fun TEXT NOT NULL DEFAULT '',
+    status INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE TABLE share_link (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL DEFAULT '',
+    link TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
+    clear_text TEXT NOT NULL DEFAULT '',
+    step_images TEXT NOT NULL DEFAULT '',
+    image_url TEXT NOT NULL DEFAULT '',
+    parse_state INTEGER NOT NULL DEFAULT 0,
+    dish_id INTEGER REFERENCES dish(id) ON DELETE SET NULL,
+    status INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL,
+    parsed_at INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX idx_share_link_state_time ON share_link(parse_state, created_at DESC);
+CREATE INDEX idx_share_link_dish ON share_link(dish_id);

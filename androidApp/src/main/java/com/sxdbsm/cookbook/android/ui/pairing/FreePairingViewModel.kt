@@ -6,6 +6,7 @@ import com.sxdbsm.cookbook.ai.PairingSuggestion
 import com.sxdbsm.cookbook.ai.RecommendationDataSource
 import com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
+import com.sxdbsm.cookbook.domain.model.DishIngredient
 import com.sxdbsm.cookbook.domain.model.Ingredient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -64,7 +65,15 @@ class FreePairingViewModel(
                     runCatching { ingredientRepo.createUserIngredient(name) }.getOrNull()
                         ?.let { id -> Ingredient(id = id, name = name) }
                 }
-                onReady(NewDishPrefill(ingredients = ingredients, cookingMethodName = suggestion.method))
+                // [AI生成] STEP-L4-4.2：NewDishPrefill.ingredients 改 List<DishIngredient> 量纲载体——生产点一行包装。
+                //   isMain=false 保持旧 addIngredient 默认"非主料"语义(DishIngredient 默认 true·不显式传会全变主料)；
+                //   无量纲项(只带 ingredient)由 NewDishViewModel.addPrefilledIngredient 兜底补默认克数。
+                onReady(
+                    NewDishPrefill(
+                        ingredients = ingredients.map { DishIngredient(ingredient = it, isMain = false) },
+                        cookingMethodName = suggestion.method,
+                    ),
+                )
             } finally {
                 building = false
             }
