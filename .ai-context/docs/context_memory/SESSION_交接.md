@@ -69,22 +69,23 @@
 
 ## 六、全景图新鲜度（每次交接必填）
 
-**执行时间**：2026-09-02 17:08（乱码修复+索引重生成后实跑）。
+**执行时间**：2026-09-03（AUTOGEN-UNIFY 交付后全景图更新完毕实跑）。
 
 ### 横轴（`review_freshness.py --md`）
 
 | 册 | 页脚 sha | 之后提交数 | 判定 | 处置 |
 |---|---|---|---|---|
-| 01_架构与技术底座 | 29af225b | 0 | FRESH | — |
-| 03_界面与交互 | 5f2c46f7 | 0 | FRESH | —（E-NAV 主批+后续批+打磨批均回写） |
-| 04_数据层 | 29af225b | 0 | FRESH | — |
-| 20_健康与算法逻辑（专属） | 57cfbb87 | 0 | FRESH | — |
-| 21_AI与网络请求策略（专属） | 57cfbb87 | 0 | FRESH | — |
+| 01_架构与技术底座 | 42b95b7a | 0 | FRESH | —（新增「统一自动入库管线」关键位置条目） |
+| 03_界面与交互 | 42b95b7a | 0 | FRESH | —（AUTOGEN-UNIFY 批交互回写：菜名预选做法/门控放宽） |
+| 04_数据层 | 42b95b7a | 0 | FRESH | —（food_group 写入者全景+回填扩源） |
+| 20_健康与算法逻辑（专属） | 42b95b7a | 0 | FRESH | —（核心实体能力层 4 行状态升级+AI 优先落地记录） |
+| 21_AI与网络请求策略（专属） | 42b95b7a | 0 | FRESH | —（food_group 三路透传+词表映射） |
 | 22_预设与参考资料治理（专属） | 742611ce | 0 | FRESH | — |
 
 ### 纵轴（`feature_sync_check.py`）
 
 - `--struct`：**[OK] 结构体检通过**。
-- `--backlog`：**[OK] 无历史欠账**（F-TOOLS/F-DISH/F-INGREDIENT synced_to=`5f2c46f7`；乱码已修复并全库扫描无残留）。
+- `--backlog`：**[OK] 无历史欠账**（F-DISH/F-INGREDIENT/F-AI-MEAL/F-HEALTH/F-NUTRITION/F-TOOLS 六文件夹 synced_to=`42b95b7a`，20_实现 均已回写 AUTOGEN-UNIFY 条目）。
+- `--emit-index --write`：已重生成，新组件（`NdjsonFoodGroupMap`/`CookingMethodInferrer`/`ensureCreated`/门控落点）全收录。
 
 **止损条件见 `08_决策记录.md` D-20（横轴）/D-25（纵轴）。下次交接重跑本命令覆盖本表。**

@@ -2,7 +2,7 @@
 name: 食材体系
 lifecycle: active
 headline: "✅ 食材库 + 分类 + 属性标签体系已落地。"
-synced_to: 5f2c46f7
+synced_to: 42b95b7a
 match:
   - androidApp/**/ui/ingredients/**
   - androidApp/**/ui/picker/Ingredient*
