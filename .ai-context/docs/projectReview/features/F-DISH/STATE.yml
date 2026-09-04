@@ -2,7 +2,7 @@
 name: 菜品库
 lifecycle: active
 headline: "✅ 菜品库 + 收藏组合已落地。"
-synced_to: 42b95b7a
+synced_to: 4f1df5f2
 match:
   - androidApp/**/ui/dishes/**
   - androidApp/**/ui/dishdetail/**
