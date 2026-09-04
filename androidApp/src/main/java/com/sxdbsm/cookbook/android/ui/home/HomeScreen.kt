@@ -33,6 +33,7 @@ import com.sxdbsm.cookbook.android.ui.component.DayPlaceholderCard
 import com.sxdbsm.cookbook.android.ui.component.EmptyState
 import com.sxdbsm.cookbook.android.ui.component.SectionHeader
 import com.sxdbsm.cookbook.android.ui.component.ThemeModeDialog
+import com.sxdbsm.cookbook.android.ui.link.LinkPendingBanner
 import com.sxdbsm.cookbook.android.ui.nav.LocalBottomNavReserved
 import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.koinViewModel
@@ -54,6 +55,7 @@ fun HomeScreen(
     onCopyMeal: (LocalDate) -> Unit = {}, // [AI生成] A1：首页计划卡"复制"入口(与食历页一致，家庭高频"照着某天再吃一次")
     onOpenWeekPlan: () -> Unit = {}, // [AI生成] B3：一周计划入口
     onOpenAiRecommend: () -> Unit = {},
+    onOpenLinkList: () -> Unit = {}, // [AI生成] STEP-L4-12.4：横幅「去看看」→导入的菜谱列表（交互规范 E.2 直达·审核修正 2026-09-04）。
     onOpenDietaryReference: () -> Unit = {}, // [AI生成] P3-B:今日卡下"各类每天吃多少"轻入口→膳食参考依据页(权威每日份量)
     vm: HomeViewModel = koinViewModel(),
 ) {
@@ -74,6 +76,9 @@ fun HomeScreen(
     val todayNutrition by vm.todayNutrition.collectAsStateWithLifecycle()
     val focusSwitcher by vm.focusSwitcher.collectAsStateWithLifecycle() // [AI生成] 多人关注:今日卡成员切换器
     val nextMeal by vm.nextMeal.collectAsStateWithLifecycle() // [AI生成] 阶段2:首页"下一餐"推荐卡
+    // [AI生成] STEP-L4-12.4：链接横幅两态（LazyListScope 非 composable 上下文，订阅须提到列表外）。
+    val linkBannerVisible by vm.linkBannerVisible.collectAsStateWithLifecycle()
+    val linkPendingCount by vm.linkPendingCount.collectAsStateWithLifecycle()
     // [AI生成] 阶段2:返回首页(ON_RESUME)刷新"下一餐"卡——忌口(健康档案别页可改·红线即时)/钟点/今日缺口实时。纯规则不调云端·无成本,故可 resume 刷新(与 AI 全页"仅手动"不同,那是为省云端调用)。
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -139,6 +144,17 @@ fun HomeScreen(
                 onShuffle = { vm.shuffleNextMeal() },
                 onAddDishes = onOpenDishes, // 空态"去添加菜品"
             )
+        }
+
+        // [AI生成] STEP-L4-12.4：未解析链接横幅（NextMealCard 后·色系墙前；visible=false 不占位）。
+        if (linkBannerVisible) {
+            item {
+                LinkPendingBanner(
+                    count = linkPendingCount,
+                    onOpen = onOpenLinkList, // 去看看→导入的菜谱列表（交互规范 E.2 直达·审核修正 2026-09-04；原折中走菜品页多一跳）
+                    onMute = { vm.muteLinkBanner() },
+                )
+            }
         }
 
         // [AI生成] 营养色系墙(功能设置开启营养色系时展示)：整年每天营养级别热力图，可折叠。

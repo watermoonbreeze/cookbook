@@ -21,6 +21,8 @@ import com.sxdbsm.cookbook.domain.FoodGroup
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
@@ -96,6 +98,8 @@ class HomeViewModel internal constructor(
     private val ingredientRepo: com.sxdbsm.cookbook.data.repository.IngredientRepository, // [AI生成] A1：食材显式营养大类(food_group)覆盖色系/均衡判定。
     private val health: com.sxdbsm.cookbook.data.repository.HealthProfileRepository, // [AI生成] A-1：解析关注成员病种→慢病提示(今日卡"偏咸·高血压留意")。
     private val recoDataSource: com.sxdbsm.cookbook.ai.RecommendationDataSource, // [AI生成] 阶段2：首页"下一餐"推荐卡(纯规则·不调云端·打开即见)。
+    private val linkRepo: com.sxdbsm.cookbook.data.repository.ShareLinkRepository, // [AI生成] STEP-L4-12.2：链接导入横幅计数(与红点同源 flow)。
+    private val todayProvider: () -> String = { DateTime.today().toString() }, // [AI生成] 横幅"当天已展示"判定用的今天日期串(yyyy-MM-dd)；提参数可测(派生逻辑不依赖内部 today)。
     private val mutationPort: MealDayMutationPort = mealRecordUseCase.asMealDayMutationPort(),
 ) : ViewModel() {
 
@@ -113,6 +117,43 @@ class HomeViewModel internal constructor(
     private var cachedThumbs: Map<Long, Pair<String, String>> = emptyMap()
 
     init { loadNextMeal() } // 首页创建即加载"下一餐"卡(打开即见·纯规则快)。
+
+    // ============ L4 链接导入横幅（STEP-L4-12.2·一次性冷读 DP-P1-3） ============
+    /** 横幅计数展示源（与 Activity 域 LinkBadgeViewModel 同一 SQLDelight flow）。[AI生成] */
+    val linkPendingCount: StateFlow<Int> = linkRepo.observePendingCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    private val _linkBannerVisible = MutableStateFlow(false)
+
+    /** 横幅可见性（会话级：冷读判定后本次会话保持；「不再提醒」即时关）。[AI生成] */
+    val linkBannerVisible: StateFlow<Boolean> = _linkBannerVisible.asStateFlow()
+
+    init {
+        // 一次性冷读两 key 判定（DP-P1-3：LAST_SHOWN 禁观察式 Flow 读——显示后写库会让观察 Flow 回环自噬）。[AI生成]
+        viewModelScope.launch {
+            val count = runCatching { linkRepo.countPending() }.getOrDefault(0)
+            val dismissed = runCatching {
+                prefs.get(com.sxdbsm.cookbook.domain.model.PreferenceKeys.LINK_BANNER_DISMISSED) == "1"
+            }.getOrDefault(false)
+            val lastShown = runCatching {
+                prefs.get(com.sxdbsm.cookbook.domain.model.PreferenceKeys.LINK_BANNER_LAST_SHOWN).orEmpty()
+            }.getOrDefault("")
+            val today = todayProvider()
+            if (com.sxdbsm.cookbook.data.parser.LinkPrefillMapper.shouldShowLinkBanner(count, dismissed, lastShown, today)) {
+                _linkBannerVisible.value = true
+                // 显示当次写 LAST_SHOWN=今天（当天内冷启动不再重复显；不影响 DISMISSED 永久关）。[AI生成]
+                runCatching { prefs.set(com.sxdbsm.cookbook.domain.model.PreferenceKeys.LINK_BANNER_LAST_SHOWN, today) }
+            }
+        }
+    }
+
+    /** 「不再提醒」：横幅当帧消失 + 锁一次性偏好（红点仍在、列表入口不丢·不弹确认）。[AI生成] */
+    fun muteLinkBanner() {
+        _linkBannerVisible.value = false
+        viewModelScope.launch {
+            runCatching { prefs.setFlag(com.sxdbsm.cookbook.domain.model.PreferenceKeys.LINK_BANNER_DISMISSED, true) }
+        }
+    }
 
     /**
      * 加载/刷新首页"下一餐"推荐(按当前钟点判餐次·**纯规则不调云端**)。[AI生成] 阶段2

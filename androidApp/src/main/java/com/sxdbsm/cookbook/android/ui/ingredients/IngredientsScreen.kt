@@ -61,7 +61,12 @@ fun IngredientsScreen(
         openDetailFor = jumpDetail,
         openCreateWithName = createName,
         onComposeDish = { ings -> // [AI生成] 从食材出发组成菜品:预填食材进新建菜品页
-            prefillBus.request(com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(ingredients = ings))
+            prefillBus.request(
+                com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefill(
+                    // [AI修改] STEP-L4-4.2：ingredients 类型替换的遗漏生产点(蓝图漏列·实况修正)——一行包装，isMain=false 保持旧"非主料"语义。
+                    ingredients = ings.map { com.sxdbsm.cookbook.domain.model.DishIngredient(ingredient = it, isMain = false) },
+                ),
+            )
             onOpenNewDish()
         },
         vm = vm,

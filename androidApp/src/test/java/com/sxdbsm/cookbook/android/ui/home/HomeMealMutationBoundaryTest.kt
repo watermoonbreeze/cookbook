@@ -30,7 +30,7 @@ class HomeMealMutationBoundaryTest {
             val recommendation = RecommendationDataSource(db, PantryRepository(db), dish, family, ingredient, nutrition)
             val repo = MealRecordRepository(db)
             val port = CountingPort()
-            val vm = HomeViewModel(dish, MealRecordUseCase(repo), MealProjectionRepository(repo), preferences, nutrition, family, ingredient, health, recommendation, port)
+            val vm = HomeViewModel(dish, MealRecordUseCase(repo), MealProjectionRepository(repo), preferences, nutrition, family, ingredient, health, recommendation, ShareLinkRepository(db), mutationPort = port)
             var shown = 0
             vm.deleteDayUndoable(LocalDate(2026, 8, 26)) { shown++ }
             assertEquals(1, port.undoCalls); assertEquals(0, shown)
@@ -44,7 +44,7 @@ class HomeMealMutationBoundaryTest {
             val dish = DishRepository(db); val ingredient = IngredientRepository(db); val nutrition = NutritionRepository(db)
             val family = FamilyRepository(db, preferences); val repo = MealRecordRepository(db)
             val port = CountingPort(MealDayUndoToken(Any()))
-            val vm = HomeViewModel(dish, MealRecordUseCase(repo), MealProjectionRepository(repo), preferences, nutrition, family, ingredient, HealthProfileRepository(db), RecommendationDataSource(db, PantryRepository(db), dish, family, ingredient, nutrition), port)
+            val vm = HomeViewModel(dish, MealRecordUseCase(repo), MealProjectionRepository(repo), preferences, nutrition, family, ingredient, HealthProfileRepository(db), RecommendationDataSource(db, PantryRepository(db), dish, family, ingredient, nutrition), ShareLinkRepository(db), mutationPort = port)
             var shown = 0; var undo: (() -> Unit)? = null
             vm.deleteDayUndoable(LocalDate(2026, 8, 26)) { shown++; undo = it }
             assertEquals(1, shown); undo!!.invoke(); assertEquals(1, port.restoreCalls)
@@ -59,7 +59,7 @@ class HomeMealMutationBoundaryTest {
             val dish = DishRepository(db); val ingredient = IngredientRepository(db); val nutrition = NutritionRepository(db)
             val family = FamilyRepository(db, preferences); val repo = MealRecordRepository(db)
             val port = CountingPort(deleteError = IllegalStateException("delete failed"))
-            val vm = HomeViewModel(dish, MealRecordUseCase(repo), MealProjectionRepository(repo), preferences, nutrition, family, ingredient, HealthProfileRepository(db), RecommendationDataSource(db, PantryRepository(db), dish, family, ingredient, nutrition), port)
+            val vm = HomeViewModel(dish, MealRecordUseCase(repo), MealProjectionRepository(repo), preferences, nutrition, family, ingredient, HealthProfileRepository(db), RecommendationDataSource(db, PantryRepository(db), dish, family, ingredient, nutrition), ShareLinkRepository(db), mutationPort = port)
             var shown = 0
             vm.deleteDayUndoable(LocalDate(2026, 8, 26)) { shown++ }
             assertEquals(1, port.undoCalls); assertEquals(0, shown)

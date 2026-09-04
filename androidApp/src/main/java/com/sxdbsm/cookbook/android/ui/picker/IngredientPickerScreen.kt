@@ -682,7 +682,9 @@ fun IngredientPickerScreen(
         //   [AI修改] AUTOGEN-UNIFY 决策点3b：判定兼容 'ai'——管线写入的 source 是 "ai" 而非 "auto"(原判定失配致横幅永不显示·潜伏 bug)。
         var isPendingReview by remember { mutableStateOf(false) }
         LaunchedEffect(ingredient.id) {
-            isPendingReview = (ingredient.source == "auto" || ingredient.source == "ai") && vm.isPendingReview(ingredient.id)
+            // [AI修改] STEP-L4-13.1：+链接导入(link)估算营养待复核横幅（isLinkNutritionPending 只看 review·绕开 source='ai' 过滤·ARCH-01）
+            isPendingReview = ((ingredient.source == "auto" || ingredient.source == "ai") && vm.isPendingReview(ingredient.id)) ||
+                (ingredient.source == "link" && vm.isLinkNutritionPending(ingredient.id))
         }
         IngredientDetailSheet(
             ingredient = ingredient,

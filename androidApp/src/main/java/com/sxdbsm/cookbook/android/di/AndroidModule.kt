@@ -55,11 +55,11 @@ val androidModule = module {
         )
     }
 
-    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    viewModel { HomeViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] STEP-L4-12.2：+ShareLinkRepository(链接导入横幅计数/冷读)——10 参。
     viewModel { DishesViewModel(get()) } // [AI修改] 移除未使用的 MealRecordRepository 死依赖。
     viewModel { com.sxdbsm.cookbook.android.ui.weekplan.WeekPlanViewModel(get(), get()) }
     viewModel { DishDetailViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 详情洞察: 库存/健康/统计/营养(含营养估算)+PreferenceRepository(库存挂钩开关)+MemberDishHealthUseCase(成员化红绿灯)+FamilyRepository(Phase 2 全家并集补个人忌口)
-    viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] AUTOGEN-UNIFY：+3 依赖(IngredientAutoGenerator/CookbookDatabase/IngredientAliasResolver)——快速自建食材走统一管线。
+    viewModel { NewDishViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) } // [AI修改] STEP-L4-5.1：+ShareLinkRepository(链接导入回写)——10 参。AUTOGEN-UNIFY：+3 依赖(IngredientAutoGenerator/CookbookDatabase/IngredientAliasResolver)——快速自建食材走统一管线。
     viewModel { AddMealViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 餐食事实读取经 Projection 边界，写入/编辑兼容 API 仍由 UseCase 编排。
     viewModel { TimelineViewModel(get(), get()) }
     viewModel { MineViewModel(get(), get(), get(), get(), get(), get(), get()) } // [AI修改] 追加 FamilyRepository + 阶段3-c Analytics(匿名统计开关)。
@@ -81,4 +81,14 @@ val androidModule = module {
     viewModel { com.sxdbsm.cookbook.android.ui.cook.CookModeViewModel(get()) } // [AI生成] D1:分步烹饪页薄 VM(数据访问收进 VM·F-Arch3)。
     // [AI修改] K1 AI快捷输入记餐：参数化 VM（P2-1 K1a：第4个 get() 改为 MultiDayRecorder·支持 preview/commit 两阶段）
     viewModel { (initialText: String, targetDate: kotlinx.datetime.LocalDate) -> com.sxdbsm.cookbook.android.ui.ai.AiMealInputViewModel(initialText, targetDate, get(), get(), get(), get(), get(), get()) }
+    // [AI生成] STEP-L4-9.4：分享链接解析（RecipeParser 无状态纯函数/WebView 采集/远程图下载 单例；ParseViewModel 按链接参数化）。
+    single { com.sxdbsm.cookbook.data.parser.RecipeParser() }
+    single { com.sxdbsm.cookbook.android.link.WebViewTextExtractor(androidContext()) }
+    single { com.sxdbsm.cookbook.android.link.RemoteImageSaver(androidContext()) }
+    viewModel { (linkId: Long, sourceName: String) -> com.sxdbsm.cookbook.android.ui.link.ParseViewModel(linkId, sourceName, get(), get(), get(), get(), get(), get()) }
+    // [AI生成] STEP-L4-10.3：链接列表（路由作用域·参数收 Activity 域 LinkBadge 同源实例）+红点 VM（Activity 域单实例）。
+    viewModel { (badge: com.sxdbsm.cookbook.android.ui.link.LinkBadgeViewModel) ->
+        com.sxdbsm.cookbook.android.ui.link.LinkListViewModel(get(), get(), badge)
+    }
+    viewModel { com.sxdbsm.cookbook.android.ui.link.LinkBadgeViewModel(get()) }
 }

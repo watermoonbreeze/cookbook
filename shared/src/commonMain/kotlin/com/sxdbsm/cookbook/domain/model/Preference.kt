@@ -75,6 +75,10 @@ object PreferenceKeys {
     // [AI生成] 慢病知情引导(F4b)一次性标记：已登记痛风/糖尿病用户在推荐页提示"切偏营养=高GI/嘌呤菜靠后"，关过/切过后永不再显。
     const val NUTRITION_HINT_DISMISSED = "nutrition_hint_dismissed_v1"
 
+    // [AI生成] STEP-L4-12.1：首页链接导入横幅两 key。LAST_SHOWN 为日期串(yyyy-MM-dd)——一次性冷读防 Flow 回环自噬(DP-P1-3·禁 observeString 该 key)。
+    const val LINK_BANNER_DISMISSED = "link_banner_dismissed"
+    const val LINK_BANNER_LAST_SHOWN = "link_banner_last_shown"
+
     // [AI生成] 身体数据(JSON: BodyMetrics)：身高/体重/年龄/性别/活动量，用于算每日卡路里目标。免迁移存偏好。
     const val BODY_METRICS = "body_metrics"
 

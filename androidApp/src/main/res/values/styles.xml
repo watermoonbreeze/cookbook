@@ -1,3 +1,10 @@
 <resources>
     <style name="AppTheme" parent="android:Theme.Material.NoActionBar"/>
+    <!-- [AI生成] STEP-L4-8.1：分享接收透明宿主主题（透明背景+无标题，宿主只承载弹窗/Sheet）。 -->
+    <style name="ShareReceiverTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
 </resources>

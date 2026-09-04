@@ -29,7 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class WebViewTextExtractor(private val context: Context) {
 
-    private val mainHandler = Handler(Looper.getMainLooper())
+    // [AI修改] lazy 化：纯 JVM 单测构造本类（ParseViewModel 组装）不触发 Looper 静态调用；extract 时才需要主线程 Handler。
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
 
     /**
      * 加载 [url] 并在页面完成后注入 JS 采集，结果单次回调 [onResult]。[AI生成]

@@ -36,10 +36,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.Search
 import androidx.activity.compose.BackHandler
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -94,6 +97,8 @@ fun DishesScreen(
     onOpenDish: (Long) -> Unit,
     onEditDish: (Long) -> Unit,
     onCopyDish: (Long) -> Unit,
+    linkPendingCount: Int = 0, // [AI生成] STEP-L4-11.1：待解析链接数（>0 显红点）。
+    onOpenLinkList: () -> Unit = {}, // [AI生成] STEP-L4-11.1：右上角链接图标→导入的菜谱列表页。
     vm: DishesViewModel = koinViewModel(),
 ) {
     val prefillBus = org.koin.compose.koinInject<com.sxdbsm.cookbook.android.ui.newdish.NewDishPrefillBus>() // [AI生成] 搜索无结果新建菜品预填
@@ -169,6 +174,12 @@ fun DishesScreen(
                     // [AI修改] #4:搜索统一到右上角图标(与+并列,搜索在左),点击展开全屏搜索覆盖层。
                     IconButton(onClick = { searchOpen = true }) {
                         Icon(Icons.Outlined.Search, contentDescription = "搜索菜品")
+                    }
+                    // [AI生成] STEP-L4-11.1：链接导入入口（红点=待解析数>0·交互规范 E.1；序=搜索→链接→加号）。
+                    BadgedBox(badge = { if (linkPendingCount > 0) Badge() }) {
+                        IconButton(onClick = onOpenLinkList) {
+                            Icon(Icons.Outlined.Link, contentDescription = "导入的菜谱")
+                        }
                     }
                     IconButton(onClick = onAddDish) {
                         Icon(Icons.Outlined.Add, contentDescription = "添加菜品")

@@ -913,6 +913,12 @@ class IngredientPickerViewModel(
         return nutrition != null && !nutrition.review
     }
 
+    /** 链接导入食材的估算营养待复核判定（绕开 source='ai' 集合过滤·只看 review 标志）。[AI生成] STEP-L4-13.1·ARCH-01 死代码修复 */
+    suspend fun isLinkNutritionPending(ingredientId: Long): Boolean {
+        val nutrition = nutritionRepo.ingredientNutrition(ingredientId)
+        return nutrition != null && !nutrition.review
+    }
+
     /** 编辑保存后自动标记已复核。[AI生成] P2-1 用于 IngredientEditorDialog 的 onSave 回调尾调用 */
     fun autoMarkReviewedIfNeeded(ingredientId: Long?) {
         if (ingredientId == null || ingredientId <= 0) return

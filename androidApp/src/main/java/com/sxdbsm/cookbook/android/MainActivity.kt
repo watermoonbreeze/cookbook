@@ -52,10 +52,12 @@ class MainActivity : ComponentActivity() {
     private val seeder: PresetDataSeeder by inject() // [AI修改] 授权并创建公共目录后再初始化预置数据。
     private val familyRepo: com.sxdbsm.cookbook.data.repository.FamilyRepository by inject() // [AI生成] 家庭档案：首启建默认成员「我」并迁旧数据。
     private val openTimerRequested = mutableStateOf(false) // [AI生成] 通知点击请求打开烹饪计时页。
+    private val openNewDishRequested = mutableStateOf(false) // [AI生成] STEP-L4-11.3：存为菜品后请求直达新建菜品页。
     private var lastPausedElapsed = 0L // [AI生成] 阶段3-b：上次离开前台的 elapsedRealtime，用于 app_open 去抖。
 
     companion object {
         const val EXTRA_OPEN_TIMER = "open_cooking_timer" // [AI生成] 计时通知点击打开计时页的 intent extra key。
+        const val EXTRA_OPEN_NEWDISH = "open_new_dish" // [AI生成] STEP-L4-11.3：存为菜品后直达新建页的 extra key（ShareReceiverActivity 同值引用）。
         private const val APP_OPEN_MIN_GAP_MS = 30_000L // [AI生成] 阶段3-b：后台超此间隔再回前台才算一次新"打开"(会话去抖)。
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,6 +71,7 @@ class MainActivity : ComponentActivity() {
             window.isStatusBarContrastEnforced = false
         }
         if (intent?.getBooleanExtra(EXTRA_OPEN_TIMER, false) == true) openTimerRequested.value = true // [AI生成] 计时通知点击进入。
+        if (intent?.getBooleanExtra(EXTRA_OPEN_NEWDISH, false) == true) openNewDishRequested.value = true // [AI生成] STEP-L4-11.3：存为菜品后直达新建页。
         prepareStorage() // [AI修改] P0：数据改存 app 专属目录，无需权限门禁，直接准备目录即可。
         setContent {
             CookbookTheme(themeMode = ThemeMode.SYSTEM) {
@@ -96,6 +99,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         if (intent.getBooleanExtra(EXTRA_OPEN_TIMER, false)) openTimerRequested.value = true // [AI生成] App 已在前台时点击计时通知也能跳转。
+        if (intent.getBooleanExtra(EXTRA_OPEN_NEWDISH, false)) openNewDishRequested.value = true // [AI生成] STEP-L4-11.3：前台时存为菜品也能直达新建页。
     }
 
     /**
@@ -169,6 +173,8 @@ class MainActivity : ComponentActivity() {
             MainScaffold(
                 openTimer = openTimerRequested.value,
                 onTimerConsumed = { openTimerRequested.value = false },
+                openNewDish = openNewDishRequested.value, // [AI生成] STEP-L4-11.3：存为菜品后从透明宿主直达新建页。
+                onNewDishConsumed = { openNewDishRequested.value = false },
             )
         }
     }

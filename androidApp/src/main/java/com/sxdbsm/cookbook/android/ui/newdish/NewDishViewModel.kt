@@ -1,5 +1,6 @@
 package com.sxdbsm.cookbook.android.ui.newdish
 
+import com.sxdbsm.cookbook.android.ui.component.encodeImagePaths
 import com.sxdbsm.cookbook.android.util.AppLogger
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,7 @@ import com.sxdbsm.cookbook.ai.MealSlotMatcher
 import com.sxdbsm.cookbook.data.repository.DishRepository
 import com.sxdbsm.cookbook.data.repository.FoodCategoryRepository
 import com.sxdbsm.cookbook.data.repository.IngredientRepository
+import com.sxdbsm.cookbook.data.repository.ShareLinkRepository
 import com.sxdbsm.cookbook.domain.model.CookingMethod
 import com.sxdbsm.cookbook.domain.model.Dish
 import com.sxdbsm.cookbook.domain.model.DishIngredient
@@ -60,6 +62,8 @@ data class NewDishUiState(
     val saving: Boolean = false,
     val done: Boolean = false,
     val savedDishId: Long? = null,
+    val cookingMethodImported: Boolean = false, // [AI生成] STEP-L4-5.7：做法为导入预填(提示行"来自菜谱导入，可改"+推演锁定·INV-L4-09 双锁之一)。
+    val ingredientSourceTag: String = "user", // [AI生成] STEP-L4-5.7：食材来源标签(链接导入"link"·save() ensureCreated 透传；默认"user"保住既有门控)。
 
     val availableUnits: List<MeasurementUnit> = emptyList(), // [AI修改] 食材用量单位下拉列表。
     val stepTemplates: List<com.sxdbsm.cookbook.domain.model.StepTemplate> = emptyList(), // [AI生成] #2 "选择步骤"可套用的步骤模板(预设+自建)。
@@ -83,6 +87,7 @@ class NewDishViewModel(
     private val autoGen: com.sxdbsm.cookbook.domain.autogen.IngredientAutoGenerator,
     private val db: com.sxdbsm.cookbook.db.CookbookDatabase,
     private val aliasResolver: com.sxdbsm.cookbook.domain.autogen.IngredientAliasResolver,
+    private val shareLinkRepo: ShareLinkRepository, // [AI生成] STEP-L4-5.1：链接导入回写 share_link.dish_id(DP-P1-4·保存成功 markSaved)。
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NewDishUiState()) // [AI修改] 表单内部可变状态。
@@ -103,6 +108,7 @@ class NewDishViewModel(
     }
     private var activeStartKey: String? = null // [AI生成] 记录当前路由参数，避免同一编辑页重复触发 start 清空表单。
     private var baselineSig: String? = null // [AI生成] 加载/新建时的表单内容签名，用于返回前判断是否有未保存改动。
+    private var prefillLinkId: Long? = null // [AI生成] STEP-L4-5.9：链接导入行的 share_link.id(保存成功回写 dish_id·applyPrefill 时记)。
 
     /** 表单可编辑内容的签名(只含用户内容，排除字典/瞬态标志)。[AI生成] */
     private fun NewDishUiState.contentSig(): String = listOf(
@@ -194,6 +200,7 @@ class NewDishViewModel(
         } // [AI修改] 同一路由参数重复进入时绝不重置表单，避免加载成功后被空状态覆盖。
         AppLogger.d(TAG, "start_requested")
         activeStartKey = startKey
+        prefillLinkId = null // [AI生成] STEP-L4-5.9：新表单重置时清掉上次链接导入的 linkId(编辑/导入不得残留；放防重复守卫之后——重复 start 不误清；UiState 全新构造已天然重置 imported/sourceTag 两新字段)。
         _state.value = NewDishUiState(
             editingId = editId,
             availableUnits = current.availableUnits,
@@ -374,7 +381,7 @@ class NewDishViewModel(
      */
     private fun updateCookingMethodPreselect() {
         if (_state.value.editingId != null) return // 编辑既有菜不自动改
-        if (_state.value.cookingMethodTouched) return // 用户手动碰过则锁定
+        if (_state.value.cookingMethodTouched || _state.value.cookingMethodImported) return // [AI修改] STEP-L4-5.6：用户手动碰过或导入预填都锁定(INV-L4-09 双锁)。
         // [AI生成] 终审 S-4：烹饪方式字典未就绪(慢机)时显式跳过——下一次菜名变化防抖会重推(自然补偿)，
         //   不在空字典上做无效推断。
         if (_state.value.availableCookingMethods.isEmpty()) return
@@ -484,7 +491,12 @@ class NewDishViewModel(
             cookingMethodTouched = true, cookingMethodPrefilled = false,
         )
     }
-    fun addCookingMethod(name: String) {
+    /**
+     * 加入一个烹饪方式。[AI修改] STEP-L4-5.5 加参支持导入预填静默加入。
+     *
+     * @param markUserTouched 导入预填传 false(不算用户触碰·不锁推演——imported 锁由 applyPrefill 置)。[AI生成] STEP-L4-5.5
+     */
+    fun addCookingMethod(name: String, markUserTouched: Boolean = true) {
         val trimmed = name.trim()
         if (trimmed.isEmpty()) return
         val next = (_state.value.cookingMethodNames + trimmed).distinct()
@@ -494,7 +506,7 @@ class NewDishViewModel(
             cookingMethodName = next.firstOrNull(),
             cookingMethodInput = "",
             cookingMethodId = null,
-            cookingMethodTouched = true,
+            cookingMethodTouched = markUserTouched || _state.value.cookingMethodTouched, // [AI修改] STEP-L4-5.5：false 时不回落覆盖已锁定态。
             cookingMethodPrefilled = false,
         ) // [AI生成] 支持多烹饪方式；保存时统一按名称创建/复用字典并写关联表。
     }
@@ -592,17 +604,71 @@ class NewDishViewModel(
         )
     }
 
-    /** 预填新建菜品(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)：设菜名+批量加食材，并以此为"无改动基线"(返回不立即弹放弃)。[AI生成] */
-    fun applyPrefill(name: String, ingredients: List<Ingredient>, cookingMethodName: String = "") {
-        if (name.isNotBlank()) _state.value = _state.value.copy(name = name)
-        ingredients.forEach { addIngredient(it) }
-        // [AI生成] 自由搭配"存为菜品"：预填做法(空则不填)。放 markBaseline 前，让预填态成为基线(不误判未保存)。
-        if (cookingMethodName.isNotBlank()) addCookingMethod(cookingMethodName)
+    /** 预填新建菜品(搜索"点此新建"/食材页"组成菜品"/自由搭配/分享链接导入 四入口统一)：菜名+含量纲食材+多做法+步骤图+封面+描述一次入表单，并以此为"无改动基线"。[AI修改] STEP-L4-5.2 整体化。 */
+    fun applyPrefill(prefill: NewDishPrefill) {
+        AppLogger.d(
+            TAG,
+            "apply_prefill ingredient_count=${prefill.ingredients.size} step_count=${prefill.steps.size} " +
+                "method_count=${prefill.cookingMethodNames.size} has_cover=${prefill.imagePath.isNotBlank()} from_link=${prefill.linkId != null}",
+        ) // [AI生成] 诊断日志：只记计数/布尔，禁记菜名/URL(Y-04 日志红线精神)。
+        if (prefill.name.isNotBlank()) _state.value = _state.value.copy(name = prefill.name)
+        prefill.ingredients.forEach { addPrefilledIngredient(it) }
+        // [AI生成] STEP-L4-5.10+DP-P1-13：做法互斥——多值非空忽略单值；预填不算用户触碰(markUserTouched=false)。
+        val methods = if (prefill.cookingMethodNames.isNotEmpty()) prefill.cookingMethodNames else {
+            if (prefill.cookingMethodName.isNotBlank()) listOf(prefill.cookingMethodName) else emptyList()
+        }
+        methods.forEach { addCookingMethod(it, markUserTouched = false) }
+        if (prefill.steps.isNotEmpty()) {
+            // [AI生成] STEP-L4-5.3：步骤+过程图(单图经 encodeImagePaths 包装——单元素 join 无分隔符，与图片选择器口径一致)。
+            _state.value = _state.value.copy(
+                steps = prefill.steps.mapIndexed { i, s ->
+                    DishStep(
+                        sortOrder = i,
+                        text = s.text,
+                        imagePath = if (s.imagePath.isNotBlank()) encodeImagePaths(listOf(s.imagePath)) else "",
+                        thumbnailPath = s.thumbnailPath,
+                    )
+                },
+            )
+        }
+        if (prefill.imagePath.isNotBlank()) {
+            setImages(encodeImagePaths(listOf(prefill.imagePath)), prefill.thumbnailPath) // [AI生成] STEP-L4-5.2：封面成对(同 encodeImagePaths 口径)。
+        }
+        if (prefill.description.isNotBlank()) _state.value = _state.value.copy(description = prefill.description)
+        // [AI生成] STEP-L4-5.7：导入态置位(有做法才置 imported——空做法预填不禁菜名推演)与来源标签。
+        val imported = methods.isNotEmpty()
+        _state.value = _state.value.copy(
+            cookingMethodImported = imported,
+            ingredientSourceTag = prefill.sourceTag,
+        )
+        prefillLinkId = prefill.linkId
+        if (prefill.ingredients.isNotEmpty()) {
+            // [AI生成] STEP-L4-5.10：一次性反馈与既有 autoAddSerial 成对同一 copy(ARCH-06——只换 message 不递增 serial 则 Snackbar 永不显示)。
+            val pending = prefill.ingredients.filter { it.ingredient.id <= 0 }.map { it.ingredient.name }
+            // [AI修改] 审核对齐交互规范 C.2 冻结文案(2026-09-04)：无新食材「已导入 N 项食材」/有新食材后半句逐字复用既有句式。
+            val msg = if (pending.isEmpty()) "已导入 ${prefill.ingredients.size} 项食材"
+            else if (pending.size == 1) "已导入 ${prefill.ingredients.size} 项，其中「${pending.first()}」将在保存时加入食材库"
+            else "已导入 ${prefill.ingredients.size} 项，其中「${pending.first()}」等 ${pending.size} 味将在保存时加入食材库"
+            _state.update { s -> s.copy(autoAddMessage = msg, autoAddSerial = s.autoAddSerial + 1) }
+        }
         updateMealSlotPreselect() // [AI生成] v28：预填菜名后按名预选餐次
-        // [AI生成] AUTOGEN-UNIFY 终审 S-3：预填菜名入口同样预选做法(与餐次预选同页同构·补一致性)；
-        //   须在 markBaseline() 之前——contentSig 含 cookingMethodNames，放基线前避免预选被误判 dirty。
-        updateCookingMethodPreselect()
-        markBaseline()
+        updateCookingMethodPreselect() // [AI生成] AUTOGEN-UNIFY S-3+STEP-L4-5.6：imported/touched 已锁则内部自 return。
+        markBaseline() // [AI生成] GC-27：预填态成为基线(返回不误弹放弃)。
+    }
+
+    /** 导入/预填食材直入清单(绕过 addIngredient 强制克单位——量纲住 DishIngredient 由上游带全；仅完全无量纲的旧生产点项兜底默认克数)。[AI生成] STEP-L4-5.2 */
+    private fun addPrefilledIngredient(di: DishIngredient) {
+        if (_state.value.ingredients.any { it.ingredient.id == di.ingredient.id }) return
+        val filled = if (di.quantity == null && di.unitId == null && di.unitName.isBlank()) {
+            // 旧生产点(组成菜品/自由搭配)无量纲项：默认克数+克单位兜底(对齐 addIngredient 语义)。
+            val gram = gramUnit()
+            val defaultGram = com.sxdbsm.cookbook.domain.SeasoningDefaults
+                .defaultGramFor(di.ingredient.name, di.ingredient.id in seasoningIds).toDouble()
+            di.copy(quantity = defaultGram, unitName = gram?.name ?: "g", unitId = gram?.id)
+        } else {
+            di // 链接导入项(含适量→quantity=null)原样保留，用户可在表单改。
+        }
+        _state.value = _state.value.copy(ingredients = _state.value.ingredients + filled)
     }
 
     // ========== B5 常用配料组 ==========
@@ -838,8 +904,9 @@ class NewDishViewModel(
             // [AI修改] D10：saving 标志用最新 _state.value 写回，不用启动前捕获的 s 快照。
             _state.value = _state.value.copy(saving = true)
             runCatching {
-                // [AI生成] 待自建食材(占位负 id)：保存前经统一自动入库管线换真 id(归一/分类/营养预估/food_group 一次做齐·source=user
-                //   保住删除/回收站/备份导出门控)；创建失败丢弃(不写坏 FK)不阻断。AUTOGEN-UNIFY STEP-AU-5.3/5.4。
+                // [AI生成] 待自建食材(占位负 id)：保存前经统一自动入库管线换真 id(归一/分类/营养预估/food_group 一次做齐)。
+                //   [AI修改] STEP-L4-5.8：导入食材 source=ingredientSourceTag(默认"user"·链接导入"link"走统一管线归一/分类/营养)——
+                //   默认"user"保住删除/回收站/备份导出门控；创建失败丢弃(不写坏 FK)不阻断。AUTOGEN-UNIFY STEP-AU-5.3/5.4。
                 //   [AI修改] 同 id 去重优先保留"非占位"(用户手动加/已调克数)那条：占位按名解析可能撞上清单已有真实食材，
                 //   若不去重，saveDish 的 INSERT OR REPLACE(uq_dish_ingredient)会用占位默认克数覆盖用户已调用量。
                 val byId = LinkedHashMap<Long, DishIngredient>()
@@ -849,7 +916,7 @@ class NewDishViewModel(
                     val resolved = if (!wasPlaceholder) {
                         di
                     } else {
-                        val realId = runCatching { autoGen.ensureCreated(di.ingredient.name.trim(), autoGenCtx(), source = "user") }
+                        val realId = runCatching { autoGen.ensureCreated(di.ingredient.name.trim(), autoGenCtx(), source = s.ingredientSourceTag) }
                             .onFailure { AppLogger.d(TAG, "save_ensure_failed error_type=${it.javaClass.simpleName}") }
                             .getOrNull() ?: return@forEach
                         di.copy(ingredient = di.ingredient.copy(id = realId))
@@ -862,7 +929,22 @@ class NewDishViewModel(
                         rid in fromPlaceholder && !wasPlaceholder -> { byId[rid] = resolved; fromPlaceholder.remove(rid) }
                     }
                 }
-                val resolvedIngredients = byId.values.toList()
+                // [AI修改] 终审 R-3 收口：链接菜谱「适量」项(quantity=null·INV-L4-18)保存时折默认克数——
+                //   否则落库 NULL 使该食材营养永久不贡献(resolveGrams 对 null 返 null·今日卡热量系统性偏低)。
+                //   编辑页显示「适量」占位(诚实)与详情页显示估算克数(营养完整)各司其职；用户调过的量非 null 不动。
+                val gramUnitForSave = gramUnit()
+                val resolvedIngredients = byId.values.map { di ->
+                    if (di.quantity == null) {
+                        di.copy(
+                            quantity = com.sxdbsm.cookbook.domain.SeasoningDefaults
+                                .defaultGramFor(di.ingredient.name, di.ingredient.id in seasoningIds).toDouble(),
+                            unitName = di.unitName.ifBlank { gramUnitForSave?.name ?: "g" },
+                            unitId = di.unitId ?: gramUnitForSave?.id,
+                        )
+                    } else {
+                        di
+                    }
+                }
                 dishRepo.saveDish(
                     id = s.editingId ?: 0L,
                     name = s.name.trim(),
@@ -891,6 +973,11 @@ class NewDishViewModel(
                         "success" to true,
                     ),
                 ) // [AI生成] 内测埋点：记录菜品保存成功摘要。
+                // [AI生成] STEP-L4-5.9：链接导入回写 share_link.dish_id(WHERE dish_id IS NULL 幂等·DP-P1-4)；失败只留痕不阻断保存结果。
+                prefillLinkId?.let { linkId ->
+                    runCatching { shareLinkRepo.markSaved(linkId, savedId) }
+                        .onFailure { AppLogger.d(TAG, "link_save_mark_failed linkId=$linkId error_type=${it.javaClass.simpleName}") } // [AI生成] Y-04 日志红线：只记 linkId/错误类型，禁完整 URL/菜名。
+                }
                 _state.value = _state.value.copy(
                     saving = false,
                     done = true,

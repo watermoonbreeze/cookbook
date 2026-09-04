@@ -12,6 +12,7 @@ import com.sxdbsm.cookbook.data.repository.MealRecordRepository
 import com.sxdbsm.cookbook.data.repository.NutritionRepository
 import com.sxdbsm.cookbook.data.repository.PantryRepository
 import com.sxdbsm.cookbook.data.repository.PresentFocusSelection
+import com.sxdbsm.cookbook.data.repository.ShareLinkRepository
 import com.sxdbsm.cookbook.data.repository.PreferenceRepository
 import com.sxdbsm.cookbook.db.CookbookDatabase
 import com.sxdbsm.cookbook.domain.model.FamilyMember
@@ -84,6 +85,7 @@ class HomeFocusSwitcherTest {
                 dishRepo, MealRecordUseCase(mealRepo), MealProjectionRepository(mealRepo), prefs, nutritionRepo,
                 family, ingredientRepo, HealthProfileRepository(db),
                 RecommendationDataSource(db, PantryRepository(db), dishRepo, family, ingredientRepo, nutritionRepo),
+                ShareLinkRepository(db), // [AI修改] STEP-L4-12.2：构造+linkRepo（横幅计数·位置参数对齐）
             )
             val nutrition = withTimeout(5_000) { vm.todayNutrition.first { it != null } }
             val switcher = withTimeout(5_000) { vm.focusSwitcher.first { it.members.isNotEmpty() } }

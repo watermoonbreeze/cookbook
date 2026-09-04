@@ -99,7 +99,7 @@ fun NewDishScreen(
         // [AI生成] 消费预填(搜索"点此新建"带菜名 / 食材页"组成菜品"带食材)——仅纯新建(无编辑/导入)时。
         if (editingDishId == null && importDishId == null) {
             prefillBus.pending.value?.let { pf ->
-                vm.applyPrefill(pf.name, pf.ingredients, pf.cookingMethodName)
+                vm.applyPrefill(pf) // [AI修改] STEP-L4-5.11：整体传(链接导入含做法/步骤/封面/描述全量)。
                 prefillBus.consume()
             }
         }
@@ -398,7 +398,15 @@ fun NewDishScreen(
                 FormFieldLabel("烹饪方式")
                 // [AI生成] AUTOGEN-UNIFY STEP-AU-5.5c：菜名预选做法的内联提示行(v28 餐次预选同款范式·持久非一次性)。
                 //   用户手动碰过做法(touched)即不再显示；预选自动展开折叠区见下方 LaunchedEffect。
-                if (state.cookingMethodPrefilled && !state.cookingMethodTouched) {
+                // [AI生成] STEP-L4-5.11：做法提示行三态——按菜名预选/菜谱导入/无；用户手动碰过(touched)即不再显示。
+                if (state.cookingMethodImported && state.cookingMethodNames.isNotEmpty() && !state.cookingMethodTouched) {
+                    Text(
+                        "来自菜谱导入，可改",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 6.dp),
+                    )
+                } else if (state.cookingMethodPrefilled && !state.cookingMethodTouched) {
                     Text(
                         "已按菜名预选，可改",
                         style = MaterialTheme.typography.bodySmall,
@@ -639,18 +647,20 @@ fun NewDishScreen(
  * #55：每味食材剂量以克为单位，±5g，最小 0。
  */
 // [AI修改] 苹果风格：克数步进器改用统一的 MiniStepper(−/＋ 缩小成可点标签)；点数值可直接输入(大跨度免狂点±)。
+// [AI修改] 终审 R-3：grams 改可空——null=链接菜谱「适量」项，显示「适量」占位（不显示假值 100）；
+//   点 −/＋/输入 时从默认克数起步落实值（changeIngredientGrams 的 ?: DEFAULT_GRAMS 兜底既有）。
 @Composable
-private fun GramStepper(grams: Int, onDelta: (Int) -> Unit, onSet: (Int) -> Unit) {
+private fun GramStepper(grams: Int?, onDelta: (Int) -> Unit, onSet: (Int) -> Unit) {
     var editing by remember { mutableStateOf(false) }
     com.sxdbsm.cookbook.android.ui.component.MiniStepper(
-        valueText = "$grams g",
+        valueText = grams?.let { "$it g" } ?: "适量",
         onMinus = { onDelta(-5) },
         onPlus = { onDelta(5) },
-        minusEnabled = grams > 0,
+        minusEnabled = (grams ?: 100) > 0,
         onValueClick = { editing = true },
     )
     if (editing) {
-        var text by remember { mutableStateOf(grams.toString()) }
+        var text by remember { mutableStateOf((grams ?: 100).toString()) } // [AI修改] 终审 R-3：适量项从默认克数起步输入。
         AlertDialog(
             onDismissRequest = { editing = false },
             title = { Text("输入用量") },
@@ -665,7 +675,7 @@ private fun GramStepper(grams: Int, onDelta: (Int) -> Unit, onSet: (Int) -> Unit
                     shape = MaterialTheme.shapes.medium,
                 )
             },
-            confirmButton = { TextButton(onClick = { onSet(text.toIntOrNull() ?: grams); editing = false }) { Text("确定") } },
+            confirmButton = { TextButton(onClick = { onSet(text.toIntOrNull() ?: (grams ?: 100)); editing = false }) { Text("确定") } }, // [AI修改] 终审 R-3：grams 可空时兜底默认。
             dismissButton = { TextButton(onClick = { editing = false }) { Text("取消") } },
         )
     }
@@ -700,7 +710,7 @@ private fun IngredientRow(ing: com.sxdbsm.cookbook.domain.model.DishIngredient, 
             )
         }
         Spacer(Modifier.width(4.dp))
-        val grams = ing.quantity?.toInt() ?: 100
+        val grams = ing.quantity?.toInt() // [AI修改] 终审 R-3：null=「适量」占位（显示与落库一致性由 save() 收口折默认保障）。
         GramStepper(grams = grams, onDelta = { d -> vm.changeIngredientGrams(ing.ingredient.id, d) }, onSet = { g -> vm.setIngredientGrams(ing.ingredient.id, g) })
         Spacer(Modifier.width(4.dp))
         IconButton(onClick = { vm.removeIngredient(ing.ingredient.id) }) {
@@ -1093,10 +1103,10 @@ private fun IngredientGroupEditorScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Text(ing.ingredient.name, modifier = Modifier.weight(1f))
-                                    val grams = ing.quantity?.toInt() ?: 100
+                                    val grams = ing.quantity?.toInt() // [AI修改] 终审 R-3：null=「适量」占位（本地 copy 语义同改可空起步）。
                                     GramStepper(
                                         grams = grams,
-                                        onDelta = { d -> items[index] = ing.copy(quantity = (grams + d).coerceAtLeast(0).toDouble()) },
+                                        onDelta = { d -> items[index] = ing.copy(quantity = ((grams ?: 100) + d).coerceAtLeast(0).toDouble()) },
                                         onSet = { g -> items[index] = ing.copy(quantity = g.coerceAtLeast(0).toDouble()) },
                                     )
                                     Spacer(Modifier.width(4.dp))

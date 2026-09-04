@@ -52,6 +52,7 @@ val sharedModule: Module = module {
     single { com.sxdbsm.cookbook.data.repository.FamilyRepository(get(), get()) } // [AI生成] 多人家庭成员档案(身体数据/系数/病种)。
     single { com.sxdbsm.cookbook.data.repository.NutritionRepository(get()) } // [AI生成] 营养素 L2 数值层：菜品/餐/日营养估算。
     single { StepTemplateRepository(get()) } // [AI生成] #2 操作步骤模板(预设+自建，编辑菜品"选择步骤"套用)。
+    single { com.sxdbsm.cookbook.data.repository.ShareLinkRepository(get()) } // [AI生成] L4 分享链接(解析状态机/回写；STEP-L4-1 收尾——NewDishViewModel/ParseViewModel/HomeViewModel 构造注入)。
     single { com.sxdbsm.cookbook.data.repository.IngredientGroupRepository(get()) } // [AI生成] B5 常用配料组(编辑菜品"配料组"一键加入)。
     // [AI生成] AI 推荐取数层(S0)：聚合库存/菜品/忌口/最近餐 → 规则引擎输入。
     single { RecommendationDataSource(get(), get(), get(), get(), get(), get()) }

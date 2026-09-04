@@ -2114,6 +2114,13 @@ LEFT JOIN ingredient_nutrition n ON n.ingredient_id = i.id AND n.status = 1
 WHERE i.status = 1
 ORDER BY i.name;
 
+-- ===== parse_dictionary 解析字典（L4-P1） =====
+
+-- [AI生成] seed 专用插入：纯 INSERT OR IGNORE，靠 UNIQUE(source) 兜幂等（sqlite_3_18 无 UPSERT·禁 ON CONFLICT 混合语法·ARCH-S10）。
+insertParseDictionary:
+INSERT OR IGNORE INTO parse_dictionary(source, parse_fun, status)
+VALUES (:source, :parse_fun, :status);
+
 -- ===== share_link 分享链接解析（L4-P1） =====
 
 -- [AI生成] 插入分享链接（重复分享去重由 Repo 层 findActiveByLink 先查复用·DP-P1-8）。
@@ -2137,9 +2144,10 @@ markShareLinkFailed:
 UPDATE share_link SET parse_state = 2, parsed_at = :parsed_at WHERE id = :id;
 
 -- [AI生成] 存为菜品回写（幂等：首写生效，重复保存不覆盖首个 dish）。
+-- [AI修改] 终审 S-1：首个 dish 已软删失活时放行重写（否则死菜重存后 dish_id 永指死菜、该行每次点击都重复兜底重建——Y-02×INV-L4-06 组合死角）。
 markShareLinkSaved:
 UPDATE share_link SET parse_state = 3, dish_id = :dish_id
-WHERE id = :id AND dish_id IS NULL;
+WHERE id = :id AND (dish_id IS NULL OR dish_id NOT IN (SELECT id FROM dish WHERE status = 1));
 
 -- [AI生成] 列表全量（分组排序由 Repo 层 Kotlin 完成；四组 0/1/2/3·组内 created_at 倒序）。
 selectActiveShareLinks:

@@ -38,7 +38,9 @@ import com.sxdbsm.cookbook.android.ui.kitchen.CookingTimerScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiRecommendScreen
 import com.sxdbsm.cookbook.android.ui.ai.AiSettingsScreen
 import com.sxdbsm.cookbook.android.ui.ingredients.IngredientJumpBus
+import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 import com.sxdbsm.cookbook.android.ui.dishdetail.DishDetailScreen
 import com.sxdbsm.cookbook.android.ui.dishes.DishesScreen
 import com.sxdbsm.cookbook.android.ui.home.HomeScreen
@@ -62,6 +64,8 @@ import kotlinx.coroutines.flow.first
 fun MainScaffold(
     openTimer: Boolean = false, // [AI生成] 计时通知点击请求打开烹饪计时页。
     onTimerConsumed: () -> Unit = {},
+    openNewDish: Boolean = false, // [AI生成] STEP-L4-11.3：存为菜品后从透明宿主直达新建菜品页。
+    onNewDishConsumed: () -> Unit = {},
 ) {
     val nav = rememberNavController()
     val current by nav.currentBackStackEntryAsState()
@@ -82,6 +86,15 @@ fun MainScaffold(
         nav.currentBackStackEntryFlow.first() // 等导航图就绪(首个回退栈条目出现)，避免图未挂时 navigate 崩溃
         if (nav.currentDestination?.route != Routes.COOKING_TIMER) nav.navigate(Routes.COOKING_TIMER)
         onTimerConsumed()
+    }
+
+    // [AI生成] STEP-L4-11.3：存为菜品后从透明宿主直达新建页——等导航图就绪再跳（F12 红线·同 openTimer 范式）。
+    //   已在新建页(链式导入再存)不重复压栈；路由串形态按实码为 newdish/{dishId}/{importDishId}。
+    LaunchedEffect(openNewDish) {
+        if (!openNewDish) return@LaunchedEffect
+        nav.currentBackStackEntryFlow.first()
+        if (nav.currentDestination?.route?.startsWith("newdish") != true) nav.navigate(Routes.newDish())
+        onNewDishConsumed()
     }
 
     // [AI生成] 阶段3-c 合规门：首启先弹「隐私政策/用户协议同意」(不可绕过·同意后才 init 采数)，通过后才轮到功能介绍。
@@ -165,6 +178,10 @@ fun MainScaffold(
     val snackScope = androidx.compose.runtime.rememberCoroutineScope()
     val appSnackbar = remember { com.sxdbsm.cookbook.android.ui.component.AppSnackbarController(snackbarHostState, snackScope) }
 
+    // [AI生成] STEP-L4-10.1：链接红点 VM（Activity 域单实例·DishesScreen 红点/LinkList/首页横幅同源·ARCH-07）。
+    val linkBadgeVm: com.sxdbsm.cookbook.android.ui.link.LinkBadgeViewModel = koinViewModel()
+    val linkPendingCount = linkBadgeVm.pendingCount.collectAsState().value
+
     // [AI修改] §9.44 底部导航真悬浮：预留口径按路由感知供值——Tab 页=胶囊包络+系统栏inset，二级页=0。
     val overlayReserved = if (showBottomBar) BottomBarOverlay.reservedTotal() else 0.dp
 
@@ -216,6 +233,7 @@ fun MainScaffold(
                         BusinessTrace.navigationStarted("home", "ai_recommend", trace)
                         nav.navigate(Routes.aiRecommend(trace.value))
                     },
+                    onOpenLinkList = { nav.navigate(Routes.LINK_LIST) }, // [AI生成] STEP-L4-12.4：横幅「去看看」直达导入的菜谱列表。
                     onOpenDietaryReference = { nav.navigate(Routes.DIETARY_REFERENCE) }, // [AI生成] P3-B:今日卡"各类每天吃多少"→膳食参考依据页
                 )
             }
@@ -245,6 +263,18 @@ fun MainScaffold(
                     onOpenDish = { id -> nav.navigate(Routes.dishDetail(id)) },
                     onEditDish = { id -> nav.navigate(Routes.newDish(id)) },
                     onCopyDish = { id -> nav.navigate(Routes.copyDish(id)) },
+                    linkPendingCount = linkPendingCount, // [AI生成] STEP-L4-11.1：待解析数驱动红点。
+                    onOpenLinkList = { nav.navigate(Routes.LINK_LIST) }, // [AI生成] STEP-L4-11.1：右上角链接图标→列表页。
+                )
+            }
+            composable(Routes.LINK_LIST) {
+                // [AI生成] STEP-L4-10.3：导入的菜谱列表（路由作用域 VM·参数收 Activity 域 LinkBadge 同源实例）。
+                val listVm: com.sxdbsm.cookbook.android.ui.link.LinkListViewModel =
+                    koinViewModel { parametersOf(linkBadgeVm) }
+                com.sxdbsm.cookbook.android.ui.link.LinkListScreen(
+                    vm = listVm,
+                    onBack = { nav.popBackStack() },
+                    onOpenDishDetail = { dishId -> nav.navigate(Routes.dishDetail(dishId)) },
                 )
             }
             composable(Routes.INGREDIENTS) {

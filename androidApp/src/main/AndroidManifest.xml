@@ -40,6 +40,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- [AI生成] STEP-L4-8.2：外部菜谱分享接收（透明宿主·双入口：系统分享 ACTION_SEND / 链接列表转发 EXTRA_LINK_ID）。 -->
+        <activity
+            android:name=".ui.link.ShareReceiverActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/ShareReceiverTheme">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
         <!-- [AI生成] 烹饪计时到点/停止广播接收器（系统级响铃，不导出） -->
         <receiver
             android:name=".kitchen.TimerAlarmReceiver"

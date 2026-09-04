@@ -142,8 +142,9 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
         val dishesJson = SeedResourceLoader.readText("seed/dishes.json").orEmpty()
         val nutritionJson = SeedResourceLoader.readText("seed/ingredient_nutrition.json").orEmpty() // [AI生成] L2 营养数据文件
         val attributesJson = SeedResourceLoader.readText("seed/ingredient_attributes.json").orEmpty() // [AI生成] 食材属性标签(方案B)
+        val parseDictJson = SeedResourceLoader.readText("seed/seed_parse_dictionary.json").orEmpty() // [AI生成] STEP-L4-3.2：解析字典 seed。
         // [AI修改] seed 逻辑版本盐：seed 处理逻辑变更(而非JSON内容)也要让老库跑一次。v2=预设菜配料补齐修复(凉皮0千卡)。
-        val fingerprint = fingerprintOf(SEED_LOGIC_VERSION, categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson, nutritionJson, attributesJson)
+        val fingerprint = fingerprintOf(SEED_LOGIC_VERSION, categoriesJson, ingredientsJson, crowdRulesJson, detailsJson, careRulesJson, dishesJson, nutritionJson, attributesJson, parseDictJson)
 
         val stored = q.selectPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT).executeAsOneOrNull()?.value_
         if (!force && stored == fingerprint) {
@@ -162,6 +163,7 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             seedIngredientNutrition(now) // [AI生成] L2 食材营养素补齐式 seed（专用文件 ingredient_nutrition.json）。
             seedDishes(now) // [AI生成] 预设经典做法菜品补齐式 seed（关联主料/烹饪方式/配料/步骤）。
             seedDishMealSlots() // [AI生成] v28：预设菜「适合餐次」补齐式 seed(回填只补空，显式 mealSlots 优先、否则 Matcher 推断)。
+            seedParseDictionary(parseDictJson) // [AI生成] STEP-L4-3.2：解析字典补齐式 seed(路由分享来源→解析配置文件)。
         }
         q.upsertPreference(PreferenceKeys.SEED_CONTENT_FINGERPRINT, fingerprint, now)
         return true
@@ -189,6 +191,20 @@ class PresetDataSeeder(private val db: CookbookDatabase) {
             q.insertMeasurementUnit(name, "preset", grams)
         }
     }
+
+    /** 解析字典 seed：纯 INSERT OR IGNORE 靠 UNIQUE(source) 兜幂等。[AI生成] STEP-L4-3.2 */
+    private fun seedParseDictionary(jsonText: String) {
+        if (jsonText.isBlank()) return
+        val rows = runCatching {
+            json.decodeFromString<List<ParseDictionarySeed>>(jsonText)
+        }.getOrDefault(emptyList())
+        val q = db.cookbookQueries
+        // [AI生成] SQLDelight INTEGER 列生成为 Kotlin Long，seed 数据类侧保持 Int、此处收口转换。
+        rows.forEach { q.insertParseDictionary(it.source, it.parse_fun, it.status.toLong()) }
+    }
+
+    @kotlinx.serialization.Serializable
+    private data class ParseDictionarySeed(val source: String, val parse_fun: String, val status: Int = 1)
 
     /**
      * 补齐单位克当量（营养估算换算依据）。[AI生成]

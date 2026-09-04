@@ -27,6 +27,7 @@ object Routes {
     const val ADD_MEAL = "addmeal?date={date}&dishIds={dishIds}&copyFrom={copyFrom}"
     const val UNIFIED_ADD_MEAL = "unified_add_meal" // [AI生成] UEN：统一添加餐食全屏入口
     const val DISHES = "dishes"
+    const val LINK_LIST = "link_list" // [AI生成] STEP-L4-10.3：导入的菜谱列表页（菜品页右上角链接图标进入）。
     const val INGREDIENTS = "ingredients"
     const val SEARCH = "search"
     const val MINE = "mine"

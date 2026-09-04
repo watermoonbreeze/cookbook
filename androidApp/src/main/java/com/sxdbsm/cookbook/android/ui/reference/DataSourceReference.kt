@@ -150,6 +150,20 @@ object DataSourceReference {
                 ),
             ),
         ),
+        // [AI生成] STEP-L4-13.2：外部食谱导入（分享链接）的采集与营养口径披露——透明可溯源（菜谱内容来源 + 营养为 App 估算）。
+        DietaryRefCategory(
+            title = "外部食谱导入",
+            intro = "从分享链接导入的菜谱内容与营养数值的来源说明。",
+            items = listOf(
+                DietaryRefItem(
+                    indicator = "链接导入菜品（菜名/食材/步骤/图片）",
+                    levels = listOf(DietaryRefLevel("说明", "菜谱内容(菜名/食材/步骤/图片)在下厨房网页公开页面采集，用户确认后才保存；营养数值由本 App 按食材库估算，仅供参考")),
+                    caliber = "参考整理，非官方权威菜谱；营养为估算·仅供参考·非医嘱",
+                    appliesTo = emptyList(),
+                    source = "下厨房公开菜谱页面（用户分享链接）",
+                ),
+            ),
+        ),
     )
 
     val sources: List<DietaryRefSource> = listOf(
@@ -178,5 +192,7 @@ object DataSourceReference {
         DietaryRefSource("《成人糖尿病食养指南(2023年版)》", "", "国家卫生健康委办公厅", "2023"),
         DietaryRefSource("DASH 饮食（限钠增钾）", "", "美国 NHLBI", ""),
         DietaryRefSource("八大菜系 + 家常菜整理", "", "公认餐饮常识", ""),
+        // [AI生成] STEP-L4-13.2：链接导入菜谱内容的采集来源（非健康数据源·透明披露）。
+        DietaryRefSource("下厨房公开菜谱页面", "链接导入的菜名/食材/步骤/图片采集处", "下厨房（用户分享的公开网页）", ""),
     )
 }
