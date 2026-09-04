@@ -2,7 +2,7 @@ id: F-MEAL
 name: 记一餐/食历
 lifecycle: active
 headline: "✅ **已落地**，早期即完成，长期稳定运行，无未决问题。"
-synced_to: 3130fdca
+synced_to: 4f1df5f2
 match:
   - androidApp/**/addmeal/**
   - androidApp/**/ui/home/**

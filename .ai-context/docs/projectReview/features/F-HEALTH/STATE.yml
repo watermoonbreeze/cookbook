@@ -2,7 +2,7 @@ id: F-HEALTH
 name: 健康判定与忌口引擎
 lifecycle: active
 headline: "✅ 慢病深挖已落地；脂肪肝只复用既有食材级 care 参考，不新增诊断或数值算法。"
-synced_to: 42b95b7a
+synced_to: 4f1df5f2
 match:
   - shared/**/ai/HealthRuleEngine*
   - shared/**/ai/MemberDishHealthUseCase*
