@@ -50,3 +50,7 @@ Truth Hierarchy（2026-08-19 修订，D-25）：Runtime Truth（Code / DB / sche
 
 - `data-pipeline/` 的 README、脚本说明、候选与映射 review 是数据生产工具的**代码近旁资料**，不作为项目通用首读入口；涉及预设/营养数据生产时，从 `docs/projectReview/22_预设与参考资料治理（专属）.md` 进入，再按需读取。
 - 根目录 `docs/` 的历史需求/规划已迁入 `docs/feature/_archive/legacy_root_docs/`；不得再创建新的根 `docs/` 项目知识副本。
+
+## 阶段功能识别
+
+核心功能（MVP）、产品一期、软著首期和产品二期的边界统一见 .ai-context/docs/projectReview/阶段功能总表.md。其他 AI 接手项目时先读该文件，再进入全景图和功能目录。
